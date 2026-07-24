@@ -1,7 +1,11 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/interaction/portal.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://concept/town/can_use/building/building_building_facility_005.png" id="2_texture"]
+[ext_resource type="Texture2D" path="res://assets/town/generated/town_ground_stairs_portal.png" id="2_texture"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_portal"]
+atlas = ExtResource("2_texture")
+region = Rect2(790, 340, 620, 575)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(128, 160)
@@ -19,8 +23,9 @@ target_scene_path = "res://scenes/maps/town.tscn"
 target_spawn_name = &"PlayerSpawn"
 
 [node name="Visual" type="Sprite2D" parent="."]
-texture = ExtResource("2_texture")
-offset = Vector2(0, -133)
+scale = Vector2(0.45, 0.45)
+texture = SubResource("AtlasTexture_portal")
+offset = Vector2(0, -287.5)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -80)

@@ -5,8 +5,6 @@
 [ext_resource type="Texture2D" uid="uid://b48ryt47l4404" path="res://concept/town/can_use/background/parallax_forest_strip_v3.png" id="3_forest"]
 [ext_resource type="Texture2D" uid="uid://bue7naubdsn6g" path="res://concept/town/can_use/background/parallax_rooftops_strip_v3.png" id="4_rooftops"]
 [ext_resource type="PackedScene" uid="uid://ckbaviqhvukg5" path="res://scenes/player/Player.tscn" id="29_player_scene"]
-[ext_resource type="PackedScene" path="res://scenes/npc/NPC.tscn" id="30_npc_scene"]
-[ext_resource type="PackedScene" path="res://scenes/npc/Merchant.tscn" id="31_merchant_scene"]
 [ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="32_portal_scene"]
 [ext_resource type="PackedScene" path="res://scenes/props/Chest.tscn" id="33_chest_scene"]
 [ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueResidence.tscn" id="34_town_object_scene"]
@@ -30,10 +28,13 @@
 [ext_resource type="PackedScene" path="res://scenes/npc/town/VillagerFemaleVisual.tscn" id="54_town_object_scene"]
 [ext_resource type="PackedScene" path="res://scenes/npc/town/GuardVisual.tscn" id="56_town_object_scene"]
 [ext_resource type="PackedScene" path="res://scenes/props/magic_book_portal.tscn" id="58_magic_book_portal_scene"]
-[ext_resource type="Texture2D" uid="uid://dqacl7u4aahyg" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Ground 02.png" id="59_road_ground"]
 [ext_resource type="Texture2D" uid="uid://ct2yg5kae6wlt" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Stone.png" id="60_road_stone"]
 [ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedResidence.tscn" id="61_empty_house"]
 [ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedTower.tscn" id="62_empty_tower"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedPotionMerchant.tscn" id="63_potion_merchant"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedBlacksmith.tscn" id="64_blacksmith"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedInnkeeper.tscn" id="65_innkeeper"]
+[ext_resource type="Texture2D" uid="uid://ckkaoi1xjx3ww" path="res://assets/town/generated/town_ground_stairs_portal.png" id="66_ground_atlas"]
 
 [sub_resource type="Gradient" id="Gradient_sky"]
 offsets = PackedFloat32Array(0, 0.58, 1)
@@ -45,6 +46,10 @@ width = 2172
 height = 724
 fill_from = Vector2(0.5, 0)
 fill_to = Vector2(0.5, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_town_ground"]
+atlas = ExtResource("66_ground_atlas")
+region = Rect2(150, 120, 1230, 200)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(2800, 79)
@@ -88,31 +93,20 @@ texture = ExtResource("4_rooftops")
 
 [node name="Ground" type="Node2D" parent="." unique_id=1400765759]
 
-[node name="StreetBase" type="ColorRect" parent="Ground" unique_id=68624083]
-offset_left = -311.0
-offset_top = 609.0
-offset_right = 2809.0
-offset_bottom = 849.0
-color = Color(0.39, 0.31, 0.25, 1)
+[node name="GroundWest" type="Sprite2D" parent="Ground" unique_id=221897107]
+position = Vector2(460, 668)
+scale = Vector2(0.75, 0.65)
+texture = SubResource("AtlasTexture_town_ground")
 
-[node name="WalkableRoad" type="ColorRect" parent="Ground" unique_id=1780323524]
-offset_left = -320.0
-offset_top = 603.0
-offset_right = 2800.0
-offset_bottom = 739.0
-color = Color(0.31, 0.22, 0.17, 1)
+[node name="GroundCenter" type="Sprite2D" parent="Ground" unique_id=1102470862]
+position = Vector2(1378, 668)
+scale = Vector2(0.75, 0.65)
+texture = SubResource("AtlasTexture_town_ground")
 
-[node name="RoadSurface" type="TextureRect" parent="Ground" unique_id=1036389531]
-texture_filter = 1
-texture_repeat = 2
-offset_left = -320.0
-offset_top = 603.0
-offset_right = 2800.0
-offset_bottom = 739.0
-mouse_filter = 2
-texture = ExtResource("59_road_ground")
-expand_mode = 1
-stretch_mode = 1
+[node name="GroundEast" type="Sprite2D" parent="Ground" unique_id=270853184]
+position = Vector2(2296, 668)
+scale = Vector2(0.75, 0.65)
+texture = SubResource("AtlasTexture_town_ground")
 
 [node name="RoadStones" type="Node2D" parent="Ground" unique_id=2030424110]
 
@@ -181,7 +175,7 @@ scale = Vector2(0.82, 0.82)
 position = Vector2(2284, 676)
 
 [node name="TownWell" parent="Buildings" unique_id=1187422557 instance=ExtResource("39_town_object_scene")]
-position = Vector2(1947, 609)
+position = Vector2(1880, 616)
 
 [node name="NoticeBoard" parent="Buildings" unique_id=1418954820 instance=ExtResource("40_town_object_scene")]
 position = Vector2(540, 625)
@@ -192,10 +186,10 @@ position = Vector2(540, 625)
 position = Vector2(90, 612)
 
 [node name="LampWest" parent="Props" unique_id=2144152005 instance=ExtResource("44_town_object_scene")]
-position = Vector2(430, 592)
+position = Vector2(385, 612)
 
 [node name="LampCenter" parent="Props" unique_id=473887855 instance=ExtResource("44_town_object_scene")]
-position = Vector2(1510, 592)
+position = Vector2(1300, 612)
 
 [node name="CrossroadSign" parent="Props" unique_id=932519189 instance=ExtResource("45_town_object_scene")]
 position = Vector2(2047, 628)
@@ -207,10 +201,10 @@ position = Vector2(1020, 616)
 position = Vector2(1440, 616)
 
 [node name="Crates" parent="Props" unique_id=390191107 instance=ExtResource("48_town_object_scene")]
-position = Vector2(1575, 620)
+position = Vector2(760, 620)
 
 [node name="MarketCart" parent="Props" unique_id=1918996332 instance=ExtResource("49_town_object_scene")]
-position = Vector2(1815, 612)
+position = Vector2(1690, 616)
 
 [node name="EastTree" parent="Props" unique_id=924302197 instance=ExtResource("50_town_object_scene")]
 position = Vector2(2440, 594)
@@ -229,12 +223,12 @@ interaction_id = &"town_crates"
 [node name="Portals" type="Node2D" parent="." unique_id=259814262]
 
 [node name="EastRoadPortal" parent="Portals" unique_id=147481501 instance=ExtResource("32_portal_scene")]
-position = Vector2(2532, 576)
+position = Vector2(2532, 676)
 interaction_id = &"town_east_road"
 prompt_text = "Travel"
 
 [node name="TownCenterPortal" parent="Portals" unique_id=1992277835 instance=ExtResource("32_portal_scene")]
-position = Vector2(2284, 576)
+position = Vector2(2284, 676)
 
 [node name="ForestPortal" parent="Portals" unique_id=1868751795 instance=ExtResource("58_magic_book_portal_scene")]
 position = Vector2(1910, 616)
@@ -272,7 +266,7 @@ prompt_text = "Travel"
 position = Vector2(485, 606)
 
 [node name="VillagerMale" parent="NPCs" unique_id=840234731 instance=ExtResource("53_town_object_scene")]
-position = Vector2(930, 620)
+position = Vector2(875, 620)
 
 [node name="VillagerFemale" parent="NPCs" unique_id=299251137 instance=ExtResource("54_town_object_scene")]
 position = Vector2(1160, 620)
@@ -280,24 +274,14 @@ position = Vector2(1160, 620)
 [node name="Guard" parent="NPCs" unique_id=250146326 instance=ExtResource("56_town_object_scene")]
 position = Vector2(2211, 624)
 
-[node name="ItemMerchantInteractive" parent="NPCs" unique_id=455671580 instance=ExtResource("31_merchant_scene")]
-position = Vector2(957.99994, 580)
-scale = Vector2(0.875, 0.875)
+[node name="ItemMerchantInteractive" parent="NPCs" unique_id=455671580 instance=ExtResource("63_potion_merchant")]
+position = Vector2(958, 620)
 
-[node name="BlacksmithInteractive" parent="NPCs" unique_id=539893336 instance=ExtResource("31_merchant_scene")]
-position = Vector2(1380, 580)
-scale = Vector2(0.855, 0.855)
-display_name = "Blacksmith"
-dialogue_id = &"blacksmith_greeting"
-shop_id = &"blacksmith"
-interaction_id = &"blacksmith"
-prompt_text = "Forge"
+[node name="BlacksmithInteractive" parent="NPCs" unique_id=539893336 instance=ExtResource("64_blacksmith")]
+position = Vector2(1380, 620)
 
-[node name="InnkeeperInteractive" parent="NPCs" unique_id=844516187 instance=ExtResource("30_npc_scene")]
+[node name="InnkeeperInteractive" parent="NPCs" unique_id=844516187 instance=ExtResource("65_innkeeper")]
 position = Vector2(1765, 620)
-display_name = "Innkeeper"
-dialogue_id = &"innkeeper"
-interaction_id = &"innkeeper"
 
 [node name="Player" parent="." unique_id=1141192825 instance=ExtResource("29_player_scene")]
 position = Vector2(1241.0001, 647.00006)
