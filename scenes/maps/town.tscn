@@ -57,6 +57,7 @@
 [ext_resource type="PackedScene" path="res://scenes/npc/town/SmithVisual.tscn" id="55_town_object_scene"]
 [ext_resource type="PackedScene" path="res://scenes/npc/town/GuardVisual.tscn" id="56_town_object_scene"]
 [ext_resource type="PackedScene" path="res://scenes/npc/town/InnkeeperVisual.tscn" id="57_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/magic_book_portal.tscn" id="58_magic_book_portal_scene"]
 
 [sub_resource type="Gradient" id="Gradient_sky"]
 offsets = PackedFloat32Array(0, 0.58, 1)
@@ -201,6 +202,33 @@ target_spawn_name = &"PlayerSpawn"
 
 [node name="Visual" parent="Portals/TownCenterPortal" index="0"]
 visible = false
+
+[node name="ForestPortal" parent="Portals" instance=ExtResource("58_magic_book_portal_scene")]
+position = Vector2(1910, 616)
+interaction_id = &"forest_portal"
+prompt_text = "Travel"
+target_scene_path = "res://scenes/maps/autumn_forest.tscn"
+target_spawn_name = &"PlayerSpawn"
+display_name = "Autumn Forest"
+portal_tint = Color(0.49, 0.95, 0.61, 1)
+
+[node name="CavesPortal" parent="Portals" instance=ExtResource("58_magic_book_portal_scene")]
+position = Vector2(2110, 616)
+interaction_id = &"caves_portal"
+prompt_text = "Travel"
+target_scene_path = "res://scenes/maps/crystal_caves.tscn"
+target_spawn_name = &"PlayerSpawn"
+display_name = "Crystal Caves"
+portal_tint = Color(0.4, 0.78, 1, 1)
+
+[node name="GraveyardPortal" parent="Portals" instance=ExtResource("58_magic_book_portal_scene")]
+position = Vector2(2410, 616)
+interaction_id = &"graveyard_portal"
+prompt_text = "Travel"
+target_scene_path = "res://scenes/maps/forbidden_graveyard.tscn"
+target_spawn_name = &"PlayerSpawn"
+display_name = "Forbidden Graveyard"
+portal_tint = Color(0.82, 0.49, 0.96, 1)
 
 [node name="NPCs" type="Node2D" parent="." unique_id=1308501861]
 

@@ -1,0 +1,284 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Background/Forbidden_Graveyard_2D_Platformer_Tileset_Background - Layer 00.png" id="1_sky"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Background/Forbidden_Graveyard_2D_Platformer_Tileset_Background - Layer 01.png" id="2_horizon"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Environment/Forbidden_Graveyard_2D_Platformer_Tileset_Environment - Tree 01.png" id="3_tree_small"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Environment/Forbidden_Graveyard_2D_Platformer_Tileset_Environment - Tree 02.png" id="4_tree_large"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Environment/Forbidden_Graveyard_2D_Platformer_Tileset_Environment - Crypt.png" id="5_crypt"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Environment/Forbidden_Graveyard_2D_Platformer_Tileset_Environment - Headstone 01.png" id="6_headstone_one"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Environment/Forbidden_Graveyard_2D_Platformer_Tileset_Environment - Headstone 02.png" id="7_headstone_two"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Environment/Forbidden_Graveyard_2D_Platformer_Tileset_Environment - Headstone 03.png" id="8_headstone_three"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Environment/Forbidden_Graveyard_2D_Platformer_Tileset_Environment - Lantern.png" id="9_lantern"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Environment/Forbidden_Graveyard_2D_Platformer_Tileset_Environment - Stone fence 01.png" id="10_fence"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Environment/Forbidden_Graveyard_2D_Platformer_Tileset_Environment - Coffin.png" id="11_coffin"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Environment/Forbidden_Graveyard_2D_Platformer_Tileset_Environment - Skull.png" id="12_skull"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Platfromer/Forbidden_Graveyard_2D_Platformer_Tileset_Platformer - Ground 01.png" id="13_ground"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Platfromer/Forbidden_Graveyard_2D_Platformer_Tileset_Platformer - Ground Additional 01.png" id="14_platform"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Collectable Object/Forbidden_Graveyard_2D_Platformer_Tileset_Collectable Object - Coin 01.png" id="15_coin"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Collectable Object/Forbidden_Graveyard_2D_Platformer_Tileset_Collectable Object - Mana.png" id="16_mana"]
+[ext_resource type="Texture2D" path="res://assets/environments/forbidden_graveyard/png/Collectable Object/Forbidden_Graveyard_2D_Platformer_Tileset_Collectable Object - Life.png" id="17_life"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="18_player_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="19_portal_scene"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(2800, 64)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(48, 520)
+
+[node name="ForbiddenGraveyard" type="Node2D"]
+
+[node name="Background" type="Node2D" parent="."]
+
+[node name="MoonlitSkyWest" type="Sprite2D" parent="Background"]
+position = Vector2(667, 375)
+texture = ExtResource("1_sky")
+
+[node name="MoonlitSkyEast" type="Sprite2D" parent="Background"]
+position = Vector2(2001, 375)
+texture = ExtResource("1_sky")
+
+[node name="GraveSilhouetteWest" type="Sprite2D" parent="Background"]
+position = Vector2(667, 375)
+texture = ExtResource("2_horizon")
+
+[node name="GraveSilhouetteEast" type="Sprite2D" parent="Background"]
+position = Vector2(2001, 375)
+texture = ExtResource("2_horizon")
+
+[node name="Ground" type="Node2D" parent="."]
+
+[node name="Ground01" type="Sprite2D" parent="Ground"]
+position = Vector2(64, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground02" type="Sprite2D" parent="Ground"]
+position = Vector2(192, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground03" type="Sprite2D" parent="Ground"]
+position = Vector2(320, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground04" type="Sprite2D" parent="Ground"]
+position = Vector2(448, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground05" type="Sprite2D" parent="Ground"]
+position = Vector2(576, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground06" type="Sprite2D" parent="Ground"]
+position = Vector2(704, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground07" type="Sprite2D" parent="Ground"]
+position = Vector2(832, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground08" type="Sprite2D" parent="Ground"]
+position = Vector2(960, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground09" type="Sprite2D" parent="Ground"]
+position = Vector2(1088, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground10" type="Sprite2D" parent="Ground"]
+position = Vector2(1216, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground11" type="Sprite2D" parent="Ground"]
+position = Vector2(1344, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground12" type="Sprite2D" parent="Ground"]
+position = Vector2(1472, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground13" type="Sprite2D" parent="Ground"]
+position = Vector2(1600, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground14" type="Sprite2D" parent="Ground"]
+position = Vector2(1728, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground15" type="Sprite2D" parent="Ground"]
+position = Vector2(1856, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground16" type="Sprite2D" parent="Ground"]
+position = Vector2(1984, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground17" type="Sprite2D" parent="Ground"]
+position = Vector2(2112, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground18" type="Sprite2D" parent="Ground"]
+position = Vector2(2240, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground19" type="Sprite2D" parent="Ground"]
+position = Vector2(2368, 650)
+texture = ExtResource("13_ground")
+
+[node name="Ground20" type="Sprite2D" parent="Ground"]
+position = Vector2(2496, 650)
+texture = ExtResource("13_ground")
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="CryptLedge" type="Sprite2D" parent="Platforms"]
+position = Vector2(690, 477)
+scale = Vector2(0.7, 0.32)
+texture = ExtResource("14_platform")
+
+[node name="MausoleumLedge" type="Sprite2D" parent="Platforms"]
+position = Vector2(1400, 450)
+scale = Vector2(0.75, 0.32)
+texture = ExtResource("14_platform")
+
+[node name="EastLedge" type="Sprite2D" parent="Platforms"]
+position = Vector2(2025, 500)
+scale = Vector2(0.65, 0.3)
+texture = ExtResource("14_platform")
+
+[node name="GraveyardProps" type="Node2D" parent="."]
+
+[node name="WestTree" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(175, 548)
+texture = ExtResource("4_tree_large")
+
+[node name="WestFence" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(427, 607)
+texture = ExtResource("10_fence")
+
+[node name="WestHeadstone" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(510, 590)
+texture = ExtResource("6_headstone_one")
+
+[node name="WestLantern" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(610, 540)
+texture = ExtResource("9_lantern")
+
+[node name="LeftCrypt" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(815, 467)
+texture = ExtResource("5_crypt")
+
+[node name="CryptHeadstone" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(1010, 590)
+texture = ExtResource("7_headstone_two")
+
+[node name="CenterTree" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(1205, 547)
+texture = ExtResource("3_tree_small")
+
+[node name="CenterCoffin" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(1325, 600)
+texture = ExtResource("11_coffin")
+
+[node name="CenterHeadstone" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(1515, 590)
+texture = ExtResource("8_headstone_three")
+
+[node name="EastCrypt" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(1770, 470)
+scale = Vector2(-0.78, 0.78)
+texture = ExtResource("5_crypt")
+
+[node name="EastTree" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(2115, 548)
+texture = ExtResource("4_tree_large")
+
+[node name="EastLantern" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(2250, 540)
+texture = ExtResource("9_lantern")
+
+[node name="EastHeadstone" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(2390, 590)
+texture = ExtResource("7_headstone_two")
+
+[node name="SkullMarker" type="Sprite2D" parent="GraveyardProps"]
+position = Vector2(2450, 604)
+texture = ExtResource("12_skull")
+
+[node name="Collectibles" type="Node2D" parent="."]
+
+[node name="CoinWest" type="Sprite2D" parent="Collectibles"]
+position = Vector2(320, 454)
+scale = Vector2(0.38, 0.38)
+texture = ExtResource("15_coin")
+
+[node name="CoinCrypt" type="Sprite2D" parent="Collectibles"]
+position = Vector2(690, 405)
+scale = Vector2(0.38, 0.38)
+texture = ExtResource("15_coin")
+
+[node name="ManaCrypt" type="Sprite2D" parent="Collectibles"]
+position = Vector2(1400, 385)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("16_mana")
+
+[node name="CoinEast" type="Sprite2D" parent="Collectibles"]
+position = Vector2(2025, 430)
+scale = Vector2(0.38, 0.38)
+texture = ExtResource("15_coin")
+
+[node name="LifeEast" type="Sprite2D" parent="Collectibles"]
+position = Vector2(2310, 498)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("17_life")
+
+[node name="TownPortal" parent="." instance=ExtResource("19_portal_scene")]
+position = Vector2(2460, 530)
+interaction_id = &"forbidden_graveyard_return"
+prompt_text = "Return"
+target_scene_path = "res://scenes/maps/town.tscn"
+target_spawn_name = &"PlayerSpawn"
+
+[node name="Visual" parent="TownPortal" index="0"]
+visible = false
+
+[node name="PortalGlow" type="Polygon2D" parent="TownPortal"]
+polygon = PackedVector2Array(-48, 62, -38, -44, 0, -70, 38, -44, 48, 62)
+color = Color(0.47, 0.24, 0.72, 0.9)
+
+[node name="PortalCore" type="Polygon2D" parent="TownPortal"]
+polygon = PackedVector2Array(-25, 58, -20, -35, 0, -50, 20, -35, 25, 58)
+color = Color(0.79, 0.55, 0.98, 1)
+
+[node name="Label" type="Label" parent="TownPortal"]
+offset_left = -76.0
+offset_top = -108.0
+offset_right = 76.0
+offset_bottom = -76.0
+theme_override_colors/font_color = Color(0.94, 0.82, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.1, 0.04, 0.14, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+text = "Return to Town"
+horizontal_alignment = 1
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(220, 576)
+
+[node name="Player" parent="." instance=ExtResource("18_player_scene")]
+position = Vector2(220, 576)
+
+[node name="WorldCollision" type="StaticBody2D" parent="."]
+
+[node name="FloorCollision" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(1300, 661)
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="LeftWall" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(-24, 420)
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="RightWall" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(2624, 420)
+shape = SubResource("RectangleShape2D_wall")
+
+[editable path="TownPortal"]

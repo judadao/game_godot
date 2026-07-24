@@ -8,6 +8,7 @@ signal interaction_prompt_accepted
 @onready var mp_fill: ColorRect = $StatusPanel/StatusRows/MPRow/MPBar/Fill
 @onready var mp_value: Label = $StatusPanel/StatusRows/MPRow/MPBar/Value
 @onready var currency_value: Label = $CurrencyPanel/CurrencyRow/CurrencyValue
+@onready var area_name: Label = $AreaPanel/AreaRows/AreaName
 @onready var quest_text: Label = $QuestPanel/QuestRows/QuestText
 @onready var quest_progress: Label = $QuestPanel/QuestRows/QuestProgress
 @onready var interaction_panel: PanelContainer = $InteractionPanel
@@ -37,6 +38,9 @@ func set_mana(current: int, maximum: int) -> void:
 
 func set_currency(amount: int) -> void:
 	currency_value.text = _format_number(amount)
+
+func set_area_name(value: String) -> void:
+	area_name.text = value.strip_edges() if not value.strip_edges().is_empty() else "Unknown Area"
 
 func set_objective(text: String, progress: String = "") -> void:
 	quest_text.text = text

@@ -67,6 +67,7 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 	map_root.add_child(current_map)
 	_register_player(spawn_name)
 	_wire_interactives()
+	_update_hud_area_name()
 	map_loaded.emit(current_map)
 	return current_map
 
@@ -85,9 +86,24 @@ func load_hud() -> void:
 		ui_root.add_child(hud)
 		if hud.has_signal("interaction_prompt_accepted"):
 			hud.connect("interaction_prompt_accepted", _try_interact)
+		_update_hud_area_name()
 	else:
 		push_error("HUD scene root must be a Control.")
 		hud_instance.queue_free()
+
+
+func _update_hud_area_name() -> void:
+	if hud == null or current_map == null or not hud.has_method("set_area_name"):
+		return
+
+	var area_names := {
+		"res://scenes/maps/town.tscn": "Town",
+		"res://scenes/maps/autumn_forest.tscn": "Autumn Forest",
+		"res://scenes/maps/crystal_caves.tscn": "Crystal Caves",
+		"res://scenes/maps/forbidden_graveyard.tscn": "Forbidden Graveyard",
+	}
+	var map_path := current_map.scene_file_path
+	hud.call("set_area_name", area_names.get(map_path, current_map.name))
 
 
 func open_ui(ui_name: String, ui_scene: PackedScene, pause_game: bool = false) -> Control:
