@@ -1,7 +1,8 @@
-[gd_scene format=3 uid="uid://ckbaviqhvukg5"]
+[gd_scene load_steps=6 format=3 uid="uid://ckbaviqhvukg5"]
 
 [ext_resource type="Script" uid="uid://wovipw8hj72o" path="res://scripts/player/player_controller.gd" id="1_player_controller"]
 [ext_resource type="Texture2D" uid="uid://btbvha3ixwooc" path="res://assets/curated/game_own/world/legacy_fantasy/Character/Idle/Idle-Sheet.png" id="2_player_idle"]
+[ext_resource type="Script" path="res://scripts/combat/hurtbox.gd" id="3_hurtbox"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(34, 96)
@@ -9,7 +10,13 @@ size = Vector2(34, 96)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_interaction"]
 size = Vector2(56, 63)
 
-[node name="Player" type="CharacterBody2D" unique_id=294046306]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurtbox"]
+size = Vector2(42, 88)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
+size = Vector2(76, 64)
+
+[node name="Player" type="CharacterBody2D" unique_id=294046306 groups=["Player"]]
 script = ExtResource("1_player_controller")
 
 [node name="Visual" type="Node2D" parent="." unique_id=159216565]
@@ -34,6 +41,24 @@ shape = SubResource("RectangleShape2D_interaction")
 
 [node name="AttackOrigin" type="Marker2D" parent="." unique_id=1494877754]
 position = Vector2(34, -48)
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("3_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(-50, -78)
+shape = SubResource("RectangleShape2D_hurtbox")
+
+[node name="AttackHitbox" type="Area2D" parent="."]
+position = Vector2(10, -54)
+collision_layer = 0
+collision_mask = 16
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackHitbox"]
+shape = SubResource("RectangleShape2D_attack")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=726086623]
 limit_left = 0

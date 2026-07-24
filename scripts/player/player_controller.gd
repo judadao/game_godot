@@ -3,6 +3,7 @@ extends CharacterBody2D
 signal attack_started(origin: Vector2, direction: Vector2)
 signal state_changed(state: StringName)
 signal resources_changed(health: int, max_health: int, mana: int, max_mana: int)
+signal defeated
 
 const ACTION_MOVE_LEFT: StringName = &"move_left"
 const ACTION_MOVE_RIGHT: StringName = &"move_right"
@@ -16,6 +17,7 @@ const STATE_IDLE: StringName = &"idle"
 const STATE_WALK: StringName = &"walk"
 const STATE_JUMP: StringName = &"jump"
 const ANIMATION_ATTACK: StringName = &"attack"
+const SKILL_WAVE_SCENE: PackedScene = preload("res://scenes/combat/SkillWave.tscn")
 
 const IDLE_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/legacy_fantasy/Character/Idle/Idle-Sheet.png")
 const RUN_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/legacy_fantasy/Character/Run/Run-Sheet.png")
@@ -34,11 +36,16 @@ const ATTACK_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/l
 @export var health: int = 78
 @export var max_mana: int = 50
 @export var mana: int = 31
+@export var attack_power: int = 16
+@export var defense: int = 3
+@export var skill_damage: int = 26
+@export var skill_mana_cost: int = 15
 
 @onready var visual: Node2D = get_node_or_null("Visual") as Node2D
 @onready var character_sprite: Sprite2D = get_node_or_null("Visual/CharacterSprite") as Sprite2D
 @onready var interaction_detector: Area2D = get_node_or_null("InteractionDetector") as Area2D
 @onready var attack_origin: Marker2D = get_node_or_null("AttackOrigin") as Marker2D
+@onready var attack_hitbox: Area2D = get_node_or_null("AttackHitbox") as Area2D
 
 var facing_direction: int = 1
 var current_state: StringName = STATE_IDLE
@@ -47,6 +54,7 @@ var _animation_name: StringName = &""
 var _animation_elapsed: float = 0.0
 var _attack_animation_active: bool = false
 var input_enabled: bool = true
+var _invulnerable := false
 
 func _ready() -> void:
 	health = clampi(health, 0, maxi(1, max_health))
@@ -69,6 +77,8 @@ func _physics_process(delta: float) -> void:
 
 	if _is_action_just_pressed(ACTION_ATTACK):
 		attack()
+	if _is_action_just_pressed(&"skill"):
+		use_skill()
 
 	move_and_slide()
 	_update_state(direction)
@@ -105,6 +115,8 @@ func set_facing_direction(direction: int) -> void:
 		attack_origin.position.x = absf(attack_origin.position.x) * float(facing_direction)
 	if interaction_detector != null:
 		interaction_detector.position.x = absf(interaction_detector.position.x) * float(facing_direction)
+	if attack_hitbox != null:
+		attack_hitbox.position.x = absf(attack_hitbox.position.x) * float(facing_direction)
 
 func attack() -> bool:
 	if _attack_cooldown > 0.0:
@@ -118,7 +130,52 @@ func attack() -> bool:
 		origin = attack_origin.global_position
 
 	attack_started.emit(origin, Vector2(facing_direction, 0.0))
+	_perform_attack_hit()
 	return true
+
+func _perform_attack_hit() -> void:
+	if attack_hitbox == null:
+		return
+	attack_hitbox.monitoring = true
+	await get_tree().physics_frame
+	for area in attack_hitbox.get_overlapping_areas():
+		if area.has_method("receive_hit"):
+			area.call("receive_hit", attack_power, global_position, 230.0)
+	await get_tree().create_timer(0.1).timeout
+	if is_instance_valid(attack_hitbox):
+		attack_hitbox.monitoring = false
+
+func use_skill() -> bool:
+	if not input_enabled or not spend_mana(skill_mana_cost):
+		return false
+	var wave := SKILL_WAVE_SCENE.instantiate()
+	get_parent().add_child(wave)
+	wave.global_position = attack_origin.global_position
+	wave.call("setup", facing_direction, skill_damage)
+	return true
+
+func take_hit(raw_damage: int, source_position: Vector2, knockback: float = 180.0) -> int:
+	if _invulnerable or health <= 0:
+		return 0
+	var applied := maxi(1, raw_damage - defense)
+	take_damage(applied)
+	velocity.x = signf(global_position.x - source_position.x) * knockback
+	_invulnerable = true
+	if health <= 0:
+		defeated.emit()
+	get_tree().create_timer(0.55).timeout.connect(_clear_invulnerability, CONNECT_ONE_SHOT)
+	return applied
+
+func _clear_invulnerability() -> void:
+	_invulnerable = false
+
+func revive(at_position: Vector2) -> void:
+	global_position = at_position
+	health = max_health
+	mana = maxi(1, max_mana / 2)
+	velocity = Vector2.ZERO
+	_invulnerable = false
+	resources_changed.emit(health, max_health, mana, max_mana)
 
 func restore_health(amount: int) -> int:
 	if amount <= 0 or health >= max_health:

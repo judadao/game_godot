@@ -18,12 +18,20 @@
 [ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Collectable Object/Autumn_Forest_2D_Platformer_Tileset_Collectable Object - Unlocked Golden Treasure Box.png" id="16_treasure"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="17_player_scene"]
 [ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="18_portal_scene"]
+[ext_resource type="PackedScene" path="res://scenes/monsters/AutumnSlime.tscn" id="19_slime"]
+[ext_resource type="Script" path="res://scripts/combat/combat_zone.gd" id="20_combat_zone"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(2800, 64)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(48, 520)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_trigger"]
+size = Vector2(760, 300)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gate"]
+size = Vector2(36, 300)
 
 [node name="AutumnForest" type="Node2D"]
 
@@ -227,6 +235,37 @@ position = Vector2(230, 576)
 
 [node name="Player" parent="." instance=ExtResource("17_player_scene")]
 position = Vector2(230, 576)
+
+[node name="ForestCombatZone" type="Node2D" parent="." groups=["CombatZones"]]
+script = ExtResource("20_combat_zone")
+
+[node name="Trigger" type="Area2D" parent="ForestCombatZone"]
+position = Vector2(1350, 500)
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ForestCombatZone/Trigger"]
+shape = SubResource("RectangleShape2D_trigger")
+
+[node name="Barriers" type="StaticBody2D" parent="ForestCombatZone"]
+
+[node name="LeftGate" type="CollisionShape2D" parent="ForestCombatZone/Barriers"]
+position = Vector2(940, 500)
+shape = SubResource("RectangleShape2D_gate")
+
+[node name="RightGate" type="CollisionShape2D" parent="ForestCombatZone/Barriers"]
+position = Vector2(1760, 500)
+shape = SubResource("RectangleShape2D_gate")
+
+[node name="Enemies" type="Node2D" parent="ForestCombatZone"]
+
+[node name="SlimeWest" parent="ForestCombatZone/Enemies" instance=ExtResource("19_slime")]
+position = Vector2(1200, 628)
+
+[node name="SlimeEast" parent="ForestCombatZone/Enemies" instance=ExtResource("19_slime")]
+position = Vector2(1570, 628)
+max_health = 55
+attack_damage = 15
 
 [node name="WorldCollision" type="StaticBody2D" parent="."]
 

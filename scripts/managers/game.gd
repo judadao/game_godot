@@ -97,6 +97,7 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 	map_root.add_child(current_map)
 	_register_player(spawn_name)
 	_wire_interactives()
+	_wire_combat_zones()
 	_update_hud_area_name()
 	map_loaded.emit(current_map)
 	return current_map
@@ -277,6 +278,8 @@ func _register_player(spawn_name: StringName) -> void:
 		_update_hud_resources
 	):
 		player.connect("resources_changed", _update_hud_resources)
+	if player.has_signal("defeated") and not player.is_connected("defeated", _on_player_defeated):
+		player.connect("defeated", _on_player_defeated)
 	_update_hud_resources()
 	player_registered.emit(player)
 
@@ -347,6 +350,58 @@ func _wire_interactives() -> void:
 		_connect_if_present(interactive, &"shop_requested", &"_on_shop_requested")
 		_connect_if_present(interactive, &"portal_entered", &"_on_portal_entered")
 		_connect_if_present(interactive, &"chest_opened", &"_on_chest_opened")
+
+
+func _wire_combat_zones() -> void:
+	if current_map == null:
+		return
+	for zone in current_map.get_tree().get_nodes_in_group("CombatZones"):
+		if not current_map.is_ancestor_of(zone):
+			continue
+		_connect_if_present(zone, &"progress_changed", &"_on_combat_progress_changed")
+		_connect_if_present(zone, &"zone_cleared", &"_on_combat_zone_cleared")
+
+
+func _on_combat_progress_changed(remaining: int, total: int) -> void:
+	if hud != null and hud.has_method("set_objective"):
+		hud.call(
+			"set_objective",
+			"Defeat the forest slimes",
+			"Enemies remaining: %d / %d" % [remaining, total]
+		)
+
+
+func _on_combat_zone_cleared(experience_reward: int, gold_reward: int) -> void:
+	wallet_gold += maxi(0, gold_reward)
+	if player != null:
+		player.experience += maxi(0, experience_reward)
+		while player.experience >= player.experience_to_next_level:
+			player.experience -= player.experience_to_next_level
+			player.level += 1
+			player.experience_to_next_level = int(round(player.experience_to_next_level * 1.25))
+			player.max_health += 10
+			player.max_mana += 5
+			player.restore_health(player.max_health)
+			player.restore_mana(player.max_mana)
+	if hud != null:
+		if hud.has_method("set_currency"):
+			hud.call("set_currency", wallet_gold)
+		if hud.has_method("set_objective"):
+			hud.call("set_objective", "Autumn Forest secured", "+%d EXP   +%d Gold" % [experience_reward, gold_reward])
+	_update_hud_player_identity()
+
+
+func _on_player_defeated() -> void:
+	if player == null or current_map == null:
+		return
+	player.call("set_input_enabled", false)
+	await get_tree().create_timer(0.8).timeout
+	if player == null or not is_instance_valid(player):
+		return
+	var spawn := current_map.find_child("PlayerSpawn", true, false) as Node2D
+	if spawn != null and player.has_method("revive"):
+		player.call("revive", spawn.global_position)
+	player.call("set_input_enabled", true)
 
 
 func _connect_if_present(node: Node, signal_name: StringName, method_name: StringName) -> void:
