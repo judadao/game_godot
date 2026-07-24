@@ -70,21 +70,22 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_preview")
 [node name="PreviewLayout" type="CenterContainer" parent="DetailsLayout/PreviewFrame"]
 layout_mode = 2
 
-[node name="PreviewIcon" type="Label" parent="DetailsLayout/PreviewFrame/PreviewLayout"]
+[node name="PreviewIcon" type="TextureRect" parent="DetailsLayout/PreviewFrame/PreviewLayout"]
+custom_minimum_size = Vector2(104, 104)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.72, 0.28, 1)
-theme_override_font_sizes/font_size = 54
-text = "I"
-horizontal_alignment = 1
-vertical_alignment = 1
+expand_mode = 3
+stretch_mode = 5
 
 [node name="ItemName" type="Label" parent="DetailsLayout"]
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
 theme_override_font_sizes/font_size = 24
 text = "Iron Longsword"
+vertical_alignment = 1
 
 [node name="ItemDescription" type="RichTextLabel" parent="DetailsLayout"]
+custom_minimum_size = Vector2(0, 132)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/default_color = Color(0.88, 0.78, 0.64, 1)
@@ -95,7 +96,6 @@ text = "A reliable blade from the town forge.
 Attack +8
 Durability: Standard
 Stock: 5"
-fit_content = true
 scroll_active = false
 
 [node name="QuantityRow" type="HBoxContainer" parent="DetailsLayout"]

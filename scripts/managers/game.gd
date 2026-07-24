@@ -33,15 +33,26 @@ func _ready() -> void:
 	load_hud()
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and (event as InputEventKey).echo:
+		return
+
+	if not ui_stack.is_empty():
+		var top_ui := ui_stack[ui_stack.size() - 1]
+		var top_name := String(_ui_names.get(top_ui, top_ui.name))
+		if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
+			close_top_ui()
+			get_viewport().set_input_as_handled()
+		elif event.is_action_pressed("inventory") and top_name == "InventoryUI":
+			close_top_ui()
+			get_viewport().set_input_as_handled()
+		return
+
 	if event.is_action_pressed("inventory"):
 		toggle_ui("InventoryUI", inventory_scene)
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("pause"):
-		if ui_stack.is_empty():
-			open_ui("PauseMenu", pause_menu_scene, true)
-		else:
-			close_top_ui()
+	elif event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
+		open_ui("PauseMenu", pause_menu_scene, true)
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("interact"):
 		_try_interact()
@@ -133,6 +144,7 @@ func open_ui(ui_name: String, ui_scene: PackedScene, pause_game: bool = false) -
 	_wire_ui_lifecycle(ui_control)
 	if ui_control.has_method("open"):
 		ui_control.call("open")
+	_focus_first_control(ui_control)
 	_update_pause_state()
 	ui_opened.emit(ui_name, ui_control)
 	return ui_control
@@ -226,6 +238,21 @@ func _wire_ui_lifecycle(ui_control: Control) -> void:
 		ui_control.connect("closed", _on_ui_self_closed.bind(ui_control))
 	if ui_control.has_signal("canceled"):
 		ui_control.connect("canceled", close_ui.bind(ui_control))
+
+
+func _focus_first_control(ui_control: Control) -> void:
+	await get_tree().process_frame
+	if not is_instance_valid(ui_control) or not ui_control.visible:
+		return
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused != null and ui_control.is_ancestor_of(focused):
+		return
+	var first_button := ui_control.find_children("*", "Button", true, false).filter(
+		func(node: Node) -> bool:
+			return node is Button and (node as Button).visible and not (node as Button).disabled
+	)
+	if not first_button.is_empty():
+		(first_button[0] as Button).grab_focus()
 
 
 func _wire_interactives() -> void:
@@ -329,7 +356,10 @@ func _on_dialogue_requested(npc: Node, dialogue_id: StringName, interactor: Node
 	var display_name := String(raw_display_name) if raw_display_name != null else "Town Resident"
 	ui_control.call("set_speaker_name", display_name)
 	ui_control.call("set_dialogue_text", _dialogue_text_for(dialogue_id, display_name))
-	ui_control.call("set_choices", [{"text": "Continue"}, {"text": "Goodbye"}])
+	ui_control.call("set_choices", [
+		{"text": "Continue"},
+		{"text": "Goodbye", "action": "close"},
+	])
 
 
 func _on_shop_requested(merchant: Node, shop_id: StringName, interactor: Node) -> void:

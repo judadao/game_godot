@@ -16,7 +16,7 @@ const ROW_CONTAINER_PATH := "CenterContainer/ShopWindow/WindowMargin/WindowLayou
 @onready var sell_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/SellButton
 @onready var merchant_name: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/MerchantName
 @onready var item_header: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemListHeader/ItemHeader
-@onready var preview_icon: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/PreviewFrame/PreviewLayout/PreviewIcon
+@onready var preview_icon: TextureRect = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/PreviewFrame/PreviewLayout/PreviewIcon
 @onready var item_name: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/ItemName
 @onready var item_description: RichTextLabel = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/ItemDescription
 @onready var minus_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow/MinusButton
@@ -52,6 +52,30 @@ func _ready() -> void:
 	_bootstrap_placeholder_items()
 	set_mode(mode)
 	_set_open(false, false)
+
+func _input(event: InputEvent) -> void:
+	if not visible or not event.is_pressed() or event.is_echo() or _row_buttons.is_empty():
+		return
+	var next_index := selected_index
+	if event.is_action_pressed("ui_up"):
+		next_index -= 1
+	elif event.is_action_pressed("ui_down"):
+		next_index += 1
+	elif event.is_action_pressed("ui_left") and quantity > 1:
+		set_quantity(quantity - 1)
+		get_viewport().set_input_as_handled()
+		return
+	elif event.is_action_pressed("ui_right") and selected_index >= 0:
+		set_quantity(quantity + 1)
+		get_viewport().set_input_as_handled()
+		return
+	else:
+		return
+	next_index = clampi(next_index, 0, min(items.size(), _row_buttons.size()) - 1)
+	if next_index >= 0:
+		set_selected_item(next_index)
+		_row_buttons[next_index].grab_focus()
+		get_viewport().set_input_as_handled()
 
 func open() -> void:
 	_set_open(true, true)
@@ -113,9 +137,7 @@ func _cache_rows() -> void:
 			var button := child as Button
 			_row_buttons.append(button)
 			var index := _row_buttons.size() - 1
-			button.pressed.connect(func() -> void:
-				set_selected_item(index)
-			)
+			button.pressed.connect(set_selected_item.bind(index))
 
 func _cache_styles() -> void:
 	if _row_buttons.size() > 0:
@@ -127,6 +149,11 @@ func _cache_styles() -> void:
 
 func _set_open(is_open: bool, should_emit: bool) -> void:
 	visible = is_open
+	if is_open:
+		if selected_index >= 0 and selected_index < _row_buttons.size():
+			_row_buttons[selected_index].grab_focus()
+		else:
+			buy_button.grab_focus()
 	if not should_emit:
 		return
 	if is_open:
@@ -170,14 +197,22 @@ func _refresh_rows() -> void:
 
 func _refresh_details() -> void:
 	if selected_index < 0 or selected_index >= items.size():
-		preview_icon.text = "-"
+		preview_icon.texture = null
 		item_name.text = "No Item Selected"
-		item_description.text = ""
+		item_description.text = "Select an item from the list to view its details."
+		minus_button.disabled = true
+		plus_button.disabled = true
+		confirm_button.disabled = true
 		set_quantity(1)
 		return
 
 	var item := items[selected_index]
-	preview_icon.text = str(item.get("icon", _item_title(item).substr(0, 1).to_upper()))
+	minus_button.disabled = false
+	plus_button.disabled = false
+	confirm_button.disabled = false
+	preview_icon.texture = item.get("texture") as Texture2D
+	if preview_icon.texture == null and selected_index < _row_buttons.size():
+		preview_icon.texture = _row_buttons[selected_index].icon
 	item_name.text = _item_title(item)
 	item_description.text = str(item.get("description", ""))
 	set_quantity(quantity)

@@ -1,15 +1,17 @@
-[gd_scene load_steps=17 format=3 uid="uid://chjyyb86xb0xs"]
+[gd_scene format=3 uid="uid://chjyyb86xb0xs"]
 
-[ext_resource type="Script" path="res://scripts/ui/shop_ui.gd" id="1_shop_ui"]
-[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png" id="2_sword"]
-[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0001_Shield.png" id="3_shield"]
-[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0003_Chest.png" id="4_cloak"]
-[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionHp_Small.png" id="5_health"]
-[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionSp_Small.png" id="6_mana"]
-[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png" id="7_torch"]
-[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png" id="8_gem"]
+[ext_resource type="Script" uid="uid://davqb0slgdls8" path="res://scripts/ui/shop_ui.gd" id="1_shop_ui"]
+[ext_resource type="Texture2D" uid="uid://b547ik7uncbps" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png" id="2_sword"]
+[ext_resource type="Texture2D" uid="uid://iuy0fhbv24g2" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0001_Shield.png" id="3_shield"]
+[ext_resource type="Texture2D" uid="uid://b6beg82u45pt2" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0003_Chest.png" id="4_cloak"]
+[ext_resource type="Texture2D" uid="uid://csx1ap3vjek4k" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionHp_Small.png" id="5_health"]
+[ext_resource type="Texture2D" uid="uid://c0shg8g7odbwk" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionSp_Small.png" id="6_mana"]
+[ext_resource type="Texture2D" uid="uid://cqu4uv5mt4e0s" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png" id="7_torch"]
+[ext_resource type="Texture2D" uid="uid://dragagmpt5wjo" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png" id="8_gem"]
 [ext_resource type="PackedScene" path="res://scenes/ui/shop/ShopItemRow.tscn" id="9_shop_item_row"]
 [ext_resource type="PackedScene" path="res://scenes/ui/shop/ShopDetailPanel.tscn" id="10_shop_detail"]
+[ext_resource type="PackedScene" path="res://scenes/ui/shop/ShopMerchantPanel.tscn" id="11_shop_merchant"]
+[ext_resource type="Texture2D" uid="uid://v0oej3ymqm6g" path="res://assets/ui/shop/generated/shop_sign.png" id="12_shop_sign"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
 bg_color = Color(0.09, 0.07, 0.055, 0.94)
@@ -66,7 +68,7 @@ corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_row_selected"]
-bg_color = Color(0.37, 0.24, 0.11, 0.94)
+bg_color = Color(0.045, 0.19, 0.34, 0.96)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -96,7 +98,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 script = ExtResource("1_shop_ui")
 
 [node name="DimBackground" type="ColorRect" parent="." unique_id=297654023]
@@ -117,6 +118,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ShopWindow" type="PanelContainer" parent="CenterContainer" unique_id=1517290008]
+custom_minimum_size = Vector2(1180, 650)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_window")
 
@@ -131,12 +133,25 @@ theme_override_constants/margin_bottom = 18
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Title" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=2094390937]
+[node name="Title" type="TextureRect" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=2094390937]
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
+texture = ExtResource("12_shop_sign")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleText" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title" unique_id=898097820]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
 theme_override_font_sizes/font_size = 32
-text = "Shop"
+text = "SHOP"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="ModeBar" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=1382795265]
 layout_mode = 2
@@ -176,8 +191,11 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 16
 
+[node name="MerchantPanel" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" unique_id=445308930 instance=ExtResource("11_shop_merchant")]
+layout_mode = 2
+
 [node name="ItemListPanel" type="PanelContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" unique_id=857394039]
-custom_minimum_size = Vector2(440, 0)
+custom_minimum_size = Vector2(390, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -205,46 +223,55 @@ theme_override_font_sizes/font_size = 17
 text = "Gold"
 horizontal_alignment = 2
 
-[node name="Row01" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
-icon = ExtResource("2_sword")
+[node name="Row01" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1450596409 instance=ExtResource("9_shop_item_row")]
+layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row_selected")
 text = "Iron Longsword                                      120"
+icon = ExtResource("2_sword")
 
-[node name="Row02" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
-icon = ExtResource("3_shield")
+[node name="Row02" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=2105509603 instance=ExtResource("9_shop_item_row")]
+layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 text = "Oak Shield                                           90"
+icon = ExtResource("3_shield")
 
-[node name="Row03" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
-icon = ExtResource("4_cloak")
+[node name="Row03" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1807439933 instance=ExtResource("9_shop_item_row")]
+layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 text = "Traveler's Cloak                                     75"
+icon = ExtResource("4_cloak")
 
-[node name="Row04" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
-icon = ExtResource("5_health")
+[node name="Row04" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=973364717 instance=ExtResource("9_shop_item_row")]
+layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 text = "Health Potion                                        25"
+icon = ExtResource("5_health")
 
-[node name="Row05" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
-icon = ExtResource("6_mana")
+[node name="Row05" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=934604875 instance=ExtResource("9_shop_item_row")]
+layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 text = "Mana Tonic                                           30"
+icon = ExtResource("6_mana")
 
-[node name="Row06" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
-icon = ExtResource("7_torch")
+[node name="Row06" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=491868519 instance=ExtResource("9_shop_item_row")]
+layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 text = "Torch Bundle                                         12"
+icon = ExtResource("7_torch")
 
-[node name="Row07" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
-icon = ExtResource("8_gem")
+[node name="Row07" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=514508573 instance=ExtResource("9_shop_item_row")]
+layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 text = "Antidote                                             18"
+icon = ExtResource("8_gem")
 
-[node name="Row08" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
+[node name="Row08" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1045152025 instance=ExtResource("9_shop_item_row")]
+layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 text = "Town Map                                             40"
 
-[node name="DetailsPanel" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" instance=ExtResource("10_shop_detail")]
+[node name="DetailsPanel" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" unique_id=2129227490 instance=ExtResource("10_shop_detail")]
+layout_mode = 2
 
 [node name="ActionBar" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=215793521]
 layout_mode = 2

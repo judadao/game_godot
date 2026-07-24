@@ -41,6 +41,29 @@ func _ready() -> void:
 	_bootstrap_placeholder_items()
 	_set_open(false, false)
 
+func _input(event: InputEvent) -> void:
+	if not visible or not event.is_pressed() or event.is_echo():
+		return
+	var next_index := selected_index
+	if event.is_action_pressed("ui_left"):
+		next_index -= 1
+	elif event.is_action_pressed("ui_right"):
+		next_index += 1
+	elif event.is_action_pressed("ui_up"):
+		next_index -= slot_grid.columns
+	elif event.is_action_pressed("ui_down"):
+		next_index += slot_grid.columns
+	elif event.is_action_pressed("ui_accept") and selected_index >= 0:
+		set_selected_item(selected_index)
+		get_viewport().set_input_as_handled()
+		return
+	else:
+		return
+	next_index = clampi(next_index, 0, _slot_nodes.size() - 1)
+	set_selected_item(next_index)
+	_slot_nodes[next_index].grab_focus()
+	get_viewport().set_input_as_handled()
+
 func open() -> void:
 	_set_open(true, true)
 
@@ -91,11 +114,10 @@ func _cache_slots() -> void:
 			var slot := child as PanelContainer
 			_slot_nodes.append(slot)
 			slot.mouse_filter = Control.MOUSE_FILTER_STOP
+			slot.focus_mode = Control.FOCUS_ALL
 			var index := _slot_nodes.size() - 1
-			slot.gui_input.connect(func(event: InputEvent) -> void:
-				if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-					set_selected_item(index)
-			)
+			slot.focus_entered.connect(_on_slot_focused.bind(index))
+			slot.gui_input.connect(_on_slot_gui_input.bind(index))
 
 func _cache_styles() -> void:
 	if _slot_nodes.size() > 0:
@@ -110,15 +132,24 @@ func _cache_styles() -> void:
 func _connect_category_buttons() -> void:
 	for category in CATEGORY_PATHS.keys():
 		var button := get_node(CATEGORY_PATHS[category]) as Button
-		button.pressed.connect(func() -> void:
-			set_category(category)
-		)
+		button.pressed.connect(set_category.bind(category))
 	_refresh_category_buttons()
+
+func _on_slot_focused(index: int) -> void:
+	set_selected_item(index)
+
+func _on_slot_gui_input(event: InputEvent, index: int) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		set_selected_item(index)
 
 func _set_open(is_open: bool, should_emit: bool) -> void:
 	visible = is_open
 	if is_open:
-		close_button.grab_focus()
+		if not _slot_nodes.is_empty():
+			var focus_index := clampi(selected_index, 0, _slot_nodes.size() - 1)
+			_slot_nodes[focus_index].grab_focus()
+		else:
+			close_button.grab_focus()
 	if not should_emit:
 		return
 	if is_open:

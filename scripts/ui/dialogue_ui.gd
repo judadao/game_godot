@@ -66,6 +66,8 @@ func set_choices(new_choices: Array) -> void:
 		if index < choices.size():
 			button.text = str(choices[index].get("text", "Choice %d" % (index + 1)))
 			button.tooltip_text = str(choices[index].get("tooltip", ""))
+	if not choices.is_empty():
+		_choice_buttons[0].grab_focus()
 
 func set_portrait_initial(initial: String) -> void:
 	portrait_initial.text = initial.substr(0, 1).to_upper() if not initial.is_empty() else "?"
@@ -77,9 +79,7 @@ func _cache_choice_buttons() -> void:
 			var button := child as Button
 			_choice_buttons.append(button)
 			var index := _choice_buttons.size() - 1
-			button.pressed.connect(func() -> void:
-				_emit_choice(index)
-			)
+			button.pressed.connect(_emit_choice.bind(index))
 
 func _set_open(is_open: bool, should_emit: bool) -> void:
 	visible = is_open
@@ -102,6 +102,10 @@ func _emit_choice(index: int) -> void:
 		return
 	var choice := choices[index]
 	choice_selected.emit(index, str(choice.get("text", "")), choice)
+	var action := str(choice.get("action", "")).to_lower()
+	var choice_text := str(choice.get("text", "")).strip_edges().to_lower()
+	if action == "close" or choice_text in ["goodbye", "say goodbye"]:
+		close()
 
 func _to_dictionary_array(source: Array) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
