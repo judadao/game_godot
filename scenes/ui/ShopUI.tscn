@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://chjyyb86xb0xs"]
+[gd_scene load_steps=8 format=3 uid="uid://chjyyb86xb0xs"]
+
+[ext_resource type="Script" path="res://scripts/ui/shop_ui.gd" id="1_shop_ui"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
 bg_color = Color(0.09, 0.07, 0.055, 0.94)
@@ -85,6 +87,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_shop_ui")
 
 [node name="DimBackground" type="ColorRect" parent="." unique_id=297654023]
 layout_mode = 1
@@ -100,9 +104,6 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 4.0
-offset_right = 5.0
-offset_bottom = -6.0
 grow_horizontal = 2
 grow_vertical = 2
 

@@ -28,7 +28,36 @@
 [ext_resource type="Texture2D" uid="uid://425qqvkhr58m" path="res://concept/town/can_use/npc/npc_asset_009.png" id="26_smith"]
 [ext_resource type="Texture2D" uid="uid://ccv6uq1tsiwoq" path="res://concept/town/can_use/npc/npc_asset_011.png" id="27_guard"]
 [ext_resource type="Texture2D" uid="uid://n263p7p8w6fv" path="res://concept/town/can_use/npc/npc_asset_016.png" id="28_innkeeper"]
-[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="29_player_script"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="29_player_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/NPC.tscn" id="30_npc_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/Merchant.tscn" id="31_merchant_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="32_portal_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/Chest.tscn" id="33_chest_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/WestHouse.tscn" id="34_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/ItemShop.tscn" id="35_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/Blacksmith.tscn" id="36_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/MarketStall.tscn" id="37_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/TownPortal.tscn" id="38_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/TownWell.tscn" id="39_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/NoticeBoard.tscn" id="40_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/Fence.tscn" id="41_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/PotionSign.tscn" id="42_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/WeaponSign.tscn" id="43_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/Lamp.tscn" id="44_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/CrossroadSign.tscn" id="45_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/Bench.tscn" id="46_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/BarrelStack.tscn" id="47_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/Crates.tscn" id="48_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/MarketCart.tscn" id="49_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/EastTree.tscn" id="50_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/FlowerBed.tscn" id="51_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/MayorVisual.tscn" id="52_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/VillagerMaleVisual.tscn" id="53_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/VillagerFemaleVisual.tscn" id="54_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/SmithVisual.tscn" id="55_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/GuardVisual.tscn" id="56_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/InnkeeperVisual.tscn" id="57_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/magic_book_portal.tscn" id="58_magic_book_portal_scene"]
 
 [sub_resource type="Gradient" id="Gradient_sky"]
 offsets = PackedFloat32Array(0, 0.58, 1)
@@ -41,16 +70,25 @@ height = 724
 fill_from = Vector2(0.5, 0)
 fill_to = Vector2(0.5, 1)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
-size = Vector2(42, 88)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(2800, 64)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(48, 520)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_portal"]
+size = Vector2(128, 160)
+
 [node name="Town" type="Node2D" unique_id=2064318752]
+metadata/map_width = 2600
+metadata/map_height = 724
+metadata/camera_limit_left = 0
+metadata/camera_limit_top = 0
+metadata/camera_limit_right = 2600
+metadata/camera_limit_bottom = 724
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(220, 576)
 
 [node name="Sky" type="Sprite2D" parent="." unique_id=1957591297]
 position = Vector2(1086, 362)
@@ -100,168 +138,164 @@ color = Color(0.72, 0.63, 0.5, 1)
 
 [node name="Buildings" type="Node2D" parent="." unique_id=13442811]
 
-[node name="WestHouse" type="Sprite2D" parent="Buildings" unique_id=742299263]
+[node name="WestHouse" parent="Buildings" instance=ExtResource("34_town_object_scene")]
 position = Vector2(270, 616)
-texture = ExtResource("5_house")
-offset = Vector2(0, -156)
-
-[node name="ItemShop" type="Sprite2D" parent="Buildings" unique_id=10223628]
+[node name="ItemShop" parent="Buildings" instance=ExtResource("35_town_object_scene")]
 position = Vector2(835, 618)
-texture = ExtResource("6_shop")
-offset = Vector2(0, -158.5)
-
-[node name="Blacksmith" type="Sprite2D" parent="Buildings" unique_id=2131865791]
+[node name="Blacksmith" parent="Buildings" instance=ExtResource("36_town_object_scene")]
 position = Vector2(1288, 614)
-texture = ExtResource("7_blacksmith")
-offset = Vector2(0, -157.5)
-
-[node name="MarketStall" type="Sprite2D" parent="Buildings" unique_id=327349519]
+[node name="MarketStall" parent="Buildings" instance=ExtResource("37_town_object_scene")]
 position = Vector2(1641, 600)
-texture = ExtResource("11_stall")
-offset = Vector2(0, -123.5)
-
-[node name="TownPortal" type="Sprite2D" parent="Buildings" unique_id=1829466527]
+[node name="TownPortal" parent="Buildings" instance=ExtResource("38_town_object_scene")]
 position = Vector2(2284, 676)
-texture = ExtResource("8_portal")
-offset = Vector2(0, -133)
-
-[node name="TownWell" type="Sprite2D" parent="Buildings" unique_id=945588921]
+[node name="TownWell" parent="Buildings" instance=ExtResource("39_town_object_scene")]
 position = Vector2(1947, 609)
-texture = ExtResource("9_well")
-offset = Vector2(0, -126.5)
-
-[node name="NoticeBoard" type="Sprite2D" parent="Buildings" unique_id=27910040]
+[node name="NoticeBoard" parent="Buildings" instance=ExtResource("40_town_object_scene")]
 position = Vector2(540, 625)
-texture = ExtResource("10_board")
-offset = Vector2(0, -115)
-
 [node name="Props" type="Node2D" parent="." unique_id=1933136006]
 
-[node name="WestFence" type="Sprite2D" parent="Props" unique_id=1245177602]
+[node name="WestFence" parent="Props" instance=ExtResource("41_town_object_scene")]
 position = Vector2(90, 612)
-texture = ExtResource("17_fence")
-offset = Vector2(0, -47)
-
-[node name="ItemShopSign" type="Sprite2D" parent="Props" unique_id=1973658835]
+[node name="ItemShopSign" parent="Props" instance=ExtResource("42_town_object_scene")]
 position = Vector2(650, 582)
-texture = ExtResource("21_potion")
-offset = Vector2(0, -68.5)
-
-[node name="BlacksmithSign" type="Sprite2D" parent="Props" unique_id=2054519613]
+[node name="BlacksmithSign" parent="Props" instance=ExtResource("43_town_object_scene")]
 position = Vector2(1110, 582)
-texture = ExtResource("22_weapon")
-offset = Vector2(0, -68.5)
-
-[node name="LampWest" type="Sprite2D" parent="Props" unique_id=985538292]
+[node name="LampWest" parent="Props" instance=ExtResource("44_town_object_scene")]
 position = Vector2(430, 592)
-texture = ExtResource("12_lamp")
-offset = Vector2(0, -84)
-
-[node name="LampCenter" type="Sprite2D" parent="Props" unique_id=1203796384]
+[node name="LampCenter" parent="Props" instance=ExtResource("44_town_object_scene")]
 position = Vector2(1510, 592)
-texture = ExtResource("12_lamp")
-offset = Vector2(0, -84)
-
-[node name="CrossroadSign" type="Sprite2D" parent="Props" unique_id=24174722]
+[node name="CrossroadSign" parent="Props" instance=ExtResource("45_town_object_scene")]
 position = Vector2(2047, 628)
-texture = ExtResource("13_sign")
-offset = Vector2(0, -81.5)
-
-[node name="Bench" type="Sprite2D" parent="Props" unique_id=1517948070]
+[node name="Bench" parent="Props" instance=ExtResource("46_town_object_scene")]
 position = Vector2(1020, 616)
-texture = ExtResource("14_bench")
-offset = Vector2(0, -52)
-
-[node name="BarrelStack" type="Sprite2D" parent="Props" unique_id=372211342]
+[node name="BarrelStack" parent="Props" instance=ExtResource("47_town_object_scene")]
 position = Vector2(1440, 616)
-texture = ExtResource("15_barrel")
-offset = Vector2(0, -53.5)
-
-[node name="Crates" type="Sprite2D" parent="Props" unique_id=966259599]
+[node name="Crates" parent="Props" instance=ExtResource("48_town_object_scene")]
 position = Vector2(1575, 620)
-texture = ExtResource("16_crate")
-offset = Vector2(0, -51)
-
-[node name="MarketCart" type="Sprite2D" parent="Props" unique_id=2055964997]
+[node name="MarketCart" parent="Props" instance=ExtResource("49_town_object_scene")]
 position = Vector2(1815, 612)
-texture = ExtResource("18_cart")
-offset = Vector2(0, -96.5)
-
-[node name="EastTree" type="Sprite2D" parent="Props" unique_id=389149608]
+[node name="EastTree" parent="Props" instance=ExtResource("50_town_object_scene")]
 position = Vector2(2440, 594)
-texture = ExtResource("19_tree")
-offset = Vector2(0, -85)
-
-[node name="FlowerBedWest" type="Sprite2D" parent="Props" unique_id=400525133]
+[node name="FlowerBedWest" parent="Props" instance=ExtResource("51_town_object_scene")]
 position = Vector2(340, 643)
-texture = ExtResource("20_flowers")
-offset = Vector2(0, -45.5)
-
-[node name="FlowerBedEast" type="Sprite2D" parent="Props" unique_id=1782771814]
+[node name="FlowerBedEast" parent="Props" instance=ExtResource("51_town_object_scene")]
 position = Vector2(2290, 643)
 scale = Vector2(-1, 1)
-texture = ExtResource("20_flowers")
-offset = Vector2(0, -45.5)
+[node name="Portals" type="Node2D" parent="."]
+
+[node name="EastRoadPortal" parent="Portals" instance=ExtResource("32_portal_scene")]
+position = Vector2(2532, 576)
+interaction_id = &"town_east_road"
+prompt_text = "Travel"
+target_scene_path = "res://scenes/maps/town.tscn"
+target_spawn_name = &"PlayerSpawn"
+
+[node name="Visual" parent="Portals/EastRoadPortal" index="0"]
+visible = false
+
+[node name="TownCenterPortal" parent="Portals" instance=ExtResource("32_portal_scene")]
+position = Vector2(2284, 576)
+interaction_id = &"town_center_portal"
+prompt_text = "Enter"
+target_scene_path = "res://scenes/maps/town.tscn"
+target_spawn_name = &"PlayerSpawn"
+
+[node name="Visual" parent="Portals/TownCenterPortal" index="0"]
+visible = false
+
+[node name="ForestPortal" parent="Portals" instance=ExtResource("58_magic_book_portal_scene")]
+position = Vector2(1910, 616)
+interaction_id = &"forest_portal"
+prompt_text = "Travel"
+target_scene_path = "res://scenes/maps/autumn_forest.tscn"
+target_spawn_name = &"PlayerSpawn"
+display_name = "Autumn Forest"
+portal_tint = Color(0.49, 0.95, 0.61, 1)
+
+[node name="CavesPortal" parent="Portals" instance=ExtResource("58_magic_book_portal_scene")]
+position = Vector2(2110, 616)
+interaction_id = &"caves_portal"
+prompt_text = "Travel"
+target_scene_path = "res://scenes/maps/crystal_caves.tscn"
+target_spawn_name = &"PlayerSpawn"
+display_name = "Crystal Caves"
+portal_tint = Color(0.4, 0.78, 1, 1)
+
+[node name="GraveyardPortal" parent="Portals" instance=ExtResource("58_magic_book_portal_scene")]
+position = Vector2(2410, 616)
+interaction_id = &"graveyard_portal"
+prompt_text = "Travel"
+target_scene_path = "res://scenes/maps/forbidden_graveyard.tscn"
+target_spawn_name = &"PlayerSpawn"
+display_name = "Forbidden Graveyard"
+portal_tint = Color(0.82, 0.49, 0.96, 1)
 
 [node name="NPCs" type="Node2D" parent="." unique_id=1308501861]
 
-[node name="Mayor" type="Sprite2D" parent="NPCs" unique_id=1514306631]
+[node name="Mayor" parent="NPCs" instance=ExtResource("52_town_object_scene")]
 position = Vector2(570, 616)
-texture = ExtResource("23_mayor")
-offset = Vector2(0, -80.5)
-
-[node name="VillagerMale" type="Sprite2D" parent="NPCs" unique_id=1759664260]
+[node name="VillagerMale" parent="NPCs" instance=ExtResource("53_town_object_scene")]
 position = Vector2(930, 620)
-texture = ExtResource("24_villager_male")
-offset = Vector2(0, -79)
-
-[node name="VillagerFemale" type="Sprite2D" parent="NPCs" unique_id=732198451]
+[node name="VillagerFemale" parent="NPCs" instance=ExtResource("54_town_object_scene")]
 position = Vector2(1160, 620)
-texture = ExtResource("25_villager_female")
-offset = Vector2(0, -75)
-
-[node name="Smith" type="Sprite2D" parent="NPCs" unique_id=602100740]
+[node name="Smith" parent="NPCs" instance=ExtResource("55_town_object_scene")]
 position = Vector2(1479, 623)
-texture = ExtResource("26_smith")
-offset = Vector2(0, -80.5)
-
-[node name="Guard" type="Sprite2D" parent="NPCs" unique_id=67683879]
+[node name="Guard" parent="NPCs" instance=ExtResource("56_town_object_scene")]
 position = Vector2(2161, 623)
-texture = ExtResource("27_guard")
-offset = Vector2(0, -86.5)
-
-[node name="Innkeeper" type="Sprite2D" parent="NPCs" unique_id=1849245278]
+[node name="Innkeeper" parent="NPCs" instance=ExtResource("57_town_object_scene")]
 position = Vector2(1765, 620)
-texture = ExtResource("28_innkeeper")
-offset = Vector2(0, -72)
+[node name="MayorInteractive" parent="NPCs" instance=ExtResource("30_npc_scene")]
+position = Vector2(570, 616)
+interaction_id = &"town_mayor"
+prompt_text = "Talk"
+display_name = "Mayor"
+dialogue_id = &"town_mayor"
 
-[node name="Player" type="CharacterBody2D" parent="." unique_id=1141192825]
+[node name="Visual" parent="NPCs/MayorInteractive" index="0"]
+visible = false
+
+[node name="ItemMerchantInteractive" parent="NPCs" instance=ExtResource("31_merchant_scene")]
+position = Vector2(930, 620)
+interaction_id = &"item_merchant"
+prompt_text = "Shop"
+display_name = "Item Merchant"
+shop_id = &"general_store"
+
+[node name="Visual" parent="NPCs/ItemMerchantInteractive" index="0"]
+visible = false
+
+[node name="BlacksmithInteractive" parent="NPCs" instance=ExtResource("31_merchant_scene")]
+position = Vector2(1479, 623)
+interaction_id = &"blacksmith"
+prompt_text = "Forge"
+display_name = "Blacksmith"
+dialogue_id = &"blacksmith_greeting"
+shop_id = &"blacksmith"
+
+[node name="Visual" parent="NPCs/BlacksmithInteractive" index="0"]
+visible = false
+
+[node name="InnkeeperInteractive" parent="NPCs" instance=ExtResource("30_npc_scene")]
+position = Vector2(1765, 620)
+interaction_id = &"innkeeper"
+prompt_text = "Talk"
+display_name = "Innkeeper"
+dialogue_id = &"innkeeper"
+
+[node name="Visual" parent="NPCs/InnkeeperInteractive" index="0"]
+visible = false
+
+[node name="TownChest" parent="Props" instance=ExtResource("33_chest_scene")]
+position = Vector2(1575, 620)
+interaction_id = &"town_crates"
+prompt_text = "Open"
+loot_table_id = &"prototype_town_chest"
+
+[node name="Visual" parent="Props/TownChest" index="0"]
+visible = false
+
+[node name="Player" parent="." unique_id=1141192825 instance=ExtResource("29_player_scene")]
 position = Vector2(220, 576)
-script = ExtResource("29_player_script")
-
-[node name="Body" type="ColorRect" parent="Player" unique_id=141603097]
-offset_left = -18.0
-offset_top = -74.0
-offset_right = 18.0
-color = Color(0.18, 0.31, 0.55, 1)
-
-[node name="Head" type="ColorRect" parent="Player" unique_id=1950324854]
-offset_left = -14.0
-offset_top = -104.0
-offset_right = 14.0
-offset_bottom = -76.0
-color = Color(0.94, 0.76, 0.57, 1)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=1447155505]
-position = Vector2(0, -44)
-shape = SubResource("RectangleShape2D_player")
-
-[node name="Camera2D" type="Camera2D" parent="Player" unique_id=1713116518]
-limit_left = 0
-limit_top = 0
-limit_right = 2600
-limit_bottom = 724
-position_smoothing_enabled = true
 
 [node name="WorldCollision" type="StaticBody2D" parent="." unique_id=1406716349]
 

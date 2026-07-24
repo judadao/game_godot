@@ -1,4 +1,19 @@
-[gd_scene format=3 uid="uid://b6jb7ycq0yfcl"]
+[gd_scene load_steps=24 format=3 uid="uid://b6jb7ycq0yfcl"]
+
+[ext_resource type="Script" path="res://scripts/ui/inventory_ui.gd" id="1_inventory_ui"]
+[ext_resource type="Texture2D" path="res://assets/ui/basic_rpg_ui/png/Inventory.png" id="2_inventory_frame"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon100_1.png" id="3_icon_100"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon101_1.png" id="4_icon_101"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon102_1.png" id="5_icon_102"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon103_1.png" id="6_icon_103"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon104_1.png" id="7_icon_104"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon105_1.png" id="8_icon_105"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon106_1.png" id="9_icon_106"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon107_1.png" id="10_icon_107"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon108_1.png" id="11_icon_108"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon109_1.png" id="12_icon_109"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon110_1.png" id="13_icon_110"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon111_1.png" id="14_icon_111"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_main_panel"]
 bg_color = Color(0.08, 0.065, 0.055, 0.9)
@@ -88,21 +103,16 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 56.0
-offset_right = -31.0
-offset_bottom = -44.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_inventory_ui")
 
 [node name="DimBackground" type="ColorRect" parent="." unique_id=1911564334]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 100.0
-offset_top = -3.0
-offset_right = -63.0
-offset_bottom = -53.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.45)
@@ -121,6 +131,26 @@ offset_bottom = 247.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_main_panel")
+
+[node name="CraftPixFrame" type="TextureRect" parent="." unique_id=1374567484]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -442.0
+offset_top = -307.0
+offset_right = 462.0
+offset_bottom = 247.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture_filter = 1
+modulate = Color(1, 1, 1, 0.16)
+texture = ExtResource("2_inventory_frame")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="MainMargin" type="MarginContainer" parent="MainPanel" unique_id=956877689]
 layout_mode = 2
@@ -224,16 +254,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_selected_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot01" unique_id=359216043]
 layout_mode = 2
-stretch_mode = 5
-
-[node name="PotionSwatch" type="Panel" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot01/Icon" unique_id=826424944]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.28
-anchor_top = 0.22
-anchor_right = 0.72
-anchor_bottom = 0.78
-theme_override_styles/panel = SubResource("StyleBoxFlat_icon_potion")
+texture_filter = 1
+texture = ExtResource("3_icon_100")
+expand_mode = 1
 
 [node name="Slot02" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=178615629]
 custom_minimum_size = Vector2(78, 78)
@@ -242,16 +265,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot02" unique_id=1426864408]
 layout_mode = 2
-stretch_mode = 5
-
-[node name="GearSwatch" type="Panel" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot02/Icon" unique_id=927220535]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.24
-anchor_top = 0.24
-anchor_right = 0.76
-anchor_bottom = 0.76
-theme_override_styles/panel = SubResource("StyleBoxFlat_icon_gear")
+texture_filter = 1
+texture = ExtResource("4_icon_101")
+expand_mode = 1
 
 [node name="Slot03" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1604734658]
 custom_minimum_size = Vector2(78, 78)
@@ -260,7 +276,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot03" unique_id=2112666197]
 layout_mode = 2
-stretch_mode = 5
+texture_filter = 1
+texture = ExtResource("5_icon_102")
+expand_mode = 1
 
 [node name="Slot04" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=931427750]
 custom_minimum_size = Vector2(78, 78)
@@ -269,7 +287,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot04" unique_id=684473984]
 layout_mode = 2
-stretch_mode = 5
+texture_filter = 1
+texture = ExtResource("6_icon_103")
+expand_mode = 1
 
 [node name="Slot05" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=375421943]
 custom_minimum_size = Vector2(78, 78)
@@ -278,7 +298,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot05" unique_id=997310766]
 layout_mode = 2
-stretch_mode = 5
+texture_filter = 1
+texture = ExtResource("7_icon_104")
+expand_mode = 1
 
 [node name="Slot06" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=438987206]
 custom_minimum_size = Vector2(78, 78)
@@ -287,7 +309,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot06" unique_id=1132368970]
 layout_mode = 2
-stretch_mode = 5
+texture_filter = 1
+texture = ExtResource("8_icon_105")
+expand_mode = 1
 
 [node name="Slot07" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=471825255]
 custom_minimum_size = Vector2(78, 78)
@@ -296,7 +320,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot07" unique_id=1733189533]
 layout_mode = 2
-stretch_mode = 5
+texture_filter = 1
+texture = ExtResource("9_icon_106")
+expand_mode = 1
 
 [node name="Slot08" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1899854474]
 custom_minimum_size = Vector2(78, 78)
@@ -305,7 +331,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot08" unique_id=1708640224]
 layout_mode = 2
-stretch_mode = 5
+texture_filter = 1
+texture = ExtResource("10_icon_107")
+expand_mode = 1
 
 [node name="Slot09" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1765039867]
 custom_minimum_size = Vector2(78, 78)
@@ -314,7 +342,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot09" unique_id=1605126231]
 layout_mode = 2
-stretch_mode = 5
+texture_filter = 1
+texture = ExtResource("11_icon_108")
+expand_mode = 1
 
 [node name="Slot10" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=667451176]
 custom_minimum_size = Vector2(78, 78)
@@ -323,7 +353,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot10" unique_id=1169908099]
 layout_mode = 2
-stretch_mode = 5
+texture_filter = 1
+texture = ExtResource("12_icon_109")
+expand_mode = 1
 
 [node name="Slot11" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=397105350]
 custom_minimum_size = Vector2(78, 78)
@@ -332,7 +364,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot11" unique_id=1028791669]
 layout_mode = 2
-stretch_mode = 5
+texture_filter = 1
+texture = ExtResource("13_icon_110")
+expand_mode = 1
 
 [node name="Slot12" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=88502964]
 custom_minimum_size = Vector2(78, 78)
@@ -341,7 +375,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
 [node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot12" unique_id=915080970]
 layout_mode = 2
-stretch_mode = 5
+texture_filter = 1
+texture = ExtResource("14_icon_111")
+expand_mode = 1
 
 [node name="Slot13" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=971506404]
 custom_minimum_size = Vector2(78, 78)

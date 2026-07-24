@@ -1,0 +1,264 @@
+[gd_scene format=3 uid="uid://c4whe1nj1xiea"]
+
+[ext_resource type="Texture2D" uid="uid://nmn32d05b6ae" path="res://concept/town/can_use/background/parallax_clouds_strip_v3.png" id="1_clouds"]
+[ext_resource type="Texture2D" uid="uid://umo8x74en0y" path="res://concept/town/can_use/background/parallax_mountains_strip_v3.png" id="2_mountains"]
+[ext_resource type="Texture2D" uid="uid://b48ryt47l4404" path="res://concept/town/can_use/background/parallax_forest_strip_v3.png" id="3_forest"]
+[ext_resource type="Texture2D" uid="uid://bue7naubdsn6g" path="res://concept/town/can_use/background/parallax_rooftops_strip_v3.png" id="4_rooftops"]
+[ext_resource type="Texture2D" uid="uid://guy5ox20kbdm" path="res://concept/town/can_use/building/building_building_facility_001.png" id="5_house"]
+[ext_resource type="Texture2D" uid="uid://dcu7m7hlqth8c" path="res://concept/town/can_use/building/building_building_facility_002.png" id="6_shop"]
+[ext_resource type="Texture2D" uid="uid://dhk4iqqnn0il4" path="res://concept/town/can_use/building/building_building_facility_003.png" id="7_blacksmith"]
+[ext_resource type="Texture2D" uid="uid://crv31jm17gtcg" path="res://concept/town/can_use/building/building_building_facility_005.png" id="8_portal"]
+[ext_resource type="Texture2D" uid="uid://0fpsu4deb07s" path="res://concept/town/can_use/building/building_building_facility_006.png" id="9_well"]
+[ext_resource type="Texture2D" uid="uid://btb314qvc4rn1" path="res://concept/town/can_use/building/building_building_facility_007.png" id="10_board"]
+[ext_resource type="Texture2D" uid="uid://dgjedw5iy5a75" path="res://concept/town/can_use/building/building_building_facility_008.png" id="11_stall"]
+[ext_resource type="Texture2D" uid="uid://brgcls3ggpb7v" path="res://concept/town/can_use/prop/prop_asset_003.png" id="12_lamp"]
+[ext_resource type="Texture2D" uid="uid://dfkqxdwq4xxa2" path="res://concept/town/can_use/prop/prop_asset_004.png" id="13_sign"]
+[ext_resource type="Texture2D" uid="uid://blyy4kpphhdv0" path="res://concept/town/can_use/prop/prop_asset_005.png" id="14_bench"]
+[ext_resource type="Texture2D" uid="uid://b8vwv0q0stij1" path="res://concept/town/can_use/prop/prop_asset_006.png" id="15_barrel"]
+[ext_resource type="Texture2D" uid="uid://c7qcyjletnrfx" path="res://concept/town/can_use/prop/prop_asset_007.png" id="16_crate"]
+[ext_resource type="Texture2D" uid="uid://bfjwe7fn3u2nr" path="res://concept/town/can_use/prop/prop_asset_008.png" id="17_fence"]
+[ext_resource type="Texture2D" uid="uid://b37ucnu4d1jc2" path="res://concept/town/can_use/prop/prop_asset_009.png" id="18_cart"]
+[ext_resource type="Texture2D" uid="uid://2ysxob8pjr1o" path="res://concept/town/can_use/prop/prop_asset_010.png" id="19_tree"]
+[ext_resource type="Texture2D" uid="uid://dt1cxkro7r7yh" path="res://concept/town/can_use/prop/prop_asset_011.png" id="20_flowers"]
+[ext_resource type="Texture2D" uid="uid://cb88erhla0rkq" path="res://concept/town/can_use/prop/prop_asset_012.png" id="21_potion"]
+[ext_resource type="Texture2D" uid="uid://bsuqk1qnnknyt" path="res://concept/town/can_use/prop/prop_asset_013.png" id="22_weapon"]
+[ext_resource type="Texture2D" uid="uid://bfoix4s1e0ld0" path="res://concept/town/can_use/npc/npc_asset_001.png" id="23_mayor"]
+[ext_resource type="Texture2D" uid="uid://c04f25mnhtfau" path="res://concept/town/can_use/npc/npc_asset_003.png" id="24_villager_male"]
+[ext_resource type="Texture2D" uid="uid://c3xiqctywsoe6" path="res://concept/town/can_use/npc/npc_asset_005.png" id="25_villager_female"]
+[ext_resource type="Texture2D" uid="uid://425qqvkhr58m" path="res://concept/town/can_use/npc/npc_asset_009.png" id="26_smith"]
+[ext_resource type="Texture2D" uid="uid://ccv6uq1tsiwoq" path="res://concept/town/can_use/npc/npc_asset_011.png" id="27_guard"]
+[ext_resource type="Texture2D" uid="uid://n263p7p8w6fv" path="res://concept/town/can_use/npc/npc_asset_016.png" id="28_innkeeper"]
+[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="29_player_script"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/WestHouse.tscn" id="30_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/ItemShop.tscn" id="31_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/Blacksmith.tscn" id="32_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/MarketStall.tscn" id="33_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/TownPortal.tscn" id="34_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/TownWell.tscn" id="35_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/NoticeBoard.tscn" id="36_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/Fence.tscn" id="37_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/PotionSign.tscn" id="38_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/WeaponSign.tscn" id="39_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/Lamp.tscn" id="40_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/CrossroadSign.tscn" id="41_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/Bench.tscn" id="42_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/BarrelStack.tscn" id="43_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/Crates.tscn" id="44_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/MarketCart.tscn" id="45_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/EastTree.tscn" id="46_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/FlowerBed.tscn" id="47_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/MayorVisual.tscn" id="48_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/VillagerMaleVisual.tscn" id="49_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/VillagerFemaleVisual.tscn" id="50_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/SmithVisual.tscn" id="51_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/GuardVisual.tscn" id="52_town_object_scene"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/InnkeeperVisual.tscn" id="53_town_object_scene"]
+
+[sub_resource type="Gradient" id="Gradient_sky"]
+offsets = PackedFloat32Array(0, 0.58, 1)
+colors = PackedColorArray(0.45, 0.73, 0.96, 1, 0.77, 0.89, 0.99, 1, 0.98, 0.9, 0.74, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_sky"]
+gradient = SubResource("Gradient_sky")
+width = 2172
+height = 724
+fill_from = Vector2(0.5, 0)
+fill_to = Vector2(0.5, 1)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(42, 88)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(2800, 64)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(48, 520)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_portal"]
+size = Vector2(128, 160)
+
+[node name="Town" type="Node2D" unique_id=2064318752]
+metadata/map_width = 2600
+metadata/map_height = 724
+metadata/camera_limit_left = 0
+metadata/camera_limit_top = 0
+metadata/camera_limit_right = 2600
+metadata/camera_limit_bottom = 724
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(220, 576)
+
+[node name="Sky" type="Sprite2D" parent="." unique_id=1957591297]
+position = Vector2(1086, 362)
+texture = SubResource("GradientTexture2D_sky")
+
+[node name="ParallaxBackground" type="Node2D" parent="." unique_id=1113887505]
+
+[node name="Clouds" type="Sprite2D" parent="ParallaxBackground" unique_id=6151231]
+position = Vector2(1086, 286)
+texture = ExtResource("1_clouds")
+
+[node name="Mountains" type="Sprite2D" parent="ParallaxBackground" unique_id=850052382]
+position = Vector2(1086, 316)
+texture = ExtResource("2_mountains")
+
+[node name="Forest" type="Sprite2D" parent="ParallaxBackground" unique_id=921288757]
+position = Vector2(1086, 346)
+texture = ExtResource("3_forest")
+
+[node name="Rooftops" type="Sprite2D" parent="ParallaxBackground" unique_id=1867272114]
+position = Vector2(1291, 352)
+scale = Vector2(1.2605894, 1)
+texture = ExtResource("4_rooftops")
+
+[node name="Ground" type="Node2D" parent="." unique_id=1400765759]
+
+[node name="StreetBase" type="ColorRect" parent="Ground" unique_id=68624083]
+offset_left = -311.0
+offset_top = 609.0
+offset_right = 2809.0
+offset_bottom = 849.0
+color = Color(0.39, 0.31, 0.25, 1)
+
+[node name="WalkableRoad" type="ColorRect" parent="Ground" unique_id=1780323524]
+offset_left = -320.0
+offset_top = 603.0
+offset_right = 2800.0
+offset_bottom = 739.0
+color = Color(0.59, 0.49, 0.38, 1)
+
+[node name="RoadHighlight" type="ColorRect" parent="Ground" unique_id=1854912833]
+offset_left = -334.0
+offset_top = 608.0
+offset_right = 2786.0
+offset_bottom = 624.0
+color = Color(0.72, 0.63, 0.5, 1)
+
+[node name="Buildings" type="Node2D" parent="." unique_id=13442811]
+
+[node name="WestHouse" parent="Buildings" instance=ExtResource("30_town_object_scene")]
+position = Vector2(270, 616)
+[node name="ItemShop" parent="Buildings" instance=ExtResource("31_town_object_scene")]
+position = Vector2(835, 618)
+[node name="Blacksmith" parent="Buildings" instance=ExtResource("32_town_object_scene")]
+position = Vector2(1288, 614)
+[node name="MarketStall" parent="Buildings" instance=ExtResource("33_town_object_scene")]
+position = Vector2(1641, 600)
+[node name="TownPortal" parent="Buildings" instance=ExtResource("34_town_object_scene")]
+position = Vector2(2284, 676)
+[node name="TownWell" parent="Buildings" instance=ExtResource("35_town_object_scene")]
+position = Vector2(1947, 609)
+[node name="NoticeBoard" parent="Buildings" instance=ExtResource("36_town_object_scene")]
+position = Vector2(540, 625)
+[node name="Props" type="Node2D" parent="." unique_id=1933136006]
+
+[node name="WestFence" parent="Props" instance=ExtResource("37_town_object_scene")]
+position = Vector2(90, 612)
+[node name="ItemShopSign" parent="Props" instance=ExtResource("38_town_object_scene")]
+position = Vector2(650, 582)
+[node name="BlacksmithSign" parent="Props" instance=ExtResource("39_town_object_scene")]
+position = Vector2(1110, 582)
+[node name="LampWest" parent="Props" instance=ExtResource("40_town_object_scene")]
+position = Vector2(430, 592)
+[node name="LampCenter" parent="Props" instance=ExtResource("40_town_object_scene")]
+position = Vector2(1510, 592)
+[node name="CrossroadSign" parent="Props" instance=ExtResource("41_town_object_scene")]
+position = Vector2(2047, 628)
+[node name="Bench" parent="Props" instance=ExtResource("42_town_object_scene")]
+position = Vector2(1020, 616)
+[node name="BarrelStack" parent="Props" instance=ExtResource("43_town_object_scene")]
+position = Vector2(1440, 616)
+[node name="Crates" parent="Props" instance=ExtResource("44_town_object_scene")]
+position = Vector2(1575, 620)
+[node name="MarketCart" parent="Props" instance=ExtResource("45_town_object_scene")]
+position = Vector2(1815, 612)
+[node name="EastTree" parent="Props" instance=ExtResource("46_town_object_scene")]
+position = Vector2(2440, 594)
+[node name="FlowerBedWest" parent="Props" instance=ExtResource("47_town_object_scene")]
+position = Vector2(340, 643)
+[node name="FlowerBedEast" parent="Props" instance=ExtResource("47_town_object_scene")]
+position = Vector2(2290, 643)
+scale = Vector2(-1, 1)
+[node name="Portals" type="Node2D" parent="."]
+
+[node name="EastRoadPortal" type="Area2D" parent="Portals" groups=["Portals"]]
+position = Vector2(2532, 576)
+monitoring = false
+metadata/portal_id = "town_east_road"
+metadata/target_scene = "res://scenes/maps/town.tscn"
+metadata/target_spawn = "PlayerSpawn"
+metadata/placeholder = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Portals/EastRoadPortal"]
+position = Vector2(0, 5)
+shape = SubResource("RectangleShape2D_portal")
+debug_color = Color(0.22, 0.65, 1, 0.28)
+
+[node name="TownCenterPortal" type="Area2D" parent="Portals" groups=["Portals"]]
+position = Vector2(2284, 576)
+monitoring = false
+metadata/portal_id = "town_center_portal"
+metadata/target_scene = "res://scenes/maps/town.tscn"
+metadata/target_spawn = "PlayerSpawn"
+metadata/placeholder = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Portals/TownCenterPortal"]
+position = Vector2(0, 5)
+shape = SubResource("RectangleShape2D_portal")
+debug_color = Color(0.22, 0.65, 1, 0.28)
+
+[node name="NPCs" type="Node2D" parent="." unique_id=1308501861]
+
+[node name="Mayor" parent="NPCs" instance=ExtResource("48_town_object_scene")]
+position = Vector2(570, 616)
+[node name="VillagerMale" parent="NPCs" instance=ExtResource("49_town_object_scene")]
+position = Vector2(930, 620)
+[node name="VillagerFemale" parent="NPCs" instance=ExtResource("50_town_object_scene")]
+position = Vector2(1160, 620)
+[node name="Smith" parent="NPCs" instance=ExtResource("51_town_object_scene")]
+position = Vector2(1479, 623)
+[node name="Guard" parent="NPCs" instance=ExtResource("52_town_object_scene")]
+position = Vector2(2161, 623)
+[node name="Innkeeper" parent="NPCs" instance=ExtResource("53_town_object_scene")]
+position = Vector2(1765, 620)
+[node name="Player" type="CharacterBody2D" parent="." unique_id=1141192825]
+position = Vector2(220, 576)
+script = ExtResource("29_player_script")
+
+[node name="Body" type="ColorRect" parent="Player" unique_id=141603097]
+offset_left = -18.0
+offset_top = -74.0
+offset_right = 18.0
+color = Color(0.18, 0.31, 0.55, 1)
+
+[node name="Head" type="ColorRect" parent="Player" unique_id=1950324854]
+offset_left = -14.0
+offset_top = -104.0
+offset_right = 14.0
+offset_bottom = -76.0
+color = Color(0.94, 0.76, 0.57, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=1447155505]
+position = Vector2(0, -44)
+shape = SubResource("RectangleShape2D_player")
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=1713116518]
+limit_left = 0
+limit_top = 0
+limit_right = 2600
+limit_bottom = 724
+position_smoothing_enabled = true
+
+[node name="WorldCollision" type="StaticBody2D" parent="." unique_id=1406716349]
+
+[node name="FloorCollision" type="CollisionShape2D" parent="WorldCollision" unique_id=1168991069]
+position = Vector2(1238, 661)
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="LeftWall" type="CollisionShape2D" parent="WorldCollision" unique_id=1260127150]
+position = Vector2(-24, 420)
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="RightWall" type="CollisionShape2D" parent="WorldCollision" unique_id=1853020719]
+position = Vector2(2624, 420)
+shape = SubResource("RectangleShape2D_wall")

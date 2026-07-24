@@ -1,0 +1,35 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/interaction/chest.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://concept/town/can_use/prop/prop_asset_007.png" id="2_texture"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(84, 66)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_interaction"]
+size = Vector2(116, 94)
+
+[node name="Chest" type="StaticBody2D" groups=["Props", "Interactives"]]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_script")
+interaction_id = &"prototype_town_chest"
+prompt_text = "Open"
+loot_table_id = &"prototype_town_chest"
+
+[node name="Visual" type="Sprite2D" parent="."]
+texture = ExtResource("2_texture")
+offset = Vector2(0, -51)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -33)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="InteractionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+position = Vector2(0, -47)
+shape = SubResource("RectangleShape2D_interaction")
+debug_color = Color(0.3, 0.75, 1, 0.25)

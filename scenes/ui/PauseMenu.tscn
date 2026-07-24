@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://c1piuenf4ahvv"]
+[gd_scene load_steps=5 format=3 uid="uid://c1piuenf4ahvv"]
+
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1_pause_menu"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 content_margin_left = 28.0
@@ -73,6 +75,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_pause_menu")
 
 [node name="ScreenDimmer" type="ColorRect" parent="."]
 layout_mode = 1
