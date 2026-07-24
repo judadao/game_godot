@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://b6jb7ycq0yfcl"]
+[gd_scene load_steps=11 format=3 uid="uid://b6jb7ycq0yfcl"]
+
+[ext_resource type="Script" path="res://scripts/ui/inventory_ui.gd" id="1_inventory_ui"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_main_panel"]
 bg_color = Color(0.08, 0.065, 0.055, 0.9)
@@ -88,21 +90,16 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 56.0
-offset_right = -31.0
-offset_bottom = -44.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_inventory_ui")
 
 [node name="DimBackground" type="ColorRect" parent="." unique_id=1911564334]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 100.0
-offset_top = -3.0
-offset_right = -63.0
-offset_bottom = -53.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.45)

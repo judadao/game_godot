@@ -1,6 +1,7 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Texture2D" path="res://concept/town/can_use/ui/ui_ui_ui_component_017.png" id="1_next_arrow"]
+[ext_resource type="Script" path="res://scripts/ui/dialogue_ui.gd" id="2_dialogue_ui"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialogue_panel"]
 bg_color = Color(0.09, 0.08, 0.1, 0.92)
@@ -84,11 +85,14 @@ corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
 [node name="DialogueUI" type="Control"]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("2_dialogue_ui")
 
 [node name="DialoguePanel" type="Panel" parent="."]
 anchors_preset = -1
