@@ -28,7 +28,7 @@
 [ext_resource type="Texture2D" uid="uid://425qqvkhr58m" path="res://concept/town/can_use/npc/npc_asset_009.png" id="26_smith"]
 [ext_resource type="Texture2D" uid="uid://ccv6uq1tsiwoq" path="res://concept/town/can_use/npc/npc_asset_011.png" id="27_guard"]
 [ext_resource type="Texture2D" uid="uid://n263p7p8w6fv" path="res://concept/town/can_use/npc/npc_asset_016.png" id="28_innkeeper"]
-[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="29_player_script"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="29_player_scene"]
 
 [sub_resource type="Gradient" id="Gradient_sky"]
 offsets = PackedFloat32Array(0, 0.58, 1)
@@ -41,16 +41,25 @@ height = 724
 fill_from = Vector2(0.5, 0)
 fill_to = Vector2(0.5, 1)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
-size = Vector2(42, 88)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(2800, 64)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(48, 520)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_portal"]
+size = Vector2(128, 160)
+
 [node name="Town" type="Node2D" unique_id=2064318752]
+metadata/map_width = 2600
+metadata/map_height = 724
+metadata/camera_limit_left = 0
+metadata/camera_limit_top = 0
+metadata/camera_limit_right = 2600
+metadata/camera_limit_bottom = 724
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(220, 576)
 
 [node name="Sky" type="Sprite2D" parent="." unique_id=1957591297]
 position = Vector2(1086, 362)
@@ -203,6 +212,34 @@ scale = Vector2(-1, 1)
 texture = ExtResource("20_flowers")
 offset = Vector2(0, -45.5)
 
+[node name="Portals" type="Node2D" parent="."]
+
+[node name="EastRoadPortal" type="Area2D" parent="Portals" groups=["Portals"]]
+position = Vector2(2532, 576)
+monitoring = false
+metadata/portal_id = "town_east_road"
+metadata/target_scene = "res://scenes/maps/town.tscn"
+metadata/target_spawn = "PlayerSpawn"
+metadata/placeholder = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Portals/EastRoadPortal"]
+position = Vector2(0, 5)
+shape = SubResource("RectangleShape2D_portal")
+debug_color = Color(0.22, 0.65, 1, 0.28)
+
+[node name="TownCenterPortal" type="Area2D" parent="Portals" groups=["Portals"]]
+position = Vector2(2284, 576)
+monitoring = false
+metadata/portal_id = "town_center_portal"
+metadata/target_scene = "res://scenes/maps/town.tscn"
+metadata/target_spawn = "PlayerSpawn"
+metadata/placeholder = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Portals/TownCenterPortal"]
+position = Vector2(0, 5)
+shape = SubResource("RectangleShape2D_portal")
+debug_color = Color(0.22, 0.65, 1, 0.28)
+
 [node name="NPCs" type="Node2D" parent="." unique_id=1308501861]
 
 [node name="Mayor" type="Sprite2D" parent="NPCs" unique_id=1514306631]
@@ -235,33 +272,8 @@ position = Vector2(1765, 620)
 texture = ExtResource("28_innkeeper")
 offset = Vector2(0, -72)
 
-[node name="Player" type="CharacterBody2D" parent="." unique_id=1141192825]
+[node name="Player" parent="." unique_id=1141192825 instance=ExtResource("29_player_scene")]
 position = Vector2(220, 576)
-script = ExtResource("29_player_script")
-
-[node name="Body" type="ColorRect" parent="Player" unique_id=141603097]
-offset_left = -18.0
-offset_top = -74.0
-offset_right = 18.0
-color = Color(0.18, 0.31, 0.55, 1)
-
-[node name="Head" type="ColorRect" parent="Player" unique_id=1950324854]
-offset_left = -14.0
-offset_top = -104.0
-offset_right = 14.0
-offset_bottom = -76.0
-color = Color(0.94, 0.76, 0.57, 1)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=1447155505]
-position = Vector2(0, -44)
-shape = SubResource("RectangleShape2D_player")
-
-[node name="Camera2D" type="Camera2D" parent="Player" unique_id=1713116518]
-limit_left = 0
-limit_top = 0
-limit_right = 2600
-limit_bottom = 724
-position_smoothing_enabled = true
 
 [node name="WorldCollision" type="StaticBody2D" parent="." unique_id=1406716349]
 

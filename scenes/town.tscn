@@ -50,7 +50,19 @@ size = Vector2(2800, 64)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(48, 520)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_portal"]
+size = Vector2(128, 160)
+
 [node name="Town" type="Node2D" unique_id=2064318752]
+metadata/map_width = 2600
+metadata/map_height = 724
+metadata/camera_limit_left = 0
+metadata/camera_limit_top = 0
+metadata/camera_limit_right = 2600
+metadata/camera_limit_bottom = 724
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(220, 576)
 
 [node name="Sky" type="Sprite2D" parent="." unique_id=1957591297]
 position = Vector2(1086, 362)
@@ -202,6 +214,34 @@ position = Vector2(2290, 643)
 scale = Vector2(-1, 1)
 texture = ExtResource("20_flowers")
 offset = Vector2(0, -45.5)
+
+[node name="Portals" type="Node2D" parent="."]
+
+[node name="EastRoadPortal" type="Area2D" parent="Portals" groups=["Portals"]]
+position = Vector2(2532, 576)
+monitoring = false
+metadata/portal_id = "town_east_road"
+metadata/target_scene = "res://scenes/maps/town.tscn"
+metadata/target_spawn = "PlayerSpawn"
+metadata/placeholder = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Portals/EastRoadPortal"]
+position = Vector2(0, 5)
+shape = SubResource("RectangleShape2D_portal")
+debug_color = Color(0.22, 0.65, 1, 0.28)
+
+[node name="TownCenterPortal" type="Area2D" parent="Portals" groups=["Portals"]]
+position = Vector2(2284, 576)
+monitoring = false
+metadata/portal_id = "town_center_portal"
+metadata/target_scene = "res://scenes/maps/town.tscn"
+metadata/target_spawn = "PlayerSpawn"
+metadata/placeholder = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Portals/TownCenterPortal"]
+position = Vector2(0, 5)
+shape = SubResource("RectangleShape2D_portal")
+debug_color = Color(0.22, 0.65, 1, 0.28)
 
 [node name="NPCs" type="Node2D" parent="." unique_id=1308501861]
 
