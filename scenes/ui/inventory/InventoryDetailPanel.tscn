@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_detail_panel"]
+bg_color = Color(0.105, 0.09, 0.075, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.31, 0.2, 0.95)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="DetailPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(300, 0)
+theme_override_styles/panel = SubResource("StyleBoxFlat_detail_panel")
+
+[node name="DetailMargin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="DetailLayout" type="VBoxContainer" parent="DetailMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="ItemName" type="Label" parent="DetailMargin/DetailLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.55, 1)
+theme_override_font_sizes/font_size = 22
+text = "Health Potion"
+
+[node name="Description" type="Label" parent="DetailMargin/DetailLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.84, 0.78, 0.68, 1)
+theme_override_font_sizes/font_size = 16
+text = "A small crimson vial brewed by town herbalists. Restores health when used outside combat."
+autowrap_mode = 3
+
+[node name="StatsTitle" type="Label" parent="DetailMargin/DetailLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.55, 1)
+theme_override_font_sizes/font_size = 18
+text = "Stats"
+
+[node name="Stats" type="Label" parent="DetailMargin/DetailLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.78, 1)
+theme_override_font_sizes/font_size = 16
+text = "+50 HP
+Value: 25 gold
+Stack: 8 / 20"

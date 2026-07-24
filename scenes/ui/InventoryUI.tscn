@@ -1,7 +1,6 @@
-[gd_scene load_steps=24 format=3 uid="uid://b6jb7ycq0yfcl"]
+[gd_scene load_steps=22 format=3 uid="uid://b6jb7ycq0yfcl"]
 
 [ext_resource type="Script" path="res://scripts/ui/inventory_ui.gd" id="1_inventory_ui"]
-[ext_resource type="Texture2D" path="res://assets/ui/basic_rpg_ui/png/Inventory.png" id="2_inventory_frame"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionHp_Big.png" id="3_icon_100"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionSp_Big.png" id="4_icon_101"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png" id="5_icon_102"]
@@ -14,6 +13,10 @@
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionPoison.png" id="12_icon_109"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0000_Weapon.png" id="13_icon_110"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0006_Boots.png" id="14_icon_111"]
+[ext_resource type="PackedScene" path="res://scenes/ui/inventory/InventorySlot.tscn" id="15_inventory_slot"]
+[ext_resource type="PackedScene" path="res://scenes/ui/inventory/InventoryHeader.tscn" id="16_inventory_header"]
+[ext_resource type="PackedScene" path="res://scenes/ui/inventory/InventoryCategoryTabs.tscn" id="17_inventory_tabs"]
+[ext_resource type="PackedScene" path="res://scenes/ui/inventory/InventoryDetailPanel.tscn" id="18_inventory_detail"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_main_panel"]
 bg_color = Color(0.08, 0.065, 0.055, 0.9)
@@ -27,27 +30,6 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
-bg_color = Color(0.18, 0.125, 0.075, 0.9)
-border_width_bottom = 1
-border_color = Color(0.58, 0.43, 0.24, 0.85)
-
-[sub_resource type="LabelSettings" id="LabelSettings_title"]
-font_size = 28
-font_color = Color(0.95, 0.82, 0.55, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab"]
-bg_color = Color(0.18, 0.145, 0.11, 0.95)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.43, 0.34, 0.22, 0.95)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_selected_slot"]
 bg_color = Color(0.19, 0.15, 0.105, 1)
 border_width_left = 2
@@ -60,13 +42,6 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_icon_potion"]
-bg_color = Color(0.58, 0.12, 0.16, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot"]
 bg_color = Color(0.13, 0.115, 0.095, 0.98)
 border_width_left = 2
@@ -78,25 +53,6 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_icon_gear"]
-bg_color = Color(0.2, 0.38, 0.58, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_detail_panel"]
-bg_color = Color(0.105, 0.09, 0.075, 0.88)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.4, 0.31, 0.2, 0.95)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
 
 [node name="InventoryUI" type="Control" unique_id=1380719653]
 layout_mode = 3
@@ -132,26 +88,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_main_panel")
 
-[node name="CraftPixFrame" type="TextureRect" parent="." unique_id=1374567484]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -442.0
-offset_top = -307.0
-offset_right = 462.0
-offset_bottom = 247.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture_filter = 1
-modulate = Color(1, 1, 1, 0.16)
-texture = ExtResource("2_inventory_frame")
-expand_mode = 1
-stretch_mode = 0
-
 [node name="MainMargin" type="MarginContainer" parent="MainPanel" unique_id=956877689]
 layout_mode = 2
 theme_override_constants/margin_left = 22
@@ -163,40 +99,7 @@ theme_override_constants/margin_bottom = 18
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="HeaderPanel" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout" unique_id=806626929]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_header")
-
-[node name="HeaderMargin" type="MarginContainer" parent="MainPanel/MainMargin/MainLayout/HeaderPanel" unique_id=988896557]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="HeaderRow" type="HBoxContainer" parent="MainPanel/MainMargin/MainLayout/HeaderPanel/HeaderMargin" unique_id=707986209]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="Title" type="Label" parent="MainPanel/MainMargin/MainLayout/HeaderPanel/HeaderMargin/HeaderRow" unique_id=2138209250]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Inventory"
-label_settings = SubResource("LabelSettings_title")
-
-[node name="CurrencyDisplay" type="Label" parent="MainPanel/MainMargin/MainLayout/HeaderPanel/HeaderMargin/HeaderRow" unique_id=1923623664]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.78, 0.36, 1)
-theme_override_font_sizes/font_size = 18
-text = "Gold: 1,245"
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="CloseButton" type="Button" parent="MainPanel/MainMargin/MainLayout/HeaderPanel/HeaderMargin/HeaderRow" unique_id=653668466]
-custom_minimum_size = Vector2(42, 36)
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "X"
+[node name="HeaderPanel" parent="MainPanel/MainMargin/MainLayout" instance=ExtResource("16_inventory_header")]
 
 [node name="ContentRow" type="HBoxContainer" parent="MainPanel/MainMargin/MainLayout" unique_id=1697006452]
 layout_mode = 2
@@ -208,37 +111,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 14
 
-[node name="CategoryTabs" type="HBoxContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn" unique_id=116804252]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="AllTab" type="Button" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/CategoryTabs" unique_id=622128795]
-custom_minimum_size = Vector2(96, 38)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_tab")
-text = "All"
-
-[node name="ItemsTab" type="Button" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/CategoryTabs" unique_id=1213370850]
-custom_minimum_size = Vector2(96, 38)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_tab")
-text = "Items"
-
-[node name="GearTab" type="Button" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/CategoryTabs" unique_id=770443048]
-custom_minimum_size = Vector2(96, 38)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_tab")
-text = "Gear"
-
-[node name="QuestTab" type="Button" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/CategoryTabs" unique_id=244628589]
-custom_minimum_size = Vector2(96, 38)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_tab")
-text = "Quest"
+[node name="CategoryTabs" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn" instance=ExtResource("17_inventory_tabs")]
 
 [node name="SlotGrid" type="GridContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn" unique_id=805098426]
 layout_mode = 2
@@ -247,250 +120,100 @@ theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 10
 columns = 5
 
-[node name="Slot01" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1610862633]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot01" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_selected_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot01" unique_id=359216043]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot01" index="0"]
 texture = ExtResource("3_icon_100")
-expand_mode = 1
 
-[node name="Slot02" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=178615629]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot02" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot02" unique_id=1426864408]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot02" index="0"]
 texture = ExtResource("4_icon_101")
-expand_mode = 1
 
-[node name="Slot03" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1604734658]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot03" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot03" unique_id=2112666197]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot03" index="0"]
 texture = ExtResource("5_icon_102")
-expand_mode = 1
 
-[node name="Slot04" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=931427750]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot04" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot04" unique_id=684473984]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot04" index="0"]
 texture = ExtResource("6_icon_103")
-expand_mode = 1
 
-[node name="Slot05" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=375421943]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot05" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot05" unique_id=997310766]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot05" index="0"]
 texture = ExtResource("7_icon_104")
-expand_mode = 1
 
-[node name="Slot06" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=438987206]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot06" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot06" unique_id=1132368970]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot06" index="0"]
 texture = ExtResource("8_icon_105")
-expand_mode = 1
 
-[node name="Slot07" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=471825255]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot07" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot07" unique_id=1733189533]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot07" index="0"]
 texture = ExtResource("9_icon_106")
-expand_mode = 1
 
-[node name="Slot08" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1899854474]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot08" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot08" unique_id=1708640224]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot08" index="0"]
 texture = ExtResource("10_icon_107")
-expand_mode = 1
 
-[node name="Slot09" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1765039867]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot09" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot09" unique_id=1605126231]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot09" index="0"]
 texture = ExtResource("11_icon_108")
-expand_mode = 1
 
-[node name="Slot10" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=667451176]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot10" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot10" unique_id=1169908099]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot10" index="0"]
 texture = ExtResource("12_icon_109")
-expand_mode = 1
 
-[node name="Slot11" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=397105350]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot11" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot11" unique_id=1028791669]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot11" index="0"]
 texture = ExtResource("13_icon_110")
-expand_mode = 1
 
-[node name="Slot12" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=88502964]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot12" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot12" unique_id=915080970]
-layout_mode = 2
-texture_filter = 1
+[node name="Icon" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot12" index="0"]
 texture = ExtResource("14_icon_111")
-expand_mode = 1
 
-[node name="Slot13" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=971506404]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot13" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot13" unique_id=1057906388]
-layout_mode = 2
-stretch_mode = 5
-
-[node name="Slot14" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=941160534]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot14" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot14" unique_id=33652869]
-layout_mode = 2
-stretch_mode = 5
-
-[node name="Slot15" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1600528137]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot15" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot15" unique_id=532343011]
-layout_mode = 2
-stretch_mode = 5
-
-[node name="Slot16" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1805067296]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot16" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot16" unique_id=145444642]
-layout_mode = 2
-stretch_mode = 5
-
-[node name="Slot17" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1582862839]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot17" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot17" unique_id=1371298525]
-layout_mode = 2
-stretch_mode = 5
-
-[node name="Slot18" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1567129221]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot18" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot18" unique_id=575716503]
-layout_mode = 2
-stretch_mode = 5
-
-[node name="Slot19" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=1569839108]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot19" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot19" unique_id=1065738751]
-layout_mode = 2
-stretch_mode = 5
-
-[node name="Slot20" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" unique_id=690357956]
-custom_minimum_size = Vector2(78, 78)
-layout_mode = 2
+[node name="Slot20" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid" instance=ExtResource("15_inventory_slot")]
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot")
 
-[node name="Icon" type="TextureRect" parent="MainPanel/MainMargin/MainLayout/ContentRow/InventoryColumn/SlotGrid/Slot20" unique_id=1391511978]
-layout_mode = 2
-stretch_mode = 5
-
-[node name="DetailPanel" type="PanelContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow" unique_id=817080192]
-custom_minimum_size = Vector2(300, 0)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_detail_panel")
-
-[node name="DetailMargin" type="MarginContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/DetailPanel" unique_id=1350997927]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 18
-
-[node name="DetailLayout" type="VBoxContainer" parent="MainPanel/MainMargin/MainLayout/ContentRow/DetailPanel/DetailMargin" unique_id=2040068076]
-layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="ItemName" type="Label" parent="MainPanel/MainMargin/MainLayout/ContentRow/DetailPanel/DetailMargin/DetailLayout" unique_id=1952886906]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.82, 0.55, 1)
-theme_override_font_sizes/font_size = 22
-text = "Health Potion"
-
-[node name="Description" type="Label" parent="MainPanel/MainMargin/MainLayout/ContentRow/DetailPanel/DetailMargin/DetailLayout" unique_id=1737609206]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.84, 0.78, 0.68, 1)
-theme_override_font_sizes/font_size = 16
-text = "A small crimson vial brewed by town herbalists. Restores health when used outside combat."
-autowrap_mode = 3
-
-[node name="StatsTitle" type="Label" parent="MainPanel/MainMargin/MainLayout/ContentRow/DetailPanel/DetailMargin/DetailLayout" unique_id=572178988]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.82, 0.55, 1)
-theme_override_font_sizes/font_size = 18
-text = "Stats"
-
-[node name="Stats" type="Label" parent="MainPanel/MainMargin/MainLayout/ContentRow/DetailPanel/DetailMargin/DetailLayout" unique_id=2021734904]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.82, 0.86, 0.78, 1)
-theme_override_font_sizes/font_size = 16
-text = "+50 HP
-Value: 25 gold
-Stack: 8 / 20"
+[node name="DetailPanel" parent="MainPanel/MainMargin/MainLayout/ContentRow" instance=ExtResource("18_inventory_detail")]

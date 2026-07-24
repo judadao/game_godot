@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://chjyyb86xb0xs"]
+[gd_scene load_steps=17 format=3 uid="uid://chjyyb86xb0xs"]
 
 [ext_resource type="Script" path="res://scripts/ui/shop_ui.gd" id="1_shop_ui"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png" id="2_sword"]
@@ -8,6 +8,8 @@
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionSp_Small.png" id="6_mana"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png" id="7_torch"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png" id="8_gem"]
+[ext_resource type="PackedScene" path="res://scenes/ui/shop/ShopItemRow.tscn" id="9_shop_item_row"]
+[ext_resource type="PackedScene" path="res://scenes/ui/shop/ShopDetailPanel.tscn" id="10_shop_detail"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
 bg_color = Color(0.09, 0.07, 0.055, 0.94)
@@ -203,209 +205,46 @@ theme_override_font_sizes/font_size = 17
 text = "Gold"
 horizontal_alignment = 2
 
-[node name="Row01" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1275922312]
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
+[node name="Row01" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
 icon = ExtResource("2_sword")
-icon_max_width = 30
-expand_icon = true
-theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_row_selected")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
-theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
 text = "Iron Longsword                                      120"
-alignment = 0
 
-[node name="Row02" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1648897586]
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
+[node name="Row02" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
 icon = ExtResource("3_shield")
-icon_max_width = 30
-expand_icon = true
-theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
-theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
 text = "Oak Shield                                           90"
-alignment = 0
 
-[node name="Row03" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1141609991]
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
+[node name="Row03" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
 icon = ExtResource("4_cloak")
-icon_max_width = 30
-expand_icon = true
-theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
-theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
 text = "Traveler's Cloak                                     75"
-alignment = 0
 
-[node name="Row04" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1185440815]
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
+[node name="Row04" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
 icon = ExtResource("5_health")
-icon_max_width = 30
-expand_icon = true
-theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
-theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
 text = "Health Potion                                        25"
-alignment = 0
 
-[node name="Row05" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=708531143]
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
+[node name="Row05" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
 icon = ExtResource("6_mana")
-icon_max_width = 30
-expand_icon = true
-theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
-theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
 text = "Mana Tonic                                           30"
-alignment = 0
 
-[node name="Row06" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1970667600]
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
+[node name="Row06" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
 icon = ExtResource("7_torch")
-icon_max_width = 30
-expand_icon = true
-theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
-theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
 text = "Torch Bundle                                         12"
-alignment = 0
 
-[node name="Row07" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=2141940716]
-custom_minimum_size = Vector2(0, 38)
+[node name="Row07" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
 icon = ExtResource("8_gem")
-icon_max_width = 30
-expand_icon = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
-theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
 text = "Antidote                                             18"
-alignment = 0
 
-[node name="Row08" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1830871957]
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
+[node name="Row08" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" instance=ExtResource("9_shop_item_row")]
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
-theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
 text = "Town Map                                             40"
-alignment = 0
 
-[node name="DetailsPanel" type="PanelContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" unique_id=26836017]
-custom_minimum_size = Vector2(380, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
-
-[node name="DetailsLayout" type="VBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel" unique_id=1466317579]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="PreviewFrame" type="PanelContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout" unique_id=710577101]
-custom_minimum_size = Vector2(0, 140)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_row")
-
-[node name="PreviewLayout" type="CenterContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/PreviewFrame" unique_id=408544084]
-layout_mode = 2
-
-[node name="PreviewIcon" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/PreviewFrame/PreviewLayout" unique_id=878512182]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.72, 0.28, 1)
-theme_override_font_sizes/font_size = 54
-text = "I"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ItemName" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout" unique_id=1578208004]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
-theme_override_font_sizes/font_size = 24
-text = "Iron Longsword"
-
-[node name="ItemDescription" type="RichTextLabel" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout" unique_id=1494566260]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_colors/default_color = Color(0.88, 0.78, 0.64, 1)
-theme_override_font_sizes/normal_font_size = 16
-bbcode_enabled = true
-text = "A reliable blade from the town forge.
-
-Attack +8
-Durability: Standard
-Stock: 5"
-fit_content = true
-scroll_active = false
-
-[node name="QuantityRow" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout" unique_id=1738560938]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="QuantityLabel" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow" unique_id=2047376018]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.93, 0.81, 0.62, 1)
-theme_override_font_sizes/font_size = 18
-text = "Quantity"
-vertical_alignment = 1
-
-[node name="MinusButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow" unique_id=79941822]
-custom_minimum_size = Vector2(42, 36)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
-text = "-"
-
-[node name="QuantityValue" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow" unique_id=1088892746]
-custom_minimum_size = Vector2(54, 36)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.64, 1)
-theme_override_font_sizes/font_size = 20
-text = "1"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="PlusButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow" unique_id=1726742162]
-custom_minimum_size = Vector2(42, 36)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
-text = "+"
-
-[node name="TotalRow" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout" unique_id=680875248]
-layout_mode = 2
-
-[node name="TotalLabel" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/TotalRow" unique_id=299407484]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.93, 0.81, 0.62, 1)
-theme_override_font_sizes/font_size = 19
-text = "Total"
-
-[node name="CurrencyAmount" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/TotalRow" unique_id=144610289]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.84, 0.32, 1)
-theme_override_font_sizes/font_size = 21
-text = "120 gold"
-horizontal_alignment = 2
+[node name="DetailsPanel" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" instance=ExtResource("10_shop_detail")]
 
 [node name="ActionBar" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=215793521]
 layout_mode = 2

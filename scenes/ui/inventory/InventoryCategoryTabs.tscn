@@ -1,0 +1,44 @@
+[gd_scene load_steps=2 format=3]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab"]
+bg_color = Color(0.18, 0.145, 0.11, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.43, 0.34, 0.22, 0.95)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="CategoryTabs" type="HBoxContainer"]
+theme_override_constants/separation = 8
+
+[node name="AllTab" type="Button" parent="."]
+custom_minimum_size = Vector2(96, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab")
+text = "All"
+
+[node name="ItemsTab" type="Button" parent="."]
+custom_minimum_size = Vector2(96, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab")
+text = "Items"
+
+[node name="GearTab" type="Button" parent="."]
+custom_minimum_size = Vector2(96, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab")
+text = "Gear"
+
+[node name="QuestTab" type="Button" parent="."]
+custom_minimum_size = Vector2(96, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab")
+text = "Quest"
