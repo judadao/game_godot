@@ -19,6 +19,11 @@ signal interaction_prompt_accepted
 @onready var interaction_panel: Control = $InteractionPanel
 @onready var key_label: Label = $InteractionPanel/PromptRow/Keycap/KeyLabel
 @onready var prompt_text: Label = $InteractionPanel/PromptRow/PromptText
+@onready var hp_potion_count: Label = $HUDHotbar/Icons/Health/Count
+@onready var mp_potion_count: Label = $HUDHotbar/Icons/Mana/Count
+@onready var potion_feedback: Label = $HUDHotbar/PotionFeedback
+
+var _feedback_generation: int = 0
 
 func _ready() -> void:
 	_make_display_only(self)
@@ -55,6 +60,20 @@ func set_currency(amount: int) -> void:
 func set_experience(current: int, required: int) -> void:
 	var safe_required := maxi(1, required)
 	experience_value.text = "%s / %s" % [_format_number(maxi(0, current)), _format_number(safe_required)]
+
+func set_potion_counts(health_count: int, mana_count: int) -> void:
+	hp_potion_count.text = str(maxi(0, health_count))
+	mp_potion_count.text = str(maxi(0, mana_count))
+
+func show_potion_feedback(message: String, successful: bool = true) -> void:
+	_feedback_generation += 1
+	var generation := _feedback_generation
+	potion_feedback.text = message
+	potion_feedback.modulate = Color.WHITE if successful else Color(1.0, 0.48, 0.38, 1.0)
+	potion_feedback.visible = true
+	await get_tree().create_timer(1.8, true, false, true).timeout
+	if generation == _feedback_generation:
+		potion_feedback.visible = false
 
 func set_area_name(value: String) -> void:
 	area_name.text = value.strip_edges() if not value.strip_edges().is_empty() else "Unknown Area"

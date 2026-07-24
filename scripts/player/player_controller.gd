@@ -2,6 +2,7 @@ extends CharacterBody2D
 
 signal attack_started(origin: Vector2, direction: Vector2)
 signal state_changed(state: StringName)
+signal resources_changed(health: int, max_health: int, mana: int, max_mana: int)
 
 const ACTION_MOVE_LEFT: StringName = &"move_left"
 const ACTION_MOVE_RIGHT: StringName = &"move_right"
@@ -29,6 +30,10 @@ const ATTACK_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/l
 @export var character_class: String = "Adventurer"
 @export var experience: int = 0
 @export var experience_to_next_level: int = 100
+@export var max_health: int = 100
+@export var health: int = 78
+@export var max_mana: int = 50
+@export var mana: int = 31
 
 @onready var visual: Node2D = get_node_or_null("Visual") as Node2D
 @onready var character_sprite: Sprite2D = get_node_or_null("Visual/CharacterSprite") as Sprite2D
@@ -42,6 +47,11 @@ var _animation_name: StringName = &""
 var _animation_elapsed: float = 0.0
 var _attack_animation_active: bool = false
 var input_enabled: bool = true
+
+func _ready() -> void:
+	health = clampi(health, 0, maxi(1, max_health))
+	mana = clampi(mana, 0, maxi(1, max_mana))
+	resources_changed.emit(health, max_health, mana, max_mana)
 
 func _physics_process(delta: float) -> void:
 	_tick_attack_cooldown(delta)
@@ -108,6 +118,36 @@ func attack() -> bool:
 		origin = attack_origin.global_position
 
 	attack_started.emit(origin, Vector2(facing_direction, 0.0))
+	return true
+
+func restore_health(amount: int) -> int:
+	if amount <= 0 or health >= max_health:
+		return 0
+	var restored := mini(amount, max_health - health)
+	health += restored
+	resources_changed.emit(health, max_health, mana, max_mana)
+	return restored
+
+func restore_mana(amount: int) -> int:
+	if amount <= 0 or mana >= max_mana:
+		return 0
+	var restored := mini(amount, max_mana - mana)
+	mana += restored
+	resources_changed.emit(health, max_health, mana, max_mana)
+	return restored
+
+func take_damage(amount: int) -> int:
+	var applied := mini(maxi(0, amount), health)
+	health -= applied
+	resources_changed.emit(health, max_health, mana, max_mana)
+	return applied
+
+func spend_mana(amount: int) -> bool:
+	var cost := maxi(0, amount)
+	if mana < cost:
+		return false
+	mana -= cost
+	resources_changed.emit(health, max_health, mana, max_mana)
 	return true
 
 func _tick_attack_cooldown(delta: float) -> void:

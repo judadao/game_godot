@@ -31,7 +31,8 @@ var _closing_ui: Dictionary = {}
 var _interaction_candidates: Array[Node] = []
 var wallet_gold: int = 250
 var player_inventory: Dictionary = {
-	"potion": 2,
+	"hp_potion": 2,
+	"mp_potion": 2,
 	"travel_bread": 3,
 }
 var _merchant_catalogs: Dictionary = {}
@@ -61,7 +62,13 @@ func _input(event: InputEvent) -> void:
 		return
 
 	if event.is_action_pressed("inventory"):
-		toggle_ui("InventoryUI", inventory_scene)
+		_toggle_inventory()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("use_hp_potion"):
+		_use_potion("hp_potion")
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("use_mp_potion"):
+		_use_potion("mp_potion")
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
 		open_ui("PauseMenu", pause_menu_scene, true)
@@ -111,6 +118,9 @@ func load_hud() -> void:
 			hud.connect("interaction_prompt_accepted", _try_interact)
 		_update_hud_area_name()
 		_update_hud_player_identity()
+		_update_hud_resources()
+		_update_hud_consumables()
+		hud.call("set_currency", wallet_gold)
 	else:
 		push_error("HUD scene root must be a Control.")
 		hud_instance.queue_free()
@@ -143,6 +153,27 @@ func _update_hud_player_identity() -> void:
 		hud.call("set_player_class", String(player_class))
 	if player_experience != null and experience_required != null and hud.has_method("set_experience"):
 		hud.call("set_experience", int(player_experience), int(experience_required))
+
+
+func _update_hud_resources(
+	_health: int = -1,
+	_max_health: int = -1,
+	_mana: int = -1,
+	_max_mana: int = -1
+) -> void:
+	if hud == null or player == null:
+		return
+	hud.call("set_health", int(player.get("health")), int(player.get("max_health")))
+	hud.call("set_mana", int(player.get("mana")), int(player.get("max_mana")))
+
+
+func _update_hud_consumables() -> void:
+	if hud != null and hud.has_method("set_potion_counts"):
+		hud.call(
+			"set_potion_counts",
+			int(player_inventory.get("hp_potion", 0)),
+			int(player_inventory.get("mp_potion", 0))
+		)
 
 
 func open_ui(ui_name: String, ui_scene: PackedScene, pause_game: bool = false) -> Control:
@@ -241,6 +272,12 @@ func _register_player(spawn_name: StringName) -> void:
 		(player as Node2D).global_position = (spawn as Node2D).global_position
 
 	_update_player_input_state()
+	if player.has_signal("resources_changed") and not player.is_connected(
+		"resources_changed",
+		_update_hud_resources
+	):
+		player.connect("resources_changed", _update_hud_resources)
+	_update_hud_resources()
 	player_registered.emit(player)
 
 
@@ -321,7 +358,78 @@ func _connect_if_present(node: Node, signal_name: StringName, method_name: Strin
 
 
 func _open_inventory_from_pause() -> void:
-	open_ui("InventoryUI", inventory_scene)
+	_open_inventory()
+
+
+func _toggle_inventory() -> void:
+	var existing := get_open_ui("InventoryUI")
+	if existing != null:
+		close_ui(existing)
+	else:
+		_open_inventory()
+
+
+func _open_inventory() -> void:
+	var inventory_ui := open_ui("InventoryUI", inventory_scene)
+	if inventory_ui == null:
+		return
+	inventory_ui.call("set_gold", wallet_gold)
+	inventory_ui.call("set_items", _inventory_projection())
+
+
+func _inventory_projection() -> Array[Dictionary]:
+	var definitions := {
+		"hp_potion": {"name": "Health Potion", "description": "Restores 35 HP.", "category": "items", "stats": "E to use\nRestore: 35 HP"},
+		"mp_potion": {"name": "Mana Potion", "description": "Restores 25 MP.", "category": "items", "stats": "R to use\nRestore: 25 MP"},
+		"travel_bread": {"name": "Travel Bread", "description": "Simple food for long roads.", "category": "items", "stats": "A basic provision."},
+		"town_map": {"name": "Town Map", "description": "Marks roads around town.", "category": "quest", "stats": "Quest item"},
+		"iron_sword": {"name": "Iron Sword", "description": "A reliable starter blade.", "category": "gear", "stats": "Attack +8"},
+		"guard_boots": {"name": "Guard Boots", "description": "Light boots for long roads.", "category": "gear", "stats": "Defense +2"},
+	}
+	var projection: Array[Dictionary] = []
+	for item_id in player_inventory.keys():
+		var count := int(player_inventory[item_id])
+		if count <= 0:
+			continue
+		var fallback := {"name": String(item_id).capitalize(), "description": "", "category": "items", "stats": ""}
+		var item := (definitions.get(String(item_id), fallback) as Dictionary).duplicate(true)
+		item["id"] = String(item_id)
+		item["quantity"] = count
+		projection.append(item)
+	return projection
+
+
+func _use_potion(item_id: String) -> bool:
+	var count := int(player_inventory.get(item_id, 0))
+	if count <= 0:
+		_show_potion_feedback("No potion remaining.", false)
+		return false
+	if player == null:
+		return false
+
+	var restored := 0
+	var resource_name := ""
+	if item_id == "hp_potion":
+		restored = int(player.call("restore_health", 35))
+		resource_name = "HP"
+	elif item_id == "mp_potion":
+		restored = int(player.call("restore_mana", 25))
+		resource_name = "MP"
+	else:
+		return false
+	if restored <= 0:
+		_show_potion_feedback("%s is already full." % resource_name, false)
+		return false
+
+	player_inventory[item_id] = count - 1
+	_update_hud_consumables()
+	_show_potion_feedback("Restored %d %s." % [restored, resource_name], true)
+	return true
+
+
+func _show_potion_feedback(message: String, successful: bool) -> void:
+	if hud != null and hud.has_method("show_potion_feedback"):
+		hud.call("show_potion_feedback", message, successful)
 
 
 func _save_quick_slot(menu: Control) -> void:
@@ -394,7 +502,10 @@ func _build_quick_save_payload() -> Dictionary:
 		if player is Node2D:
 			var position := (player as Node2D).global_position
 			player_payload["position"] = {"x": position.x, "y": position.y}
-		for property_name in ["level", "character_class", "experience", "experience_to_next_level"]:
+		for property_name in [
+			"level", "character_class", "experience", "experience_to_next_level",
+			"health", "max_health", "mana", "max_mana",
+		]:
 			var value: Variant = player.get(property_name)
 			if value != null:
 				player_payload[property_name] = value
@@ -415,6 +526,11 @@ func _apply_quick_save_payload(payload: Dictionary) -> void:
 	var saved_inventory: Variant = payload.get("inventory", {})
 	if saved_inventory is Dictionary:
 		player_inventory = (saved_inventory as Dictionary).duplicate(true)
+		if player_inventory.has("potion") and not player_inventory.has("hp_potion"):
+			player_inventory["hp_potion"] = int(player_inventory["potion"])
+			player_inventory.erase("potion")
+		if not player_inventory.has("mp_potion"):
+			player_inventory["mp_potion"] = 0
 	var saved_catalogs: Variant = payload.get("merchant_catalogs", {})
 	if saved_catalogs is Dictionary:
 		_merchant_catalogs.clear()
@@ -431,7 +547,10 @@ func _apply_quick_save_payload(payload: Dictionary) -> void:
 	if player == null:
 		return
 	var player_payload := payload.get("player", {}) as Dictionary
-	for property_name in ["level", "character_class", "experience", "experience_to_next_level"]:
+	for property_name in [
+		"level", "character_class", "experience", "experience_to_next_level",
+		"health", "max_health", "mana", "max_mana",
+	]:
 		if player_payload.has(property_name):
 			player.set(property_name, player_payload[property_name])
 	var position_payload := player_payload.get("position", {}) as Dictionary
@@ -441,6 +560,8 @@ func _apply_quick_save_payload(payload: Dictionary) -> void:
 			float(position_payload["y"])
 		)
 	_update_hud_player_identity()
+	_update_hud_resources()
+	_update_hud_consumables()
 
 
 func _set_menu_footer(menu: Control, text: String) -> void:
@@ -628,7 +749,8 @@ func _shop_items_for(shop_id: StringName) -> Array[Dictionary]:
 		]
 
 	return [
-		{"id": "potion", "name": "Potion", "price": 25, "sell_price": 12, "description": "Restores a small amount of health.", "stock": 8},
+		{"id": "hp_potion", "name": "Health Potion", "price": 25, "sell_price": 12, "description": "Restores 35 HP.", "stock": 8},
+		{"id": "mp_potion", "name": "Mana Potion", "price": 30, "sell_price": 15, "description": "Restores 25 MP.", "stock": 8},
 		{"id": "travel_bread", "name": "Travel Bread", "price": 12, "sell_price": 6, "description": "Simple food for the road.", "stock": 12},
 		{"id": "town_map", "name": "Town Map", "price": 45, "sell_price": 22, "description": "Marks roads around the prototype town.", "stock": 1},
 	]
@@ -717,5 +839,6 @@ func _on_shop_transaction_confirmed(
 
 	if hud != null and hud.has_method("set_currency"):
 		hud.call("set_currency", wallet_gold)
+	_update_hud_consumables()
 	_refresh_shop_projection(ui_control, shop_id, mode)
 	ui_control.call("set_transaction_feedback", message, success)
