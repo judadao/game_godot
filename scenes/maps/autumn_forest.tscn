@@ -1,290 +1,367 @@
-[gd_scene format=3]
+[gd_scene load_steps=49 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Background/Autumn_Forest_2D_Platformer_Tileset_Background - Layer 00.png" id="1_background_far"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Background/Autumn_Forest_2D_Platformer_Tileset_Background - Layer 01.png" id="2_background_near"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Tree 01.png" id="3_tree_one"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Tree 02.png" id="4_tree_two"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Bush 01.png" id="5_bush_one"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Bush 03.png" id="6_bush_three"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Rock 03.png" id="7_rock"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Signpost 01.png" id="8_signpost"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Fire.png" id="9_fire"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Ground 01.png" id="10_ground"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Ground 04.png" id="11_ground_cap"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Bridge Part 01.png" id="12_bridge"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Collectable Object/Autumn_Forest_2D_Platformer_Tileset_Collectable Object - Coin 01.png" id="13_coin_one"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Collectable Object/Autumn_Forest_2D_Platformer_Tileset_Collectable Object - Coin 03.png" id="14_coin_three"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Collectable Object/Autumn_Forest_2D_Platformer_Tileset_Collectable Object - Crystal.png" id="15_crystal"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Collectable Object/Autumn_Forest_2D_Platformer_Tileset_Collectable Object - Unlocked Golden Treasure Box.png" id="16_treasure"]
-[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="17_player_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="18_portal_scene"]
-[ext_resource type="PackedScene" path="res://scenes/monsters/AutumnSlime.tscn" id="19_slime"]
-[ext_resource type="Script" path="res://scripts/combat/combat_zone.gd" id="20_combat_zone"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Background/Autumn_Forest_2D_Platformer_Tileset_Background - Layer 00.png" id="1_far"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Background/Autumn_Forest_2D_Platformer_Tileset_Background - Layer 01.png" id="2_near"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Tree 01.png" id="3_tree_a"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Tree 02.png" id="4_tree_b"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Bush 01.png" id="5_bush_a"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Bush 02.png" id="6_bush_b"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Bush 03.png" id="7_bush_c"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Rock 03.png" id="8_rock_a"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Rock 06.png" id="9_rock_b"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - House.png" id="10_house"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Fence 01.png" id="11_fence"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Signpost 01.png" id="12_sign"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Environment/Autumn_Forest_2D_Platformer_Tileset_Environment - Fire.png" id="13_fire"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Ground 01.png" id="14_ground"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Ground 04.png" id="15_platform"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Ground Additional 03.png" id="16_ground_detail"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Bridge Part 01.png" id="17_bridge"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Wooden Box.png" id="18_box"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Wooden Barrel.png" id="19_barrel"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Collectable Object/Autumn_Forest_2D_Platformer_Tileset_Collectable Object - Coin 01.png" id="20_coin"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Collectable Object/Autumn_Forest_2D_Platformer_Tileset_Collectable Object - Crystal.png" id="21_crystal"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Collectable Object/Autumn_Forest_2D_Platformer_Tileset_Collectable Object - Unlocked Golden Treasure Box.png" id="22_chest"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="23_player"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="24_portal"]
+[ext_resource type="PackedScene" path="res://scenes/monsters/AutumnSlime.tscn" id="25_slime"]
+[ext_resource type="Script" path="res://scripts/combat/combat_zone.gd" id="26_zone"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_forest_background.png" id="27_new_background"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_ground_atlas.png" id="28_new_ground"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_trees_atlas.png" id="29_new_trees"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_props_atlas.png" id="30_new_props"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
-size = Vector2(2800, 64)
+[sub_resource type="AtlasTexture" id="atlas_ground"]
+atlas = ExtResource("28_new_ground")
+region = Rect2(14, 320, 996, 174)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+[sub_resource type="AtlasTexture" id="atlas_platform"]
+atlas = ExtResource("28_new_ground")
+region = Rect2(24, 684, 506, 198)
+
+[sub_resource type="AtlasTexture" id="atlas_bridge"]
+atlas = ExtResource("28_new_ground")
+region = Rect2(552, 704, 438, 178)
+
+[sub_resource type="AtlasTexture" id="atlas_stairs"]
+atlas = ExtResource("28_new_ground")
+region = Rect2(314, 1018, 380, 246)
+
+[sub_resource type="AtlasTexture" id="atlas_oak"]
+atlas = ExtResource("29_new_trees")
+region = Rect2(34, 122, 650, 632)
+
+[sub_resource type="AtlasTexture" id="atlas_maple"]
+atlas = ExtResource("29_new_trees")
+region = Rect2(700, 64, 260, 690)
+
+[sub_resource type="AtlasTexture" id="atlas_amber_tree"]
+atlas = ExtResource("29_new_trees")
+region = Rect2(964, 166, 370, 590)
+
+[sub_resource type="AtlasTexture" id="atlas_bushes"]
+atlas = ExtResource("29_new_trees")
+region = Rect2(1290, 494, 474, 270)
+
+[sub_resource type="AtlasTexture" id="atlas_cabin"]
+atlas = ExtResource("30_new_props")
+region = Rect2(62, 114, 492, 370)
+
+[sub_resource type="AtlasTexture" id="atlas_sign"]
+atlas = ExtResource("30_new_props")
+region = Rect2(588, 140, 242, 342)
+
+[sub_resource type="AtlasTexture" id="atlas_fence"]
+atlas = ExtResource("30_new_props")
+region = Rect2(850, 270, 326, 214)
+
+[sub_resource type="AtlasTexture" id="atlas_fire"]
+atlas = ExtResource("30_new_props")
+region = Rect2(1200, 296, 302, 190)
+
+[sub_resource type="AtlasTexture" id="atlas_crates"]
+atlas = ExtResource("30_new_props")
+region = Rect2(94, 584, 320, 324)
+
+[sub_resource type="AtlasTexture" id="atlas_barrel"]
+atlas = ExtResource("30_new_props")
+region = Rect2(492, 628, 230, 286)
+
+[sub_resource type="AtlasTexture" id="atlas_rocks"]
+atlas = ExtResource("30_new_props")
+region = Rect2(778, 638, 362, 280)
+
+[sub_resource type="AtlasTexture" id="atlas_lantern"]
+atlas = ExtResource("30_new_props")
+region = Rect2(1220, 532, 260, 390)
+
+[sub_resource type="RectangleShape2D" id="floor_shape"]
+size = Vector2(2680, 60)
+
+[sub_resource type="RectangleShape2D" id="wall_shape"]
 size = Vector2(48, 520)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_trigger"]
-size = Vector2(760, 300)
+[sub_resource type="RectangleShape2D" id="platform_shape"]
+size = Vector2(210, 18)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_gate"]
-size = Vector2(36, 300)
+[sub_resource type="RectangleShape2D" id="bridge_shape"]
+size = Vector2(250, 24)
+
+[sub_resource type="RectangleShape2D" id="trigger_shape"]
+size = Vector2(700, 320)
+
+[sub_resource type="RectangleShape2D" id="gate_shape"]
+size = Vector2(34, 320)
 
 [node name="AutumnForest" type="Node2D"]
 
+[node name="SkyBackdrop" type="ColorRect" parent="."]
+offset_right = 2600.0
+offset_bottom = 720.0
+color = Color(0.17, 0.105, 0.075, 1)
+mouse_filter = 2
+
 [node name="Background" type="Node2D" parent="."]
 
-[node name="FarCanopyWest" type="Sprite2D" parent="Background"]
-position = Vector2(667, 375)
-texture = ExtResource("1_background_far")
+[node name="AutumnPanorama" type="Sprite2D" parent="Background"]
+position = Vector2(1300, 362)
+scale = Vector2(1.2, 1)
+texture = ExtResource("27_new_background")
 
-[node name="FarCanopyEast" type="Sprite2D" parent="Background"]
-position = Vector2(2001, 375)
-texture = ExtResource("1_background_far")
+[node name="RearSilhouettes" type="Node2D" parent="."]
+modulate = Color(0.55, 0.42, 0.3, 0.72)
 
-[node name="NearCanopyWest" type="Sprite2D" parent="Background"]
-position = Vector2(667, 375)
-texture = ExtResource("2_background_near")
+[node name="RearTree01" type="Sprite2D" parent="RearSilhouettes"]
+position = Vector2(360, 490)
+scale = Vector2(0.62, 0.62)
+texture = SubResource("atlas_oak")
 
-[node name="NearCanopyEast" type="Sprite2D" parent="Background"]
-position = Vector2(2001, 375)
-texture = ExtResource("2_background_near")
+[node name="RearTree02" type="Sprite2D" parent="RearSilhouettes"]
+position = Vector2(770, 475)
+scale = Vector2(0.62, 0.62)
+texture = SubResource("atlas_maple")
+
+[node name="RearTree03" type="Sprite2D" parent="RearSilhouettes"]
+position = Vector2(1390, 485)
+scale = Vector2(0.58, 0.58)
+texture = SubResource("atlas_amber_tree")
+
+[node name="RearTree04" type="Sprite2D" parent="RearSilhouettes"]
+position = Vector2(1980, 480)
+scale = Vector2(0.62, 0.62)
+texture = SubResource("atlas_maple")
+
+[node name="RearTree05" type="Sprite2D" parent="RearSilhouettes"]
+position = Vector2(2380, 490)
+scale = Vector2(0.62, 0.62)
+texture = SubResource("atlas_oak")
+
+[node name="Architecture" type="Node2D" parent="."]
+
+[node name="RangerHouse" type="Sprite2D" parent="Architecture"]
+position = Vector2(275, 500)
+scale = Vector2(0.66, 0.66)
+texture = SubResource("atlas_cabin")
+
+[node name="WestFence" type="Sprite2D" parent="Architecture"]
+position = Vector2(520, 574)
+scale = Vector2(0.54, 0.54)
+texture = SubResource("atlas_fence")
+
+[node name="EastFence" type="Sprite2D" parent="Architecture"]
+position = Vector2(2220, 574)
+scale = Vector2(0.54, 0.54)
+texture = SubResource("atlas_fence")
 
 [node name="Ground" type="Node2D" parent="."]
 
-[node name="Ground01" type="Sprite2D" parent="Ground"]
-position = Vector2(64, 660)
-texture = ExtResource("10_ground")
+[node name="BaseTiles" type="Node2D" parent="Ground"]
 
-[node name="Ground02" type="Sprite2D" parent="Ground"]
-position = Vector2(192, 660)
-texture = ExtResource("10_ground")
+[node name="GroundWest" type="Sprite2D" parent="Ground/BaseTiles"]
+position = Vector2(440, 680)
+scale = Vector2(0.9, 0.9)
+texture = SubResource("atlas_ground")
 
-[node name="Ground03" type="Sprite2D" parent="Ground"]
-position = Vector2(320, 660)
-texture = ExtResource("10_ground")
+[node name="GroundCenter" type="Sprite2D" parent="Ground/BaseTiles"]
+position = Vector2(1300, 680)
+scale = Vector2(0.9, 0.9)
+texture = SubResource("atlas_ground")
 
-[node name="Ground04" type="Sprite2D" parent="Ground"]
-position = Vector2(448, 660)
-texture = ExtResource("10_ground")
+[node name="GroundEast" type="Sprite2D" parent="Ground/BaseTiles"]
+position = Vector2(2160, 680)
+scale = Vector2(0.9, 0.9)
+texture = SubResource("atlas_ground")
 
-[node name="Ground05" type="Sprite2D" parent="Ground"]
-position = Vector2(576, 660)
-texture = ExtResource("10_ground")
+[node name="Platforms" type="Node2D" parent="."]
 
-[node name="Ground06" type="Sprite2D" parent="Ground"]
-position = Vector2(704, 660)
-texture = ExtResource("10_ground")
+[node name="WestLow" type="Sprite2D" parent="Platforms"]
+position = Vector2(570, 604)
+scale = Vector2(0.44, 0.44)
+texture = SubResource("atlas_platform")
 
-[node name="Ground07" type="Sprite2D" parent="Ground"]
-position = Vector2(832, 660)
-texture = ExtResource("10_ground")
+[node name="WestHigh" type="Sprite2D" parent="Platforms"]
+position = Vector2(820, 534)
+scale = Vector2(0.44, 0.44)
+texture = SubResource("atlas_platform")
 
-[node name="Ground08" type="Sprite2D" parent="Ground"]
-position = Vector2(960, 660)
-texture = ExtResource("10_ground")
+[node name="ArenaLow" type="Sprite2D" parent="Platforms"]
+position = Vector2(1070, 594)
+scale = Vector2(0.44, 0.44)
+texture = SubResource("atlas_platform")
 
-[node name="Ground09" type="Sprite2D" parent="Ground"]
-position = Vector2(1088, 660)
-texture = ExtResource("10_ground")
+[node name="ArenaHigh" type="Sprite2D" parent="Platforms"]
+position = Vector2(1320, 519)
+scale = Vector2(0.44, 0.44)
+texture = SubResource("atlas_platform")
 
-[node name="Ground10" type="Sprite2D" parent="Ground"]
-position = Vector2(1216, 660)
-texture = ExtResource("10_ground")
+[node name="EastMid" type="Sprite2D" parent="Platforms"]
+position = Vector2(1570, 587)
+scale = Vector2(0.44, 0.44)
+texture = SubResource("atlas_platform")
 
-[node name="Ground11" type="Sprite2D" parent="Ground"]
-position = Vector2(1344, 660)
-texture = ExtResource("10_ground")
+[node name="EastBridge" type="Sprite2D" parent="Platforms"]
+position = Vector2(1890, 596)
+scale = Vector2(0.59, 0.59)
+texture = SubResource("atlas_bridge")
 
-[node name="Ground12" type="Sprite2D" parent="Ground"]
-position = Vector2(1472, 660)
-texture = ExtResource("10_ground")
+[node name="EastSteps" type="Sprite2D" parent="Platforms"]
+position = Vector2(2180, 555)
+scale = Vector2(0.42, 0.42)
+texture = SubResource("atlas_stairs")
 
-[node name="Ground13" type="Sprite2D" parent="Ground"]
-position = Vector2(1600, 660)
-texture = ExtResource("10_ground")
+[node name="SetDressing" type="Node2D" parent="."]
 
-[node name="Ground14" type="Sprite2D" parent="Ground"]
-position = Vector2(1728, 660)
-texture = ExtResource("10_ground")
+[node name="WestSign" type="Sprite2D" parent="SetDressing"]
+position = Vector2(610, 520)
+scale = Vector2(0.42, 0.42)
+texture = SubResource("atlas_sign")
 
-[node name="Ground15" type="Sprite2D" parent="Ground"]
-position = Vector2(1856, 660)
-texture = ExtResource("10_ground")
+[node name="Campfire" type="Sprite2D" parent="SetDressing"]
+position = Vector2(895, 590)
+scale = Vector2(0.48, 0.48)
+texture = SubResource("atlas_fire")
 
-[node name="Ground16" type="Sprite2D" parent="Ground"]
-position = Vector2(1984, 660)
-texture = ExtResource("10_ground")
+[node name="CrateStack" type="Sprite2D" parent="SetDressing"]
+position = Vector2(2070, 554)
+scale = Vector2(0.36, 0.36)
+texture = SubResource("atlas_crates")
 
-[node name="Ground17" type="Sprite2D" parent="Ground"]
-position = Vector2(2112, 660)
-texture = ExtResource("10_ground")
+[node name="Barrel" type="Sprite2D" parent="SetDressing"]
+position = Vector2(2135, 578)
+scale = Vector2(0.35, 0.35)
+texture = SubResource("atlas_barrel")
 
-[node name="Ground18" type="Sprite2D" parent="Ground"]
-position = Vector2(2240, 660)
-texture = ExtResource("10_ground")
+[node name="RockWest" type="Sprite2D" parent="SetDressing"]
+position = Vector2(1020, 589)
+scale = Vector2(0.34, 0.34)
+texture = SubResource("atlas_rocks")
 
-[node name="Ground19" type="Sprite2D" parent="Ground"]
-position = Vector2(2368, 660)
-texture = ExtResource("10_ground")
+[node name="RockEast" type="Sprite2D" parent="SetDressing"]
+position = Vector2(2160, 589)
+scale = Vector2(0.34, 0.34)
+texture = SubResource("atlas_rocks")
 
-[node name="Ground20" type="Sprite2D" parent="Ground"]
-position = Vector2(2496, 660)
-texture = ExtResource("10_ground")
+[node name="ForestLantern" type="Sprite2D" parent="SetDressing"]
+position = Vector2(2310, 528)
+scale = Vector2(0.36, 0.36)
+texture = SubResource("atlas_lantern")
 
-[node name="Ground21" type="Sprite2D" parent="Ground"]
-position = Vector2(2624, 660)
-texture = ExtResource("10_ground")
+[node name="BushWest" type="Sprite2D" parent="SetDressing"]
+position = Vector2(500, 590)
+scale = Vector2(0.42, 0.42)
+texture = SubResource("atlas_bushes")
 
-[node name="Landmarks" type="Node2D" parent="."]
+[node name="BushArena" type="Sprite2D" parent="SetDressing"]
+position = Vector2(1080, 595)
+scale = Vector2(0.38, 0.38)
+texture = SubResource("atlas_bushes")
 
-[node name="WestTree" type="Sprite2D" parent="Landmarks"]
-position = Vector2(172, 524)
-texture = ExtResource("4_tree_two")
-
-[node name="WestBush" type="Sprite2D" parent="Landmarks"]
-position = Vector2(396, 620)
-texture = ExtResource("5_bush_one")
-
-[node name="MossyRock" type="Sprite2D" parent="Landmarks"]
-position = Vector2(614, 626)
-texture = ExtResource("7_rock")
-
-[node name="CenterTree" type="Sprite2D" parent="Landmarks"]
-position = Vector2(1014, 554)
-texture = ExtResource("3_tree_one")
-
-[node name="CenterBush" type="Sprite2D" parent="Landmarks"]
-position = Vector2(1280, 620)
-texture = ExtResource("6_bush_three")
-
-[node name="EastTree" type="Sprite2D" parent="Landmarks"]
-position = Vector2(1770, 522)
-texture = ExtResource("4_tree_two")
-
-[node name="EastBush" type="Sprite2D" parent="Landmarks"]
-position = Vector2(2020, 620)
-texture = ExtResource("5_bush_one")
-
-[node name="PortalTree" type="Sprite2D" parent="Landmarks"]
-position = Vector2(2440, 552)
-texture = ExtResource("3_tree_one")
-
-[node name="RaisedPlatforms" type="Node2D" parent="."]
-
-[node name="PlatformOneA" type="Sprite2D" parent="RaisedPlatforms"]
-position = Vector2(730, 492)
-texture = ExtResource("11_ground_cap")
-
-[node name="PlatformOneB" type="Sprite2D" parent="RaisedPlatforms"]
-position = Vector2(858, 492)
-texture = ExtResource("11_ground_cap")
-
-[node name="PlatformTwoA" type="Sprite2D" parent="RaisedPlatforms"]
-position = Vector2(1400, 432)
-texture = ExtResource("11_ground_cap")
-
-[node name="PlatformTwoB" type="Sprite2D" parent="RaisedPlatforms"]
-position = Vector2(1528, 432)
-texture = ExtResource("11_ground_cap")
-
-[node name="BridgeA" type="Sprite2D" parent="RaisedPlatforms"]
-position = Vector2(1860, 520)
-texture = ExtResource("12_bridge")
-
-[node name="BridgeB" type="Sprite2D" parent="RaisedPlatforms"]
-position = Vector2(1924, 520)
-texture = ExtResource("12_bridge")
-
-[node name="BridgeC" type="Sprite2D" parent="RaisedPlatforms"]
-position = Vector2(1988, 520)
-texture = ExtResource("12_bridge")
-
-[node name="Collectibles" type="Node2D" parent="."]
-
-[node name="CoinOne" type="Sprite2D" parent="Collectibles"]
-position = Vector2(692, 410)
-scale = Vector2(0.45, 0.45)
-texture = ExtResource("13_coin_one")
-
-[node name="CoinTwo" type="Sprite2D" parent="Collectibles"]
-position = Vector2(790, 410)
-scale = Vector2(0.45, 0.45)
-texture = ExtResource("14_coin_three")
-
-[node name="CoinThree" type="Sprite2D" parent="Collectibles"]
-position = Vector2(888, 410)
-scale = Vector2(0.45, 0.45)
-texture = ExtResource("13_coin_one")
-
-[node name="Crystal" type="Sprite2D" parent="Collectibles"]
-position = Vector2(1464, 354)
-scale = Vector2(0.5, 0.5)
-texture = ExtResource("15_crystal")
-
-[node name="Treasure" type="Sprite2D" parent="Collectibles"]
-position = Vector2(2050, 586)
-scale = Vector2(0.65, 0.65)
-texture = ExtResource("16_treasure")
+[node name="BushEast" type="Sprite2D" parent="SetDressing"]
+position = Vector2(2280, 592)
+scale = Vector2(0.4, 0.4)
+texture = SubResource("atlas_bushes")
 
 [node name="PlayerSpawn" type="Marker2D" parent="."]
-position = Vector2(230, 576)
+position = Vector2(310, 576)
 
-[node name="Player" parent="." instance=ExtResource("17_player_scene")]
-position = Vector2(230, 576)
+[node name="Player" parent="." instance=ExtResource("23_player")]
+position = Vector2(310, 576)
 
 [node name="ForestCombatZone" type="Node2D" parent="." groups=["CombatZones"]]
-script = ExtResource("20_combat_zone")
+script = ExtResource("26_zone")
 
 [node name="Trigger" type="Area2D" parent="ForestCombatZone"]
-position = Vector2(1350, 500)
+position = Vector2(1350, 495)
 collision_layer = 0
 collision_mask = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ForestCombatZone/Trigger"]
-shape = SubResource("RectangleShape2D_trigger")
-
-[node name="Barriers" type="StaticBody2D" parent="ForestCombatZone"]
-
-[node name="LeftGate" type="CollisionShape2D" parent="ForestCombatZone/Barriers"]
-position = Vector2(940, 500)
-shape = SubResource("RectangleShape2D_gate")
-
-[node name="RightGate" type="CollisionShape2D" parent="ForestCombatZone/Barriers"]
-position = Vector2(1760, 500)
-shape = SubResource("RectangleShape2D_gate")
+shape = SubResource("trigger_shape")
 
 [node name="Enemies" type="Node2D" parent="ForestCombatZone"]
 
-[node name="SlimeWest" parent="ForestCombatZone/Enemies" instance=ExtResource("19_slime")]
-position = Vector2(1200, 628)
+[node name="SlimeWest" parent="ForestCombatZone/Enemies" instance=ExtResource("25_slime")]
+position = Vector2(1190, 628)
 
-[node name="SlimeEast" parent="ForestCombatZone/Enemies" instance=ExtResource("19_slime")]
-position = Vector2(1570, 628)
+[node name="SlimeEast" parent="ForestCombatZone/Enemies" instance=ExtResource("25_slime")]
+position = Vector2(1530, 628)
 max_health = 55
 attack_damage = 15
 
 [node name="WorldCollision" type="StaticBody2D" parent="."]
 
 [node name="FloorCollision" type="CollisionShape2D" parent="WorldCollision"]
-position = Vector2(1238, 661)
-shape = SubResource("RectangleShape2D_floor")
+position = Vector2(1300, 661)
+shape = SubResource("floor_shape")
 
 [node name="LeftWall" type="CollisionShape2D" parent="WorldCollision"]
 position = Vector2(-24, 420)
-shape = SubResource("RectangleShape2D_wall")
+shape = SubResource("wall_shape")
 
 [node name="RightWall" type="CollisionShape2D" parent="WorldCollision"]
 position = Vector2(2624, 420)
-shape = SubResource("RectangleShape2D_wall")
+shape = SubResource("wall_shape")
 
-[node name="TownPortal" parent="." instance=ExtResource("18_portal_scene")]
-position = Vector2(2310, 585)
+[node name="WestLowCollision" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(570, 569)
+shape = SubResource("platform_shape")
+one_way_collision = true
+one_way_collision_margin = 12.0
+
+[node name="WestHighCollision" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(820, 499)
+shape = SubResource("platform_shape")
+one_way_collision = true
+one_way_collision_margin = 12.0
+
+[node name="ArenaLowCollision" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(1070, 559)
+shape = SubResource("platform_shape")
+one_way_collision = true
+one_way_collision_margin = 12.0
+
+[node name="ArenaHighCollision" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(1320, 484)
+shape = SubResource("platform_shape")
+one_way_collision = true
+one_way_collision_margin = 12.0
+
+[node name="EastMidCollision" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(1570, 552)
+shape = SubResource("platform_shape")
+one_way_collision = true
+one_way_collision_margin = 12.0
+
+[node name="EastBridgeCollision" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(1890, 555)
+shape = SubResource("bridge_shape")
+one_way_collision = true
+one_way_collision_margin = 12.0
+
+[node name="TownPortal" parent="." instance=ExtResource("24_portal")]
+position = Vector2(2390, 584)
 interaction_id = &"autumn_forest_return"
-prompt_text = "Return"
+prompt_text = "Return to Town"
 target_scene_path = "res://scenes/maps/town.tscn"
 target_spawn_name = &"PlayerSpawn"
 
@@ -292,22 +369,23 @@ target_spawn_name = &"PlayerSpawn"
 visible = false
 
 [node name="ReturnSign" type="Sprite2D" parent="TownPortal"]
-position = Vector2(-42, 12)
-texture = ExtResource("8_signpost")
+position = Vector2(-44, 11)
+texture = ExtResource("12_sign")
 
-[node name="Campfire" type="Sprite2D" parent="TownPortal"]
-position = Vector2(38, 18)
-texture = ExtResource("9_fire")
+[node name="PortalFire" type="Sprite2D" parent="TownPortal"]
+position = Vector2(36, 18)
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("13_fire")
 
 [node name="Label" type="Label" parent="TownPortal"]
-offset_left = -72.0
+offset_left = -96.0
 offset_top = -112.0
-offset_right = 112.0
+offset_right = 128.0
 offset_bottom = -76.0
 theme_override_colors/font_color = Color(1, 0.91, 0.55, 1)
 theme_override_colors/font_outline_color = Color(0.19, 0.11, 0.06, 1)
 theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 text = "RETURN TO TOWN"
 horizontal_alignment = 1
 

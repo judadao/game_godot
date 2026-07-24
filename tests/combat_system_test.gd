@@ -18,6 +18,31 @@ func _run() -> void:
 	var slime := map.get_node("ForestCombatZone/Enemies/SlimeWest")
 	_expect(player.is_in_group("Player"), "Player must be discoverable by combat AI.")
 	_expect(zone.get("_remaining") == 2, "Autumn combat zone must start with two enemies.")
+	var floor_collision := map.get_node("WorldCollision/FloorCollision") as CollisionShape2D
+	var west_ledge := map.get_node("WorldCollision/WestLowCollision") as CollisionShape2D
+	var west_high := map.get_node("WorldCollision/WestHighCollision") as CollisionShape2D
+	var arena_low := map.get_node("WorldCollision/ArenaLowCollision") as CollisionShape2D
+	var arena_high := map.get_node("WorldCollision/ArenaHighCollision") as CollisionShape2D
+	var east_mid := map.get_node("WorldCollision/EastMidCollision") as CollisionShape2D
+	var floor_top := floor_collision.position.y - 30.0
+	var west_top := west_ledge.position.y - 12.0
+	var west_high_top := west_high.position.y - 9.0
+	var arena_low_top := arena_low.position.y - 9.0
+	var arena_high_top := arena_high.position.y - 9.0
+	var east_mid_top := east_mid.position.y - 9.0
+	var bridge_ledge := map.get_node("WorldCollision/EastBridgeCollision") as CollisionShape2D
+	var bridge_top := bridge_ledge.position.y - 12.0
+	var maximum_jump_height := pow(float(player.get("jump_velocity")), 2.0) / (2.0 * float(player.get("gravity")))
+	_expect(floor_top - west_top < maximum_jump_height, "First forest platform must be reachable from ground.")
+	_expect(west_top - west_high_top < maximum_jump_height, "West high platform must be reachable from west low.")
+	_expect(floor_top - arena_low_top < maximum_jump_height, "Arena low platform must be reachable from ground.")
+	_expect(arena_low_top - arena_high_top < maximum_jump_height, "Arena high platform must be reachable from arena low.")
+	_expect(floor_top - east_mid_top < maximum_jump_height, "East middle platform must be reachable from ground.")
+	_expect(floor_top - bridge_top < maximum_jump_height, "Bridge platform must be reachable from ground.")
+	_expect(west_ledge.one_way_collision, "First forest platform must allow jumping through from below.")
+	_expect(west_high.one_way_collision and arena_high.one_way_collision, "High platforms must be one-way.")
+	_expect(zone.get_node_or_null("Barriers") == null, "Combat zone must not contain invisible barrier bodies.")
+	_expect(map.get_node_or_null("Collectibles") == null, "Legacy floating collectible art must be removed.")
 
 	var slime_start_health := int(slime.get("health"))
 	var applied := int(slime.call("take_hit", 16, player.global_position, 0.0))

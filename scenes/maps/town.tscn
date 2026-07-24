@@ -68,6 +68,12 @@ metadata/camera_limit_bottom = 724
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=1039936403]
 position = Vector2(220, 576)
 
+[node name="TownEntranceArrival" type="Marker2D" parent="."]
+position = Vector2(480, 576)
+
+[node name="TownTailArrival" type="Marker2D" parent="."]
+position = Vector2(2250, 576)
+
 [node name="Sky" type="Sprite2D" parent="." unique_id=1957591297]
 position = Vector2(1086, 362)
 texture = SubResource("GradientTexture2D_sky")
@@ -222,10 +228,21 @@ interaction_id = &"town_crates"
 
 [node name="Portals" type="Node2D" parent="." unique_id=259814262]
 
+[node name="EntranceFastTravelPortal" parent="Portals" instance=ExtResource("32_portal_scene")]
+position = Vector2(100, 676)
+collision_layer = 0
+interaction_id = &"town_fast_travel_to_tail"
+prompt_text = "Travel to Town East"
+target_scene_path = "res://scenes/maps/town.tscn"
+target_spawn_name = &"TownTailArrival"
+
 [node name="EastRoadPortal" parent="Portals" unique_id=147481501 instance=ExtResource("32_portal_scene")]
 position = Vector2(2532, 676)
-interaction_id = &"town_east_road"
-prompt_text = "Travel"
+collision_layer = 0
+interaction_id = &"town_fast_travel_to_entrance"
+prompt_text = "Travel to Town Entrance"
+target_scene_path = "res://scenes/maps/town.tscn"
+target_spawn_name = &"TownEntranceArrival"
 
 [node name="TownCenterPortal" parent="Portals" unique_id=1992277835 instance=ExtResource("32_portal_scene")]
 position = Vector2(2284, 676)
