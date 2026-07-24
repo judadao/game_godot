@@ -272,6 +272,7 @@ func _register_player(spawn_name: StringName) -> void:
 	if spawn is Node2D and player is Node2D:
 		(player as Node2D).global_position = (spawn as Node2D).global_position
 
+	_configure_player_camera()
 	_update_player_input_state()
 	if player.has_signal("resources_changed") and not player.is_connected(
 		"resources_changed",
@@ -282,6 +283,22 @@ func _register_player(spawn_name: StringName) -> void:
 		player.connect("defeated", _on_player_defeated)
 	_update_hud_resources()
 	player_registered.emit(player)
+
+
+func _configure_player_camera() -> void:
+	if current_map == null or player == null:
+		return
+
+	var camera := player.find_child("Camera2D", true, false) as Camera2D
+	if camera == null:
+		return
+
+	camera.limit_left = int(current_map.get_meta("camera_limit_left", 0))
+	camera.limit_top = int(current_map.get_meta("camera_limit_top", 0))
+	camera.limit_right = int(current_map.get_meta("camera_limit_right", 1280))
+	camera.limit_bottom = int(current_map.get_meta("camera_limit_bottom", 720))
+	camera.position_smoothing_enabled = false
+	camera.reset_smoothing()
 
 
 func _wire_common_ui_controls(ui_control: Control) -> void:

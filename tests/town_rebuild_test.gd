@@ -8,6 +8,10 @@ func _init() -> void:
 
 
 func _run() -> void:
+	_expect(
+		not FileAccess.file_exists("res://scenes/town.tscn"),
+		"Legacy duplicate Town scene must not exist; use scenes/maps/town.tscn."
+	)
 	var packed := load("res://scenes/maps/town.tscn") as PackedScene
 	_expect(packed != null, "Town scene must load.")
 	if packed == null:
