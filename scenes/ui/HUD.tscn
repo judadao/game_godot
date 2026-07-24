@@ -261,14 +261,13 @@ label_settings = SubResource("LabelSettings_small")
 
 [node name="InteractionPanel" type="PanelContainer" parent="." unique_id=1450196303]
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
+anchor_left = 0.5
 anchor_top = 1.0
-anchor_right = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -221.0
+offset_left = -155.0
 offset_top = -94.0
-offset_right = -24.0
+offset_right = 155.0
 offset_bottom = -24.0
 grow_horizontal = 0
 grow_vertical = 0
@@ -279,7 +278,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_prompt")
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 12
-alignment = 2
+alignment = 1
 
 [node name="Keycap" type="PanelContainer" parent="InteractionPanel/PromptRow" unique_id=642903650]
 custom_minimum_size = Vector2(42, 34)
@@ -296,6 +295,7 @@ vertical_alignment = 1
 
 [node name="PromptText" type="Label" parent="InteractionPanel/PromptRow" unique_id=1823477037]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Talk to Mayor"
 label_settings = SubResource("LabelSettings_prompt")
 horizontal_alignment = 1

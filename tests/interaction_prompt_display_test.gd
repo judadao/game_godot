@@ -26,6 +26,7 @@ func _run() -> void:
 		await process_frame
 
 	var prompt_label := game.hud.get_node_or_null("InteractionPanel/PromptRow/PromptText") as Label
+	var prompt_panel := game.hud.get_node_or_null("InteractionPanel") as PanelContainer
 	if prompt_label == null:
 		push_error("HUD prompt label is missing.")
 		failed = true
@@ -35,6 +36,15 @@ func _run() -> void:
 			failed = true
 		if prompt_label.horizontal_alignment != HORIZONTAL_ALIGNMENT_CENTER:
 			push_error("Expected interaction prompt text to be centered.")
+			failed = true
+	if prompt_panel == null:
+		push_error("HUD prompt panel is missing.")
+		failed = true
+	else:
+		var viewport_width := game.get_viewport().get_visible_rect().size.x
+		var panel_center_x := prompt_panel.global_position.x + prompt_panel.size.x * 0.5
+		if absf(panel_center_x - viewport_width * 0.5) > 2.0:
+			push_error("Expected interaction prompt panel centered at %.1f, got %.1f." % [viewport_width * 0.5, panel_center_x])
 			failed = true
 
 	game.queue_free()
