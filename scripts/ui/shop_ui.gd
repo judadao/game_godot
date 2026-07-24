@@ -32,6 +32,7 @@ var items: Array[Dictionary] = []
 var mode: String = "buy"
 var selected_index: int = -1
 var quantity: int = 1
+var wallet_balance: int = 0
 var _row_buttons: Array[Button] = []
 var _row_normal_style: StyleBox
 var _row_selected_style: StyleBox
@@ -43,6 +44,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_cache_rows()
 	_cache_styles()
+	_configure_focus_navigation()
 	buy_button.pressed.connect(func() -> void: set_mode("buy"))
 	sell_button.pressed.connect(func() -> void: set_mode("sell"))
 	minus_button.pressed.connect(func() -> void: set_quantity(quantity - 1))
@@ -52,30 +54,6 @@ func _ready() -> void:
 	_bootstrap_placeholder_items()
 	set_mode(mode)
 	_set_open(false, false)
-
-func _input(event: InputEvent) -> void:
-	if not visible or not event.is_pressed() or event.is_echo() or _row_buttons.is_empty():
-		return
-	var next_index := selected_index
-	if event.is_action_pressed("ui_up"):
-		next_index -= 1
-	elif event.is_action_pressed("ui_down"):
-		next_index += 1
-	elif event.is_action_pressed("ui_left") and quantity > 1:
-		set_quantity(quantity - 1)
-		get_viewport().set_input_as_handled()
-		return
-	elif event.is_action_pressed("ui_right") and selected_index >= 0:
-		set_quantity(quantity + 1)
-		get_viewport().set_input_as_handled()
-		return
-	else:
-		return
-	next_index = clampi(next_index, 0, min(items.size(), _row_buttons.size()) - 1)
-	if next_index >= 0:
-		set_selected_item(next_index)
-		_row_buttons[next_index].grab_focus()
-		get_viewport().set_input_as_handled()
 
 func open() -> void:
 	_set_open(true, true)
@@ -93,11 +71,14 @@ func set_merchant_name(display_name: String) -> void:
 	merchant_name.text = display_name
 
 func set_wallet(amount: int) -> void:
-	gold_balance.text = "Wallet: %s gold" % _format_number(amount)
+	wallet_balance = maxi(0, amount)
+	gold_balance.text = "Wallet: %s gold" % _format_number(wallet_balance)
+	_refresh_details()
 
 func set_mode(new_mode: String) -> void:
 	mode = "sell" if new_mode.to_lower() == "sell" else "buy"
 	item_header.text = "Your Goods" if mode == "sell" else "Merchant Stock"
+	confirm_button.text = "Sell" if mode == "sell" else "Buy"
 	buy_button.add_theme_stylebox_override("normal", _mode_selected_style if mode == "buy" else _mode_normal_style)
 	sell_button.add_theme_stylebox_override("normal", _mode_selected_style if mode == "sell" else _mode_normal_style)
 	mode_changed.emit(mode)
@@ -124,7 +105,8 @@ func set_selected_item(index: int) -> void:
 func set_quantity(new_quantity: int) -> void:
 	var max_quantity := 99
 	if selected_index >= 0 and selected_index < items.size():
-		max_quantity = max(1, int(items[selected_index].get("stock", 99)))
+		var limit_key := "owned_count" if mode == "sell" else "stock"
+		max_quantity = max(1, int(items[selected_index].get(limit_key, 99)))
 	quantity = clampi(new_quantity, 1, max_quantity)
 	quantity_value.text = str(quantity)
 	_refresh_total()
@@ -138,6 +120,7 @@ func _cache_rows() -> void:
 			_row_buttons.append(button)
 			var index := _row_buttons.size() - 1
 			button.pressed.connect(set_selected_item.bind(index))
+			button.focus_entered.connect(_on_row_focused.bind(index))
 
 func _cache_styles() -> void:
 	if _row_buttons.size() > 0:
@@ -146,6 +129,36 @@ func _cache_styles() -> void:
 		_row_normal_style = _row_buttons[1].get_theme_stylebox("normal")
 	_mode_selected_style = buy_button.get_theme_stylebox("normal")
 	_mode_normal_style = sell_button.get_theme_stylebox("normal")
+
+func _configure_focus_navigation() -> void:
+	buy_button.focus_neighbor_right = buy_button.get_path_to(sell_button)
+	sell_button.focus_neighbor_left = sell_button.get_path_to(buy_button)
+	if _row_buttons.is_empty():
+		return
+	buy_button.focus_neighbor_bottom = buy_button.get_path_to(_row_buttons[0])
+	sell_button.focus_neighbor_bottom = sell_button.get_path_to(_row_buttons[0])
+	for index in _row_buttons.size():
+		var row := _row_buttons[index]
+		row.focus_neighbor_top = row.get_path_to(
+			buy_button if index == 0 else _row_buttons[index - 1]
+		)
+		row.focus_neighbor_bottom = row.get_path_to(
+			confirm_button if index == _row_buttons.size() - 1 else _row_buttons[index + 1]
+		)
+		row.focus_neighbor_right = row.get_path_to(minus_button)
+	minus_button.focus_neighbor_left = minus_button.get_path_to(_row_buttons[0])
+	minus_button.focus_neighbor_right = minus_button.get_path_to(plus_button)
+	plus_button.focus_neighbor_left = plus_button.get_path_to(minus_button)
+	minus_button.focus_neighbor_bottom = minus_button.get_path_to(confirm_button)
+	plus_button.focus_neighbor_bottom = plus_button.get_path_to(cancel_button)
+	confirm_button.focus_neighbor_top = confirm_button.get_path_to(minus_button)
+	confirm_button.focus_neighbor_right = confirm_button.get_path_to(cancel_button)
+	cancel_button.focus_neighbor_top = cancel_button.get_path_to(plus_button)
+	cancel_button.focus_neighbor_left = cancel_button.get_path_to(confirm_button)
+
+func _on_row_focused(index: int) -> void:
+	if index < items.size():
+		set_selected_item(index)
 
 func _set_open(is_open: bool, should_emit: bool) -> void:
 	visible = is_open
@@ -191,9 +204,34 @@ func _refresh_rows() -> void:
 		button.disabled = index >= items.size()
 		if index < items.size():
 			var item := items[index]
-			button.text = "%s    %s" % [_item_title(item), _format_number(int(item.get("price", 0)))]
+			var count_text := (
+				"Owned %d" % int(item.get("owned_count", 0))
+				if mode == "sell"
+				else "Stock %d" % int(item.get("stock", 0))
+			)
+			button.text = "%s    %s    %s" % [
+				_item_title(item),
+				count_text,
+				_format_number(_unit_price(item)),
+			]
 			button.tooltip_text = str(item.get("description", ""))
-		button.add_theme_stylebox_override("normal", _row_selected_style if index == selected_index else _row_normal_style)
+			button.add_theme_stylebox_override("normal", _row_selected_style if index == selected_index else _row_normal_style)
+	_configure_active_row_navigation()
+
+func _configure_active_row_navigation() -> void:
+	var active_count := mini(items.size(), _row_buttons.size())
+	if active_count <= 0:
+		return
+	buy_button.focus_neighbor_bottom = buy_button.get_path_to(_row_buttons[0])
+	sell_button.focus_neighbor_bottom = sell_button.get_path_to(_row_buttons[0])
+	for index in active_count:
+		var row := _row_buttons[index]
+		row.focus_neighbor_top = row.get_path_to(
+			buy_button if index == 0 else _row_buttons[index - 1]
+		)
+		row.focus_neighbor_bottom = row.get_path_to(
+			confirm_button if index == active_count - 1 else _row_buttons[index + 1]
+		)
 
 func _refresh_details() -> void:
 	if selected_index < 0 or selected_index >= items.size():
@@ -209,23 +247,32 @@ func _refresh_details() -> void:
 	var item := items[selected_index]
 	minus_button.disabled = false
 	plus_button.disabled = false
-	confirm_button.disabled = false
+	var available := int(item.get("owned_count", 0)) if mode == "sell" else int(item.get("stock", 0))
+	confirm_button.disabled = available <= 0
 	preview_icon.texture = item.get("texture") as Texture2D
 	if preview_icon.texture == null and selected_index < _row_buttons.size():
 		preview_icon.texture = _row_buttons[selected_index].icon
 	item_name.text = _item_title(item)
-	item_description.text = str(item.get("description", ""))
+	item_description.text = "%s\n\n%s: %d" % [
+		str(item.get("description", "")),
+		"Owned" if mode == "sell" else "Stock",
+		available,
+	]
 	set_quantity(quantity)
 
 func _refresh_total() -> void:
 	var price := 0
 	if selected_index >= 0 and selected_index < items.size():
-		price = int(items[selected_index].get("price", 0))
+		price = _unit_price(items[selected_index])
 	currency_amount.text = "%s gold" % _format_number(price * quantity)
 
 func _confirm_selection() -> void:
-	if selected_index >= 0 and selected_index < items.size():
+	if selected_index >= 0 and selected_index < items.size() and not confirm_button.disabled:
 		confirmed.emit(items[selected_index], quantity, mode)
+
+func set_transaction_feedback(message: String, successful: bool) -> void:
+	var prefix := "Success" if successful else "Unable"
+	item_description.text += "\n\n[b]%s:[/b] %s" % [prefix, message]
 
 func _cancel() -> void:
 	canceled.emit()
@@ -233,6 +280,11 @@ func _cancel() -> void:
 
 func _item_title(item: Dictionary) -> String:
 	return str(item.get("name", "Unknown Item"))
+
+func _unit_price(item: Dictionary) -> int:
+	if mode == "sell":
+		return int(item.get("sell_price", maxi(1, int(item.get("price", 0)) / 2)))
+	return int(item.get("price", 0))
 
 func _to_dictionary_array(source: Array) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []

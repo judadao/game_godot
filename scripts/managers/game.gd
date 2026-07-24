@@ -29,6 +29,12 @@ var _ui_names: Dictionary = {}
 var _ui_pause_flags: Dictionary = {}
 var _closing_ui: Dictionary = {}
 var _interaction_candidates: Array[Node] = []
+var wallet_gold: int = 250
+var player_inventory: Dictionary = {
+	"potion": 2,
+	"travel_bread": 3,
+}
+var _merchant_catalogs: Dictionary = {}
 
 
 func _ready() -> void:
@@ -398,10 +404,30 @@ func _build_quick_save_payload() -> Dictionary:
 		"saved_at": Time.get_datetime_string_from_system(true),
 		"map_path": current_map.scene_file_path if current_map != null else "",
 		"player": player_payload,
+		"wallet_gold": wallet_gold,
+		"inventory": player_inventory.duplicate(true),
+		"merchant_catalogs": _merchant_catalogs.duplicate(true),
 	}
 
 
 func _apply_quick_save_payload(payload: Dictionary) -> void:
+	wallet_gold = maxi(0, int(payload.get("wallet_gold", wallet_gold)))
+	var saved_inventory: Variant = payload.get("inventory", {})
+	if saved_inventory is Dictionary:
+		player_inventory = (saved_inventory as Dictionary).duplicate(true)
+	var saved_catalogs: Variant = payload.get("merchant_catalogs", {})
+	if saved_catalogs is Dictionary:
+		_merchant_catalogs.clear()
+		for shop_key in (saved_catalogs as Dictionary).keys():
+			var restored_entries: Array[Dictionary] = []
+			var raw_entries: Variant = (saved_catalogs as Dictionary)[shop_key]
+			if raw_entries is Array:
+				for raw_entry in raw_entries:
+					if raw_entry is Dictionary:
+						restored_entries.append((raw_entry as Dictionary).duplicate(true))
+			_merchant_catalogs[String(shop_key)] = restored_entries
+	if hud != null and hud.has_method("set_currency"):
+		hud.call("set_currency", wallet_gold)
 	if player == null:
 		return
 	var player_payload := payload.get("player", {}) as Dictionary
@@ -531,8 +557,12 @@ func _on_shop_requested(merchant: Node, shop_id: StringName, interactor: Node) -
 	var raw_display_name: Variant = merchant.get("display_name")
 	var display_name := String(raw_display_name) if raw_display_name != null else "Merchant"
 	ui_control.call("set_merchant_name", display_name)
-	ui_control.call("set_wallet", 250)
-	ui_control.call("set_items", _shop_items_for(shop_id))
+	ui_control.call("set_wallet", wallet_gold)
+	if ui_control.has_signal("mode_changed"):
+		ui_control.connect("mode_changed", _on_shop_mode_changed.bind(ui_control, shop_id))
+	if ui_control.has_signal("confirmed"):
+		ui_control.connect("confirmed", _on_shop_transaction_confirmed.bind(ui_control, shop_id))
+	_refresh_shop_projection(ui_control, shop_id, "buy")
 
 
 func _on_portal_entered(_portal: Node, target_scene_path: String, target_spawn_name: StringName, interactor: Node) -> void:
@@ -593,12 +623,99 @@ func _dialogue_text_for(dialogue_id: StringName, display_name: String) -> String
 func _shop_items_for(shop_id: StringName) -> Array[Dictionary]:
 	if shop_id == &"blacksmith":
 		return [
-			{"name": "Iron Sword", "price": 120, "description": "A reliable starter blade.", "stock": 2, "icon": "S"},
-			{"name": "Guard Boots", "price": 85, "description": "Light boots made for long roads.", "stock": 3, "icon": "B"},
+			{"id": "iron_sword", "name": "Iron Sword", "price": 120, "sell_price": 60, "description": "A reliable starter blade.", "stock": 2},
+			{"id": "guard_boots", "name": "Guard Boots", "price": 85, "sell_price": 42, "description": "Light boots made for long roads.", "stock": 3},
 		]
 
 	return [
-		{"name": "Potion", "price": 25, "description": "Restores a small amount of health.", "stock": 8, "icon": "P"},
-		{"name": "Travel Bread", "price": 12, "description": "Simple food for the road.", "stock": 12, "icon": "B"},
-		{"name": "Town Map", "price": 45, "description": "Marks roads around the prototype town.", "stock": 1, "icon": "M"},
+		{"id": "potion", "name": "Potion", "price": 25, "sell_price": 12, "description": "Restores a small amount of health.", "stock": 8},
+		{"id": "travel_bread", "name": "Travel Bread", "price": 12, "sell_price": 6, "description": "Simple food for the road.", "stock": 12},
+		{"id": "town_map", "name": "Town Map", "price": 45, "sell_price": 22, "description": "Marks roads around the prototype town.", "stock": 1},
 	]
+
+
+func _catalog_for_shop(shop_id: StringName) -> Array[Dictionary]:
+	var key := String(shop_id)
+	if not _merchant_catalogs.has(key):
+		_merchant_catalogs[key] = _shop_items_for(shop_id)
+	return _merchant_catalogs[key] as Array[Dictionary]
+
+
+func _on_shop_mode_changed(mode: String, ui_control: Control, shop_id: StringName) -> void:
+	_refresh_shop_projection(ui_control, shop_id, mode)
+
+
+func _refresh_shop_projection(ui_control: Control, shop_id: StringName, mode: String) -> void:
+	if not is_instance_valid(ui_control):
+		return
+	var projection: Array[Dictionary] = []
+	for raw_item in _catalog_for_shop(shop_id):
+		var item := raw_item.duplicate(true)
+		var item_id := String(item.get("id", ""))
+		item["owned_count"] = int(player_inventory.get(item_id, 0))
+		if mode == "sell" and int(item["owned_count"]) <= 0:
+			continue
+		projection.append(item)
+	ui_control.call("set_wallet", wallet_gold)
+	ui_control.call("set_items", projection)
+
+
+func _on_shop_transaction_confirmed(
+	item: Dictionary,
+	quantity: int,
+	mode: String,
+	ui_control: Control,
+	shop_id: StringName
+) -> void:
+	var safe_quantity := maxi(1, quantity)
+	var item_id := String(item.get("id", ""))
+	var catalog := _catalog_for_shop(shop_id)
+	var catalog_item: Dictionary = {}
+	for entry in catalog:
+		if String(entry.get("id", "")) == item_id:
+			catalog_item = entry
+			break
+	if catalog_item.is_empty():
+		ui_control.call("set_transaction_feedback", "This item is unavailable.", false)
+		return
+
+	var success := false
+	var message := ""
+	if mode == "sell":
+		var owned := int(player_inventory.get(item_id, 0))
+		var unit_price := int(catalog_item.get("sell_price", maxi(1, int(catalog_item.get("price", 0)) / 2)))
+		if owned < safe_quantity:
+			message = "You do not own enough of this item."
+		else:
+			player_inventory[item_id] = owned - safe_quantity
+			wallet_gold += unit_price * safe_quantity
+			catalog_item["stock"] = int(catalog_item.get("stock", 0)) + safe_quantity
+			success = true
+			message = "Sold %s x%d for %d gold." % [
+				String(catalog_item.get("name", item_id)),
+				safe_quantity,
+				unit_price * safe_quantity,
+			]
+	else:
+		var stock := int(catalog_item.get("stock", 0))
+		var unit_price := int(catalog_item.get("price", 0))
+		var total := unit_price * safe_quantity
+		if stock < safe_quantity:
+			message = "The merchant does not have enough stock."
+		elif wallet_gold < total:
+			message = "You do not have enough gold."
+		else:
+			wallet_gold -= total
+			catalog_item["stock"] = stock - safe_quantity
+			player_inventory[item_id] = int(player_inventory.get(item_id, 0)) + safe_quantity
+			success = true
+			message = "Bought %s x%d for %d gold." % [
+				String(catalog_item.get("name", item_id)),
+				safe_quantity,
+				total,
+			]
+
+	if hud != null and hud.has_method("set_currency"):
+		hud.call("set_currency", wallet_gold)
+	_refresh_shop_projection(ui_control, shop_id, mode)
+	ui_control.call("set_transaction_feedback", message, success)
