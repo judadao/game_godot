@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://concept/town/can_use/prop/prop_asset_006.png" id="1_texture"]
+
+[node name="BarrelStack" type="Sprite2D" groups=["TownProp"]]
+texture = ExtResource("1_texture")
+offset = Vector2(0, -53.5)
