@@ -1,0 +1,5242 @@
+{
+  "generated_at": "2026-07-24",
+  "root": "concept/town/can_use",
+  "source_type": "curated_can_use_assets_only",
+  "license_status": "internal_prototype_only",
+  "production_status": "prototype_only",
+  "notes": [
+    "These PNGs are sliced from generated project concept sheets for prototype use.",
+    "They are not final production sprites until manually reviewed, cleaned, normalized, and approved.",
+    "Godot import should disable filter/mipmaps and use bottom-center pivots for world sprites.",
+    "Cleanup: concept/town now keeps only can_use/ plus main_horizontal_concept/; generated and slices intermediates were removed.",
+    "Background v3 now points to independently generated layers instead of cropped sheet output.",
+    "Only concept/town/can_use and concept/town/main_horizontal_concept are kept under concept/town.",
+    "Preferred background strips are independent v3 assets listed in background_v3_manifest.json."
+  ],
+  "assets": [
+    {
+      "id": "npc_npc_archetype_001",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_001.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        63,
+        59,
+        199,
+        256
+      ],
+      "dimensions": {
+        "w": 215,
+        "h": 272
+      },
+      "alpha_pixels": 25961,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_002",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_002.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        332,
+        68,
+        121,
+        246
+      ],
+      "dimensions": {
+        "w": 137,
+        "h": 262
+      },
+      "alpha_pixels": 14970,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_003",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_003.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        744,
+        72,
+        243,
+        243
+      ],
+      "dimensions": {
+        "w": 259,
+        "h": 259
+      },
+      "alpha_pixels": 29485,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_004",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_004.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        1017,
+        56,
+        213,
+        259
+      ],
+      "dimensions": {
+        "w": 229,
+        "h": 275
+      },
+      "alpha_pixels": 22808,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_005",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_005.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        1312,
+        31,
+        144,
+        282
+      ],
+      "dimensions": {
+        "w": 160,
+        "h": 298
+      },
+      "alpha_pixels": 15680,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_006",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_006.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        556,
+        80,
+        107,
+        235
+      ],
+      "dimensions": {
+        "w": 123,
+        "h": 251
+      },
+      "alpha_pixels": 18711,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_007",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_007.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        77,
+        392,
+        164,
+        259
+      ],
+      "dimensions": {
+        "w": 180,
+        "h": 275
+      },
+      "alpha_pixels": 22479,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_008",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_008.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        643,
+        390,
+        171,
+        262
+      ],
+      "dimensions": {
+        "w": 187,
+        "h": 278
+      },
+      "alpha_pixels": 27182,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_009",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_009.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        1162,
+        390,
+        144,
+        262
+      ],
+      "dimensions": {
+        "w": 160,
+        "h": 278
+      },
+      "alpha_pixels": 17001,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_010",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_010.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        315,
+        401,
+        250,
+        246
+      ],
+      "dimensions": {
+        "w": 266,
+        "h": 262
+      },
+      "alpha_pixels": 32306,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_011",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_011.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        922,
+        467,
+        86,
+        185
+      ],
+      "dimensions": {
+        "w": 102,
+        "h": 201
+      },
+      "alpha_pixels": 9986,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_012",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_012.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        265,
+        701,
+        189,
+        280
+      ],
+      "dimensions": {
+        "w": 205,
+        "h": 296
+      },
+      "alpha_pixels": 24565,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_013",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_013.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        760,
+        715,
+        203,
+        265
+      ],
+      "dimensions": {
+        "w": 219,
+        "h": 281
+      },
+      "alpha_pixels": 26160,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_npc_archetype_014",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_npc_archetype_014.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_npc_archetype_sheet_v1.png",
+      "source_crop_xywh": [
+        525,
+        724,
+        156,
+        258
+      ],
+      "dimensions": {
+        "w": 172,
+        "h": 274
+      },
+      "alpha_pixels": 24160,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_001",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_001.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        48,
+        56,
+        103,
+        145
+      ],
+      "dimensions": {
+        "w": 119,
+        "h": 161
+      },
+      "alpha_pixels": 8192,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_002",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_002.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        197,
+        58,
+        81,
+        143
+      ],
+      "dimensions": {
+        "w": 97,
+        "h": 159
+      },
+      "alpha_pixels": 6906,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_003",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_003.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        347,
+        58,
+        71,
+        142
+      ],
+      "dimensions": {
+        "w": 87,
+        "h": 158
+      },
+      "alpha_pixels": 5800,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_004",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_004.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        459,
+        61,
+        52,
+        138
+      ],
+      "dimensions": {
+        "w": 68,
+        "h": 154
+      },
+      "alpha_pixels": 4233,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_005",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_005.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        619,
+        65,
+        66,
+        134
+      ],
+      "dimensions": {
+        "w": 82,
+        "h": 150
+      },
+      "alpha_pixels": 6495,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_006",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_006.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        734,
+        66,
+        55,
+        134
+      ],
+      "dimensions": {
+        "w": 71,
+        "h": 150
+      },
+      "alpha_pixels": 5148,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_007",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_007.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        862,
+        64,
+        107,
+        137
+      ],
+      "dimensions": {
+        "w": 123,
+        "h": 153
+      },
+      "alpha_pixels": 6617,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_008",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_008.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        1007,
+        66,
+        76,
+        135
+      ],
+      "dimensions": {
+        "w": 92,
+        "h": 151
+      },
+      "alpha_pixels": 4764,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_009",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_009.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        1141,
+        56,
+        137,
+        145
+      ],
+      "dimensions": {
+        "w": 153,
+        "h": 161
+      },
+      "alpha_pixels": 7534,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_010",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_010.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        1317,
+        62,
+        74,
+        138
+      ],
+      "dimensions": {
+        "w": 90,
+        "h": 154
+      },
+      "alpha_pixels": 4623,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_011",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_011.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        44,
+        229,
+        94,
+        157
+      ],
+      "dimensions": {
+        "w": 110,
+        "h": 173
+      },
+      "alpha_pixels": 7310,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_012",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_012.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        181,
+        239,
+        76,
+        147
+      ],
+      "dimensions": {
+        "w": 92,
+        "h": 163
+      },
+      "alpha_pixels": 5345,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_013",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_013.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        786,
+        234,
+        221,
+        152
+      ],
+      "dimensions": {
+        "w": 237,
+        "h": 168
+      },
+      "alpha_pixels": 14353,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_014",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_014.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        333,
+        255,
+        60,
+        128
+      ],
+      "dimensions": {
+        "w": 76,
+        "h": 144
+      },
+      "alpha_pixels": 4587,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_015",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_015.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        424,
+        258,
+        44,
+        125
+      ],
+      "dimensions": {
+        "w": 60,
+        "h": 141
+      },
+      "alpha_pixels": 3363,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_016",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_016.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        573,
+        256,
+        63,
+        128
+      ],
+      "dimensions": {
+        "w": 79,
+        "h": 144
+      },
+      "alpha_pixels": 5976,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_017",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_017.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        676,
+        256,
+        57,
+        130
+      ],
+      "dimensions": {
+        "w": 73,
+        "h": 146
+      },
+      "alpha_pixels": 4695,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_018",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_018.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        1064,
+        248,
+        167,
+        137
+      ],
+      "dimensions": {
+        "w": 183,
+        "h": 153
+      },
+      "alpha_pixels": 9040,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_019",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_019.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        1297,
+        253,
+        66,
+        131
+      ],
+      "dimensions": {
+        "w": 82,
+        "h": 147
+      },
+      "alpha_pixels": 4934,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_020",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_020.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        1412,
+        252,
+        60,
+        133
+      ],
+      "dimensions": {
+        "w": 76,
+        "h": 149
+      },
+      "alpha_pixels": 4786,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "npc_asset_021",
+      "category": "npc",
+      "path": "concept/town/can_use/npc/npc_asset_021.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        1243,
+        388,
+        23,
+        17
+      ],
+      "dimensions": {
+        "w": 39,
+        "h": 33
+      },
+      "alpha_pixels": 211,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "building_building_facility_001",
+      "category": "building",
+      "path": "concept/town/can_use/building/building_building_facility_001.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_building_facility_sheet_v1.png",
+      "source_crop_xywh": [
+        17,
+        38,
+        716,
+        292
+      ],
+      "dimensions": {
+        "w": 736,
+        "h": 312
+      },
+      "alpha_pixels": 93717,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "building_building_facility_002",
+      "category": "building",
+      "path": "concept/town/can_use/building/building_building_facility_002.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_building_facility_sheet_v1.png",
+      "source_crop_xywh": [
+        784,
+        33,
+        332,
+        297
+      ],
+      "dimensions": {
+        "w": 352,
+        "h": 317
+      },
+      "alpha_pixels": 38488,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "building_building_facility_003",
+      "category": "building",
+      "path": "concept/town/can_use/building/building_building_facility_003.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_building_facility_sheet_v1.png",
+      "source_crop_xywh": [
+        1150,
+        35,
+        348,
+        295
+      ],
+      "dimensions": {
+        "w": 368,
+        "h": 315
+      },
+      "alpha_pixels": 41199,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "building_building_facility_004",
+      "category": "building",
+      "path": "concept/town/can_use/building/building_building_facility_004.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_building_facility_sheet_v1.png",
+      "source_crop_xywh": [
+        25,
+        374,
+        1475,
+        299
+      ],
+      "dimensions": {
+        "w": 1495,
+        "h": 319
+      },
+      "alpha_pixels": 166270,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "building_building_facility_005",
+      "category": "building",
+      "path": "concept/town/can_use/building/building_building_facility_005.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_building_facility_sheet_v1.png",
+      "source_crop_xywh": [
+        37,
+        709,
+        321,
+        246
+      ],
+      "dimensions": {
+        "w": 341,
+        "h": 266
+      },
+      "alpha_pixels": 38239,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "building_building_facility_006",
+      "category": "building",
+      "path": "concept/town/can_use/building/building_building_facility_006.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_building_facility_sheet_v1.png",
+      "source_crop_xywh": [
+        402,
+        725,
+        256,
+        233
+      ],
+      "dimensions": {
+        "w": 276,
+        "h": 253
+      },
+      "alpha_pixels": 23204,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "building_building_facility_007",
+      "category": "building",
+      "path": "concept/town/can_use/building/building_building_facility_007.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_building_facility_sheet_v1.png",
+      "source_crop_xywh": [
+        716,
+        748,
+        298,
+        210
+      ],
+      "dimensions": {
+        "w": 318,
+        "h": 230
+      },
+      "alpha_pixels": 30422,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "building_building_facility_008",
+      "category": "building",
+      "path": "concept/town/can_use/building/building_building_facility_008.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_building_facility_sheet_v1.png",
+      "source_crop_xywh": [
+        1065,
+        733,
+        411,
+        227
+      ],
+      "dimensions": {
+        "w": 431,
+        "h": 247
+      },
+      "alpha_pixels": 46085,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "building_asset_001",
+      "category": "building",
+      "path": "concept/town/can_use/building/building_asset_001.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        70,
+        712,
+        95,
+        8
+      ],
+      "dimensions": {
+        "w": 115,
+        "h": 28
+      },
+      "alpha_pixels": 563,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "building_asset_002",
+      "category": "building",
+      "path": "concept/town/can_use/building/building_asset_002.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        252,
+        706,
+        75,
+        14
+      ],
+      "dimensions": {
+        "w": 95,
+        "h": 34
+      },
+      "alpha_pixels": 370,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "building_asset_003",
+      "category": "building",
+      "path": "concept/town/can_use/building/building_asset_003.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        565,
+        703,
+        24,
+        17
+      ],
+      "dimensions": {
+        "w": 44,
+        "h": 37
+      },
+      "alpha_pixels": 354,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_001",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_001.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        39,
+        58,
+        713,
+        119
+      ],
+      "dimensions": {
+        "w": 729,
+        "h": 135
+      },
+      "alpha_pixels": 33331,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_002",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_002.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        771,
+        69,
+        284,
+        208
+      ],
+      "dimensions": {
+        "w": 300,
+        "h": 224
+      },
+      "alpha_pixels": 11338,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_003",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_003.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        1076,
+        69,
+        438,
+        206
+      ],
+      "dimensions": {
+        "w": 454,
+        "h": 222
+      },
+      "alpha_pixels": 29910,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_004",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_004.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        50,
+        204,
+        611,
+        82
+      ],
+      "dimensions": {
+        "w": 627,
+        "h": 98
+      },
+      "alpha_pixels": 20829,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_005",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_005.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        696,
+        215,
+        38,
+        63
+      ],
+      "dimensions": {
+        "w": 54,
+        "h": 79
+      },
+      "alpha_pixels": 931,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_006",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_006.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        714,
+        310,
+        792,
+        174
+      ],
+      "dimensions": {
+        "w": 808,
+        "h": 190
+      },
+      "alpha_pixels": 39037,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_007",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_007.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        28,
+        321,
+        201,
+        159
+      ],
+      "dimensions": {
+        "w": 217,
+        "h": 175
+      },
+      "alpha_pixels": 16201,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_008",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_008.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        255,
+        324,
+        501,
+        306
+      ],
+      "dimensions": {
+        "w": 517,
+        "h": 322
+      },
+      "alpha_pixels": 38217,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_009",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_009.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        25,
+        535,
+        173,
+        88
+      ],
+      "dimensions": {
+        "w": 189,
+        "h": 104
+      },
+      "alpha_pixels": 5998,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_010",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_010.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        229,
+        533,
+        286,
+        87
+      ],
+      "dimensions": {
+        "w": 302,
+        "h": 103
+      },
+      "alpha_pixels": 9213,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_011",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_011.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        793,
+        551,
+        259,
+        70
+      ],
+      "dimensions": {
+        "w": 275,
+        "h": 86
+      },
+      "alpha_pixels": 7427,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_012",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_012.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        1077,
+        549,
+        101,
+        70
+      ],
+      "dimensions": {
+        "w": 117,
+        "h": 86
+      },
+      "alpha_pixels": 2542,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_013",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_013.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        1206,
+        543,
+        82,
+        75
+      ],
+      "dimensions": {
+        "w": 98,
+        "h": 91
+      },
+      "alpha_pixels": 2009,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_014",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_014.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        1316,
+        540,
+        186,
+        82
+      ],
+      "dimensions": {
+        "w": 202,
+        "h": 98
+      },
+      "alpha_pixels": 5739,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_015",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_015.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        33,
+        664,
+        635,
+        310
+      ],
+      "dimensions": {
+        "w": 651,
+        "h": 326
+      },
+      "alpha_pixels": 56927,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_016",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_016.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        704,
+        680,
+        271,
+        111
+      ],
+      "dimensions": {
+        "w": 287,
+        "h": 127
+      },
+      "alpha_pixels": 10002,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_017",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_017.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        1016,
+        691,
+        106,
+        101
+      ],
+      "dimensions": {
+        "w": 122,
+        "h": 117
+      },
+      "alpha_pixels": 6057,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_018",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_018.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        1156,
+        653,
+        111,
+        138
+      ],
+      "dimensions": {
+        "w": 127,
+        "h": 154
+      },
+      "alpha_pixels": 6620,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_019",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_019.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        1292,
+        666,
+        99,
+        119
+      ],
+      "dimensions": {
+        "w": 115,
+        "h": 135
+      },
+      "alpha_pixels": 4430,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_020",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_020.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        1428,
+        686,
+        43,
+        95
+      ],
+      "dimensions": {
+        "w": 59,
+        "h": 111
+      },
+      "alpha_pixels": 2118,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_021",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_021.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        142,
+        867,
+        97,
+        101
+      ],
+      "dimensions": {
+        "w": 113,
+        "h": 117
+      },
+      "alpha_pixels": 4511,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_022",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_022.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        701,
+        848,
+        261,
+        120
+      ],
+      "dimensions": {
+        "w": 277,
+        "h": 136
+      },
+      "alpha_pixels": 8968,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_023",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_023.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        983,
+        861,
+        373,
+        103
+      ],
+      "dimensions": {
+        "w": 389,
+        "h": 119
+      },
+      "alpha_pixels": 16020,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_024",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_024.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        1386,
+        822,
+        112,
+        152
+      ],
+      "dimensions": {
+        "w": 128,
+        "h": 168
+      },
+      "alpha_pixels": 5217,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_prop_street_dressing_025",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_prop_street_dressing_025.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_prop_street_dressing_sheet_v1.png",
+      "source_crop_xywh": [
+        33,
+        882,
+        83,
+        79
+      ],
+      "dimensions": {
+        "w": 99,
+        "h": 95
+      },
+      "alpha_pixels": 3129,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_001",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_001.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        47,
+        712,
+        146,
+        144
+      ],
+      "dimensions": {
+        "w": 162,
+        "h": 160
+      },
+      "alpha_pixels": 12064,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_002",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_002.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        243,
+        706,
+        133,
+        144
+      ],
+      "dimensions": {
+        "w": 149,
+        "h": 160
+      },
+      "alpha_pixels": 11436,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_003",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_003.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        436,
+        701,
+        49,
+        152
+      ],
+      "dimensions": {
+        "w": 65,
+        "h": 168
+      },
+      "alpha_pixels": 2697,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_004",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_004.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        534,
+        703,
+        84,
+        147
+      ],
+      "dimensions": {
+        "w": 100,
+        "h": 163
+      },
+      "alpha_pixels": 5069,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_005",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_005.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        668,
+        744,
+        125,
+        88
+      ],
+      "dimensions": {
+        "w": 141,
+        "h": 104
+      },
+      "alpha_pixels": 5599,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_006",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_006.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        846,
+        740,
+        71,
+        91
+      ],
+      "dimensions": {
+        "w": 87,
+        "h": 107
+      },
+      "alpha_pixels": 4637,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_007",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_007.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        953,
+        748,
+        96,
+        86
+      ],
+      "dimensions": {
+        "w": 112,
+        "h": 102
+      },
+      "alpha_pixels": 5944,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_008",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_008.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        1086,
+        756,
+        145,
+        78
+      ],
+      "dimensions": {
+        "w": 161,
+        "h": 94
+      },
+      "alpha_pixels": 6704,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_009",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_009.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        1283,
+        690,
+        204,
+        177
+      ],
+      "dimensions": {
+        "w": 220,
+        "h": 193
+      },
+      "alpha_pixels": 21362,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_010",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_010.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        576,
+        848,
+        163,
+        154
+      ],
+      "dimensions": {
+        "w": 179,
+        "h": 170
+      },
+      "alpha_pixels": 10723,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_011",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_011.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        78,
+        909,
+        444,
+        75
+      ],
+      "dimensions": {
+        "w": 460,
+        "h": 91
+      },
+      "alpha_pixels": 13643,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_012",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_012.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        875,
+        872,
+        123,
+        121
+      ],
+      "dimensions": {
+        "w": 139,
+        "h": 137
+      },
+      "alpha_pixels": 9344,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "prop_asset_013",
+      "category": "prop",
+      "path": "concept/town/can_use/prop/prop_asset_013.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_asset_sheet_v1.png",
+      "source_crop_xywh": [
+        1098,
+        872,
+        127,
+        121
+      ],
+      "dimensions": {
+        "w": 143,
+        "h": 137
+      },
+      "alpha_pixels": 8390,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "bottom_center"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_001",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_001.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        42,
+        38,
+        568,
+        304
+      ],
+      "dimensions": {
+        "w": 576,
+        "h": 312
+      },
+      "alpha_pixels": 85689,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_002",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_002.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        676,
+        83,
+        24,
+        39
+      ],
+      "dimensions": {
+        "w": 32,
+        "h": 47
+      },
+      "alpha_pixels": 523,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_003",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_003.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        676,
+        184,
+        24,
+        39
+      ],
+      "dimensions": {
+        "w": 32,
+        "h": 47
+      },
+      "alpha_pixels": 441,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_004",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_004.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        135,
+        292,
+        54,
+        48
+      ],
+      "dimensions": {
+        "w": 62,
+        "h": 56
+      },
+      "alpha_pixels": 1897,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_005",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_005.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        676,
+        285,
+        24,
+        38
+      ],
+      "dimensions": {
+        "w": 32,
+        "h": 46
+      },
+      "alpha_pixels": 436,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_006",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_006.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        41,
+        360,
+        206,
+        93
+      ],
+      "dimensions": {
+        "w": 214,
+        "h": 101
+      },
+      "alpha_pixels": 12708,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_007",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_007.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        270,
+        360,
+        187,
+        93
+      ],
+      "dimensions": {
+        "w": 195,
+        "h": 101
+      },
+      "alpha_pixels": 9462,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_008",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_008.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        484,
+        359,
+        116,
+        94
+      ],
+      "dimensions": {
+        "w": 124,
+        "h": 102
+      },
+      "alpha_pixels": 6268,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_009",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_009.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        631,
+        358,
+        12,
+        95
+      ],
+      "dimensions": {
+        "w": 20,
+        "h": 103
+      },
+      "alpha_pixels": 985,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_010",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_010.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        675,
+        346,
+        25,
+        102
+      ],
+      "dimensions": {
+        "w": 33,
+        "h": 110
+      },
+      "alpha_pixels": 2108,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_011",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_011.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        470,
+        477,
+        43,
+        75
+      ],
+      "dimensions": {
+        "w": 51,
+        "h": 83
+      },
+      "alpha_pixels": 1320,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_012",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_012.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        640,
+        471,
+        55,
+        91
+      ],
+      "dimensions": {
+        "w": 63,
+        "h": 99
+      },
+      "alpha_pixels": 1470,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_013",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_013.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        41,
+        499,
+        82,
+        48
+      ],
+      "dimensions": {
+        "w": 90,
+        "h": 56
+      },
+      "alpha_pixels": 2161,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_014",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_014.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        143,
+        499,
+        98,
+        48
+      ],
+      "dimensions": {
+        "w": 106,
+        "h": 56
+      },
+      "alpha_pixels": 2505,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_015",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_015.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        271,
+        499,
+        92,
+        49
+      ],
+      "dimensions": {
+        "w": 100,
+        "h": 57
+      },
+      "alpha_pixels": 2603,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_016",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_016.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        392,
+        503,
+        53,
+        47
+      ],
+      "dimensions": {
+        "w": 61,
+        "h": 55
+      },
+      "alpha_pixels": 826,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_017",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_017.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        538,
+        480,
+        64,
+        69
+      ],
+      "dimensions": {
+        "w": 72,
+        "h": 77
+      },
+      "alpha_pixels": 1663,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_018",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_018.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        42,
+        584,
+        269,
+        42
+      ],
+      "dimensions": {
+        "w": 277,
+        "h": 50
+      },
+      "alpha_pixels": 4592,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_019",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_019.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        328,
+        581,
+        362,
+        45
+      ],
+      "dimensions": {
+        "w": 370,
+        "h": 53
+      },
+      "alpha_pixels": 5180,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_020",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_020.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        34,
+        649,
+        253,
+        118
+      ],
+      "dimensions": {
+        "w": 261,
+        "h": 126
+      },
+      "alpha_pixels": 12706,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_021",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_021.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        314,
+        645,
+        350,
+        122
+      ],
+      "dimensions": {
+        "w": 358,
+        "h": 130
+      },
+      "alpha_pixels": 12533,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_022",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_022.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        34,
+        722,
+        121,
+        43
+      ],
+      "dimensions": {
+        "w": 129,
+        "h": 51
+      },
+      "alpha_pixels": 3103,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_023",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_023.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        42,
+        798,
+        266,
+        166
+      ],
+      "dimensions": {
+        "w": 274,
+        "h": 174
+      },
+      "alpha_pixels": 24512,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_024",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_024.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        329,
+        799,
+        124,
+        166
+      ],
+      "dimensions": {
+        "w": 132,
+        "h": 174
+      },
+      "alpha_pixels": 11933,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_025",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_025.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        477,
+        804,
+        122,
+        161
+      ],
+      "dimensions": {
+        "w": 130,
+        "h": 169
+      },
+      "alpha_pixels": 11288,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_026",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_026.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        676,
+        40,
+        97,
+        82
+      ],
+      "dimensions": {
+        "w": 105,
+        "h": 90
+      },
+      "alpha_pixels": 4785,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_027",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_027.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        796,
+        49,
+        145,
+        72
+      ],
+      "dimensions": {
+        "w": 153,
+        "h": 80
+      },
+      "alpha_pixels": 8451,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_028",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_028.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        963,
+        38,
+        274,
+        285
+      ],
+      "dimensions": {
+        "w": 282,
+        "h": 293
+      },
+      "alpha_pixels": 41110,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_029",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_029.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        1266,
+        40,
+        93,
+        82
+      ],
+      "dimensions": {
+        "w": 101,
+        "h": 90
+      },
+      "alpha_pixels": 5254,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_030",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_030.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        676,
+        140,
+        97,
+        83
+      ],
+      "dimensions": {
+        "w": 105,
+        "h": 91
+      },
+      "alpha_pixels": 4500,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_031",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_031.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        796,
+        148,
+        145,
+        73
+      ],
+      "dimensions": {
+        "w": 153,
+        "h": 81
+      },
+      "alpha_pixels": 7728,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_032",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_032.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        1266,
+        140,
+        93,
+        83
+      ],
+      "dimensions": {
+        "w": 101,
+        "h": 91
+      },
+      "alpha_pixels": 4700,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_033",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_033.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        676,
+        241,
+        97,
+        82
+      ],
+      "dimensions": {
+        "w": 105,
+        "h": 90
+      },
+      "alpha_pixels": 4002,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_034",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_034.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        796,
+        249,
+        145,
+        73
+      ],
+      "dimensions": {
+        "w": 153,
+        "h": 81
+      },
+      "alpha_pixels": 7115,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_035",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_035.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        1266,
+        240,
+        93,
+        83
+      ],
+      "dimensions": {
+        "w": 101,
+        "h": 91
+      },
+      "alpha_pixels": 4405,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_036",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_036.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        675,
+        346,
+        114,
+        102
+      ],
+      "dimensions": {
+        "w": 122,
+        "h": 110
+      },
+      "alpha_pixels": 10461,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_037",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_037.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        799,
+        346,
+        372,
+        214
+      ],
+      "dimensions": {
+        "w": 380,
+        "h": 222
+      },
+      "alpha_pixels": 36802,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_038",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_038.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        1191,
+        346,
+        83,
+        102
+      ],
+      "dimensions": {
+        "w": 91,
+        "h": 110
+      },
+      "alpha_pixels": 5878,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_039",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_039.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        1291,
+        346,
+        75,
+        102
+      ],
+      "dimensions": {
+        "w": 83,
+        "h": 110
+      },
+      "alpha_pixels": 6818,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_040",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_040.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        1385,
+        346,
+        113,
+        102
+      ],
+      "dimensions": {
+        "w": 121,
+        "h": 110
+      },
+      "alpha_pixels": 9627,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_041",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_041.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        650,
+        471,
+        45,
+        91
+      ],
+      "dimensions": {
+        "w": 53,
+        "h": 99
+      },
+      "alpha_pixels": 1383,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_042",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_042.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        728,
+        469,
+        37,
+        89
+      ],
+      "dimensions": {
+        "w": 45,
+        "h": 97
+      },
+      "alpha_pixels": 1018,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_043",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_043.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        792,
+        466,
+        26,
+        92
+      ],
+      "dimensions": {
+        "w": 34,
+        "h": 100
+      },
+      "alpha_pixels": 791,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_044",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_044.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        848,
+        465,
+        27,
+        94
+      ],
+      "dimensions": {
+        "w": 35,
+        "h": 102
+      },
+      "alpha_pixels": 827,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_045",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_045.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        958,
+        470,
+        86,
+        89
+      ],
+      "dimensions": {
+        "w": 94,
+        "h": 97
+      },
+      "alpha_pixels": 4537,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_046",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_046.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        653,
+        581,
+        37,
+        29
+      ],
+      "dimensions": {
+        "w": 45,
+        "h": 37
+      },
+      "alpha_pixels": 439,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "tileset_tileset_parallax_047",
+      "category": "tileset",
+      "path": "concept/town/can_use/tileset/tileset_tileset_parallax_047.png",
+      "source_sheet": "concept/town/can_use/source_sheets/town_tileset_parallax_sheet_v1.png",
+      "source_crop_xywh": [
+        727,
+        579,
+        776,
+        31
+      ],
+      "dimensions": {
+        "w": 784,
+        "h": 39
+      },
+      "alpha_pixels": 24056,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_001",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_001.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        19,
+        16,
+        366,
+        231
+      ],
+      "dimensions": {
+        "w": 382,
+        "h": 247
+      },
+      "alpha_pixels": 17507,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_002",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_002.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        408,
+        16,
+        303,
+        286
+      ],
+      "dimensions": {
+        "w": 319,
+        "h": 302
+      },
+      "alpha_pixels": 52789,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_003",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_003.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        735,
+        16,
+        326,
+        228
+      ],
+      "dimensions": {
+        "w": 342,
+        "h": 244
+      },
+      "alpha_pixels": 47062,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_004",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_004.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        19,
+        318,
+        411,
+        71
+      ],
+      "dimensions": {
+        "w": 427,
+        "h": 87
+      },
+      "alpha_pixels": 12013,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_005",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_005.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        213,
+        272,
+        123,
+        20
+      ],
+      "dimensions": {
+        "w": 139,
+        "h": 36
+      },
+      "alpha_pixels": 1126,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_006",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_006.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        464,
+        327,
+        600,
+        414
+      ],
+      "dimensions": {
+        "w": 616,
+        "h": 430
+      },
+      "alpha_pixels": 121971,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_007",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_007.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        19,
+        413,
+        409,
+        152
+      ],
+      "dimensions": {
+        "w": 425,
+        "h": 168
+      },
+      "alpha_pixels": 17239,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_008",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_008.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        19,
+        589,
+        401,
+        151
+      ],
+      "dimensions": {
+        "w": 417,
+        "h": 167
+      },
+      "alpha_pixels": 38799,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_009",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_009.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        19,
+        766,
+        396,
+        340
+      ],
+      "dimensions": {
+        "w": 412,
+        "h": 356
+      },
+      "alpha_pixels": 83948,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_010",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_010.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        442,
+        782,
+        247,
+        202
+      ],
+      "dimensions": {
+        "w": 263,
+        "h": 218
+      },
+      "alpha_pixels": 16859,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_011",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_011.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        719,
+        779,
+        292,
+        218
+      ],
+      "dimensions": {
+        "w": 308,
+        "h": 234
+      },
+      "alpha_pixels": 10387,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_012",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_012.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        442,
+        1024,
+        231,
+        76
+      ],
+      "dimensions": {
+        "w": 247,
+        "h": 92
+      },
+      "alpha_pixels": 13221,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_013",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_013.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        704,
+        1028,
+        352,
+        72
+      ],
+      "dimensions": {
+        "w": 368,
+        "h": 88
+      },
+      "alpha_pixels": 17622,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_014",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_014.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        19,
+        1137,
+        496,
+        276
+      ],
+      "dimensions": {
+        "w": 512,
+        "h": 292
+      },
+      "alpha_pixels": 50513,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_015",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_015.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        545,
+        1136,
+        509,
+        137
+      ],
+      "dimensions": {
+        "w": 525,
+        "h": 153
+      },
+      "alpha_pixels": 35485,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_sheet_v2_016",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_016.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v2.png",
+      "source_crop_xywh": [
+        545,
+        1300,
+        519,
+        115
+      ],
+      "dimensions": {
+        "w": 535,
+        "h": 131
+      },
+      "alpha_pixels": 27587,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_001",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_001.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        33,
+        35,
+        607,
+        310
+      ],
+      "dimensions": {
+        "w": 623,
+        "h": 326
+      },
+      "alpha_pixels": 129478,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_002",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_002.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        661,
+        35,
+        213,
+        338
+      ],
+      "dimensions": {
+        "w": 229,
+        "h": 354
+      },
+      "alpha_pixels": 13247,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_003",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_003.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        909,
+        51,
+        601,
+        153
+      ],
+      "dimensions": {
+        "w": 617,
+        "h": 169
+      },
+      "alpha_pixels": 5226,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_004",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_004.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        904,
+        244,
+        246,
+        127
+      ],
+      "dimensions": {
+        "w": 262,
+        "h": 143
+      },
+      "alpha_pixels": 2872,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_005",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_005.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        1185,
+        240,
+        320,
+        161
+      ],
+      "dimensions": {
+        "w": 336,
+        "h": 177
+      },
+      "alpha_pixels": 23223,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_006",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_006.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        33,
+        368,
+        394,
+        334
+      ],
+      "dimensions": {
+        "w": 410,
+        "h": 350
+      },
+      "alpha_pixels": 95793,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_007",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_007.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        455,
+        399,
+        412,
+        312
+      ],
+      "dimensions": {
+        "w": 428,
+        "h": 328
+      },
+      "alpha_pixels": 127385,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_008",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_008.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        900,
+        411,
+        210,
+        277
+      ],
+      "dimensions": {
+        "w": 226,
+        "h": 293
+      },
+      "alpha_pixels": 37313,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_009",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_009.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        1135,
+        429,
+        353,
+        138
+      ],
+      "dimensions": {
+        "w": 369,
+        "h": 154
+      },
+      "alpha_pixels": 38045,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_010",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_010.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        1137,
+        594,
+        155,
+        98
+      ],
+      "dimensions": {
+        "w": 171,
+        "h": 114
+      },
+      "alpha_pixels": 9438,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_011",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_011.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        1315,
+        594,
+        153,
+        98
+      ],
+      "dimensions": {
+        "w": 169,
+        "h": 114
+      },
+      "alpha_pixels": 9658,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_012",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_012.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        40,
+        740,
+        556,
+        185
+      ],
+      "dimensions": {
+        "w": 572,
+        "h": 201
+      },
+      "alpha_pixels": 69411,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_013",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_013.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        620,
+        755,
+        279,
+        58
+      ],
+      "dimensions": {
+        "w": 295,
+        "h": 74
+      },
+      "alpha_pixels": 15817,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_014",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_014.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        911,
+        724,
+        541,
+        232
+      ],
+      "dimensions": {
+        "w": 557,
+        "h": 248
+      },
+      "alpha_pixels": 59583,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_015",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_015.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        922,
+        728,
+        124,
+        147
+      ],
+      "dimensions": {
+        "w": 140,
+        "h": 163
+      },
+      "alpha_pixels": 7301,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_016",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_016.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        624,
+        864,
+        254,
+        57
+      ],
+      "dimensions": {
+        "w": 270,
+        "h": 73
+      },
+      "alpha_pixels": 14133,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "ui_ui_ui_component_017",
+      "category": "ui",
+      "path": "concept/town/can_use/ui/ui_ui_ui_component_017.png",
+      "source_sheet": "concept/town/can_use/source_sheets/ui_component_sheet_v1.png",
+      "source_crop_xywh": [
+        1479,
+        905,
+        22,
+        40
+      ],
+      "dimensions": {
+        "w": 38,
+        "h": 56
+      },
+      "alpha_pixels": 502,
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "license_status": "internal_prototype_only",
+      "final_needed": true,
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "pivot": "top_left"
+      },
+      "quality_flags": [
+        "auto_sliced",
+        "needs_manual_review"
+      ]
+    },
+    {
+      "id": "background_clouds_v3",
+      "category": "background",
+      "subcategory": "clouds",
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "final_needed": true,
+      "path": "concept/town/can_use/background/parallax_clouds_strip_v3.png",
+      "source_type": "independent_ai_generated_background_layer",
+      "source_path": "concept/town/can_use/background/parallax_clouds_strip_v3.png",
+      "source_crop_xywh": [
+        0,
+        0,
+        2172,
+        724
+      ],
+      "dimensions": {
+        "w": 2172,
+        "h": 724
+      },
+      "seamless_method": "none; use mirror/repeat only after manual loop review",
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "repeat_mode": "mirror_or_disabled"
+      },
+      "recommended_motion_scale": 0.08,
+      "quality_flags": [
+        "ai_generated_proxy",
+        "independent_layer",
+        "not_sheet_crop",
+        "needs_manual_loop_review"
+      ]
+    },
+    {
+      "id": "background_mountains_v3",
+      "category": "background",
+      "subcategory": "mountains",
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "final_needed": true,
+      "path": "concept/town/can_use/background/parallax_mountains_strip_v3.png",
+      "source_type": "independent_ai_generated_background_layer",
+      "source_path": "concept/town/can_use/background/parallax_mountains_strip_v3.png",
+      "source_crop_xywh": [
+        0,
+        0,
+        2172,
+        724
+      ],
+      "dimensions": {
+        "w": 2172,
+        "h": 724
+      },
+      "seamless_method": "none; use mirror/repeat only after manual loop review",
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "repeat_mode": "mirror_or_disabled"
+      },
+      "recommended_motion_scale": 0.16,
+      "quality_flags": [
+        "ai_generated_proxy",
+        "independent_layer",
+        "not_sheet_crop",
+        "needs_manual_loop_review"
+      ]
+    },
+    {
+      "id": "background_forest_v3",
+      "category": "background",
+      "subcategory": "forest",
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "final_needed": true,
+      "path": "concept/town/can_use/background/parallax_forest_strip_v3.png",
+      "source_type": "independent_ai_generated_background_layer",
+      "source_path": "concept/town/can_use/background/parallax_forest_strip_v3.png",
+      "source_crop_xywh": [
+        0,
+        0,
+        2172,
+        724
+      ],
+      "dimensions": {
+        "w": 2172,
+        "h": 724
+      },
+      "seamless_method": "none; use mirror/repeat only after manual loop review",
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "repeat_mode": "mirror_or_disabled"
+      },
+      "recommended_motion_scale": 0.32,
+      "quality_flags": [
+        "ai_generated_proxy",
+        "independent_layer",
+        "not_sheet_crop",
+        "needs_manual_loop_review"
+      ]
+    },
+    {
+      "id": "background_rooftops_v3",
+      "category": "background",
+      "subcategory": "rooftops",
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "final_needed": true,
+      "path": "concept/town/can_use/background/parallax_rooftops_strip_v3.png",
+      "source_type": "independent_ai_generated_background_layer",
+      "source_path": "concept/town/can_use/background/parallax_rooftops_strip_v3.png",
+      "source_crop_xywh": [
+        0,
+        0,
+        2172,
+        724
+      ],
+      "dimensions": {
+        "w": 2172,
+        "h": 724
+      },
+      "seamless_method": "none; use mirror/repeat only after manual loop review",
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "repeat_mode": "mirror_or_disabled"
+      },
+      "recommended_motion_scale": 0.55,
+      "quality_flags": [
+        "ai_generated_proxy",
+        "independent_layer",
+        "not_sheet_crop",
+        "needs_manual_loop_review"
+      ]
+    }
+  ]
+}

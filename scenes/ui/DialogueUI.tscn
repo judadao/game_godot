@@ -1,0 +1,220 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Texture2D" path="res://concept/town/can_use/ui/ui_ui_ui_component_017.png" id="1_next_arrow"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialogue_panel"]
+bg_color = Color(0.09, 0.08, 0.1, 0.92)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.82, 0.64, 0.36, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_name_plate"]
+bg_color = Color(0.25, 0.14, 0.12, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.9, 0.72, 0.42, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_portrait_frame"]
+bg_color = Color(0.15, 0.16, 0.18, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.74, 0.57, 0.32, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_portrait_fill"]
+bg_color = Color(0.36, 0.3, 0.28, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_choice_normal"]
+bg_color = Color(0.16, 0.14, 0.16, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.55, 0.43, 0.28, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_choice_hover"]
+bg_color = Color(0.28, 0.22, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.76, 0.38, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_choice_pressed"]
+bg_color = Color(0.11, 0.1, 0.11, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.9, 0.62, 0.24, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="DialogueUI" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DialoguePanel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_left = 0.05
+anchor_top = 0.62
+anchor_right = 0.95
+anchor_bottom = 0.94
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dialogue_panel")
+
+[node name="SpeakerNamePlate" type="Panel" parent="DialoguePanel"]
+anchors_preset = -1
+anchor_left = 0.14
+anchor_top = -0.12
+anchor_right = 0.39
+anchor_bottom = 0.12
+offset_left = 8.0
+offset_top = -8.0
+offset_right = 8.0
+offset_bottom = -8.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_name_plate")
+
+[node name="SpeakerName" type="Label" parent="DialoguePanel/SpeakerNamePlate"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_right = -18.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.91, 0.64, 1)
+theme_override_font_sizes/font_size = 24
+text = "Town Elder"
+vertical_alignment = 1
+
+[node name="PortraitFrame" type="Panel" parent="DialoguePanel"]
+anchors_preset = -1
+anchor_left = 0.035
+anchor_top = 0.17
+anchor_right = 0.16
+anchor_bottom = 0.82
+theme_override_styles/panel = SubResource("StyleBoxFlat_portrait_frame")
+
+[node name="PortraitPlaceholder" type="Panel" parent="DialoguePanel/PortraitFrame"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_portrait_fill")
+
+[node name="PortraitInitial" type="Label" parent="DialoguePanel/PortraitFrame/PortraitPlaceholder"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.56, 1)
+theme_override_font_sizes/font_size = 42
+text = "?"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DialogueText" type="RichTextLabel" parent="DialoguePanel"]
+anchors_preset = -1
+anchor_left = 0.19
+anchor_top = 0.2
+anchor_right = 0.68
+anchor_bottom = 0.82
+theme_override_colors/default_color = Color(0.96, 0.91, 0.82, 1)
+theme_override_font_sizes/normal_font_size = 25
+bbcode_enabled = true
+text = "Welcome back. The west road is open again, but the market is still waiting for someone brave enough to check the old notice board."
+fit_content = false
+scroll_active = false
+autowrap_mode = 3
+
+[node name="ChoicesContainer" type="VBoxContainer" parent="DialoguePanel"]
+anchors_preset = -1
+anchor_left = 0.71
+anchor_top = 0.18
+anchor_right = 0.96
+anchor_bottom = 0.82
+theme_override_constants/separation = 10
+
+[node name="ChoiceOne" type="Button" parent="DialoguePanel/ChoicesContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.9, 0.78, 1)
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxFlat_choice_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_choice_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_choice_pressed")
+text = "Ask about the road"
+
+[node name="ChoiceTwo" type="Button" parent="DialoguePanel/ChoicesContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.9, 0.78, 1)
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxFlat_choice_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_choice_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_choice_pressed")
+text = "Check the notice board"
+
+[node name="ChoiceThree" type="Button" parent="DialoguePanel/ChoicesContainer"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.9, 0.78, 1)
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxFlat_choice_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_choice_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_choice_pressed")
+text = "Say goodbye"
+
+[node name="NextArrowIndicator" type="TextureRect" parent="DialoguePanel"]
+anchors_preset = -1
+anchor_left = 0.94
+anchor_top = 0.78
+anchor_right = 0.98
+anchor_bottom = 0.92
+texture = ExtResource("1_next_arrow")
+expand_mode = 1
+stretch_mode = 5

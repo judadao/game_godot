@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "status": "prototype_only",
+  "notes": [
+    "These are the first assets recommended for the Godot village prototype.",
+    "They are semantic aliases over auto-sliced PNGs. Do not treat them as final production art.",
+    "Every placed object still needs visual_rect, collision_rect, interaction_rect, section, and action_id contracts.",
+    "Background aliases use independent v3 files; older cropped backgrounds were removed from can_use/background."
+  ],
+  "background": {
+    "clouds": "concept/town/can_use/background/parallax_clouds_strip_v3.png",
+    "mountains": "concept/town/can_use/background/parallax_mountains_strip_v3.png",
+    "forest": "concept/town/can_use/background/parallax_forest_strip_v3.png",
+    "rooftops": "concept/town/can_use/background/parallax_rooftops_strip_v3.png"
+  },
+  "npc": {
+    "mayor": "concept/town/can_use/npc/npc_asset_001.png",
+    "villager_male": "concept/town/can_use/npc/npc_asset_003.png",
+    "villager_female": "concept/town/can_use/npc/npc_asset_005.png",
+    "item_merchant": "concept/town/can_use/npc/npc_npc_archetype_003.png",
+    "blacksmith": "concept/town/can_use/npc/npc_asset_009.png",
+    "guard": "concept/town/can_use/npc/npc_asset_011.png",
+    "innkeeper": "concept/town/can_use/npc/npc_asset_016.png",
+    "priest": "concept/town/can_use/npc/npc_asset_019.png",
+    "child": "concept/town/can_use/npc/npc_npc_archetype_011.png"
+  },
+  "building": {
+    "house": "concept/town/can_use/building/building_building_facility_001.png",
+    "item_shop": "concept/town/can_use/building/building_building_facility_002.png",
+    "blacksmith": "concept/town/can_use/building/building_building_facility_003.png",
+    "portal": "concept/town/can_use/building/building_building_facility_005.png",
+    "well": "concept/town/can_use/building/building_building_facility_006.png",
+    "notice_board": "concept/town/can_use/building/building_building_facility_007.png",
+    "market_stall": "concept/town/can_use/building/building_building_facility_008.png"
+  },
+  "prop": {
+    "notice_board": "concept/town/can_use/prop/prop_asset_002.png",
+    "lamp_post": "concept/town/can_use/prop/prop_asset_003.png",
+    "signpost": "concept/town/can_use/prop/prop_asset_004.png",
+    "bench": "concept/town/can_use/prop/prop_asset_005.png",
+    "barrel": "concept/town/can_use/prop/prop_asset_006.png",
+    "crate": "concept/town/can_use/prop/prop_asset_007.png",
+    "fence": "concept/town/can_use/prop/prop_asset_008.png",
+    "market_cart": "concept/town/can_use/prop/prop_asset_009.png",
+    "tree": "concept/town/can_use/prop/prop_asset_010.png",
+    "flowers": "concept/town/can_use/prop/prop_asset_011.png",
+    "potion_sign": "concept/town/can_use/prop/prop_asset_012.png",
+    "weapon_sign": "concept/town/can_use/prop/prop_asset_013.png"
+  },
+  "tileset_or_module": {
+    "terrain_reference_sheet": "concept/town/can_use/tileset/tileset_tileset_parallax_001.png",
+    "stone_bridge": "concept/town/can_use/tileset/tileset_tileset_parallax_006.png",
+    "wood_bridge": "concept/town/can_use/tileset/tileset_tileset_parallax_007.png",
+    "portal_variant_a": "concept/town/can_use/tileset/tileset_tileset_parallax_023.png",
+    "portal_variant_b": "concept/town/can_use/tileset/tileset_tileset_parallax_024.png",
+    "red_roof_module": "concept/town/can_use/tileset/tileset_tileset_parallax_027.png",
+    "blue_roof_module": "concept/town/can_use/tileset/tileset_tileset_parallax_031.png",
+    "door_module": "concept/town/can_use/tileset/tileset_tileset_parallax_040.png",
+    "notice_board_module": "concept/town/can_use/tileset/tileset_tileset_parallax_045.png"
+  },
+  "ui": {
+    "item_slots": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_003.png",
+    "category_tabs": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_004.png",
+    "dialogue_panel_reference": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_007.png",
+    "inventory_window_reference": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_009.png",
+    "confirm_popup_reference": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_010.png",
+    "quantity_selector": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_012.png",
+    "currency_display": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_013.png",
+    "hud_reference": "concept/town/can_use/ui/ui_ui_ui_component_sheet_v2_014.png",
+    "next_arrow": "concept/town/can_use/ui/ui_ui_ui_component_017.png"
+  },
+  "defer_or_reslice": [
+    "concept/town/can_use/npc/npc_asset_021.png",
+    "concept/town/can_use/building/building_building_facility_004.png",
+    "concept/town/can_use/building/building_asset_001.png",
+    "concept/town/can_use/building/building_asset_002.png",
+    "concept/town/can_use/building/building_asset_003.png",
+    "concept/town/can_use/prop/prop_prop_street_dressing_001.png",
+    "concept/town/can_use/prop/prop_prop_street_dressing_002.png",
+    "concept/town/can_use/prop/prop_prop_street_dressing_003.png",
+    "concept/town/can_use/prop/prop_prop_street_dressing_004.png"
+  ]
+}

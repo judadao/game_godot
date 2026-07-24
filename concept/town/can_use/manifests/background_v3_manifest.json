@@ -1,0 +1,152 @@
+{
+  "generated_at": "2026-07-24",
+  "source_root": "concept/town/can_use",
+  "preferred": true,
+  "notes": [
+    "Preferred prototype town background set.",
+    "Each v3 file is copied from an independently generated layer, not cropped from a mixed concept sheet.",
+    "Use as side-scrolling parallax proxies only; final release backgrounds still need loop and license review."
+  ],
+  "entries": [
+    {
+      "id": "background_clouds_v3",
+      "category": "background",
+      "subcategory": "clouds",
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "final_needed": true,
+      "path": "concept/town/can_use/background/parallax_clouds_strip_v3.png",
+      "source_type": "independent_ai_generated_background_layer",
+      "source_path": "concept/town/can_use/background/parallax_clouds_strip_v3.png",
+      "source_crop_xywh": [
+        0,
+        0,
+        2172,
+        724
+      ],
+      "dimensions": {
+        "w": 2172,
+        "h": 724
+      },
+      "seamless_method": "none; use mirror/repeat only after manual loop review",
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "repeat_mode": "mirror_or_disabled"
+      },
+      "recommended_motion_scale": 0.08,
+      "quality_flags": [
+        "ai_generated_proxy",
+        "independent_layer",
+        "not_sheet_crop",
+        "needs_manual_loop_review"
+      ]
+    },
+    {
+      "id": "background_mountains_v3",
+      "category": "background",
+      "subcategory": "mountains",
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "final_needed": true,
+      "path": "concept/town/can_use/background/parallax_mountains_strip_v3.png",
+      "source_type": "independent_ai_generated_background_layer",
+      "source_path": "concept/town/can_use/background/parallax_mountains_strip_v3.png",
+      "source_crop_xywh": [
+        0,
+        0,
+        2172,
+        724
+      ],
+      "dimensions": {
+        "w": 2172,
+        "h": 724
+      },
+      "seamless_method": "none; use mirror/repeat only after manual loop review",
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "repeat_mode": "mirror_or_disabled"
+      },
+      "recommended_motion_scale": 0.16,
+      "quality_flags": [
+        "ai_generated_proxy",
+        "independent_layer",
+        "not_sheet_crop",
+        "needs_manual_loop_review"
+      ]
+    },
+    {
+      "id": "background_forest_v3",
+      "category": "background",
+      "subcategory": "forest",
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "final_needed": true,
+      "path": "concept/town/can_use/background/parallax_forest_strip_v3.png",
+      "source_type": "independent_ai_generated_background_layer",
+      "source_path": "concept/town/can_use/background/parallax_forest_strip_v3.png",
+      "source_crop_xywh": [
+        0,
+        0,
+        2172,
+        724
+      ],
+      "dimensions": {
+        "w": 2172,
+        "h": 724
+      },
+      "seamless_method": "none; use mirror/repeat only after manual loop review",
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "repeat_mode": "mirror_or_disabled"
+      },
+      "recommended_motion_scale": 0.32,
+      "quality_flags": [
+        "ai_generated_proxy",
+        "independent_layer",
+        "not_sheet_crop",
+        "needs_manual_loop_review"
+      ]
+    },
+    {
+      "id": "background_rooftops_v3",
+      "category": "background",
+      "subcategory": "rooftops",
+      "asset_role": "runtime_proxy",
+      "production_status": "prototype_only",
+      "final_needed": true,
+      "path": "concept/town/can_use/background/parallax_rooftops_strip_v3.png",
+      "source_type": "independent_ai_generated_background_layer",
+      "source_path": "concept/town/can_use/background/parallax_rooftops_strip_v3.png",
+      "source_crop_xywh": [
+        0,
+        0,
+        2172,
+        724
+      ],
+      "dimensions": {
+        "w": 2172,
+        "h": 724
+      },
+      "seamless_method": "none; use mirror/repeat only after manual loop review",
+      "godot_import": {
+        "filter": false,
+        "mipmaps": false,
+        "pixel_snap_required": true,
+        "repeat_mode": "mirror_or_disabled"
+      },
+      "recommended_motion_scale": 0.55,
+      "quality_flags": [
+        "ai_generated_proxy",
+        "independent_layer",
+        "not_sheet_crop",
+        "needs_manual_loop_review"
+      ]
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This is a Godot project. The root contains `project.godot`, engine import metadata, and the project icon. Game scenes are currently under `senes/`, including `senes/town.tscn`; keep new gameplay scenes in this area unless the project is reorganized. Place reusable scripts beside the scene that owns them at first, then move shared logic into a dedicated `scripts/` directory when multiple scenes depend on it. Keep imported artwork, audio, and other runtime assets in clearly named folders such as `assets/`, `sprites/`, or `audio/`.
+This is a Godot project. The root contains `project.godot`, engine import metadata, and the project icon. Runtime scenes are organized under `scenes/` by domain: `game/`, `maps/`, `player/`, `npc/`, `ui/`, `monsters/`, and `props/`. The game entry scene is `scenes/game/game.tscn`, and the current town map lives at `scenes/maps/town.tscn`. Scripts follow the same domain split under `scripts/`, such as `scripts/player/player_controller.gd` and `scripts/managers/game.gd`.
 
 ## Build, Test, and Development Commands
 

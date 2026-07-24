@@ -1,0 +1,409 @@
+[gd_scene format=3 uid="uid://chjyyb86xb0xs"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
+bg_color = Color(0.09, 0.07, 0.055, 0.94)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.72, 0.52, 0.24, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
+bg_color = Color(0.54, 0.35, 0.14, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.98, 0.75, 0.32, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+bg_color = Color(0.25, 0.17, 0.09, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.62, 0.43, 0.19, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+bg_color = Color(0.15, 0.115, 0.08, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.42, 0.3, 0.16, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_row_selected"]
+bg_color = Color(0.37, 0.24, 0.11, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.7, 0.28, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_row"]
+bg_color = Color(0.22, 0.16, 0.1, 0.82)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.45, 0.32, 0.17, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="ShopUI" type="Control" unique_id=1281057967]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DimBackground" type="ColorRect" parent="." unique_id=297654023]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.42)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1949137595]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 4.0
+offset_right = 5.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ShopWindow" type="PanelContainer" parent="CenterContainer" unique_id=1517290008]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_window")
+
+[node name="WindowMargin" type="MarginContainer" parent="CenterContainer/ShopWindow" unique_id=359818337]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 18
+
+[node name="WindowLayout" type="VBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin" unique_id=296861978]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=2094390937]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
+theme_override_font_sizes/font_size = 32
+text = "Shop"
+horizontal_alignment = 1
+
+[node name="ModeBar" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=1382795265]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BuyButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar" unique_id=1237727422]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+text = "Buy"
+
+[node name="SellButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar" unique_id=1787728941]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+text = "Sell"
+
+[node name="ModeSpacer" type="Control" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar" unique_id=132273594]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MerchantName" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar" unique_id=1171229837]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.89, 0.75, 0.52, 1)
+theme_override_font_sizes/font_size = 18
+text = "Mira's Goods"
+vertical_alignment = 1
+
+[node name="Content" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=1075919554]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="ItemListPanel" type="PanelContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" unique_id=857394039]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="ItemListLayout" type="VBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel" unique_id=446996967]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ItemListHeader" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1392772843]
+layout_mode = 2
+
+[node name="ItemHeader" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemListHeader" unique_id=1549389718]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.96, 0.82, 0.5, 1)
+theme_override_font_sizes/font_size = 17
+text = "Merchant Stock"
+
+[node name="PriceHeader" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemListHeader" unique_id=1263731348]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.82, 0.5, 1)
+theme_override_font_sizes/font_size = 17
+text = "Gold"
+horizontal_alignment = 2
+
+[node name="Row01" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1275922312]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_row_selected")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
+text = "Iron Longsword                                      120"
+alignment = 0
+
+[node name="Row02" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1648897586]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_row")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
+text = "Oak Shield                                           90"
+alignment = 0
+
+[node name="Row03" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1141609991]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_row")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
+text = "Traveler's Cloak                                     75"
+alignment = 0
+
+[node name="Row04" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1185440815]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_row")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
+text = "Health Potion                                        25"
+alignment = 0
+
+[node name="Row05" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=708531143]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_row")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
+text = "Mana Tonic                                           30"
+alignment = 0
+
+[node name="Row06" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1970667600]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_row")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
+text = "Torch Bundle                                         12"
+alignment = 0
+
+[node name="Row07" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=2141940716]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_row")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
+text = "Antidote                                             18"
+alignment = 0
+
+[node name="Row08" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1830871957]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_row")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_row_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_row_selected")
+text = "Town Map                                             40"
+alignment = 0
+
+[node name="DetailsPanel" type="PanelContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" unique_id=26836017]
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="DetailsLayout" type="VBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel" unique_id=1466317579]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PreviewFrame" type="PanelContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout" unique_id=710577101]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="PreviewLayout" type="CenterContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/PreviewFrame" unique_id=408544084]
+layout_mode = 2
+
+[node name="PreviewIcon" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/PreviewFrame/PreviewLayout" unique_id=878512182]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.72, 0.28, 1)
+theme_override_font_sizes/font_size = 54
+text = "I"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ItemName" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout" unique_id=1578208004]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
+theme_override_font_sizes/font_size = 24
+text = "Iron Longsword"
+
+[node name="ItemDescription" type="RichTextLabel" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout" unique_id=1494566260]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.88, 0.78, 0.64, 1)
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+text = "A reliable blade from the town forge.
+
+Attack +8
+Durability: Standard
+Stock: 5"
+fit_content = true
+scroll_active = false
+
+[node name="QuantityRow" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout" unique_id=1738560938]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="QuantityLabel" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow" unique_id=2047376018]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.93, 0.81, 0.62, 1)
+theme_override_font_sizes/font_size = 18
+text = "Quantity"
+vertical_alignment = 1
+
+[node name="MinusButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow" unique_id=79941822]
+custom_minimum_size = Vector2(42, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+text = "-"
+
+[node name="QuantityValue" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow" unique_id=1088892746]
+custom_minimum_size = Vector2(54, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.64, 1)
+theme_override_font_sizes/font_size = 20
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlusButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow" unique_id=1726742162]
+custom_minimum_size = Vector2(42, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+text = "+"
+
+[node name="TotalRow" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout" unique_id=680875248]
+layout_mode = 2
+
+[node name="TotalLabel" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/TotalRow" unique_id=299407484]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.93, 0.81, 0.62, 1)
+theme_override_font_sizes/font_size = 19
+text = "Total"
+
+[node name="CurrencyAmount" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/TotalRow" unique_id=144610289]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0.32, 1)
+theme_override_font_sizes/font_size = 21
+text = "120 gold"
+horizontal_alignment = 2
+
+[node name="ActionBar" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=215793521]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="GoldBalance" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ActionBar" unique_id=172957030]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.89, 0.75, 0.52, 1)
+theme_override_font_sizes/font_size = 17
+text = "Wallet: 480 gold"
+vertical_alignment = 1
+
+[node name="ConfirmButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ActionBar" unique_id=801924932]
+custom_minimum_size = Vector2(132, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+text = "Confirm"
+
+[node name="CancelButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ActionBar" unique_id=1882606986]
+custom_minimum_size = Vector2(132, 42)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+text = "Cancel"
