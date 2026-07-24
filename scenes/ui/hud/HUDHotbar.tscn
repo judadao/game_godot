@@ -1,0 +1,112 @@
+[gd_scene load_steps=7 format=3 uid="uid://c86blgxrtf677"]
+
+[ext_resource type="Texture2D" uid="uid://boq1gj2qvd33j" path="res://assets/ui/hud/generated/hotbar_frame.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://ci7wlrlhdfe68" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionHp_Big.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://cqb3c1n46ivrp" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionSp_Big.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Skill_icon1.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://b547ik7uncbps" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png" id="5"]
+
+[node name="HUDHotbar" type="Control" unique_id=1549465770]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 312.0
+offset_bottom = 110.0
+mouse_filter = 2
+
+[node name="HotbarFrame" type="TextureRect" parent="." unique_id=635757122]
+layout_mode = 0
+offset_right = 296.0
+offset_bottom = 98.0
+texture = ExtResource("1")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icons" type="Control" parent="." unique_id=1131232641]
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 9.0
+offset_right = 282.0
+offset_bottom = 86.0
+
+[node name="Health" type="TextureRect" parent="Icons" unique_id=1085843386]
+layout_mode = 0
+offset_right = 52.0
+offset_bottom = 52.0
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Mana" type="TextureRect" parent="Icons" unique_id=178507827]
+layout_mode = 0
+offset_left = 67.0
+offset_right = 119.0
+offset_bottom = 52.0
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Attack" type="TextureRect" parent="Icons" unique_id=801264796]
+layout_mode = 0
+offset_left = 138.0
+offset_right = 190.0
+offset_bottom = 52.0
+texture = ExtResource("5")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Skill" type="TextureRect" parent="Icons" unique_id=1518968214]
+layout_mode = 0
+offset_left = 209.0
+offset_right = 261.0
+offset_bottom = 52.0
+texture = ExtResource("4")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HealthKey" type="Label" parent="."]
+offset_left = 19.0
+offset_top = 64.0
+offset_right = 78.0
+offset_bottom = 82.0
+theme_override_colors/font_color = Color(0.96, 0.86, 0.58, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.03, 0.02, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 9
+text = "E  HP"
+horizontal_alignment = 1
+
+[node name="ManaKey" type="Label" parent="."]
+offset_left = 86.0
+offset_top = 64.0
+offset_right = 145.0
+offset_bottom = 82.0
+theme_override_colors/font_color = Color(0.96, 0.86, 0.58, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.03, 0.02, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 9
+text = "R  MP"
+horizontal_alignment = 1
+
+[node name="AttackKey" type="Label" parent="."]
+offset_left = 153.0
+offset_top = 64.0
+offset_right = 212.0
+offset_bottom = 82.0
+theme_override_colors/font_color = Color(0.96, 0.86, 0.58, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.03, 0.02, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 9
+text = "Q  ATTACK"
+horizontal_alignment = 1
+
+[node name="SkillKey" type="Label" parent="."]
+offset_left = 220.0
+offset_top = 64.0
+offset_right = 279.0
+offset_bottom = 82.0
+theme_override_colors/font_color = Color(0.96, 0.86, 0.58, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.03, 0.02, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 9
+text = "W  SKILL"
+horizontal_alignment = 1

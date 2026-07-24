@@ -6,6 +6,29 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
+	var game_scene: Node = load("res://scenes/game/game.tscn").instantiate()
+	_expect(game_scene.has_node("HUDLayer"), "HUD has its own canvas layer")
+	_expect(game_scene.has_node("MenuLayer"), "Menus have their own canvas layer")
+	game_scene.free()
+
+	var hud: HUD = load("res://scenes/ui/HUD.tscn").instantiate() as HUD
+	root.add_child(hud)
+	await process_frame
+	_expect(hud.mouse_filter == Control.MOUSE_FILTER_IGNORE, "HUD ignores mouse input")
+	_expect(
+		(hud.get_node("InteractionPanel") as Control).mouse_filter == Control.MOUSE_FILTER_IGNORE,
+		"HUD interaction prompt does not open menus by click"
+	)
+	hud.set_player_level(7)
+	hud.set_player_class("Ranger")
+	_expect((hud.get_node("HUDStatus/LevelLabel") as Label).text == "Lv. 7", "HUD level updates dynamically")
+	_expect((hud.get_node("HUDStatus/ClassLabel") as Label).text == "RANGER", "HUD class updates dynamically")
+	_expect(
+		(hud.get_node("HUDStatus/HPFrame") as CanvasItem).z_index > (hud.get_node("HUDStatus/HPBar") as CanvasItem).z_index,
+		"Status frame renders above health fill"
+	)
+	hud.queue_free()
+
 	var shop: ShopUI = load("res://scenes/ui/ShopUI.tscn").instantiate() as ShopUI
 	root.add_child(shop)
 	await process_frame
@@ -28,6 +51,18 @@ func _run() -> void:
 	await process_frame
 	_expect(shop.quantity == 1, "Shop Left decreases quantity")
 	shop.queue_free()
+
+	var player: CharacterBody2D = load("res://scenes/player/Player.tscn").instantiate() as CharacterBody2D
+	root.add_child(player)
+	await process_frame
+	player.set_input_enabled(false)
+	_send_action(&"move_right")
+	await process_frame
+	_expect(player.get_move_direction() == 0.0, "Open UI lock suppresses player movement")
+	_send_action(&"jump")
+	await process_frame
+	_expect(not player._is_action_just_pressed(&"jump"), "Open UI lock suppresses player actions")
+	player.queue_free()
 
 	var dialogue: DialogueUI = load("res://scenes/ui/DialogueUI.tscn").instantiate() as DialogueUI
 	root.add_child(dialogue)

@@ -13,7 +13,8 @@ signal ui_closed(ui_name: String, ui_node: Control)
 @export var shop_scene: PackedScene = preload("res://scenes/ui/ShopUI.tscn")
 
 @onready var map_root: Node = $MapRoot
-@onready var ui_root: CanvasLayer = $UIRoot
+@onready var hud_root: CanvasLayer = $HUDLayer
+@onready var ui_root: CanvasLayer = $MenuLayer
 
 var current_map: Node
 var player: Node
@@ -28,6 +29,7 @@ var _interaction_candidates: Array[Node] = []
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	hud_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	load_current_map(starting_map)
 	load_hud()
@@ -94,10 +96,11 @@ func load_hud() -> void:
 	var hud_instance := hud_scene.instantiate()
 	if hud_instance is Control:
 		hud = hud_instance
-		ui_root.add_child(hud)
+		hud_root.add_child(hud)
 		if hud.has_signal("interaction_prompt_accepted"):
 			hud.connect("interaction_prompt_accepted", _try_interact)
 		_update_hud_area_name()
+		_update_hud_player_identity()
 	else:
 		push_error("HUD scene root must be a Control.")
 		hud_instance.queue_free()
@@ -115,6 +118,21 @@ func _update_hud_area_name() -> void:
 	}
 	var map_path := current_map.scene_file_path
 	hud.call("set_area_name", area_names.get(map_path, current_map.name))
+
+
+func _update_hud_player_identity() -> void:
+	if hud == null or player == null:
+		return
+	var player_level: Variant = player.get("level")
+	var player_class: Variant = player.get("character_class")
+	var player_experience: Variant = player.get("experience")
+	var experience_required: Variant = player.get("experience_to_next_level")
+	if player_level != null and hud.has_method("set_player_level"):
+		hud.call("set_player_level", int(player_level))
+	if player_class != null and hud.has_method("set_player_class"):
+		hud.call("set_player_class", String(player_class))
+	if player_experience != null and experience_required != null and hud.has_method("set_experience"):
+		hud.call("set_experience", int(player_experience), int(experience_required))
 
 
 func open_ui(ui_name: String, ui_scene: PackedScene, pause_game: bool = false) -> Control:
@@ -212,6 +230,7 @@ func _register_player(spawn_name: StringName) -> void:
 	if spawn is Node2D and player is Node2D:
 		(player as Node2D).global_position = (spawn as Node2D).global_position
 
+	_update_player_input_state()
 	player_registered.emit(player)
 
 
@@ -306,6 +325,13 @@ func _update_pause_state() -> void:
 			break
 
 	get_tree().paused = should_pause
+	_update_player_input_state()
+
+
+func _update_player_input_state() -> void:
+	if player == null or not player.has_method("set_input_enabled"):
+		return
+	player.call("set_input_enabled", ui_stack.is_empty())
 
 
 func _close_existing_primary_ui(next_ui_name: String) -> void:
@@ -415,9 +441,9 @@ func _update_interaction_prompt() -> void:
 	if raw_display_name != null:
 		var display_name := String(raw_display_name).strip_edges()
 		if not display_name.is_empty():
-			prompt = "%s to %s" % [prompt, display_name]
+			prompt = "%s — %s" % [prompt, display_name]
 	if hud.has_method("set_interaction_prompt"):
-		hud.call("set_interaction_prompt", prompt, "E")
+		hud.call("set_interaction_prompt", prompt, "F")
 
 
 func _dialogue_text_for(dialogue_id: StringName, display_name: String) -> String:

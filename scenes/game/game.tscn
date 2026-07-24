@@ -7,5 +7,8 @@ script = ExtResource("1_game_script")
 
 [node name="MapRoot" type="Node" parent="."]
 
-[node name="UIRoot" type="CanvasLayer" parent="."]
+[node name="HUDLayer" type="CanvasLayer" parent="."]
 layer = 10
+
+[node name="MenuLayer" type="CanvasLayer" parent="."]
+layer = 20

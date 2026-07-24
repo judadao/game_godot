@@ -3,22 +3,25 @@ class_name HUD
 
 signal interaction_prompt_accepted
 
-@onready var hp_fill: ColorRect = $StatusPanel/StatusRows/HPRow/HPBar/Fill
-@onready var hp_value: Label = $StatusPanel/StatusRows/HPRow/HPBar/Value
-@onready var mp_fill: ColorRect = $StatusPanel/StatusRows/MPRow/MPBar/Fill
-@onready var mp_value: Label = $StatusPanel/StatusRows/MPRow/MPBar/Value
-@onready var currency_value: Label = $CurrencyPanel/CurrencyRow/CurrencyValue
+@onready var hp_fill: ColorRect = $HUDStatus/HPBar/Fill
+@onready var hp_value: Label = $HUDStatus/HPBar/Value
+@onready var mp_fill: ColorRect = $HUDStatus/MPBar/Fill
+@onready var mp_value: Label = $HUDStatus/MPBar/Value
+@onready var stamina_fill: ColorRect = $HUDStatus/StaminaBar/Fill
+@onready var stamina_value: Label = $HUDStatus/StaminaBar/Value
+@onready var level_label: Label = $HUDStatus/LevelLabel
+@onready var class_label: Label = $HUDStatus/ClassLabel
+@onready var currency_value: Label = $HUDProgressPanel/Rows/GoldRow/CurrencyValue
+@onready var experience_value: Label = $HUDProgressPanel/Rows/ExperienceRow/ExperienceValue
 @onready var area_name: Label = $AreaPanel/AreaRows/AreaName
-@onready var quest_text: Label = $QuestPanel/QuestRows/QuestText
-@onready var quest_progress: Label = $QuestPanel/QuestRows/QuestProgress
-@onready var interaction_panel: PanelContainer = $InteractionPanel
+@onready var quest_text: Label = $HUDQuestTracker/QuestRows/QuestText
+@onready var quest_progress: Label = $HUDQuestTracker/QuestRows/QuestProgress
+@onready var interaction_panel: Control = $InteractionPanel
 @onready var key_label: Label = $InteractionPanel/PromptRow/Keycap/KeyLabel
 @onready var prompt_text: Label = $InteractionPanel/PromptRow/PromptText
 
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	interaction_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	interaction_panel.gui_input.connect(_on_interaction_panel_input)
+	_make_display_only(self)
 	prompt_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 func open() -> void:
@@ -36,8 +39,22 @@ func set_health(current: int, maximum: int) -> void:
 func set_mana(current: int, maximum: int) -> void:
 	_set_bar(mp_fill, mp_value, current, maximum)
 
+func set_stamina(current: int, maximum: int) -> void:
+	_set_bar(stamina_fill, stamina_value, current, maximum)
+
+func set_player_level(level: int) -> void:
+	level_label.text = "Lv. %d" % maxi(1, level)
+
+func set_player_class(player_class_name: String) -> void:
+	var normalized := player_class_name.strip_edges()
+	class_label.text = normalized.to_upper() if not normalized.is_empty() else "ADVENTURER"
+
 func set_currency(amount: int) -> void:
 	currency_value.text = _format_number(amount)
+
+func set_experience(current: int, required: int) -> void:
+	var safe_required := maxi(1, required)
+	experience_value.text = "%s / %s" % [_format_number(maxi(0, current)), _format_number(safe_required)]
 
 func set_area_name(value: String) -> void:
 	area_name.text = value.strip_edges() if not value.strip_edges().is_empty() else "Unknown Area"
@@ -47,7 +64,7 @@ func set_objective(text: String, progress: String = "") -> void:
 	quest_progress.text = progress
 	quest_progress.visible = not progress.is_empty()
 
-func set_interaction_prompt(action_text: String, key_text: String = "E") -> void:
+func set_interaction_prompt(action_text: String, key_text: String = "F") -> void:
 	prompt_text.text = action_text
 	key_label.text = key_text
 	interaction_panel.visible = not action_text.is_empty()
@@ -61,12 +78,16 @@ func set_interaction_visible(is_visible: bool) -> void:
 func _set_bar(fill: ColorRect, value_label: Label, current: int, maximum: int) -> void:
 	var safe_maximum: int = maxi(1, maximum)
 	var safe_current: int = clampi(current, 0, safe_maximum)
-	fill.anchor_right = float(safe_current) / float(safe_maximum)
+	var ratio := float(safe_current) / float(safe_maximum)
+	fill.position = Vector2(14.0, 5.0)
+	fill.size = Vector2(231.0 * ratio, 12.0)
 	value_label.text = "%d / %d" % [safe_current, safe_maximum]
 
-func _on_interaction_panel_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		interaction_prompt_accepted.emit()
+func _make_display_only(node: Node) -> void:
+	if node is Control:
+		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		_make_display_only(child)
 
 func _format_number(value: int) -> String:
 	var text := str(value)

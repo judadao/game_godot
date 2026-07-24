@@ -1,0 +1,77 @@
+[gd_scene load_steps=4 format=3]
+
+[sub_resource type="StyleBoxFlat" id="Panel"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.09, 0.12, 0.14, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.56, 0.3, 0.95)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="LabelSettings" id="Heading"]
+font_size = 11
+font_color = Color(0.78, 0.7, 0.52, 1)
+outline_size = 1
+outline_color = Color(0.04, 0.03, 0.02, 1)
+
+[sub_resource type="LabelSettings" id="Value"]
+font_size = 14
+font_color = Color(1, 0.84, 0.34, 1)
+outline_size = 2
+outline_color = Color(0.04, 0.03, 0.02, 1)
+
+[node name="HUDProgressPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(174, 72)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -194.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 92.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Panel")
+
+[node name="Rows" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="GoldRow" type="HBoxContainer" parent="Rows"]
+layout_mode = 2
+
+[node name="GoldLabel" type="Label" parent="Rows/GoldRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "GOLD"
+label_settings = SubResource("Heading")
+
+[node name="CurrencyValue" type="Label" parent="Rows/GoldRow"]
+layout_mode = 2
+text = "1,240"
+label_settings = SubResource("Value")
+horizontal_alignment = 2
+
+[node name="ExperienceRow" type="HBoxContainer" parent="Rows"]
+layout_mode = 2
+
+[node name="ExperienceLabel" type="Label" parent="Rows/ExperienceRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "EXP"
+label_settings = SubResource("Heading")
+
+[node name="ExperienceValue" type="Label" parent="Rows/ExperienceRow"]
+layout_mode = 2
+text = "0 / 100"
+label_settings = SubResource("Value")
+horizontal_alignment = 2

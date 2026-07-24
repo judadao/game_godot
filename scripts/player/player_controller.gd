@@ -25,6 +25,10 @@ const ATTACK_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/l
 @export var gravity: float = 980.0
 @export var jump_velocity: float = -420.0
 @export var attack_recovery: float = 0.25
+@export var level: int = 1
+@export var character_class: String = "Adventurer"
+@export var experience: int = 0
+@export var experience_to_next_level: int = 100
 
 @onready var visual: Node2D = get_node_or_null("Visual") as Node2D
 @onready var character_sprite: Sprite2D = get_node_or_null("Visual/CharacterSprite") as Sprite2D
@@ -37,6 +41,7 @@ var _attack_cooldown: float = 0.0
 var _animation_name: StringName = &""
 var _animation_elapsed: float = 0.0
 var _attack_animation_active: bool = false
+var input_enabled: bool = true
 
 func _physics_process(delta: float) -> void:
 	_tick_attack_cooldown(delta)
@@ -60,6 +65,9 @@ func _physics_process(delta: float) -> void:
 	_update_character_animation(delta)
 
 func get_move_direction() -> float:
+	if not input_enabled:
+		return 0.0
+
 	var direction := 0.0
 	if _is_action_pressed(ACTION_MOVE_LEFT, [FALLBACK_MOVE_LEFT]):
 		direction -= 1.0
@@ -67,6 +75,14 @@ func get_move_direction() -> float:
 		direction += 1.0
 
 	return clampf(direction, -1.0, 1.0)
+
+func set_input_enabled(is_enabled: bool) -> void:
+	input_enabled = is_enabled
+	if input_enabled:
+		return
+	velocity.x = 0.0
+	_attack_animation_active = false
+	_update_state(0.0)
 
 func set_facing_direction(direction: int) -> void:
 	if direction == 0:
@@ -166,6 +182,8 @@ func _get_animation_fps(animation_name: StringName) -> float:
 			return 5.0
 
 func _is_action_pressed(action: StringName, fallback_actions: Array[StringName] = []) -> bool:
+	if not input_enabled:
+		return false
 	if InputMap.has_action(action) and Input.is_action_pressed(action):
 		return true
 
@@ -176,6 +194,8 @@ func _is_action_pressed(action: StringName, fallback_actions: Array[StringName] 
 	return false
 
 func _is_action_just_pressed(action: StringName, fallback_actions: Array[StringName] = []) -> bool:
+	if not input_enabled:
+		return false
 	if InputMap.has_action(action) and Input.is_action_just_pressed(action):
 		return true
 

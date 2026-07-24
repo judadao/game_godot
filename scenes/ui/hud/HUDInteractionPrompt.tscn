@@ -1,0 +1,101 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ui/hud/generated/notification_banner.png" id="1"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_prompt"]
+texture = ExtResource("1")
+texture_margin_left = 48.0
+texture_margin_top = 22.0
+texture_margin_right = 48.0
+texture_margin_bottom = 22.0
+content_margin_left = 58.0
+content_margin_top = 13.0
+content_margin_right = 58.0
+content_margin_bottom = 13.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_keycap"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.09, 0.075, 0.055, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.78, 0.61, 0.31, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="LabelSettings" id="LabelSettings_keycap"]
+font_size = 14
+font_color = Color(0.96, 0.84, 0.58, 1)
+outline_size = 1
+outline_color = Color(0.03, 0.025, 0.02, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_prompt"]
+font_size = 16
+font_color = Color(0.94, 0.88, 0.7, 1)
+outline_size = 2
+outline_color = Color(0.04, 0.03, 0.02, 0.95)
+
+[node name="InteractionPanel" type="Control"]
+custom_minimum_size = Vector2(380, 82)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -190.0
+offset_top = -96.0
+offset_right = 190.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Banner" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_top = 26.0
+offset_right = 380.0
+offset_bottom = 82.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_prompt")
+
+[node name="PromptRow" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Keycap" type="PanelContainer" parent="PromptRow"]
+layout_mode = 0
+offset_left = 170.0
+offset_right = 210.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_keycap")
+
+[node name="KeyLabel" type="Label" parent="PromptRow/Keycap"]
+layout_mode = 2
+text = "F"
+label_settings = SubResource("LabelSettings_keycap")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PromptText" type="Label" parent="PromptRow"]
+layout_mode = 0
+offset_left = 54.0
+offset_top = 37.0
+offset_right = 326.0
+offset_bottom = 73.0
+text = "Talk to Mayor"
+label_settings = SubResource("LabelSettings_prompt")
+horizontal_alignment = 1
+vertical_alignment = 1

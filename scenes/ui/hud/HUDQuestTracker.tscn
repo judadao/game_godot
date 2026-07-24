@@ -1,0 +1,44 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ui/hud/generated/quest_panel.png" id="1"]
+
+[node name="HUDQuestTracker" type="Control"]
+offset_right = 280.0
+offset_bottom = 118.0
+mouse_filter = 2
+
+[node name="QuestFrame" type="TextureRect" parent="."]
+offset_right = 280.0
+offset_bottom = 118.0
+mouse_filter = 2
+texture = ExtResource("1")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="QuestRows" type="VBoxContainer" parent="."]
+offset_left = 18.0
+offset_top = 16.0
+offset_right = 262.0
+offset_bottom = 102.0
+theme_override_constants/separation = 4
+
+[node name="QuestHeading" type="Label" parent="QuestRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.84, 0.57, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 13
+text = "CURRENT OBJECTIVE"
+
+[node name="QuestText" type="Label" parent="QuestRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.92, 0.86, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 13
+text = "Meet the mayor at the notice board"
+autowrap_mode = 2
+
+[node name="QuestProgress" type="Label" parent="QuestRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.74, 0.7, 1)
+theme_override_font_sizes/font_size = 11
+text = "Town errands: 1 / 3"

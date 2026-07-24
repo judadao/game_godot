@@ -4,10 +4,10 @@
 [ext_resource type="Texture2D" uid="uid://btbvha3ixwooc" path="res://assets/curated/game_own/world/legacy_fantasy/Character/Idle/Idle-Sheet.png" id="2_player_idle"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
-size = Vector2(170, 192)
+size = Vector2(34, 96)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_interaction"]
-size = Vector2(56, 72)
+size = Vector2(56, 63)
 
 [node name="Player" type="CharacterBody2D" unique_id=294046306]
 script = ExtResource("1_player_controller")
@@ -22,14 +22,14 @@ texture = ExtResource("2_player_idle")
 hframes = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=357269703]
-position = Vector2(-64, -96)
+position = Vector2(-50, -78)
 shape = SubResource("RectangleShape2D_body")
 
 [node name="InteractionDetector" type="Area2D" parent="." unique_id=910379043]
 position = Vector2(24, -44)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionDetector" unique_id=923709006]
-position = Vector2(-36, -17)
+position = Vector2(-36, -21.5)
 shape = SubResource("RectangleShape2D_interaction")
 
 [node name="AttackOrigin" type="Marker2D" parent="." unique_id=1494877754]

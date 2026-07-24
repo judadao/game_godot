@@ -1,7 +1,12 @@
-[gd_scene format=3 uid="uid://cvgy0phlmscxp"]
+[gd_scene load_steps=14 format=3 uid="uid://cvgy0phlmscxp"]
 
 [ext_resource type="Script" uid="uid://bnw5erhged87p" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/ui/basic_rpg_ui/png/Action_panel.png" id="2_action_panel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDStatus.tscn" id="3_status"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDProgressPanel.tscn" id="4_progress"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDQuestTracker.tscn" id="5_quest"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDHotbar.tscn" id="6_hotbar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDInteractionPrompt.tscn" id="7_interaction"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 content_margin_left = 12.0
@@ -18,6 +23,12 @@ corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_overlay"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
 
 [sub_resource type="LabelSettings" id="LabelSettings_heading"]
 font_size = 14
@@ -42,47 +53,6 @@ font_color = Color(0.94, 0.96, 0.94, 1)
 outline_size = 2
 outline_color = Color(0.04, 0.04, 0.04, 0.85)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prompt"]
-content_margin_left = 12.0
-content_margin_top = 10.0
-content_margin_right = 12.0
-content_margin_bottom = 10.0
-bg_color = Color(0.08, 0.09, 0.11, 0.88)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.5, 0.82, 0.93, 0.95)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_keycap"]
-content_margin_left = 10.0
-content_margin_top = 5.0
-content_margin_right = 10.0
-content_margin_bottom = 5.0
-bg_color = Color(0.89, 0.82, 0.63, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.16, 0.13, 0.09, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-
-[sub_resource type="LabelSettings" id="LabelSettings_keycap"]
-font_color = Color(0.11, 0.09, 0.06, 1)
-
-[sub_resource type="LabelSettings" id="LabelSettings_prompt"]
-font_size = 18
-font_color = Color(0.91, 0.98, 1, 1)
-outline_size = 2
-outline_color = Color(0.04, 0.04, 0.04, 0.9)
-
 [node name="HUD" type="Control" unique_id=356122139]
 layout_mode = 3
 anchors_preset = 15
@@ -93,7 +63,30 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_hud")
 
+[node name="HUDStatus" parent="." instance=ExtResource("3_status")]
+
+[node name="HUDProgressPanel" parent="." instance=ExtResource("4_progress")]
+
+[node name="HUDQuestTracker" parent="." instance=ExtResource("5_quest")]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 148.0
+offset_right = 296.0
+offset_bottom = 266.0
+
+[node name="HUDHotbar" parent="." instance=ExtResource("6_hotbar")]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -126.0
+offset_right = 328.0
+offset_bottom = -16.0
+grow_vertical = 0
+
 [node name="CraftPixStatusFrame" type="TextureRect" parent="." unique_id=1940318031]
+visible = false
 layout_mode = 0
 offset_left = 18.0
 offset_top = 18.0
@@ -107,18 +100,19 @@ expand_mode = 1
 stretch_mode = 0
 
 [node name="StatusPanel" type="PanelContainer" parent="." unique_id=606363279]
+visible = false
 layout_mode = 0
-offset_left = 24.0
-offset_top = 22.0
-offset_right = 308.0
-offset_bottom = 108.0
+offset_left = 163.0
+offset_top = 55.0
+offset_right = 440.0
+offset_bottom = 122.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_overlay")
 
 [node name="StatusRows" type="VBoxContainer" parent="StatusPanel" unique_id=456278756]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 3
 
 [node name="HPRow" type="HBoxContainer" parent="StatusPanel/StatusRows" unique_id=1481443785]
 layout_mode = 2
@@ -132,7 +126,7 @@ text = "HP"
 label_settings = SubResource("LabelSettings_heading")
 
 [node name="HPBar" type="Control" parent="StatusPanel/StatusRows/HPRow" unique_id=1214215906]
-custom_minimum_size = Vector2(216, 20)
+custom_minimum_size = Vector2(225, 16)
 layout_mode = 2
 mouse_filter = 2
 
@@ -143,7 +137,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.2, 0.07, 0.07, 0.92)
+color = Color(0.08, 0.04, 0.04, 0.3)
 
 [node name="Fill" type="ColorRect" parent="StatusPanel/StatusRows/HPRow/HPBar" unique_id=1954585511]
 layout_mode = 0
@@ -152,7 +146,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.86, 0.2, 0.17, 1)
+color = Color(0.82, 0.11, 0.12, 0.92)
 
 [node name="Value" type="Label" parent="StatusPanel/StatusRows/HPRow/HPBar" unique_id=285950018]
 layout_mode = 0
@@ -177,7 +171,7 @@ text = "MP"
 label_settings = SubResource("LabelSettings_heading")
 
 [node name="MPBar" type="Control" parent="StatusPanel/StatusRows/MPRow" unique_id=1705197919]
-custom_minimum_size = Vector2(216, 20)
+custom_minimum_size = Vector2(225, 16)
 layout_mode = 2
 mouse_filter = 2
 
@@ -188,7 +182,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.05, 0.1, 0.23, 0.92)
+color = Color(0.03, 0.05, 0.12, 0.3)
 
 [node name="Fill" type="ColorRect" parent="StatusPanel/StatusRows/MPRow/MPBar" unique_id=210750285]
 layout_mode = 0
@@ -210,42 +204,58 @@ label_settings = SubResource("LabelSettings_small")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CurrencyPanel" type="PanelContainer" parent="." unique_id=1086629638]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -127.0
-offset_top = 22.0
-offset_right = -24.0
-offset_bottom = 72.0
-grow_horizontal = 0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
-
-[node name="CurrencyRow" type="HBoxContainer" parent="CurrencyPanel" unique_id=1096411027]
+[node name="StaminaRow" type="HBoxContainer" parent="StatusPanel/StatusRows"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
-alignment = 2
 
-[node name="CoinIcon" type="ColorRect" parent="CurrencyPanel/CurrencyRow" unique_id=440102433]
-custom_minimum_size = Vector2(24, 24)
+[node name="StaminaLabel" type="Label" parent="StatusPanel/StatusRows/StaminaRow"]
+custom_minimum_size = Vector2(28, 20)
+layout_mode = 2
+text = "SP"
+label_settings = SubResource("LabelSettings_heading")
+
+[node name="StaminaBar" type="Control" parent="StatusPanel/StatusRows/StaminaRow"]
+custom_minimum_size = Vector2(225, 16)
 layout_mode = 2
 mouse_filter = 2
-color = Color(1, 0.72, 0.22, 1)
 
-[node name="CurrencyValue" type="Label" parent="CurrencyPanel/CurrencyRow" unique_id=1655501081]
-layout_mode = 2
-text = "1,240"
-label_settings = SubResource("LabelSettings_currency")
+[node name="Background" type="ColorRect" parent="StatusPanel/StatusRows/StaminaRow/StaminaBar"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.03, 0.09, 0.04, 0.3)
+
+[node name="Fill" type="ColorRect" parent="StatusPanel/StatusRows/StaminaRow/StaminaBar"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.29, 0.56, 0.22, 0.95)
+
+[node name="Value" type="Label" parent="StatusPanel/StatusRows/StaminaRow/StaminaBar"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "100 / 100"
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="AreaPanel" type="PanelContainer" parent="." unique_id=1447830167]
+visible = false
 layout_mode = 0
-offset_left = 24.0
-offset_top = 120.0
-offset_right = 308.0
-offset_bottom = 168.0
+offset_left = 136.0
+offset_top = 126.0
+offset_right = 355.0
+offset_bottom = 164.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
@@ -265,17 +275,14 @@ text = "Town Square"
 label_settings = SubResource("LabelSettings_body")
 
 [node name="QuestPanel" type="PanelContainer" parent="." unique_id=1176895634]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = -527.0
-offset_right = 366.0
-offset_bottom = -433.0
-grow_vertical = 0
+visible = false
+layout_mode = 0
+offset_left = 38.0
+offset_top = 195.0
+offset_right = 290.0
+offset_bottom = 306.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_overlay")
 
 [node name="QuestRows" type="VBoxContainer" parent="QuestPanel" unique_id=573888644]
 layout_mode = 2
@@ -298,45 +305,4 @@ layout_mode = 2
 text = "Town errands: 1 / 3"
 label_settings = SubResource("LabelSettings_small")
 
-[node name="InteractionPanel" type="PanelContainer" parent="." unique_id=1450196303]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -155.0
-offset_top = -84.0
-offset_right = 155.0
-offset_bottom = -14.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_prompt")
-
-[node name="PromptRow" type="HBoxContainer" parent="InteractionPanel" unique_id=1818581699]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 12
-alignment = 1
-
-[node name="Keycap" type="PanelContainer" parent="InteractionPanel/PromptRow" unique_id=642903650]
-custom_minimum_size = Vector2(42, 34)
-layout_mode = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_keycap")
-
-[node name="KeyLabel" type="Label" parent="InteractionPanel/PromptRow/Keycap" unique_id=1467414429]
-layout_mode = 2
-text = "E"
-label_settings = SubResource("LabelSettings_keycap")
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="PromptText" type="Label" parent="InteractionPanel/PromptRow" unique_id=1823477037]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Talk to Mayor"
-label_settings = SubResource("LabelSettings_prompt")
-horizontal_alignment = 1
-vertical_alignment = 1
+[node name="InteractionPanel" parent="." instance=ExtResource("7_interaction")]

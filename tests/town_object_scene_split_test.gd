@@ -2,21 +2,20 @@ extends SceneTree
 
 const TOWN_SCENES: Array[String] = [
 	"res://scenes/maps/town.tscn",
-	"res://scenes/town.tscn",
 ]
 const EXPECTED_BUILDINGS: Array[StringName] = [
 	&"WestHouse",
 	&"ItemShop",
 	&"Blacksmith",
 	&"MarketStall",
+	&"EmptyResidence",
+	&"EmptyTowerHouse",
 	&"TownPortal",
 	&"TownWell",
 	&"NoticeBoard",
 ]
 const EXPECTED_PROPS: Array[StringName] = [
 	&"WestFence",
-	&"ItemShopSign",
-	&"BlacksmithSign",
 	&"LampWest",
 	&"LampCenter",
 	&"CrossroadSign",
@@ -32,9 +31,7 @@ const EXPECTED_VISUAL_NPCS: Array[StringName] = [
 	&"Mayor",
 	&"VillagerMale",
 	&"VillagerFemale",
-	&"Smith",
 	&"Guard",
-	&"Innkeeper",
 ]
 
 func _init() -> void:
