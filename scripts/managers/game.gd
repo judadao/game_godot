@@ -5,6 +5,10 @@ signal player_registered(player_node: Node)
 signal ui_opened(ui_name: String, ui_node: Control)
 signal ui_closed(ui_name: String, ui_node: Control)
 
+const QUICK_SAVE_PATH := "user://saves/quick_save.json"
+const QUICK_SAVE_TEMP_PATH := "user://saves/quick_save.tmp"
+const QUICK_SAVE_BACKUP_PATH := "user://saves/quick_save.json.bak"
+
 @export var starting_map: PackedScene = preload("res://scenes/maps/town.tscn")
 @export var hud_scene: PackedScene = preload("res://scenes/ui/HUD.tscn")
 @export var inventory_scene: PackedScene = preload("res://scenes/ui/InventoryUI.tscn")
@@ -247,6 +251,13 @@ func _wire_common_ui_controls(ui_control: Control) -> void:
 	if inventory_button is BaseButton:
 		(inventory_button as BaseButton).pressed.connect(_open_inventory_from_pause)
 
+	if ui_control.has_signal("save_requested"):
+		ui_control.connect("save_requested", _save_quick_slot.bind(ui_control))
+	if ui_control.has_signal("load_requested"):
+		ui_control.connect("load_requested", _load_quick_slot.bind(ui_control))
+	if ui_control.has_method("set_button_enabled"):
+		ui_control.call("set_button_enabled", "load", FileAccess.file_exists(QUICK_SAVE_PATH))
+
 	var quit_button := ui_control.find_child("Quit", true, false)
 	if quit_button is BaseButton:
 		(quit_button as BaseButton).pressed.connect(get_tree().quit)
@@ -305,6 +316,127 @@ func _connect_if_present(node: Node, signal_name: StringName, method_name: Strin
 
 func _open_inventory_from_pause() -> void:
 	open_ui("InventoryUI", inventory_scene)
+
+
+func _save_quick_slot(menu: Control) -> void:
+	var payload := _build_quick_save_payload()
+	var save_directory := ProjectSettings.globalize_path("user://saves")
+	var create_error := DirAccess.make_dir_recursive_absolute(save_directory)
+	if create_error != OK:
+		_set_menu_footer(menu, "Save failed: cannot create save folder.")
+		return
+
+	var temp_file := FileAccess.open(QUICK_SAVE_TEMP_PATH, FileAccess.WRITE)
+	if temp_file == null:
+		_set_menu_footer(menu, "Save failed: cannot write temporary file.")
+		return
+	temp_file.store_string(JSON.stringify(payload, "\t"))
+	temp_file.flush()
+	temp_file = null
+
+	var check_file := FileAccess.open(QUICK_SAVE_TEMP_PATH, FileAccess.READ)
+	if check_file == null or JSON.parse_string(check_file.get_as_text()) == null:
+		_remove_file_if_present(QUICK_SAVE_TEMP_PATH)
+		_set_menu_footer(menu, "Save failed: validation error.")
+		return
+
+	if FileAccess.file_exists(QUICK_SAVE_PATH):
+		_copy_file(QUICK_SAVE_PATH, QUICK_SAVE_BACKUP_PATH)
+		_remove_file_if_present(QUICK_SAVE_PATH)
+
+	var rename_error := DirAccess.rename_absolute(
+		ProjectSettings.globalize_path(QUICK_SAVE_TEMP_PATH),
+		ProjectSettings.globalize_path(QUICK_SAVE_PATH)
+	)
+	if rename_error != OK:
+		_set_menu_footer(menu, "Save failed while replacing quick save.")
+		return
+
+	if menu.has_method("set_button_enabled"):
+		menu.call("set_button_enabled", "load", true)
+	_set_menu_footer(menu, "Game saved.")
+
+
+func _load_quick_slot(menu: Control) -> void:
+	var save_file := FileAccess.open(QUICK_SAVE_PATH, FileAccess.READ)
+	if save_file == null:
+		_set_menu_footer(menu, "No quick save found.")
+		return
+	var parsed: Variant = JSON.parse_string(save_file.get_as_text())
+	if not parsed is Dictionary:
+		_set_menu_footer(menu, "Load failed: save data is corrupted.")
+		return
+
+	var payload := parsed as Dictionary
+	var map_path := String(payload.get("map_path", ""))
+	if map_path.is_empty() or not ResourceLoader.exists(map_path):
+		_set_menu_footer(menu, "Load failed: saved map is unavailable.")
+		return
+	var map_scene := load(map_path) as PackedScene
+	if map_scene == null:
+		_set_menu_footer(menu, "Load failed: saved map cannot be loaded.")
+		return
+
+	close_ui(menu)
+	load_current_map(map_scene)
+	_apply_quick_save_payload(payload)
+
+
+func _build_quick_save_payload() -> Dictionary:
+	var player_payload: Dictionary = {}
+	if player != null:
+		if player is Node2D:
+			var position := (player as Node2D).global_position
+			player_payload["position"] = {"x": position.x, "y": position.y}
+		for property_name in ["level", "character_class", "experience", "experience_to_next_level"]:
+			var value: Variant = player.get(property_name)
+			if value != null:
+				player_payload[property_name] = value
+
+	return {
+		"schema_version": 1,
+		"saved_at": Time.get_datetime_string_from_system(true),
+		"map_path": current_map.scene_file_path if current_map != null else "",
+		"player": player_payload,
+	}
+
+
+func _apply_quick_save_payload(payload: Dictionary) -> void:
+	if player == null:
+		return
+	var player_payload := payload.get("player", {}) as Dictionary
+	for property_name in ["level", "character_class", "experience", "experience_to_next_level"]:
+		if player_payload.has(property_name):
+			player.set(property_name, player_payload[property_name])
+	var position_payload := player_payload.get("position", {}) as Dictionary
+	if player is Node2D and position_payload.has("x") and position_payload.has("y"):
+		(player as Node2D).global_position = Vector2(
+			float(position_payload["x"]),
+			float(position_payload["y"])
+		)
+	_update_hud_player_identity()
+
+
+func _set_menu_footer(menu: Control, text: String) -> void:
+	if is_instance_valid(menu) and menu.has_method("set_footer_text"):
+		menu.call("set_footer_text", text)
+
+
+func _copy_file(source_path: String, target_path: String) -> bool:
+	var source := FileAccess.open(source_path, FileAccess.READ)
+	if source == null:
+		return false
+	var target := FileAccess.open(target_path, FileAccess.WRITE)
+	if target == null:
+		return false
+	target.store_buffer(source.get_buffer(source.get_length()))
+	target.flush()
+	return true
+
+
+func _remove_file_if_present(path: String) -> void:
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 func _resolve_open_ui(ui: Variant) -> Control:
