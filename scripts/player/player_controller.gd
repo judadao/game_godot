@@ -14,6 +14,12 @@ const FALLBACK_JUMP_ALT: StringName = &"ui_up"
 const STATE_IDLE: StringName = &"idle"
 const STATE_WALK: StringName = &"walk"
 const STATE_JUMP: StringName = &"jump"
+const ANIMATION_ATTACK: StringName = &"attack"
+
+const IDLE_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/legacy_fantasy/Character/Idle/Idle-Sheet.png")
+const RUN_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/legacy_fantasy/Character/Run/Run-Sheet.png")
+const JUMP_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/legacy_fantasy/Character/Jumlp-All/Jump-All-Sheet.png")
+const ATTACK_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/legacy_fantasy/Character/Attack-01/Attack-01-Sheet.png")
 
 @export var speed: float = 260.0
 @export var gravity: float = 980.0
@@ -21,12 +27,16 @@ const STATE_JUMP: StringName = &"jump"
 @export var attack_recovery: float = 0.25
 
 @onready var visual: Node2D = get_node_or_null("Visual") as Node2D
+@onready var character_sprite: Sprite2D = get_node_or_null("Visual/CharacterSprite") as Sprite2D
 @onready var interaction_detector: Area2D = get_node_or_null("InteractionDetector") as Area2D
 @onready var attack_origin: Marker2D = get_node_or_null("AttackOrigin") as Marker2D
 
 var facing_direction: int = 1
 var current_state: StringName = STATE_IDLE
 var _attack_cooldown: float = 0.0
+var _animation_name: StringName = &""
+var _animation_elapsed: float = 0.0
+var _attack_animation_active: bool = false
 
 func _physics_process(delta: float) -> void:
 	_tick_attack_cooldown(delta)
@@ -47,6 +57,7 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 	_update_state(direction)
+	_update_character_animation(delta)
 
 func get_move_direction() -> float:
 	var direction := 0.0
@@ -74,6 +85,8 @@ func attack() -> bool:
 		return false
 
 	_attack_cooldown = attack_recovery
+	_attack_animation_active = true
+	_play_animation(ANIMATION_ATTACK)
 	var origin := global_position
 	if attack_origin != null:
 		origin = attack_origin.global_position
@@ -96,6 +109,61 @@ func _update_state(direction: float) -> void:
 
 	current_state = next_state
 	state_changed.emit(current_state)
+
+func _update_character_animation(delta: float) -> void:
+	if character_sprite == null:
+		return
+
+	var target_animation := current_state
+	if _attack_animation_active:
+		target_animation = ANIMATION_ATTACK
+
+	_play_animation(target_animation)
+	_animation_elapsed += delta
+
+	var fps := _get_animation_fps(_animation_name)
+	var frame_count := character_sprite.hframes
+	var next_frame := int(_animation_elapsed * fps)
+
+	if _animation_name == ANIMATION_ATTACK and next_frame >= frame_count:
+		_attack_animation_active = false
+		_play_animation(current_state)
+		return
+
+	character_sprite.frame = next_frame % frame_count
+
+func _play_animation(animation_name: StringName) -> void:
+	if character_sprite == null or animation_name == _animation_name:
+		return
+
+	_animation_name = animation_name
+	_animation_elapsed = 0.0
+	character_sprite.frame = 0
+
+	match animation_name:
+		STATE_WALK:
+			character_sprite.texture = RUN_TEXTURE
+			character_sprite.hframes = 8
+		STATE_JUMP:
+			character_sprite.texture = JUMP_TEXTURE
+			character_sprite.hframes = 15
+		ANIMATION_ATTACK:
+			character_sprite.texture = ATTACK_TEXTURE
+			character_sprite.hframes = 8
+		_:
+			character_sprite.texture = IDLE_TEXTURE
+			character_sprite.hframes = 4
+
+func _get_animation_fps(animation_name: StringName) -> float:
+	match animation_name:
+		STATE_WALK:
+			return 12.0
+		STATE_JUMP:
+			return 15.0
+		ANIMATION_ATTACK:
+			return 14.0
+		_:
+			return 5.0
 
 func _is_action_pressed(action: StringName, fallback_actions: Array[StringName] = []) -> bool:
 	if InputMap.has_action(action) and Input.is_action_pressed(action):

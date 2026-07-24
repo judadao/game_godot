@@ -13,6 +13,6 @@ Shared placeholder directories:
 
 Current prototype placeholders:
 
-- `res://scenes/player/Player.tscn` uses simple Godot primitives and gradient textures for the player body until final character sprites are ready.
+- `res://scenes/player/Player.tscn` uses the curated Legacy Fantasy swordsman sheets for idle, run, jump, and attack animations.
 - `res://scenes/maps/town.tscn` keeps the existing town sprites as the visual layer and adds hidden interactive scene instances for the mayor, merchant, blacksmith, innkeeper, chest, and portals.
 - `res://scripts/managers/game.gd` uses inline prototype dialogue text, shop stock, and chest feedback data until `res://data/` gameplay tables are added.
