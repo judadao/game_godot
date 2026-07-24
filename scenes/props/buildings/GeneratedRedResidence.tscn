@@ -1,14 +1,14 @@
 [gd_scene load_steps=4 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/town/generated/town_buildings_atlas.png" id="1"]
+[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_buildings_atlas_v2.png" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/props/town/GeneratedBlankSign.tscn" id="2"]
 [sub_resource type="AtlasTexture" id="Building"]
 atlas = ExtResource("1")
-region = Rect2(0, 512, 512, 512)
+region = Rect2(494, 72, 380, 402)
 
 [node name="GeneratedRedResidence" type="Sprite2D" groups=["TownBuilding"]]
 texture = SubResource("Building")
-offset = Vector2(0, -174)
+offset = Vector2(0, -201)
 
 [node name="BlankDoorplate" parent="." instance=ExtResource("2")]
 position = Vector2(78, -150)

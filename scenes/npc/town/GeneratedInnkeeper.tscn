@@ -1,10 +1,10 @@
 [gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/npc/npc.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/town/generated/town_npc_atlas.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_npcs_atlas_v2.png" id="2"]
 [sub_resource type="AtlasTexture" id="NpcTexture"]
 atlas = ExtResource("2")
-region = Rect2(1481, 111, 223, 541)
+region = Rect2(930, 54, 300, 590)
 [sub_resource type="RectangleShape2D" id="Body"]
 size = Vector2(42, 94)
 [sub_resource type="RectangleShape2D" id="Interaction"]
@@ -21,8 +21,8 @@ dialogue_id = &"innkeeper"
 
 [node name="Visual" type="Sprite2D" parent="."]
 texture = SubResource("NpcTexture")
-offset = Vector2(0, -270.5)
-scale = Vector2(0.3, 0.3)
+offset = Vector2(0, -295)
+scale = Vector2(0.23, 0.23)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -47)

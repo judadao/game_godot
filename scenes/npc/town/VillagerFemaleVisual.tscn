@@ -1,11 +1,11 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/town/generated/town_npc_atlas.png" id="1_texture"]
+[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_npcs_atlas_v2.png" id="1_texture"]
 [sub_resource type="AtlasTexture" id="NpcTexture"]
 atlas = ExtResource("1_texture")
-region = Rect2(518, 128, 203, 522)
+region = Rect2(1840, 54, 270, 590)
 
 [node name="VillagerFemaleVisual" type="Sprite2D" groups=["TownNpcVisual"]]
 texture = SubResource("NpcTexture")
-offset = Vector2(0, -261)
-scale = Vector2(0.3, 0.3)
+offset = Vector2(0, -295)
+scale = Vector2(0.23, 0.23)
