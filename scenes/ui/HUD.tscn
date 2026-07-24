@@ -227,13 +227,14 @@ text = "1,240"
 label_settings = SubResource("LabelSettings_currency")
 
 [node name="QuestPanel" type="PanelContainer" parent="." unique_id=1176895634]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 24.0
-offset_top = -118.0
+offset_top = -527.0
 offset_right = 366.0
-offset_bottom = -24.0
+offset_bottom = -433.0
 grow_vertical = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
@@ -261,15 +262,16 @@ label_settings = SubResource("LabelSettings_small")
 
 [node name="InteractionPanel" type="PanelContainer" parent="." unique_id=1450196303]
 layout_mode = 1
+anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -155.0
-offset_top = -94.0
-offset_right = 155.0
-offset_bottom = -24.0
-grow_horizontal = 0
+offset_left = 252.0
+offset_top = -84.0
+offset_right = 562.0
+offset_bottom = -14.0
+grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_prompt")
