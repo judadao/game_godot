@@ -298,4 +298,5 @@ vertical_alignment = 1
 layout_mode = 2
 text = "Talk to Mayor"
 label_settings = SubResource("LabelSettings_prompt")
+horizontal_alignment = 1
 vertical_alignment = 1

@@ -18,6 +18,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	interaction_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	interaction_panel.gui_input.connect(_on_interaction_panel_input)
+	prompt_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 func open() -> void:
 	visible = true
