@@ -1,0 +1,278 @@
+[gd_scene format=3 uid="uid://c4whe1nj1xiea"]
+
+[ext_resource type="Texture2D" uid="uid://nmn32d05b6ae" path="res://concept/town/can_use/background/parallax_clouds_strip_v3.png" id="1_clouds"]
+[ext_resource type="Texture2D" uid="uid://umo8x74en0y" path="res://concept/town/can_use/background/parallax_mountains_strip_v3.png" id="2_mountains"]
+[ext_resource type="Texture2D" uid="uid://b48ryt47l4404" path="res://concept/town/can_use/background/parallax_forest_strip_v3.png" id="3_forest"]
+[ext_resource type="Texture2D" uid="uid://bue7naubdsn6g" path="res://concept/town/can_use/background/parallax_rooftops_strip_v3.png" id="4_rooftops"]
+[ext_resource type="Texture2D" uid="uid://guy5ox20kbdm" path="res://concept/town/can_use/building/building_building_facility_001.png" id="5_house"]
+[ext_resource type="Texture2D" uid="uid://dcu7m7hlqth8c" path="res://concept/town/can_use/building/building_building_facility_002.png" id="6_shop"]
+[ext_resource type="Texture2D" uid="uid://dhk4iqqnn0il4" path="res://concept/town/can_use/building/building_building_facility_003.png" id="7_blacksmith"]
+[ext_resource type="Texture2D" uid="uid://crv31jm17gtcg" path="res://concept/town/can_use/building/building_building_facility_005.png" id="8_portal"]
+[ext_resource type="Texture2D" uid="uid://0fpsu4deb07s" path="res://concept/town/can_use/building/building_building_facility_006.png" id="9_well"]
+[ext_resource type="Texture2D" uid="uid://btb314qvc4rn1" path="res://concept/town/can_use/building/building_building_facility_007.png" id="10_board"]
+[ext_resource type="Texture2D" uid="uid://dgjedw5iy5a75" path="res://concept/town/can_use/building/building_building_facility_008.png" id="11_stall"]
+[ext_resource type="Texture2D" uid="uid://brgcls3ggpb7v" path="res://concept/town/can_use/prop/prop_asset_003.png" id="12_lamp"]
+[ext_resource type="Texture2D" uid="uid://dfkqxdwq4xxa2" path="res://concept/town/can_use/prop/prop_asset_004.png" id="13_sign"]
+[ext_resource type="Texture2D" uid="uid://blyy4kpphhdv0" path="res://concept/town/can_use/prop/prop_asset_005.png" id="14_bench"]
+[ext_resource type="Texture2D" uid="uid://b8vwv0q0stij1" path="res://concept/town/can_use/prop/prop_asset_006.png" id="15_barrel"]
+[ext_resource type="Texture2D" uid="uid://c7qcyjletnrfx" path="res://concept/town/can_use/prop/prop_asset_007.png" id="16_crate"]
+[ext_resource type="Texture2D" uid="uid://bfjwe7fn3u2nr" path="res://concept/town/can_use/prop/prop_asset_008.png" id="17_fence"]
+[ext_resource type="Texture2D" uid="uid://b37ucnu4d1jc2" path="res://concept/town/can_use/prop/prop_asset_009.png" id="18_cart"]
+[ext_resource type="Texture2D" uid="uid://2ysxob8pjr1o" path="res://concept/town/can_use/prop/prop_asset_010.png" id="19_tree"]
+[ext_resource type="Texture2D" uid="uid://dt1cxkro7r7yh" path="res://concept/town/can_use/prop/prop_asset_011.png" id="20_flowers"]
+[ext_resource type="Texture2D" uid="uid://cb88erhla0rkq" path="res://concept/town/can_use/prop/prop_asset_012.png" id="21_potion"]
+[ext_resource type="Texture2D" uid="uid://bsuqk1qnnknyt" path="res://concept/town/can_use/prop/prop_asset_013.png" id="22_weapon"]
+[ext_resource type="Texture2D" uid="uid://bfoix4s1e0ld0" path="res://concept/town/can_use/npc/npc_asset_001.png" id="23_mayor"]
+[ext_resource type="Texture2D" uid="uid://c04f25mnhtfau" path="res://concept/town/can_use/npc/npc_asset_003.png" id="24_villager_male"]
+[ext_resource type="Texture2D" uid="uid://c3xiqctywsoe6" path="res://concept/town/can_use/npc/npc_asset_005.png" id="25_villager_female"]
+[ext_resource type="Texture2D" uid="uid://425qqvkhr58m" path="res://concept/town/can_use/npc/npc_asset_009.png" id="26_smith"]
+[ext_resource type="Texture2D" uid="uid://ccv6uq1tsiwoq" path="res://concept/town/can_use/npc/npc_asset_011.png" id="27_guard"]
+[ext_resource type="Texture2D" uid="uid://n263p7p8w6fv" path="res://concept/town/can_use/npc/npc_asset_016.png" id="28_innkeeper"]
+[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="29_player_script"]
+
+[sub_resource type="Gradient" id="Gradient_sky"]
+offsets = PackedFloat32Array(0, 0.58, 1)
+colors = PackedColorArray(0.45, 0.73, 0.96, 1, 0.77, 0.89, 0.99, 1, 0.98, 0.9, 0.74, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_sky"]
+gradient = SubResource("Gradient_sky")
+width = 2172
+height = 724
+fill_from = Vector2(0.5, 0)
+fill_to = Vector2(0.5, 1)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(42, 88)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(2800, 64)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(48, 520)
+
+[node name="Town" type="Node2D" unique_id=2064318752]
+
+[node name="Sky" type="Sprite2D" parent="." unique_id=1957591297]
+position = Vector2(1086, 362)
+texture = SubResource("GradientTexture2D_sky")
+
+[node name="ParallaxBackground" type="Node2D" parent="." unique_id=1113887505]
+
+[node name="Clouds" type="Sprite2D" parent="ParallaxBackground" unique_id=6151231]
+position = Vector2(1086, 286)
+texture = ExtResource("1_clouds")
+
+[node name="Mountains" type="Sprite2D" parent="ParallaxBackground" unique_id=850052382]
+position = Vector2(1086, 316)
+texture = ExtResource("2_mountains")
+
+[node name="Forest" type="Sprite2D" parent="ParallaxBackground" unique_id=921288757]
+position = Vector2(1086, 346)
+texture = ExtResource("3_forest")
+
+[node name="Rooftops" type="Sprite2D" parent="ParallaxBackground" unique_id=1867272114]
+position = Vector2(1291, 352)
+scale = Vector2(1.2605894, 1)
+texture = ExtResource("4_rooftops")
+
+[node name="Ground" type="Node2D" parent="." unique_id=1400765759]
+
+[node name="StreetBase" type="ColorRect" parent="Ground" unique_id=68624083]
+offset_left = -311.0
+offset_top = 609.0
+offset_right = 2809.0
+offset_bottom = 849.0
+color = Color(0.39, 0.31, 0.25, 1)
+
+[node name="WalkableRoad" type="ColorRect" parent="Ground" unique_id=1780323524]
+offset_left = -320.0
+offset_top = 603.0
+offset_right = 2800.0
+offset_bottom = 739.0
+color = Color(0.59, 0.49, 0.38, 1)
+
+[node name="RoadHighlight" type="ColorRect" parent="Ground" unique_id=1854912833]
+offset_left = -334.0
+offset_top = 608.0
+offset_right = 2786.0
+offset_bottom = 624.0
+color = Color(0.72, 0.63, 0.5, 1)
+
+[node name="Buildings" type="Node2D" parent="." unique_id=13442811]
+
+[node name="WestHouse" type="Sprite2D" parent="Buildings" unique_id=742299263]
+position = Vector2(270, 616)
+texture = ExtResource("5_house")
+offset = Vector2(0, -156)
+
+[node name="ItemShop" type="Sprite2D" parent="Buildings" unique_id=10223628]
+position = Vector2(835, 618)
+texture = ExtResource("6_shop")
+offset = Vector2(0, -158.5)
+
+[node name="Blacksmith" type="Sprite2D" parent="Buildings" unique_id=2131865791]
+position = Vector2(1288, 614)
+texture = ExtResource("7_blacksmith")
+offset = Vector2(0, -157.5)
+
+[node name="MarketStall" type="Sprite2D" parent="Buildings" unique_id=327349519]
+position = Vector2(1641, 600)
+texture = ExtResource("11_stall")
+offset = Vector2(0, -123.5)
+
+[node name="TownPortal" type="Sprite2D" parent="Buildings" unique_id=1829466527]
+position = Vector2(2284, 676)
+texture = ExtResource("8_portal")
+offset = Vector2(0, -133)
+
+[node name="TownWell" type="Sprite2D" parent="Buildings" unique_id=945588921]
+position = Vector2(1947, 609)
+texture = ExtResource("9_well")
+offset = Vector2(0, -126.5)
+
+[node name="NoticeBoard" type="Sprite2D" parent="Buildings" unique_id=27910040]
+position = Vector2(540, 625)
+texture = ExtResource("10_board")
+offset = Vector2(0, -115)
+
+[node name="Props" type="Node2D" parent="." unique_id=1933136006]
+
+[node name="WestFence" type="Sprite2D" parent="Props" unique_id=1245177602]
+position = Vector2(90, 612)
+texture = ExtResource("17_fence")
+offset = Vector2(0, -47)
+
+[node name="ItemShopSign" type="Sprite2D" parent="Props" unique_id=1973658835]
+position = Vector2(650, 582)
+texture = ExtResource("21_potion")
+offset = Vector2(0, -68.5)
+
+[node name="BlacksmithSign" type="Sprite2D" parent="Props" unique_id=2054519613]
+position = Vector2(1110, 582)
+texture = ExtResource("22_weapon")
+offset = Vector2(0, -68.5)
+
+[node name="LampWest" type="Sprite2D" parent="Props" unique_id=985538292]
+position = Vector2(430, 592)
+texture = ExtResource("12_lamp")
+offset = Vector2(0, -84)
+
+[node name="LampCenter" type="Sprite2D" parent="Props" unique_id=1203796384]
+position = Vector2(1510, 592)
+texture = ExtResource("12_lamp")
+offset = Vector2(0, -84)
+
+[node name="CrossroadSign" type="Sprite2D" parent="Props" unique_id=24174722]
+position = Vector2(2047, 628)
+texture = ExtResource("13_sign")
+offset = Vector2(0, -81.5)
+
+[node name="Bench" type="Sprite2D" parent="Props" unique_id=1517948070]
+position = Vector2(1020, 616)
+texture = ExtResource("14_bench")
+offset = Vector2(0, -52)
+
+[node name="BarrelStack" type="Sprite2D" parent="Props" unique_id=372211342]
+position = Vector2(1440, 616)
+texture = ExtResource("15_barrel")
+offset = Vector2(0, -53.5)
+
+[node name="Crates" type="Sprite2D" parent="Props" unique_id=966259599]
+position = Vector2(1575, 620)
+texture = ExtResource("16_crate")
+offset = Vector2(0, -51)
+
+[node name="MarketCart" type="Sprite2D" parent="Props" unique_id=2055964997]
+position = Vector2(1815, 612)
+texture = ExtResource("18_cart")
+offset = Vector2(0, -96.5)
+
+[node name="EastTree" type="Sprite2D" parent="Props" unique_id=389149608]
+position = Vector2(2440, 594)
+texture = ExtResource("19_tree")
+offset = Vector2(0, -85)
+
+[node name="FlowerBedWest" type="Sprite2D" parent="Props" unique_id=400525133]
+position = Vector2(340, 643)
+texture = ExtResource("20_flowers")
+offset = Vector2(0, -45.5)
+
+[node name="FlowerBedEast" type="Sprite2D" parent="Props" unique_id=1782771814]
+position = Vector2(2290, 643)
+scale = Vector2(-1, 1)
+texture = ExtResource("20_flowers")
+offset = Vector2(0, -45.5)
+
+[node name="NPCs" type="Node2D" parent="." unique_id=1308501861]
+
+[node name="Mayor" type="Sprite2D" parent="NPCs" unique_id=1514306631]
+position = Vector2(570, 616)
+texture = ExtResource("23_mayor")
+offset = Vector2(0, -80.5)
+
+[node name="VillagerMale" type="Sprite2D" parent="NPCs" unique_id=1759664260]
+position = Vector2(930, 620)
+texture = ExtResource("24_villager_male")
+offset = Vector2(0, -79)
+
+[node name="VillagerFemale" type="Sprite2D" parent="NPCs" unique_id=732198451]
+position = Vector2(1160, 620)
+texture = ExtResource("25_villager_female")
+offset = Vector2(0, -75)
+
+[node name="Smith" type="Sprite2D" parent="NPCs" unique_id=602100740]
+position = Vector2(1479, 623)
+texture = ExtResource("26_smith")
+offset = Vector2(0, -80.5)
+
+[node name="Guard" type="Sprite2D" parent="NPCs" unique_id=67683879]
+position = Vector2(2161, 623)
+texture = ExtResource("27_guard")
+offset = Vector2(0, -86.5)
+
+[node name="Innkeeper" type="Sprite2D" parent="NPCs" unique_id=1849245278]
+position = Vector2(1765, 620)
+texture = ExtResource("28_innkeeper")
+offset = Vector2(0, -72)
+
+[node name="Player" type="CharacterBody2D" parent="." unique_id=1141192825]
+position = Vector2(220, 576)
+script = ExtResource("29_player_script")
+
+[node name="Body" type="ColorRect" parent="Player" unique_id=141603097]
+offset_left = -18.0
+offset_top = -74.0
+offset_right = 18.0
+color = Color(0.18, 0.31, 0.55, 1)
+
+[node name="Head" type="ColorRect" parent="Player" unique_id=1950324854]
+offset_left = -14.0
+offset_top = -104.0
+offset_right = 14.0
+offset_bottom = -76.0
+color = Color(0.94, 0.76, 0.57, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=1447155505]
+position = Vector2(0, -44)
+shape = SubResource("RectangleShape2D_player")
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=1713116518]
+limit_left = 0
+limit_top = 0
+limit_right = 2600
+limit_bottom = 724
+position_smoothing_enabled = true
+
+[node name="WorldCollision" type="StaticBody2D" parent="." unique_id=1406716349]
+
+[node name="FloorCollision" type="CollisionShape2D" parent="WorldCollision" unique_id=1168991069]
+position = Vector2(1238, 661)
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="LeftWall" type="CollisionShape2D" parent="WorldCollision" unique_id=1260127150]
+position = Vector2(-24, 420)
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="RightWall" type="CollisionShape2D" parent="WorldCollision" unique_id=1853020719]
+position = Vector2(2624, 420)
+shape = SubResource("RectangleShape2D_wall")
