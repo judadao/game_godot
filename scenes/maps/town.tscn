@@ -36,6 +36,7 @@
 [ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedInnkeeper.tscn" id="65_innkeeper"]
 [ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_street_atlas_v2.png" id="66_ground_atlas"]
 [ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_props_portals_atlas_v2.png" id="67_props_v2"]
+[ext_resource type="Script" path="res://scripts/maps/town_editor_preview.gd" id="68_editor_preview"]
 
 [sub_resource type="Gradient" id="Gradient_sky"]
 offsets = PackedFloat32Array(0, 0.58, 1)
@@ -115,8 +116,11 @@ size = Vector2(2800, 79)
 size = Vector2(48, 520)
 
 [node name="Town" type="Node2D" unique_id=2064318752]
+script = ExtResource("68_editor_preview")
 metadata/map_width = 2600
 metadata/map_height = 724
+metadata/editor_preview_width = 1280
+metadata/editor_preview_height = 720
 metadata/camera_limit_left = 0
 metadata/camera_limit_top = 0
 metadata/camera_limit_right = 2600
