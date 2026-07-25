@@ -1,0 +1,948 @@
+# Resource and Data Guide
+
+本文件定義目前專案的靜態資料、runtime state、Meta/Run state、UI projection與save
+serialization邊界。名稱中的「Resource」同時涵蓋Godot `Resource`概念與專案資料治理；
+目前repository **沒有 gameplay `.tres`／`.res`檔案**，不可把未實作的typed Resource
+pipeline描述成Current。
+
+## 目錄
+
+1. [目的、現況與術語](#1-目的現況與術語)
+2. [資料分層與 Ownership](#2-資料分層與-ownership)
+3. [現有四個 JSON Catalog](#3-現有四個-json-catalog)
+4. [Card Data 與 CardDatabase](#4-card-data-與-carddatabase)
+5. [Evolution Data 與 EvolutionManager](#5-evolution-data-與-evolutionmanager)
+6. [Equipment Data 與 Inventory Runtime State](#6-equipment-data-與-inventory-runtime-state)
+7. [Town Upgrade Data 與 Town Runtime State](#7-town-upgrade-data-與-town-runtime-state)
+8. [Godot Resource 現況](#8-godot-resource-現況)
+9. [Runtime、MetaState 與 RunState](#9-runtimemetastate-與-runstate)
+10. [Save Data Boundary](#10-save-data-boundary)
+11. [UI Projection 與 Mutation Rules](#11-ui-projection-與-mutation-rules)
+12. [Validation、Error Handling 與 Migration](#12-validationerror-handling-與-migration)
+13. [檔案與 ID 規則](#13-檔案與-id-規則)
+14. [Code Examples](#14-code-examples)
+15. [Scene Tree Example](#15-scene-tree-example)
+16. [Godot Example (Godot 4)](#16-godot-example-godot-4)
+17. [Best Practice](#17-best-practice)
+18. [Anti Pattern](#18-anti-pattern)
+19. [Data Change Checklist](#19-data-change-checklist)
+20. [Review Checklist](#20-review-checklist)
+21. [Future Extension](#21-future-extension)
+22. [Related Documents](#22-related-documents)
+
+## 1. 目的、現況與術語
+
+### 1.1 Current inventory
+
+| 類型 | 數量 | Path |
+|---|---:|---|
+| Gameplay JSON | 4 | `res://data/*.json` |
+| Gameplay `.tres` / `.res` | 0 | 無 |
+| `resources/` content | 只有`.gitkeep` | `res://resources/.gitkeep` |
+| Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
+| Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
+
+四個JSON：
+
+- `res://data/cards.json`
+- `res://data/evolutions.json`
+- `res://data/equipment.json`
+- `res://data/town_upgrades.json`
+
+### 1.2 術語
+
+- **Static catalog**：repository中的authoritative JSON，runtime不應回寫。
+- **Validated model**：loader驗證後快取的duplicate Dictionary/Array或Resource。
+- **Runtime state**：目前application/run中可變狀態。
+- **Meta state**：跨run與restart保存的永久進度。
+- **Run state**：單次expedition transient state。
+- **Save DTO**：序列化到`user://`的Dictionary。
+- **UI projection**：為顯示而產生的copy，不是catalog owner。
+- **Godot Resource**：繼承`Resource`的Godot object；不等同所有JSON資料。
+
+### 1.3 核心邊界
+
+```text
+Static JSON / Scene sub_resource
+→ parse + validation
+→ runtime catalog/model
+→ mutable manager / MetaState / RunState
+→ UI projection
+→ explicit save DTO
+```
+
+逆向寫回只允許save DTO到`user://`。UI或runtime manager不得改寫`res://data/*.json`。
+
+## 2. 資料分層與 Ownership
+
+### 2.1 Layer table
+
+| Layer | Owner | Mutable | Persistence |
+|---|---|---:|---|
+| JSON catalog | repository | 否（runtime） | version control |
+| Catalog cache | Card/Evolution/Inventory/Town loader | loader-controlled | reload from JSON |
+| Inventory/Town runtime | manager instances owned by Game | 是 | projection into MetaState |
+| MetaState | Game-owned `MetaState` | 是 | `meta_progress.json` |
+| RunState | Game-owned `RunState` | 是 | finish summary only；非完整save |
+| DeckManager piles/AP | Game-owned `DeckManager` | 是 | quick save不完整保存 |
+| Prototype inventory/shop | Game dictionaries | 是 | quick save部分保存 |
+| UI projection | UI instance | 顯示狀態 | 不直接保存 |
+
+### 2.2 Dependency direction
+
+```text
+data/*.json
+  ↓
+systems loader
+  ↓
+runtime state/service
+  ↓
+Game orchestration
+  ↓
+UI setter/configure API
+```
+
+禁止：
+
+- static loader依賴UI Scene。
+- UI持有並修改catalog中的base Dictionary。
+- save loader直接改Scene node而不經validation/application boundary。
+- system從`/root`尋找不存在的Autoload。
+
+### 2.3 Copy boundary
+
+跨layer時使用：
+
+- `Dictionary.duplicate(true)`
+- `Array.duplicate()`或typed projection
+- getter回傳copy
+- `to_dict()`／`apply_dict()`
+
+如果getter回傳catalog內部reference，consumer可能污染所有後續讀取。Current
+`CardDatabase.get_card()`與`get_all_cards()`已回傳deep copies。
+
+## 3. 現有四個 JSON Catalog
+
+| JSON | Loader | Root field | Current validated content |
+|---|---|---|---|
+| `cards.json` | `CardDatabase` | `cards` | 23 cards |
+| `evolutions.json` | `EvolutionManager` | `evolutions` | 6 recipes |
+| `equipment.json` | `inventory_manager.gd` | `resource_order`, `starting_resources`, `equipment` | 5 resources, 10 equipment |
+| `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 4 buildings × 3 levels, 3 stages |
+
+數量與重要cross-reference由`tests/content_validation_test.gd`驗證。新增內容時，
+測試中的固定數量若代表產品contract需一起更新；不得只為通過測試放寬assertion。
+
+### 3.1 JSON parsing rules
+
+- 使用`FileAccess`與`JSON.parse_string()`。
+- top-level必須是`Dictionary`。
+- expected array/object field必須驗證type。
+- ID不得空白或重複。
+- cross-reference必須指向存在ID。
+- asset path使用`ResourceLoader.exists()`。
+- 任一entry破壞catalog contract時，loader回傳false或保持`_loaded == false`。
+
+### 3.2 Schema version現況
+
+- `cards.json`：`schema_version = 2`
+- `evolutions.json`：`schema_version = 1`
+- `equipment.json`：目前沒有schema_version field
+- `town_upgrades.json`：目前沒有schema_version field
+
+Loader目前不以schema version分派migration。新增／更改schema前，必須先建立version
+policy與old fixture，不能只提高number。
+
+## 4. Card Data 與 CardDatabase
+
+### 4.1 Authoritative path與loader
+
+- Data：`res://data/cards.json`
+- Loader：`scripts/systems/card_database.gd`
+- Class：`CardDatabase extends RefCounted`
+- Default path：`CardDatabase.DEFAULT_CATALOG_PATH`
+
+### 4.2 Required fields
+
+`CardDatabase.REQUIRED_FIELDS`：
+
+```text
+id
+name
+type
+rarity
+level
+max_level
+cost
+description
+icon_path
+combo_tags
+effect
+upgrade_effects
+evolution_condition
+evolution_result
+```
+
+JSON另有`tags`，但它不在current required list。治理與validator要區分required與optional。
+
+### 4.3 Valid types
+
+Current：
+
+- `attack`
+- `skill`
+- `power`
+- `summon`
+- `defense`
+- `status`
+- `ultimate`
+- `combo`
+
+新增type時至少同步：
+
+- `CardDatabase.VALID_TYPES`
+- `CardEffectRunner` effect handling
+- Game card/equipment/infusion projection
+- CardHandUI presentation
+- content/combat integration tests
+-本文件與Game Design
+
+### 4.4 Validation
+
+Current loader檢查：
+
+- required fields存在。
+- `id`與`name`非空。
+- type在allowlist。
+- cost非負。
+- rarity非空。
+- `level >= 1`，`max_level >= level`。
+- `combo_tags`是非空Array。
+- `effect`是非空Dictionary。
+- `upgrade_effects`是Array。
+- 至少有level 3 upgrade帶visible `mechanic_change`。
+- evolution condition是Dictionary，result是String。
+- icon path非空且`ResourceLoader.exists()`。
+- card ID不可重複。
+
+`get_card()`回傳deep copy。UI與combat可以加入runtime level/effect projection，但不能
+回寫`_cards_by_id`。
+
+### 4.5 Effect boundary
+
+Card JSON的`effect.kind`交由`CardEffectRunner.SUPPORTED_EFFECTS`解析。Catalog
+validator目前沒有直接檢查kind是否被runner支援，這是Known Risk。新增kind時需同步：
+
+1. data entry
+2. runner support與behavior
+3. target capability
+4. integration test
+5. UI description
+
+## 5. Evolution Data 與 EvolutionManager
+
+### 5.1 Authoritative path與loader
+
+- Data：`res://data/evolutions.json`
+- Loader：`scripts/systems/evolution_manager.gd`
+- Class：`EvolutionManager`
+
+### 5.2 Required recipe fields
+
+```text
+id
+name
+base_card_id
+required_level
+required_passives
+result_card_id
+```
+
+Validation：
+
+- recipe ID非空且唯一。
+- required level至少1。
+- required passives是非空Array。
+- CardDatabase存在時，base/result card都必須存在。
+
+### 5.3 Runtime application
+
+`EvolutionManager.find_available(levels, passives)`只查詢可用recipe，不直接mutation
+deck。`Game._try_evolve_card()`負責：
+
+- 找matching base card。
+- 替換DeckManager piles中的card ID。
+- 更新RunState card levels。
+- 更新MetaState unlocked evolution。
+- 更新HUD projection。
+
+這個ownership不可移入UI。
+
+## 6. Equipment Data 與 Inventory Runtime State
+
+### 6.1 Authoritative path與loader
+
+- Data：`res://data/equipment.json`
+- Loader：`scripts/systems/inventory_manager.gd`
+- Script type：unnamed `RefCounted`
+
+### 6.2 Root fields
+
+```text
+resource_order
+starting_resources
+equipment
+```
+
+Current resource IDs：
+
+- `gold`
+- `autumn_wood`
+- `stone`
+- `magic_shard`
+- `autumn_core`
+
+Current equipment slots：
+
+- `weapon`
+- `armor`
+- `accessory`
+
+### 6.3 Equipment entry
+
+Current fields：
+
+- `id`
+- `name`
+- `slot`
+- `purchase_cost`
+- `effects`
+- `special_ability`
+
+Loader validation：
+
+- root arrays/dictionaries非空。
+- 每個resource ID在starting resources中存在。
+- starting amount是非負整數值。
+- equipment ID非空且唯一。
+- slot在`VALID_SLOTS`。
+- effects與purchase cost非空。
+- cost是正整數值。
+- effect value是int或float。
+
+`special_ability`目前由data提供且content test要求非空，但
+`inventory_manager._load_data()`沒有完整schema validation每個ability field。
+新增ability key時必須檢查Game consumer，不能假設任意key生效。
+
+### 6.4 Runtime state
+
+InventoryManager持有：
+
+```text
+_resources
+_equipment_catalog / _equipment_by_id
+_owned_equipment
+_equipment_levels
+_equipped { weapon, armor, accessory }
+```
+
+Persistence API：
+
+- `to_dict()`
+- `apply_dict(data)`
+
+Mutation API：
+
+- resource add/set/spend
+- equipment add/purchase/equip/unequip/upgrade
+
+UI不得直接改以上private dictionaries。
+
+### 6.5 Known overlap
+
+除InventoryManager外，還有：
+
+- `MetaState.resources/equipment/equipment_levels/inventory_state`
+- `Game.wallet_gold/player_inventory/_merchant_catalogs`
+
+一般InventoryUI顯示prototype `player_inventory`；TownProgressUI操作InventoryManager。
+這不是已統一的Inventory architecture。任何transaction都要追蹤所有同步點。
+
+## 7. Town Upgrade Data 與 Town Runtime State
+
+### 7.1 Authoritative path與loader
+
+- Data：`res://data/town_upgrades.json`
+- Loader：`scripts/systems/town_manager.gd`
+- Script type：unnamed `RefCounted`
+- Dependency：InventoryManager-like service
+
+### 7.2 Root fields
+
+```text
+buildings
+village_stages
+```
+
+Current building IDs：
+
+- `blacksmith`
+- `workshop`
+- `market`
+- `town_hall`
+
+每棟三個upgrade levels，entry包含：
+
+- `level`
+- `cost`
+- `visual_flag`
+
+Current village stages：
+
+- `settlement`
+- `growing_village`
+- `prosperous_town`
+
+### 7.3 Validation
+
+TownManager檢查：
+
+- buildings非空。
+- stages恰好3個。
+- building ID非空且唯一。
+- upgrades非空。
+- upgrade level依array index連續為1..N。
+- cost非空。
+- visual flag非空。
+- stage ID非空。
+- stage threshold嚴格遞增。
+- stage visual flags非空。
+
+目前loader沒有逐一驗證cost value型別與resource ID是否存在InventoryManager。
+這是Known Risk，data review必須交叉檢查。
+
+### 7.4 Runtime state與projection
+
+TownManager持有building levels並提供：
+
+- next cost/can upgrade/upgrade
+- total levels
+- village stage/id
+- visual projection
+- `to_dict()`／`apply_dict()`
+
+`Game._apply_town_visual_progress()`目前直接找到Town building nodes並改modulate；
+`TownManager.get_visual_projection()`的完整flags尚未成為通用Scene binding。
+不得宣稱所有visual flags已有runtime consumer。
+
+## 8. Godot Resource 現況
+
+### 8.1 `.tres` / `.res`
+
+Current：
+
+- gameplay `.tres`：0
+- gameplay `.res`：0
+- `resources/`：只有`.gitkeep`
+
+因此：
+
+- cards不是CardResource。
+- equipment不是EquipmentResource。
+- quest resource不存在。
+- dialogue resource不存在。
+- audio resource catalog不存在。
+- shared Theme resource現況另見Theme稽核／文件。
+
+### 8.2 Runtime Resource class
+
+`scripts/monsters/enemy_archetype.gd`：
+
+```gdscript
+class_name EnemyArchetype
+extends Resource
+```
+
+`EnemyArchetype.autumn_catalog()`以`EnemyArchetype.new()`建立runtime objects；
+不是從`.tres`載入。`EnemyBase.configure_archetype()`取得catalog並套用。
+
+這種runtime factory是Current；不要在文件範例寫成
+`load("res://resources/enemies/*.tres")`。
+
+### 8.3 Scene sub_resource
+
+`.tscn`內的`StyleBoxFlat`、Shape等`sub_resource`由Scene擁有。修改時：
+
+- 同Scene專用可保留sub_resource。
+- 多Scene重複樣式應先查Theme/component pattern。
+- 不要在runtime改共享Resource造成所有instance一起變更。
+- 需要per-instance mutation時使用duplicate。
+
+## 9. Runtime、MetaState 與 RunState
+
+### 9.1 MetaState
+
+`MetaState.SCHEMA_VERSION = 2`。
+
+主要fields：
+
+```text
+resources
+village_level / building_levels
+unlocked_cards / selected_deck / permanent_card_levels
+equipment / equipment_levels
+unlocked_combos / unlocked_evolutions
+boss_defeated / shortcuts
+settings
+inventory_state / town_state
+```
+
+`inventory_state`與`town_state`是current manager DTO；其他equipment/building fields
+同時保留legacy compatibility。
+
+### 9.2 RunState
+
+Transient fields：
+
+```text
+active
+level / experience / pending_level_ups
+energy / max_energy
+starting_deck / temporary_cards / card_levels
+combo_count / temporary_buffs
+gold_earned / materials_earned
+defeated_enemies / elite_defeated / boss_defeated
+```
+
+`finish_run()`產生summary後reset transient state。不要把RunState直接serialize成meta，
+除非產品需求明確改成run resume並完成migration/tests。
+
+### 9.3 DeckManager
+
+`DeckManager`持有：
+
+- draw pile
+- hand
+- discard pile
+- exhaust pile
+- energy/max energy
+- protected card與retain flag
+
+這些不是static card data，也不是MetaState selected deck。selected deck是ID清單；
+piles是runtime sequence。
+
+### 9.4 Static、runtime、UI例
+
+```text
+cards.json "ember_bolt" base card
+→ CardDatabase immutable copy
+→ RunState card level
+→ Game applies level/equipment/infusion effect
+→ CardHandUI receives display Dictionary
+→ CardEffectRunner receives cast Dictionary
+```
+
+UI改description或disabled state不應回寫CardDatabase。
+
+## 10. Save Data Boundary
+
+### 10.1 Permanent meta save
+
+Path：`user://saves/meta_progress.json`
+
+Owner：
+
+- DTO：`MetaState.to_dict()`
+- IO：`SaveService.save_meta()`／`load_meta()`
+- orchestration：`Game`
+
+Write flow：
+
+```text
+sync managers into MetaState
+→ JSON stringify to .tmp
+→ read-back parse validation
+→ copy old file to .bak
+→ replace target by rename
+→ remove backup after success
+```
+
+Load flow：
+
+```text
+open target
+→ parse top-level Dictionary
+→ MetaState.apply_dict()
+→ return normalized MetaState.to_dict()
+→ apply manager DTO / legacy fallback
+```
+
+### 10.2 Quick save
+
+Paths：
+
+- `user://saves/quick_save.json`
+- `user://saves/quick_save.tmp`
+- `user://saves/quick_save.json.bak`
+
+Owner：`scripts/managers/game.gd`，不經`SaveService`。
+
+Schema 1 payload：
+
+| Field | Current content |
+|---|---|
+| `schema_version` | 1 |
+| `saved_at` | system datetime string |
+| `map_path` | current authoritative `scene_file_path` |
+| `player` | position + selected player stats |
+| `wallet_gold` | prototype wallet |
+| `inventory` | prototype player inventory |
+| `merchant_catalogs` | runtime shop stock |
+
+Not included：
+
+- full MetaState
+- full InventoryManager/TownManager DTO
+- full RunState
+- DeckManager piles/AP
+- card levels/temporary buffs
+- encounter/director state
+
+所以quick save不是完整run resume。
+
+### 10.3 Backup差異
+
+Meta SaveService在成功後移除backup。Quick save自行copy backup，但load不fallback到
+backup。修改其中一條pipeline時不可假定另一條自動同步。
+
+### 10.4 Save安全規則
+
+- 只寫`user://`，不寫`res://`。
+- 先寫temporary file並驗證，再replace。
+- parse失敗不得覆蓋原存檔。
+- migration不得丟失未知但仍需保留的current fields。
+- load後每個nested field做type/範圍sanitization。
+- save path或map registry變更需old payload test。
+
+## 11. UI Projection 與 Mutation Rules
+
+### 11.1 UI只接projection
+
+| UI | Data source |
+|---|---|
+| CardHandUI | Game從CardDatabase + RunState產生card copies |
+| HUD | Player、RunState、wallet與objective setters |
+| InventoryUI | Game prototype `_inventory_projection()` |
+| ShopUI | Game catalog/owned count projection |
+| TownProgressUI | Current exception：直接接Town/Inventory services |
+
+UI可以：
+
+- format text/number
+- select/filter/page
+- emit intent
+- keeptemporary selection/focus
+
+UI不可以：
+
+- 修改base catalog
+- 直接寫save file
+- 決定reward/economy規則
+- 自行提升building/equipment而不經domain API
+
+### 11.2 TownProgressUI exception
+
+Current `TownProgressUI`透過`RefCounted.call()`直接呼叫upgrade/equip/purchase。
+這是Known Risk，不是推薦pattern。新增UI優先emit typed intent，由Game或coordinator
+呼叫domain service，再把result投影回UI。
+
+### 11.3 Projection copy
+
+```gdscript
+func get_card(card_id: String) -> Dictionary:
+	if not _cards_by_id.has(card_id):
+		return {}
+	return (_cards_by_id[card_id] as Dictionary).duplicate(true)
+```
+
+Consumer可改copy中的runtime `level`或`effect`，不污染catalog。
+
+## 12. Validation、Error Handling 與 Migration
+
+### 12.1 Boundary validation checklist
+
+每個catalog loader至少驗證：
+
+- file exists/open成功
+- JSON parse成功
+- top-level type
+- required root fields
+- entry type
+- required entry fields
+- ID non-empty/unique
+- numeric range與whole-number需求
+- enum allowlist
+- cross-reference
+- resource path exists
+- 空catalog policy
+
+### 12.2 Failure behavior
+
+Current loader多以`false`／empty result表示失敗。新增或修改loader時，錯誤訊息應包含：
+
+- source path
+- entry ID/index
+- failed field
+- expected type/range
+
+不得parse失敗後默默用部分catalog繼續。Catalog若採all-or-nothing，遇到invalid entry
+應clear partial cache。
+
+### 12.3 Schema migration
+
+Current缺少集中migration registry。Schema變更前：
+
+1. 保存舊JSON/save fixture。
+2. 定義from/to version。
+3. 先寫舊資料載入失敗或behavior test。
+4. 實作純migration function。
+5. validate migrated result。
+6. 保留backup與失敗復原。
+7. 更新本文件與Game Design。
+
+不要只在`apply_dict()`塞更多fallback而沒有version判斷。
+
+### 12.4 Test sources
+
+- `tests/content_validation_test.gd`
+- `tests/card_system_test.gd`
+- `tests/progression_state_test.gd`
+- `tests/quick_save_migration_test.gd`
+- `tests/town_progression_test.gd`
+- `tests/shop_system_test.gd`
+- `tests/deck_builder_test.gd`
+- `tests/card_combat_integration_test.gd`
+
+## 13. 檔案與 ID 規則
+
+### 13.1 Path
+
+- runtime path使用`res://`。
+- save path使用`user://`。
+- 不依賴OS absolute path作gameplay identity。
+- asset/data move前`rg`所有string references。
+- canonical map path與authoritative path都需migration考量。
+
+### 13.2 Stable ID
+
+- ID使用lower snake_case，例如`ember_bolt`, `autumn_wood`。
+- display name可改，ID不可任意改。
+- ID rename等同save/content migration。
+- 不使用array index當persistent identity。
+- cross-catalog reference先驗證存在。
+
+### 13.3 Numbers
+
+- cost/resource count：非負或正整數，依domain contract。
+- level：有明確min/max。
+- ratio/duration：定義範圍與單位。
+- UI不得自行改clamp rule；domain owner負責。
+
+### 13.4 Sensitive/local data
+
+不要commit：
+
+- `user://` saves
+- `.test_userdata`
+- editor cache
+- credentials/signing keys
+- exported build
+
+## 14. Code Examples
+
+### 14.1 Current JSON dictionary loader
+
+來源：`scripts/systems/card_database.gd`
+
+```gdscript
+func _read_json_dictionary(path: String) -> Dictionary:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	return parsed as Dictionary if parsed is Dictionary else {}
+```
+
+### 14.2 Current catalog copy
+
+```gdscript
+func get_all_cards() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for card in _ordered_cards:
+		result.append(card.duplicate(true))
+	return result
+```
+
+### 14.3 Current state DTO
+
+來源：`scripts/systems/inventory_manager.gd`
+
+```gdscript
+func to_dict() -> Dictionary:
+	return {
+		"resources": _resources.duplicate(true),
+		"owned_equipment": _owned_equipment.keys(),
+		"equipment_levels": _equipment_levels.duplicate(true),
+		"equipped": _equipped.duplicate(true),
+	}
+```
+
+## 15. Scene Tree Example
+
+資料不應由UI Scene擁有；Scene只持有presentation與runtime Node：
+
+```text
+Game
+├── CardEffectRunner
+├── MapRoot
+│   └── Map
+│       ├── Player
+│       └── EncounterDirector
+├── HUDLayer
+│   ├── HUD
+│   └── CardHandUI
+└── MenuLayer
+    └── TownProgressUI
+
+Game-owned RefCounted state (not Scene children)
+├── CardDatabase
+├── InventoryManager
+├── TownManager
+├── MetaState
+└── RunState
+```
+
+`RefCounted`不是Scene child。文件圖需明確區分SceneTree ownership與object reference。
+
+## 16. Godot Example (Godot 4)
+
+### 16.1 Proposed typed Resource shape（TODO，非Current）
+
+只有在核准Resource migration後才可採用：
+
+```gdscript
+class_name CardDefinition
+extends Resource
+
+@export var id: StringName
+@export var display_name: String
+@export_range(0, 99, 1) var cost: int
+@export var effect: Dictionary
+```
+
+此範例使用Godot 4 `Resource`與typed exports，但目前cards仍以JSON為authority。
+導入前必須決定：
+
+- JSON是否保留
+- importer/authoring流程
+- stable ID與cross-reference
+- duplicate/local-to-scene semantics
+- save compatibility
+- content validation tests
+
+### 16.2 Safe file boundary
+
+```gdscript
+func read_dictionary(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		push_error("Data file does not exist: %s" % path)
+		return {}
+	var parsed: Variant = JSON.parse_string(
+		FileAccess.get_file_as_string(path)
+	)
+	if not parsed is Dictionary:
+		push_error("Expected JSON object: %s" % path)
+		return {}
+	return (parsed as Dictionary).duplicate(true)
+```
+
+## 17. Best Practice
+
+- 先validation，再建立runtime catalog。
+- static definition與mutable state分開。
+- getter回傳copy，不暴露internal dictionary。
+- ID穩定，display name可變。
+- MetaState與RunState依lifetime分離。
+- 所有save write使用temporary/validation/backup策略。
+- UI只收projection並emit intent。
+- data/schema改動與tests/docs同一任務完成。
+- 未存在Resource/Quest/Dialogue/Audio data明確標TODO。
+
+## 18. Anti Pattern
+
+- 把不存在的`.tres`寫成current source of truth。
+- runtime/UI回寫`res://data/*.json`。
+- huge Dictionary跨所有layers且無schema。
+- 用array index當save ID。
+- parse失敗後保存default覆蓋原檔。
+- 同一gold transaction只更新其中一份state。
+- 把quick save當完整Meta/Run snapshot。
+- 新增effect/data key但不查consumer。
+- 未migration就rename ID或map path。
+- shared Resource直接mutation造成所有instance一起改。
+
+## 19. Data Change Checklist
+
+修改JSON／Resource／save前：
+
+- [ ] 已確認authoritative path與loader。
+- [ ] 已列required/optional fields。
+- [ ] 已確認ID uniqueness與cross-reference。
+- [ ] 已確認數值type、range、unit。
+- [ ] 已找出所有consumer與UI projection。
+- [ ] 已區分static、runtime、Meta、Run、save。
+- [ ] 已準備valid/invalid/old-version fixture。
+- [ ] 已確認失敗不覆蓋原存檔。
+- [ ] 已更新content/migration/integration tests。
+- [ ] 已同步02、06、09、12等相關文件。
+
+## 20. Review Checklist
+
+- [ ] 四個JSON仍可由current loader成功載入。
+- [ ] Catalog count與ID contract符合產品需求。
+- [ ] Card icon與cross-reference paths存在。
+- [ ] Equipment cost/effect/special ability consumer一致。
+- [ ] Town cost resource IDs有效，stage thresholds遞增。
+- [ ] Getter沒有洩漏可變internal reference。
+- [ ] UI沒有直接修改base catalog。
+- [ ] Inventory/Meta/prototype state在mutation後一致。
+- [ ] Meta save與quick save schema沒有混稱。
+- [ ] Old/malformed payload可安全處理。
+- [ ] `.tres/.res`、Quest、Dialogue、Audio等不存在能力未被虛構。
+- [ ] Git diff沒有save/cache/build artifact。
+
+## 21. Future Extension
+
+以下為Proposed／TODO：
+
+1. 為equipment/town JSON加入明確schema version與集中validator。
+2. 對card effect kind建立data-to-runner allowlist validation。
+3. 建立save migration registry，統一meta/quick的IO與backup policy。
+4. 統一InventoryManager、Meta legacy fields與prototype inventory。
+5. 對成熟catalog評估typed Resource與editor authoring。
+6. 建立Quest／Dialogue data前先定義ID、condition、effect與save boundary。
+7. 建立Audio catalog前先定義bus、stream ownership與settings persistence。
+8. 在CI中驗證JSON schema、resource paths與governance文件path。
+
+## 22. Related Documents
+
+- `docs/README.md`
+- `docs/01_AI_GUIDE.md`
+- `docs/02_PROJECT_ARCHITECTURE.md`
+- `docs/03_SCENE_STRUCTURE.md`
+- `docs/05_CODING_STANDARD.md`
+- `docs/09_TESTING_GUIDE.md`
+- `docs/10_DEBUG_GUIDE.md`
+- `docs/12_GAME_DESIGN.md`
+- `docs/13_ROADMAP.md`
+- `docs/rule_1.md`
