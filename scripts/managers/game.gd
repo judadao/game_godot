@@ -55,6 +55,7 @@ const COMBO_EVOLUTIONS := [
 
 @export var starting_map: PackedScene = preload("res://scenes/maps/layouts/TownLayout.tscn")
 @export var hud_scene: PackedScene = preload("res://scenes/ui/HUD.tscn")
+@export var card_hand_scene: PackedScene = preload("res://scenes/ui/CardHandUI.tscn")
 @export var inventory_scene: PackedScene = preload("res://scenes/ui/InventoryUI.tscn")
 @export var pause_menu_scene: PackedScene = preload("res://scenes/ui/PauseMenu.tscn")
 @export var dialogue_scene: PackedScene = preload("res://scenes/ui/DialogueUI.tscn")
@@ -68,12 +69,12 @@ const COMBO_EVOLUTIONS := [
 @onready var map_root: Node = $MapRoot
 @onready var hud_root: CanvasLayer = $HUDLayer
 @onready var ui_root: CanvasLayer = $MenuLayer
-@onready var card_hand_ui: Control = $HUDLayer/CardHandUI
 @onready var card_effect_runner: CardEffectRunner = $CardEffectRunner
 
 var current_map: Node
 var player: Node
 var hud: Control
+var card_hand_ui: Control
 var ui_stack: Array[Control] = []
 var current_interactive: Node
 var _ui_names: Dictionary = {}
@@ -125,8 +126,6 @@ func _ready() -> void:
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	card_database.load_catalog()
 	evolution_manager.load_recipes()
-	card_hand_ui.card_selected.connect(_on_card_selected)
-	card_hand_ui.redraw_requested.connect(_redraw_current_hand)
 	card_effect_runner.effect_resolved.connect(_on_card_effect_resolved)
 	load_current_map(starting_map)
 	_sync_progression_to_meta()
@@ -220,6 +219,7 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 	current_map = map_scene.instantiate()
 	map_root.add_child(current_map)
 	load_hud()
+	load_card_hand()
 	_register_player(spawn_name)
 	_apply_transferred_player_state()
 	_apply_shortcut_spawn()
@@ -227,6 +227,8 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 	_wire_interactives()
 	_wire_combat_zones()
 	_update_hud_area_name()
+	if run_state.active:
+		_refresh_card_hand()
 	_update_card_hand_visibility()
 	_apply_town_visual_progress()
 	map_loaded.emit(current_map)
@@ -259,6 +261,32 @@ func load_hud() -> void:
 	else:
 		push_error("HUD scene root must be a Control.")
 		hud_instance.queue_free()
+
+
+func load_card_hand() -> void:
+	if card_hand_ui != null:
+		card_hand_ui.queue_free()
+		card_hand_ui = null
+
+	var hand_instance: Node = current_map.get_node_or_null("EditorHUDReference/CardHandUI") if current_map != null else null
+	if hand_instance != null:
+		hand_instance.reparent(hud_root)
+	elif card_hand_scene != null:
+		hand_instance = card_hand_scene.instantiate()
+	else:
+		return
+
+	if hand_instance is Control:
+		card_hand_ui = hand_instance
+		if card_hand_ui.get_parent() == null:
+			hud_root.add_child(card_hand_ui)
+		if not card_hand_ui.card_selected.is_connected(_on_card_selected):
+			card_hand_ui.card_selected.connect(_on_card_selected)
+		if not card_hand_ui.redraw_requested.is_connected(_redraw_current_hand):
+			card_hand_ui.redraw_requested.connect(_redraw_current_hand)
+	else:
+		push_error("Card hand scene root must be a Control.")
+		hand_instance.queue_free()
 
 
 func _update_hud_area_name() -> void:

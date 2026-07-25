@@ -10,6 +10,7 @@ func _init() -> void:
 func _run() -> void:
 	var scene := load("res://scenes/ui/CardHandUI.tscn") as PackedScene
 	var ui := scene.instantiate()
+	ui.position = Vector2(23.0, 11.0)
 	root.add_child(ui)
 	var database := CardDatabase.new()
 	_expect(database.load_catalog(), "Card catalog must load for hand layout.")
@@ -18,6 +19,10 @@ func _run() -> void:
 		cards.append(database.get_card(card_id))
 	ui.call("set_cards", cards, 3)
 	await process_frame
+	_expect(
+		ui.position == Vector2(23.0, 11.0),
+		"Card hand root offsets edited in a map layout must survive initialization."
+	)
 
 	_expect(ui.has_method("get_hand_panel_count"), "Card hand must expose its obstruction contract.")
 	_expect(ui.has_method("get_resting_visible_height"), "Card hand must expose resting visible height.")

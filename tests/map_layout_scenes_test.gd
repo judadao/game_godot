@@ -43,6 +43,10 @@ func _run() -> void:
 		var reference := map.get_node_or_null("EditorHUDReference") as CanvasLayer
 		_expect(reference != null, "%s must include the shared editor HUD reference." % layout_path)
 		_expect(reference != null and not reference.visible, "Editor HUD reference must stay hidden at runtime.")
+		_expect(
+			reference != null and reference.get_node_or_null("CardHandUI") != null,
+			"%s must include an editable card hand UI." % layout_path
+		)
 		map.queue_free()
 		await process_frame
 
@@ -62,6 +66,15 @@ func _run() -> void:
 	_expect(
 		game.hud != null and game.hud.get_parent() == game.get_node("HUDLayer"),
 		"Runtime HUD from the map layout must be adopted into the global HUD layer."
+	)
+	_expect(
+		game.current_map != null
+		and game.current_map.get_node_or_null("EditorHUDReference/CardHandUI") == null,
+		"Runtime card hand must be adopted from the current authoritative map layout."
+	)
+	_expect(
+		game.card_hand_ui != null and game.card_hand_ui.get_parent() == game.get_node("HUDLayer"),
+		"Runtime card hand from the map layout must be adopted into the global HUD layer."
 	)
 	_expect(game.has_method("_resolve_layout_scene_path"), "Game must expose canonical-to-layout path resolution.")
 	if game.has_method("_resolve_layout_scene_path"):
@@ -85,6 +98,14 @@ func _run() -> void:
 	_expect(
 		game.hud != null and game.hud.get_parent() == game.get_node("HUDLayer"),
 		"Autumn layout HUD must remain attached to the global HUD layer at runtime."
+	)
+	_expect(
+		game.current_map.get_node_or_null("EditorHUDReference/CardHandUI") == null,
+		"Changing maps must adopt the new layout's card hand UI instance."
+	)
+	_expect(
+		game.card_hand_ui != null and game.card_hand_ui.get_parent() == game.get_node("HUDLayer"),
+		"Autumn layout card hand must remain attached to the global HUD layer at runtime."
 	)
 	game.queue_free()
 	await process_frame

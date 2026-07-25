@@ -6,3 +6,5 @@
 [node name="AutumnForest" instance=ExtResource("1_map")]
 
 [node name="EditorHUDReference" parent="." instance=ExtResource("2_reference")]
+
+[editable path="EditorHUDReference/CardHandUI"]

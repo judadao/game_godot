@@ -1,3 +1,4 @@
+@tool
 class_name CardHandUI
 extends Control
 
@@ -35,8 +36,9 @@ var _safe_area_band: ColorRect
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if Engine.is_editor_hint() and _cards.is_empty():
+		_cards = _editor_sample_cards()
 	_build_layout()
 	if not get_viewport().size_changed.is_connected(_on_viewport_size_changed):
 		get_viewport().size_changed.connect(_on_viewport_size_changed)
@@ -464,3 +466,12 @@ func _make_badge_style(background: Color, border: Color, radius: int) -> StyleBo
 	style.content_margin_left = 8.0
 	style.content_margin_right = 8.0
 	return style
+
+
+func _editor_sample_cards() -> Array[Dictionary]:
+	return [
+		{"name": "Ember Bolt", "type": "attack", "description": "Deal 12 damage and apply burn.", "cost": 1, "level": 1},
+		{"name": "Guard", "type": "defense", "description": "Gain 12 block.", "cost": 1, "level": 1},
+		{"name": "Quickstep", "type": "skill", "description": "Dash through danger.", "cost": 1, "level": 1},
+		{"name": "Cleave", "type": "attack", "description": "Strike enemies in an arc.", "cost": 2, "level": 1},
+	]
