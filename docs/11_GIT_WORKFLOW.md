@@ -178,7 +178,8 @@ git commit -m "Extract map scene registry"
 
 ## 12. Future Extension
 
-- 建立 CI 執行 46+ headless tests、editor smoke、Markdown/path check。
+- 建立 CI 執行目前 48 個 headless tests、editor smoke、Markdown/path check；
+  test 數量改變時由 runner 自動發現，不硬編碼清單。
 - 增加 PR template 與 required checks。
 - 定義 release branch、semantic version 與 changelog 流程。
 - 以 script 提供跨平台一致的 test runner。

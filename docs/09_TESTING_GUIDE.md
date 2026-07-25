@@ -29,7 +29,10 @@
 
 目前測試是直接繼承 `SceneTree` 的 Godot 原生腳本，存放於 `tests/`，多數以 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT、統一測試執行器與 CI；新增這些能力前不得在交付報告中宣稱已具備。
 
-現有測試涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林流程、HUD 與多解析度排版等範圍。`tests/test_ui_keyboard.gd` 不符合目前主要的檔名慣例，應在建立統一 runner 時一併納入或改名，避免漏跑。
+現有 48 個測試腳本涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+流程、HUD 與多解析度排版；其中 47 個符合 `*_test.gd`。
+`tests/test_ui_keyboard.gd` 不符合目前主要的檔名慣例，建立統一 runner 時必須
+一併納入或改名，避免漏跑。
 
 ## 3. 測試分層
 
@@ -75,10 +78,13 @@ try {
 $test_files = @(Get-ChildItem tests -Filter *_test.gd | Sort-Object FullName)
 $test_files += Get-Item tests/test_ui_keyboard.gd
 $test_failures = @()
+$suite_run_id = [guid]::NewGuid().ToString("N")
 $original_app_data = $env:APPDATA
 try {
-	$env:APPDATA = Join-Path (Get-Location) ".test_userdata"
 	foreach ($test_file in $test_files) {
+		$env:APPDATA = Join-Path (Get-Location) (
+			".test_userdata\{0}\{1}" -f $suite_run_id, $test_file.BaseName
+		)
 		$test_output = @(& $godot --headless --path . --script $test_file.FullName 2>&1)
 		$test_output | Write-Output
 		if ($LASTEXITCODE -ne 0 -or
@@ -197,13 +203,12 @@ object、orphan node 與記憶體不持續成長。專案尚無自動 performanc
 extends SceneTree
 
 var _failures := 0
-const GAME_SCRIPT := preload("res://scripts/managers/game.gd")
+const MAP_REGISTRY_SCRIPT := preload("res://scripts/systems/map_registry.gd")
 
 func _init() -> void:
-	var game := GAME_SCRIPT.new()
-	_expect_equal(game.call("_canonical_map_scene_path", "res://scenes/maps/town/TownMap.tscn"),
+	var registry := MAP_REGISTRY_SCRIPT.new()
+	_expect_equal(registry.canonical("res://scenes/maps/town/TownMap.tscn"),
 		"res://scenes/maps/town.tscn", "town canonical path")
-	game.free()
 	quit(0 if _failures == 0 else 1)
 
 func _expect_equal(actual: Variant, expected: Variant, context: String) -> void:
@@ -213,8 +218,8 @@ func _expect_equal(actual: Variant, expected: Variant, context: String) -> void:
 	push_error("%s: expected %s, got %s" % [context, expected, actual])
 ```
 
-上例使用目前 `Game` 已存在的 path contract；若該責任被重構，測試應改驗證新的
-public owner，同時保留 Game compatibility coverage。
+上例直接驗證目前的純 `MapRegistry` owner；另以
+`tests/map_registry_test.gd` 保護 `Game` compatibility wrappers。
 
 ## 14. Scene Tree Example
 

@@ -171,7 +171,9 @@ script 後 `new()`，以 `call()` 溝通。這是 Current，不應在文件中�
 ### 4.1 Canonical 與 authoritative path
 
 Portal/content identity 使用 canonical path；runtime/editor 使用 authoritative main scene。
-mapping 由 `Game.MAP_MAIN_SCENE_PATHS` 管理：
+mapping 由純 `RefCounted` `scripts/systems/map_registry.gd` 管理。`Game` preload
+該 registry，並保留原有 path constants、`MAP_MAIN_SCENE_PATHS` 與 compatibility
+wrappers，讓 portal、HUD、save 與既有測試不需知道實作已抽離：
 
 | Canonical path | Authoritative path | Runtime root |
 |---|---|---|
@@ -183,10 +185,13 @@ mapping 由 `Game.MAP_MAIN_SCENE_PATHS` 管理：
 規則：
 
 - Portal `target_scene_path` 可保留 canonical path。
+- `MapRegistry` 只處理 path identity，不載入 scene、不持有 Node/Player/UI/save。
 - `Game._resolve_main_scene_path()` 後才 `load()` destination。
 - HUD area name與 run/map identity 經 `_canonical_map_scene_path()` 比對。
 - Save 的 `map_path` 目前保存 instantiated authoritative
   `current_map.scene_file_path`。
+- Registry 抽取不改變 quick-save payload；任何改存 canonical path 的提案都屬
+  schema/migration 變更，需另行測試。
 - 新地圖若採此 pattern，必須同時加入 mapping、authoritative scene、Portal
   contract、save compatibility與 tests。
 
@@ -538,7 +543,7 @@ Scene/UI input
 
 | Severity | Risk | Evidence | Required control |
 |---|---|---|---|
-| High | Game monolith | `game.gd`約2,114行，涵蓋多domain | 新規則優先放可測system；改動跑跨系統tests |
+| High | Game monolith | `game.gd`約2,108行，仍涵蓋多domain；map path registry已抽離 | 新規則優先放可測system；改動跑跨系統tests |
 | High | Inventory多份真相 | manager/meta/prototype dictionaries | 明確同步點與一致性assertion |
 | High | Save雙管線 | SaveService vs Game quick save | 分開文件、fixtures與migration |
 | High | Map雙路徑 | canonical vs authoritative | registry test、save compatibility |
@@ -552,16 +557,14 @@ Scene/UI input
 
 ### 12.1 Current map path resolution
 
-來源：`scripts/managers/game.gd`
+來源：`scripts/systems/map_registry.gd` 與 `scripts/managers/game.gd`
 
 ```gdscript
+func resolve(scene_path: String) -> String:
+	return String(CANONICAL_TO_AUTHORITATIVE.get(canonical(scene_path), scene_path))
+
 func _resolve_main_scene_path(scene_path: String) -> String:
-	return String(
-		MAP_MAIN_SCENE_PATHS.get(
-			_canonical_map_scene_path(scene_path),
-			scene_path
-		)
-	)
+	return map_registry.resolve(scene_path)
 ```
 
 ### 12.2 Signal-first boundary

@@ -77,13 +77,14 @@ Roadmap item 的建立與關閉依序使用：
 
 ### 2.2 驗證基線
 
-Gameplay/testing audit 在隔離 `user://` 的 project copy 中記錄：
+2026-07-25 MapRegistry integration 完成後，以每個測試各自全新的隔離
+`APPDATA` 重新執行並記錄目前基線：
 
 | Check | Baseline |
 |---|---|
-| `*_test.gd` | 46/46 passed |
+| `*_test.gd` | 47/47 passed |
 | `tests/test_ui_keyboard.gd` | passed |
-| Total standalone test scripts | 47/47 passed |
+| Total standalone test scripts | 48/48 passed |
 | Second pass Godot error markers | 0 |
 | Editor parse | exit 0，0 markers |
 | Main-scene smoke | 300 frames，exit 0，0 markers |
@@ -92,7 +93,8 @@ Gameplay/testing audit 在隔離 `user://` 的 project copy 中記錄：
 
 ### 2.3 Current constraints
 
-- `scripts/managers/game.gd` 為 2,114 行 central coordinator；
+- `scripts/managers/game.gd` 為 2,108 行 central coordinator；map path registry
+  已抽成獨立純邏輯 system；
 - 無 central test runner；
 - 無 CI；
 - 無 performance/memory budget；
@@ -333,7 +335,9 @@ Town manager 產生的 visual flag 多於 `Game` 實際套用的四個 scene nod
 
 **Evidence**
 
-`scripts/managers/game.gd` 2,114 行，同時負責 map、UI、combat、cards、shops、save、inventory、town 與 result。
+`scripts/managers/game.gd` 2,108 行，仍同時負責 map lifecycle、UI、combat、cards、
+shops、save、inventory、town 與 result。純 path mapping 已完成第一步抽離至
+`scripts/systems/map_registry.gd`，但本項整體仍為 Open。
 
 **Boundary candidates from current ownership**
 
@@ -353,7 +357,7 @@ Game composition root
 - [ ] 先建立 caller/signal/ownership map，避免循環依賴。
 - [ ] 每次只移動一個可獨立測試的責任。
 - [ ] `Game` 保留 composition root，不以 autoload 取代依賴設計。
-- [ ] Existing 47-test baseline 與 affected scene tests 全數通過。
+- [ ] Existing 48-test baseline 與 affected scene tests 全數通過。
 - [ ] Map/HUD adoption、Run result、save 與 Town transaction 行為不變。
 - [ ] 新檔責任與架構文件同步。
 
@@ -365,11 +369,12 @@ Game composition root
 
 **Evidence**
 
-46 個 `*_test.gd` 加上一個命名例外 `test_ui_keyboard.gd` 必須逐一執行；標準 glob 會漏測。
+47 個 `*_test.gd` 加上一個命名例外 `test_ui_keyboard.gd` 必須逐一執行；標準
+glob 會漏測。
 
 **Acceptance Criteria**
 
-- [ ] 一個 documented command 發現全部 47 個現有 test。
+- [ ] 一個 documented command 發現全部 48 個現有 test。
 - [ ] 任一 test 非零 exit 時 runner 非零 exit。
 - [ ] Summary 顯示 total、passed、failed 與 failing path。
 - [ ] 新 test 依命名規則自動被發現。

@@ -9,20 +9,16 @@ const QUICK_SAVE_PATH := "user://saves/quick_save.json"
 const QUICK_SAVE_TEMP_PATH := "user://saves/quick_save.tmp"
 const QUICK_SAVE_BACKUP_PATH := "user://saves/quick_save.json.bak"
 const META_SAVE_PATH := "user://saves/meta_progress.json"
-const TOWN_SCENE_PATH := "res://scenes/maps/town.tscn"
-const AUTUMN_FOREST_SCENE_PATH := "res://scenes/maps/autumn_forest.tscn"
-const CRYSTAL_CAVES_SCENE_PATH := "res://scenes/maps/crystal_caves.tscn"
-const FORBIDDEN_GRAVEYARD_SCENE_PATH := "res://scenes/maps/forbidden_graveyard.tscn"
-const TOWN_MAIN_SCENE_PATH := "res://scenes/maps/town/TownMap.tscn"
-const AUTUMN_TREE_MAIN_SCENE_PATH := "res://scenes/maps/autumn_tree/AutumnTreeMap.tscn"
-const CRYSTAL_CAVES_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/CrystalCavesLayout.tscn"
-const FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn"
-const MAP_MAIN_SCENE_PATHS := {
-	TOWN_SCENE_PATH: TOWN_MAIN_SCENE_PATH,
-	AUTUMN_FOREST_SCENE_PATH: AUTUMN_TREE_MAIN_SCENE_PATH,
-	CRYSTAL_CAVES_SCENE_PATH: CRYSTAL_CAVES_LAYOUT_SCENE_PATH,
-	FORBIDDEN_GRAVEYARD_SCENE_PATH: FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH,
-}
+const MAP_REGISTRY_SCRIPT := preload("res://scripts/systems/map_registry.gd")
+const TOWN_SCENE_PATH := MAP_REGISTRY_SCRIPT.TOWN_SCENE_PATH
+const AUTUMN_FOREST_SCENE_PATH := MAP_REGISTRY_SCRIPT.AUTUMN_FOREST_SCENE_PATH
+const CRYSTAL_CAVES_SCENE_PATH := MAP_REGISTRY_SCRIPT.CRYSTAL_CAVES_SCENE_PATH
+const FORBIDDEN_GRAVEYARD_SCENE_PATH := MAP_REGISTRY_SCRIPT.FORBIDDEN_GRAVEYARD_SCENE_PATH
+const TOWN_MAIN_SCENE_PATH := MAP_REGISTRY_SCRIPT.TOWN_MAIN_SCENE_PATH
+const AUTUMN_TREE_MAIN_SCENE_PATH := MAP_REGISTRY_SCRIPT.AUTUMN_TREE_MAIN_SCENE_PATH
+const CRYSTAL_CAVES_LAYOUT_SCENE_PATH := MAP_REGISTRY_SCRIPT.CRYSTAL_CAVES_LAYOUT_SCENE_PATH
+const FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH := MAP_REGISTRY_SCRIPT.FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH
+const MAP_MAIN_SCENE_PATHS := MAP_REGISTRY_SCRIPT.CANONICAL_TO_AUTHORITATIVE
 const INVENTORY_MANAGER_SCRIPT := preload("res://scripts/systems/inventory_manager.gd")
 const TOWN_MANAGER_SCRIPT := preload("res://scripts/systems/town_manager.gd")
 const BASE_AP_REGEN := 0.65
@@ -84,6 +80,7 @@ var _interaction_candidates: Array[Node] = []
 var meta_state := MetaState.new()
 var run_state := RunState.new()
 var save_service := SaveService.new()
+var map_registry := MAP_REGISTRY_SCRIPT.new()
 var card_database := CardDatabase.new()
 var deck_manager := DeckManager.new(card_database)
 var combo_manager := ComboManager.new()
@@ -186,7 +183,7 @@ func load_starting_map() -> void:
 
 
 func _resolve_main_scene_path(scene_path: String) -> String:
-	return String(MAP_MAIN_SCENE_PATHS.get(_canonical_map_scene_path(scene_path), scene_path))
+	return map_registry.resolve(scene_path)
 
 
 func _resolve_layout_scene_path(scene_path: String) -> String:
@@ -194,16 +191,13 @@ func _resolve_layout_scene_path(scene_path: String) -> String:
 
 
 func _canonical_map_scene_path(scene_path: String) -> String:
-	for canonical_path in MAP_MAIN_SCENE_PATHS:
-		if scene_path == String(MAP_MAIN_SCENE_PATHS[canonical_path]):
-			return String(canonical_path)
-	return scene_path
+	return map_registry.canonical(scene_path)
 
 
 func _current_map_matches(canonical_path: String) -> bool:
 	return (
 		current_map != null
-		and _canonical_map_scene_path(current_map.scene_file_path) == canonical_path
+		and map_registry.matches(current_map.scene_file_path, canonical_path)
 	)
 
 
