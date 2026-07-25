@@ -33,8 +33,8 @@ func _run() -> void:
 	var safe_area := ui.get_node("CardSafeArea") as ColorRect
 	var viewport_height: float = ui.get_viewport_rect().size.y
 	_expect(
-		safe_area.position.y <= viewport_height - 270.0,
-		"Card stage must reserve at least 270 pixels below the visible battle map."
+		safe_area.position.y >= viewport_height - 196.0,
+		"Card stage must not hide more than 196 pixels of the battle map."
 	)
 	_expect(
 		is_equal_approx(safe_area.size.y, viewport_height - safe_area.position.y),

@@ -58,16 +58,42 @@ mouse_filter = 2
 script = ExtResource("1_hud")
 
 [node name="HUDStatus" parent="." unique_id=1176208436 instance=ExtResource("3_status")]
-anchors_preset = 0
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -114.0
+offset_right = 456.0
+offset_bottom = 22.0
+grow_vertical = 0
+scale = Vector2(0.75, 0.75)
 
 [node name="HUDProgressPanel" parent="." unique_id=854433835 instance=ExtResource("4_progress")]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -194.0
+offset_top = -104.0
+offset_right = -20.0
+offset_bottom = -32.0
+grow_horizontal = 0
+grow_vertical = 0
 
 [node name="HUDQuestTracker" parent="." unique_id=1373074750 instance=ExtResource("5_quest")]
-anchors_preset = 0
-offset_left = 16.0
-offset_top = 148.0
-offset_right = 296.0
-offset_bottom = 266.0
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -410.0
+offset_top = -114.0
+offset_right = -130.0
+offset_bottom = 4.0
+grow_horizontal = 0
+grow_vertical = 0
+scale = Vector2(0.72, 0.72)
 
 [node name="HUDHotbar" parent="." unique_id=1489913082 instance=ExtResource("6_hotbar")]
 visible = false

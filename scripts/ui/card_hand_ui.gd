@@ -7,7 +7,7 @@ signal group_changed(group_index: int)
 
 const CARD_SIZE := Vector2(132.0, 168.0)
 const RESTING_VISIBLE_HEIGHT := CARD_SIZE.y
-const SAFE_AREA_HEIGHT := 270.0
+const SAFE_AREA_HEIGHT := 184.0
 const CARD_BOTTOM_MARGIN := 10.0
 const HOVER_RISE := 75.0
 const HOVER_SCALE := Vector2(1.08, 1.08)
