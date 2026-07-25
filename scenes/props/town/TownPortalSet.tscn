@@ -8,28 +8,28 @@
 [node name="TownPortalSet" type="Node2D" unique_id=1130275238]
 
 [node name="EntranceFastTravelPortal" parent="." unique_id=990929359 instance=ExtResource("1_fast")]
-position = Vector2(100, 618)
+position = Vector2(86, 638)
 target_spawn_name = &"TownTailArrival"
 interaction_id = &"town_fast_travel_to_tail"
 prompt_text = "Travel to Town East"
 
 [node name="ForestPortal" parent="." unique_id=2077706239 instance=ExtResource("2_forest")]
-position = Vector2(2110, 618)
+position = Vector2(2107, 648)
 float_height = 7.0
 float_speed = 2.1
 
 [node name="CavesPortal" parent="." unique_id=2069987569 instance=ExtResource("3_caves")]
-position = Vector2(2260, 618)
+position = Vector2(2335, 648)
 float_height = 7.0
 float_speed = 2.1
 
 [node name="GraveyardPortal" parent="." unique_id=804408309 instance=ExtResource("4_graveyard")]
-position = Vector2(2410, 618)
+position = Vector2(2564, 648)
 float_height = 7.0
 float_speed = 2.1
 
 [node name="EastRoadPortal" parent="." unique_id=709159382 instance=ExtResource("1_fast")]
-position = Vector2(2550, 618)
+position = Vector2(2989, 648)
 target_spawn_name = &"TownEntranceArrival"
 interaction_id = &"town_fast_travel_to_entrance"
 prompt_text = "Travel to Town Entrance"

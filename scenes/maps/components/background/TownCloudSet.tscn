@@ -1,0 +1,40 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/town/background_modules/cloud_01.png" id="1"]
+[ext_resource type="Texture2D" path="res://assets/town/background_modules/cloud_02.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/town/background_modules/cloud_03.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/town/background_modules/cloud_04.png" id="4"]
+
+[node name="TownCloudSet" type="Node2D"]
+z_index = -45
+metadata/layer_role = "clouds"
+
+[node name="Cloud01" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(330, 165)
+scale = Vector2(1.1, 1.1)
+texture = ExtResource("1")
+
+[node name="Cloud02" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(1040, 275)
+scale = Vector2(0.82, 0.82)
+texture = ExtResource("2")
+
+[node name="Cloud03" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(1780, 125)
+scale = Vector2(-1.15, 1.15)
+texture = ExtResource("3")
+
+[node name="Cloud04" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(2580, 245)
+scale = Vector2(0.9, 0.9)
+texture = ExtResource("4")
+
+[node name="Cloud05" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(3470, 155)
+scale = Vector2(-1.05, 1.05)
+texture = ExtResource("1")

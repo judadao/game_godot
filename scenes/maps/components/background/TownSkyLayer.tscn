@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/town/background_modules/town_sky_3900.png" id="1_sky"]
+
+[node name="TownSkyLayer" type="Node2D"]
+z_index = -50
+metadata/layer_role = "sky"
+
+[node name="Sky" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(1950, 362)
+scale = Vector2(1.02, 1)
+texture = ExtResource("1_sky")

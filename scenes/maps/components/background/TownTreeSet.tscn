@@ -1,0 +1,107 @@
+[gd_scene format=3 uid="uid://cwidf1drqwy1a"]
+
+[ext_resource type="Texture2D" uid="uid://bcfwrdmde4mey" path="res://assets/town/background_modules/tree_cluster_01.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://vi6lnkp1jtby" path="res://assets/town/background_modules/tree_cluster_02.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://cvjldseiwl2st" path="res://assets/town/background_modules/tree_cluster_03.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://fwl4xj88up61" path="res://assets/town/background_modules/tree_cluster_04.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://b3tferc7a6qv" path="res://assets/town/background_modules/tree_cluster_05.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://b82h8eggphoue" path="res://assets/town/background_modules/tree_cluster_06.png" id="6"]
+
+[node name="TownTreeSet" type="Node2D" unique_id=1703298562]
+z_index = -20
+metadata/layer_role = "trees"
+
+[node name="Trees01" type="Sprite2D" parent="." unique_id=1320162328]
+texture_filter = 1
+position = Vector2(260, 610)
+texture = ExtResource("1")
+
+[node name="Trees02" type="Sprite2D" parent="." unique_id=499239041]
+texture_filter = 1
+position = Vector2(824, 559)
+scale = Vector2(-0.92, 0.92)
+texture = ExtResource("6")
+
+[node name="Trees08" type="Sprite2D" parent="." unique_id=2123203970]
+texture_filter = 1
+position = Vector2(555, 564)
+scale = Vector2(-0.92, 0.92)
+texture = ExtResource("6")
+
+[node name="Trees03" type="Sprite2D" parent="." unique_id=325074698]
+texture_filter = 1
+position = Vector2(1384.0001, 527)
+scale = Vector2(1.08, 1.08)
+texture = ExtResource("4")
+
+[node name="Trees09" type="Sprite2D" parent="." unique_id=1908678607]
+texture_filter = 1
+position = Vector2(903, 529)
+scale = Vector2(1.08, 1.08)
+texture = ExtResource("4")
+
+[node name="Trees04" type="Sprite2D" parent="." unique_id=759885609]
+texture_filter = 1
+position = Vector2(1940, 618)
+scale = Vector2(0.96, 0.96)
+texture = ExtResource("3")
+
+[node name="Trees10" type="Sprite2D" parent="." unique_id=1649988784]
+texture_filter = 1
+position = Vector2(1751, 597.00006)
+scale = Vector2(0.96, 0.96)
+texture = ExtResource("3")
+
+[node name="Trees05" type="Sprite2D" parent="." unique_id=602433212]
+texture_filter = 1
+position = Vector2(2500, 602)
+scale = Vector2(-1.04, 1.04)
+texture = ExtResource("5")
+
+[node name="Trees11" type="Sprite2D" parent="." unique_id=2032096983]
+texture_filter = 1
+position = Vector2(2702, 592)
+scale = Vector2(-1.04, 1.04)
+texture = ExtResource("5")
+
+[node name="Trees06" type="Sprite2D" parent="." unique_id=1668564790]
+texture_filter = 1
+position = Vector2(3070, 625)
+scale = Vector2(0.94, 0.94)
+texture = ExtResource("2")
+
+[node name="Trees07" type="Sprite2D" parent="." unique_id=147169201]
+texture_filter = 1
+position = Vector2(3660, 612)
+scale = Vector2(-1.02, 1.02)
+texture = ExtResource("1")
+
+[node name="Trees12" type="Sprite2D" parent="." unique_id=2138167829]
+texture_filter = 1
+position = Vector2(3441.0002, 610.00006)
+scale = Vector2(-1.02, 1.02)
+texture = ExtResource("1")
+
+[node name="Trees13" type="Sprite2D" parent="." unique_id=1204262995]
+texture_filter = 1
+position = Vector2(3208, 617)
+scale = Vector2(-1.02, 1.02)
+texture = ExtResource("1")
+
+[node name="Trees14" type="Sprite2D" parent="." unique_id=640181871]
+texture_filter = 1
+position = Vector2(2960, 615)
+scale = Vector2(-1.02, 1.02)
+texture = ExtResource("1")
+
+[node name="Trees15" type="Sprite2D" parent="." unique_id=511359128]
+texture_filter = 1
+position = Vector2(2783, 641.00006)
+scale = Vector2(-1.02, 1.02)
+texture = ExtResource("1")
+
+[node name="Trees16" type="Sprite2D" parent="." unique_id=1450052503]
+texture_filter = 1
+position = Vector2(2634.0002, 617)
+scale = Vector2(-1.02, 1.02)
+texture = ExtResource("1")

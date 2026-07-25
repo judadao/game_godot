@@ -6,9 +6,18 @@
 
 [node name="ContinuousStreet" type="Sprite2D" parent="." unique_id=1148873165]
 z_index = -5
-position = Vector2(1300, 686)
+position = Vector2(1950, 686)
 scale = Vector2(1.1970534, 1)
 texture = ExtResource("1_ground")
 region_enabled = true
-region_rect = Rect2(0, 280, 2172, 135)
+region_rect = Rect2(0, 280, 3258, 135)
+metadata/layer_role = "ground"
+
+[node name="ContinuousStreet2" type="Sprite2D" parent="." unique_id=1437793507]
+z_index = -5
+position = Vector2(4548, 686)
+scale = Vector2(1.1970534, 1)
+texture = ExtResource("1_ground")
+region_enabled = true
+region_rect = Rect2(0, 280, 3258, 135)
 metadata/layer_role = "ground"

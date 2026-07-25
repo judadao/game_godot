@@ -21,6 +21,9 @@ func _run() -> void:
 	_expect(entrance.target_scene_path == "res://scenes/maps/town.tscn", "Fast travel must stay in town.")
 	_expect(tail.target_scene_path == "res://scenes/maps/town.tscn", "Return fast travel must stay in town.")
 	_expect(entrance.collision_layer == 0 and tail.collision_layer == 0, "Fast-travel portals must not block town roads.")
+	var map_width := float(town.get_meta("map_width"))
+	_expect(tail.global_position.x >= 0.0, "East road portal must not be left of the playable map.")
+	_expect(tail.global_position.x < map_width, "East road portal must remain inside the playable map.")
 
 	town.queue_free()
 	await process_frame

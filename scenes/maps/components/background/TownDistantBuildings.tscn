@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://bljuylt5w7ohf"]
+
+[ext_resource type="Texture2D" uid="uid://b8j4n2ggj4dgw" path="res://assets/town/background_modules/distant_buildings_01.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://bqsmgfdytsw5o" path="res://assets/town/background_modules/distant_buildings_02.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://cobt2f8beb7ak" path="res://assets/town/background_modules/distant_buildings_03.png" id="3"]
+[ext_resource type="Texture2D" uid="uid://cndiexaj5ptj" path="res://assets/town/background_modules/distant_buildings_04.png" id="4"]
+
+[node name="TownDistantBuildings" type="Node2D" unique_id=62685276]
+z_index = -30
+metadata/layer_role = "distant_buildings"
+
+[node name="DistantBuildings01" type="Sprite2D" parent="." unique_id=1958803097]
+texture_filter = 1
+position = Vector2(491, 460)
+scale = Vector2(1.8286636, 1.8286636)
+texture = ExtResource("1")
+
+[node name="DistantBuildings11" type="Sprite2D" parent="." unique_id=1492077576]
+texture_filter = 1
+position = Vector2(288, 466)
+scale = Vector2(1.8286636, 1.8286636)
+texture = ExtResource("1")
+
+[node name="DistantBuildings02" type="Sprite2D" parent="." unique_id=1940647058]
+texture_filter = 1
+position = Vector2(1040, 517)
+scale = Vector2(-1.2055081, 1.2055081)
+texture = ExtResource("2")
+
+[node name="DistantBuildings07" type="Sprite2D" parent="." unique_id=1328921402]
+texture_filter = 1
+position = Vector2(938.9451, 433.70627)
+scale = Vector2(-1.8216965, 1.9559022)
+texture = ExtResource("2")
+
+[node name="DistantBuildings03" type="Sprite2D" parent="." unique_id=1099199644]
+texture_filter = 1
+position = Vector2(1386, 481)
+scale = Vector2(1.994681, 1.9946809)
+texture = ExtResource("3")
+
+[node name="DistantBuildings04" type="Sprite2D" parent="." unique_id=1534572]
+texture_filter = 1
+position = Vector2(2001.0299, 426.87)
+scale = Vector2(2, 2)
+texture = ExtResource("4")
+
+[node name="DistantBuildings05" type="Sprite2D" parent="." unique_id=868143805]
+texture_filter = 1
+position = Vector2(2180, 465.99997)
+scale = Vector2(-1.7126995, 1.807919)
+texture = ExtResource("2")
+
+[node name="DistantBuildings09" type="Sprite2D" parent="." unique_id=1904169640]
+texture_filter = 1
+position = Vector2(3469, 478.99997)
+scale = Vector2(-1.7126995, 1.807919)
+texture = ExtResource("2")
+
+[node name="DistantBuildings10" type="Sprite2D" parent="." unique_id=1381279860]
+texture_filter = 1
+position = Vector2(3649.9998, 484.99997)
+scale = Vector2(-1.7126995, 1.807919)
+texture = ExtResource("2")
+
+[node name="DistantBuildings06" type="Sprite2D" parent="." unique_id=1651917561]
+texture_filter = 1
+position = Vector2(2680, 488)
+scale = Vector2(1.95, 1.95)
+texture = ExtResource("1")
+
+[node name="DistantBuildings08" type="Sprite2D" parent="." unique_id=1540361447]
+texture_filter = 1
+position = Vector2(3080, 493.99997)
+scale = Vector2(1.95, 1.95)
+texture = ExtResource("1")

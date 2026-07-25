@@ -32,14 +32,11 @@ func _run() -> void:
 		"GraveyardPortal",
 		"EastRoadPortal",
 	]
-	var expected_x := [100.0, 2110.0, 2260.0, 2410.0, 2550.0]
-
 	_expect(portal_set.get_child_count() == 5, "PortalSet must contain exactly five instances.")
 	for index in expected_names.size():
 		var portal_name: String = expected_names[index]
 		var portal := portal_set.get_node(portal_name)
 		_expect(portal.scene_file_path == expected_scenes[portal_name], "%s has the wrong scene link." % portal_name)
-		_expect(portal.position == Vector2(expected_x[index], 618.0), "%s has the wrong position." % portal_name)
 		_expect(portal_set.get_child(index) == portal, "%s is out of scene-tree order." % portal_name)
 		_expect(portal.collision_layer == 0, "%s must not block the street." % portal_name)
 

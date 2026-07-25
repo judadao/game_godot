@@ -44,6 +44,12 @@ func _run() -> void:
 	]:
 		_expect(town.has_node(node_path), "Town rebuild node missing: %s" % node_path)
 
+	_expect(int(town.get_meta("map_width")) >= 3900, "Town map must remain at least 3900px wide.")
+	_expect(
+		int(town.get_meta("camera_limit_right")) >= int(town.get_meta("map_width")),
+		"Town camera must reach the configured map edge."
+	)
+
 	for portal_name in ["ForestPortal", "CavesPortal", "GraveyardPortal"]:
 		var portal := town.get_node("Portals/%s" % portal_name) as CollisionObject2D
 		_expect(portal.collision_layer == 0, "%s must not block the town road." % portal_name)
@@ -98,30 +104,114 @@ func _run() -> void:
 			npc_regions.append(region)
 
 	_expect(
-		town.get_node("ParallaxBackground/MidLayer/Background").texture.resource_path
-		== "res://assets/town/rebuild_v2/town_background_clean_v3.png",
-		"Town must use the clean distant-only background."
-	)
-	_expect(
-		town.get_node("ParallaxBackground/MiddleNearLayer").texture.resource_path
-		== "res://assets/town/rebuild_v2/town_mid_near_layer.png",
-		"Town must use the generated middle-near scenery layer."
-	)
-	_expect(
 		not town.has_node("ParallaxBackground/ParallaxBackground"),
 		"Town must not nest a second TownBackdrop inside the linked backdrop scene."
 	)
-	_expect(
-		not town.has_node("ParallaxBackground/MiddleNearLayer/MiddleNearLayer"),
-		"Town backdrop must not nest a duplicate middle-near layer."
+	var background_modules := {
+		"Sky": {
+			"scene": "res://scenes/maps/components/background/TownSkyLayer.tscn",
+			"minimum_sprites": 1,
+		},
+		"Clouds": {
+			"scene": "res://scenes/maps/components/background/TownCloudSet.tscn",
+			"minimum_sprites": 4,
+		},
+		"Mountains": {
+			"scene": "res://scenes/maps/components/background/TownMountainSet.tscn",
+			"minimum_sprites": 3,
+		},
+		"DistantBuildings": {
+			"scene": "res://scenes/maps/components/background/TownDistantBuildings.tscn",
+			"minimum_sprites": 4,
+		},
+		"Trees": {
+			"scene": "res://scenes/maps/components/background/TownTreeSet.tscn",
+			"minimum_sprites": 6,
+		},
+	}
+	var backdrop := town.get_node("ParallaxBackground")
+	var sky_sprite := backdrop.get_node("Sky/Sky") as Sprite2D
+	var sky_half_width: float = (
+		float(sky_sprite.texture.get_width())
+		* absf(sky_sprite.global_scale.x)
+		* 0.5
 	)
+	_expect(
+		sky_sprite.global_position.x - sky_half_width <= 0.0
+		and sky_sprite.global_position.x + sky_half_width >= 3900.0,
+		"Town sky must cover both edges after backdrop positioning."
+	)
+	for module_name in background_modules:
+		var module := backdrop.get_node_or_null(module_name)
+		_expect(module != null, "TownBackdrop must expose linked %s child scene." % module_name)
+		if module == null:
+			continue
+		var contract: Dictionary = background_modules[module_name]
+		_expect(
+			module.scene_file_path == contract["scene"],
+			"TownBackdrop/%s must link %s." % [module_name, contract["scene"]]
+		)
+		_expect(
+			_count_sprites(module) >= contract["minimum_sprites"],
+			"TownBackdrop/%s must contain at least %d Sprite2D nodes."
+			% [module_name, contract["minimum_sprites"]]
+		)
 	var continuous_ground := town.get_node("Ground/ContinuousStreet") as Sprite2D
 	_expect(
 		continuous_ground.texture.resource_path
 		== "res://assets/town/rebuild_v2/town_ground_continuous.png",
 		"Town ground must use one continuous texture."
 	)
-	_expect(town.get_node("Ground").get_child_count() == 1, "Town ground must not contain stitched segments.")
+	var ground_root := town.get_node("Ground") as Node2D
+	var ground_width: float = continuous_ground.region_rect.size.x * absf(continuous_ground.scale.x)
+	var ground_right: float = (
+		ground_root.position.x
+		+ continuous_ground.position.x
+		+ ground_width * 0.5
+	)
+	_expect(ground_right >= 3900.0, "Town continuous ground must reach the 3900px east edge.")
+
+	var floor_collision := town.get_node("WorldCollision/FloorCollision") as CollisionShape2D
+	var floor_shape := floor_collision.shape as RectangleShape2D
+	var collision_root := town.get_node("WorldCollision") as Node2D
+	var floor_right: float = (
+		collision_root.position.x
+		+ floor_collision.position.x
+		+ floor_shape.size.x * 0.5
+	)
+	_expect(floor_right >= 3900.0, "Town floor collision must reach the 3900px east edge.")
+	var right_wall := town.get_node("WorldCollision/RightWall") as CollisionShape2D
+	_expect(
+		collision_root.position.x + right_wall.position.x >= 3900.0,
+		"Town right wall must be at or beyond the east boundary."
+	)
+	var east_portal := town.get_node("Portals/EastRoadPortal") as Node2D
+	var tail_arrival := town.get_node("TownTailArrival") as Node2D
+	var map_width := float(town.get_meta("map_width"))
+	_expect(
+		east_portal.global_position.x >= 0.0
+		and east_portal.global_position.x < map_width,
+		"EastRoadPortal must remain inside the playable Town bounds."
+	)
+	_expect(
+		absf(east_portal.global_position.x - tail_arrival.global_position.x) >= 128.0,
+		"TownTailArrival must keep safe clearance from EastRoadPortal."
+	)
+
+	for asset_name in [
+		"cloud_01.png", "cloud_02.png", "cloud_03.png", "cloud_04.png",
+		"mountain_01.png", "mountain_02.png", "mountain_03.png",
+		"distant_buildings_01.png", "distant_buildings_02.png",
+		"distant_buildings_03.png", "distant_buildings_04.png",
+		"tree_cluster_01.png", "tree_cluster_02.png", "tree_cluster_03.png",
+		"tree_cluster_04.png", "tree_cluster_05.png", "tree_cluster_06.png",
+	]:
+		_expect(
+			_has_transparent_corners(
+				"res://assets/town/background_modules/%s" % asset_name
+			),
+			"%s must have transparent corners after chroma-key removal." % asset_name
+		)
 	for prop_name in [
 		"EntranceFence",
 		"ResidentialLamp",
@@ -166,3 +256,27 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _has_transparent_corners(texture_path: String) -> bool:
+	var texture := load(texture_path) as Texture2D
+	if texture == null:
+		return false
+	var image := texture.get_image()
+	if image == null or image.get_width() < 2 or image.get_height() < 2:
+		return false
+	var right := image.get_width() - 1
+	var bottom := image.get_height() - 1
+	return (
+		image.get_pixel(0, 0).a == 0.0
+		and image.get_pixel(right, 0).a == 0.0
+		and image.get_pixel(0, bottom).a == 0.0
+		and image.get_pixel(right, bottom).a == 0.0
+	)
+
+
+func _count_sprites(node: Node) -> int:
+	var count := 1 if node is Sprite2D else 0
+	for child in node.get_children():
+		count += _count_sprites(child)
+	return count
