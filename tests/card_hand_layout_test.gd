@@ -103,7 +103,15 @@ func _run() -> void:
 				String(ui.call("get_shortcut_label", index)) == ["Q", "W", "E", "R"][index],
 				"Four cards must display Q/W/E/R in order."
 			)
-	ui.queue_free()
+	var energy_badge := ui.get_node("HandLayer/EnergyBadge") as Control
+	var attached_badge_position := energy_badge.position
+	root.remove_child(ui)
+	ui.call("_layout_cards")
+	_expect(
+		energy_badge.position == attached_badge_position,
+		"Detached editor card hand must not recalculate layout from an unavailable viewport."
+	)
+	ui.free()
 	await process_frame
 	quit(0 if _failures == 0 else 1)
 

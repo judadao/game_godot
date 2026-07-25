@@ -339,7 +339,7 @@ func _build_card_button(card: Dictionary, local_index: int, global_index: int) -
 
 
 func _layout_cards() -> void:
-	if _hand_layer == null:
+	if _hand_layer == null or not is_inside_tree():
 		return
 	var viewport_size := get_viewport_rect().size
 	if _safe_area_band != null:
