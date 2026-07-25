@@ -3,13 +3,13 @@ extends SceneTree
 const LAYOUTS := [
 	{
 		"canonical": "res://scenes/maps/town.tscn",
-		"layout": "res://scenes/maps/layouts/TownLayout.tscn",
-		"root": "Town",
+		"layout": "res://scenes/maps/town/TownMap.tscn",
+		"root": "TownMap",
 	},
 	{
 		"canonical": "res://scenes/maps/autumn_forest.tscn",
-		"layout": "res://scenes/maps/layouts/AutumnForestLayout.tscn",
-		"root": "AutumnForest",
+		"layout": "res://scenes/maps/autumn_tree/AutumnTreeMap.tscn",
+		"root": "AutumnTreeMap",
 	},
 	{
 		"canonical": "res://scenes/maps/crystal_caves.tscn",
@@ -81,12 +81,12 @@ func _run() -> void:
 		game.card_hand_ui != null and game.card_hand_ui.get_parent() == game.get_node("HUDLayer"),
 		"Runtime card hand from the map layout must be adopted into the global HUD layer."
 	)
-	_expect(game.has_method("_resolve_layout_scene_path"), "Game must expose canonical-to-layout path resolution.")
-	if game.has_method("_resolve_layout_scene_path"):
+	_expect(game.has_method("_resolve_main_scene_path"), "Game must expose canonical-to-main-scene path resolution.")
+	if game.has_method("_resolve_main_scene_path"):
 		for spec in LAYOUTS:
 			_expect(
-				String(game.call("_resolve_layout_scene_path", String(spec["canonical"]))) == String(spec["layout"]),
-				"Canonical map path must resolve to its authoritative layout scene."
+				String(game.call("_resolve_main_scene_path", String(spec["canonical"]))) == String(spec["layout"]),
+				"Canonical map path must resolve to its authoritative main scene."
 			)
 
 	var autumn_layout := load(String(LAYOUTS[1]["layout"])) as PackedScene

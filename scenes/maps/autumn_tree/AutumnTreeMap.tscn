@@ -1,0 +1,45 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_forest.tscn" id="1_map"]
+[ext_resource type="PackedScene" path="res://scenes/dev/EditorHUDReference.tscn" id="2_ui"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_tree/editor/AutumnTreeEditorHelpers.tscn" id="3_helpers"]
+
+[node name="AutumnTreeMap" instance=ExtResource("1_map")]
+
+[node name="TownPortal" parent="." index="16"]
+visible = true
+target_scene_path = "res://scenes/maps/town.tscn"
+target_spawn_name = &"PlayerSpawn"
+
+[node name="Visual" parent="TownPortal" index="0"]
+visible = true
+
+[node name="CollisionShape2D" parent="TownPortal" index="1"]
+visible = true
+
+[node name="InteractionArea" parent="TownPortal" index="2"]
+visible = true
+
+[node name="CollisionShape2D" parent="TownPortal/InteractionArea" index="0"]
+visible = true
+
+[node name="EditorHUDReference" parent="." instance=ExtResource("2_ui")]
+
+[node name="EditorHelpers" parent="." instance=ExtResource("3_helpers")]
+
+[editable path="HiddenBranchCache"]
+[editable path="HiddenBranchCache/InteractionArea"]
+[editable path="ForestRest"]
+[editable path="ForestRest/InteractionArea"]
+[editable path="ShortcutLever"]
+[editable path="ShortcutLever/InteractionArea"]
+[editable path="TownPortal"]
+[editable path="TownPortal/InteractionArea"]
+[editable path="ForwardPortal"]
+[editable path="ForwardPortal/InteractionArea"]
+[editable path="WanderingCardMerchant"]
+[editable path="WanderingCardMerchant/InteractionArea"]
+[editable path="EditorHUDReference"]
+[editable path="EditorHUDReference/HUD"]
+[editable path="EditorHUDReference/CardHandUI"]
+[editable path="EditorHelpers"]

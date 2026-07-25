@@ -26,8 +26,8 @@ func _run() -> void:
 		await process_frame
 		await process_frame
 	_expect(
-		game.get("current_map").scene_file_path == "res://scenes/maps/layouts/AutumnForestLayout.tscn",
-		"Normalized confirmation must enter the authoritative Autumn Forest layout."
+		game.get("current_map").scene_file_path == "res://scenes/maps/autumn_tree/AutumnTreeMap.tscn",
+		"Normalized confirmation must enter the authoritative Autumn Tree main scene."
 	)
 	_expect((game.get("run_state") as RunState).active, "Entering Autumn Forest must start a run.")
 	game.queue_free()

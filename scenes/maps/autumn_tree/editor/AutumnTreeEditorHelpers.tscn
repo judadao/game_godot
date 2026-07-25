@@ -1,0 +1,110 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/map_editor_helpers.gd" id="1_helpers"]
+
+[node name="EditorHelpers" type="Node2D"]
+z_index = 200
+script = ExtResource("1_helpers")
+
+[node name="MapBounds" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0, 2600, 0, 2600, 724, 0, 724, 0, 0)
+width = 4.0
+default_color = Color(1, 0.24, 0.18, 0.9)
+
+[node name="CombatCameraSafeView" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0, 1280, 0, 1280, 536, 0, 536, 0, 0)
+width = 3.0
+default_color = Color(1, 0.8, 0.2, 0.9)
+
+[node name="SurvivalCombatArea" type="Line2D" parent="."]
+points = PackedVector2Array(470, 70, 2250, 70, 2250, 430, 470, 430, 470, 70)
+width = 4.0
+default_color = Color(1, 0.42, 0.18, 0.8)
+
+[node name="BossArea" type="Line2D" parent="."]
+points = PackedVector2Array(1680, 100, 2320, 100, 2320, 430, 1680, 430, 1680, 100)
+width = 4.0
+default_color = Color(0.9, 0.2, 0.48, 0.9)
+
+[node name="MapTitle" type="Label" parent="."]
+offset_left = 28.0
+offset_top = 22.0
+offset_right = 440.0
+offset_bottom = 58.0
+theme_override_colors/font_color = Color(1, 0.72, 0.25, 1)
+theme_override_colors/font_outline_color = Color(0.08, 0.04, 0.02, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 24
+text = "AUTUMN TREE — COMPLETE MAP"
+
+[node name="SpawnLabel" type="Label" parent="."]
+offset_left = 270.0
+offset_top = 260.0
+offset_right = 520.0
+offset_bottom = 294.0
+theme_override_colors/font_color = Color(0.34, 1, 0.54, 1)
+theme_override_constants/outline_size = 4
+text = "◆ PLAYER SPAWN"
+
+[node name="ScoutLabel" type="Label" parent="."]
+offset_left = 650.0
+offset_top = 300.0
+offset_right = 900.0
+offset_bottom = 334.0
+theme_override_colors/font_color = Color(1, 0.52, 0.32, 1)
+theme_override_constants/outline_size = 4
+text = "◆ ENEMY START"
+
+[node name="CombatAreaLabel" type="Label" parent="."]
+offset_left = 900.0
+offset_top = 86.0
+offset_right = 1260.0
+offset_bottom = 120.0
+theme_override_colors/font_color = Color(1, 0.58, 0.25, 1)
+theme_override_constants/outline_size = 4
+text = "SURVIVAL WAVES / ENEMY SPAWNS"
+
+[node name="BossAreaLabel" type="Label" parent="."]
+offset_left = 1870.0
+offset_top = 116.0
+offset_right = 2150.0
+offset_bottom = 150.0
+theme_override_colors/font_color = Color(1, 0.3, 0.52, 1)
+theme_override_constants/outline_size = 4
+text = "BOSS STAGE"
+
+[node name="CampfireLabel" type="Label" parent="."]
+offset_left = 850.0
+offset_top = 272.0
+offset_right = 1120.0
+offset_bottom = 306.0
+theme_override_colors/font_color = Color(1, 0.82, 0.38, 1)
+theme_override_constants/outline_size = 4
+text = "◆ CAMPFIRE / MERCHANT"
+
+[node name="HiddenRewardLabel" type="Label" parent="."]
+offset_left = 680.0
+offset_top = 170.0
+offset_right = 980.0
+offset_bottom = 204.0
+theme_override_colors/font_color = Color(0.52, 0.92, 1, 1)
+theme_override_constants/outline_size = 4
+text = "◆ HIDDEN REWARD"
+
+[node name="ShortcutLabel" type="Label" parent="."]
+offset_left = 2040.0
+offset_top = 252.0
+offset_right = 2300.0
+offset_bottom = 286.0
+theme_override_colors/font_color = Color(0.52, 0.92, 1, 1)
+theme_override_constants/outline_size = 4
+text = "◆ SHORTCUT"
+
+[node name="TransitionsLabel" type="Label" parent="."]
+offset_left = 2280.0
+offset_top = 250.0
+offset_right = 2580.0
+offset_bottom = 284.0
+theme_override_colors/font_color = Color(0.92, 0.78, 1, 1)
+theme_override_constants/outline_size = 4
+text = "← TOWN / NEXT MAP →"

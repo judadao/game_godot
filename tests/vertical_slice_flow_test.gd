@@ -13,8 +13,8 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	_expect(
-		game.get("current_map").scene_file_path == "res://scenes/maps/layouts/TownLayout.tscn",
-		"A new session must begin in the authoritative Town layout."
+		game.get("current_map").scene_file_path == "res://scenes/maps/town/TownMap.tscn",
+		"A new session must begin in the authoritative Town main scene."
 	)
 
 	var town_player := game.get("player") as Node
@@ -33,8 +33,8 @@ func _run() -> void:
 		await process_frame
 		await process_frame
 	_expect(
-		game.get("current_map").scene_file_path == "res://scenes/maps/layouts/AutumnForestLayout.tscn",
-		"Town portal must enter the authoritative Autumn Forest layout."
+		game.get("current_map").scene_file_path == "res://scenes/maps/autumn_tree/AutumnTreeMap.tscn",
+		"Town portal must enter the authoritative Autumn Tree main scene."
 	)
 	var run := game.get("run_state") as RunState
 	_expect(run.active, "Entering Autumn Forest must start transient run state.")
@@ -115,8 +115,8 @@ func _run() -> void:
 	await process_frame
 	await game.call("_on_player_defeated")
 	_expect(
-		game.get("current_map").scene_file_path == "res://scenes/maps/layouts/TownLayout.tscn",
-		"Death must return the player to the authoritative Town layout."
+		game.get("current_map").scene_file_path == "res://scenes/maps/town/TownMap.tscn",
+		"Death must return the player to the authoritative Town main scene."
 	)
 	_expect(
 		int((game.get("meta_state") as MetaState).resources.get("gold", 0)) == permanent_gold_before + 11,

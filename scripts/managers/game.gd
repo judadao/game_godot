@@ -13,13 +13,13 @@ const TOWN_SCENE_PATH := "res://scenes/maps/town.tscn"
 const AUTUMN_FOREST_SCENE_PATH := "res://scenes/maps/autumn_forest.tscn"
 const CRYSTAL_CAVES_SCENE_PATH := "res://scenes/maps/crystal_caves.tscn"
 const FORBIDDEN_GRAVEYARD_SCENE_PATH := "res://scenes/maps/forbidden_graveyard.tscn"
-const TOWN_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/TownLayout.tscn"
-const AUTUMN_FOREST_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/AutumnForestLayout.tscn"
+const TOWN_MAIN_SCENE_PATH := "res://scenes/maps/town/TownMap.tscn"
+const AUTUMN_TREE_MAIN_SCENE_PATH := "res://scenes/maps/autumn_tree/AutumnTreeMap.tscn"
 const CRYSTAL_CAVES_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/CrystalCavesLayout.tscn"
 const FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn"
-const MAP_LAYOUT_SCENE_PATHS := {
-	TOWN_SCENE_PATH: TOWN_LAYOUT_SCENE_PATH,
-	AUTUMN_FOREST_SCENE_PATH: AUTUMN_FOREST_LAYOUT_SCENE_PATH,
+const MAP_MAIN_SCENE_PATHS := {
+	TOWN_SCENE_PATH: TOWN_MAIN_SCENE_PATH,
+	AUTUMN_FOREST_SCENE_PATH: AUTUMN_TREE_MAIN_SCENE_PATH,
 	CRYSTAL_CAVES_SCENE_PATH: CRYSTAL_CAVES_LAYOUT_SCENE_PATH,
 	FORBIDDEN_GRAVEYARD_SCENE_PATH: FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH,
 }
@@ -53,7 +53,7 @@ const COMBO_EVOLUTIONS := [
 	},
 ]
 
-@export var starting_map: PackedScene = preload("res://scenes/maps/layouts/TownLayout.tscn")
+@export var starting_map: PackedScene = preload("res://scenes/maps/town/TownMap.tscn")
 @export var hud_scene: PackedScene = preload("res://scenes/ui/HUD.tscn")
 @export var card_hand_scene: PackedScene = preload("res://scenes/ui/CardHandUI.tscn")
 @export var inventory_scene: PackedScene = preload("res://scenes/ui/InventoryUI.tscn")
@@ -185,13 +185,17 @@ func load_starting_map() -> void:
 	load_current_map(starting_map)
 
 
+func _resolve_main_scene_path(scene_path: String) -> String:
+	return String(MAP_MAIN_SCENE_PATHS.get(_canonical_map_scene_path(scene_path), scene_path))
+
+
 func _resolve_layout_scene_path(scene_path: String) -> String:
-	return String(MAP_LAYOUT_SCENE_PATHS.get(_canonical_map_scene_path(scene_path), scene_path))
+	return _resolve_main_scene_path(scene_path)
 
 
 func _canonical_map_scene_path(scene_path: String) -> String:
-	for canonical_path in MAP_LAYOUT_SCENE_PATHS:
-		if scene_path == String(MAP_LAYOUT_SCENE_PATHS[canonical_path]):
+	for canonical_path in MAP_MAIN_SCENE_PATHS:
+		if scene_path == String(MAP_MAIN_SCENE_PATHS[canonical_path]):
 			return String(canonical_path)
 	return scene_path
 
@@ -803,7 +807,7 @@ func _on_player_defeated() -> void:
 	await get_tree().create_timer(0.8).timeout
 	_pending_player_state.clear()
 	player = null
-	load_current_map(load(_resolve_layout_scene_path(TOWN_SCENE_PATH)) as PackedScene)
+	load_current_map(load(_resolve_main_scene_path(TOWN_SCENE_PATH)) as PackedScene)
 	_show_run_result(false, summary)
 
 
@@ -1281,7 +1285,7 @@ func _on_result_return_to_town(result_ui: Control) -> void:
 		return
 	_pending_player_state.clear()
 	player = null
-	load_current_map(load(_resolve_layout_scene_path(TOWN_SCENE_PATH)) as PackedScene)
+	load_current_map(load(_resolve_main_scene_path(TOWN_SCENE_PATH)) as PackedScene)
 
 
 func _capture_player_state() -> Dictionary:
@@ -1811,7 +1815,7 @@ func _on_portal_entered(_portal: Node, target_scene_path: String, target_spawn_n
 	if interactor != null and interactor != player:
 		return
 	var canonical_target := _canonical_map_scene_path(target_scene_path)
-	var resolved_target := _resolve_layout_scene_path(canonical_target)
+	var resolved_target := _resolve_main_scene_path(canonical_target)
 	if target_scene_path.is_empty() or not ResourceLoader.exists(resolved_target):
 		push_warning("Portal target scene is not available: %s" % target_scene_path)
 		return
@@ -1854,7 +1858,7 @@ func _on_deck_confirmed(deck_ids: Array[String], ui_control: Control, target_sce
 	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
 	close_ui(ui_control)
 	_begin_autumn_run(normalized)
-	load_current_map(load(_resolve_layout_scene_path(target_scene_path)) as PackedScene, target_spawn_name)
+	load_current_map(load(_resolve_main_scene_path(target_scene_path)) as PackedScene, target_spawn_name)
 
 
 func _normalize_expedition_deck(deck_ids: Array) -> Array[String]:
