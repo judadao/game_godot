@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_npcs_atlas_v2.png" id="1_atlas"]
+
+[sub_resource type="AtlasTexture" id="Portrait"]
+atlas = ExtResource("1_atlas")
+region = Rect2(1840, 54, 270, 590)
+
+[node name="FemaleVillager" type="Sprite2D" groups=["TownNpcVisual"]]
+texture = SubResource("Portrait")
+offset = Vector2(0, -295)
+scale = Vector2(0.23, 0.23)
+

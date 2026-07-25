@@ -96,8 +96,11 @@ func _run() -> void:
 	var linked_scenes := {
 		"ParallaxBackground": "res://scenes/maps/components/TownBackdrop.tscn",
 		"Ground": "res://scenes/maps/components/TownStreetGround.tscn",
+		"Buildings": "res://scenes/maps/components/TownBuildings.tscn",
 		"Props": "res://scenes/props/town/TownStreetProps.tscn",
 		"Portals": "res://scenes/props/town/TownPortalSet.tscn",
+		"NPCs": "res://scenes/maps/components/TownNPCs.tscn",
+		"WorldCollision": "res://scenes/maps/components/TownWorldCollision.tscn",
 	}
 	for node_path in linked_scenes:
 		var linked_node := town.get_node(node_path)

@@ -1,30 +1,14 @@
-[gd_scene load_steps=22 format=3 uid="uid://dw3j7rocm1qmn"]
+[gd_scene load_steps=10 format=3 uid="uid://dw3j7rocm1qmn"]
 
 [ext_resource type="Script" path="res://scripts/maps/town_editor_preview.gd" id="1_preview"]
 [ext_resource type="PackedScene" path="res://scenes/maps/components/TownBackdrop.tscn" id="2_backdrop"]
 [ext_resource type="PackedScene" path="res://scenes/maps/components/TownStreetGround.tscn" id="3_ground"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/TownStreetProps.tscn" id="4_props"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/TownPortalSet.tscn" id="5_portals"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueResidence.tscn" id="6_west_house"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueShop.tscn" id="7_item_shop"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueTower.tscn" id="8_blacksmith"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedShop.tscn" id="9_market"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedResidence.tscn" id="10_residence"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedTower.tscn" id="11_tower"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/Mayor.tscn" id="12_mayor"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/VillagerMaleVisual.tscn" id="13_male"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/VillagerFemaleVisual.tscn" id="14_female"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/GuardVisual.tscn" id="15_guard"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedPotionMerchant.tscn" id="16_merchant"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedBlacksmith.tscn" id="17_smith"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedInnkeeper.tscn" id="18_innkeeper"]
-[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="19_player"]
-
-[sub_resource type="RectangleShape2D" id="FloorShape"]
-size = Vector2(2800, 79)
-
-[sub_resource type="RectangleShape2D" id="WallShape"]
-size = Vector2(48, 520)
+[ext_resource type="PackedScene" path="res://scenes/maps/components/TownBuildings.tscn" id="4_buildings"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/TownStreetProps.tscn" id="5_props"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/TownPortalSet.tscn" id="6_portals"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/TownNPCs.tscn" id="7_npcs"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="8_player"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/TownWorldCollision.tscn" id="9_collision"]
 
 [node name="Town" type="Node2D"]
 script = ExtResource("1_preview")
@@ -50,72 +34,15 @@ position = Vector2(2250, 576)
 
 [node name="Ground" parent="." instance=ExtResource("3_ground")]
 
-[node name="Buildings" type="Node2D" parent="."]
+[node name="Buildings" parent="." instance=ExtResource("4_buildings")]
 
-[node name="WestHouse" parent="Buildings" instance=ExtResource("6_west_house")]
-position = Vector2(265, 618)
-scale = Vector2(0.82, 0.82)
+[node name="Props" parent="." instance=ExtResource("5_props")]
 
-[node name="ItemShop" parent="Buildings" instance=ExtResource("7_item_shop")]
-position = Vector2(1510, 618)
-scale = Vector2(0.82, 0.82)
+[node name="Portals" parent="." instance=ExtResource("6_portals")]
 
-[node name="Blacksmith" parent="Buildings" instance=ExtResource("8_blacksmith")]
-position = Vector2(2020, 618)
-scale = Vector2(0.82, 0.82)
+[node name="NPCs" parent="." instance=ExtResource("7_npcs")]
 
-[node name="MarketStall" parent="Buildings" instance=ExtResource("9_market")]
-position = Vector2(1810, 618)
-scale = Vector2(0.82, 0.82)
-
-[node name="EmptyResidence" parent="Buildings" instance=ExtResource("10_residence")]
-position = Vector2(620, 618)
-scale = Vector2(0.82, 0.82)
-
-[node name="EmptyTowerHouse" parent="Buildings" instance=ExtResource("11_tower")]
-position = Vector2(1080, 618)
-scale = Vector2(0.82, 0.82)
-
-[node name="Props" parent="." instance=ExtResource("4_props")]
-
-[node name="Portals" parent="." instance=ExtResource("5_portals")]
-
-[node name="NPCs" type="Node2D" parent="."]
-
-[node name="Mayor" parent="NPCs" instance=ExtResource("12_mayor")]
-position = Vector2(1120, 618)
-
-[node name="VillagerMale" parent="NPCs" instance=ExtResource("13_male")]
-position = Vector2(760, 618)
-
-[node name="VillagerFemale" parent="NPCs" instance=ExtResource("14_female")]
-position = Vector2(1320, 618)
-
-[node name="Guard" parent="NPCs" instance=ExtResource("15_guard")]
-position = Vector2(360, 618)
-
-[node name="ItemMerchantInteractive" parent="NPCs" instance=ExtResource("16_merchant")]
-position = Vector2(1530, 618)
-
-[node name="BlacksmithInteractive" parent="NPCs" instance=ExtResource("17_smith")]
-position = Vector2(2010, 618)
-
-[node name="InnkeeperInteractive" parent="NPCs" instance=ExtResource("18_innkeeper")]
-position = Vector2(1810, 618)
-
-[node name="Player" parent="." instance=ExtResource("19_player")]
+[node name="Player" parent="." instance=ExtResource("8_player")]
 position = Vector2(220, 647)
 
-[node name="WorldCollision" type="StaticBody2D" parent="."]
-
-[node name="FloorCollision" type="CollisionShape2D" parent="WorldCollision"]
-position = Vector2(1238, 657)
-shape = SubResource("FloorShape")
-
-[node name="LeftWall" type="CollisionShape2D" parent="WorldCollision"]
-position = Vector2(-24, 420)
-shape = SubResource("WallShape")
-
-[node name="RightWall" type="CollisionShape2D" parent="WorldCollision"]
-position = Vector2(2624, 420)
-shape = SubResource("WallShape")
+[node name="WorldCollision" parent="." instance=ExtResource("9_collision")]

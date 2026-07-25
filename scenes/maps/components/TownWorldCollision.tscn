@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="RectangleShape2D" id="Floor"]
+size = Vector2(2800, 79)
+
+[sub_resource type="RectangleShape2D" id="Wall"]
+size = Vector2(48, 520)
+
+[node name="TownWorldCollision" type="StaticBody2D"]
+
+[node name="FloorCollision" type="CollisionShape2D" parent="."]
+position = Vector2(1238, 657)
+shape = SubResource("Floor")
+
+[node name="LeftWall" type="CollisionShape2D" parent="."]
+position = Vector2(-24, 420)
+shape = SubResource("Wall")
+
+[node name="RightWall" type="CollisionShape2D" parent="."]
+position = Vector2(2624, 420)
+shape = SubResource("Wall")

@@ -1,0 +1,35 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueResidence.tscn" id="1_west"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueShop.tscn" id="2_shop"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueTower.tscn" id="3_smith"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedShop.tscn" id="4_market"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedResidence.tscn" id="5_house"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedTower.tscn" id="6_tower"]
+
+[node name="TownBuildings" type="Node2D"]
+
+[node name="WestHouse" parent="." instance=ExtResource("1_west")]
+position = Vector2(265, 618)
+scale = Vector2(0.82, 0.82)
+
+[node name="ItemShop" parent="." instance=ExtResource("2_shop")]
+position = Vector2(1510, 618)
+scale = Vector2(0.82, 0.82)
+
+[node name="Blacksmith" parent="." instance=ExtResource("3_smith")]
+position = Vector2(2020, 618)
+scale = Vector2(0.82, 0.82)
+
+[node name="MarketStall" parent="." instance=ExtResource("4_market")]
+position = Vector2(1810, 618)
+scale = Vector2(0.82, 0.82)
+
+[node name="EmptyResidence" parent="." instance=ExtResource("5_house")]
+position = Vector2(620, 618)
+scale = Vector2(0.82, 0.82)
+
+[node name="EmptyTowerHouse" parent="." instance=ExtResource("6_tower")]
+position = Vector2(1080, 618)
+scale = Vector2(0.82, 0.82)
+

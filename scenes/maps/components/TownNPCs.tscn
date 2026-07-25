@@ -1,0 +1,33 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/npc/town/Mayor.tscn" id="1_mayor"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/MaleVillager.tscn" id="2_male"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/FemaleVillager.tscn" id="3_female"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/TownGuard.tscn" id="4_guard"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/PotionMerchant.tscn" id="5_merchant"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/Blacksmith.tscn" id="6_smith"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/Innkeeper.tscn" id="7_innkeeper"]
+
+[node name="TownNPCs" type="Node2D"]
+
+[node name="Mayor" parent="." instance=ExtResource("1_mayor")]
+position = Vector2(1120, 618)
+
+[node name="VillagerMale" parent="." instance=ExtResource("2_male")]
+position = Vector2(760, 618)
+
+[node name="VillagerFemale" parent="." instance=ExtResource("3_female")]
+position = Vector2(1320, 618)
+
+[node name="Guard" parent="." instance=ExtResource("4_guard")]
+position = Vector2(360, 618)
+
+[node name="ItemMerchantInteractive" parent="." instance=ExtResource("5_merchant")]
+position = Vector2(1530, 618)
+
+[node name="BlacksmithInteractive" parent="." instance=ExtResource("6_smith")]
+position = Vector2(2010, 618)
+
+[node name="InnkeeperInteractive" parent="." instance=ExtResource("7_innkeeper")]
+position = Vector2(1810, 618)
+

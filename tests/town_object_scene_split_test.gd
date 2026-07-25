@@ -40,7 +40,13 @@ func _init() -> void:
 			continue
 
 		var town := packed.instantiate()
-		failed = _expect_container(town, scene_path, "Buildings", EXPECTED_BUILDINGS) or failed
+		failed = _expect_linked_container(
+			town,
+			scene_path,
+			"Buildings",
+			"res://scenes/maps/components/TownBuildings.tscn",
+			EXPECTED_BUILDINGS
+		) or failed
 		failed = _expect_linked_container(
 			town,
 			scene_path,
@@ -48,7 +54,13 @@ func _init() -> void:
 			"res://scenes/props/town/TownStreetProps.tscn",
 			EXPECTED_PROPS
 		) or failed
-		failed = _expect_container(town, scene_path, "NPCs", EXPECTED_VISUAL_NPCS) or failed
+		failed = _expect_linked_container(
+			town,
+			scene_path,
+			"NPCs",
+			"res://scenes/maps/components/TownNPCs.tscn",
+			EXPECTED_VISUAL_NPCS
+		) or failed
 		town.free()
 	quit(1 if failed else 0)
 
