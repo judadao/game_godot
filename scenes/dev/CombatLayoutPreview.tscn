@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://dnjjnaifkyhj7"]
+
+[ext_resource type="Script" uid="uid://c0kqkskf8c18n" path="res://scripts/dev/combat_layout_preview.gd" id="1_preview"]
+[ext_resource type="PackedScene" uid="uid://co2qlt1mv0xr8" path="res://scenes/maps/autumn_forest.tscn" id="2_map"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CardHandUI.tscn" id="3_hand"]
+[ext_resource type="PackedScene" uid="uid://cvgy0phlmscxp" path="res://scenes/ui/HUD.tscn" id="4_hud"]
+
+[node name="CombatLayoutPreview" type="Node2D" unique_id=1539186567]
+script = ExtResource("1_preview")
+
+[node name="AutumnForest" parent="." unique_id=1113266027 instance=ExtResource("2_map")]
+process_mode = 4
+
+[node name="PreviewCamera" type="Camera2D" parent="." unique_id=1105153874]
+position = Vector2(640, 360)
+limit_left = 0
+limit_top = 0
+limit_right = 2600
+limit_bottom = 724
+editor_draw_limits = true
+
+[node name="HUDLayer" type="CanvasLayer" parent="." unique_id=196612487]
+layer = 10
+
+[node name="CardHandUI" parent="HUDLayer" unique_id=587760162 instance=ExtResource("3_hand")]
+
+[node name="HUD" parent="HUDLayer" unique_id=1059586021 instance=ExtResource("4_hud")]
+offset_top = 5.0
+offset_bottom = 5.0
+
+[node name="HUDStatus" parent="HUDLayer/HUD" index="0" unique_id=1176208436]
+layout_mode = 1
+offset_left = 18.0
+offset_top = -188.0
+offset_right = 462.0
+offset_bottom = -52.0
+
+[node name="HUDProgressPanel" parent="HUDLayer/HUD" index="1" unique_id=854433835]
+offset_left = -315.0
+offset_top = -113.0
+offset_right = -141.0
+offset_bottom = -41.0
+
+[node name="HUDQuestTracker" parent="HUDLayer/HUD" index="2" unique_id=1373074750]
+layout_mode = 1
+offset_left = -328.00006
+offset_top = -228.0
+offset_right = -48.0
+offset_bottom = -110.0
+
+[node name="InteractionPanel" parent="HUDLayer/HUD" index="8" unique_id=1483490553]
+offset_left = -182.0
+offset_top = -314.0
+offset_right = 198.0
+offset_bottom = -232.0
+
+[editable path="HUDLayer/HUD"]
