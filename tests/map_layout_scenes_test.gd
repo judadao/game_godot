@@ -54,6 +54,15 @@ func _run() -> void:
 		starting_map != null and starting_map.resource_path == String(LAYOUTS[0]["layout"]),
 		"Game must start from the authoritative Town layout scene."
 	)
+	_expect(
+		game.current_map != null
+		and game.current_map.get_node_or_null("EditorHUDReference/HUD") == null,
+		"Runtime HUD must be adopted from the current authoritative map layout."
+	)
+	_expect(
+		game.hud != null and game.hud.get_parent() == game.get_node("HUDLayer"),
+		"Runtime HUD from the map layout must be adopted into the global HUD layer."
+	)
 	_expect(game.has_method("_resolve_layout_scene_path"), "Game must expose canonical-to-layout path resolution.")
 	if game.has_method("_resolve_layout_scene_path"):
 		for spec in LAYOUTS:
@@ -61,6 +70,22 @@ func _run() -> void:
 				String(game.call("_resolve_layout_scene_path", String(spec["canonical"]))) == String(spec["layout"]),
 				"Canonical map path must resolve to its authoritative layout scene."
 			)
+
+	var autumn_layout := load(String(LAYOUTS[1]["layout"])) as PackedScene
+	game.call("load_current_map", autumn_layout)
+	await process_frame
+	_expect(
+		game.current_map != null and game.current_map.scene_file_path == String(LAYOUTS[1]["layout"]),
+		"Game must load the authoritative Autumn layout before adopting its HUD."
+	)
+	_expect(
+		game.current_map.get_node_or_null("EditorHUDReference/HUD") == null,
+		"Changing maps must adopt the new layout's HUD instance."
+	)
+	_expect(
+		game.hud != null and game.hud.get_parent() == game.get_node("HUDLayer"),
+		"Autumn layout HUD must remain attached to the global HUD layer at runtime."
+	)
 	game.queue_free()
 	await process_frame
 

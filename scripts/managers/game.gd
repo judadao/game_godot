@@ -129,7 +129,6 @@ func _ready() -> void:
 	card_hand_ui.redraw_requested.connect(_redraw_current_hand)
 	card_effect_runner.effect_resolved.connect(_on_card_effect_resolved)
 	load_current_map(starting_map)
-	load_hud()
 	_sync_progression_to_meta()
 
 
@@ -220,6 +219,7 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 
 	current_map = map_scene.instantiate()
 	map_root.add_child(current_map)
+	load_hud()
 	_register_player(spawn_name)
 	_apply_transferred_player_state()
 	_apply_shortcut_spawn()
@@ -238,13 +238,18 @@ func load_hud() -> void:
 		hud.queue_free()
 		hud = null
 
-	if hud_scene == null:
+	var hud_instance: Node = current_map.get_node_or_null("EditorHUDReference/HUD") if current_map != null else null
+	if hud_instance != null:
+		hud_instance.reparent(hud_root)
+	elif hud_scene != null:
+		hud_instance = hud_scene.instantiate()
+	else:
 		return
 
-	var hud_instance := hud_scene.instantiate()
 	if hud_instance is Control:
 		hud = hud_instance
-		hud_root.add_child(hud)
+		if hud.get_parent() == null:
+			hud_root.add_child(hud)
 		if hud.has_signal("interaction_prompt_accepted"):
 			hud.connect("interaction_prompt_accepted", _try_interact)
 		_update_hud_area_name()
