@@ -12,7 +12,10 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	await process_frame
-	_expect(game.get("current_map").scene_file_path == "res://scenes/maps/town.tscn", "A new session must begin in Town.")
+	_expect(
+		game.get("current_map").scene_file_path == "res://scenes/maps/layouts/TownLayout.tscn",
+		"A new session must begin in the authoritative Town layout."
+	)
 
 	var town_player := game.get("player") as Node
 	game.call(
@@ -29,7 +32,10 @@ func _run() -> void:
 		deck_builder.emit_signal("deck_confirmed", game.get("meta_state").selected_deck)
 		await process_frame
 		await process_frame
-	_expect(game.get("current_map").scene_file_path == "res://scenes/maps/autumn_forest.tscn", "Town portal must enter Autumn Forest.")
+	_expect(
+		game.get("current_map").scene_file_path == "res://scenes/maps/layouts/AutumnForestLayout.tscn",
+		"Town portal must enter the authoritative Autumn Forest layout."
+	)
 	var run := game.get("run_state") as RunState
 	_expect(run.active, "Entering Autumn Forest must start transient run state.")
 	var director := game.get("current_map").get_node("AutumnRunDirector") as EncounterDirector
@@ -81,7 +87,10 @@ func _run() -> void:
 	_expect(not bool(forward_portal.get("locked")), "Boss victory must unlock the forward route.")
 	game.call("_on_portal_entered", forward_portal, "res://scenes/maps/crystal_caves.tscn", &"PlayerSpawn", game.get("player"))
 	await process_frame
-	_expect(game.get("current_map").scene_file_path == "res://scenes/maps/crystal_caves.tscn", "Boss victory must allow progression to the next exploration map.")
+	_expect(
+		game.get("current_map").scene_file_path == "res://scenes/maps/layouts/CrystalCavesLayout.tscn",
+		"Boss victory must enter the authoritative Crystal Caves layout."
+	)
 
 	var town := game.get("town_manager") as RefCounted
 	var inventory := game.get("inventory_manager") as RefCounted
@@ -105,7 +114,10 @@ func _run() -> void:
 	game.call("load_current_map", forest)
 	await process_frame
 	await game.call("_on_player_defeated")
-	_expect(game.get("current_map").scene_file_path == "res://scenes/maps/town.tscn", "Death must return the player to Town.")
+	_expect(
+		game.get("current_map").scene_file_path == "res://scenes/maps/layouts/TownLayout.tscn",
+		"Death must return the player to the authoritative Town layout."
+	)
 	_expect(
 		int((game.get("meta_state") as MetaState).resources.get("gold", 0)) == permanent_gold_before + 11,
 		"Death must retain earned permanent gold."

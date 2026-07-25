@@ -11,6 +11,18 @@ const QUICK_SAVE_BACKUP_PATH := "user://saves/quick_save.json.bak"
 const META_SAVE_PATH := "user://saves/meta_progress.json"
 const TOWN_SCENE_PATH := "res://scenes/maps/town.tscn"
 const AUTUMN_FOREST_SCENE_PATH := "res://scenes/maps/autumn_forest.tscn"
+const CRYSTAL_CAVES_SCENE_PATH := "res://scenes/maps/crystal_caves.tscn"
+const FORBIDDEN_GRAVEYARD_SCENE_PATH := "res://scenes/maps/forbidden_graveyard.tscn"
+const TOWN_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/TownLayout.tscn"
+const AUTUMN_FOREST_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/AutumnForestLayout.tscn"
+const CRYSTAL_CAVES_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/CrystalCavesLayout.tscn"
+const FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn"
+const MAP_LAYOUT_SCENE_PATHS := {
+	TOWN_SCENE_PATH: TOWN_LAYOUT_SCENE_PATH,
+	AUTUMN_FOREST_SCENE_PATH: AUTUMN_FOREST_LAYOUT_SCENE_PATH,
+	CRYSTAL_CAVES_SCENE_PATH: CRYSTAL_CAVES_LAYOUT_SCENE_PATH,
+	FORBIDDEN_GRAVEYARD_SCENE_PATH: FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH,
+}
 const INVENTORY_MANAGER_SCRIPT := preload("res://scripts/systems/inventory_manager.gd")
 const TOWN_MANAGER_SCRIPT := preload("res://scripts/systems/town_manager.gd")
 const BASE_AP_REGEN := 0.65
@@ -41,7 +53,7 @@ const COMBO_EVOLUTIONS := [
 	},
 ]
 
-@export var starting_map: PackedScene = preload("res://scenes/maps/town.tscn")
+@export var starting_map: PackedScene = preload("res://scenes/maps/layouts/TownLayout.tscn")
 @export var hud_scene: PackedScene = preload("res://scenes/ui/HUD.tscn")
 @export var inventory_scene: PackedScene = preload("res://scenes/ui/InventoryUI.tscn")
 @export var pause_menu_scene: PackedScene = preload("res://scenes/ui/PauseMenu.tscn")
@@ -175,6 +187,24 @@ func load_starting_map() -> void:
 	load_current_map(starting_map)
 
 
+func _resolve_layout_scene_path(scene_path: String) -> String:
+	return String(MAP_LAYOUT_SCENE_PATHS.get(_canonical_map_scene_path(scene_path), scene_path))
+
+
+func _canonical_map_scene_path(scene_path: String) -> String:
+	for canonical_path in MAP_LAYOUT_SCENE_PATHS:
+		if scene_path == String(MAP_LAYOUT_SCENE_PATHS[canonical_path]):
+			return String(canonical_path)
+	return scene_path
+
+
+func _current_map_matches(canonical_path: String) -> bool:
+	return (
+		current_map != null
+		and _canonical_map_scene_path(current_map.scene_file_path) == canonical_path
+	)
+
+
 func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerSpawn") -> Node:
 	if player != null:
 		_pending_player_state = _capture_player_state()
@@ -231,12 +261,12 @@ func _update_hud_area_name() -> void:
 		return
 
 	var area_names := {
-		"res://scenes/maps/town.tscn": "Town",
-		"res://scenes/maps/autumn_forest.tscn": "Autumn Forest",
-		"res://scenes/maps/crystal_caves.tscn": "Crystal Caves",
-		"res://scenes/maps/forbidden_graveyard.tscn": "Forbidden Graveyard",
+		TOWN_SCENE_PATH: "Town",
+		AUTUMN_FOREST_SCENE_PATH: "Autumn Forest",
+		CRYSTAL_CAVES_SCENE_PATH: "Crystal Caves",
+		FORBIDDEN_GRAVEYARD_SCENE_PATH: "Forbidden Graveyard",
 	}
-	var map_path := current_map.scene_file_path
+	var map_path := _canonical_map_scene_path(current_map.scene_file_path)
 	hud.call("set_area_name", area_names.get(map_path, current_map.name))
 
 
@@ -393,7 +423,7 @@ func _configure_player_camera() -> void:
 	camera.limit_right = int(current_map.get_meta("camera_limit_right", 1280))
 	camera.limit_bottom = int(current_map.get_meta("camera_limit_bottom", 720))
 	camera.position_smoothing_enabled = false
-	camera.position.y = COMBAT_CAMERA_SAFE_OFFSET_Y if run_state.active and current_map.scene_file_path == AUTUMN_FOREST_SCENE_PATH else 0.0
+	camera.position.y = COMBAT_CAMERA_SAFE_OFFSET_Y if run_state.active and _current_map_matches(AUTUMN_FOREST_SCENE_PATH) else 0.0
 	camera.reset_smoothing()
 
 
@@ -740,7 +770,7 @@ func _on_player_defeated() -> void:
 	await get_tree().create_timer(0.8).timeout
 	_pending_player_state.clear()
 	player = null
-	load_current_map(load(TOWN_SCENE_PATH) as PackedScene)
+	load_current_map(load(_resolve_layout_scene_path(TOWN_SCENE_PATH)) as PackedScene)
 	_show_run_result(false, summary)
 
 
@@ -1194,7 +1224,7 @@ func _refresh_card_hand() -> void:
 func _update_card_hand_visibility() -> void:
 	if card_hand_ui == null or current_map == null:
 		return
-	card_hand_ui.visible = current_map.scene_file_path == AUTUMN_FOREST_SCENE_PATH and run_state.active
+	card_hand_ui.visible = _current_map_matches(AUTUMN_FOREST_SCENE_PATH) and run_state.active
 
 
 func _set_tactical_slowdown(enabled: bool) -> void:
@@ -1214,11 +1244,11 @@ func _show_run_result(victory: bool, summary: Dictionary) -> void:
 
 func _on_result_return_to_town(result_ui: Control) -> void:
 	close_ui(result_ui)
-	if current_map != null and current_map.scene_file_path == TOWN_SCENE_PATH:
+	if _current_map_matches(TOWN_SCENE_PATH):
 		return
 	_pending_player_state.clear()
 	player = null
-	load_current_map(load(TOWN_SCENE_PATH) as PackedScene)
+	load_current_map(load(_resolve_layout_scene_path(TOWN_SCENE_PATH)) as PackedScene)
 
 
 func _capture_player_state() -> Dictionary:
@@ -1249,7 +1279,7 @@ func _apply_shortcut_spawn() -> void:
 	if (
 		player is Node2D
 		and current_map != null
-		and current_map.scene_file_path == AUTUMN_FOREST_SCENE_PATH
+		and _current_map_matches(AUTUMN_FOREST_SCENE_PATH)
 		and bool(meta_state.shortcuts.get("forest_gate", false))
 	):
 		(player as Node2D).global_position = Vector2(1580, 576)
@@ -1572,7 +1602,7 @@ func _has_legacy_inventory_progress() -> bool:
 
 
 func _apply_town_visual_progress() -> void:
-	if current_map == null or current_map.scene_file_path != TOWN_SCENE_PATH:
+	if not _current_map_matches(TOWN_SCENE_PATH):
 		return
 	var stage := int(town_manager.call("get_village_stage"))
 	var buildings := current_map.get_node_or_null("Buildings")
@@ -1747,20 +1777,22 @@ func _discover_equipment_reward() -> String:
 func _on_portal_entered(_portal: Node, target_scene_path: String, target_spawn_name: StringName, interactor: Node) -> void:
 	if interactor != null and interactor != player:
 		return
-	if target_scene_path.is_empty() or not ResourceLoader.exists(target_scene_path):
+	var canonical_target := _canonical_map_scene_path(target_scene_path)
+	var resolved_target := _resolve_layout_scene_path(canonical_target)
+	if target_scene_path.is_empty() or not ResourceLoader.exists(resolved_target):
 		push_warning("Portal target scene is not available: %s" % target_scene_path)
 		return
 
-	if target_scene_path == AUTUMN_FOREST_SCENE_PATH:
-		_open_deck_builder(target_scene_path, target_spawn_name)
+	if canonical_target == AUTUMN_FOREST_SCENE_PATH:
+		_open_deck_builder(canonical_target, target_spawn_name)
 		return
-	elif target_scene_path == TOWN_SCENE_PATH and run_state.active:
+	elif canonical_target == TOWN_SCENE_PATH and run_state.active:
 		_finish_run(false)
 		_pending_player_state.clear()
 		player = null
 	elif run_state.active and run_state.boss_defeated:
 		_finish_run(true)
-	var packed := load(target_scene_path) as PackedScene
+	var packed := load(resolved_target) as PackedScene
 	load_current_map(packed, target_spawn_name)
 
 
@@ -1789,7 +1821,7 @@ func _on_deck_confirmed(deck_ids: Array[String], ui_control: Control, target_sce
 	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
 	close_ui(ui_control)
 	_begin_autumn_run(normalized)
-	load_current_map(load(target_scene_path) as PackedScene, target_spawn_name)
+	load_current_map(load(_resolve_layout_scene_path(target_scene_path)) as PackedScene, target_spawn_name)
 
 
 func _normalize_expedition_deck(deck_ids: Array) -> Array[String]:

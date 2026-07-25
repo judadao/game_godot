@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_forest.tscn" id="1_map"]
+[ext_resource type="PackedScene" path="res://scenes/dev/EditorHUDReference.tscn" id="2_reference"]
+
+[node name="AutumnForest" instance=ExtResource("1_map")]
+
+[node name="EditorHUDReference" parent="." instance=ExtResource("2_reference")]

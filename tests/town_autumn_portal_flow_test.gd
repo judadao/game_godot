@@ -25,7 +25,10 @@ func _run() -> void:
 		builder.emit_signal("deck_confirmed", invalid_deck)
 		await process_frame
 		await process_frame
-	_expect(game.get("current_map").scene_file_path == "res://scenes/maps/autumn_forest.tscn", "Normalized confirmation must enter Autumn Forest.")
+	_expect(
+		game.get("current_map").scene_file_path == "res://scenes/maps/layouts/AutumnForestLayout.tscn",
+		"Normalized confirmation must enter the authoritative Autumn Forest layout."
+	)
 	_expect((game.get("run_state") as RunState).active, "Entering Autumn Forest must start a run.")
 	game.queue_free()
 	await process_frame
