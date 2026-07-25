@@ -1,0 +1,106 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_props_portals_atlas_v2.png" id="1_props"]
+
+[sub_resource type="AtlasTexture" id="Fence"]
+atlas = ExtResource("1_props")
+region = Rect2(50, 440, 320, 190)
+
+[sub_resource type="AtlasTexture" id="Lamp"]
+atlas = ExtResource("1_props")
+region = Rect2(790, 45, 155, 350)
+
+[sub_resource type="AtlasTexture" id="Notice"]
+atlas = ExtResource("1_props")
+region = Rect2(405, 55, 310, 330)
+
+[sub_resource type="AtlasTexture" id="Well"]
+atlas = ExtResource("1_props")
+region = Rect2(52, 50, 300, 332)
+
+[sub_resource type="AtlasTexture" id="Bench"]
+atlas = ExtResource("1_props")
+region = Rect2(1040, 120, 390, 260)
+
+[sub_resource type="AtlasTexture" id="Cart"]
+atlas = ExtResource("1_props")
+region = Rect2(345, 680, 300, 290)
+
+[sub_resource type="AtlasTexture" id="Forge"]
+atlas = ExtResource("1_props")
+region = Rect2(45, 690, 300, 280)
+
+[sub_resource type="AtlasTexture" id="Crates"]
+atlas = ExtResource("1_props")
+region = Rect2(410, 420, 270, 235)
+
+[sub_resource type="AtlasTexture" id="Barrels"]
+atlas = ExtResource("1_props")
+region = Rect2(740, 420, 260, 245)
+
+[sub_resource type="AtlasTexture" id="Flowers"]
+atlas = ExtResource("1_props")
+region = Rect2(1050, 440, 390, 200)
+
+[node name="TownStreetProps" type="Node2D"]
+
+[node name="EntranceFence" type="Sprite2D" parent="."]
+position = Vector2(180, 618)
+scale = Vector2(0.48, 0.48)
+texture = SubResource("Fence")
+offset = Vector2(0, -95)
+
+[node name="ResidentialLamp" type="Sprite2D" parent="."]
+position = Vector2(430, 618)
+scale = Vector2(0.38, 0.38)
+texture = SubResource("Lamp")
+offset = Vector2(0, -175)
+
+[node name="NoticeBoard" type="Sprite2D" parent="."]
+position = Vector2(900, 618)
+scale = Vector2(0.5, 0.5)
+texture = SubResource("Notice")
+offset = Vector2(0, -165)
+
+[node name="CivicWell" type="Sprite2D" parent="."]
+position = Vector2(1230, 618)
+scale = Vector2(0.48, 0.48)
+texture = SubResource("Well")
+offset = Vector2(0, -166)
+
+[node name="CivicBench" type="Sprite2D" parent="."]
+position = Vector2(1340, 618)
+scale = Vector2(0.42, 0.42)
+texture = SubResource("Bench")
+offset = Vector2(0, -130)
+
+[node name="MarketCart" type="Sprite2D" parent="."]
+position = Vector2(1690, 618)
+scale = Vector2(0.44, 0.44)
+texture = SubResource("Cart")
+offset = Vector2(0, -145)
+
+[node name="SmithForge" type="Sprite2D" parent="."]
+position = Vector2(2030, 618)
+scale = Vector2(0.4, 0.4)
+texture = SubResource("Forge")
+offset = Vector2(0, -140)
+
+[node name="CratePile" type="Sprite2D" parent="."]
+position = Vector2(1940, 618)
+scale = Vector2(0.38, 0.38)
+texture = SubResource("Crates")
+offset = Vector2(0, -117.5)
+
+[node name="BarrelPile" type="Sprite2D" parent="."]
+position = Vector2(2100, 618)
+scale = Vector2(0.35, 0.35)
+texture = SubResource("Barrels")
+offset = Vector2(0, -122.5)
+
+[node name="FlowerBed" type="Sprite2D" parent="."]
+position = Vector2(720, 618)
+scale = Vector2(0.48, 0.48)
+texture = SubResource("Flowers")
+offset = Vector2(0, -100)
+

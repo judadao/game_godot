@@ -1,122 +1,33 @@
-[gd_scene format=3 uid="uid://dw3j7rocm1qmn"]
+[gd_scene load_steps=22 format=3 uid="uid://dw3j7rocm1qmn"]
 
-[ext_resource type="Texture2D" uid="uid://c4t8q3xdcx15o" path="res://assets/town/rebuild_v2/town_background_clean_v3.png" id="1_clouds"]
-[ext_resource type="Texture2D" uid="uid://umo8x74en0y" path="res://concept/town/can_use/background/parallax_mountains_strip_v3.png" id="2_mountains"]
-[ext_resource type="Texture2D" uid="uid://b48ryt47l4404" path="res://concept/town/can_use/background/parallax_forest_strip_v3.png" id="3_forest"]
-[ext_resource type="Texture2D" uid="uid://bue7naubdsn6g" path="res://concept/town/can_use/background/parallax_rooftops_strip_v3.png" id="4_rooftops"]
-[ext_resource type="PackedScene" uid="uid://ckbaviqhvukg5" path="res://scenes/player/Player.tscn" id="29_player_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="32_portal_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/Chest.tscn" id="33_chest_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueResidence.tscn" id="34_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueShop.tscn" id="35_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueTower.tscn" id="36_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedShop.tscn" id="37_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/TownPortal.tscn" id="38_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/TownWell.tscn" id="39_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/NoticeBoard.tscn" id="40_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/Fence.tscn" id="41_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/Lamp.tscn" id="44_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/CrossroadSign.tscn" id="45_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/Bench.tscn" id="46_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/BarrelStack.tscn" id="47_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/Crates.tscn" id="48_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/MarketCart.tscn" id="49_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/EastTree.tscn" id="50_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/FlowerBed.tscn" id="51_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/Mayor.tscn" id="52_mayor_scene"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/VillagerMaleVisual.tscn" id="53_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/VillagerFemaleVisual.tscn" id="54_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/GuardVisual.tscn" id="56_town_object_scene"]
-[ext_resource type="PackedScene" path="res://scenes/props/magic_book_portal.tscn" id="58_magic_book_portal_scene"]
-[ext_resource type="Texture2D" uid="uid://ct2yg5kae6wlt" path="res://assets/environments/autumn_forest/png/Platfromer/Autumn_Forest_2D_Platformer_Tileset_Platformer - Stone.png" id="60_road_stone"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedResidence.tscn" id="61_empty_house"]
-[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedTower.tscn" id="62_empty_tower"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedPotionMerchant.tscn" id="63_potion_merchant"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedBlacksmith.tscn" id="64_blacksmith"]
-[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedInnkeeper.tscn" id="65_innkeeper"]
-[ext_resource type="Texture2D" uid="uid://i8vcgl06vq8h" path="res://assets/town/rebuild_v2/town_street_atlas_v2.png" id="66_ground_atlas"]
-[ext_resource type="Texture2D" uid="uid://bsek1jgr31mcl" path="res://assets/town/rebuild_v2/town_props_portals_atlas_v2.png" id="67_props_v2"]
-[ext_resource type="Script" uid="uid://ddj80fyybrukd" path="res://scripts/maps/town_editor_preview.gd" id="68_editor_preview"]
+[ext_resource type="Script" path="res://scripts/maps/town_editor_preview.gd" id="1_preview"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/TownBackdrop.tscn" id="2_backdrop"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/TownStreetGround.tscn" id="3_ground"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/TownStreetProps.tscn" id="4_props"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/TownPortalSet.tscn" id="5_portals"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueResidence.tscn" id="6_west_house"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueShop.tscn" id="7_item_shop"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueTower.tscn" id="8_blacksmith"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedShop.tscn" id="9_market"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedResidence.tscn" id="10_residence"]
+[ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedTower.tscn" id="11_tower"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/Mayor.tscn" id="12_mayor"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/VillagerMaleVisual.tscn" id="13_male"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/VillagerFemaleVisual.tscn" id="14_female"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/GuardVisual.tscn" id="15_guard"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedPotionMerchant.tscn" id="16_merchant"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedBlacksmith.tscn" id="17_smith"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedInnkeeper.tscn" id="18_innkeeper"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="19_player"]
 
-[sub_resource type="Gradient" id="Gradient_sky"]
-offsets = PackedFloat32Array(0, 0.58, 1)
-colors = PackedColorArray(0.45, 0.73, 0.96, 1, 0.77, 0.89, 0.99, 1, 0.98, 0.9, 0.74, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_sky"]
-gradient = SubResource("Gradient_sky")
-width = 2172
-height = 724
-fill_from = Vector2(0.5, 0)
-fill_to = Vector2(0.5, 1)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_town_ground"]
-atlas = ExtResource("66_ground_atlas")
-region = Rect2(14, 150, 1510, 170)
-
-[sub_resource type="AtlasTexture" id="V2Fence"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(50, 440, 320, 190)
-
-[sub_resource type="AtlasTexture" id="V2Lamp"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(790, 45, 155, 350)
-
-[sub_resource type="AtlasTexture" id="V2Notice"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(405, 55, 310, 330)
-
-[sub_resource type="AtlasTexture" id="V2Well"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(52, 50, 300, 332)
-
-[sub_resource type="AtlasTexture" id="V2Bench"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(1040, 120, 390, 260)
-
-[sub_resource type="AtlasTexture" id="V2Cart"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(345, 680, 300, 290)
-
-[sub_resource type="AtlasTexture" id="V2Forge"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(45, 690, 300, 280)
-
-[sub_resource type="AtlasTexture" id="V2Crates"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(410, 420, 270, 235)
-
-[sub_resource type="AtlasTexture" id="V2Barrels"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(740, 420, 260, 245)
-
-[sub_resource type="AtlasTexture" id="V2Flowers"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(1050, 440, 390, 200)
-
-[sub_resource type="AtlasTexture" id="V2PortalBlue"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(660, 660, 220, 320)
-
-[sub_resource type="AtlasTexture" id="V2PortalForest"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(870, 660, 220, 320)
-
-[sub_resource type="AtlasTexture" id="V2PortalCave"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(1080, 660, 220, 320)
-
-[sub_resource type="AtlasTexture" id="V2PortalGrave"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(1290, 660, 220, 320)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+[sub_resource type="RectangleShape2D" id="FloorShape"]
 size = Vector2(2800, 79)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+[sub_resource type="RectangleShape2D" id="WallShape"]
 size = Vector2(48, 520)
 
-[node name="Town" type="Node2D" unique_id=2064318752]
-script = ExtResource("68_editor_preview")
+[node name="Town" type="Node2D"]
+script = ExtResource("1_preview")
 metadata/map_width = 2600
 metadata/map_height = 724
 metadata/editor_preview_width = 1280
@@ -126,373 +37,85 @@ metadata/camera_limit_top = 0
 metadata/camera_limit_right = 2600
 metadata/camera_limit_bottom = 724
 
-[node name="PlayerSpawn" type="Marker2D" parent="." unique_id=1039936403]
+[node name="PlayerSpawn" type="Marker2D" parent="."]
 position = Vector2(220, 576)
 
-[node name="TownEntranceArrival" type="Marker2D" parent="." unique_id=111893223]
+[node name="TownEntranceArrival" type="Marker2D" parent="."]
 position = Vector2(480, 576)
 
-[node name="TownTailArrival" type="Marker2D" parent="." unique_id=1062614035]
+[node name="TownTailArrival" type="Marker2D" parent="."]
 position = Vector2(2250, 576)
 
-[node name="Sky" type="Sprite2D" parent="." unique_id=1957591297]
-position = Vector2(1086, 362)
-texture = SubResource("GradientTexture2D_sky")
+[node name="ParallaxBackground" parent="." instance=ExtResource("2_backdrop")]
 
-[node name="ParallaxBackground" type="Node2D" parent="." unique_id=1113887505]
+[node name="Ground" parent="." instance=ExtResource("3_ground")]
 
-[node name="Clouds" type="Sprite2D" parent="ParallaxBackground" unique_id=6151231]
-position = Vector2(1300, 362)
-scale = Vector2(1.55, 0.775)
-texture = ExtResource("1_clouds")
+[node name="Buildings" type="Node2D" parent="."]
 
-[node name="Mountains" type="Sprite2D" parent="ParallaxBackground" unique_id=850052382]
-visible = false
-position = Vector2(1086, 316)
-texture = ExtResource("2_mountains")
-
-[node name="Forest" type="Sprite2D" parent="ParallaxBackground" unique_id=921288757]
-visible = false
-position = Vector2(1086, 346)
-texture = ExtResource("3_forest")
-
-[node name="Rooftops" type="Sprite2D" parent="ParallaxBackground" unique_id=1867272114]
-visible = false
-position = Vector2(1313.9999, 330)
-scale = Vector2(1.281768, 1.1077348)
-texture = ExtResource("4_rooftops")
-
-[node name="Ground" type="Node2D" parent="." unique_id=1400765759]
-
-[node name="GroundWest" type="Sprite2D" parent="Ground" unique_id=221897107]
-position = Vector2(468, 668)
-scale = Vector2(0.62, 0.62)
-texture = SubResource("AtlasTexture_town_ground")
-
-[node name="GroundCenter" type="Sprite2D" parent="Ground" unique_id=1102470862]
-position = Vector2(1404, 668)
-scale = Vector2(0.62, 0.62)
-texture = SubResource("AtlasTexture_town_ground")
-
-[node name="GroundEast" type="Sprite2D" parent="Ground" unique_id=270853184]
-position = Vector2(2340, 668)
-scale = Vector2(0.62, 0.62)
-texture = SubResource("AtlasTexture_town_ground")
-
-[node name="RoadStones" type="Node2D" parent="Ground" unique_id=2030424110]
-visible = false
-
-[node name="StoneWest" type="Sprite2D" parent="Ground/RoadStones" unique_id=1785518116]
-position = Vector2(145, 687)
-scale = Vector2(0.18, 0.12)
-texture = ExtResource("60_road_stone")
-
-[node name="StoneShop" type="Sprite2D" parent="Ground/RoadStones" unique_id=1017883999]
-position = Vector2(690, 674)
-rotation = -0.08
-scale = Vector2(0.12, 0.08)
-texture = ExtResource("60_road_stone")
-
-[node name="StoneCenter" type="Sprite2D" parent="Ground/RoadStones" unique_id=1264637852]
-position = Vector2(1195, 694)
-rotation = 0.05
-scale = Vector2(0.16, 0.1)
-texture = ExtResource("60_road_stone")
-
-[node name="StoneMarket" type="Sprite2D" parent="Ground/RoadStones" unique_id=1832001399]
-position = Vector2(1690, 681)
-rotation = -0.04
-scale = Vector2(0.11, 0.07)
-texture = ExtResource("60_road_stone")
-
-[node name="StonePortal" type="Sprite2D" parent="Ground/RoadStones" unique_id=1397140960]
-position = Vector2(2180, 696)
-rotation = 0.06
-scale = Vector2(0.15, 0.09)
-texture = ExtResource("60_road_stone")
-
-[node name="StoneEast" type="Sprite2D" parent="Ground/RoadStones" unique_id=1421710374]
-position = Vector2(2535, 677)
-rotation = -0.06
-scale = Vector2(0.1, 0.07)
-texture = ExtResource("60_road_stone")
-
-[node name="Buildings" type="Node2D" parent="." unique_id=13442811]
-
-[node name="WestHouse" parent="Buildings" unique_id=100086437 instance=ExtResource("34_town_object_scene")]
+[node name="WestHouse" parent="Buildings" instance=ExtResource("6_west_house")]
 position = Vector2(265, 618)
 scale = Vector2(0.82, 0.82)
 
-[node name="ItemShop" parent="Buildings" unique_id=770860232 instance=ExtResource("35_town_object_scene")]
+[node name="ItemShop" parent="Buildings" instance=ExtResource("7_item_shop")]
 position = Vector2(1510, 618)
 scale = Vector2(0.82, 0.82)
 
-[node name="Blacksmith" parent="Buildings" unique_id=1879561668 instance=ExtResource("36_town_object_scene")]
+[node name="Blacksmith" parent="Buildings" instance=ExtResource("8_blacksmith")]
 position = Vector2(2020, 618)
 scale = Vector2(0.82, 0.82)
 
-[node name="MarketStall" parent="Buildings" unique_id=553426682 instance=ExtResource("37_town_object_scene")]
+[node name="MarketStall" parent="Buildings" instance=ExtResource("9_market")]
 position = Vector2(1810, 618)
 scale = Vector2(0.82, 0.82)
 
-[node name="EmptyResidence" parent="Buildings" unique_id=284414627 instance=ExtResource("61_empty_house")]
+[node name="EmptyResidence" parent="Buildings" instance=ExtResource("10_residence")]
 position = Vector2(620, 618)
 scale = Vector2(0.82, 0.82)
 
-[node name="EmptyTowerHouse" parent="Buildings" unique_id=1205248304 instance=ExtResource("62_empty_tower")]
+[node name="EmptyTowerHouse" parent="Buildings" instance=ExtResource("11_tower")]
 position = Vector2(1080, 618)
 scale = Vector2(0.82, 0.82)
 
-[node name="TownPortal" parent="Buildings" unique_id=178989709 instance=ExtResource("38_town_object_scene")]
-visible = false
-position = Vector2(2284, 676)
+[node name="Props" parent="." instance=ExtResource("4_props")]
 
-[node name="TownWell" parent="Buildings" unique_id=1187422557 instance=ExtResource("39_town_object_scene")]
-visible = false
-position = Vector2(1880, 616)
+[node name="Portals" parent="." instance=ExtResource("5_portals")]
 
-[node name="NoticeBoard" parent="Buildings" unique_id=1418954820 instance=ExtResource("40_town_object_scene")]
-visible = false
-position = Vector2(540, 625)
+[node name="NPCs" type="Node2D" parent="."]
 
-[node name="Props" type="Node2D" parent="." unique_id=1933136006]
-
-[node name="WestFence" parent="Props" unique_id=400900426 instance=ExtResource("41_town_object_scene")]
-visible = false
-position = Vector2(90, 612)
-
-[node name="LampWest" parent="Props" unique_id=2144152005 instance=ExtResource("44_town_object_scene")]
-visible = false
-position = Vector2(385, 612)
-
-[node name="LampCenter" parent="Props" unique_id=473887855 instance=ExtResource("44_town_object_scene")]
-visible = false
-position = Vector2(1300, 612)
-
-[node name="CrossroadSign" parent="Props" unique_id=932519189 instance=ExtResource("45_town_object_scene")]
-visible = false
-position = Vector2(2047, 628)
-
-[node name="Bench" parent="Props" unique_id=1294504391 instance=ExtResource("46_town_object_scene")]
-visible = false
-position = Vector2(1020, 616)
-
-[node name="BarrelStack" parent="Props" unique_id=4163037 instance=ExtResource("47_town_object_scene")]
-visible = false
-position = Vector2(1440, 616)
-
-[node name="Crates" parent="Props" unique_id=390191107 instance=ExtResource("48_town_object_scene")]
-visible = false
-position = Vector2(760, 620)
-
-[node name="MarketCart" parent="Props" unique_id=1918996332 instance=ExtResource("49_town_object_scene")]
-visible = false
-position = Vector2(1690, 616)
-
-[node name="EastTree" parent="Props" unique_id=924302197 instance=ExtResource("50_town_object_scene")]
-visible = false
-position = Vector2(2440, 594)
-
-[node name="FlowerBedWest" parent="Props" unique_id=1505960328 instance=ExtResource("51_town_object_scene")]
-visible = false
-position = Vector2(340, 643)
-
-[node name="FlowerBedEast" parent="Props" unique_id=1197530712 instance=ExtResource("51_town_object_scene")]
-visible = false
-position = Vector2(2290, 643)
-scale = Vector2(-1, 1)
-
-[node name="TownChest" parent="Props" unique_id=1290628437 instance=ExtResource("33_chest_scene")]
-visible = false
-position = Vector2(1575, 620)
-collision_layer = 0
-interaction_id = &"town_crates"
-
-[node name="V2EntranceFence" type="Sprite2D" parent="Props" unique_id=38069376]
-position = Vector2(180, 618)
-scale = Vector2(0.48, 0.48)
-texture = SubResource("V2Fence")
-offset = Vector2(0, -95)
-
-[node name="V2ResidentialLamp" type="Sprite2D" parent="Props" unique_id=454467684]
-position = Vector2(430, 618)
-scale = Vector2(0.38, 0.38)
-texture = SubResource("V2Lamp")
-offset = Vector2(0, -175)
-
-[node name="V2NoticeBoard" type="Sprite2D" parent="Props" unique_id=1276906737]
-position = Vector2(900, 618)
-scale = Vector2(0.5, 0.5)
-texture = SubResource("V2Notice")
-offset = Vector2(0, -165)
-
-[node name="V2CivicWell" type="Sprite2D" parent="Props" unique_id=485698772]
-position = Vector2(1230, 618)
-scale = Vector2(0.48, 0.48)
-texture = SubResource("V2Well")
-offset = Vector2(0, -166)
-
-[node name="V2CivicBench" type="Sprite2D" parent="Props" unique_id=251059378]
-position = Vector2(1340, 618)
-scale = Vector2(0.42, 0.42)
-texture = SubResource("V2Bench")
-offset = Vector2(0, -130)
-
-[node name="V2MarketCart" type="Sprite2D" parent="Props" unique_id=1780937757]
-position = Vector2(1690, 618)
-scale = Vector2(0.44, 0.44)
-texture = SubResource("V2Cart")
-offset = Vector2(0, -145)
-
-[node name="V2SmithForge" type="Sprite2D" parent="Props" unique_id=1052128263]
-position = Vector2(2030, 618)
-scale = Vector2(0.4, 0.4)
-texture = SubResource("V2Forge")
-offset = Vector2(0, -140)
-
-[node name="V2Crates" type="Sprite2D" parent="Props" unique_id=1792593813]
-position = Vector2(1940, 618)
-scale = Vector2(0.38, 0.38)
-texture = SubResource("V2Crates")
-offset = Vector2(0, -117.5)
-
-[node name="V2Barrels" type="Sprite2D" parent="Props" unique_id=884997821]
-position = Vector2(2100, 618)
-scale = Vector2(0.35, 0.35)
-texture = SubResource("V2Barrels")
-offset = Vector2(0, -122.5)
-
-[node name="V2Flowers" type="Sprite2D" parent="Props" unique_id=812889265]
-position = Vector2(720, 618)
-scale = Vector2(0.48, 0.48)
-texture = SubResource("V2Flowers")
-offset = Vector2(0, -100)
-
-[node name="Portals" type="Node2D" parent="." unique_id=259814262]
-
-[node name="EntranceFastTravelPortal" parent="Portals" unique_id=1343762961 instance=ExtResource("32_portal_scene")]
-position = Vector2(100, 676)
-collision_layer = 0
-target_spawn_name = &"TownTailArrival"
-show_default_visual = false
-interaction_id = &"town_fast_travel_to_tail"
-prompt_text = "Travel to Town East"
-
-[node name="EastRoadPortal" parent="Portals" unique_id=147481501 instance=ExtResource("32_portal_scene")]
-position = Vector2(2532, 676)
-collision_layer = 0
-target_spawn_name = &"TownEntranceArrival"
-show_default_visual = false
-interaction_id = &"town_fast_travel_to_entrance"
-prompt_text = "Travel to Town Entrance"
-
-[node name="TownCenterPortal" parent="Portals" unique_id=1992277835 instance=ExtResource("32_portal_scene")]
-process_mode = 4
-visible = false
-position = Vector2(2284, 676)
-collision_layer = 0
-
-[node name="ForestPortal" parent="Portals" unique_id=1868751795 instance=ExtResource("58_magic_book_portal_scene")]
-position = Vector2(2200, 630)
-collision_layer = 0
-display_name = "Autumn Forest"
-portal_tint = Color(0.49, 0.95, 0.61, 1)
-float_height = 7.0
-float_speed = 2.1
-target_scene_path = "res://scenes/maps/autumn_forest.tscn"
-interaction_id = &"forest_portal"
-prompt_text = "Travel"
-
-[node name="CavesPortal" parent="Portals" unique_id=194706548 instance=ExtResource("58_magic_book_portal_scene")]
-position = Vector2(2350, 630)
-collision_layer = 0
-display_name = "Crystal Caves"
-portal_tint = Color(0.4, 0.78, 1, 1)
-float_height = 7.0
-float_speed = 2.1
-target_scene_path = "res://scenes/maps/crystal_caves.tscn"
-interaction_id = &"caves_portal"
-prompt_text = "Travel"
-
-[node name="GraveyardPortal" parent="Portals" unique_id=2146132574 instance=ExtResource("58_magic_book_portal_scene")]
-position = Vector2(2485, 630)
-collision_layer = 0
-display_name = "Forbidden Graveyard"
-portal_tint = Color(0.82, 0.49, 0.96, 1)
-float_height = 7.0
-float_speed = 2.1
-target_scene_path = "res://scenes/maps/forbidden_graveyard.tscn"
-interaction_id = &"graveyard_portal"
-prompt_text = "Travel"
-
-[node name="PortalVisuals" type="Node2D" parent="." unique_id=620403891]
-
-[node name="EntranceFastTravel" type="Sprite2D" parent="PortalVisuals" unique_id=1258902945]
-position = Vector2(100, 618)
-scale = Vector2(0.42, 0.42)
-texture = SubResource("V2PortalBlue")
-offset = Vector2(0, -160)
-
-[node name="Forest" type="Sprite2D" parent="PortalVisuals" unique_id=603981985]
-position = Vector2(2200, 618)
-scale = Vector2(0.46, 0.46)
-texture = SubResource("V2PortalForest")
-offset = Vector2(0, -160)
-
-[node name="Caves" type="Sprite2D" parent="PortalVisuals" unique_id=1186392656]
-position = Vector2(2350, 618)
-scale = Vector2(0.46, 0.46)
-texture = SubResource("V2PortalCave")
-offset = Vector2(0, -160)
-
-[node name="Graveyard" type="Sprite2D" parent="PortalVisuals" unique_id=1956639162]
-position = Vector2(2485, 618)
-scale = Vector2(0.46, 0.46)
-texture = SubResource("V2PortalGrave")
-offset = Vector2(0, -160)
-
-[node name="EastFastTravel" type="Sprite2D" parent="PortalVisuals" unique_id=1296782327]
-position = Vector2(2532, 618)
-scale = Vector2(0.34, 0.34)
-texture = SubResource("V2PortalBlue")
-offset = Vector2(0, -160)
-
-[node name="NPCs" type="Node2D" parent="." unique_id=1308501861]
-
-[node name="Mayor" parent="NPCs" unique_id=561058561 instance=ExtResource("52_mayor_scene")]
+[node name="Mayor" parent="NPCs" instance=ExtResource("12_mayor")]
 position = Vector2(1120, 618)
 
-[node name="VillagerMale" parent="NPCs" unique_id=840234731 instance=ExtResource("53_town_object_scene")]
+[node name="VillagerMale" parent="NPCs" instance=ExtResource("13_male")]
 position = Vector2(760, 618)
 
-[node name="VillagerFemale" parent="NPCs" unique_id=299251137 instance=ExtResource("54_town_object_scene")]
+[node name="VillagerFemale" parent="NPCs" instance=ExtResource("14_female")]
 position = Vector2(1320, 618)
 
-[node name="Guard" parent="NPCs" unique_id=250146326 instance=ExtResource("56_town_object_scene")]
-position = Vector2(468, 408)
+[node name="Guard" parent="NPCs" instance=ExtResource("15_guard")]
+position = Vector2(360, 618)
 
-[node name="ItemMerchantInteractive" parent="NPCs" unique_id=455671580 instance=ExtResource("63_potion_merchant")]
+[node name="ItemMerchantInteractive" parent="NPCs" instance=ExtResource("16_merchant")]
 position = Vector2(1530, 618)
 
-[node name="BlacksmithInteractive" parent="NPCs" unique_id=539893336 instance=ExtResource("64_blacksmith")]
+[node name="BlacksmithInteractive" parent="NPCs" instance=ExtResource("17_smith")]
 position = Vector2(2010, 618)
 
-[node name="InnkeeperInteractive" parent="NPCs" unique_id=844516187 instance=ExtResource("65_innkeeper")]
+[node name="InnkeeperInteractive" parent="NPCs" instance=ExtResource("18_innkeeper")]
 position = Vector2(1810, 618)
 
-[node name="Player" parent="." unique_id=1141192825 instance=ExtResource("29_player_scene")]
+[node name="Player" parent="." instance=ExtResource("19_player")]
 position = Vector2(220, 647)
 
-[node name="WorldCollision" type="StaticBody2D" parent="." unique_id=1406716349]
+[node name="WorldCollision" type="StaticBody2D" parent="."]
 
-[node name="FloorCollision" type="CollisionShape2D" parent="WorldCollision" unique_id=1168991069]
+[node name="FloorCollision" type="CollisionShape2D" parent="WorldCollision"]
 position = Vector2(1238, 657)
-shape = SubResource("RectangleShape2D_floor")
+shape = SubResource("FloorShape")
 
-[node name="LeftWall" type="CollisionShape2D" parent="WorldCollision" unique_id=1260127150]
+[node name="LeftWall" type="CollisionShape2D" parent="WorldCollision"]
 position = Vector2(-24, 420)
-shape = SubResource("RectangleShape2D_wall")
+shape = SubResource("WallShape")
 
-[node name="RightWall" type="CollisionShape2D" parent="WorldCollision" unique_id=1853020719]
+[node name="RightWall" type="CollisionShape2D" parent="WorldCollision"]
 position = Vector2(2624, 420)
-shape = SubResource("RectangleShape2D_wall")
+shape = SubResource("WallShape")

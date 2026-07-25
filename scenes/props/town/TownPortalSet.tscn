@@ -1,0 +1,122 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="1_portal"]
+[ext_resource type="PackedScene" path="res://scenes/props/magic_book_portal.tscn" id="2_magic"]
+[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_props_portals_atlas_v2.png" id="3_atlas"]
+
+[sub_resource type="AtlasTexture" id="Blue"]
+atlas = ExtResource("3_atlas")
+region = Rect2(660, 660, 220, 320)
+
+[sub_resource type="AtlasTexture" id="Forest"]
+atlas = ExtResource("3_atlas")
+region = Rect2(870, 660, 220, 320)
+
+[sub_resource type="AtlasTexture" id="Cave"]
+atlas = ExtResource("3_atlas")
+region = Rect2(1080, 660, 220, 320)
+
+[sub_resource type="AtlasTexture" id="Grave"]
+atlas = ExtResource("3_atlas")
+region = Rect2(1290, 660, 220, 320)
+
+[node name="TownPortalSet" type="Node2D"]
+
+[node name="EntranceFastTravelPortal" parent="." instance=ExtResource("1_portal")]
+position = Vector2(100, 618)
+collision_layer = 0
+target_spawn_name = &"TownTailArrival"
+show_default_visual = false
+interaction_id = &"town_fast_travel_to_tail"
+prompt_text = "Travel to Town East"
+
+[node name="TownVisual" type="Sprite2D" parent="EntranceFastTravelPortal"]
+scale = Vector2(0.42, 0.42)
+texture = SubResource("Blue")
+offset = Vector2(0, -160)
+
+[node name="EastRoadPortal" parent="." instance=ExtResource("1_portal")]
+position = Vector2(2532, 618)
+collision_layer = 0
+target_spawn_name = &"TownEntranceArrival"
+show_default_visual = false
+interaction_id = &"town_fast_travel_to_entrance"
+prompt_text = "Travel to Town Entrance"
+
+[node name="TownVisual" type="Sprite2D" parent="EastRoadPortal"]
+scale = Vector2(0.34, 0.34)
+texture = SubResource("Blue")
+offset = Vector2(0, -160)
+
+[node name="ForestPortal" parent="." instance=ExtResource("2_magic")]
+position = Vector2(2200, 618)
+collision_layer = 0
+display_name = "Autumn Forest"
+portal_tint = Color(0.49, 0.95, 0.61, 1)
+target_scene_path = "res://scenes/maps/autumn_forest.tscn"
+interaction_id = &"forest_portal"
+prompt_text = "Travel"
+
+[node name="PortalGlow" parent="ForestPortal" index="3"]
+visible = false
+
+[node name="BookAnchor" parent="ForestPortal" index="4"]
+visible = false
+
+[node name="DestinationLabel" parent="ForestPortal" index="5"]
+visible = false
+
+[node name="TownVisual" type="Sprite2D" parent="ForestPortal"]
+scale = Vector2(0.46, 0.46)
+texture = SubResource("Forest")
+offset = Vector2(0, -160)
+
+[node name="CavesPortal" parent="." instance=ExtResource("2_magic")]
+position = Vector2(2350, 618)
+collision_layer = 0
+display_name = "Crystal Caves"
+portal_tint = Color(0.4, 0.78, 1, 1)
+target_scene_path = "res://scenes/maps/crystal_caves.tscn"
+interaction_id = &"caves_portal"
+prompt_text = "Travel"
+
+[node name="PortalGlow" parent="CavesPortal" index="3"]
+visible = false
+
+[node name="BookAnchor" parent="CavesPortal" index="4"]
+visible = false
+
+[node name="DestinationLabel" parent="CavesPortal" index="5"]
+visible = false
+
+[node name="TownVisual" type="Sprite2D" parent="CavesPortal"]
+scale = Vector2(0.46, 0.46)
+texture = SubResource("Cave")
+offset = Vector2(0, -160)
+
+[node name="GraveyardPortal" parent="." instance=ExtResource("2_magic")]
+position = Vector2(2485, 618)
+collision_layer = 0
+display_name = "Forbidden Graveyard"
+portal_tint = Color(0.82, 0.49, 0.96, 1)
+target_scene_path = "res://scenes/maps/forbidden_graveyard.tscn"
+interaction_id = &"graveyard_portal"
+prompt_text = "Travel"
+
+[node name="PortalGlow" parent="GraveyardPortal" index="3"]
+visible = false
+
+[node name="BookAnchor" parent="GraveyardPortal" index="4"]
+visible = false
+
+[node name="DestinationLabel" parent="GraveyardPortal" index="5"]
+visible = false
+
+[node name="TownVisual" type="Sprite2D" parent="GraveyardPortal"]
+scale = Vector2(0.46, 0.46)
+texture = SubResource("Grave")
+offset = Vector2(0, -160)
+
+[editable path="ForestPortal"]
+[editable path="CavesPortal"]
+[editable path="GraveyardPortal"]

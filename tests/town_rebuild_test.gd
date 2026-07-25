@@ -38,9 +38,9 @@ func _run() -> void:
 		"NPCs/ItemMerchantInteractive",
 		"NPCs/BlacksmithInteractive",
 		"NPCs/InnkeeperInteractive",
-		"PortalVisuals/Forest",
-		"PortalVisuals/Caves",
-		"PortalVisuals/Graveyard",
+		"Portals/ForestPortal/TownVisual",
+		"Portals/CavesPortal/TownVisual",
+		"Portals/GraveyardPortal/TownVisual",
 	]:
 		_expect(town.has_node(node_path), "Town rebuild node missing: %s" % node_path)
 
@@ -73,31 +73,41 @@ func _run() -> void:
 			"%s must use the rebuilt Town NPC atlas at runtime." % npc_name
 		)
 
-	var chest := town.get_node("Props/TownChest") as CollisionObject2D
-	_expect(not chest.visible and chest.collision_layer == 0, "Retired chest must be hidden and non-blocking.")
 	_expect(
 		town.get_node("ParallaxBackground/Clouds").texture.resource_path
 		== "res://assets/town/rebuild_v2/town_background_clean_v3.png",
 		"Town must use the clean distant-only background."
 	)
 	for prop_name in [
-		"V2EntranceFence",
-		"V2ResidentialLamp",
-		"V2NoticeBoard",
-		"V2CivicWell",
-		"V2CivicBench",
-		"V2MarketCart",
-		"V2SmithForge",
-		"V2Crates",
-		"V2Barrels",
-		"V2Flowers",
+		"EntranceFence",
+		"ResidentialLamp",
+		"NoticeBoard",
+		"CivicWell",
+		"CivicBench",
+		"MarketCart",
+		"SmithForge",
+		"CratePile",
+		"BarrelPile",
+		"FlowerBed",
 	]:
 		var prop := town.get_node("Props/%s" % prop_name) as Sprite2D
 		_expect(prop.position.y == 618.0, "%s must share the town ground baseline." % prop_name)
 		_expect(prop.offset.y < 0.0, "%s must be bottom-aligned instead of center-aligned." % prop_name)
-	_expect(not town.get_node("ParallaxBackground/Mountains").visible, "Legacy mountain strip must stay hidden.")
-	_expect(not town.get_node("ParallaxBackground/Forest").visible, "Legacy forest strip must stay hidden.")
-	_expect(not town.get_node("ParallaxBackground/Rooftops").visible, "Legacy rooftop strip must stay hidden.")
+	var linked_scenes := {
+		"ParallaxBackground": "res://scenes/maps/components/TownBackdrop.tscn",
+		"Ground": "res://scenes/maps/components/TownStreetGround.tscn",
+		"Props": "res://scenes/props/town/TownStreetProps.tscn",
+		"Portals": "res://scenes/props/town/TownPortalSet.tscn",
+	}
+	for node_path in linked_scenes:
+		var linked_node := town.get_node(node_path)
+		_expect(
+			linked_node.scene_file_path == linked_scenes[node_path],
+			"%s must be a real linked child scene." % node_path
+		)
+	_expect(not town.has_node("PortalVisuals"), "Town must not keep a detached portal visual layer.")
+	_expect(not town.has_node("Ground/RoadStones"), "Town must not keep retired hidden road nodes.")
+	_expect(town.get_node("NPCs/Guard").position.y == 618.0, "Guard must stand on the town baseline.")
 
 	town.queue_free()
 	await process_frame

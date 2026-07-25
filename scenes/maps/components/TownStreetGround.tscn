@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_street_atlas_v2.png" id="1_ground"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ground"]
+atlas = ExtResource("1_ground")
+region = Rect2(14, 150, 1510, 170)
+
+[node name="TownStreetGround" type="Node2D"]
+
+[node name="GroundWest" type="Sprite2D" parent="."]
+position = Vector2(468, 668)
+scale = Vector2(0.62, 0.62)
+texture = SubResource("AtlasTexture_ground")
+
+[node name="GroundCenter" type="Sprite2D" parent="."]
+position = Vector2(1404, 668)
+scale = Vector2(0.62, 0.62)
+texture = SubResource("AtlasTexture_ground")
+
+[node name="GroundEast" type="Sprite2D" parent="."]
+position = Vector2(2340, 668)
+scale = Vector2(0.62, 0.62)
+texture = SubResource("AtlasTexture_ground")
+
