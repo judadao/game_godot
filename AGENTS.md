@@ -1,8 +1,28 @@
 # Repository Guidelines
 
+## Mandatory Task Workflow
+
+Before modifying project files, read `docs/rule_1.md` completely and follow its
+preflight, scope-control, UI-layout, verification, and reporting checklists.
+Start each implementation task by inspecting the relevant scenes, scripts,
+resources, signals, callers, and Git changes. Share a concise preflight summary,
+then proceed without waiting unless a real blocker or a requirement-changing
+choice cannot be resolved from the repository.
+
+Never overwrite, discard, or stage unrelated user changes. UI work requires
+behavioral and visual checks at the resolutions listed in `docs/rule_1.md`;
+successful parsing alone is not completion.
+
 ## Project Structure & Module Organization
 
-This is a Godot project. The root contains `project.godot`, engine import metadata, and the project icon. Runtime scenes are organized under `scenes/` by domain: `game/`, `maps/`, `player/`, `npc/`, `ui/`, `monsters/`, and `props/`. The game entry scene is `scenes/game/game.tscn`, and the current town map lives at `scenes/maps/town.tscn`. Scripts follow the same domain split under `scripts/`, such as `scripts/player/player_controller.gd` and `scripts/managers/game.gd`.
+This is a Godot project. The root contains `project.godot`, engine import
+metadata, and the project icon. Runtime scenes are organized under `scenes/` by
+domain: `game/`, `maps/`, `player/`, `npc/`, `ui/`, `monsters/`, and `props/`.
+The game entry scene is `scenes/game/game.tscn`. Editable master map scenes live
+in map-specific folders, including `scenes/maps/town/TownMap.tscn` and
+`scenes/maps/autumn_tree/AutumnTreeMap.tscn`. Scripts follow the same domain
+split under `scripts/`, such as `scripts/player/player_controller.gd` and
+`scripts/managers/game.gd`.
 
 ## Build, Test, and Development Commands
 
@@ -26,7 +46,16 @@ The repository uses UTF-8 via `.editorconfig`. Follow Godot conventions: use Pas
 
 ## Testing Guidelines
 
-No automated test framework is configured yet. For now, verify changes by running the project in Godot and exercising the affected scene manually. If tests are added, prefer a Godot-native framework such as GUT, place tests under `tests/`, and name files after the behavior under test, for example `test_player_movement.gd`.
+Headless `SceneTree` tests live under `tests/` and use the `*_test.gd` suffix.
+Run every affected test directly:
+
+```bash
+godot --headless --path . --script res://tests/<name>_test.gd
+```
+
+Then run the affected scene or the main project and exercise the changed flow.
+For UI changes, also perform the multi-resolution checks required by
+`docs/rule_1.md`.
 
 ## Commit & Pull Request Guidelines
 
