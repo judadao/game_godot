@@ -1,63 +1,40 @@
-# 完整地圖編輯入口
+# Map editing entries
 
-## Town
+## Authoritative scenes
 
-完整 Town 編輯入口：
+- Town: `res://scenes/maps/town/TownMap.tscn`
+- Autumn Forest: `res://scenes/maps/autumn_tree/AutumnTreeMap.tscn`
 
-```text
-res://scenes/maps/town/TownMap.tscn
-```
+Open these `*Map.tscn` scenes in Godot to edit the playable map. The canonical
+portal paths (`town.tscn` and `autumn_forest.tscn`) resolve to these entries at
+runtime; do not use a legacy layout scene as an editing or runtime entry.
 
-在 Godot FileSystem 雙擊 `TownMap.tscn`。這個 Scene 會顯示完整背景、地面、
-建築、街道道具、NPC、傳送入口、出生點、碰撞、HUD／卡牌預覽與
-`EditorHelpers`。
+Town exposes `ParallaxBackground`, `Buildings`, `Ground`, `Props`, `Portals`,
+`NPCs`, `WorldCollision`, the player spawn, `EditorHUDReference`, and
+`EditorHelpers`. Autumn Forest exposes its background, terrain, platforms,
+set dressing, run director, interactables, portals, collision, player spawn,
+`EditorHUDReference`, and `EditorHelpers`. Expand editable children in the
+Scene tree to adjust their Inspector overrides.
 
-可直接展開並調整：
+## Per-map HUD preview and runtime adoption
 
-- `ParallaxBackground`
-- `Buildings` 與各建築
-- `Ground`
-- `Props`
-- `Portals` 與各入口
-- `NPCs` 與各 NPC
-- `WorldCollision`
-- `EditorHUDReference/HUD`
-- `EditorHUDReference/CardHandUI`
-- `EditorHelpers`
+Every authoritative map instances `EditorHUDReference`. Its editable children
+are the source for that map's runtime UI:
 
-## 秋天樹
+- `EditorHUDReference/HUD` is the HUD preview and runtime HUD instance.
+- `EditorHUDReference/CardHandUI` is the card-hand preview and runtime card-hand
+  instance.
+- `CardHandUI.tscn`, including its `CardFan`, is the runtime-authoritative card
+  layout. Edit static safe-area and control placement there (or through the
+  map's editable child overrides). Gameplay creates only the variable card
+  buttons inside `CardFan`.
 
-完整秋天樹編輯入口：
+When a map loads, `Game.load_hud()` and `Game.load_card_hand()` reparent those
+exact instances to `Game/HUDLayer`. Root anchors, offsets, position, scale, and
+other Inspector overrides must remain intact; do not replace them with duplicate
+HUD or card-hand instances.
 
-```text
-res://scenes/maps/autumn_tree/AutumnTreeMap.tscn
-```
-
-在 Godot FileSystem 雙擊 `AutumnTreeMap.tscn`。這個 Scene 會顯示完整背景、
-地形、平台、裝飾、Player、初始敵人、波次控制器、寶箱、營火、捷徑、商人、
-回城／前進入口、碰撞、HUD／卡牌預覽與 `EditorHelpers`。
-
-可直接展開並調整：
-
-- `HiddenBranchCache`
-- `ForestRest`
-- `ShortcutLever`
-- `TownPortal`
-- `ForwardPortal`
-- `WanderingCardMerchant`
-- 各物件的 `InteractionArea`
-- `EditorHUDReference/HUD`
-- `EditorHUDReference/CardHandUI`
-- `EditorHelpers`
-
-## 編輯與單獨測試
-
-1. 只使用上面兩個 `*Map.tscn` 作為完整地圖排版入口。
-2. 在 Scene Tree 選取實例根節點可調整 Position、Rotation、Scale、Z Index。
-3. 已標記 Editable Children 的節點可展開調整碰撞、互動範圍與內部版面。
-4. 紅線是完整地圖邊界；黃線是初始／戰鬥相機安全畫面。
-5. `EditorHelpers` 與 HUD 參考只在編輯器顯示，正式執行不參與碰撞或輸入。
-6. 按 F6 可單獨執行目前主地圖 Scene；Player、Camera 與碰撞均已包含。
-7. 正式遊戲會採用主 Scene 內的 HUD／CardHandUI，不會再建立第二份。
-
-`town.tscn` 與 `autumn_forest.tscn` 是可重用內容基底，不是主要編輯入口。
+`EditorHelpers` and the `EditorHUDReference` overlay are hidden during normal
+runtime map play. Use the Scene tree and Inspector to adjust map content and
+the editable UI children, then run the map or main game to verify the adopted
+HUD at 1280x720, 1600x900, 1920x1080, and 2560x1440.

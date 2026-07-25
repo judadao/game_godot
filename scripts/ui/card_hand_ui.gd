@@ -8,10 +8,10 @@ signal group_changed(group_index: int)
 
 const CARD_SIZE := Vector2(132.0, 168.0)
 const RESTING_VISIBLE_HEIGHT := CARD_SIZE.y
-const SAFE_AREA_HEIGHT := 184.0
 const CARD_BOTTOM_MARGIN := 10.0
 const HOVER_RISE := 75.0
 const HOVER_SCALE := Vector2(1.08, 1.08)
+const HOVER_SIDE_INSET := 6.0
 const MAX_HAND_SPAN := 520.0
 const MAX_CARD_SPACING := 104.0
 const SHORTCUT_LABELS := ["Q", "W", "E", "R"]
@@ -24,22 +24,23 @@ var _card_tweens: Dictionary = {}
 var _energy := 0.0
 var _max_energy := 5.0
 var _active_group := 0
-var _hand_layer: Control
-var _energy_label: Label
-var _combo_label: Label
-var _boss_label: Label
-var _boss_bar: ProgressBar
-var _redraw_button: Button
-var _group_label: Label
-var _safe_area_band: ColorRect
+
+@onready var _card_fan: Control = $CardSafeArea/BottomMargin/BottomRow/HandSlot/CardFan
+@onready var _energy_label: Label = $CardSafeArea/BottomMargin/BottomRow/LeftSlot/LeftControls/EnergyBadge
+@onready var _combo_label: Label = $CardSafeArea/BottomMargin/BottomRow/RightSlot/ComboHint
+@onready var _boss_label: Label = $BossCenter/BossStack/BossName
+@onready var _boss_bar: ProgressBar = $BossCenter/BossStack/BossHealth
+@onready var _redraw_button: Button = $CardSafeArea/BottomMargin/BottomRow/LeftSlot/LeftControls/RedrawHand
+@onready var _group_label: Label = $CardGroupCenter/CardGroupBadge
 
 
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if Engine.is_editor_hint() and _cards.is_empty():
 		_cards = _editor_sample_cards()
-	_build_layout()
+	if not Engine.is_editor_hint():
+		_boss_label.visible = false
+		_boss_bar.visible = false
+	_refresh()
 	if not get_viewport().size_changed.is_connected(_on_viewport_size_changed):
 		get_viewport().size_changed.connect(_on_viewport_size_changed)
 
@@ -84,8 +85,6 @@ func set_action_points(current: float, maximum: float) -> void:
 	for index in _buttons.size():
 		var global_index := get_visible_card_global_index(index)
 		_buttons[index].disabled = global_index >= _cards.size() or float(_cards[global_index].get("cost", 0)) > _energy
-	if _redraw_button != null:
-		_redraw_button.disabled = _energy < _max_energy
 
 
 func select_card(index: int) -> void:
@@ -137,7 +136,7 @@ func get_card_layout(index: int) -> Dictionary:
 		return {}
 	var button := _buttons[index]
 	return {
-		"position": button.position,
+		"position": get_global_transform().affine_inverse() * button.get_global_position(),
 		"scale": button.scale,
 		"rotation": button.rotation,
 		"z_index": button.z_index,
@@ -179,96 +178,8 @@ func hide_boss_health() -> void:
 		_boss_bar.visible = false
 
 
-func _build_layout() -> void:
-	_safe_area_band = ColorRect.new()
-	_safe_area_band.name = "CardSafeArea"
-	_safe_area_band.color = Color(0.015, 0.02, 0.03, 1.0)
-	_safe_area_band.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_safe_area_band.z_index = -20
-	add_child(_safe_area_band)
-
-	_hand_layer = Control.new()
-	_hand_layer.name = "HandLayer"
-	_hand_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_hand_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_hand_layer)
-
-	_energy_label = Label.new()
-	_energy_label.name = "EnergyBadge"
-	_energy_label.custom_minimum_size = Vector2(66, 66)
-	_energy_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_energy_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_energy_label.add_theme_font_size_override("font_size", 17)
-	_energy_label.add_theme_color_override("font_color", Color(1.0, 0.91, 0.42))
-	_energy_label.add_theme_color_override("font_outline_color", Color(0.05, 0.025, 0.015))
-	_energy_label.add_theme_constant_override("outline_size", 4)
-	_energy_label.add_theme_stylebox_override("normal", _make_badge_style(
-		Color(0.08, 0.05, 0.025, 0.90),
-		Color(0.90, 0.61, 0.20, 0.95),
-		30
-	))
-	_energy_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hand_layer.add_child(_energy_label)
-
-	_combo_label = Label.new()
-	_combo_label.name = "ComboHint"
-	_combo_label.custom_minimum_size = Vector2(250, 46)
-	_combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_combo_label.add_theme_font_size_override("font_size", 11)
-	_combo_label.add_theme_color_override("font_color", Color(0.74, 0.91, 1.0))
-	_combo_label.add_theme_color_override("font_outline_color", Color(0.025, 0.04, 0.07))
-	_combo_label.add_theme_constant_override("outline_size", 3)
-	_combo_label.add_theme_stylebox_override("normal", _make_badge_style(
-		Color(0.035, 0.07, 0.10, 0.74),
-		Color(0.30, 0.62, 0.76, 0.72),
-		8
-	))
-	_combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hand_layer.add_child(_combo_label)
-
-	_redraw_button = Button.new()
-	_redraw_button.name = "RedrawHand"
-	_redraw_button.text = "T  REDRAW\nALL AP"
-	_redraw_button.custom_minimum_size = Vector2(92, 48)
-	_redraw_button.tooltip_text = "Requires full AP. Discard both groups and draw eight random cards."
-	_redraw_button.pressed.connect(func() -> void: redraw_requested.emit())
-	_hand_layer.add_child(_redraw_button)
-
-	_group_label = Label.new()
-	_group_label.name = "CardGroupBadge"
-	_group_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_group_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_group_label.add_theme_font_size_override("font_size", 12)
-	_group_label.add_theme_color_override("font_color", Color(0.86, 0.93, 1.0))
-	_group_label.add_theme_color_override("font_outline_color", Color(0.02, 0.04, 0.07))
-	_group_label.add_theme_constant_override("outline_size", 3)
-	_group_label.add_theme_stylebox_override("normal", _make_badge_style(
-		Color(0.035, 0.07, 0.11, 0.88),
-		Color(0.34, 0.66, 0.87, 0.86),
-		8
-	))
-	_group_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hand_layer.add_child(_group_label)
-
-	_boss_label = Label.new()
-	_boss_label.name = "BossName"
-	_boss_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_boss_label.add_theme_color_override("font_color", Color(1.0, 0.50, 0.29))
-	_boss_label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0.01))
-	_boss_label.add_theme_constant_override("outline_size", 4)
-	_boss_label.add_theme_font_size_override("font_size", 18)
-	_boss_label.visible = false
-	_boss_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hand_layer.add_child(_boss_label)
-
-	_boss_bar = ProgressBar.new()
-	_boss_bar.name = "BossHealth"
-	_boss_bar.custom_minimum_size = Vector2(520, 18)
-	_boss_bar.show_percentage = false
-	_boss_bar.visible = false
-	_boss_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hand_layer.add_child(_boss_bar)
-	_refresh()
+func _on_redraw_hand_pressed() -> void:
+	redraw_requested.emit()
 
 
 func _refresh() -> void:
@@ -289,10 +200,9 @@ func _refresh() -> void:
 		var card := _cards[global_index]
 		var local_index := global_index - group_start
 		var button := _build_card_button(card, local_index, global_index)
-		_hand_layer.add_child(button)
+		_card_fan.add_child(button)
 		_buttons.append(button)
-	if _group_label != null:
-		_group_label.text = "A / LT  GROUP  %d / %d  S / RT" % [_active_group + 1, get_group_count()]
+	_group_label.text = "A / LT  GROUP  %d / %d  S / RT" % [_active_group + 1, get_group_count()]
 	_layout_cards()
 
 
@@ -339,24 +249,25 @@ func _build_card_button(card: Dictionary, local_index: int, global_index: int) -
 
 
 func _layout_cards() -> void:
-	if _hand_layer == null or not is_inside_tree():
+	if _card_fan == null or not is_inside_tree():
 		return
-	var viewport_size := get_viewport_rect().size
-	if _safe_area_band != null:
-		_safe_area_band.position = Vector2(0.0, viewport_size.y - SAFE_AREA_HEIGHT)
-		_safe_area_band.size = Vector2(viewport_size.x, SAFE_AREA_HEIGHT)
 	var count := _buttons.size()
 	var spacing := 0.0
 	if count > 1:
-		spacing = minf(MAX_CARD_SPACING, MAX_HAND_SPAN / float(count - 1))
+		var available_spacing := maxf(
+			0.0,
+			(_card_fan.size.x - CARD_SIZE.x - HOVER_SIDE_INSET * 2.0) / float(count - 1)
+		)
+		spacing = minf(MAX_CARD_SPACING, minf(MAX_HAND_SPAN / float(count - 1), available_spacing))
+	var base_y := maxf(0.0, _card_fan.size.y - CARD_SIZE.y - CARD_BOTTOM_MARGIN)
 	_resting_layouts.clear()
 	for index in count:
 		var center_offset := float(index) - float(count - 1) * 0.5
 		var edge_drop := absf(center_offset) * 4.0
 		var resting := {
 			"position": Vector2(
-				viewport_size.x * 0.5 + center_offset * spacing - CARD_SIZE.x * 0.5,
-				viewport_size.y - CARD_SIZE.y - CARD_BOTTOM_MARGIN + edge_drop
+				_card_fan.size.x * 0.5 + center_offset * spacing - CARD_SIZE.x * 0.5,
+				base_y + edge_drop
 			),
 			"rotation": deg_to_rad(clampf(center_offset * 2.0, -6.0, 6.0)),
 			"scale": Vector2.ONE,
@@ -364,25 +275,6 @@ func _layout_cards() -> void:
 		}
 		_resting_layouts.append(resting)
 		_apply_card_layout(_buttons[index], resting)
-
-	var half_span := spacing * float(maxi(0, count - 1)) * 0.5
-	var hand_left := viewport_size.x * 0.5 - half_span - CARD_SIZE.x * 0.5
-	var hand_right := viewport_size.x * 0.5 + half_span + CARD_SIZE.x * 0.5
-	_energy_label.position = Vector2(maxf(12.0, hand_left - 80.0), viewport_size.y - 92.0)
-	_energy_label.size = Vector2(66, 66)
-	_combo_label.position = Vector2(
-		minf(viewport_size.x - 262.0, hand_right + 14.0),
-		viewport_size.y - 76.0
-	)
-	_combo_label.size = Vector2(250, 52)
-	_redraw_button.position = Vector2(maxf(12.0, hand_left - 106.0), viewport_size.y - 148.0)
-	_redraw_button.size = Vector2(92, 48)
-	_group_label.position = Vector2(viewport_size.x * 0.5 - 125.0, viewport_size.y - 206.0)
-	_group_label.size = Vector2(250, 30)
-	_boss_label.position = Vector2(viewport_size.x * 0.5 - 260.0, 14.0)
-	_boss_label.size = Vector2(520, 25)
-	_boss_bar.position = Vector2(viewport_size.x * 0.5 - 260.0, 41.0)
-	_boss_bar.size = Vector2(520, 18)
 
 
 func _set_card_hover(index: int, hovered: bool, animate: bool = true) -> void:
@@ -426,10 +318,8 @@ func _on_viewport_size_changed() -> void:
 
 
 func _update_ap_display() -> void:
-	if _energy_label != null:
-		_energy_label.text = "%.1f / %.0f\nAP" % [_energy, _max_energy]
-	if _redraw_button != null:
-		_redraw_button.disabled = _energy < _max_energy
+	_energy_label.text = "%.1f / %.0f\nAP" % [_energy, _max_energy]
+	_redraw_button.disabled = _energy < _max_energy
 
 
 func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
@@ -454,17 +344,6 @@ func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
 	style.content_margin_bottom = 8.0
 	style.shadow_color = Color(0.0, 0.0, 0.0, 0.55)
 	style.shadow_size = 8 if hovered else 4
-	return style
-
-
-func _make_badge_style(background: Color, border: Color, radius: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = background
-	style.border_color = border
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(radius)
-	style.content_margin_left = 8.0
-	style.content_margin_right = 8.0
 	return style
 
 
