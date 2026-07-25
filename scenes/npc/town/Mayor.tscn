@@ -27,7 +27,7 @@ texture = SubResource("MayorTexture")
 offset = Vector2(0, -295)
 scale = Vector2(0.23, 0.23)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="BodyCollision" type="CollisionShape2D" parent="."]
 position = Vector2(0, -52)
 shape = SubResource("RectangleShape2D_body")
 
@@ -35,7 +35,7 @@ shape = SubResource("RectangleShape2D_body")
 collision_layer = 0
 collision_mask = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+[node name="InteractionCollision" type="CollisionShape2D" parent="InteractionArea"]
 position = Vector2(0, -63)
 shape = SubResource("RectangleShape2D_interaction")
 debug_color = Color(0.3, 0.75, 1, 0.25)

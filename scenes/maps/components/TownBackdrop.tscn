@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://br6i1uvyi4wv2"]
 
-[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_background_clean_v3.png" id="1_background"]
+[ext_resource type="Texture2D" uid="uid://c4t8q3xdcx15o" path="res://assets/town/rebuild_v2/town_background_clean_v3.png" id="1_background"]
+[ext_resource type="Texture2D" uid="uid://b6l5hs7lb2uie" path="res://assets/town/rebuild_v2/town_mid_near_layer.png" id="2_mid_near"]
 
 [sub_resource type="Gradient" id="Gradient_sky"]
 offsets = PackedFloat32Array(0, 0.58, 1)
@@ -13,14 +14,30 @@ height = 724
 fill_from = Vector2(0.5, 0)
 fill_to = Vector2(0.5, 1)
 
-[node name="TownBackdrop" type="Node2D"]
+[node name="TownBackdrop" type="Node2D" unique_id=2005808844]
 
-[node name="Sky" type="Sprite2D" parent="."]
+[node name="FarLayer" type="Node2D" parent="." unique_id=1409728770]
+z_index = -30
+metadata/layer_role = "far"
+
+[node name="Sky" type="Sprite2D" parent="FarLayer" unique_id=1839597353]
+z_index = -30
 position = Vector2(1300, 362)
 texture = SubResource("GradientTexture2D_sky")
 
-[node name="Clouds" type="Sprite2D" parent="."]
-position = Vector2(1300, 362)
-scale = Vector2(1.55, 0.775)
+[node name="MidLayer" type="Node2D" parent="." unique_id=2121168445]
+z_index = -20
+metadata/layer_role = "mid"
+
+[node name="Background" type="Sprite2D" parent="MidLayer" unique_id=805258782]
+z_index = -20
+position = Vector2(1333.6124, 239.65628)
+scale = Vector2(1.5757138, 1.0366979)
 texture = ExtResource("1_background")
 
+[node name="MiddleNearLayer" type="Sprite2D" parent="." unique_id=412634603]
+z_index = -10
+position = Vector2(1312.75, 400.5063)
+scale = Vector2(1.2900932, 1.0518968)
+texture = ExtResource("2_mid_near")
+metadata/layer_role = "middle_near"

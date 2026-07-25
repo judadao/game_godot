@@ -73,11 +73,55 @@ func _run() -> void:
 			"%s must use the rebuilt Town NPC atlas at runtime." % npc_name
 		)
 
+	var npc_scene_paths := {
+		"Mayor": "res://scenes/npc/town/Mayor.tscn",
+		"VillagerMale": "res://scenes/npc/town/MaleVillager.tscn",
+		"VillagerFemale": "res://scenes/npc/town/FemaleVillager.tscn",
+		"Guard": "res://scenes/npc/town/TownGuard.tscn",
+		"ItemMerchantInteractive": "res://scenes/npc/town/PotionMerchant.tscn",
+		"BlacksmithInteractive": "res://scenes/npc/town/Blacksmith.tscn",
+		"InnkeeperInteractive": "res://scenes/npc/town/Innkeeper.tscn",
+	}
+	var npc_regions: Array[Rect2] = []
+	for npc_name in npc_scene_paths:
+		var npc := town.get_node("NPCs/%s" % npc_name)
+		_expect(
+			npc.scene_file_path == npc_scene_paths[npc_name],
+			"%s must remain linked to its dedicated NPC scene." % npc_name
+		)
+		_expect(npc.has_node("Visual"), "%s must own its visual inside the NPC scene." % npc_name)
+		_expect(npc.has_node("InteractionArea/InteractionCollision"), "%s must own a complete interaction area." % npc_name)
+		var visual := npc.get_node_or_null("Visual") as Sprite2D
+		if visual != null and visual.texture is AtlasTexture:
+			var region := (visual.texture as AtlasTexture).region
+			_expect(not npc_regions.has(region), "%s must use a unique atlas region." % npc_name)
+			npc_regions.append(region)
+
 	_expect(
-		town.get_node("ParallaxBackground/Clouds").texture.resource_path
+		town.get_node("ParallaxBackground/MidLayer/Background").texture.resource_path
 		== "res://assets/town/rebuild_v2/town_background_clean_v3.png",
 		"Town must use the clean distant-only background."
 	)
+	_expect(
+		town.get_node("ParallaxBackground/MiddleNearLayer").texture.resource_path
+		== "res://assets/town/rebuild_v2/town_mid_near_layer.png",
+		"Town must use the generated middle-near scenery layer."
+	)
+	_expect(
+		not town.has_node("ParallaxBackground/ParallaxBackground"),
+		"Town must not nest a second TownBackdrop inside the linked backdrop scene."
+	)
+	_expect(
+		not town.has_node("ParallaxBackground/MiddleNearLayer/MiddleNearLayer"),
+		"Town backdrop must not nest a duplicate middle-near layer."
+	)
+	var continuous_ground := town.get_node("Ground/ContinuousStreet") as Sprite2D
+	_expect(
+		continuous_ground.texture.resource_path
+		== "res://assets/town/rebuild_v2/town_ground_continuous.png",
+		"Town ground must use one continuous texture."
+	)
+	_expect(town.get_node("Ground").get_child_count() == 1, "Town ground must not contain stitched segments.")
 	for prop_name in [
 		"EntranceFence",
 		"ResidentialLamp",

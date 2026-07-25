@@ -1,28 +1,34 @@
-[gd_scene load_steps=5 format=3 uid="uid://daq53oxwtoqn6"]
+[gd_scene format=3 uid="uid://daq53oxwtoqn6"]
 
-[ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownFastTravelPortal.tscn" id="1_fast"]
+[ext_resource type="PackedScene" uid="uid://boq308w6mc3pb" path="res://scenes/props/town/portals/TownFastTravelPortal.tscn" id="1_fast"]
 [ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownForestPortal.tscn" id="2_forest"]
 [ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownCavesPortal.tscn" id="3_caves"]
 [ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownGraveyardPortal.tscn" id="4_graveyard"]
 
-[node name="TownPortalSet" type="Node2D"]
+[node name="TownPortalSet" type="Node2D" unique_id=1130275238]
 
-[node name="EntranceFastTravelPortal" parent="." instance=ExtResource("1_fast")]
+[node name="EntranceFastTravelPortal" parent="." unique_id=990929359 instance=ExtResource("1_fast")]
 position = Vector2(100, 618)
 target_spawn_name = &"TownTailArrival"
 interaction_id = &"town_fast_travel_to_tail"
 prompt_text = "Travel to Town East"
 
-[node name="ForestPortal" parent="." instance=ExtResource("2_forest")]
+[node name="ForestPortal" parent="." unique_id=2077706239 instance=ExtResource("2_forest")]
 position = Vector2(2110, 618)
+float_height = 7.0
+float_speed = 2.1
 
-[node name="CavesPortal" parent="." instance=ExtResource("3_caves")]
+[node name="CavesPortal" parent="." unique_id=2069987569 instance=ExtResource("3_caves")]
 position = Vector2(2260, 618)
+float_height = 7.0
+float_speed = 2.1
 
-[node name="GraveyardPortal" parent="." instance=ExtResource("4_graveyard")]
+[node name="GraveyardPortal" parent="." unique_id=804408309 instance=ExtResource("4_graveyard")]
 position = Vector2(2410, 618)
+float_height = 7.0
+float_speed = 2.1
 
-[node name="EastRoadPortal" parent="." instance=ExtResource("1_fast")]
+[node name="EastRoadPortal" parent="." unique_id=709159382 instance=ExtResource("1_fast")]
 position = Vector2(2550, 618)
 target_spawn_name = &"TownEntranceArrival"
 interaction_id = &"town_fast_travel_to_entrance"

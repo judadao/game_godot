@@ -27,6 +27,12 @@ size = Vector2(2800, 64)
 size = Vector2(48, 520)
 
 [node name="ForbiddenGraveyard" type="Node2D"]
+metadata/map_width = 2600
+metadata/map_height = 724
+metadata/camera_limit_left = 0
+metadata/camera_limit_top = 0
+metadata/camera_limit_right = 2600
+metadata/camera_limit_bottom = 724
 
 [node name="Background" type="Node2D" parent="."]
 

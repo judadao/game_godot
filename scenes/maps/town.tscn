@@ -1,16 +1,16 @@
-[gd_scene load_steps=10 format=3 uid="uid://dw3j7rocm1qmn"]
+[gd_scene format=3 uid="uid://dw3j7rocm1qmn"]
 
-[ext_resource type="Script" path="res://scripts/maps/town_editor_preview.gd" id="1_preview"]
-[ext_resource type="PackedScene" path="res://scenes/maps/components/TownBackdrop.tscn" id="2_backdrop"]
-[ext_resource type="PackedScene" path="res://scenes/maps/components/TownStreetGround.tscn" id="3_ground"]
-[ext_resource type="PackedScene" path="res://scenes/maps/components/TownBuildings.tscn" id="4_buildings"]
+[ext_resource type="Script" uid="uid://ddj80fyybrukd" path="res://scripts/maps/town_editor_preview.gd" id="1_preview"]
+[ext_resource type="PackedScene" uid="uid://br6i1uvyi4wv2" path="res://scenes/maps/components/TownBackdrop.tscn" id="2_backdrop"]
+[ext_resource type="PackedScene" uid="uid://c64506surh8h5" path="res://scenes/maps/components/TownStreetGround.tscn" id="3_ground"]
+[ext_resource type="PackedScene" uid="uid://clumnm3e6wkj5" path="res://scenes/maps/components/TownBuildings.tscn" id="4_buildings"]
 [ext_resource type="PackedScene" path="res://scenes/props/town/TownStreetProps.tscn" id="5_props"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/TownPortalSet.tscn" id="6_portals"]
+[ext_resource type="PackedScene" uid="uid://daq53oxwtoqn6" path="res://scenes/props/town/TownPortalSet.tscn" id="6_portals"]
 [ext_resource type="PackedScene" path="res://scenes/maps/components/TownNPCs.tscn" id="7_npcs"]
-[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="8_player"]
+[ext_resource type="PackedScene" uid="uid://ckbaviqhvukg5" path="res://scenes/player/Player.tscn" id="8_player"]
 [ext_resource type="PackedScene" path="res://scenes/maps/components/TownWorldCollision.tscn" id="9_collision"]
 
-[node name="Town" type="Node2D"]
+[node name="Town" type="Node2D" unique_id=296374039]
 script = ExtResource("1_preview")
 metadata/map_width = 2600
 metadata/map_height = 724
@@ -21,28 +21,40 @@ metadata/camera_limit_top = 0
 metadata/camera_limit_right = 2600
 metadata/camera_limit_bottom = 724
 
-[node name="PlayerSpawn" type="Marker2D" parent="."]
+[node name="PlayerSpawn" type="Marker2D" parent="." unique_id=1210315716]
 position = Vector2(220, 576)
 
-[node name="TownEntranceArrival" type="Marker2D" parent="."]
+[node name="TownEntranceArrival" type="Marker2D" parent="." unique_id=431745468]
 position = Vector2(480, 576)
 
-[node name="TownTailArrival" type="Marker2D" parent="."]
+[node name="TownTailArrival" type="Marker2D" parent="." unique_id=2017773689]
 position = Vector2(2250, 576)
 
-[node name="ParallaxBackground" parent="." instance=ExtResource("2_backdrop")]
+[node name="ParallaxBackground" parent="." unique_id=1600227815 instance=ExtResource("2_backdrop")]
+position = Vector2(-27, -62)
 
-[node name="Ground" parent="." instance=ExtResource("3_ground")]
+[node name="Buildings" parent="." unique_id=961392485 instance=ExtResource("4_buildings")]
+position = Vector2(14, 30)
+metadata/layer_role = "near"
 
-[node name="Buildings" parent="." instance=ExtResource("4_buildings")]
+[node name="Ground" parent="." unique_id=148187483 instance=ExtResource("3_ground")]
+position = Vector2(0, -4)
+metadata/layer_role = "ground"
 
-[node name="Props" parent="." instance=ExtResource("5_props")]
+[node name="Props" parent="." unique_id=1884118247 instance=ExtResource("5_props")]
+position = Vector2(17, 33)
+metadata/layer_role = "near"
 
-[node name="Portals" parent="." instance=ExtResource("6_portals")]
+[node name="Portals" parent="." unique_id=1397079685 instance=ExtResource("6_portals")]
+position = Vector2(-4, 27)
+metadata/layer_role = "near"
 
-[node name="NPCs" parent="." instance=ExtResource("7_npcs")]
+[node name="NPCs" parent="." unique_id=2141749617 instance=ExtResource("7_npcs")]
+position = Vector2(5, 38)
+metadata/layer_role = "near"
 
-[node name="Player" parent="." instance=ExtResource("8_player")]
+[node name="Player" parent="." unique_id=1438006060 instance=ExtResource("8_player")]
 position = Vector2(220, 647)
 
-[node name="WorldCollision" parent="." instance=ExtResource("9_collision")]
+[node name="WorldCollision" parent="." unique_id=477183193 instance=ExtResource("9_collision")]
+position = Vector2(6, 39)

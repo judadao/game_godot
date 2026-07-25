@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene format=3 uid="uid://clumnm3e6wkj5"]
 
 [ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueResidence.tscn" id="1_west"]
 [ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedBlueShop.tscn" id="2_shop"]
@@ -7,29 +7,28 @@
 [ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedResidence.tscn" id="5_house"]
 [ext_resource type="PackedScene" path="res://scenes/props/buildings/GeneratedRedTower.tscn" id="6_tower"]
 
-[node name="TownBuildings" type="Node2D"]
+[node name="TownBuildings" type="Node2D" unique_id=1300937398]
 
-[node name="WestHouse" parent="." instance=ExtResource("1_west")]
+[node name="WestHouse" parent="." unique_id=2002577784 instance=ExtResource("1_west")]
 position = Vector2(265, 618)
 scale = Vector2(0.82, 0.82)
 
-[node name="ItemShop" parent="." instance=ExtResource("2_shop")]
-position = Vector2(1510, 618)
+[node name="ItemShop" parent="." unique_id=1340452614 instance=ExtResource("2_shop")]
+position = Vector2(1430, 615)
 scale = Vector2(0.82, 0.82)
 
-[node name="Blacksmith" parent="." instance=ExtResource("3_smith")]
-position = Vector2(2020, 618)
+[node name="Blacksmith" parent="." unique_id=1146742380 instance=ExtResource("3_smith")]
+position = Vector2(2117, 620)
 scale = Vector2(0.82, 0.82)
 
-[node name="MarketStall" parent="." instance=ExtResource("4_market")]
-position = Vector2(1810, 618)
+[node name="MarketStall" parent="." unique_id=29367277 instance=ExtResource("4_market")]
+position = Vector2(1759, 613)
 scale = Vector2(0.82, 0.82)
 
-[node name="EmptyResidence" parent="." instance=ExtResource("5_house")]
-position = Vector2(620, 618)
+[node name="EmptyResidence" parent="." unique_id=1515707324 instance=ExtResource("5_house")]
+position = Vector2(597, 620)
 scale = Vector2(0.82, 0.82)
 
-[node name="EmptyTowerHouse" parent="." instance=ExtResource("6_tower")]
-position = Vector2(1080, 618)
+[node name="EmptyTowerHouse" parent="." unique_id=1823551390 instance=ExtResource("6_tower")]
+position = Vector2(1010, 609)
 scale = Vector2(0.82, 0.82)
-

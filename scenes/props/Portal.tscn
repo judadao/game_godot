@@ -1,7 +1,7 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://bvk1dxcsl4l0m"]
 
-[ext_resource type="Script" path="res://scripts/interaction/portal.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/town/generated/town_ground_stairs_portal.png" id="2_texture"]
+[ext_resource type="Script" uid="uid://d0gtc8lirxthb" path="res://scripts/interaction/portal.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://ckkaoi1xjx3ww" path="res://assets/town/generated/town_ground_stairs_portal.png" id="2_texture"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_portal"]
 atlas = ExtResource("2_texture")
@@ -13,7 +13,7 @@ size = Vector2(128, 160)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_interaction"]
 size = Vector2(168, 188)
 
-[node name="Portal" type="StaticBody2D" groups=["Portals", "Interactives"]]
+[node name="Portal" type="StaticBody2D" unique_id=2118213084 groups=["Interactives", "Portals"]]
 collision_layer = 2
 collision_mask = 1
 script = ExtResource("1_script")
@@ -22,20 +22,20 @@ prompt_text = "Enter"
 target_scene_path = "res://scenes/maps/town.tscn"
 target_spawn_name = &"PlayerSpawn"
 
-[node name="Visual" type="Sprite2D" parent="."]
+[node name="Visual" type="Sprite2D" parent="." unique_id=561159541]
 scale = Vector2(0.45, 0.45)
 texture = SubResource("AtlasTexture_portal")
 offset = Vector2(0, -287.5)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2016464674]
 position = Vector2(0, -80)
 shape = SubResource("RectangleShape2D_body")
 
-[node name="InteractionArea" type="Area2D" parent="."]
+[node name="InteractionArea" type="Area2D" parent="." unique_id=1150441591]
 collision_layer = 0
 collision_mask = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=518413562]
 position = Vector2(0, -94)
 shape = SubResource("RectangleShape2D_interaction")
 debug_color = Color(0.3, 0.75, 1, 0.25)

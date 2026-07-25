@@ -1,19 +1,21 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://boq308w6mc3pb"]
 
-[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="1_portal"]
-[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_props_portals_atlas_v2.png" id="2_atlas"]
+[ext_resource type="PackedScene" uid="uid://bvk1dxcsl4l0m" path="res://scenes/props/Portal.tscn" id="1_portal"]
+[ext_resource type="Texture2D" uid="uid://bsek1jgr31mcl" path="res://assets/town/rebuild_v2/town_props_portals_atlas_v2.png" id="2_atlas"]
 
 [sub_resource type="AtlasTexture" id="PortalTexture"]
 atlas = ExtResource("2_atlas")
 region = Rect2(660, 660, 220, 320)
 
-[node name="TownFastTravelPortal" instance=ExtResource("1_portal")]
+[node name="TownFastTravelPortal" unique_id=570009547 instance=ExtResource("1_portal")]
 visible = true
 collision_layer = 0
 show_default_visual = false
 
-[node name="TownVisual" type="Sprite2D" parent="."]
+[node name="Visual" parent="." index="0" unique_id=561159541]
+visible = false
+
+[node name="TownVisual" type="Sprite2D" parent="." index="3" unique_id=1722419399]
 scale = Vector2(0.42, 0.42)
 texture = SubResource("PortalTexture")
 offset = Vector2(0, -160)
-
