@@ -17,7 +17,7 @@ func _run() -> void:
 	await process_frame
 	var player := game.get("player") as Node
 	var camera := player.find_child("Camera2D", true, false) as Camera2D
-	_expect(camera != null and camera.position.y >= 100.0, "Battle camera must shift the world upward to reserve a bottom card-hand safe area.")
+	_expect(camera != null and camera.position.y >= 135.0, "Battle camera must shift the world upward by half the reserved card stage.")
 	game.queue_free()
 	await process_frame
 	quit(0 if _failures == 0 else 1)

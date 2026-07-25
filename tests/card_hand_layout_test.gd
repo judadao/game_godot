@@ -30,9 +30,23 @@ func _run() -> void:
 		return
 
 	_expect(int(ui.call("get_hand_panel_count")) == 0, "Hand must not create a large opaque background panel.")
+	var safe_area := ui.get_node("CardSafeArea") as ColorRect
+	var viewport_height: float = ui.get_viewport_rect().size.y
 	_expect(
-		is_equal_approx(float(ui.call("get_resting_visible_height")), 154.0),
-		"Resting hand must expose nearly the full card."
+		safe_area.position.y <= viewport_height - 270.0,
+		"Card stage must reserve at least 270 pixels below the visible battle map."
+	)
+	_expect(
+		is_equal_approx(safe_area.size.y, viewport_height - safe_area.position.y),
+		"Card stage must cover the viewport all the way to the bottom edge."
+	)
+	_expect(
+		is_equal_approx(safe_area.color.a, 1.0),
+		"Card stage must be opaque so the battle map cannot show through the hand."
+	)
+	_expect(
+		is_equal_approx(float(ui.call("get_resting_visible_height")), 168.0),
+		"Resting hand must expose the full card."
 	)
 	var first := ui.call("get_card_layout", 0) as Dictionary
 	var second := ui.call("get_card_layout", 1) as Dictionary
@@ -50,6 +64,15 @@ func _run() -> void:
 		"Visible four-card group must remain centered in a 1280-wide viewport."
 	)
 	var resting_position := middle.get("position", Vector2.ZERO) as Vector2
+	var resting_size := middle.get("size", Vector2.ZERO) as Vector2
+	_expect(
+		resting_position.y >= safe_area.position.y,
+		"Resting cards must remain inside the dedicated bottom card stage."
+	)
+	_expect(
+		resting_position.y + resting_size.y <= viewport_height,
+		"Resting cards must remain fully visible above the bottom viewport edge."
+	)
 	ui.call("preview_card_hover", 2, true)
 	var raised := ui.call("get_card_layout", 2) as Dictionary
 	_expect(

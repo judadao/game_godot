@@ -6,7 +6,9 @@ signal redraw_requested
 signal group_changed(group_index: int)
 
 const CARD_SIZE := Vector2(132.0, 168.0)
-const RESTING_VISIBLE_HEIGHT := 154.0
+const RESTING_VISIBLE_HEIGHT := CARD_SIZE.y
+const SAFE_AREA_HEIGHT := 270.0
+const CARD_BOTTOM_MARGIN := 10.0
 const HOVER_RISE := 75.0
 const HOVER_SCALE := Vector2(1.08, 1.08)
 const MAX_HAND_SPAN := 520.0
@@ -178,7 +180,7 @@ func hide_boss_health() -> void:
 func _build_layout() -> void:
 	_safe_area_band = ColorRect.new()
 	_safe_area_band.name = "CardSafeArea"
-	_safe_area_band.color = Color(0.015, 0.02, 0.03, 0.78)
+	_safe_area_band.color = Color(0.015, 0.02, 0.03, 1.0)
 	_safe_area_band.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_safe_area_band.z_index = -20
 	add_child(_safe_area_band)
@@ -339,8 +341,8 @@ func _layout_cards() -> void:
 		return
 	var viewport_size := get_viewport_rect().size
 	if _safe_area_band != null:
-		_safe_area_band.position = Vector2(0.0, viewport_size.y - 184.0)
-		_safe_area_band.size = Vector2(viewport_size.x, 184.0)
+		_safe_area_band.position = Vector2(0.0, viewport_size.y - SAFE_AREA_HEIGHT)
+		_safe_area_band.size = Vector2(viewport_size.x, SAFE_AREA_HEIGHT)
 	var count := _buttons.size()
 	var spacing := 0.0
 	if count > 1:
@@ -352,7 +354,7 @@ func _layout_cards() -> void:
 		var resting := {
 			"position": Vector2(
 				viewport_size.x * 0.5 + center_offset * spacing - CARD_SIZE.x * 0.5,
-				viewport_size.y - RESTING_VISIBLE_HEIGHT + edge_drop
+				viewport_size.y - CARD_SIZE.y - CARD_BOTTOM_MARGIN + edge_drop
 			),
 			"rotation": deg_to_rad(clampf(center_offset * 2.0, -6.0, 6.0)),
 			"scale": Vector2.ONE,
