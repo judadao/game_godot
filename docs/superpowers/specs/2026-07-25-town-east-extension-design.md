@@ -28,6 +28,19 @@ Extend the playable Town map from 2600 pixels to 3900 pixels wide while preservi
   - Move only `EastRoadPortal` into the new east extension.
   - Preserve the positions of the other four portal instances.
 
+## Modular Background Assets
+
+The previous composite background is replaced by independently placeable bitmap modules:
+
+- `TownSkyLayer.tscn`: an opaque 3900-pixel-wide sky foundation.
+- `TownCloudSet.tscn`: at least four individually positioned transparent cloud sprites.
+- `TownMountainSet.tscn`: at least three overlapping transparent distant-mountain sprites.
+- `TownDistantBuildings.tscn`: at least four transparent distant house or tower groups.
+- `TownTreeSet.tscn`: at least six transparent tree clusters with varied silhouettes.
+- `TownBackdrop.tscn`: a composition scene that references the five scenes above without embedding duplicate copies of itself.
+
+Generated modules must match the current Town pixel-art style, use a consistent light direction and side-view perspective, contain no text or watermark, and cover the 3900-pixel map without scaling any sprite beyond twice its native size. Transparent modules must have transparent corners and no chroma-key fringe.
+
 ## Runtime Behavior
 
 - The player camera can follow the player to `x = 3900`.
@@ -45,6 +58,9 @@ Automated checks will assert:
 - The right wall is positioned at or beyond the new map boundary.
 - `EastRoadPortal` and `TownTailArrival` are inside the extension and separated safely.
 - Existing buildings, NPCs, street props, and the other four portals retain their current positions.
+- Every background layer is a linked child scene.
+- Cloud, mountain, distant-building, and tree layers contain the required number of independently movable sprites.
+- No background scene is nested inside itself.
 - Town scene loading and fast-travel tests continue to pass.
 
 Manual verification will run the project and confirm that the ground and background have no visible seam at the old `x = 2600` boundary.
