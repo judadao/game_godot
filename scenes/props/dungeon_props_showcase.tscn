@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://cxep10anc6nrj"]
+
+[ext_resource type="Texture2D" uid="uid://cip1aayr00y0i" path="res://assets/props/dungeon_objects/png/pedestals.png" id="1_pedestals"]
+[ext_resource type="Texture2D" uid="uid://b4wv1k6bbmlm3" path="res://assets/props/dungeon_objects/png/supplies_objects.png" id="2_supplies"]
+[ext_resource type="Texture2D" uid="uid://bqo00lo3mgx4f" path="res://assets/props/dungeon_objects/png/full.png" id="3_full"]
+[ext_resource type="PackedScene" path="res://scenes/props/magic_book_portal.tscn" id="4_magic_book_portal"]
+
+[node name="DungeonPropsShowcase" type="Node2D" unique_id=595751741]
+
+[node name="Backdrop" type="Polygon2D" parent="." unique_id=1191998888]
+color = Color(0.09, 0.11, 0.19, 0.92)
+polygon = PackedVector2Array(-250, 0, -210, -224, 210, -224, 250, 0)
+
+[node name="ArchiveShelf" type="Sprite2D" parent="." unique_id=1173054134]
+position = Vector2(-160, -77)
+scale = Vector2(1.25, 1.25)
+texture = ExtResource("2_supplies")
+region_enabled = true
+region_rect = Rect2(0, 0, 80, 64)
+
+[node name="SupplyShelf" type="Sprite2D" parent="." unique_id=329514907]
+position = Vector2(163, -77)
+scale = Vector2(1.25, 1.25)
+texture = ExtResource("2_supplies")
+region_enabled = true
+region_rect = Rect2(80, 0, 80, 64)
+
+[node name="LeftPedestal" type="Sprite2D" parent="." unique_id=300375748]
+position = Vector2(-87, -37)
+scale = Vector2(1.35, 1.35)
+texture = ExtResource("1_pedestals")
+region_enabled = true
+region_rect = Rect2(0, 0, 48, 48)
+
+[node name="RightPedestal" type="Sprite2D" parent="." unique_id=891656756]
+position = Vector2(87, -37)
+scale = Vector2(1.35, 1.35)
+texture = ExtResource("1_pedestals")
+region_enabled = true
+region_rect = Rect2(96, 0, 48, 48)
+
+[node name="WeaponDisplay" type="Sprite2D" parent="." unique_id=376233087]
+position = Vector2(0, -26)
+scale = Vector2(1.4, 1.4)
+texture = ExtResource("3_full")
+region_enabled = true
+region_rect = Rect2(560, 192, 128, 32)
+
+[node name="MagicBookPortal" parent="." unique_id=1605052740 instance=ExtResource("4_magic_book_portal")]
+position = Vector2(0, 6)
+scale = Vector2(0.8, 0.8)
+display_name = "Arcane Archive"
+portal_tint = Color(0.58, 0.72, 1, 1)
+float_height = 7.0
+float_speed = 2.1
+interaction_enabled = false

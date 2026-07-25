@@ -10,19 +10,14 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	await process_frame
-	var player: Node = game.get("player")
 	var inventory := game.get("player_inventory") as Dictionary
 
-	_expect(int(player.get("health")) == 78, "Player should start with configured health.")
-	_expect(bool(game.call("_use_potion", "hp_potion")), "Health potion should work below max HP.")
-	_expect(int(player.get("health")) == 100, "Health potion must clamp healing to max HP.")
-	_expect(int(inventory.get("hp_potion", 0)) == 1, "Successful healing must consume one potion.")
-	_expect(not bool(game.call("_use_potion", "hp_potion")), "Potion must not be consumed at full HP.")
-	_expect(int(inventory.get("hp_potion", 0)) == 1, "No-effect use must preserve potion quantity.")
-
-	_expect(bool(game.call("_use_potion", "mp_potion")), "Mana potion should work below max MP.")
-	_expect(int(player.get("mana")) == 50, "Mana potion must clamp restoration to max MP.")
-	_expect(int(inventory.get("mp_potion", 0)) == 1, "Successful mana restoration must consume one potion.")
+	_expect(not game.has_method("_use_potion"), "Legacy potion combat method must be removed.")
+	_expect(not InputMap.has_action("use_hp_potion"), "HP potion hotkey must be removed.")
+	_expect(not InputMap.has_action("use_mp_potion"), "MP potion hotkey must be removed.")
+	_expect(not inventory.has("hp_potion") and not inventory.has("mp_potion"), "New sessions must not carry legacy combat potions.")
+	var hud := game.get("hud") as Control
+	_expect(hud.get_node("HUDHotbar").visible == false, "Legacy potion hotbar must remain hidden.")
 
 	game.queue_free()
 	await process_frame

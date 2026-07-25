@@ -14,25 +14,26 @@ func _run() -> void:
 	var shop := game.call("open_ui", "ShopUI", shop_scene) as Control
 	await process_frame
 	var catalog: Array = game.call("_catalog_for_shop", &"general_store")
-	var potion := (catalog[0] as Dictionary).duplicate(true)
+	var item := (catalog[0] as Dictionary).duplicate(true)
+	_expect(String(item.get("id", "")) == "travel_bread", "General store must no longer sell combat potions.")
 
 	var starting_wallet := int(game.get("wallet_gold"))
-	var starting_owned := int((game.get("player_inventory") as Dictionary).get("hp_potion", 0))
-	var starting_stock := int(potion.get("stock", 0))
-	game.call("_on_shop_transaction_confirmed", potion, 2, "buy", shop, &"general_store")
+	var starting_owned := int((game.get("player_inventory") as Dictionary).get("travel_bread", 0))
+	var starting_stock := int(item.get("stock", 0))
+	game.call("_on_shop_transaction_confirmed", item, 2, "buy", shop, &"general_store")
 	var after_buy_catalog: Array = game.call("_catalog_for_shop", &"general_store")
-	_expect(int(game.get("wallet_gold")) == starting_wallet - 50, "Buy must deduct wallet gold.")
+	_expect(int(game.get("wallet_gold")) == starting_wallet - 24, "Buy must deduct wallet gold.")
 	_expect(
-		int((game.get("player_inventory") as Dictionary).get("hp_potion", 0)) == starting_owned + 2,
+		int((game.get("player_inventory") as Dictionary).get("travel_bread", 0)) == starting_owned + 2,
 		"Buy must add inventory quantity."
 	)
 	_expect(int((after_buy_catalog[0] as Dictionary).get("stock", 0)) == starting_stock - 2, "Buy must reduce stock.")
 
 	game.call("_on_shop_transaction_confirmed", after_buy_catalog[0], 1, "sell", shop, &"general_store")
 	var after_sell_catalog: Array = game.call("_catalog_for_shop", &"general_store")
-	_expect(int(game.get("wallet_gold")) == starting_wallet - 38, "Sell must credit the sell price.")
+	_expect(int(game.get("wallet_gold")) == starting_wallet - 18, "Sell must credit the sell price.")
 	_expect(
-		int((game.get("player_inventory") as Dictionary).get("hp_potion", 0)) == starting_owned + 1,
+		int((game.get("player_inventory") as Dictionary).get("travel_bread", 0)) == starting_owned + 1,
 		"Sell must remove inventory quantity."
 	)
 	_expect(int((after_sell_catalog[0] as Dictionary).get("stock", 0)) == starting_stock - 1, "Sell must return stock.")

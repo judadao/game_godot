@@ -8,6 +8,38 @@ signal ui_closed(ui_name: String, ui_node: Control)
 const QUICK_SAVE_PATH := "user://saves/quick_save.json"
 const QUICK_SAVE_TEMP_PATH := "user://saves/quick_save.tmp"
 const QUICK_SAVE_BACKUP_PATH := "user://saves/quick_save.json.bak"
+const META_SAVE_PATH := "user://saves/meta_progress.json"
+const TOWN_SCENE_PATH := "res://scenes/maps/town.tscn"
+const AUTUMN_FOREST_SCENE_PATH := "res://scenes/maps/autumn_forest.tscn"
+const INVENTORY_MANAGER_SCRIPT := preload("res://scripts/systems/inventory_manager.gd")
+const TOWN_MANAGER_SCRIPT := preload("res://scripts/systems/town_manager.gd")
+const BASE_AP_REGEN := 0.65
+const WISP_AP_REGEN := 0.35
+const WISP_DURATION := 6.0
+const COMBAT_CAMERA_SAFE_OFFSET_Y := 100.0
+const MAX_COMBO_ABILITIES := 4
+const MAX_COMBO_LEVEL := 3
+const COMBO_EVOLUTIONS := [
+	{
+		"requires": ["flame", "frost"],
+		"id": "thermal_shatter",
+		"name": "Thermal Shatter",
+		"effect": {
+			"kind": "infusion", "infusion_id": "thermal_shatter",
+			"damage_bonus": 20, "burn_damage": 6, "burn_duration": 6.0,
+			"frost_ratio": 0.50, "frost_duration": 4.0, "combo_stun": 0.5,
+		},
+	},
+	{
+		"requires": ["rhythm", "stoneguard"],
+		"id": "war_cadence",
+		"name": "War Cadence",
+		"effect": {
+			"kind": "infusion", "infusion_id": "war_cadence",
+			"damage_bonus": 8, "block_bonus": 14,
+		},
+	},
+]
 
 @export var starting_map: PackedScene = preload("res://scenes/maps/town.tscn")
 @export var hud_scene: PackedScene = preload("res://scenes/ui/HUD.tscn")
@@ -15,10 +47,17 @@ const QUICK_SAVE_BACKUP_PATH := "user://saves/quick_save.json.bak"
 @export var pause_menu_scene: PackedScene = preload("res://scenes/ui/PauseMenu.tscn")
 @export var dialogue_scene: PackedScene = preload("res://scenes/ui/DialogueUI.tscn")
 @export var shop_scene: PackedScene = preload("res://scenes/ui/ShopUI.tscn")
+@export var town_progress_scene: PackedScene = preload("res://scenes/ui/TownProgressUI.tscn")
+@export var run_result_scene: PackedScene = preload("res://scenes/ui/RunResultUI.tscn")
+@export var deck_builder_scene: PackedScene = preload("res://scenes/ui/DeckBuilderUI.tscn")
+@export var card_discard_scene: PackedScene = preload("res://scenes/ui/CardDiscardUI.tscn")
+@export var level_up_scene: PackedScene = preload("res://scenes/ui/LevelUpUI.tscn")
 
 @onready var map_root: Node = $MapRoot
 @onready var hud_root: CanvasLayer = $HUDLayer
 @onready var ui_root: CanvasLayer = $MenuLayer
+@onready var card_hand_ui: Control = $HUDLayer/CardHandUI
+@onready var card_effect_runner: CardEffectRunner = $CardEffectRunner
 
 var current_map: Node
 var player: Node
@@ -29,10 +68,20 @@ var _ui_names: Dictionary = {}
 var _ui_pause_flags: Dictionary = {}
 var _closing_ui: Dictionary = {}
 var _interaction_candidates: Array[Node] = []
+var meta_state := MetaState.new()
+var run_state := RunState.new()
+var save_service := SaveService.new()
+var card_database := CardDatabase.new()
+var deck_manager := DeckManager.new(card_database)
+var combo_manager := ComboManager.new()
+var evolution_manager := EvolutionManager.new(card_database)
+var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
+var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
+var _pending_player_state: Dictionary = {}
+var _last_combo_name := "—"
+var _tactical_slowdown := false
 var wallet_gold: int = 250
 var player_inventory: Dictionary = {
-	"hp_potion": 2,
-	"mp_potion": 2,
 	"travel_bread": 3,
 }
 var _merchant_catalogs: Dictionary = {}
@@ -42,8 +91,50 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	hud_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_root.process_mode = Node.PROCESS_MODE_ALWAYS
+	meta_state.apply_dict(save_service.load_meta(META_SAVE_PATH))
+	if not meta_state.inventory_state.is_empty():
+		inventory_manager.call("apply_dict", meta_state.inventory_state)
+	elif _has_legacy_inventory_progress():
+		var owned: Array[String] = []
+		for slot in ["weapon", "armor", "accessory"]:
+			var item_id := String(meta_state.equipment.get(slot, ""))
+			if not item_id.is_empty():
+				owned.append(item_id)
+		inventory_manager.call("apply_dict", {
+			"resources": meta_state.resources,
+			"owned_equipment": owned,
+			"equipment_levels": meta_state.equipment_levels,
+			"equipped": meta_state.equipment,
+		})
+	if not meta_state.town_state.is_empty():
+		town_manager.call("apply_dict", meta_state.town_state)
+	elif not meta_state.building_levels.is_empty():
+		town_manager.call("apply_dict", {"building_levels": meta_state.building_levels})
+	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
+	card_database.load_catalog()
+	evolution_manager.load_recipes()
+	card_hand_ui.card_selected.connect(_on_card_selected)
+	card_hand_ui.redraw_requested.connect(_redraw_current_hand)
+	card_effect_runner.effect_resolved.connect(_on_card_effect_resolved)
 	load_current_map(starting_map)
 	load_hud()
+	_sync_progression_to_meta()
+
+
+func _process(delta: float) -> void:
+	if not run_state.active or get_tree().paused:
+		return
+	var regen_rate := BASE_AP_REGEN
+	regen_rate += float((inventory_manager.call("get_special_ability_totals") as Dictionary).get("ap_regen", 0.0))
+	regen_rate += float(run_state.temporary_buffs.get("level_ap_regen", 0.0))
+	var wisp_seconds := float(run_state.temporary_buffs.get("ap_wisp_seconds", 0.0))
+	if wisp_seconds > 0.0:
+		regen_rate += float(run_state.temporary_buffs.get("ap_wisp_rate", WISP_AP_REGEN))
+		run_state.temporary_buffs["ap_wisp_seconds"] = maxf(0.0, wisp_seconds - delta)
+	var regenerated := deck_manager.regenerate_energy(delta, regen_rate)
+	if regenerated > 0.0:
+		run_state.energy = deck_manager.energy
+		card_hand_ui.call("set_action_points", deck_manager.energy, deck_manager.max_energy)
 
 
 func _input(event: InputEvent) -> void:
@@ -53,6 +144,8 @@ func _input(event: InputEvent) -> void:
 	if not ui_stack.is_empty():
 		var top_ui := ui_stack[ui_stack.size() - 1]
 		var top_name := String(_ui_names.get(top_ui, top_ui.name))
+		if top_name in ["CardDiscardUI", "LevelUpUI"]:
+			return
 		if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
 			close_top_ui()
 			get_viewport().set_input_as_handled()
@@ -64,14 +157,14 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("inventory"):
 		_toggle_inventory()
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("use_hp_potion"):
-		_use_potion("hp_potion")
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("use_mp_potion"):
-		_use_potion("mp_potion")
-		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
 		open_ui("PauseMenu", pause_menu_scene, true)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("card_focus") and run_state.active:
+		_set_tactical_slowdown(not _tactical_slowdown)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("redraw_hand") and run_state.active:
+		_redraw_current_hand()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("interact"):
 		_try_interact()
@@ -83,6 +176,8 @@ func load_starting_map() -> void:
 
 
 func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerSpawn") -> Node:
+	if player != null:
+		_pending_player_state = _capture_player_state()
 	for child in map_root.get_children():
 		child.queue_free()
 
@@ -96,9 +191,14 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 	current_map = map_scene.instantiate()
 	map_root.add_child(current_map)
 	_register_player(spawn_name)
+	_apply_transferred_player_state()
+	_apply_shortcut_spawn()
+	_apply_equipment_stats()
 	_wire_interactives()
 	_wire_combat_zones()
 	_update_hud_area_name()
+	_update_card_hand_visibility()
+	_apply_town_visual_progress()
 	map_loaded.emit(current_map)
 	return current_map
 
@@ -120,7 +220,6 @@ func load_hud() -> void:
 		_update_hud_area_name()
 		_update_hud_player_identity()
 		_update_hud_resources()
-		_update_hud_consumables()
 		hud.call("set_currency", wallet_gold)
 	else:
 		push_error("HUD scene root must be a Control.")
@@ -144,10 +243,10 @@ func _update_hud_area_name() -> void:
 func _update_hud_player_identity() -> void:
 	if hud == null or player == null:
 		return
-	var player_level: Variant = player.get("level")
+	var player_level: Variant = run_state.level if run_state.active else player.get("level")
 	var player_class: Variant = player.get("character_class")
-	var player_experience: Variant = player.get("experience")
-	var experience_required: Variant = player.get("experience_to_next_level")
+	var player_experience: Variant = run_state.experience if run_state.active else player.get("experience")
+	var experience_required: Variant = run_state.experience_required if run_state.active else player.get("experience_to_next_level")
 	if player_level != null and hud.has_method("set_player_level"):
 		hud.call("set_player_level", int(player_level))
 	if player_class != null and hud.has_method("set_player_class"):
@@ -166,15 +265,6 @@ func _update_hud_resources(
 		return
 	hud.call("set_health", int(player.get("health")), int(player.get("max_health")))
 	hud.call("set_mana", int(player.get("mana")), int(player.get("max_mana")))
-
-
-func _update_hud_consumables() -> void:
-	if hud != null and hud.has_method("set_potion_counts"):
-		hud.call(
-			"set_potion_counts",
-			int(player_inventory.get("hp_potion", 0)),
-			int(player_inventory.get("mp_potion", 0))
-		)
 
 
 func open_ui(ui_name: String, ui_scene: PackedScene, pause_game: bool = false) -> Control:
@@ -223,6 +313,11 @@ func close_ui(ui: Variant) -> void:
 		return
 
 	var ui_name := String(_ui_names.get(ui_control, ui_control.name))
+	if ui_name == "TownProgressUI":
+		_sync_progression_to_meta()
+		save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+		_apply_town_visual_progress()
+		_apply_equipment_stats()
 	_closing_ui[ui_control] = true
 	if ui_control.visible and ui_control.has_method("close"):
 		ui_control.call("close")
@@ -298,6 +393,7 @@ func _configure_player_camera() -> void:
 	camera.limit_right = int(current_map.get_meta("camera_limit_right", 1280))
 	camera.limit_bottom = int(current_map.get_meta("camera_limit_bottom", 720))
 	camera.position_smoothing_enabled = false
+	camera.position.y = COMBAT_CAMERA_SAFE_OFFSET_Y if run_state.active and current_map.scene_file_path == AUTUMN_FOREST_SCENE_PATH else 0.0
 	camera.reset_smoothing()
 
 
@@ -377,6 +473,21 @@ func _wire_combat_zones() -> void:
 			continue
 		_connect_if_present(zone, &"progress_changed", &"_on_combat_progress_changed")
 		_connect_if_present(zone, &"zone_cleared", &"_on_combat_zone_cleared")
+	for director in current_map.get_tree().get_nodes_in_group("EncounterDirectors"):
+		if not current_map.is_ancestor_of(director):
+			continue
+		_connect_if_present(director, &"wave_started", &"_on_run_wave_started")
+		_connect_if_present(director, &"progress_changed", &"_on_run_progress_changed")
+		_connect_if_present(director, &"encounter_cleared", &"_on_run_encounter_cleared")
+		_connect_if_present(director, &"combat_engaged", &"_on_combat_engaged")
+		_connect_if_present(director, &"disengage_warning", &"_on_disengage_warning")
+		_connect_if_present(director, &"disengage_cancelled", &"_on_disengage_cancelled")
+		_connect_if_present(director, &"combat_reset", &"_on_combat_reset")
+		_connect_if_present(director, &"experience_gem_spawned", &"_on_experience_gem_spawned")
+		_connect_if_present(director, &"phase_time_changed", &"_on_survival_phase_time_changed")
+		_connect_if_present(director, &"boss_stage_completed", &"_on_boss_stage_completed")
+		if director.has_method("start_encounter") and not bool(director.get("_running")):
+			director.call_deferred("start_encounter")
 
 
 func _on_combat_progress_changed(remaining: int, total: int) -> void:
@@ -389,7 +500,8 @@ func _on_combat_progress_changed(remaining: int, total: int) -> void:
 
 
 func _on_combat_zone_cleared(experience_reward: int, gold_reward: int) -> void:
-	wallet_gold += maxi(0, gold_reward)
+	inventory_manager.call("add_resource", &"gold", maxi(0, gold_reward))
+	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	if player != null:
 		player.experience += maxi(0, experience_reward)
 		while player.experience >= player.experience_to_next_level:
@@ -408,17 +520,739 @@ func _on_combat_zone_cleared(experience_reward: int, gold_reward: int) -> void:
 	_update_hud_player_identity()
 
 
+func _on_run_wave_started(wave_number: int, total_waves: int, enemy_count: int) -> void:
+	if hud != null and hud.has_method("set_objective"):
+		hud.call(
+			"set_objective",
+			"Autumn Tree — Wave %d / %d" % [wave_number, total_waves],
+			"Enemies: %d" % enemy_count
+		)
+	if run_state.active and wave_number == 2:
+		run_state.temporary_buffs["passives"] = [
+			"ember_core", "iron_heart", "wind_feather",
+			"hourglass_shard", "life_seed", "warrior_emblem",
+		]
+	if run_state.active and wave_number > 1 and wave_number < total_waves:
+		call_deferred("_show_card_reward_choices", wave_number)
+	if run_state.active and wave_number == 3:
+		_discover_equipment_reward()
+	if wave_number == total_waves:
+		call_deferred("_wire_boss_hud")
+
+
+func _on_run_progress_changed(remaining: int, total: int) -> void:
+	if hud != null and hud.has_method("set_objective"):
+		hud.call("set_objective", "Autumn Tree Expedition", "Enemies remaining: %d / %d" % [remaining, total])
+
+
+func _on_survival_phase_time_changed(phase: int, remaining: float, alive: int, cap: int) -> void:
+	if hud != null and hud.has_method("set_objective"):
+		var time_text := "BOSS" if remaining < 0.0 else "%ds" % int(ceil(remaining))
+		hud.call("set_objective", "SURVIVAL PHASE %d" % phase, "%s   Enemies %d / %d" % [time_text, alive, cap])
+
+
+func _on_boss_stage_completed() -> void:
+	if not run_state.active:
+		return
+	run_state.boss_defeated = true
+	meta_state.boss_defeated = true
+	run_state.add_reward("autumn_wood", 18)
+	run_state.add_reward("magic_shard", 7)
+	meta_state.add_resource("autumn_core", 1)
+	inventory_manager.call("add_resource", &"autumn_core", 1)
+	meta_state.shortcuts["autumn_route_cleared"] = true
+	_discover_equipment_reward()
+	if current_map != null:
+		var forward_portal := current_map.get_node_or_null("ForwardPortal")
+		if forward_portal != null and forward_portal.has_method("set_locked"):
+			forward_portal.call("set_locked", false, "")
+	if hud != null and hud.has_method("set_objective"):
+		hud.call("set_objective", "BOSS DEFEATED — ROUTE OPEN", "The forward portal now leads to the next region.")
+
+
+func _on_experience_gem_spawned(gem: Node, _value: int) -> void:
+	if gem != null and gem.has_signal("collected"):
+		gem.connect("collected", _on_experience_collected, CONNECT_ONE_SHOT)
+
+
+func _on_experience_collected(value: int) -> void:
+	if run_state.add_experience(value) > 0:
+		call_deferred("_open_next_level_up")
+	_update_hud_player_identity()
+
+
+func _open_next_level_up() -> void:
+	if run_state.pending_level_ups <= 0 or get_open_ui("LevelUpUI") != null:
+		return
+	var ui_control := open_ui("LevelUpUI", level_up_scene, true)
+	if ui_control == null:
+		return
+	ui_control.call("set_choices", _build_level_up_choices())
+	ui_control.connect("choice_selected", _on_level_up_choice.bind(ui_control), CONNECT_ONE_SHOT)
+
+
+func _build_level_up_choices() -> Array[Dictionary]:
+	var choices: Array[Dictionary] = []
+	var card_ids := run_state.card_levels.keys()
+	card_ids.sort()
+	for card_id_variant in card_ids:
+		var card_id := String(card_id_variant)
+		var level := int(run_state.card_levels.get(card_id, 1))
+		if level >= 3:
+			continue
+		choices.append({
+			"kind": "upgrade_card",
+			"card_id": card_id,
+			"text": "Upgrade %s  Lv.%d → Lv.%d" % [_card_name(card_id), level, level + 1],
+		})
+		if choices.size() >= 3:
+			return choices
+	if _get_run_deck_size() < 16:
+		for card_id in meta_state.unlocked_cards:
+			if choices.size() >= 3:
+				break
+			if card_database.has_card(card_id):
+				choices.append({"kind": "add_card", "card_id": card_id, "text": "Add %s" % _card_name(card_id)})
+	var fallback := [
+		{"kind": "max_health", "text": "Vital Growth  +10 Max HP"},
+		{"kind": "ap_regen", "text": "Quick Mind  +0.10 AP/sec"},
+		{"kind": "remove_card", "text": "Refine Deck  Remove one card"},
+	]
+	for choice in fallback:
+		if choices.size() >= 3:
+			break
+		choices.append(choice)
+	return choices
+
+
+func _on_level_up_choice(choice: Dictionary, ui_control: Control) -> void:
+	if not _apply_level_up_choice(choice):
+		return
+	run_state.consume_pending_level()
+	close_ui(ui_control)
+	_refresh_card_hand()
+	_update_hud_player_identity()
+	if run_state.pending_level_ups > 0:
+		call_deferred("_open_next_level_up")
+
+
+func _apply_level_up_choice(choice: Dictionary) -> bool:
+	match String(choice.get("kind", "")):
+		"upgrade_card":
+			var card_id := String(choice.get("card_id", ""))
+			if not run_state.card_levels.has(card_id) or int(run_state.card_levels[card_id]) >= 3:
+				return false
+			run_state.card_levels[card_id] = int(run_state.card_levels[card_id]) + 1
+			_try_evolve_card(card_id)
+		"add_card":
+			return _apply_card_reward(String(choice.get("card_id", "")))
+		"max_health":
+			if player == null:
+				return false
+			player.max_health += 10
+			player.health += 10
+		"ap_regen":
+			run_state.temporary_buffs["level_ap_regen"] = float(run_state.temporary_buffs.get("level_ap_regen", 0.0)) + 0.10
+		"remove_card":
+			for card_id in deck_manager.hand + deck_manager.draw_pile + deck_manager.discard_pile:
+				if card_id != deck_manager.protected_card_id:
+					return _remove_one_card_copy(card_id)
+			return false
+		_:
+			return false
+	return true
+
+
+func _get_run_deck_size() -> int:
+	return deck_manager.hand.size() + deck_manager.draw_pile.size() + deck_manager.discard_pile.size()
+
+
+func _on_combat_engaged() -> void:
+	if hud != null and hud.has_method("set_objective"):
+		hud.call("set_objective", "COMBAT ENGAGED", "Dodge attacks or escape beyond the arena.")
+
+
+func _on_disengage_warning(seconds: int) -> void:
+	if hud != null and hud.has_method("set_objective"):
+		hud.call(
+			"set_objective",
+			"DISENGAGING — RETURN TO COMBAT",
+			"Enemies reset in %d" % maxi(1, seconds)
+		)
+
+
+func _on_disengage_cancelled() -> void:
+	if hud != null and hud.has_method("set_objective"):
+		hud.call("set_objective", "COMBAT REJOINED", "Enemy reset cancelled.")
+
+
+func _on_combat_reset() -> void:
+	if hud != null and hud.has_method("set_objective"):
+		hud.call("set_objective", "COMBAT DISENGAGED", "Living enemies returned and restored to full health.")
+
+
+func _wire_boss_hud() -> void:
+	if current_map == null:
+		return
+	for boss in get_tree().get_nodes_in_group("Bosses"):
+		if not current_map.is_ancestor_of(boss):
+			continue
+		if boss.has_signal("health_changed") and not boss.is_connected("health_changed", _on_boss_health_changed):
+			boss.connect("health_changed", _on_boss_health_changed)
+		var maximum := 1
+		var archetype: Variant = boss.get("archetype")
+		if archetype is Resource:
+			maximum = int(archetype.get("max_health"))
+		card_hand_ui.call("set_boss_health", "HEARTWOOD GUARDIAN", int(boss.get("health")), maximum)
+
+
+func _on_boss_health_changed(current: int, maximum: int) -> void:
+	card_hand_ui.call("set_boss_health", "HEARTWOOD GUARDIAN", current, maximum)
+
+
+func _on_run_encounter_cleared(experience_reward: int, gold_reward: int) -> void:
+	if not run_state.active:
+		return
+	run_state.add_reward("gold", gold_reward)
+	run_state.add_reward("autumn_wood", 18)
+	run_state.add_reward("magic_shard", 7)
+	run_state.boss_defeated = true
+	_discover_equipment_reward()
+	meta_state.add_resource("autumn_core", 1)
+	inventory_manager.call("add_resource", &"autumn_core", 1)
+	if player != null:
+		player.experience += maxi(0, experience_reward)
+	var summary := _finish_run(true)
+	_show_run_result(true, summary)
+	if hud != null and hud.has_method("set_objective"):
+		hud.call(
+			"set_objective",
+			"HEARTWOOD GUARDIAN DEFEATED",
+			"+%d Gold  +18 Autumn Wood  +7 Shards  +1 Autumn Core" % int(summary.get("gold", 0))
+		)
+
+
 func _on_player_defeated() -> void:
 	if player == null or current_map == null:
 		return
 	player.call("set_input_enabled", false)
+	var summary := _finish_run(false)
 	await get_tree().create_timer(0.8).timeout
-	if player == null or not is_instance_valid(player):
+	_pending_player_state.clear()
+	player = null
+	load_current_map(load(TOWN_SCENE_PATH) as PackedScene)
+	_show_run_result(false, summary)
+
+
+func _begin_autumn_run(deck_override: Array = []) -> void:
+	if run_state.active:
 		return
-	var spawn := current_map.find_child("PlayerSpawn", true, false) as Node2D
-	if spawn != null and player.has_method("revive"):
-		player.call("revive", spawn.global_position)
-	player.call("set_input_enabled", true)
+	var fallback_deck := [
+		"ember_bolt", "quickstep", "cleave", "cleave",
+		"guard", "guard", "quickstep", "dash_strike",
+		"healing_light", "frost_bind", "energy_surge", "iron_skin",
+		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
+	]
+	var selected: Array = deck_override if deck_override.size() > 0 and deck_override.size() <= 16 else meta_state.selected_deck
+	run_state.begin_run(selected if selected.size() > 0 and selected.size() <= 16 else fallback_deck)
+	deck_manager.protected_card_id = "ember_bolt"
+	deck_manager.start(run_state.starting_deck, run_state.max_energy, true)
+	for card_id in run_state.starting_deck:
+		run_state.card_levels[card_id] = 1
+	combo_manager.reset()
+	_last_combo_name = "—"
+	_refresh_card_hand()
+
+
+func _show_card_reward_choices(wave_number: int) -> void:
+	if not run_state.active or not ui_stack.is_empty():
+		return
+	var choices_by_wave := {
+		2: ["ember_bolt", "guard", "dash_strike"],
+		3: ["frost_bind", "healing_light", "battle_focus"],
+	}
+	var card_ids: Array = choices_by_wave.get(wave_number, ["cleave", "quickstep", "energy_surge"])
+	var ui_control := open_ui("RunUpgradeUI", dialogue_scene, true)
+	if ui_control == null:
+		return
+	ui_control.call("set_speaker_name", "Autumn Blessing")
+	ui_control.call("set_dialogue_text", "Choose a card copy. Merge and upgrades are handled at the campfire.")
+	var choices: Array[Dictionary] = []
+	for card_id in card_ids:
+		var card := card_database.get_card(String(card_id))
+		choices.append({
+			"text": "%s — %s" % [String(card.get("name", card_id)), String(card.get("description", ""))],
+			"card_id": String(card_id),
+		})
+	ui_control.call("set_choices", choices)
+	ui_control.connect("choice_selected", _on_card_reward_selected.bind(ui_control), CONNECT_ONE_SHOT)
+
+
+func _on_card_reward_selected(_index: int, _text: String, metadata: Dictionary, ui_control: Control) -> void:
+	_apply_card_reward(String(metadata.get("card_id", "")))
+	close_ui(ui_control)
+
+
+func _apply_card_reward(card_id: String) -> bool:
+	if not run_state.active or not card_database.has_card(card_id):
+		return false
+	if not run_state.card_levels.has(card_id):
+		run_state.card_levels[card_id] = 1
+	run_state.temporary_cards.append(card_id)
+	deck_manager.discard_pile.append(card_id)
+	if not meta_state.unlocked_cards.has(card_id):
+		meta_state.unlocked_cards.append(card_id)
+		save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	_refresh_card_hand()
+	return true
+
+
+func _get_card_copy_count(card_id: String) -> int:
+	var count := 0
+	for pile in [deck_manager.hand, deck_manager.draw_pile, deck_manager.discard_pile]:
+		for pile_card_id in pile:
+			if pile_card_id == card_id:
+				count += 1
+	return count
+
+
+func _merge_card_at_campfire(card_id: String) -> bool:
+	if not run_state.active or bool(run_state.temporary_buffs.get("campfire_used", false)):
+		return false
+	if _get_card_copy_count(card_id) < 2 or int(run_state.card_levels.get(card_id, 0)) >= 3:
+		return false
+	var merged := false
+	while _get_card_copy_count(card_id) > 1 and int(run_state.card_levels.get(card_id, 1)) < 3:
+		if not _remove_one_card_copy(card_id):
+			break
+		run_state.card_levels[card_id] = int(run_state.card_levels.get(card_id, 1)) + 1
+		merged = true
+	if not merged:
+		return false
+	run_state.temporary_buffs["campfire_used"] = true
+	_try_evolve_card(card_id)
+	_refresh_card_hand()
+	return true
+
+
+func _upgrade_card_at_campfire(card_id: String) -> bool:
+	if not run_state.active or bool(run_state.temporary_buffs.get("campfire_used", false)):
+		return false
+	if _get_card_copy_count(card_id) <= 0 or int(run_state.card_levels.get(card_id, 0)) >= 3:
+		return false
+	run_state.card_levels[card_id] = int(run_state.card_levels.get(card_id, 1)) + 1
+	run_state.temporary_buffs["campfire_used"] = true
+	_try_evolve_card(card_id)
+	_refresh_card_hand()
+	return true
+
+
+func _remove_one_card_copy(card_id: String) -> bool:
+	var piles: Array = [deck_manager.discard_pile, deck_manager.draw_pile, deck_manager.hand]
+	for pile_variant in piles:
+		var pile := pile_variant as Array
+		var index: int = pile.find(card_id)
+		if index >= 0:
+			pile.remove_at(index)
+			return true
+	return false
+
+
+func _try_evolve_card(base_card_id: String) -> bool:
+	var passives_variant: Variant = run_state.temporary_buffs.get("passives", [])
+	var passives: Array = passives_variant if passives_variant is Array else []
+	for recipe in evolution_manager.find_available(run_state.card_levels, passives):
+		if String(recipe.get("base_card_id", "")) != base_card_id:
+			continue
+		var result_id := String(recipe.get("result_card_id", ""))
+		for pile in [deck_manager.hand, deck_manager.draw_pile, deck_manager.discard_pile]:
+			for index in pile.size():
+				if pile[index] == base_card_id:
+					pile[index] = result_id
+		run_state.card_levels.erase(base_card_id)
+		run_state.card_levels[result_id] = 3
+		var recipe_id := String(recipe.get("id", ""))
+		if not meta_state.unlocked_evolutions.has(recipe_id):
+			meta_state.unlocked_evolutions.append(recipe_id)
+		if hud != null and hud.has_method("set_objective"):
+			hud.call("set_objective", "EVOLUTION — %s" % String(recipe.get("name", result_id)), "Build power has reached its peak!")
+		return true
+	return false
+
+
+func _finish_run(victory: bool) -> Dictionary:
+	if not run_state.active:
+		return {}
+	var summary := run_state.finish_run(victory)
+	_set_tactical_slowdown(false)
+	card_hand_ui.visible = false
+	card_hand_ui.call("hide_boss_health")
+	meta_state.apply_run_summary(summary)
+	inventory_manager.call("add_resource", &"gold", maxi(0, int(summary.get("gold", 0))))
+	var materials: Variant = summary.get("materials", {})
+	if materials is Dictionary:
+		for resource_id in materials:
+			inventory_manager.call(
+				"add_resource",
+				StringName(resource_id),
+				maxi(0, int(materials[resource_id]))
+			)
+	_sync_progression_to_meta()
+	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	if hud != null and hud.has_method("set_currency"):
+		hud.call("set_currency", wallet_gold)
+	return summary
+
+
+func _on_card_selected(index: int) -> void:
+	if not run_state.active or player == null or not ui_stack.is_empty():
+		return
+	var card := deck_manager.play_from_hand(index)
+	if card.is_empty():
+		_refresh_card_hand()
+		return
+	card = _card_for_cast(String(card.get("id", "")))
+	if String(card.get("type", "")) == "combo":
+		_resolve_combo_card(card)
+	else:
+		card = _apply_combo_infusions_to_card(card)
+	var targets: Array = []
+	if current_map != null:
+		for director in get_tree().get_nodes_in_group("EncounterDirectors"):
+			if current_map.is_ancestor_of(director) and director.has_method("get_active_enemies"):
+				targets.append_array(director.call("get_active_enemies") as Array)
+		if targets.is_empty():
+			for enemy in get_tree().get_nodes_in_group("Enemies"):
+				if current_map.is_ancestor_of(enemy) and is_instance_valid(enemy):
+					targets.append(enemy)
+	card_effect_runner.cast(card, player, targets)
+	var effect := card.get("effect", {}) as Dictionary
+	if String(effect.get("kind", "")) == "summon" and String(effect.get("unit_id", "")) == "energy_wisp":
+		run_state.temporary_buffs["ap_wisp_seconds"] = maxf(
+			float(run_state.temporary_buffs.get("ap_wisp_seconds", 0.0)),
+			WISP_DURATION
+		)
+		run_state.temporary_buffs["ap_wisp_rate"] = WISP_AP_REGEN
+	var triggered := combo_manager.record_card(card)
+	if not triggered.is_empty():
+		_last_combo_name = String(triggered[0].get("name", "Combo"))
+		run_state.combo_count += 1
+		if hud != null and hud.has_method("set_objective"):
+			hud.call("set_objective", "COMBO: %s" % _last_combo_name, String(triggered[0].get("description", "")))
+	var draw_count := maxi(0, int(effect.get("draw_cards", 0)))
+	if not deck_manager.last_play_retained:
+		draw_count += 1
+	deck_manager.draw_cards(draw_count)
+	run_state.energy = deck_manager.energy
+	_set_tactical_slowdown(false)
+	_refresh_card_hand()
+	var overflow := maxi(0, deck_manager.hand.size() - deck_manager.hand_size)
+	if overflow > 0:
+		call_deferred("_open_hand_overflow_discard", overflow)
+
+
+func _open_hand_overflow_discard(required_count: int) -> void:
+	if required_count <= 0 or get_open_ui("CardDiscardUI") != null:
+		return
+	var cards: Array[Dictionary] = []
+	for card_id in deck_manager.hand:
+		cards.append(_card_for_cast(card_id))
+	var ui_control := open_ui("CardDiscardUI", card_discard_scene, true)
+	if ui_control == null:
+		return
+	ui_control.call("configure", cards, required_count, deck_manager.protected_card_id)
+	ui_control.connect("discard_confirmed", _on_hand_overflow_confirmed.bind(ui_control), CONNECT_ONE_SHOT)
+
+
+func _on_hand_overflow_confirmed(indices: Array[int], ui_control: Control) -> void:
+	var required_count := maxi(0, deck_manager.hand.size() - deck_manager.hand_size)
+	if indices.size() != required_count:
+		return
+	for index in indices:
+		if index < 0 or index >= deck_manager.hand.size() or deck_manager.hand[index] == deck_manager.protected_card_id:
+			return
+	var sorted_indices := indices.duplicate()
+	sorted_indices.sort()
+	sorted_indices.reverse()
+	for index in sorted_indices:
+		if index < 0 or index >= deck_manager.hand.size():
+			continue
+		var card_id := deck_manager.hand[index]
+		if card_id == deck_manager.protected_card_id:
+			continue
+		deck_manager.hand.remove_at(index)
+		deck_manager.discard_pile.append(card_id)
+	close_ui(ui_control)
+	_refresh_card_hand()
+
+
+func _resolve_combo_card(card: Dictionary) -> bool:
+	if card.is_empty() or String(card.get("type", "")) != "combo":
+		return false
+	var effect := card.get("effect", {}) as Dictionary
+	if String(effect.get("kind", "")) != "infusion":
+		return false
+	var infusion_id := String(effect.get("infusion_id", ""))
+	if infusion_id.is_empty():
+		return false
+	var active_variant: Variant = run_state.temporary_buffs.get("active_infusions", [])
+	var active: Array = active_variant if active_variant is Array else []
+	if not active.has(infusion_id) and active.size() >= MAX_COMBO_ABILITIES:
+		return false
+	if not active.has(infusion_id):
+		active.append(infusion_id)
+	run_state.temporary_buffs["active_infusions"] = active
+	var levels_variant: Variant = run_state.temporary_buffs.get("combo_levels", {})
+	var levels: Dictionary = levels_variant if levels_variant is Dictionary else {}
+	var current_level := int(levels.get(infusion_id, 0))
+	if current_level >= MAX_COMBO_LEVEL:
+		return false
+	levels[infusion_id] = current_level + 1
+	run_state.temporary_buffs["combo_levels"] = levels
+	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
+	var effects: Array = effects_variant if effects_variant is Array else []
+	effects.append(effect.duplicate(true))
+	run_state.temporary_buffs["infusion_effects"] = effects
+	_try_evolve_combo_abilities()
+	return true
+
+
+func _try_evolve_combo_abilities() -> bool:
+	var active_variant: Variant = run_state.temporary_buffs.get("active_infusions", [])
+	var levels_variant: Variant = run_state.temporary_buffs.get("combo_levels", {})
+	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
+	if not active_variant is Array or not levels_variant is Dictionary or not effects_variant is Array:
+		return false
+	var active := active_variant as Array
+	var levels := levels_variant as Dictionary
+	var effects := effects_variant as Array
+	for recipe in COMBO_EVOLUTIONS:
+		var required := recipe["requires"] as Array
+		if required.any(func(combo_id: Variant) -> bool:
+			return int(levels.get(String(combo_id), 0)) < MAX_COMBO_LEVEL
+		):
+			continue
+		for combo_id in required:
+			active.erase(String(combo_id))
+			levels.erase(String(combo_id))
+			var retained_effects: Array = []
+			for effect_variant in effects:
+				if effect_variant is Dictionary and String((effect_variant as Dictionary).get("infusion_id", "")) != String(combo_id):
+					retained_effects.append(effect_variant)
+			effects = retained_effects
+		var evolution_id := String(recipe["id"])
+		active.append(evolution_id)
+		levels[evolution_id] = 1
+		effects.append((recipe["effect"] as Dictionary).duplicate(true))
+		run_state.temporary_buffs["active_infusions"] = active
+		run_state.temporary_buffs["combo_levels"] = levels
+		run_state.temporary_buffs["infusion_effects"] = effects
+		_last_combo_name = String(recipe["name"])
+		return true
+	return false
+
+
+func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
+	var infused := card.duplicate(true)
+	var effect := (infused.get("effect", {}) as Dictionary).duplicate(true)
+	var equipment_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
+	match String(infused.get("type", "")):
+		"attack":
+			effect["amount"] = int(effect.get("amount", 0)) + int(equipment_specials.get("card_damage_bonus", 0))
+		"defense":
+			effect["amount"] = int(effect.get("amount", 0)) + int(equipment_specials.get("card_block_bonus", 0))
+		"skill":
+			if String(effect.get("kind", "")) == "heal":
+				effect["amount"] = int(effect.get("amount", 0)) + int(equipment_specials.get("card_heal_bonus", 0))
+	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
+	if not effects_variant is Array:
+		return infused
+	var effects := effects_variant as Array
+	var has_flame := false
+	var has_frost := false
+	for infusion_variant in effects:
+		if not infusion_variant is Dictionary:
+			continue
+		var infusion := infusion_variant as Dictionary
+		var infusion_id := String(infusion.get("infusion_id", ""))
+		if String(infused.get("type", "")) == "attack":
+			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("damage_bonus", 0))
+			if float(infusion.get("lifesteal_ratio", 0.0)) > 0.0:
+				effect["lifesteal_ratio"] = float(effect.get("lifesteal_ratio", 0.0)) + float(infusion["lifesteal_ratio"])
+		elif String(infused.get("type", "")) == "defense":
+			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("block_bonus", 0))
+		if infusion_id == "flame":
+			has_flame = true
+			effect["burn_damage"] = int(infusion.get("burn_damage", 1))
+			effect["burn_duration"] = float(effect.get("burn_duration", 0.0)) + float(infusion.get("burn_duration", 0.0))
+		elif infusion_id == "frost":
+			has_frost = true
+			effect["frost_ratio"] = float(infusion.get("frost_ratio", 0.25))
+			effect["frost_duration"] = float(effect.get("frost_duration", 0.0)) + float(infusion.get("frost_duration", 0.0))
+		elif infusion_id == "thermal_shatter":
+			has_flame = true
+			has_frost = true
+			effect["burn_damage"] = int(infusion.get("burn_damage", 1))
+			effect["burn_duration"] = float(infusion.get("burn_duration", 0.0))
+			effect["frost_ratio"] = float(infusion.get("frost_ratio", 0.25))
+			effect["frost_duration"] = float(infusion.get("frost_duration", 0.0))
+			effect["combo_stun"] = float(infusion.get("combo_stun", 0.5))
+	if String(infused.get("type", "")) == "attack" and has_flame and has_frost:
+		effect["amount"] = int(effect.get("amount", 0)) + 2
+		effect["combo_stun"] = 0.25
+	infused["effect"] = effect
+	return infused
+
+
+func _redraw_current_hand() -> bool:
+	if not run_state.active or not ui_stack.is_empty():
+		return false
+	if not deck_manager.redraw_hand_for_all_energy():
+		return false
+	run_state.energy = deck_manager.energy
+	_refresh_card_hand()
+	return true
+
+
+func _on_card_effect_resolved(_card_id: String, result: Dictionary) -> void:
+	var total := int(result.get("total", 0))
+	if total > 0 and current_map != null and player is Node2D:
+		var number := Label.new()
+		number.text = str(total)
+		number.position = (player as Node2D).global_position + Vector2(28, -130)
+		number.add_theme_font_size_override("font_size", 24)
+		number.add_theme_color_override("font_color", Color(1.0, 0.82, 0.28))
+		number.add_theme_color_override("font_outline_color", Color.BLACK)
+		number.add_theme_constant_override("outline_size", 5)
+		current_map.add_child(number)
+		var number_tween := number.create_tween()
+		number_tween.set_parallel(true)
+		number_tween.tween_property(number, "position:y", number.position.y - 42.0, 0.55)
+		number_tween.tween_property(number, "modulate:a", 0.0, 0.55)
+		number_tween.chain().tween_callback(number.queue_free)
+	var camera := player.find_child("Camera2D", true, false) as Camera2D if player != null else null
+	if camera != null and float(meta_state.settings.get("camera_shake", 0.65)) > 0.0:
+		var strength := 4.0 * float(meta_state.settings.get("camera_shake", 0.65))
+		camera.offset = Vector2(strength, -strength * 0.5)
+		camera.create_tween().tween_property(camera, "offset", Vector2.ZERO, 0.12)
+	Engine.time_scale = 0.08
+	await get_tree().create_timer(0.035, true, false, true).timeout
+	Engine.time_scale = 0.22 if _tactical_slowdown else 1.0
+
+
+func _card_for_cast(card_id: String) -> Dictionary:
+	var card := card_database.get_card(card_id)
+	if card.is_empty():
+		return {}
+	var current_level := clampi(int(run_state.card_levels.get(card_id, 1)), 1, 3)
+	var effect := (card.get("effect", {}) as Dictionary).duplicate(true)
+	var upgrades := card.get("upgrade_effects", []) as Array
+	for upgrade_variant in upgrades:
+		if not upgrade_variant is Dictionary:
+			continue
+		var upgrade := upgrade_variant as Dictionary
+		if int(upgrade.get("level", 99)) > current_level:
+			continue
+		var upgraded_effect := upgrade.get("effect", {}) as Dictionary
+		for key in upgraded_effect:
+			effect[key] = upgraded_effect[key]
+		if upgrade.has("mechanic_change"):
+			card["mechanic_change"] = upgrade["mechanic_change"]
+	card["effect"] = effect
+	card["level"] = current_level
+	return card
+
+
+func _has_affordable_card() -> bool:
+	for card_id in deck_manager.hand:
+		if int(card_database.get_card(card_id).get("cost", 0)) <= deck_manager.energy:
+			return true
+	return false
+
+
+func _advance_card_turn() -> void:
+	deck_manager.end_turn()
+	var wisp_turns := int(run_state.temporary_buffs.get("energy_wisp_turns", 0))
+	if wisp_turns > 0:
+		deck_manager.energy += maxi(1, int(run_state.temporary_buffs.get("energy_wisp_amount", 1)))
+		run_state.temporary_buffs["energy_wisp_turns"] = wisp_turns - 1
+
+
+func _refresh_card_hand() -> void:
+	if card_hand_ui == null or card_database.get_all_cards().is_empty():
+		return
+	var cards: Array[Dictionary] = []
+	for card_id in deck_manager.hand:
+		cards.append(_card_for_cast(card_id))
+	card_hand_ui.call("set_cards", cards, deck_manager.energy)
+	card_hand_ui.call("set_action_points", deck_manager.energy, deck_manager.max_energy)
+	var combo_kinds_variant: Variant = run_state.temporary_buffs.get("active_infusions", [])
+	var combo_count := (combo_kinds_variant as Array).size() if combo_kinds_variant is Array else 0
+	card_hand_ui.call("set_combo", "%s  [%d/%d]" % [_last_combo_name, combo_count, MAX_COMBO_ABILITIES], "Same type stacks / four types max")
+
+
+func _update_card_hand_visibility() -> void:
+	if card_hand_ui == null or current_map == null:
+		return
+	card_hand_ui.visible = current_map.scene_file_path == AUTUMN_FOREST_SCENE_PATH and run_state.active
+
+
+func _set_tactical_slowdown(enabled: bool) -> void:
+	_tactical_slowdown = enabled and run_state.active
+	Engine.time_scale = 0.22 if _tactical_slowdown else 1.0
+	if card_hand_ui != null:
+		card_hand_ui.modulate = Color(1.12, 1.08, 0.92, 1.0) if _tactical_slowdown else Color.WHITE
+
+
+func _show_run_result(victory: bool, summary: Dictionary) -> void:
+	var result_ui := open_ui("RunResultUI", run_result_scene, true)
+	if result_ui == null:
+		return
+	result_ui.call("set_result", victory, summary)
+	result_ui.connect("return_to_town_requested", _on_result_return_to_town.bind(result_ui), CONNECT_ONE_SHOT)
+
+
+func _on_result_return_to_town(result_ui: Control) -> void:
+	close_ui(result_ui)
+	if current_map != null and current_map.scene_file_path == TOWN_SCENE_PATH:
+		return
+	_pending_player_state.clear()
+	player = null
+	load_current_map(load(TOWN_SCENE_PATH) as PackedScene)
+
+
+func _capture_player_state() -> Dictionary:
+	var snapshot: Dictionary = {}
+	if player == null:
+		return snapshot
+	for property_name in [
+		"level", "character_class", "experience", "experience_to_next_level",
+		"health", "max_health", "mana", "max_mana",
+	]:
+		var value: Variant = player.get(property_name)
+		if value != null:
+			snapshot[property_name] = value
+	return snapshot
+
+
+func _apply_transferred_player_state() -> void:
+	if player == null or _pending_player_state.is_empty():
+		return
+	for property_name in _pending_player_state:
+		player.set(property_name, _pending_player_state[property_name])
+	_pending_player_state.clear()
+	_update_hud_player_identity()
+	_update_hud_resources()
+
+
+func _apply_shortcut_spawn() -> void:
+	if (
+		player is Node2D
+		and current_map != null
+		and current_map.scene_file_path == AUTUMN_FOREST_SCENE_PATH
+		and bool(meta_state.shortcuts.get("forest_gate", false))
+	):
+		(player as Node2D).global_position = Vector2(1580, 576)
 
 
 func _connect_if_present(node: Node, signal_name: StringName, method_name: StringName) -> void:
@@ -451,8 +1285,6 @@ func _open_inventory() -> void:
 
 func _inventory_projection() -> Array[Dictionary]:
 	var definitions := {
-		"hp_potion": {"name": "Health Potion", "description": "Restores 35 HP.", "category": "items", "stats": "E to use\nRestore: 35 HP"},
-		"mp_potion": {"name": "Mana Potion", "description": "Restores 25 MP.", "category": "items", "stats": "R to use\nRestore: 25 MP"},
 		"travel_bread": {"name": "Travel Bread", "description": "Simple food for long roads.", "category": "items", "stats": "A basic provision."},
 		"town_map": {"name": "Town Map", "description": "Marks roads around town.", "category": "quest", "stats": "Quest item"},
 		"iron_sword": {"name": "Iron Sword", "description": "A reliable starter blade.", "category": "gear", "stats": "Attack +8"},
@@ -469,39 +1301,6 @@ func _inventory_projection() -> Array[Dictionary]:
 		item["quantity"] = count
 		projection.append(item)
 	return projection
-
-
-func _use_potion(item_id: String) -> bool:
-	var count := int(player_inventory.get(item_id, 0))
-	if count <= 0:
-		_show_potion_feedback("No potion remaining.", false)
-		return false
-	if player == null:
-		return false
-
-	var restored := 0
-	var resource_name := ""
-	if item_id == "hp_potion":
-		restored = int(player.call("restore_health", 35))
-		resource_name = "HP"
-	elif item_id == "mp_potion":
-		restored = int(player.call("restore_mana", 25))
-		resource_name = "MP"
-	else:
-		return false
-	if restored <= 0:
-		_show_potion_feedback("%s is already full." % resource_name, false)
-		return false
-
-	player_inventory[item_id] = count - 1
-	_update_hud_consumables()
-	_show_potion_feedback("Restored %d %s." % [restored, resource_name], true)
-	return true
-
-
-func _show_potion_feedback(message: String, successful: bool) -> void:
-	if hud != null and hud.has_method("show_potion_feedback"):
-		hud.call("show_potion_feedback", message, successful)
 
 
 func _save_quick_slot(menu: Control) -> void:
@@ -593,16 +1392,15 @@ func _build_quick_save_payload() -> Dictionary:
 	}
 
 
-func _apply_quick_save_payload(payload: Dictionary) -> void:
+func _apply_quick_save_payload(payload: Dictionary) -> bool:
 	wallet_gold = maxi(0, int(payload.get("wallet_gold", wallet_gold)))
+	inventory_manager.call("set_resource_amount", &"gold", wallet_gold)
 	var saved_inventory: Variant = payload.get("inventory", {})
 	if saved_inventory is Dictionary:
 		player_inventory = (saved_inventory as Dictionary).duplicate(true)
-		if player_inventory.has("potion") and not player_inventory.has("hp_potion"):
-			player_inventory["hp_potion"] = int(player_inventory["potion"])
-			player_inventory.erase("potion")
-		if not player_inventory.has("mp_potion"):
-			player_inventory["mp_potion"] = 0
+		player_inventory.erase("potion")
+		player_inventory.erase("hp_potion")
+		player_inventory.erase("mp_potion")
 	var saved_catalogs: Variant = payload.get("merchant_catalogs", {})
 	if saved_catalogs is Dictionary:
 		_merchant_catalogs.clear()
@@ -617,15 +1415,21 @@ func _apply_quick_save_payload(payload: Dictionary) -> void:
 	if hud != null and hud.has_method("set_currency"):
 		hud.call("set_currency", wallet_gold)
 	if player == null:
-		return
-	var player_payload := payload.get("player", {}) as Dictionary
+		return true
+	var raw_player_payload: Variant = payload.get("player", {})
+	var player_payload: Dictionary = (
+		(raw_player_payload as Dictionary) if raw_player_payload is Dictionary else {}
+	)
 	for property_name in [
 		"level", "character_class", "experience", "experience_to_next_level",
 		"health", "max_health", "mana", "max_mana",
 	]:
 		if player_payload.has(property_name):
 			player.set(property_name, player_payload[property_name])
-	var position_payload := player_payload.get("position", {}) as Dictionary
+	var raw_position_payload: Variant = player_payload.get("position", {})
+	var position_payload: Dictionary = (
+		(raw_position_payload as Dictionary) if raw_position_payload is Dictionary else {}
+	)
 	if player is Node2D and position_payload.has("x") and position_payload.has("y"):
 		(player as Node2D).global_position = Vector2(
 			float(position_payload["x"]),
@@ -633,7 +1437,7 @@ func _apply_quick_save_payload(payload: Dictionary) -> void:
 		)
 	_update_hud_player_identity()
 	_update_hud_resources()
-	_update_hud_consumables()
+	return true
 
 
 func _set_menu_footer(menu: Control, text: String) -> void:
@@ -724,6 +1528,11 @@ func _try_interact() -> void:
 func _on_dialogue_requested(npc: Node, dialogue_id: StringName, interactor: Node) -> void:
 	if interactor != null and interactor != player:
 		return
+	if dialogue_id == &"town_mayor":
+		var town_ui := open_ui("TownProgressUI", town_progress_scene, true)
+		if town_ui != null:
+			town_ui.call("set_services", town_manager, inventory_manager)
+		return
 
 	var ui_control := open_ui("DialogueUI", dialogue_scene)
 	if ui_control == null:
@@ -739,8 +1548,73 @@ func _on_dialogue_requested(npc: Node, dialogue_id: StringName, interactor: Node
 	])
 
 
+func _sync_progression_to_meta() -> void:
+	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
+	meta_state.inventory_state = inventory_manager.call("to_dict") as Dictionary
+	meta_state.town_state = town_manager.call("to_dict") as Dictionary
+	meta_state.resources = (
+		meta_state.inventory_state.get("resources", {}) as Dictionary
+	).duplicate(true)
+	meta_state.building_levels = (
+		meta_state.town_state.get("building_levels", {}) as Dictionary
+	).duplicate(true)
+	meta_state.village_level = clampi(int(town_manager.call("get_village_stage")) + 1, 1, 3)
+
+
+func _has_legacy_inventory_progress() -> bool:
+	for amount in meta_state.resources.values():
+		if int(amount) > 0:
+			return true
+	for item_id in meta_state.equipment.values():
+		if not String(item_id).is_empty():
+			return true
+	return false
+
+
+func _apply_town_visual_progress() -> void:
+	if current_map == null or current_map.scene_file_path != TOWN_SCENE_PATH:
+		return
+	var stage := int(town_manager.call("get_village_stage"))
+	var buildings := current_map.get_node_or_null("Buildings")
+	if buildings == null:
+		return
+	var market := buildings.get_node_or_null("MarketStall") as CanvasItem
+	var residence := buildings.get_node_or_null("EmptyResidence") as CanvasItem
+	var tower := buildings.get_node_or_null("EmptyTowerHouse") as CanvasItem
+	var blacksmith := buildings.get_node_or_null("Blacksmith") as CanvasItem
+	if market != null:
+		market.modulate = Color.WHITE if stage >= 1 else Color(0.58, 0.52, 0.46, 1.0)
+	if residence != null:
+		residence.modulate = Color.WHITE if stage >= 2 else Color(0.60, 0.54, 0.48, 1.0)
+	if tower != null:
+		tower.modulate = Color(1.08, 0.96, 0.80, 1.0) if stage >= 2 else Color(0.56, 0.52, 0.50, 1.0)
+	if blacksmith != null:
+		var smith_level := int(town_manager.call("get_building_level", &"blacksmith"))
+		blacksmith.modulate = Color(1.0, 0.86 + 0.04 * smith_level, 0.76 + 0.06 * smith_level, 1.0)
+	_apply_equipment_stats()
+
+
+func _apply_equipment_stats() -> void:
+	if player == null:
+		return
+	var effects := inventory_manager.call("get_effect_totals") as Dictionary
+	player.attack_power = 16 + int(effects.get("attack", 0))
+	player.defense = 3 + int(effects.get("defense", 0))
+	var equipment_health := 100 + int(effects.get("max_health", 0))
+	var equipment_mana := 50 + int(effects.get("max_mana", 0))
+	player.max_health = maxi(player.max_health, equipment_health) if run_state.active else equipment_health
+	player.max_mana = maxi(player.max_mana, equipment_mana) if run_state.active else equipment_mana
+	player.speed = 260.0 * (1.0 + float(effects.get("move_speed_multiplier", 0.0)))
+	player.health = mini(player.health, player.max_health)
+	player.mana = mini(player.mana, player.max_mana)
+	_update_hud_resources()
+
+
 func _on_shop_requested(merchant: Node, shop_id: StringName, interactor: Node) -> void:
 	if interactor != null and interactor != player:
+		return
+	if shop_id == &"wandering_cards":
+		_open_wandering_card_merchant(merchant)
 		return
 
 	var ui_control := open_ui("ShopUI", shop_scene)
@@ -758,6 +1632,118 @@ func _on_shop_requested(merchant: Node, shop_id: StringName, interactor: Node) -
 	_refresh_shop_projection(ui_control, shop_id, "buy")
 
 
+func _open_wandering_card_merchant(merchant: Node) -> void:
+	if not run_state.active:
+		return
+	var ui_control := open_ui("WanderingCardMerchant", dialogue_scene, true)
+	if ui_control == null:
+		return
+	var display_name := String(merchant.get("display_name")) if merchant != null else "Wandering Cardwright"
+	ui_control.call("set_speaker_name", display_name)
+	ui_control.call("set_dialogue_text", "Supplies affect this expedition only. Run gold: %d" % run_state.gold_earned)
+	var choices: Array[Dictionary] = []
+	for offer in _build_wandering_stock():
+		var choice := offer.duplicate(true)
+		choice["text"] = "%s — %d gold" % [String(offer.get("name", "Offer")), int(offer.get("price", 0))]
+		choice["merchant_action"] = "purchase"
+		choices.append(choice)
+	choices.append({"text": "Leave", "merchant_action": "leave", "action": "close"})
+	ui_control.call("set_choices", choices)
+	ui_control.connect("choice_selected", _on_wandering_card_choice.bind(ui_control))
+
+
+func _on_wandering_card_choice(_index: int, _text: String, metadata: Dictionary, ui_control: Control) -> void:
+	if not is_instance_valid(ui_control):
+		return
+	match String(metadata.get("merchant_action", "")):
+		"purchase":
+			var success := _purchase_wandering_offer(metadata)
+			ui_control.call("set_dialogue_text", "Purchase complete. Run gold: %d" % run_state.gold_earned if success else "That purchase is not available.")
+			_refresh_card_hand()
+
+
+func _build_wandering_stock() -> Array[Dictionary]:
+	var saved: Variant = run_state.temporary_buffs.get("wandering_stock", [])
+	if saved is Array and not (saved as Array).is_empty():
+		return (saved as Array).duplicate(true)
+	var ordinary_id := ""
+	var rare_id := ""
+	for card_id in meta_state.unlocked_cards:
+		var card := card_database.get_card(card_id)
+		if card.is_empty():
+			continue
+		if ordinary_id.is_empty() and String(card.get("rarity", "")) in ["common", "uncommon"] and String(card.get("type", "")) != "combo":
+			ordinary_id = card_id
+		if rare_id.is_empty() and (String(card.get("rarity", "")) in ["rare", "legendary"] or String(card.get("type", "")) == "combo"):
+			rare_id = card_id
+	if ordinary_id.is_empty():
+		ordinary_id = "guard"
+	if rare_id.is_empty():
+		rare_id = "flame_imbue"
+	var removable_id := ""
+	for card_id in deck_manager.hand + deck_manager.draw_pile + deck_manager.discard_pile:
+		if card_id != deck_manager.protected_card_id:
+			removable_id = card_id
+			break
+	var stock: Array[Dictionary] = [
+		{"kind": "health_potion", "name": "Health Potion (+40 HP)", "price": 25},
+		{"kind": "mana_potion", "name": "Mana Potion (+30 MP)", "price": 20},
+		{"kind": "card", "name": _card_name(ordinary_id), "price": 35, "card_id": ordinary_id},
+		{"kind": "card", "name": _card_name(rare_id), "price": 70, "card_id": rare_id},
+		{"kind": "purge", "name": "Purge %s" % _card_name(removable_id), "price": 45, "card_id": removable_id},
+	]
+	run_state.temporary_buffs["wandering_stock"] = stock.duplicate(true)
+	return stock
+
+
+func _purchase_wandering_offer(offer: Dictionary) -> bool:
+	if not run_state.active or player == null:
+		return false
+	var kind := String(offer.get("kind", ""))
+	var prices := {"health_potion": 25, "mana_potion": 20, "card": int(offer.get("price", 35)), "purge": 45}
+	if not prices.has(kind):
+		return false
+	var price := int(prices[kind])
+	if run_state.gold_earned < price:
+		return false
+	match kind:
+		"health_potion":
+			if int(player.get("health")) >= int(player.get("max_health")):
+				return false
+			player.call("restore_health", 40)
+		"mana_potion":
+			if int(player.get("mana")) >= int(player.get("max_mana")):
+				return false
+			player.call("restore_mana", 30)
+		"card":
+			var card_id := String(offer.get("card_id", ""))
+			if not card_database.has_card(card_id) or _get_run_deck_size() >= 16:
+				return false
+			run_state.temporary_cards.append(card_id)
+			deck_manager.discard_pile.append(card_id)
+		"purge":
+			var card_id := String(offer.get("card_id", ""))
+			if card_id.is_empty() or card_id == deck_manager.protected_card_id or not _remove_one_card_copy(card_id):
+				return false
+	run_state.gold_earned -= price
+	return true
+
+
+func _discover_equipment_reward() -> String:
+	for equipment in inventory_manager.call("get_equipment_catalog") as Array:
+		var item := equipment as Dictionary
+		var item_id := StringName(item.get("id", ""))
+		if item_id.is_empty() or bool(inventory_manager.call("has_equipment", item_id)):
+			continue
+		if bool(inventory_manager.call("add_equipment", item_id)):
+			meta_state.inventory_state = inventory_manager.call("to_dict")
+			if hud != null and hud.has_method("set_objective"):
+				var ability := item.get("special_ability", {}) as Dictionary
+				hud.call("set_objective", "EQUIPMENT DISCOVERED: %s" % String(item.get("name", item_id)), String(ability.get("description", "New equipment discovered.")))
+			return String(item_id)
+	return ""
+
+
 func _on_portal_entered(_portal: Node, target_scene_path: String, target_spawn_name: StringName, interactor: Node) -> void:
 	if interactor != null and interactor != player:
 		return
@@ -765,20 +1751,164 @@ func _on_portal_entered(_portal: Node, target_scene_path: String, target_spawn_n
 		push_warning("Portal target scene is not available: %s" % target_scene_path)
 		return
 
+	if target_scene_path == AUTUMN_FOREST_SCENE_PATH:
+		_open_deck_builder(target_scene_path, target_spawn_name)
+		return
+	elif target_scene_path == TOWN_SCENE_PATH and run_state.active:
+		_finish_run(false)
+		_pending_player_state.clear()
+		player = null
+	elif run_state.active and run_state.boss_defeated:
+		_finish_run(true)
 	var packed := load(target_scene_path) as PackedScene
 	load_current_map(packed, target_spawn_name)
+
+
+func _open_deck_builder(target_scene_path: String, target_spawn_name: StringName) -> void:
+	if get_open_ui("DeckBuilderUI") != null:
+		return
+	var ui_control := open_ui("DeckBuilderUI", deck_builder_scene, true)
+	if ui_control == null:
+		return
+	var discovered: Array[Dictionary] = []
+	var valid_ids: Array[String] = []
+	for card in card_database.get_all_cards():
+		valid_ids.append(String(card.get("id", "")))
+	meta_state.normalize_selected_deck(valid_ids)
+	for card_id in meta_state.unlocked_cards:
+		var card := card_database.get_card(card_id)
+		if not card.is_empty():
+			discovered.append(card)
+	ui_control.call("configure", discovered, meta_state.selected_deck)
+	ui_control.connect("deck_confirmed", _on_deck_confirmed.bind(ui_control, target_scene_path, target_spawn_name), CONNECT_ONE_SHOT)
+
+
+func _on_deck_confirmed(deck_ids: Array[String], ui_control: Control, target_scene_path: String, target_spawn_name: StringName) -> void:
+	var normalized := _normalize_expedition_deck(deck_ids)
+	meta_state.selected_deck = normalized.duplicate()
+	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	close_ui(ui_control)
+	_begin_autumn_run(normalized)
+	load_current_map(load(target_scene_path) as PackedScene, target_spawn_name)
+
+
+func _normalize_expedition_deck(deck_ids: Array) -> Array[String]:
+	var normalized: Array[String] = []
+	for card_id_variant in deck_ids:
+		if normalized.size() >= 16:
+			break
+		var card_id := String(card_id_variant)
+		if card_database.has_card(card_id):
+			normalized.append(card_id)
+	if not normalized.has("ember_bolt"):
+		if normalized.size() >= 16:
+			normalized.pop_back()
+		normalized.push_front("ember_bolt")
+	if normalized.is_empty():
+		normalized.append("ember_bolt")
+	return normalized
 
 
 func _on_chest_opened(_chest: Node, loot_table_id: StringName, interactor: Node) -> void:
 	if interactor != null and interactor != player:
 		return
+	if loot_table_id == &"forest_rest":
+		_open_campfire_menu()
+		return
+	var message := "You found supplies from %s." % String(loot_table_id)
+	match loot_table_id:
+		&"forest_hidden_cache":
+			if run_state.active:
+				run_state.add_reward("gold", 45)
+				run_state.add_reward("autumn_wood", 12)
+			message = "Hidden cache found: +45 Gold and +12 Autumn Wood retained for this run."
+		&"forest_shortcut":
+			meta_state.shortcuts["forest_gate"] = true
+			save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+			message = "Forest shortcut unlocked permanently."
 
 	var ui_control := open_ui("DialogueUI", dialogue_scene)
 	if ui_control == null:
 		return
 	ui_control.call("set_speaker_name", "Chest")
-	ui_control.call("set_dialogue_text", "You found supplies from %s." % String(loot_table_id))
+	ui_control.call("set_dialogue_text", message)
 	ui_control.call("set_choices", [{"text": "Take all"}])
+
+
+func _open_campfire_menu() -> void:
+	var ui_control := open_ui("CampfireUI", dialogue_scene, true)
+	if ui_control == null:
+		return
+	_render_campfire_root(ui_control)
+	ui_control.connect("choice_selected", _on_campfire_choice.bind(ui_control))
+
+
+func _render_campfire_root(ui_control: Control) -> void:
+	ui_control.call("set_speaker_name", "Forest Campfire")
+	if bool(run_state.temporary_buffs.get("campfire_used", false)):
+		ui_control.call("set_dialogue_text", "Only cold embers remain. This campfire has already aided your run.")
+		ui_control.call("set_choices", [{"text": "Leave", "action": "close"}])
+	else:
+		ui_control.call("set_dialogue_text", "Rest beside the fire to restore health and mana.")
+		ui_control.call("set_choices", [
+			{"text": "Rest — restore HP and MP", "campfire_action": "rest"},
+			{"text": "Leave", "campfire_action": "leave", "action": "close"},
+		])
+
+
+func _on_campfire_choice(_index: int, _text: String, metadata: Dictionary, ui_control: Control) -> void:
+	if not is_instance_valid(ui_control):
+		return
+	var action := String(metadata.get("campfire_action", ""))
+	match action:
+		"rest":
+			if _rest_at_campfire():
+				_show_campfire_result(ui_control, "You rest until your health and mana are fully restored.")
+		"back":
+			_render_campfire_root(ui_control)
+		"leave":
+			close_ui(ui_control)
+
+
+func _rest_at_campfire() -> bool:
+	if not run_state.active or bool(run_state.temporary_buffs.get("campfire_used", false)) or player == null:
+		return false
+	player.call("restore_health", int(player.get("max_health")))
+	player.call("restore_mana", int(player.get("max_mana")))
+	run_state.temporary_buffs["campfire_used"] = true
+	return true
+
+
+func _show_campfire_card_choices(ui_control: Control, merge: bool) -> void:
+	var choices: Array[Dictionary] = []
+	for card_id_variant in run_state.card_levels.keys():
+		var card_id := String(card_id_variant)
+		var level := int(run_state.card_levels.get(card_id, 1))
+		if level >= 3:
+			continue
+		if merge and _get_card_copy_count(card_id) < 2:
+			continue
+		choices.append({
+			"text": "%s  Lv.%d  Copies %d" % [_card_name(card_id), level, _get_card_copy_count(card_id)],
+			"campfire_action": "merge_card" if merge else "upgrade_card",
+			"card_id": card_id,
+		})
+	if choices.is_empty():
+		choices.append({"text": "No eligible cards — go back", "campfire_action": "back"})
+	else:
+		choices.append({"text": "Back", "campfire_action": "back"})
+	ui_control.call("set_dialogue_text", "Choose duplicate cards to merge." if merge else "Choose one card to upgrade.")
+	ui_control.call("set_choices", choices)
+
+
+func _show_campfire_result(ui_control: Control, message: String) -> void:
+	ui_control.call("set_dialogue_text", message)
+	ui_control.call("set_choices", [{"text": "Leave", "campfire_action": "leave", "action": "close"}])
+
+
+func _card_name(card_id: String) -> String:
+	var card := card_database.get_card(card_id)
+	return String(card.get("name", card_id.capitalize()))
 
 
 func _update_interaction_prompt() -> void:
@@ -821,8 +1951,6 @@ func _shop_items_for(shop_id: StringName) -> Array[Dictionary]:
 		]
 
 	return [
-		{"id": "hp_potion", "name": "Health Potion", "price": 25, "sell_price": 12, "description": "Restores 35 HP.", "stock": 8},
-		{"id": "mp_potion", "name": "Mana Potion", "price": 30, "sell_price": 15, "description": "Restores 25 MP.", "stock": 8},
 		{"id": "travel_bread", "name": "Travel Bread", "price": 12, "sell_price": 6, "description": "Simple food for the road.", "stock": 12},
 		{"id": "town_map", "name": "Town Map", "price": 45, "sell_price": 22, "description": "Marks roads around the prototype town.", "stock": 1},
 	]
@@ -911,6 +2039,7 @@ func _on_shop_transaction_confirmed(
 
 	if hud != null and hud.has_method("set_currency"):
 		hud.call("set_currency", wallet_gold)
-	_update_hud_consumables()
+	inventory_manager.call("set_resource_amount", &"gold", wallet_gold)
+	_sync_progression_to_meta()
 	_refresh_shop_projection(ui_control, shop_id, mode)
 	ui_control.call("set_transaction_feedback", message, success)

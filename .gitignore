@@ -1,5 +1,6 @@
 # Godot editor cache and generated import metadata
 /.godot/
+/.test_userdata/
 *.import
 
 # Generated platform and export output

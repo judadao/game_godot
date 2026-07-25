@@ -59,6 +59,12 @@ func set_dialogue_text(text: String) -> void:
 
 func set_choices(new_choices: Array) -> void:
 	choices = _to_dictionary_array(new_choices)
+	while _choice_buttons.size() < choices.size():
+		var button := Button.new()
+		choices_container.add_child(button)
+		var index := _choice_buttons.size()
+		_choice_buttons.append(button)
+		button.pressed.connect(_emit_choice.bind(index))
 	for index in _choice_buttons.size():
 		var button := _choice_buttons[index]
 		button.visible = index < choices.size()

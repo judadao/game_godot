@@ -1,0 +1,92 @@
+{
+  "resource_order": ["gold", "autumn_wood", "stone", "magic_shard", "autumn_core"],
+  "starting_resources": {
+    "gold": 200,
+    "autumn_wood": 60,
+    "stone": 50,
+    "magic_shard": 30,
+    "autumn_core": 20
+  },
+  "equipment": [
+    {
+      "id": "iron_sword",
+      "name": "Iron Sword",
+      "slot": "weapon",
+      "purchase_cost": {"gold": 60, "autumn_wood": 5},
+      "effects": {"attack": 4},
+      "special_ability": {"id": "tempered_edge", "description": "Attack cards deal +2 damage.", "card_damage_bonus": 2}
+    },
+    {
+      "id": "hunter_bow",
+      "name": "Hunter Bow",
+      "slot": "weapon",
+      "purchase_cost": {"gold": 70, "autumn_wood": 6},
+      "effects": {"attack": 3, "critical_chance": 0.05},
+      "special_ability": {"id": "keen_draw", "description": "Attack cards deal +1 damage and critical chance rises.", "card_damage_bonus": 1}
+    },
+    {
+      "id": "apprentice_staff",
+      "name": "Apprentice Staff",
+      "slot": "weapon",
+      "purchase_cost": {"gold": 80, "magic_shard": 5},
+      "effects": {"magic_power": 3, "max_mana": 10},
+      "special_ability": {"id": "mana_current", "description": "AP regenerates 0.10 faster per second.", "ap_regen": 0.10}
+    },
+    {
+      "id": "leather_armor",
+      "name": "Leather Armor",
+      "slot": "armor",
+      "purchase_cost": {"gold": 55, "autumn_wood": 4},
+      "effects": {"defense": 2, "max_health": 10},
+      "special_ability": {"id": "brace", "description": "Defense cards gain +2 Block.", "card_block_bonus": 2}
+    },
+    {
+      "id": "chain_armor",
+      "name": "Chain Armor",
+      "slot": "armor",
+      "purchase_cost": {"gold": 85, "stone": 8},
+      "effects": {"defense": 4, "move_speed_multiplier": -0.05},
+      "special_ability": {"id": "unyielding", "description": "Defense cards gain +4 Block.", "card_block_bonus": 4}
+    },
+    {
+      "id": "mage_robe",
+      "name": "Mage Robe",
+      "slot": "armor",
+      "purchase_cost": {"gold": 75, "magic_shard": 6},
+      "effects": {"defense": 1, "max_mana": 20},
+      "special_ability": {"id": "spellweave", "description": "AP regenerates 0.15 faster per second.", "ap_regen": 0.15}
+    },
+    {
+      "id": "swift_ring",
+      "name": "Swift Ring",
+      "slot": "accessory",
+      "purchase_cost": {"gold": 65, "magic_shard": 3},
+      "effects": {"move_speed_multiplier": 0.08},
+      "special_ability": {"id": "afterimage", "description": "Dash cooldown is reduced.", "dash_cooldown_reduction": 0.12}
+    },
+    {
+      "id": "vitality_charm",
+      "name": "Vitality Charm",
+      "slot": "accessory",
+      "purchase_cost": {"gold": 60, "autumn_wood": 5},
+      "effects": {"max_health": 15},
+      "special_ability": {"id": "second_wind", "description": "Healing cards restore +4 health.", "card_heal_bonus": 4}
+    },
+    {
+      "id": "focus_amulet",
+      "name": "Focus Amulet",
+      "slot": "accessory",
+      "purchase_cost": {"gold": 70, "magic_shard": 5},
+      "effects": {"critical_chance": 0.05, "max_mana": 5},
+      "special_ability": {"id": "steady_focus", "description": "Attack cards deal +1 damage.", "card_damage_bonus": 1}
+    },
+    {
+      "id": "merchant_seal",
+      "name": "Merchant Seal",
+      "slot": "accessory",
+      "purchase_cost": {"gold": 90, "autumn_core": 2},
+      "effects": {"shop_discount": 0.1},
+      "special_ability": {"id": "rare_stock", "description": "Wandering merchants offer an extra rare choice.", "merchant_bonus_choice": 1}
+    }
+  ]
+}

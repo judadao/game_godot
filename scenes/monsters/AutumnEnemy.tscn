@@ -1,0 +1,59 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/monsters/enemy_base.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/combat/hurtbox.gd" id="2_hurtbox"]
+
+[sub_resource type="CapsuleShape2D" id="BodyShape"]
+radius = 25.0
+height = 56.0
+
+[node name="AutumnEnemy" type="CharacterBody2D" groups=["Enemies", "AutumnEnemies"]]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_enemy")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Body" type="Polygon2D" parent="Visual"]
+polygon = PackedVector2Array(-24, -8, -18, -48, 0, -64, 18, -48, 24, -8, 12, 0, -12, 0)
+color = Color(1, 1, 1, 1)
+
+[node name="LeafCrown" type="Polygon2D" parent="Visual"]
+polygon = PackedVector2Array(-20, -48, -38, -66, -10, -62, 0, -82, 10, -62, 38, -66, 20, -48)
+color = Color(0.62, 0.86, 0.24, 1)
+
+[node name="EyeLeft" type="Polygon2D" parent="Visual"]
+polygon = PackedVector2Array(-12, -39, -5, -39, -5, -31, -12, -31)
+color = Color(1, 0.92, 0.55, 1)
+
+[node name="EyeRight" type="Polygon2D" parent="Visual"]
+polygon = PackedVector2Array(5, -39, 12, -39, 12, -31, 5, -31)
+color = Color(1, 0.92, 0.55, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -28)
+shape = SubResource("BodyShape")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("2_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -28)
+shape = SubResource("BodyShape")
+
+[node name="HealthBar" type="Node2D" parent="."]
+position = Vector2(-36, -92)
+
+[node name="Background" type="ColorRect" parent="HealthBar"]
+offset_right = 72.0
+offset_bottom = 7.0
+color = Color(0.08, 0.04, 0.03, 0.9)
+
+[node name="Fill" type="ColorRect" parent="HealthBar"]
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 70.0
+offset_bottom = 5.0
+color = Color(0.9, 0.25, 0.08, 1)

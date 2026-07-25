@@ -1,4 +1,4 @@
-[gd_scene load_steps=49 format=3]
+[gd_scene load_steps=53 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Background/Autumn_Forest_2D_Platformer_Tileset_Background - Layer 00.png" id="1_far"]
 [ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Background/Autumn_Forest_2D_Platformer_Tileset_Background - Layer 01.png" id="2_near"]
@@ -24,12 +24,14 @@
 [ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Collectable Object/Autumn_Forest_2D_Platformer_Tileset_Collectable Object - Unlocked Golden Treasure Box.png" id="22_chest"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="23_player"]
 [ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="24_portal"]
-[ext_resource type="PackedScene" path="res://scenes/monsters/AutumnSlime.tscn" id="25_slime"]
-[ext_resource type="Script" path="res://scripts/combat/combat_zone.gd" id="26_zone"]
 [ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_forest_background.png" id="27_new_background"]
 [ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_ground_atlas.png" id="28_new_ground"]
 [ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_trees_atlas.png" id="29_new_trees"]
 [ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_props_atlas.png" id="30_new_props"]
+[ext_resource type="Script" path="res://scripts/combat/survival_wave_director.gd" id="31_run_director"]
+[ext_resource type="PackedScene" path="res://scenes/props/Chest.tscn" id="32_chest"]
+[ext_resource type="PackedScene" path="res://scenes/monsters/AutumnEnemy.tscn" id="33_enemy"]
+[ext_resource type="PackedScene" path="res://scenes/npc/Merchant.tscn" id="34_merchant"]
 
 [sub_resource type="AtlasTexture" id="atlas_ground"]
 atlas = ExtResource("28_new_ground")
@@ -293,26 +295,35 @@ position = Vector2(310, 576)
 [node name="Player" parent="." instance=ExtResource("23_player")]
 position = Vector2(310, 576)
 
-[node name="ForestCombatZone" type="Node2D" parent="." groups=["CombatZones"]]
-script = ExtResource("26_zone")
+[node name="ForestScout" parent="." instance=ExtResource("33_enemy")]
+position = Vector2(690, 628)
+archetype_id = &"sprout"
 
-[node name="Trigger" type="Area2D" parent="ForestCombatZone"]
-position = Vector2(1350, 495)
-collision_layer = 0
-collision_mask = 1
+[node name="AutumnRunDirector" type="Node2D" parent="." groups=["EncounterDirectors"]]
+position = Vector2(1840, 628)
+script = ExtResource("31_run_director")
+auto_start = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ForestCombatZone/Trigger"]
-shape = SubResource("trigger_shape")
+[node name="HiddenBranchCache" parent="." instance=ExtResource("32_chest")]
+position = Vector2(820, 480)
+interaction_id = &"forest_hidden_cache"
+prompt_text = "Open hidden cache"
+loot_table_id = &"forest_hidden_cache"
 
-[node name="Enemies" type="Node2D" parent="ForestCombatZone"]
+[node name="ForestRest" parent="." instance=ExtResource("32_chest")]
+position = Vector2(900, 628)
+interaction_id = &"forest_rest"
+prompt_text = "Rest at campfire"
+loot_table_id = &"forest_rest"
 
-[node name="SlimeWest" parent="ForestCombatZone/Enemies" instance=ExtResource("25_slime")]
-position = Vector2(1190, 628)
+[node name="Visual" parent="ForestRest" index="0"]
+visible = false
 
-[node name="SlimeEast" parent="ForestCombatZone/Enemies" instance=ExtResource("25_slime")]
-position = Vector2(1530, 628)
-max_health = 55
-attack_damage = 15
+[node name="ShortcutLever" parent="." instance=ExtResource("32_chest")]
+position = Vector2(2130, 578)
+interaction_id = &"forest_shortcut"
+prompt_text = "Unlock forest shortcut"
+loot_table_id = &"forest_shortcut"
 
 [node name="WorldCollision" type="StaticBody2D" parent="."]
 
@@ -371,6 +382,23 @@ prompt_text = "Return to Town"
 target_scene_path = "res://scenes/maps/town.tscn"
 target_spawn_name = &"PlayerSpawn"
 
+[node name="ForwardPortal" parent="." instance=ExtResource("24_portal")]
+position = Vector2(2180, 584)
+interaction_id = &"autumn_forward_gate"
+prompt_text = "Continue Expedition"
+target_scene_path = "res://scenes/maps/crystal_caves.tscn"
+target_spawn_name = &"PlayerSpawn"
+locked = true
+locked_reason = "Defeat the Heartwood Guardian"
+
+[node name="WanderingCardMerchant" parent="." instance=ExtResource("34_merchant")]
+position = Vector2(1040, 586)
+interaction_id = &"wandering_card_merchant"
+prompt_text = "Trade Cards"
+display_name = "Wandering Cardwright"
+dialogue_id = &"wandering_card_greeting"
+shop_id = &"wandering_cards"
+
 [node name="Visual" parent="TownPortal" index="0"]
 visible = false
 
@@ -396,3 +424,4 @@ text = "RETURN TO TOWN"
 horizontal_alignment = 1
 
 [editable path="TownPortal"]
+[editable path="ForestRest"]

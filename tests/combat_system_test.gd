@@ -14,10 +14,11 @@ func _run() -> void:
 	await physics_frame
 
 	var player := map.get_node("Player")
-	var zone := map.get_node("ForestCombatZone")
-	var slime := map.get_node("ForestCombatZone/Enemies/SlimeWest")
+	var zone := map.get_node("AutumnRunDirector") as EncounterDirector
+	zone.start_encounter()
+	var enemy := (zone.get_active_enemies() as Array)[0] as Node
 	_expect(player.is_in_group("Player"), "Player must be discoverable by combat AI.")
-	_expect(zone.get("_remaining") == 2, "Autumn combat zone must start with two enemies.")
+	_expect((zone.get_active_enemies() as Array).size() >= 3, "Survival battle must open with an initial enemy group and continue replenishing it.")
 	var floor_collision := map.get_node("WorldCollision/FloorCollision") as CollisionShape2D
 	var west_ledge := map.get_node("WorldCollision/WestLowCollision") as CollisionShape2D
 	var west_high := map.get_node("WorldCollision/WestHighCollision") as CollisionShape2D
@@ -41,20 +42,20 @@ func _run() -> void:
 	_expect(floor_top - bridge_top < maximum_jump_height, "Bridge platform must be reachable from ground.")
 	_expect(west_ledge.one_way_collision, "First forest platform must allow jumping through from below.")
 	_expect(west_high.one_way_collision and arena_high.one_way_collision, "High platforms must be one-way.")
-	_expect(zone.get_node_or_null("Barriers") == null, "Combat zone must not contain invisible barrier bodies.")
+	_expect(map.get_node_or_null("Barriers") == null, "Forest must not contain invisible barrier bodies.")
 	_expect(map.get_node_or_null("Collectibles") == null, "Legacy floating collectible art must be removed.")
 
-	var slime_start_health := int(slime.get("health"))
-	var applied := int(slime.call("take_hit", 16, player.global_position, 0.0))
-	_expect(applied == 15, "Enemy defense must reduce incoming player damage.")
-	_expect(int(slime.get("health")) == slime_start_health - applied, "Enemy health must update after a hit.")
+	var enemy_start_health := int(enemy.get("health"))
+	var defense := int((enemy.get("archetype") as Resource).get("defense"))
+	var applied := int(enemy.call("take_hit", 16, player.global_position, 0.0))
+	_expect(applied == maxi(1, 16 - defense), "Enemy defense must reduce incoming player damage.")
+	_expect(int(enemy.get("health")) == enemy_start_health - applied, "Enemy health must update after a hit.")
 
-	var mana_before := int(player.get("mana"))
-	_expect(bool(player.call("use_skill")), "Player should cast skill when enough mana is available.")
-	_expect(int(player.get("mana")) == mana_before - int(player.get("skill_mana_cost")), "Skill must consume MP.")
+	_expect(not player.has_method("attack"), "Legacy basic attack must be removed in card-only combat.")
+	_expect(not player.has_method("use_skill"), "Legacy mana skill must be removed in card-only combat.")
 
 	var health_before := int(player.get("health"))
-	var player_damage := int(player.call("take_hit", 12, slime.global_position, 0.0))
+	var player_damage := int(player.call("take_hit", 12, enemy.global_position, 0.0))
 	_expect(player_damage == 9, "Player defense must reduce incoming enemy damage.")
 	_expect(int(player.get("health")) == health_before - player_damage, "Player health must update after enemy hit.")
 

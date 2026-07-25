@@ -1,28 +1,12 @@
-[gd_scene load_steps=14 format=3 uid="uid://cvgy0phlmscxp"]
+[gd_scene format=3 uid="uid://cvgy0phlmscxp"]
 
 [ext_resource type="Script" uid="uid://bnw5erhged87p" path="res://scripts/ui/hud.gd" id="1_hud"]
-[ext_resource type="Texture2D" path="res://assets/ui/basic_rpg_ui/png/Action_panel.png" id="2_action_panel"]
+[ext_resource type="Texture2D" uid="uid://rnke8rlxep04" path="res://assets/ui/basic_rpg_ui/png/Action_panel.png" id="2_action_panel"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDStatus.tscn" id="3_status"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDProgressPanel.tscn" id="4_progress"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDQuestTracker.tscn" id="5_quest"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDHotbar.tscn" id="6_hotbar"]
+[ext_resource type="PackedScene" uid="uid://c86blgxrtf677" path="res://scenes/ui/hud/HUDHotbar.tscn" id="6_hotbar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDInteractionPrompt.tscn" id="7_interaction"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-content_margin_left = 12.0
-content_margin_top = 10.0
-content_margin_right = 12.0
-content_margin_bottom = 10.0
-bg_color = Color(0.09, 0.12, 0.14, 0.82)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.87, 0.8, 0.62, 0.9)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_overlay"]
 content_margin_left = 8.0
@@ -42,11 +26,21 @@ font_color = Color(0.72, 0.78, 0.79, 1)
 outline_size = 2
 outline_color = Color(0.04, 0.04, 0.04, 0.85)
 
-[sub_resource type="LabelSettings" id="LabelSettings_currency"]
-font_size = 18
-font_color = Color(1, 0.86, 0.36, 1)
-outline_size = 2
-outline_color = Color(0.04, 0.04, 0.04, 0.9)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+bg_color = Color(0.09, 0.12, 0.14, 0.82)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.87, 0.8, 0.62, 0.9)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 [sub_resource type="LabelSettings" id="LabelSettings_body"]
 font_color = Color(0.94, 0.96, 0.94, 1)
@@ -63,41 +57,39 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_hud")
 
-[node name="HUDStatus" parent="." instance=ExtResource("3_status")]
+[node name="HUDStatus" parent="." unique_id=1176208436 instance=ExtResource("3_status")]
+anchors_preset = 0
 
-[node name="HUDProgressPanel" parent="." instance=ExtResource("4_progress")]
+[node name="HUDProgressPanel" parent="." unique_id=854433835 instance=ExtResource("4_progress")]
 
-[node name="HUDQuestTracker" parent="." instance=ExtResource("5_quest")]
-layout_mode = 0
+[node name="HUDQuestTracker" parent="." unique_id=1373074750 instance=ExtResource("5_quest")]
+anchors_preset = 0
 offset_left = 16.0
 offset_top = 148.0
 offset_right = 296.0
 offset_bottom = 266.0
 
-[node name="HUDHotbar" parent="." instance=ExtResource("6_hotbar")]
+[node name="HUDHotbar" parent="." unique_id=1489913082 instance=ExtResource("6_hotbar")]
+visible = false
+visible = false
 layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = -126.0
-offset_right = 328.0
-offset_bottom = -16.0
-grow_vertical = 0
+offset_left = 18.0
+offset_top = 124.0
+offset_right = 150.0
+offset_bottom = 182.0
 
 [node name="CraftPixStatusFrame" type="TextureRect" parent="." unique_id=1940318031]
 visible = false
+modulate = Color(1, 1, 1, 0.42)
+texture_filter = 1
 layout_mode = 0
 offset_left = 18.0
 offset_top = 18.0
 offset_right = 314.0
 offset_bottom = 112.0
 mouse_filter = 2
-texture_filter = 1
-modulate = Color(1, 1, 1, 0.42)
 texture = ExtResource("2_action_panel")
 expand_mode = 1
-stretch_mode = 0
 
 [node name="StatusPanel" type="PanelContainer" parent="." unique_id=606363279]
 visible = false
@@ -204,23 +196,23 @@ label_settings = SubResource("LabelSettings_small")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StaminaRow" type="HBoxContainer" parent="StatusPanel/StatusRows"]
+[node name="StaminaRow" type="HBoxContainer" parent="StatusPanel/StatusRows" unique_id=1080254309]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="StaminaLabel" type="Label" parent="StatusPanel/StatusRows/StaminaRow"]
+[node name="StaminaLabel" type="Label" parent="StatusPanel/StatusRows/StaminaRow" unique_id=1105706224]
 custom_minimum_size = Vector2(28, 20)
 layout_mode = 2
 text = "SP"
 label_settings = SubResource("LabelSettings_heading")
 
-[node name="StaminaBar" type="Control" parent="StatusPanel/StatusRows/StaminaRow"]
+[node name="StaminaBar" type="Control" parent="StatusPanel/StatusRows/StaminaRow" unique_id=1927427074]
 custom_minimum_size = Vector2(225, 16)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Background" type="ColorRect" parent="StatusPanel/StatusRows/StaminaRow/StaminaBar"]
+[node name="Background" type="ColorRect" parent="StatusPanel/StatusRows/StaminaRow/StaminaBar" unique_id=1879733492]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -229,7 +221,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.03, 0.09, 0.04, 0.3)
 
-[node name="Fill" type="ColorRect" parent="StatusPanel/StatusRows/StaminaRow/StaminaBar"]
+[node name="Fill" type="ColorRect" parent="StatusPanel/StatusRows/StaminaRow/StaminaBar" unique_id=879438653]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -238,7 +230,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.29, 0.56, 0.22, 0.95)
 
-[node name="Value" type="Label" parent="StatusPanel/StatusRows/StaminaRow/StaminaBar"]
+[node name="Value" type="Label" parent="StatusPanel/StatusRows/StaminaRow/StaminaBar" unique_id=711785877]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -305,4 +297,4 @@ layout_mode = 2
 text = "Town errands: 1 / 3"
 label_settings = SubResource("LabelSettings_small")
 
-[node name="InteractionPanel" parent="." instance=ExtResource("7_interaction")]
+[node name="InteractionPanel" parent="." unique_id=1483490553 instance=ExtResource("7_interaction")]

@@ -1,0 +1,105 @@
+{
+  "buildings": [
+    {
+      "id": "blacksmith",
+      "name": "Blacksmith",
+      "upgrades": [
+        {
+          "level": 1,
+          "cost": {"autumn_wood": 10, "stone": 5, "magic_shard": 3},
+          "visual_flag": "show_blacksmith_level_1"
+        },
+        {
+          "level": 2,
+          "cost": {"autumn_wood": 20, "stone": 12, "magic_shard": 8, "gold": 20},
+          "visual_flag": "show_blacksmith_level_2"
+        },
+        {
+          "level": 3,
+          "cost": {"autumn_wood": 35, "stone": 25, "magic_shard": 15, "gold": 50},
+          "visual_flag": "show_blacksmith_level_3"
+        }
+      ]
+    },
+    {
+      "id": "workshop",
+      "name": "Workshop",
+      "upgrades": [
+        {
+          "level": 1,
+          "cost": {"autumn_wood": 12, "stone": 4, "autumn_core": 2},
+          "visual_flag": "show_workshop_level_1"
+        },
+        {
+          "level": 2,
+          "cost": {"autumn_wood": 24, "stone": 10, "autumn_core": 6, "gold": 15},
+          "visual_flag": "show_workshop_level_2"
+        },
+        {
+          "level": 3,
+          "cost": {"autumn_wood": 40, "stone": 20, "autumn_core": 12, "gold": 40},
+          "visual_flag": "show_workshop_level_3"
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "name": "Market",
+      "upgrades": [
+        {
+          "level": 1,
+          "cost": {"autumn_wood": 8, "autumn_core": 4, "gold": 15},
+          "visual_flag": "show_market_level_1"
+        },
+        {
+          "level": 2,
+          "cost": {"autumn_wood": 18, "stone": 6, "autumn_core": 10, "gold": 35},
+          "visual_flag": "show_market_level_2"
+        },
+        {
+          "level": 3,
+          "cost": {"autumn_wood": 30, "stone": 15, "autumn_core": 18, "gold": 70},
+          "visual_flag": "show_market_level_3"
+        }
+      ]
+    },
+    {
+      "id": "town_hall",
+      "name": "Town Hall",
+      "upgrades": [
+        {
+          "level": 1,
+          "cost": {"autumn_wood": 15, "stone": 12, "magic_shard": 4, "autumn_core": 3, "gold": 25},
+          "visual_flag": "show_town_hall_level_1"
+        },
+        {
+          "level": 2,
+          "cost": {"autumn_wood": 30, "stone": 25, "magic_shard": 10, "autumn_core": 8, "gold": 60},
+          "visual_flag": "show_town_hall_level_2"
+        },
+        {
+          "level": 3,
+          "cost": {"autumn_wood": 50, "stone": 45, "magic_shard": 20, "autumn_core": 15, "gold": 120},
+          "visual_flag": "show_town_hall_level_3"
+        }
+      ]
+    }
+  ],
+  "village_stages": [
+    {
+      "id": "settlement",
+      "minimum_total_levels": 0,
+      "visual_flags": ["show_basic_houses", "show_dirt_square"]
+    },
+    {
+      "id": "growing_village",
+      "minimum_total_levels": 3,
+      "visual_flags": ["show_market_stalls", "show_lamp_posts"]
+    },
+    {
+      "id": "prosperous_town",
+      "minimum_total_levels": 7,
+      "visual_flags": ["show_stone_walls", "show_town_banner"]
+    }
+  ]
+}

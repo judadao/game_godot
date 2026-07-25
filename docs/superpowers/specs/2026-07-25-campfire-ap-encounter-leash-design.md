@@ -12,6 +12,7 @@ This combines four related changes:
 2. Combat rewards add card copies without automatically leveling an owned card.
 3. A forest campfire provides one successful action per run: rest, merge, or upgrade.
 4. AP regenerates continuously, while encounters enforce a visible five-second leash countdown.
+5. The hand is limited to four cards with Q/W/E/R and X/Y/A/B slot controls.
 
 The alternative of retaining automatic card levels was rejected because it makes the campfire decision meaningless. A discrete turn-based AP refill was rejected because the game otherwise remains real-time. Instant enemy resets were rejected because they would give the player no chance to dodge outside the arena and return.
 
@@ -26,14 +27,27 @@ The alternative of retaining automatic card levels was rejected because it makes
 ## Real-Time AP
 
 - AP replaces the turn-refill interpretation of energy.
-- Maximum AP is 3.0.
+- Maximum AP is 5.0.
 - Base regeneration is 0.65 AP per second while a run is active and gameplay is not paused.
 - Card costs remain whole numbers and are subtracted immediately.
+- Ordinary cards cost 0–2 AP, major powers cost 3–4 AP, and ultimate cards may cost 5 AP.
 - A card cannot be played unless current AP covers its cost.
 - The hand does not discard and redraw merely because AP reaches zero.
 - After a card is played, one replacement card is drawn when hand size permits.
 - The energy wisp adds 0.35 AP regeneration per second for six seconds.
 - The HUD displays AP with one decimal place and updates disabled card states without rebuilding the hand each frame.
+
+## Four-Card Input Layout
+
+- Hand size is exactly four.
+- Keyboard slots one through four use Q, W, E, and R.
+- Joypad slots one through four use X, Y, A, and B.
+- The original basic attack, mana skill, HP potion, and MP potion actions are removed.
+- All attacks, skills, movement techniques, defense, healing, and combat recovery come from cards.
+- Joypad dash moves from A to right shoulder so it cannot also play slot three.
+- Card faces show their Q/W/E/R shortcut instead of 1–5.
+- No slot is reserved for a basic attack card; all four cards are drawn from a shuffled run deck.
+- At full AP, keyboard T, joypad D-pad Down, or a compact button spends all AP to discard and redraw four cards.
 
 ## Campfire Card Growth
 
@@ -53,8 +67,9 @@ The existing `forest_rest` landmark becomes a campfire menu.
 ### Merge
 
 - Available only for card IDs with at least two copies across hand, draw pile, and discard pile.
-- Consumes one copy of the selected card.
-- Raises that card ID's run level by one, to a maximum of level three.
+- Consumes extra copies of the selected card, one at a time.
+- Each consumed copy raises that card ID's run level by one, to a maximum of level three.
+- A single merge action processes enough available copies to reach level three, so three level-one copies can become one level-three card.
 - Runs the existing evolution check after reaching level three.
 
 ### Upgrade
@@ -70,6 +85,17 @@ The existing `forest_rest` landmark becomes a campfire menu.
 - Selecting a card reward always adds a playable copy.
 - A duplicate reward no longer raises the shared card level.
 - New card IDs initialize at level one.
+
+## Persistent Combo Infusions
+
+- Combo cards use a separate two-slot belt and never enter hand, draw pile, or discard pile.
+- Combo slots use keyboard C/V and joypad D-pad Left/Right, and remain mouse-clickable.
+- Activating a combo card spends AP directly and permanently enables its infusion for the current run.
+- `Flame Imbue` costs 3 AP; subsequent attack cards gain four damage and apply a short burn.
+- `Frostburst Imbue` costs 3 AP; subsequent attack cards gain two damage and apply a 30% slow.
+- When both infusions are active, attack cards gain an additional two damage and briefly stun.
+- An active combo card cannot be paid for twice.
+- Combo cards do not solve ordinary deck congestion: the four-card hand is still drawn from the chosen run deck.
 
 ## Dodge, Escape, and Encounter Leash
 
@@ -126,6 +152,8 @@ Automated tests cover:
 - One successful campfire action per run.
 - Leash countdown start, cancellation, timeout, position reset, health restoration, and status clearing.
 - Existing card selection, combat, map transition, and save tests.
+- Four-card hand size and Q/W/E/R plus X/Y/A/B input mappings.
+- Combo belt activation, AP costs, non-hand ownership, and attack infusion effects.
 
 Runtime verification loads the editor and runs the main game for 300 frames without script or scene errors.
 

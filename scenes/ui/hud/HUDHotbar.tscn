@@ -9,11 +9,12 @@
 [node name="HUDHotbar" type="Control" unique_id=1549465770]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 312.0
-offset_bottom = 110.0
+offset_right = 132.0
+offset_bottom = 58.0
 mouse_filter = 2
 
 [node name="HotbarFrame" type="TextureRect" parent="." unique_id=635757122]
+visible = false
 layout_mode = 0
 offset_right = 296.0
 offset_bottom = 98.0
@@ -23,10 +24,8 @@ stretch_mode = 5
 
 [node name="Icons" type="Control" parent="." unique_id=1131232641]
 anchors_preset = 0
-offset_left = 20.0
-offset_top = 9.0
-offset_right = 282.0
-offset_bottom = 86.0
+offset_right = 132.0
+offset_bottom = 58.0
 
 [node name="Health" type="TextureRect" parent="Icons" unique_id=1085843386]
 layout_mode = 0
@@ -82,10 +81,10 @@ text = "2"
 horizontal_alignment = 2
 
 [node name="PotionFeedback" type="Label" parent="."]
-offset_left = 4.0
-offset_top = -28.0
-offset_right = 304.0
-offset_bottom = -4.0
+offset_left = 136.0
+offset_top = 14.0
+offset_right = 436.0
+offset_bottom = 38.0
 theme_override_colors/font_color = Color(1, 0.91, 0.62, 1)
 theme_override_colors/font_outline_color = Color(0.04, 0.03, 0.02, 1)
 theme_override_constants/outline_size = 3
@@ -93,6 +92,7 @@ theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 
 [node name="Attack" type="TextureRect" parent="Icons" unique_id=801264796]
+visible = false
 layout_mode = 0
 offset_left = 138.0
 offset_right = 190.0
@@ -102,6 +102,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Skill" type="TextureRect" parent="Icons" unique_id=1518968214]
+visible = false
 layout_mode = 0
 offset_left = 209.0
 offset_right = 261.0
@@ -111,6 +112,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="HealthKey" type="Label" parent="."]
+visible = false
 offset_left = 19.0
 offset_top = 64.0
 offset_right = 78.0
@@ -123,6 +125,7 @@ text = "E  HP"
 horizontal_alignment = 1
 
 [node name="ManaKey" type="Label" parent="."]
+visible = false
 offset_left = 86.0
 offset_top = 64.0
 offset_right = 145.0
@@ -135,6 +138,7 @@ text = "R  MP"
 horizontal_alignment = 1
 
 [node name="AttackKey" type="Label" parent="."]
+visible = false
 offset_left = 153.0
 offset_top = 64.0
 offset_right = 212.0
@@ -147,6 +151,7 @@ text = "Q  ATTACK"
 horizontal_alignment = 1
 
 [node name="SkillKey" type="Label" parent="."]
+visible = false
 offset_left = 220.0
 offset_top = 64.0
 offset_right = 279.0

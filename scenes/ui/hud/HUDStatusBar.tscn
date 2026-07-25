@@ -1,0 +1,52 @@
+[gd_scene format=3 uid="uid://d0oo74l8geykv"]
+
+[ext_resource type="Texture2D" uid="uid://ctroxhmqpsmeo" path="res://assets/ui/hud/generated/hp_bar_frame.png" id="1"]
+
+[node name="HUDStatusBar" type="Control" unique_id=1785470822]
+custom_minimum_size = Vector2(259, 22)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 259.0
+offset_bottom = 22.0
+mouse_filter = 2
+
+[node name="Fill" type="ColorRect" parent="." unique_id=1014012445]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.78
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 5.0
+offset_right = -14.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.82, 0.1, 0.12, 0.95)
+
+[node name="Frame" type="TextureRect" parent="." unique_id=1546089626]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("1")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Value" type="Label" parent="." unique_id=53863386]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.94, 0.91, 0.82, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.04, 0.03, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 11
+text = "78 / 100"
+horizontal_alignment = 1
+vertical_alignment = 1

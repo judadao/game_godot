@@ -1,0 +1,63 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/monsters/autumn_guardian.gd" id="1_guardian"]
+[ext_resource type="Script" path="res://scripts/combat/hurtbox.gd" id="2_hurtbox"]
+
+[sub_resource type="CapsuleShape2D" id="GuardianShape"]
+radius = 42.0
+height = 104.0
+
+[node name="AutumnGuardian" type="CharacterBody2D" groups=["Enemies", "AutumnEnemies", "Bosses"]]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_guardian")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Trunk" type="Polygon2D" parent="Visual"]
+polygon = PackedVector2Array(-38, -5, -32, -82, -18, -116, 18, -116, 32, -82, 38, -5, 18, 4, -18, 4)
+color = Color(1, 1, 1, 1)
+
+[node name="Crown" type="Polygon2D" parent="Visual"]
+polygon = PackedVector2Array(-62, -82, -78, -116, -48, -110, -58, -148, -20, -132, 0, -168, 20, -132, 58, -148, 48, -110, 78, -116, 62, -82)
+color = Color(0.86, 0.35, 0.08, 1)
+
+[node name="Core" type="Polygon2D" parent="Visual"]
+polygon = PackedVector2Array(-14, -74, 0, -92, 14, -74, 0, -56)
+color = Color(1, 0.72, 0.18, 1)
+
+[node name="EyeLeft" type="Polygon2D" parent="Visual"]
+polygon = PackedVector2Array(-20, -102, -8, -102, -8, -90, -20, -90)
+color = Color(1, 0.88, 0.38, 1)
+
+[node name="EyeRight" type="Polygon2D" parent="Visual"]
+polygon = PackedVector2Array(8, -102, 20, -102, 20, -90, 8, -90)
+color = Color(1, 0.88, 0.38, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -52)
+shape = SubResource("GuardianShape")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("2_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -52)
+shape = SubResource("GuardianShape")
+
+[node name="HealthBar" type="Node2D" parent="."]
+position = Vector2(-62, -192)
+
+[node name="Background" type="ColorRect" parent="HealthBar"]
+offset_right = 124.0
+offset_bottom = 10.0
+color = Color(0.06, 0.025, 0.02, 0.94)
+
+[node name="Fill" type="ColorRect" parent="HealthBar"]
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 70.0
+offset_bottom = 8.0
+color = Color(0.96, 0.28, 0.08, 1)
