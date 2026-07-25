@@ -1,10 +1,14 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://bxc6ixfcli8bj"]
 
-[ext_resource type="PackedScene" path="res://scenes/maps/autumn_forest.tscn" id="1_map"]
+[ext_resource type="PackedScene" uid="uid://co2qlt1mv0xr8" path="res://scenes/maps/autumn_forest.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/dev/EditorHUDReference.tscn" id="2_reference"]
 
-[node name="AutumnForest" instance=ExtResource("1_map")]
+[node name="AutumnForest" unique_id=2051404239 instance=ExtResource("1_map")]
 
-[node name="EditorHUDReference" parent="." instance=ExtResource("2_reference")]
+[node name="EditorHUDReference" parent="." index="18" unique_id=12129850 instance=ExtResource("2_reference")]
 
+[editable path="ForestRest"]
+[editable path="TownPortal"]
+[editable path="EditorHUDReference"]
+[editable path="EditorHUDReference/HUD"]
 [editable path="EditorHUDReference/CardHandUI"]

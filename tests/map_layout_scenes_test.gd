@@ -4,18 +4,22 @@ const LAYOUTS := [
 	{
 		"canonical": "res://scenes/maps/town.tscn",
 		"layout": "res://scenes/maps/layouts/TownLayout.tscn",
+		"root": "Town",
 	},
 	{
 		"canonical": "res://scenes/maps/autumn_forest.tscn",
 		"layout": "res://scenes/maps/layouts/AutumnForestLayout.tscn",
+		"root": "AutumnForest",
 	},
 	{
 		"canonical": "res://scenes/maps/crystal_caves.tscn",
 		"layout": "res://scenes/maps/layouts/CrystalCavesLayout.tscn",
+		"root": "CrystalCaves",
 	},
 	{
 		"canonical": "res://scenes/maps/forbidden_graveyard.tscn",
 		"layout": "res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn",
+		"root": "ForbiddenGraveyard",
 	},
 ]
 
@@ -37,6 +41,7 @@ func _run() -> void:
 		root.add_child(map)
 		await process_frame
 		_expect(map.scene_file_path == layout_path, "%s must be the authoritative instantiated scene." % layout_path)
+		_expect(map.name == String(spec["root"]), "%s must retain its canonical map root name." % layout_path)
 		_expect(map.has_node("PlayerSpawn"), "%s must inherit PlayerSpawn." % layout_path)
 		_expect(map.has_node("Player"), "%s must inherit Player." % layout_path)
 		_expect(int(map.get_meta("map_width", 0)) > 0, "%s must inherit map metadata." % layout_path)
