@@ -1,3 +1,41 @@
-# Godot 4+ specific ignores
-.godot/
+# Godot editor cache and generated import metadata
+/.godot/
+*.import
+
+# Generated platform and export output
 /android/
+/build/
+/builds/
+/dist/
+/exports/
+*.pck
+*.apk
+*.aab
+*.exe
+
+# Local credentials and signing material
+.env
+.env.*
+!.env.example
+export_credentials.cfg
+*.keystore
+*.jks
+*.p12
+*.pfx
+
+# Temporary files and image-generation intermediates
+/tmp/
+*.tmp
+*.temp
+*.log
+*_chroma.png
+
+# IDE and operating-system files
+/.idea/
+/.vscode/
+/.vs/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*~

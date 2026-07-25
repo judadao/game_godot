@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3]
-
-[ext_resource type="Texture2D" path="res://concept/town/can_use/npc/npc_asset_009.png" id="1_texture"]
-
-[node name="SmithVisual" type="Sprite2D" groups=["TownNpcVisual"]]
-texture = ExtResource("1_texture")
-offset = Vector2(0, -80.5)

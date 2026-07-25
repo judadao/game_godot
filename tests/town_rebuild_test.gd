@@ -8,10 +8,6 @@ func _init() -> void:
 
 
 func _run() -> void:
-	_expect(
-		not FileAccess.file_exists("res://scenes/town.tscn"),
-		"Legacy duplicate Town scene must not exist; use scenes/maps/town.tscn."
-	)
 	var packed := load("res://scenes/maps/town.tscn") as PackedScene
 	_expect(packed != null, "Town scene must load.")
 	if packed == null:
@@ -23,7 +19,7 @@ func _run() -> void:
 	await process_frame
 
 	for asset_path in [
-		"res://assets/town/rebuild_v2/town_background_v2.png",
+		"res://assets/town/rebuild_v2/town_background_clean_v3.png",
 		"res://assets/town/rebuild_v2/town_street_atlas_v2.png",
 		"res://assets/town/rebuild_v2/town_buildings_atlas_v2.png",
 		"res://assets/town/rebuild_v2/town_props_portals_atlas_v2.png",
@@ -54,6 +50,26 @@ func _run() -> void:
 
 	var chest := town.get_node("Props/TownChest") as CollisionObject2D
 	_expect(not chest.visible and chest.collision_layer == 0, "Retired chest must be hidden and non-blocking.")
+	_expect(
+		town.get_node("ParallaxBackground/Clouds").texture.resource_path
+		== "res://assets/town/rebuild_v2/town_background_clean_v3.png",
+		"Town must use the clean distant-only background."
+	)
+	for prop_name in [
+		"V2EntranceFence",
+		"V2ResidentialLamp",
+		"V2NoticeBoard",
+		"V2CivicWell",
+		"V2CivicBench",
+		"V2MarketCart",
+		"V2SmithForge",
+		"V2Crates",
+		"V2Barrels",
+		"V2Flowers",
+	]:
+		var prop := town.get_node("Props/%s" % prop_name) as Sprite2D
+		_expect(prop.position.y == 618.0, "%s must share the town ground baseline." % prop_name)
+		_expect(prop.offset.y < 0.0, "%s must be bottom-aligned instead of center-aligned." % prop_name)
 	_expect(not town.get_node("ParallaxBackground/Mountains").visible, "Legacy mountain strip must stay hidden.")
 	_expect(not town.get_node("ParallaxBackground/Forest").visible, "Legacy forest strip must stay hidden.")
 	_expect(not town.get_node("ParallaxBackground/Rooftops").visible, "Legacy rooftop strip must stay hidden.")

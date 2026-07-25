@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dw3j7rocm1qmn"]
 
-[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_background_v2.png" id="1_clouds"]
+[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_background_clean_v3.png" id="1_clouds"]
 [ext_resource type="Texture2D" uid="uid://umo8x74en0y" path="res://concept/town/can_use/background/parallax_mountains_strip_v3.png" id="2_mountains"]
 [ext_resource type="Texture2D" uid="uid://b48ryt47l4404" path="res://concept/town/can_use/background/parallax_forest_strip_v3.png" id="3_forest"]
 [ext_resource type="Texture2D" uid="uid://bue7naubdsn6g" path="res://concept/town/can_use/background/parallax_rooftops_strip_v3.png" id="4_rooftops"]
@@ -216,7 +216,7 @@ texture = ExtResource("60_road_stone")
 [node name="Buildings" type="Node2D" parent="." unique_id=13442811]
 
 [node name="WestHouse" parent="Buildings" unique_id=100086437 instance=ExtResource("34_town_object_scene")]
-position = Vector2(265, 616)
+position = Vector2(265, 618)
 scale = Vector2(0.82, 0.82)
 
 [node name="ItemShop" parent="Buildings" unique_id=770860232 instance=ExtResource("35_town_object_scene")]
@@ -224,19 +224,19 @@ position = Vector2(1510, 618)
 scale = Vector2(0.82, 0.82)
 
 [node name="Blacksmith" parent="Buildings" unique_id=1879561668 instance=ExtResource("36_town_object_scene")]
-position = Vector2(2020, 614)
+position = Vector2(2020, 618)
 scale = Vector2(0.82, 0.82)
 
 [node name="MarketStall" parent="Buildings" unique_id=553426682 instance=ExtResource("37_town_object_scene")]
-position = Vector2(1810, 614)
+position = Vector2(1810, 618)
 scale = Vector2(0.82, 0.82)
 
 [node name="EmptyResidence" parent="Buildings" unique_id=284414627 instance=ExtResource("61_empty_house")]
-position = Vector2(620, 616)
+position = Vector2(620, 618)
 scale = Vector2(0.82, 0.82)
 
 [node name="EmptyTowerHouse" parent="Buildings" unique_id=1205248304 instance=ExtResource("62_empty_tower")]
-position = Vector2(1080, 616)
+position = Vector2(1080, 618)
 scale = Vector2(0.82, 0.82)
 
 [node name="TownPortal" parent="Buildings" unique_id=178989709 instance=ExtResource("38_town_object_scene")]
@@ -308,54 +308,64 @@ interaction_id = &"town_crates"
 collision_mask = 0
 
 [node name="V2EntranceFence" type="Sprite2D" parent="Props"]
-position = Vector2(180, 610)
+position = Vector2(180, 618)
 scale = Vector2(0.48, 0.48)
 texture = SubResource("V2Fence")
+offset = Vector2(0, -95)
 
 [node name="V2ResidentialLamp" type="Sprite2D" parent="Props"]
-position = Vector2(430, 620)
+position = Vector2(430, 618)
 scale = Vector2(0.38, 0.38)
 texture = SubResource("V2Lamp")
+offset = Vector2(0, -175)
 
 [node name="V2NoticeBoard" type="Sprite2D" parent="Props"]
-position = Vector2(900, 600)
+position = Vector2(900, 618)
 scale = Vector2(0.5, 0.5)
 texture = SubResource("V2Notice")
+offset = Vector2(0, -165)
 
 [node name="V2CivicWell" type="Sprite2D" parent="Props"]
-position = Vector2(1230, 610)
+position = Vector2(1230, 618)
 scale = Vector2(0.48, 0.48)
 texture = SubResource("V2Well")
+offset = Vector2(0, -166)
 
 [node name="V2CivicBench" type="Sprite2D" parent="Props"]
-position = Vector2(1340, 620)
+position = Vector2(1340, 618)
 scale = Vector2(0.42, 0.42)
 texture = SubResource("V2Bench")
+offset = Vector2(0, -130)
 
 [node name="V2MarketCart" type="Sprite2D" parent="Props"]
-position = Vector2(1690, 615)
+position = Vector2(1690, 618)
 scale = Vector2(0.44, 0.44)
 texture = SubResource("V2Cart")
+offset = Vector2(0, -145)
 
 [node name="V2SmithForge" type="Sprite2D" parent="Props"]
-position = Vector2(2030, 615)
+position = Vector2(2030, 618)
 scale = Vector2(0.4, 0.4)
 texture = SubResource("V2Forge")
+offset = Vector2(0, -140)
 
 [node name="V2Crates" type="Sprite2D" parent="Props"]
-position = Vector2(1940, 620)
+position = Vector2(1940, 618)
 scale = Vector2(0.38, 0.38)
 texture = SubResource("V2Crates")
+offset = Vector2(0, -117.5)
 
 [node name="V2Barrels" type="Sprite2D" parent="Props"]
-position = Vector2(2100, 620)
+position = Vector2(2100, 618)
 scale = Vector2(0.35, 0.35)
 texture = SubResource("V2Barrels")
+offset = Vector2(0, -122.5)
 
 [node name="V2Flowers" type="Sprite2D" parent="Props"]
-position = Vector2(720, 635)
+position = Vector2(720, 618)
 scale = Vector2(0.48, 0.48)
 texture = SubResource("V2Flowers")
+offset = Vector2(0, -100)
 
 [node name="Portals" type="Node2D" parent="." unique_id=259814262]
 
@@ -453,31 +463,31 @@ visible = false
 [node name="PortalVisuals" type="Node2D" parent="."]
 
 [node name="EntranceFastTravel" type="Sprite2D" parent="PortalVisuals"]
-position = Vector2(100, 676)
+position = Vector2(100, 618)
 scale = Vector2(0.42, 0.42)
 texture = SubResource("V2PortalBlue")
 offset = Vector2(0, -160)
 
 [node name="Forest" type="Sprite2D" parent="PortalVisuals"]
-position = Vector2(2200, 676)
+position = Vector2(2200, 618)
 scale = Vector2(0.46, 0.46)
 texture = SubResource("V2PortalForest")
 offset = Vector2(0, -160)
 
 [node name="Caves" type="Sprite2D" parent="PortalVisuals"]
-position = Vector2(2350, 676)
+position = Vector2(2350, 618)
 scale = Vector2(0.46, 0.46)
 texture = SubResource("V2PortalCave")
 offset = Vector2(0, -160)
 
 [node name="Graveyard" type="Sprite2D" parent="PortalVisuals"]
-position = Vector2(2485, 676)
+position = Vector2(2485, 618)
 scale = Vector2(0.46, 0.46)
 texture = SubResource("V2PortalGrave")
 offset = Vector2(0, -160)
 
 [node name="EastFastTravel" type="Sprite2D" parent="PortalVisuals"]
-position = Vector2(2532, 676)
+position = Vector2(2532, 618)
 scale = Vector2(0.34, 0.34)
 texture = SubResource("V2PortalBlue")
 offset = Vector2(0, -160)
@@ -485,25 +495,25 @@ offset = Vector2(0, -160)
 [node name="NPCs" type="Node2D" parent="." unique_id=1308501861]
 
 [node name="Mayor" parent="NPCs" unique_id=561058561 instance=ExtResource("52_mayor_scene")]
-position = Vector2(1120, 620)
+position = Vector2(1120, 618)
 
 [node name="VillagerMale" parent="NPCs" unique_id=840234731 instance=ExtResource("53_town_object_scene")]
-position = Vector2(760, 620)
+position = Vector2(760, 618)
 
 [node name="VillagerFemale" parent="NPCs" unique_id=299251137 instance=ExtResource("54_town_object_scene")]
-position = Vector2(1320, 620)
+position = Vector2(1320, 618)
 
 [node name="Guard" parent="NPCs" unique_id=250146326 instance=ExtResource("56_town_object_scene")]
-position = Vector2(360, 620)
+position = Vector2(360, 618)
 
 [node name="ItemMerchantInteractive" parent="NPCs" unique_id=455671580 instance=ExtResource("63_potion_merchant")]
-position = Vector2(1530, 620)
+position = Vector2(1530, 618)
 
 [node name="BlacksmithInteractive" parent="NPCs" unique_id=539893336 instance=ExtResource("64_blacksmith")]
-position = Vector2(2010, 620)
+position = Vector2(2010, 618)
 
 [node name="InnkeeperInteractive" parent="NPCs" unique_id=844516187 instance=ExtResource("65_innkeeper")]
-position = Vector2(1810, 620)
+position = Vector2(1810, 618)
 
 [node name="Player" parent="." unique_id=1141192825 instance=ExtResource("29_player_scene")]
 position = Vector2(220, 647)

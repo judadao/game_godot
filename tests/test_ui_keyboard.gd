@@ -23,8 +23,10 @@ func _run() -> void:
 	hud.set_player_class("Ranger")
 	_expect((hud.get_node("HUDStatus/LevelLabel") as Label).text == "Lv. 7", "HUD level updates dynamically")
 	_expect((hud.get_node("HUDStatus/ClassLabel") as Label).text == "RANGER", "HUD class updates dynamically")
+	var hp_frame := hud.get_node("HUDStatus/HPBar/Frame") as CanvasItem
+	var hp_fill := hud.get_node("HUDStatus/HPBar/Fill") as CanvasItem
 	_expect(
-		(hud.get_node("HUDStatus/HPFrame") as CanvasItem).z_index > (hud.get_node("HUDStatus/HPBar") as CanvasItem).z_index,
+		hp_frame.z_index > hp_fill.z_index or hp_frame.get_index() > hp_fill.get_index(),
 		"Status frame renders above health fill"
 	)
 	hud.queue_free()
@@ -46,10 +48,19 @@ func _run() -> void:
 	_expect(shop.selected_index == 0, "Shop Up selects the previous row")
 	_send_action(&"ui_right")
 	await process_frame
-	_expect(shop.quantity == 2, "Shop Right increases quantity")
+	_expect(shop.get_viewport().gui_get_focus_owner() == shop.minus_button, "Shop Right enters quantity controls")
+	_send_action(&"ui_right")
+	await process_frame
+	_expect(shop.get_viewport().gui_get_focus_owner() == shop.plus_button, "Shop Right selects quantity increase")
+	shop.plus_button.pressed.emit()
+	await process_frame
+	_expect(shop.quantity == 2, "Shop quantity increase control works")
 	_send_action(&"ui_left")
 	await process_frame
-	_expect(shop.quantity == 1, "Shop Left decreases quantity")
+	_expect(shop.get_viewport().gui_get_focus_owner() == shop.minus_button, "Shop Left selects quantity decrease")
+	shop.minus_button.pressed.emit()
+	await process_frame
+	_expect(shop.quantity == 1, "Shop quantity decrease control works")
 	shop.queue_free()
 
 	var player: CharacterBody2D = load("res://scenes/player/Player.tscn").instantiate() as CharacterBody2D
