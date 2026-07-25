@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dw3j7rocm1qmn"]
 
-[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_background_clean_v3.png" id="1_clouds"]
+[ext_resource type="Texture2D" uid="uid://c4t8q3xdcx15o" path="res://assets/town/rebuild_v2/town_background_clean_v3.png" id="1_clouds"]
 [ext_resource type="Texture2D" uid="uid://umo8x74en0y" path="res://concept/town/can_use/background/parallax_mountains_strip_v3.png" id="2_mountains"]
 [ext_resource type="Texture2D" uid="uid://b48ryt47l4404" path="res://concept/town/can_use/background/parallax_forest_strip_v3.png" id="3_forest"]
 [ext_resource type="Texture2D" uid="uid://bue7naubdsn6g" path="res://concept/town/can_use/background/parallax_rooftops_strip_v3.png" id="4_rooftops"]
@@ -34,9 +34,9 @@
 [ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedPotionMerchant.tscn" id="63_potion_merchant"]
 [ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedBlacksmith.tscn" id="64_blacksmith"]
 [ext_resource type="PackedScene" path="res://scenes/npc/town/GeneratedInnkeeper.tscn" id="65_innkeeper"]
-[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_street_atlas_v2.png" id="66_ground_atlas"]
-[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_props_portals_atlas_v2.png" id="67_props_v2"]
-[ext_resource type="Script" path="res://scripts/maps/town_editor_preview.gd" id="68_editor_preview"]
+[ext_resource type="Texture2D" uid="uid://i8vcgl06vq8h" path="res://assets/town/rebuild_v2/town_street_atlas_v2.png" id="66_ground_atlas"]
+[ext_resource type="Texture2D" uid="uid://bsek1jgr31mcl" path="res://assets/town/rebuild_v2/town_props_portals_atlas_v2.png" id="67_props_v2"]
+[ext_resource type="Script" uid="uid://ddj80fyybrukd" path="res://scripts/maps/town_editor_preview.gd" id="68_editor_preview"]
 
 [sub_resource type="Gradient" id="Gradient_sky"]
 offsets = PackedFloat32Array(0, 0.58, 1)
@@ -53,25 +53,33 @@ fill_to = Vector2(0.5, 1)
 atlas = ExtResource("66_ground_atlas")
 region = Rect2(14, 150, 1510, 170)
 
-[sub_resource type="AtlasTexture" id="V2Well"]
+[sub_resource type="AtlasTexture" id="V2Fence"]
 atlas = ExtResource("67_props_v2")
-region = Rect2(52, 50, 300, 332)
-
-[sub_resource type="AtlasTexture" id="V2Notice"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(405, 55, 310, 330)
+region = Rect2(50, 440, 320, 190)
 
 [sub_resource type="AtlasTexture" id="V2Lamp"]
 atlas = ExtResource("67_props_v2")
 region = Rect2(790, 45, 155, 350)
 
+[sub_resource type="AtlasTexture" id="V2Notice"]
+atlas = ExtResource("67_props_v2")
+region = Rect2(405, 55, 310, 330)
+
+[sub_resource type="AtlasTexture" id="V2Well"]
+atlas = ExtResource("67_props_v2")
+region = Rect2(52, 50, 300, 332)
+
 [sub_resource type="AtlasTexture" id="V2Bench"]
 atlas = ExtResource("67_props_v2")
 region = Rect2(1040, 120, 390, 260)
 
-[sub_resource type="AtlasTexture" id="V2Fence"]
+[sub_resource type="AtlasTexture" id="V2Cart"]
 atlas = ExtResource("67_props_v2")
-region = Rect2(50, 440, 320, 190)
+region = Rect2(345, 680, 300, 290)
+
+[sub_resource type="AtlasTexture" id="V2Forge"]
+atlas = ExtResource("67_props_v2")
+region = Rect2(45, 690, 300, 280)
 
 [sub_resource type="AtlasTexture" id="V2Crates"]
 atlas = ExtResource("67_props_v2")
@@ -84,14 +92,6 @@ region = Rect2(740, 420, 260, 245)
 [sub_resource type="AtlasTexture" id="V2Flowers"]
 atlas = ExtResource("67_props_v2")
 region = Rect2(1050, 440, 390, 200)
-
-[sub_resource type="AtlasTexture" id="V2Forge"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(45, 690, 300, 280)
-
-[sub_resource type="AtlasTexture" id="V2Cart"]
-atlas = ExtResource("67_props_v2")
-region = Rect2(345, 680, 300, 290)
 
 [sub_resource type="AtlasTexture" id="V2PortalBlue"]
 atlas = ExtResource("67_props_v2")
@@ -129,10 +129,10 @@ metadata/camera_limit_bottom = 724
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=1039936403]
 position = Vector2(220, 576)
 
-[node name="TownEntranceArrival" type="Marker2D" parent="."]
+[node name="TownEntranceArrival" type="Marker2D" parent="." unique_id=111893223]
 position = Vector2(480, 576)
 
-[node name="TownTailArrival" type="Marker2D" parent="."]
+[node name="TownTailArrival" type="Marker2D" parent="." unique_id=1062614035]
 position = Vector2(2250, 576)
 
 [node name="Sky" type="Sprite2D" parent="." unique_id=1957591297]
@@ -308,64 +308,61 @@ position = Vector2(1575, 620)
 collision_layer = 0
 interaction_id = &"town_crates"
 
-[node name="InteractionArea" parent="Props/TownChest" index="2"]
-collision_mask = 0
-
-[node name="V2EntranceFence" type="Sprite2D" parent="Props"]
+[node name="V2EntranceFence" type="Sprite2D" parent="Props" unique_id=38069376]
 position = Vector2(180, 618)
 scale = Vector2(0.48, 0.48)
 texture = SubResource("V2Fence")
 offset = Vector2(0, -95)
 
-[node name="V2ResidentialLamp" type="Sprite2D" parent="Props"]
+[node name="V2ResidentialLamp" type="Sprite2D" parent="Props" unique_id=454467684]
 position = Vector2(430, 618)
 scale = Vector2(0.38, 0.38)
 texture = SubResource("V2Lamp")
 offset = Vector2(0, -175)
 
-[node name="V2NoticeBoard" type="Sprite2D" parent="Props"]
+[node name="V2NoticeBoard" type="Sprite2D" parent="Props" unique_id=1276906737]
 position = Vector2(900, 618)
 scale = Vector2(0.5, 0.5)
 texture = SubResource("V2Notice")
 offset = Vector2(0, -165)
 
-[node name="V2CivicWell" type="Sprite2D" parent="Props"]
+[node name="V2CivicWell" type="Sprite2D" parent="Props" unique_id=485698772]
 position = Vector2(1230, 618)
 scale = Vector2(0.48, 0.48)
 texture = SubResource("V2Well")
 offset = Vector2(0, -166)
 
-[node name="V2CivicBench" type="Sprite2D" parent="Props"]
+[node name="V2CivicBench" type="Sprite2D" parent="Props" unique_id=251059378]
 position = Vector2(1340, 618)
 scale = Vector2(0.42, 0.42)
 texture = SubResource("V2Bench")
 offset = Vector2(0, -130)
 
-[node name="V2MarketCart" type="Sprite2D" parent="Props"]
+[node name="V2MarketCart" type="Sprite2D" parent="Props" unique_id=1780937757]
 position = Vector2(1690, 618)
 scale = Vector2(0.44, 0.44)
 texture = SubResource("V2Cart")
 offset = Vector2(0, -145)
 
-[node name="V2SmithForge" type="Sprite2D" parent="Props"]
+[node name="V2SmithForge" type="Sprite2D" parent="Props" unique_id=1052128263]
 position = Vector2(2030, 618)
 scale = Vector2(0.4, 0.4)
 texture = SubResource("V2Forge")
 offset = Vector2(0, -140)
 
-[node name="V2Crates" type="Sprite2D" parent="Props"]
+[node name="V2Crates" type="Sprite2D" parent="Props" unique_id=1792593813]
 position = Vector2(1940, 618)
 scale = Vector2(0.38, 0.38)
 texture = SubResource("V2Crates")
 offset = Vector2(0, -117.5)
 
-[node name="V2Barrels" type="Sprite2D" parent="Props"]
+[node name="V2Barrels" type="Sprite2D" parent="Props" unique_id=884997821]
 position = Vector2(2100, 618)
 scale = Vector2(0.35, 0.35)
 texture = SubResource("V2Barrels")
 offset = Vector2(0, -122.5)
 
-[node name="V2Flowers" type="Sprite2D" parent="Props"]
+[node name="V2Flowers" type="Sprite2D" parent="Props" unique_id=812889265]
 position = Vector2(720, 618)
 scale = Vector2(0.48, 0.48)
 texture = SubResource("V2Flowers")
@@ -373,36 +370,27 @@ offset = Vector2(0, -100)
 
 [node name="Portals" type="Node2D" parent="." unique_id=259814262]
 
-[node name="EntranceFastTravelPortal" parent="Portals" instance=ExtResource("32_portal_scene")]
+[node name="EntranceFastTravelPortal" parent="Portals" unique_id=1343762961 instance=ExtResource("32_portal_scene")]
 position = Vector2(100, 676)
 collision_layer = 0
+target_spawn_name = &"TownTailArrival"
+show_default_visual = false
 interaction_id = &"town_fast_travel_to_tail"
 prompt_text = "Travel to Town East"
-target_scene_path = "res://scenes/maps/town.tscn"
-target_spawn_name = &"TownTailArrival"
-
-[node name="Visual" parent="Portals/EntranceFastTravelPortal" index="0"]
-visible = false
 
 [node name="EastRoadPortal" parent="Portals" unique_id=147481501 instance=ExtResource("32_portal_scene")]
 position = Vector2(2532, 676)
 collision_layer = 0
+target_spawn_name = &"TownEntranceArrival"
+show_default_visual = false
 interaction_id = &"town_fast_travel_to_entrance"
 prompt_text = "Travel to Town Entrance"
-target_scene_path = "res://scenes/maps/town.tscn"
-target_spawn_name = &"TownEntranceArrival"
-
-[node name="Visual" parent="Portals/EastRoadPortal" index="0"]
-visible = false
 
 [node name="TownCenterPortal" parent="Portals" unique_id=1992277835 instance=ExtResource("32_portal_scene")]
-position = Vector2(2284, 676)
 process_mode = 4
 visible = false
+position = Vector2(2284, 676)
 collision_layer = 0
-
-[node name="InteractionArea" parent="Portals/TownCenterPortal" index="2"]
-collision_mask = 0
 
 [node name="ForestPortal" parent="Portals" unique_id=1868751795 instance=ExtResource("58_magic_book_portal_scene")]
 position = Vector2(2200, 630)
@@ -415,15 +403,6 @@ target_scene_path = "res://scenes/maps/autumn_forest.tscn"
 interaction_id = &"forest_portal"
 prompt_text = "Travel"
 
-[node name="PortalGlow" parent="Portals/ForestPortal" index="3"]
-visible = false
-
-[node name="BookAnchor" parent="Portals/ForestPortal" index="4"]
-visible = false
-
-[node name="DestinationLabel" parent="Portals/ForestPortal" index="5"]
-visible = false
-
 [node name="CavesPortal" parent="Portals" unique_id=194706548 instance=ExtResource("58_magic_book_portal_scene")]
 position = Vector2(2350, 630)
 collision_layer = 0
@@ -434,15 +413,6 @@ float_speed = 2.1
 target_scene_path = "res://scenes/maps/crystal_caves.tscn"
 interaction_id = &"caves_portal"
 prompt_text = "Travel"
-
-[node name="PortalGlow" parent="Portals/CavesPortal" index="3"]
-visible = false
-
-[node name="BookAnchor" parent="Portals/CavesPortal" index="4"]
-visible = false
-
-[node name="DestinationLabel" parent="Portals/CavesPortal" index="5"]
-visible = false
 
 [node name="GraveyardPortal" parent="Portals" unique_id=2146132574 instance=ExtResource("58_magic_book_portal_scene")]
 position = Vector2(2485, 630)
@@ -455,42 +425,33 @@ target_scene_path = "res://scenes/maps/forbidden_graveyard.tscn"
 interaction_id = &"graveyard_portal"
 prompt_text = "Travel"
 
-[node name="PortalGlow" parent="Portals/GraveyardPortal" index="3"]
-visible = false
+[node name="PortalVisuals" type="Node2D" parent="." unique_id=620403891]
 
-[node name="BookAnchor" parent="Portals/GraveyardPortal" index="4"]
-visible = false
-
-[node name="DestinationLabel" parent="Portals/GraveyardPortal" index="5"]
-visible = false
-
-[node name="PortalVisuals" type="Node2D" parent="."]
-
-[node name="EntranceFastTravel" type="Sprite2D" parent="PortalVisuals"]
+[node name="EntranceFastTravel" type="Sprite2D" parent="PortalVisuals" unique_id=1258902945]
 position = Vector2(100, 618)
 scale = Vector2(0.42, 0.42)
 texture = SubResource("V2PortalBlue")
 offset = Vector2(0, -160)
 
-[node name="Forest" type="Sprite2D" parent="PortalVisuals"]
+[node name="Forest" type="Sprite2D" parent="PortalVisuals" unique_id=603981985]
 position = Vector2(2200, 618)
 scale = Vector2(0.46, 0.46)
 texture = SubResource("V2PortalForest")
 offset = Vector2(0, -160)
 
-[node name="Caves" type="Sprite2D" parent="PortalVisuals"]
+[node name="Caves" type="Sprite2D" parent="PortalVisuals" unique_id=1186392656]
 position = Vector2(2350, 618)
 scale = Vector2(0.46, 0.46)
 texture = SubResource("V2PortalCave")
 offset = Vector2(0, -160)
 
-[node name="Graveyard" type="Sprite2D" parent="PortalVisuals"]
+[node name="Graveyard" type="Sprite2D" parent="PortalVisuals" unique_id=1956639162]
 position = Vector2(2485, 618)
 scale = Vector2(0.46, 0.46)
 texture = SubResource("V2PortalGrave")
 offset = Vector2(0, -160)
 
-[node name="EastFastTravel" type="Sprite2D" parent="PortalVisuals"]
+[node name="EastFastTravel" type="Sprite2D" parent="PortalVisuals" unique_id=1296782327]
 position = Vector2(2532, 618)
 scale = Vector2(0.34, 0.34)
 texture = SubResource("V2PortalBlue")
@@ -508,7 +469,7 @@ position = Vector2(760, 618)
 position = Vector2(1320, 618)
 
 [node name="Guard" parent="NPCs" unique_id=250146326 instance=ExtResource("56_town_object_scene")]
-position = Vector2(360, 618)
+position = Vector2(468, 408)
 
 [node name="ItemMerchantInteractive" parent="NPCs" unique_id=455671580 instance=ExtResource("63_potion_merchant")]
 position = Vector2(1530, 618)

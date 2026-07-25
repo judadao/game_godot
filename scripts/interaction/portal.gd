@@ -4,6 +4,14 @@ signal portal_entered(portal: Node, target_scene_path: String, target_spawn_name
 
 @export_file("*.tscn") var target_scene_path: String = "res://scenes/maps/town.tscn"
 @export var target_spawn_name: StringName = &"PlayerSpawn"
+@export var show_default_visual: bool = true
+
+@onready var default_visual: CanvasItem = $Visual
+
+
+func _ready() -> void:
+	super._ready()
+	default_visual.visible = show_default_visual
 
 func interact(interactor: Node = null) -> bool:
 	if not super.interact(interactor):

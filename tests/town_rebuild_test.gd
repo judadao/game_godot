@@ -48,6 +48,31 @@ func _run() -> void:
 		var portal := town.get_node("Portals/%s" % portal_name) as CollisionObject2D
 		_expect(portal.collision_layer == 0, "%s must not block the town road." % portal_name)
 
+	for portal_name in ["EntranceFastTravelPortal", "EastRoadPortal"]:
+		var portal := town.get_node("Portals/%s" % portal_name)
+		_expect(
+			not portal.get_node("Visual").is_visible_in_tree(),
+			"%s must not render the retired default portal visual." % portal_name
+		)
+
+	for npc_name in [
+		"Mayor",
+		"VillagerMale",
+		"VillagerFemale",
+		"Guard",
+		"ItemMerchantInteractive",
+		"BlacksmithInteractive",
+		"InnkeeperInteractive",
+	]:
+		var npc := town.get_node("NPCs/%s" % npc_name)
+		var visual := npc if npc is Sprite2D else npc.get_node("Visual")
+		var texture: Texture2D = (visual as Sprite2D).texture
+		var atlas: Texture2D = texture.atlas if texture is AtlasTexture else texture
+		_expect(
+			atlas.resource_path == "res://assets/town/rebuild_v2/town_npcs_atlas_v2.png",
+			"%s must use the rebuilt Town NPC atlas at runtime." % npc_name
+		)
+
 	var chest := town.get_node("Props/TownChest") as CollisionObject2D
 	_expect(not chest.visible and chest.collision_layer == 0, "Retired chest must be hidden and non-blocking.")
 	_expect(
