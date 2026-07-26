@@ -85,6 +85,25 @@ func _run() -> void:
 		"Repaired modern payloads must remain stable on later loads."
 	)
 
+	var numeric_id_save: MetaState = meta_script.new()
+	numeric_id_save.apply_dict({
+		"schema_version": 3,
+		"selected_card_instances": [
+			{"instance_id": 1, "card_id": "ember_bolt", "level": 1},
+			{"instance_id": 2, "card_id": "quickstep", "level": 1},
+			{"instance_id": 3, "card_id": "guard", "level": 1},
+		],
+		"selected_deck": ["ember_bolt", "quickstep", "guard"],
+	})
+	_expect(
+		numeric_id_save.to_dict().get("selected_card_instances", []) == [
+			{"instance_id": "1", "card_id": "ember_bolt", "level": 1},
+			{"instance_id": "2", "card_id": "quickstep", "level": 1},
+			{"instance_id": "3", "card_id": "guard", "level": 1},
+		],
+		"Schema-three numeric instance IDs must load as stable strings without losing cards."
+	)
+
 	var path := "user://saves/card_instance_save_migration_test.json"
 	var save: SaveService = save_script.new()
 	_expect(save.save_meta(path, migrated), "A migrated payload must save successfully.")

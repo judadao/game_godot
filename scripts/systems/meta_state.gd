@@ -242,7 +242,7 @@ func _safe_dictionary(value: Variant, fallback: Dictionary) -> Dictionary:
 
 
 func _safe_integer_dictionary(value: Variant, fallback: Dictionary) -> Dictionary:
-	if not value is Dictionary:
+	if not (value is Dictionary):
 		return fallback.duplicate(true)
 	var result: Dictionary = {}
 	for key in (value as Dictionary).keys():
@@ -254,7 +254,7 @@ func _safe_string_array(value: Variant, fallback: Array[String]) -> Array[String
 	var result: Array[String] = []
 	if value is Array:
 		for item in value:
-			result.append(String(item))
+			result.append(str(item))
 		return result
 	return fallback.duplicate()
 
@@ -313,12 +313,12 @@ func _restore_card_instances(raw_instances: Array) -> Array[CardInstance]:
 	var seen_ids: Dictionary = {}
 	var seen_fixed_ids: Dictionary = {}
 	for index in raw_instances.size():
-		if not raw_instances[index] is Dictionary:
+		if not (raw_instances[index] is Dictionary):
 			_record_invalid_instance()
 			continue
 		var raw := raw_instances[index] as Dictionary
-		var card_id := String(raw.get("card_id", "")).strip_edges()
-		var instance_id := String(raw.get("instance_id", "")).strip_edges()
+		var card_id := str(raw.get("card_id", "")).strip_edges()
+		var instance_id := str(raw.get("instance_id", "")).strip_edges()
 		var level := int(raw.get("level", CardInstance.MIN_LEVEL))
 		if (
 			card_id.is_empty()
