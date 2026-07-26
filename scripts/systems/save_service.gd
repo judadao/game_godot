@@ -1,8 +1,10 @@
 class_name SaveService
 extends RefCounted
 
+var _last_migration_report: Dictionary = {}
 
 func save_meta(path: String, data: Dictionary) -> bool:
+	var normalized_data := _migrate_meta_payload(data)
 	var directory := path.get_base_dir()
 	if not directory.is_empty():
 		var create_error := DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(directory))
@@ -12,7 +14,7 @@ func save_meta(path: String, data: Dictionary) -> bool:
 	var file := FileAccess.open(temporary_path, FileAccess.WRITE)
 	if file == null:
 		return false
-	file.store_string(JSON.stringify(data, "\t"))
+	file.store_string(JSON.stringify(normalized_data, "\t"))
 	file.flush()
 	file = null
 	var validation_file := FileAccess.open(temporary_path, FileAccess.READ)
@@ -41,13 +43,33 @@ func save_meta(path: String, data: Dictionary) -> bool:
 
 
 func load_meta(path: String) -> Dictionary:
-	var meta := MetaState.new()
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
-		return meta.to_dict()
+		return _migrate_meta_payload({})
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	if parsed is Dictionary:
-		meta.apply_dict(parsed)
+		return _migrate_meta_payload(parsed)
+	var fallback := _migrate_meta_payload({})
+	_last_migration_report["malformed_payload"] = true
+	return fallback
+
+
+func migrate_meta_payload(data: Dictionary) -> Dictionary:
+	var normalized := _migrate_meta_payload(data)
+	return {
+		"data": normalized,
+		"report": get_last_migration_report(),
+	}
+
+
+func get_last_migration_report() -> Dictionary:
+	return _last_migration_report.duplicate(true)
+
+
+func _migrate_meta_payload(data: Dictionary) -> Dictionary:
+	var meta := MetaState.new()
+	meta.apply_dict(data)
+	_last_migration_report = meta.get_last_migration_report()
 	return meta.to_dict()
 
 

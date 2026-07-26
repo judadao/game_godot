@@ -1,7 +1,7 @@
 class_name MetaState
 extends RefCounted
 
-const SCHEMA_VERSION := 2
+const SCHEMA_VERSION := 3
 const RESOURCE_IDS := ["gold", "autumn_wood", "stone", "magic_shard", "autumn_core"]
 const FIXED_CARD_IDS: Array[String] = ["ember_bolt", "quickstep"]
 
@@ -32,6 +32,7 @@ var selected_deck: Array[String] = [
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 ]
 var permanent_card_levels: Dictionary = {}
+var selected_card_instances: Array[CardInstance] = []
 var equipment := {"weapon": "", "armor": "", "accessory": ""}
 var equipment_levels: Dictionary = {}
 var unlocked_combos: Array[String] = []
@@ -42,6 +43,11 @@ var shortcuts: Dictionary = {}
 var settings := {"master_volume": 1.0, "camera_shake": 0.65}
 var inventory_state: Dictionary = {}
 var town_state: Dictionary = {}
+var _last_migration_report: Dictionary = {}
+
+
+func _init() -> void:
+	_migrate_legacy_selected_deck(selected_deck, permanent_card_levels)
 
 
 func add_resource(resource_id: String, amount: int) -> bool:
@@ -77,6 +83,7 @@ func apply_run_summary(summary: Dictionary) -> void:
 
 
 func to_dict() -> Dictionary:
+	_synchronize_selected_card_instances()
 	return {
 		"schema_version": SCHEMA_VERSION,
 		"resources": resources.duplicate(true),
@@ -84,7 +91,7 @@ func to_dict() -> Dictionary:
 		"building_levels": building_levels.duplicate(true),
 		"unlocked_cards": unlocked_cards.duplicate(),
 		"selected_deck": selected_deck.duplicate(),
-		"permanent_card_levels": permanent_card_levels.duplicate(true),
+		"selected_card_instances": get_selected_card_payloads(),
 		"equipment": equipment.duplicate(true),
 		"equipment_levels": equipment_levels.duplicate(true),
 		"unlocked_combos": unlocked_combos.duplicate(),
@@ -99,17 +106,29 @@ func to_dict() -> Dictionary:
 
 
 func apply_dict(data: Dictionary) -> void:
+	_last_migration_report = _empty_migration_report(int(data.get("schema_version", 0)))
 	var incoming_resources: Variant = data.get("resources", {})
 	if incoming_resources is Dictionary:
 		for resource_id in RESOURCE_IDS:
 			resources[resource_id] = maxi(0, int(incoming_resources.get(resource_id, resources[resource_id])))
 	village_level = clampi(int(data.get("village_level", village_level)), 1, 3)
-	building_levels = _safe_dictionary(data.get("building_levels"), building_levels)
+	building_levels = _safe_integer_dictionary(data.get("building_levels"), building_levels)
 	unlocked_cards = _safe_string_array(data.get("unlocked_cards"), unlocked_cards)
-	selected_deck = _safe_string_array(data.get("selected_deck"), selected_deck)
-	permanent_card_levels = _safe_dictionary(data.get("permanent_card_levels"), permanent_card_levels)
+	var legacy_selected_deck := _safe_string_array(data.get("selected_deck"), selected_deck)
+	var legacy_levels := _safe_dictionary(data.get("permanent_card_levels"), {})
+	if data.get("selected_card_instances") is Array:
+		selected_card_instances = _restore_card_instances(
+			data.get("selected_card_instances") as Array
+		)
+		if selected_card_instances.is_empty() and not legacy_selected_deck.is_empty():
+			_migrate_legacy_selected_deck(legacy_selected_deck, legacy_levels)
+		else:
+			selected_deck = get_selected_card_ids()
+	else:
+		_migrate_legacy_selected_deck(legacy_selected_deck, legacy_levels)
+	permanent_card_levels.clear()
 	equipment = _safe_dictionary(data.get("equipment"), equipment)
-	equipment_levels = _safe_dictionary(data.get("equipment_levels"), equipment_levels)
+	equipment_levels = _safe_integer_dictionary(data.get("equipment_levels"), equipment_levels)
 	unlocked_combos = _safe_string_array(data.get("unlocked_combos"), unlocked_combos)
 	unlocked_evolutions = _safe_string_array(data.get("unlocked_evolutions"), unlocked_evolutions)
 	boss_defeated = bool(data.get("boss_defeated", boss_defeated))
@@ -128,17 +147,88 @@ func normalize_selected_deck(valid_ids: Array[String]) -> Array[String]:
 	for fixed_id in FIXED_CARD_IDS:
 		if valid_lookup.has(fixed_id):
 			normalized.append(fixed_id)
-	for card_id in selected_deck:
+	for card_id in get_selected_card_ids():
 		if normalized.size() >= 16:
 			break
 		if valid_lookup.has(card_id) and not FIXED_CARD_IDS.has(card_id):
 			normalized.append(card_id)
-	selected_deck = normalized
+	_reconcile_selected_card_instances(normalized)
 	return selected_deck.duplicate()
+
+
+func get_selected_card_ids() -> Array[String]:
+	var result: Array[String] = []
+	for instance in selected_card_instances:
+		result.append(instance.card_id)
+	return result
+
+
+func get_selected_card_payloads() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for instance in selected_card_instances:
+		result.append(instance.to_dict())
+	return result
+
+
+func get_card_instance(instance_id: String) -> CardInstance:
+	for instance in selected_card_instances:
+		if instance.instance_id == instance_id:
+			return instance
+	return null
+
+
+func upgrade_card_instance(instance_id: String) -> bool:
+	var instance := get_card_instance(instance_id)
+	if instance == null or instance.is_fixed() or instance.level >= CardInstance.MAX_LEVEL:
+		return false
+	instance.level += 1
+	return true
+
+
+func add_card_instance(card_id: String, level: int = CardInstance.MIN_LEVEL) -> CardInstance:
+	if card_id.is_empty() or FIXED_CARD_IDS.has(card_id):
+		return null
+	var instance := CardInstance.new(card_id, level)
+	selected_card_instances.append(instance)
+	selected_deck.append(card_id)
+	return instance
+
+
+func remove_card_instances(instance_ids: Array[String]) -> bool:
+	if instance_ids.is_empty():
+		return false
+	var wanted: Dictionary = {}
+	for instance_id in instance_ids:
+		if instance_id.is_empty() or wanted.has(instance_id):
+			return false
+		var instance := get_card_instance(instance_id)
+		if instance == null or instance.is_fixed():
+			return false
+		wanted[instance_id] = true
+	var retained: Array[CardInstance] = []
+	for instance in selected_card_instances:
+		if not wanted.has(instance.instance_id):
+			retained.append(instance)
+	selected_card_instances = retained
+	selected_deck = get_selected_card_ids()
+	return true
+
+
+func get_last_migration_report() -> Dictionary:
+	return _last_migration_report.duplicate(true)
 
 
 func _safe_dictionary(value: Variant, fallback: Dictionary) -> Dictionary:
 	return (value as Dictionary).duplicate(true) if value is Dictionary else fallback.duplicate(true)
+
+
+func _safe_integer_dictionary(value: Variant, fallback: Dictionary) -> Dictionary:
+	if not value is Dictionary:
+		return fallback.duplicate(true)
+	var result: Dictionary = {}
+	for key in (value as Dictionary).keys():
+		result[key] = int((value as Dictionary)[key])
+	return result
 
 
 func _safe_string_array(value: Variant, fallback: Array[String]) -> Array[String]:
@@ -148,3 +238,123 @@ func _safe_string_array(value: Variant, fallback: Array[String]) -> Array[String
 			result.append(String(item))
 		return result
 	return fallback.duplicate()
+
+
+func _migrate_legacy_selected_deck(
+		legacy_deck: Array[String],
+		legacy_levels: Dictionary
+	) -> void:
+	selected_card_instances.clear()
+	for index in legacy_deck.size():
+		var card_id := legacy_deck[index].strip_edges()
+		if card_id.is_empty():
+			_last_migration_report["discarded_invalid_instances"] = int(
+				_last_migration_report.get("discarded_invalid_instances", 0)
+			) + 1
+			continue
+		var legacy_level := clampi(
+			int(legacy_levels.get(card_id, CardInstance.MIN_LEVEL)),
+			CardInstance.MIN_LEVEL,
+			CardInstance.MAX_LEVEL
+		)
+		var level := CardInstance.MIN_LEVEL if FIXED_CARD_IDS.has(card_id) else legacy_level
+		if level != legacy_level:
+			_last_migration_report["fixed_levels_repaired"] = int(
+				_last_migration_report.get("fixed_levels_repaired", 0)
+			) + 1
+		selected_card_instances.append(CardInstance.new(
+			card_id,
+			level,
+			"legacy-%06d" % (index + 1)
+		))
+		_last_migration_report["migrated_instances"] = int(
+			_last_migration_report.get("migrated_instances", 0)
+		) + 1
+	selected_deck = get_selected_card_ids()
+	_last_migration_report["to_schema"] = SCHEMA_VERSION
+
+
+func _restore_card_instances(raw_instances: Array) -> Array[CardInstance]:
+	var result: Array[CardInstance] = []
+	var seen_ids: Dictionary = {}
+	for index in raw_instances.size():
+		if not raw_instances[index] is Dictionary:
+			_record_invalid_instance()
+			continue
+		var raw := raw_instances[index] as Dictionary
+		var card_id := String(raw.get("card_id", "")).strip_edges()
+		var instance_id := String(raw.get("instance_id", "")).strip_edges()
+		var level := int(raw.get("level", CardInstance.MIN_LEVEL))
+		if (
+			card_id.is_empty()
+			or level < CardInstance.MIN_LEVEL
+			or level > CardInstance.MAX_LEVEL
+		):
+			_record_invalid_instance()
+			continue
+		if instance_id.is_empty() or seen_ids.has(instance_id):
+			instance_id = _unique_repair_id(index + 1, seen_ids)
+			_last_migration_report["duplicate_ids_repaired"] = int(
+				_last_migration_report.get("duplicate_ids_repaired", 0)
+			) + 1
+		if FIXED_CARD_IDS.has(card_id) and level != CardInstance.MIN_LEVEL:
+			level = CardInstance.MIN_LEVEL
+			_last_migration_report["fixed_levels_repaired"] = int(
+				_last_migration_report.get("fixed_levels_repaired", 0)
+			) + 1
+		seen_ids[instance_id] = true
+		result.append(CardInstance.new(card_id, level, instance_id))
+	_last_migration_report["to_schema"] = SCHEMA_VERSION
+	return result
+
+
+func _synchronize_selected_card_instances() -> void:
+	if selected_deck != get_selected_card_ids():
+		_reconcile_selected_card_instances(selected_deck)
+
+
+func _reconcile_selected_card_instances(target_ids: Array[String]) -> void:
+	var remaining := selected_card_instances.duplicate()
+	var reconciled: Array[CardInstance] = []
+	for card_id in target_ids:
+		var matched_index := -1
+		for index in remaining.size():
+			if remaining[index].card_id == card_id:
+				matched_index = index
+				break
+		if matched_index >= 0:
+			var retained := remaining[matched_index] as CardInstance
+			remaining.remove_at(matched_index)
+			if retained.is_fixed():
+				retained.level = CardInstance.MIN_LEVEL
+			reconciled.append(retained)
+		else:
+			reconciled.append(CardInstance.new(card_id))
+	selected_card_instances = reconciled
+	selected_deck = get_selected_card_ids()
+
+
+func _empty_migration_report(from_schema: int) -> Dictionary:
+	return {
+		"from_schema": from_schema,
+		"to_schema": SCHEMA_VERSION,
+		"migrated_instances": 0,
+		"duplicate_ids_repaired": 0,
+		"fixed_levels_repaired": 0,
+		"discarded_invalid_instances": 0,
+	}
+
+
+func _record_invalid_instance() -> void:
+	_last_migration_report["discarded_invalid_instances"] = int(
+		_last_migration_report.get("discarded_invalid_instances", 0)
+	) + 1
+
+
+func _unique_repair_id(index: int, seen_ids: Dictionary) -> String:
+	var candidate := "repair-%06d" % index
+	var suffix := 2
+	while seen_ids.has(candidate):
+		candidate = "repair-%06d-%d" % [index, suffix]
+		suffix += 1
+	return candidate

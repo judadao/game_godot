@@ -948,3 +948,27 @@ func read_dictionary(path: String) -> Dictionary:
 - `docs/12_GAME_DESIGN.md`
 - `docs/13_ROADMAP.md`
 - `docs/rule_1.md`
+
+## 23. Card Instance Save Contract
+
+Card definitions remain static catalog records keyed by `card_id`. Every owned
+or runtime copy is a `CardInstance` with a unique string `instance_id`, its
+`card_id`, and an independent level from 1 through 3. `MetaState` schema 3
+serializes these copies as `selected_card_instances`; `selected_deck` is kept
+only as a card-ID compatibility projection. `permanent_card_levels` is accepted
+only while migrating schema-2 saves and is never written as the new authority.
+
+Schema-2 card-ID arrays migrate in source order to deterministic IDs
+`legacy-000001`, `legacy-000002`, and so on. Duplicate IDs in schema-3 payloads
+are repaired deterministically, fixed `ember_bolt` and `quickstep` copies are
+forced to level 1, and `MetaState.get_last_migration_report()` /
+`SaveService.get_last_migration_report()` expose conversion and repair counts.
+Applying an already migrated payload must be idempotent.
+
+`DeckManager` keeps `CardInstance` objects authoritative in hand, draw,
+discard, exhaust, and cooldown piles. The legacy string arrays are projections
+for callers during integration and must not be mutated. Catalog fields
+`play_destination` (`discard`, `exhaust`, or `cooldown`) and
+`cooldown_seconds` control post-play routing. Cooldown completion returns the
+same instance to discard; paused cooldown clocks do not advance. Fixed card
+instances ignore exhaust and cooldown destinations and stay reusable.
