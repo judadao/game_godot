@@ -7,7 +7,7 @@ const SUPPORTED_EFFECTS := [
 	"damage", "area_damage", "block", "heal", "dash", "dash_damage",
 	"slow", "area_slow", "stun", "attack_power", "damage_aura",
 	"gain_energy", "summon", "projectile_burst", "overdrive",
-	"infusion",
+	"infusion", "combat_status", "healing_pulses", "regeneration",
 ]
 
 
@@ -20,7 +20,14 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 		return {}
 	var effect := card.get("effect", {}) as Dictionary
 	var kind := String(effect.get("kind", ""))
-	var result := {"card_id": String(card.get("id", "")), "kind": kind, "affected": 0, "total": 0}
+	var result := {
+		"card_id": String(card.get("id", "")),
+		"kind": kind,
+		"affected": 0,
+		"total": 0,
+		"play_destination": String(card.get("play_destination", "discard")),
+		"cooldown_seconds": float(card.get("cooldown_seconds", 0.0)),
+	}
 
 	match kind:
 		"damage":
@@ -72,11 +79,25 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 					caster.call("take_damage", maxi(0, int(effect.get("health_cost", 0))))
 				caster.set_meta("overdrive_duration", float(effect.get("duration", 0.0)))
 				result["affected"] = 1
+		"combat_status", "healing_pulses", "regeneration":
+			if caster.has_method("apply_combat_status"):
+				result["affected"] = 1 if bool(caster.call(
+					"apply_combat_status",
+					String(card.get("id", "")),
+					String(card.get("name", "")),
+					effect
+				)) else 0
 		"gain_energy", "projectile_burst", "infusion":
 			result["affected"] = 1
 
-	if float(effect.get("lifesteal_ratio", 0.0)) > 0.0 and int(result.get("total", 0)) > 0 and caster.has_method("restore_health"):
-		caster.call("restore_health", maxi(1, int(round(float(result["total"]) * float(effect["lifesteal_ratio"])))))
+	if int(result.get("total", 0)) > 0:
+		if caster.has_method("resolve_lifesteal"):
+			result["lifesteal_restored"] = int(caster.call("resolve_lifesteal", int(result["total"])))
+		elif float(effect.get("lifesteal_ratio", 0.0)) > 0.0 and caster.has_method("restore_health"):
+			result["lifesteal_restored"] = int(caster.call(
+				"restore_health",
+				maxi(1, int(round(float(result["total"]) * float(effect["lifesteal_ratio"]))))
+			))
 
 	effect_resolved.emit(String(card.get("id", "")), result)
 	return result

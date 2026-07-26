@@ -5,9 +5,10 @@ const DEFAULT_CATALOG_PATH := "res://data/cards.json"
 const REQUIRED_FIELDS := [
 	"id", "name", "type", "rarity", "level", "max_level", "cost", "description",
 	"icon_path", "combo_tags", "effect", "upgrade_effects",
-	"evolution_condition", "evolution_result",
+	"evolution_condition", "evolution_result", "play_destination", "cooldown_seconds",
 ]
-const VALID_TYPES := ["attack", "skill", "power", "summon", "defense", "status", "ultimate", "combo"]
+const VALID_TYPES := ["attack", "skill", "power", "summon", "healing", "status", "ultimate", "combo"]
+const VALID_PLAY_DESTINATIONS := ["discard", "exhaust", "cooldown"]
 
 var _cards_by_id: Dictionary = {}
 var _ordered_cards: Array[Dictionary] = []
@@ -27,6 +28,8 @@ func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
 			_clear()
 			return false
 		var card := (raw_card as Dictionary).duplicate(true)
+		card["play_destination"] = String(card.get("play_destination", "discard"))
+		card["cooldown_seconds"] = float(card.get("cooldown_seconds", 0.0))
 		if not _is_valid_card(card):
 			_clear()
 			return false
@@ -63,6 +66,14 @@ func _is_valid_card(card: Dictionary) -> bool:
 	if String(card["id"]).strip_edges().is_empty() or String(card["name"]).strip_edges().is_empty():
 		return false
 	if not VALID_TYPES.has(String(card["type"]).to_lower()) or int(card["cost"]) < 0:
+		return false
+	var play_destination := String(card["play_destination"])
+	if not VALID_PLAY_DESTINATIONS.has(play_destination):
+		return false
+	var cooldown_seconds := float(card["cooldown_seconds"])
+	if cooldown_seconds < 0.0 or (play_destination == "cooldown" and cooldown_seconds <= 0.0):
+		return false
+	if String(card["type"]).to_lower() == "healing" and String(card.get("card_color", "")) != "green":
 		return false
 	if String(card["rarity"]).strip_edges().is_empty():
 		return false

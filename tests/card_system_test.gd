@@ -5,7 +5,7 @@ const EXPECTED_TYPES := [
 	"skill",
 	"power",
 	"summon",
-	"defense",
+	"healing",
 	"status",
 	"ultimate",
 ]
@@ -33,7 +33,7 @@ func _run() -> void:
 	var database: RefCounted = database_script.new()
 	_expect(bool(database.call("load_catalog")), "Card catalog must load and validate.")
 	var cards: Array = database.call("get_all_cards")
-	_expect(cards.size() == 23, "Card catalog must contain exactly 23 practical cards.")
+	_expect(cards.size() == 24, "Card catalog must contain exactly 24 practical cards.")
 
 	var seen_ids := {}
 	var seen_types := {}

@@ -125,7 +125,7 @@ UI setter/configure API
 
 | JSON | Loader | Root field | Current validated content |
 |---|---|---|---|
-| `cards.json` | `CardDatabase` | `cards` | 23 cards |
+| `cards.json` | `CardDatabase` | `cards` | 24 cards |
 | `evolutions.json` | `EvolutionManager` | `evolutions` | 6 recipes |
 | `equipment.json` | `inventory_manager.gd` | `resource_order`, `starting_resources`, `equipment` | 5 resources, 10 equipment |
 | `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 4 buildings × 3 levels, 3 stages |
@@ -145,7 +145,7 @@ UI setter/configure API
 
 ### 3.2 Schema version現況
 
-- `cards.json`：`schema_version = 2`
+- `cards.json`：`schema_version = 3`
 - `evolutions.json`：`schema_version = 1`
 - `equipment.json`：目前沒有schema_version field
 - `town_upgrades.json`：目前沒有schema_version field
@@ -181,6 +181,8 @@ effect
 upgrade_effects
 evolution_condition
 evolution_result
+play_destination
+cooldown_seconds
 ```
 
 JSON另有`tags`，但它不在current required list。治理與validator要區分required與optional。
@@ -193,7 +195,7 @@ Current：
 - `skill`
 - `power`
 - `summon`
-- `defense`
+- `healing`
 - `status`
 - `ultimate`
 - `combo`

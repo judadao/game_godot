@@ -10,14 +10,14 @@ func _init() -> void:
 func _run() -> void:
 	var cards := CardDatabase.new()
 	_expect(cards.load_catalog(), "Card content must load.")
-	_expect(cards.get_all_cards().size() == 23, "Vertical slice must ship 23 practical cards.")
+	_expect(cards.get_all_cards().size() == 24, "Vertical slice must ship 24 practical cards.")
 	var card_ids := {}
 	var represented_types := {}
 	for card in cards.get_all_cards():
 		card_ids[String(card["id"])] = true
 		represented_types[String(card["type"]).to_lower()] = true
 		_expect(ResourceLoader.exists(String(card["icon_path"])), "Every card icon path must resolve.")
-	for required_type in ["attack", "skill", "power", "summon", "defense", "status", "ultimate", "combo"]:
+	for required_type in ["attack", "skill", "power", "summon", "healing", "status", "ultimate", "combo"]:
 		_expect(represented_types.has(required_type), "Card catalog must represent %s." % required_type)
 
 	var evolutions := EvolutionManager.new(cards)
