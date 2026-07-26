@@ -21,7 +21,10 @@ bottom layer.
 - Q/W/E/R play the current four-card group.
 - A/S switches between the two groups.
 - Automatic attack is shown as a passive loadout status, not a hand card.
-- Skill/Combo activation appears as a short-lived toast, not a permanent HUD panel.
+- Redraw lives in the card action strip instead of the player vitals panel.
+- AP uses one compact numeric counter; HP remains the only persistent resource bar.
+- Skill/Combo activation uses a three-row fading feed on the lower right.
+- The large top-left Combo panel is removed to preserve combat visibility.
 - The map preserves an open combat lane on the left, merchant/camp landmark in the
   middle, and portal landmark on the right.
 

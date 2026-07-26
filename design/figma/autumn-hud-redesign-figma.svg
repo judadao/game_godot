@@ -80,18 +80,13 @@
       <circle cx="-10" cy="1" r="3" fill="#2a3940"/><circle cx="10" cy="1" r="3" fill="#2a3940"/>
     </g>
     <g id="InteractionPrompt" transform="translate(650 390)" filter="url(#shadow)">
-      <rect width="430" height="58" rx="10" fill="#0a1012" fill-opacity=".96" class="panelStroke"/>
-      <use href="#key" x="10" y="7" width="44" height="44"/>
-      <text x="32" y="36" text-anchor="middle" class="label">F</text>
-      <text x="72" y="36" class="label">Trade Cards &#x2014; Wandering Merchant</text>
+      <rect width="300" height="72" rx="10" fill="#0a1012" fill-opacity=".96" class="panelStroke"/>
+      <use href="#key" x="12" y="14" width="44" height="44"/>
+      <text x="34" y="43" text-anchor="middle" class="label">F</text>
+      <text x="72" y="31" class="small">Trade Cards &#x2014;</text>
+      <text x="72" y="52" class="label">Wandering Merchant</text>
     </g>
-    <g id="SkillToast" transform="translate(820 280)" filter="url(#shadow)">
-      <rect width="280" height="58" rx="12" fill="#10171a" fill-opacity=".94" stroke="#7ed8ff" stroke-width="2"/>
-      <use href="#diamond" x="18" y="17" width="24" height="24" style="color:#55c6ef"/>
-      <text x="56" y="27" class="tiny">COMBO ACTIVATED</text>
-      <text x="56" y="47" class="label">Dash Edge</text>
-    </g>
-    <g id="DashHint" transform="translate(1090 622)" filter="url(#shadow)">
+    <g id="DashHint" transform="translate(30 628)" filter="url(#shadow)">
       <rect width="190" height="46" rx="23" fill="#0b1114" fill-opacity=".9" stroke="#b88948" stroke-width="2"/>
       <use href="#key" x="8" y="3" width="40" height="40"/>
       <text x="28" y="30" text-anchor="middle" class="small">&#x2423;</text>
@@ -101,18 +96,7 @@
   </g>
 
   <g id="03_TOP_LEFT_COMBAT" class="font" filter="url(#shadow)">
-    <g id="ComboPanel" transform="translate(18 18)">
-      <rect width="300" height="112" rx="10" fill="url(#panel)" class="panelStroke"/>
-      <text x="20" y="32" class="title">COMBO</text>
-      <text x="278" y="42" text-anchor="end" fill="#ffc43d" font-size="38" font-weight="800">&#x00D7;12</text>
-      <line x1="18" y1="47" x2="130" y2="47" stroke="#b88948" stroke-width="2"/>
-      <circle cx="34" cy="80" r="14" fill="none" stroke="#e5c48a" stroke-width="3"/>
-      <path d="M34 64V58M29 57H39M34 80 42 74" stroke="#e5c48a" stroke-width="3" stroke-linecap="round"/>
-      <text x="58" y="87" class="number">8.6s</text>
-      <rect x="128" y="74" width="146" height="12" rx="6" fill="#493e31"/>
-      <rect x="128" y="74" width="105" height="12" rx="6" fill="#f0b72f"/>
-    </g>
-    <g id="MissionPanel" transform="translate(18 142)">
+    <g id="MissionPanel" transform="translate(18 260)">
       <rect width="300" height="184" rx="10" fill="url(#panel)" class="panelStroke"/>
       <text x="20" y="33" class="title">MISSIONS</text>
       <line x1="18" y1="48" x2="282" y2="48" stroke="#3d392f" stroke-width="2"/>
@@ -166,27 +150,19 @@
       <rect x="182" y="76" width="160" height="16" rx="4" fill="#c64632"/>
       <text x="334" y="90" text-anchor="end" class="number">128 / 128</text>
 
-      <text x="142" y="128" class="label">SP</text>
-      <rect x="178" y="109" width="168" height="24" rx="6" fill="#111b24" stroke="#6a5b46" stroke-width="2"/>
-      <rect x="182" y="113" width="160" height="16" rx="4" fill="#3d83c5"/>
-      <text x="334" y="127" text-anchor="end" class="number">45 / 45</text>
-
-      <text x="142" y="165" class="label">AP</text>
-      <rect x="178" y="146" width="168" height="24" rx="6" fill="#142014" stroke="#6a5b46" stroke-width="2"/>
-      <rect x="182" y="150" width="128" height="16" rx="4" fill="#65b84b"/>
-      <text x="334" y="164" text-anchor="end" class="number">4 / 5</text>
+      <g id="ActionPointCounter" transform="translate(142 116)">
+        <rect width="204" height="58" rx="8" fill="#11191c" stroke="#6a5b46" stroke-width="2"/>
+        <text x="18" y="24" class="tiny">ACTION POINTS</text>
+        <text x="182" y="39" text-anchor="end" fill="#91d976" font-size="30" font-weight="800">4 / 5</text>
+        <rect x="18" y="42" width="116" height="6" rx="3" fill="#65b84b"/>
+        <rect x="134" y="42" width="48" height="6" rx="3" fill="#354337"/>
+      </g>
 
       <line x1="20" y1="194" x2="350" y2="194" stroke="#3d392f" stroke-width="2"/>
-      <g id="RedrawButton" transform="translate(22 214)">
-        <rect width="142" height="43" rx="8" fill="#11191c" stroke="#604d32" stroke-width="2"/>
-        <use href="#key" x="7" y="3" width="37" height="37"/>
-        <text x="25" y="28" text-anchor="middle" class="small">T</text>
-        <text x="54" y="28" class="label">REDRAW</text>
-      </g>
-      <circle cx="212" cy="235" r="20" fill="#11191c" stroke="#80633d" stroke-width="2"/>
-      <text x="212" y="242" text-anchor="middle" class="label">11</text>
-      <text x="254" y="226" class="tiny">AUTO ATTACK</text>
-      <text x="254" y="246" class="small">Ember Bolt</text>
+      <circle cx="210" cy="235" r="20" fill="#11191c" stroke="#80633d" stroke-width="2"/>
+      <text x="210" y="242" text-anchor="middle" class="label">11</text>
+      <text x="252" y="226" class="tiny">AUTO ATTACK</text>
+      <text x="252" y="246" class="small">Ember Bolt</text>
     </g>
 
     <g id="CardDock" transform="translate(406 714)" filter="url(#shadow)">
@@ -199,6 +175,12 @@
         <text x="172" y="33" class="small">AP 1</text>
         <line x1="236" y1="14" x2="236" y2="40" stroke="#5c4b33" stroke-width="2"/>
         <text x="256" y="33" class="small">CD 0.1s</text>
+        <g id="RedrawButton" transform="translate(420 6)">
+          <rect width="142" height="42" rx="8" fill="#11191c" stroke="#80633d" stroke-width="2"/>
+          <use href="#key" x="4" y="1" width="40" height="40"/>
+          <text x="24" y="28" text-anchor="middle" class="small">T</text>
+          <text x="52" y="28" class="label">REDRAW</text>
+        </g>
         <text x="850" y="33" class="tiny">SPACE DASH</text>
         <circle cx="976" cy="27" r="12" fill="none" stroke="#b88948" stroke-width="2"/>
         <text x="976" y="32" text-anchor="middle" class="small">i</text>
@@ -275,22 +257,28 @@
         <text x="346" y="33" text-anchor="middle" class="small">&#x2423;</text>
         <text x="376" y="33" class="small">DASH</text>
       </g>
-      <g id="StatusSummary" transform="translate(0 66)">
-        <rect width="218" height="194" rx="10" fill="url(#panelSoft)" stroke="#4b3e2d" stroke-width="2"/>
-        <text x="109" y="31" text-anchor="middle" class="title">STATUS</text>
-        <text x="28" y="78" font-size="24">&#x2694;</text><text x="70" y="77" class="label">ATK</text><text x="188" y="77" text-anchor="end" class="number">36</text>
-        <text x="28" y="121" font-size="24">&#x25C8;</text><text x="70" y="120" class="label">DEF</text><text x="188" y="120" text-anchor="end" class="number">18</text>
-        <text x="28" y="164" font-size="24">&#x27A4;</text><text x="70" y="163" class="label">SPD</text><text x="188" y="163" text-anchor="end" class="number">12</text>
-      </g>
-      <g id="InventorySummary" transform="translate(230 66)">
-        <rect width="244" height="194" rx="10" fill="url(#panelSoft)" stroke="#4b3e2d" stroke-width="2"/>
-        <text x="122" y="31" text-anchor="middle" class="title">QUICK ITEMS</text>
-        <use href="#slot" x="22" y="48" width="76" height="76"/>
-        <use href="#slot" x="110" y="48" width="76" height="76"/>
-        <circle cx="60" cy="86" r="18" fill="#b53e35" stroke="#edaf72" stroke-width="3"/>
-        <path d="M54 65h12v10H54Z" fill="#a5d3d1" stroke="#d9ffff" stroke-width="2"/>
-        <path d="M133 105 165 67M133 67l32 38" stroke="#74c8ef" stroke-width="7"/>
-        <text x="122" y="156" text-anchor="middle" class="small">I  OPEN INVENTORY</text>
+      <g id="TransientSkillFeed" transform="translate(16 66)">
+        <g id="SkillFeedNewest">
+          <rect width="442" height="54" rx="10" fill="#122128" stroke="#76d4f4" stroke-width="2"/>
+          <use href="#diamond" x="16" y="17" width="20" height="20" style="color:#55c6ef"/>
+          <text x="50" y="22" class="tiny">COMBO ACTIVATED</text>
+          <text x="50" y="43" class="label">Dash Edge</text>
+          <text x="416" y="33" text-anchor="end" fill="#86dcf8" font-size="13" font-weight="700">5.8s</text>
+        </g>
+        <g id="SkillFeedMiddle" transform="translate(0 64)" opacity=".76">
+          <rect width="442" height="54" rx="10" fill="#101b20" stroke="#6ebbd5" stroke-width="2"/>
+          <use href="#diamond" x="16" y="17" width="20" height="20" style="color:#9b78d3"/>
+          <text x="50" y="22" class="tiny">COMBO ACTIVATED</text>
+          <text x="50" y="43" class="label">Iron Will</text>
+          <text x="416" y="33" text-anchor="end" class="tiny">3.2s</text>
+        </g>
+        <g id="SkillFeedOldest" transform="translate(0 128)" opacity=".48">
+          <rect width="442" height="54" rx="10" fill="#0e171b" stroke="#5795aa" stroke-width="2"/>
+          <use href="#diamond" x="16" y="17" width="20" height="20" style="color:#73c977"/>
+          <text x="50" y="22" class="tiny">SKILL ACTIVATED</text>
+          <text x="50" y="43" class="label">Renewal</text>
+          <text x="416" y="33" text-anchor="end" class="tiny">FADING</text>
+        </g>
       </g>
     </g>
 
