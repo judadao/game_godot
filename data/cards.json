@@ -17,9 +17,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Damage increases to 16.", "effect": {"amount": 16}},
         {"level": 3, "description": "Splits into two visible bolts.", "mechanic_change": "split_projectile", "effect": {"amount": 10, "projectiles": 2}}
-      ],
-      "evolution_condition": {"required_level": 3, "required_passive": "ember_core"},
-      "evolution_result": "inferno_orb"
+      ]
     },
     {
       "id": "cleave",
@@ -37,9 +35,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Damage increases to 23.", "effect": {"amount": 23}},
         {"level": 3, "description": "The swing becomes a full visible circle.", "mechanic_change": "full_circle_swing", "effect": {"amount": 23, "arc_degrees": 360}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "inferno_orb",
@@ -57,9 +53,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Explosion radius increases.", "effect": {"radius": 220}},
         {"level": 3, "description": "Leaves a visible burning ground field.", "mechanic_change": "burning_ground", "effect": {"field_damage": 6, "field_duration": 4.0}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "guard",
@@ -79,9 +73,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Super armor lasts 5 seconds.", "effect": {"statuses": [{"status_id": "super_armor", "tier": 1, "duration": 5.0}]}},
         {"level": 3, "description": "A visible iron aura resists stronger impacts.", "mechanic_change": "reinforced_super_armor", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 5.0}]}}
-      ],
-      "evolution_condition": {"required_level": 3, "required_passive": "iron_heart"},
-      "evolution_result": "fortress_stance"
+      ]
     },
     {
       "id": "iron_skin",
@@ -101,9 +93,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Damage reduction lasts 6 seconds.", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 6.0}]}},
         {"level": 3, "description": "Stone plates visibly orbit while active.", "mechanic_change": "orbiting_stone_armor", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.35, "duration": 6.0}]}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "fortress_stance",
@@ -123,9 +113,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "The stance lasts 5 seconds.", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 5.0}, {"status_id": "damage_reduction", "ratio": 0.40, "duration": 5.0}]}},
         {"level": 3, "description": "Raises a visible unbreakable aura around the player.", "mechanic_change": "unbreakable_aura", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 5.0}, {"status_id": "damage_reduction", "ratio": 0.45, "duration": 5.0}]}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "quickstep",
@@ -143,9 +131,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Dash distance increases.", "effect": {"distance": 160}},
         {"level": 3, "description": "Leaves a visible decoy afterimage that draws attacks.", "mechanic_change": "decoy_afterimage", "effect": {"decoy_duration": 1.5}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "dash_strike",
@@ -163,9 +149,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Damage increases to 15.", "effect": {"amount": 15}},
         {"level": 3, "description": "Creates a visible return slash along the dash path.", "mechanic_change": "return_slash", "effect": {"return_damage": 10}}
-      ],
-      "evolution_condition": {"required_level": 3, "required_passive": "wind_feather"},
-      "evolution_result": "gale_lunge"
+      ]
     },
     {
       "id": "gale_lunge",
@@ -183,9 +167,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "The wind trail deals 6 damage.", "effect": {"trail_damage": 6}},
         {"level": 3, "description": "The visible wind trail pulls enemies inward.", "mechanic_change": "pulling_wind_trail", "effect": {"pull_strength": 180}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "frost_bind",
@@ -203,9 +185,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Slow duration increases.", "effect": {"duration": 4.5}},
         {"level": 3, "description": "The target visibly freezes solid after two seconds.", "mechanic_change": "delayed_freeze", "effect": {"freeze_delay": 2.0, "freeze_duration": 0.8}}
-      ],
-      "evolution_condition": {"required_level": 3, "required_passive": "hourglass_shard"},
-      "evolution_result": "time_snare"
+      ]
     },
     {
       "id": "shockwave",
@@ -223,9 +203,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Stun radius increases.", "effect": {"radius": 190}},
         {"level": 3, "description": "A second visible shock ring erupts after a delay.", "mechanic_change": "echo_shockwave", "effect": {"echo_delay": 0.5, "echo_stun": 0.35}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "time_snare",
@@ -243,9 +221,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Field duration increases.", "effect": {"duration": 5.5}},
         {"level": 3, "description": "The visible field rewinds enemies to their entry point.", "mechanic_change": "position_rewind", "effect": {"rewind_delay": 2.5}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "healing_light",
@@ -266,9 +242,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Healing increases to 20.", "effect": {"amount": 20}},
         {"level": 3, "description": "Visible healing motes jump to the lowest-health ally.", "mechanic_change": "chain_heal", "effect": {"ally_amount": 12, "jumps": 1}}
-      ],
-      "evolution_condition": {"required_level": 3, "required_passive": "life_seed"},
-      "evolution_result": "renewal"
+      ]
     },
     {
       "id": "energy_surge",
@@ -286,9 +260,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "The wisp remains for three turns.", "effect": {"duration_turns": 3}},
         {"level": 3, "description": "The wisp visibly duplicates after granting energy.", "mechanic_change": "wisp_duplication", "effect": {"duplicate_count": 1, "duplicate_duration_turns": 1}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "renewal",
@@ -309,9 +281,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Each healing pulse restores 14 health.", "effect": {"heal": 14}},
         {"level": 3, "description": "The spirit visibly blooms and cleanses allies in an area.", "mechanic_change": "cleansing_bloom", "effect": {"cleanse": 1, "radius": 140}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "battle_focus",
@@ -329,9 +299,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Attack bonus increases to six.", "effect": {"amount": 6}},
         {"level": 3, "description": "A visible focus mark guarantees the next critical hit.", "mechanic_change": "guaranteed_critical", "effect": {"critical_hits": 1}}
-      ],
-      "evolution_condition": {"required_level": 3, "required_passive": "warrior_emblem"},
-      "evolution_result": "overdrive"
+      ]
     },
     {
       "id": "flame_aura",
@@ -349,9 +317,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Aura radius increases.", "effect": {"radius": 145}},
         {"level": 3, "description": "The visible aura launches a flame lash every third tick.", "mechanic_change": "periodic_flame_lash", "effect": {"lash_damage": 12, "tick_interval": 3}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "flame_imbue",
@@ -365,13 +331,13 @@
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
       "tags": ["combo", "fire", "infusion"],
       "combo_tags": ["combo", "fire"],
+      "play_destination": "exhaust",
+      "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "flame", "combo_duration": 6.0, "damage_bonus": 4, "burn_damage": 3, "burn_duration": 3.0},
       "upgrade_effects": [
         {"level": 2, "description": "Fire bonus increases to six.", "effect": {"damage_bonus": 6}},
         {"level": 3, "description": "Burn lasts five seconds.", "mechanic_change": "wildfire_infusion", "effect": {"burn_duration": 5.0}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "frostburst_imbue",
@@ -385,13 +351,13 @@
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png",
       "tags": ["combo", "frost", "infusion"],
       "combo_tags": ["combo", "frost"],
+      "play_destination": "exhaust",
+      "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "frost", "combo_duration": 6.0, "damage_bonus": 2, "frost_ratio": 0.30, "frost_duration": 2.0},
       "upgrade_effects": [
         {"level": 2, "description": "Frost bonus increases to four.", "effect": {"damage_bonus": 4}},
         {"level": 3, "description": "Slow becomes stronger.", "mechanic_change": "deep_freeze_infusion", "effect": {"frost_ratio": 0.45}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "battle_rhythm",
@@ -405,13 +371,13 @@
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0005_Gloves.png",
       "tags": ["combo", "buff", "power"],
       "combo_tags": ["combo", "power"],
+      "play_destination": "exhaust",
+      "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "rhythm", "combo_duration": 6.0, "damage_bonus": 2},
       "upgrade_effects": [
         {"level": 2, "description": "Rhythm grants three extra damage.", "effect": {"damage_bonus": 3}},
         {"level": 3, "description": "Rhythm grants four extra damage.", "mechanic_change": "perfect_rhythm", "effect": {"damage_bonus": 4}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "stoneguard_combo",
@@ -431,9 +397,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Retaliation increases to eight.", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 6.0}, {"status_id": "retaliation", "amount": 8, "duration": 6.0}]}},
         {"level": 3, "description": "A visible stone burst answers every hit.", "mechanic_change": "living_counterguard", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 6.0}, {"status_id": "retaliation", "amount": 10, "duration": 6.0}]}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "blood_pact_combo",
@@ -454,9 +418,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Lifesteal increases to 20 percent.", "effect": {"lifesteal_ratio": 0.20}},
         {"level": 3, "description": "Lifesteal increases to 25 percent.", "mechanic_change": "crimson_feast", "effect": {"lifesteal_ratio": 0.25}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "verdant_renewal",
@@ -477,9 +439,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Each pulse restores 8 health.", "effect": {"amount": 8}},
         {"level": 3, "description": "A visible green bloom accompanies every healing pulse.", "mechanic_change": "verdant_bloom", "effect": {"amount": 10}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     },
     {
       "id": "overdrive",
@@ -497,9 +457,7 @@
       "upgrade_effects": [
         {"level": 2, "description": "Overdrive lasts ten seconds.", "effect": {"duration": 10.0}},
         {"level": 3, "description": "Creates a visible berserk echo that repeats each attack.", "mechanic_change": "attack_echo", "effect": {"echo_damage_ratio": 0.5}}
-      ],
-      "evolution_condition": {},
-      "evolution_result": ""
+      ]
     }
   ]
 }

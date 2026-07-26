@@ -47,15 +47,28 @@ func _run() -> void:
 	_expect(int(second_enemy.get("health")) == second_health, "A single-target card must not damage every enemy on the map.")
 	_expect(int(result.get("affected", 0)) == 1, "Card result must report affected targets.")
 	_expect(deck.energy == 2, "Playing a one-cost card must spend one energy.")
-	_expect(deck.discard_pile.has("ember_bolt"), "Played cards must enter discard.")
+	_expect(
+		deck.hand_instances.any(
+			func(instance: CardInstance) -> bool: return instance.card_id == "ember_bolt"
+		),
+		"The fixed basic attack must retain its stable hand instance."
+	)
 
 	var guard_index := deck.hand.find("guard")
 	var guard_card := deck.play_from_hand(guard_index)
 	runner.call("cast", guard_card, player, [])
-	_expect(int(player.call("get_block")) >= 12, "Defense card must grant real player block.")
-	var health_before := int(player.get("health"))
+	var status_controller := player.get_node("CombatStatusController") as CombatStatusController
+	_expect(
+		status_controller.get_super_armor_tier() >= 1
+		and deck.cooldown_pile.size() == 1,
+		"Iron Will must grant timed super armor and move its exact instance to cooldown."
+	)
+	player.set("velocity", Vector2.ZERO)
 	player.call("take_hit", 10, enemy.global_position, 0.0)
-	_expect(int(player.get("health")) == health_before, "Block must absorb incoming damage before health.")
+	_expect(
+		(player.get("velocity") as Vector2).x == 0.0,
+		"Timed super armor must prevent incoming-hit knockback."
+	)
 
 	var frost_card := database.get_card("frost_bind")
 	runner.call("cast", frost_card, player, [second_enemy])

@@ -245,12 +245,16 @@ func _migrate_legacy_selected_deck(
 		legacy_levels: Dictionary
 	) -> void:
 	selected_card_instances.clear()
+	var seen_fixed_ids: Dictionary = {}
 	for index in legacy_deck.size():
 		var card_id := legacy_deck[index].strip_edges()
 		if card_id.is_empty():
 			_last_migration_report["discarded_invalid_instances"] = int(
 				_last_migration_report.get("discarded_invalid_instances", 0)
 			) + 1
+			continue
+		if FIXED_CARD_IDS.has(card_id) and seen_fixed_ids.has(card_id):
+			_record_duplicate_fixed_card()
 			continue
 		var legacy_level := clampi(
 			int(legacy_levels.get(card_id, CardInstance.MIN_LEVEL)),
@@ -267,6 +271,8 @@ func _migrate_legacy_selected_deck(
 			level,
 			"legacy-%06d" % (index + 1)
 		))
+		if FIXED_CARD_IDS.has(card_id):
+			seen_fixed_ids[card_id] = true
 		_last_migration_report["migrated_instances"] = int(
 			_last_migration_report.get("migrated_instances", 0)
 		) + 1
@@ -277,6 +283,7 @@ func _migrate_legacy_selected_deck(
 func _restore_card_instances(raw_instances: Array) -> Array[CardInstance]:
 	var result: Array[CardInstance] = []
 	var seen_ids: Dictionary = {}
+	var seen_fixed_ids: Dictionary = {}
 	for index in raw_instances.size():
 		if not raw_instances[index] is Dictionary:
 			_record_invalid_instance()
@@ -302,8 +309,13 @@ func _restore_card_instances(raw_instances: Array) -> Array[CardInstance]:
 			_last_migration_report["fixed_levels_repaired"] = int(
 				_last_migration_report.get("fixed_levels_repaired", 0)
 			) + 1
+		if FIXED_CARD_IDS.has(card_id) and seen_fixed_ids.has(card_id):
+			_record_duplicate_fixed_card()
+			continue
 		seen_ids[instance_id] = true
 		result.append(CardInstance.new(card_id, level, instance_id))
+		if FIXED_CARD_IDS.has(card_id):
+			seen_fixed_ids[card_id] = true
 	_last_migration_report["to_schema"] = SCHEMA_VERSION
 	return result
 
@@ -340,6 +352,7 @@ func _empty_migration_report(from_schema: int) -> Dictionary:
 		"to_schema": SCHEMA_VERSION,
 		"migrated_instances": 0,
 		"duplicate_ids_repaired": 0,
+		"duplicate_fixed_cards_removed": 0,
 		"fixed_levels_repaired": 0,
 		"discarded_invalid_instances": 0,
 	}
@@ -348,6 +361,12 @@ func _empty_migration_report(from_schema: int) -> Dictionary:
 func _record_invalid_instance() -> void:
 	_last_migration_report["discarded_invalid_instances"] = int(
 		_last_migration_report.get("discarded_invalid_instances", 0)
+	) + 1
+
+
+func _record_duplicate_fixed_card() -> void:
+	_last_migration_report["duplicate_fixed_cards_removed"] = int(
+		_last_migration_report.get("duplicate_fixed_cards_removed", 0)
 	) + 1
 
 

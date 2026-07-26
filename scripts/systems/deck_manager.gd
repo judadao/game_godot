@@ -258,9 +258,21 @@ func add_instance(card_id: String, level: int = CardInstance.MIN_LEVEL) -> CardI
 	if card_id.is_empty() or FIXED_CARD_IDS.has(card_id) or not _has_card(card_id):
 		return null
 	var instance := CardInstance.new(card_id, level)
+	return instance if add_existing_instance(instance) else null
+
+
+func add_existing_instance(instance: CardInstance) -> bool:
+	if (
+		instance == null
+		or not instance.is_valid()
+		or instance.is_fixed()
+		or not _has_card(instance.card_id)
+		or find_instance(instance.instance_id) != null
+	):
+		return false
 	discard_instances.append(instance)
 	_sync_id_views()
-	return instance
+	return true
 
 
 func remove_instances(instance_ids: Array[String]) -> bool:

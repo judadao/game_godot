@@ -33,8 +33,10 @@ func _run() -> void:
 	_expect(bool(game.call("_resolve_combo_card", frost)), "Playing Frostburst Imbue must activate its persistent infusion.")
 	var rhythm := deck.play_from_hand(0)
 	_expect(bool(game.call("_resolve_combo_card", rhythm)), "Non-element Combo cards must also resolve run buffs.")
-	_expect(bool(game.call("_resolve_combo_card", database_card(game, "stoneguard_combo"))), "A fourth distinct Combo ability must fit.")
-	_expect(not bool(game.call("_resolve_combo_card", database_card(game, "blood_pact_combo"))), "A fifth distinct Combo ability must be rejected.")
+	_expect(
+		not bool(game.call("_resolve_combo_card", database_card(game, "stoneguard_combo"))),
+		"Counterguard is now a direct timed status card, not a legacy infusion."
+	)
 
 	var database := game.get("card_database") as CardDatabase
 	var base := database.get_card("ember_bolt")
@@ -47,8 +49,11 @@ func _run() -> void:
 	_expect(bool(game.call("_resolve_combo_card", database_card(game, "frostburst_imbue"))), "Frost must reach max level.")
 	var active_combos := game.get("run_state").temporary_buffs.get("active_infusions", []) as Array
 	_expect(active_combos.has("thermal_shatter") and not active_combos.has("flame") and not active_combos.has("frost"), "Two max-level compatible Combo abilities must evolve into one slot.")
-	_expect(active_combos.size() == 3, "Combo evolution must free one of the four ability slots.")
-	_expect(bool(game.call("_resolve_combo_card", database_card(game, "blood_pact_combo"))), "A new Combo ability must fit after evolution frees a slot.")
+	_expect(active_combos.size() == 2, "Legacy infusion evolution must retain Rhythm plus Thermal Shatter.")
+	_expect(
+		not bool(game.call("_resolve_combo_card", database_card(game, "blood_pact_combo"))),
+		"Blood Pact is now a direct reusable healing status, not a legacy infusion."
+	)
 
 	var player := (load("res://scenes/player/Player.tscn") as PackedScene).instantiate()
 	var enemy := (load("res://scenes/monsters/AutumnEnemy.tscn") as PackedScene).instantiate()

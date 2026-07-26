@@ -22,6 +22,8 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 	var kind := String(effect.get("kind", ""))
 	var result := {
 		"card_id": String(card.get("id", "")),
+		"instance_id": String(card.get("instance_id", "")),
+		"card_level": int(card.get("card_level", card.get("level", 1))),
 		"kind": kind,
 		"affected": 0,
 		"total": 0,

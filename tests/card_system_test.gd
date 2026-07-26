@@ -50,8 +50,10 @@ func _run() -> void:
 		_expect(int(card.get("level", 0)) >= 1, "%s must define a positive current level." % card_id)
 		_expect(int(card.get("max_level", 0)) >= int(card.get("level", 0)), "%s must define a valid max level." % card_id)
 		_expect(not (card.get("combo_tags", []) as Array).is_empty(), "%s must define combo tags." % card_id)
-		_expect(card.has("evolution_condition"), "%s must include an evolution condition field." % card_id)
-		_expect(card.has("evolution_result"), "%s must include an evolution result field." % card_id)
+		_expect(
+			not card.has("evolution_condition") and not card.has("evolution_result"),
+			"%s must not retain the removed passive-evolution fields." % card_id
+		)
 		var level_three_upgrade := _find_upgrade(card.get("upgrade_effects", []) as Array, 3)
 		_expect(not level_three_upgrade.is_empty(), "%s must define a level-three upgrade." % card_id)
 		_expect(
@@ -79,7 +81,7 @@ func _run() -> void:
 		_expect(is_equal_approx(float(deck.get("energy")), float(deck.get("max_energy"))), "AP regeneration must clamp to maximum.")
 		deck.set("energy", 2.0)
 	var hand_before_failed_play := (deck.get("hand") as Array).duplicate()
-	_expect((deck.call("play_from_hand", 0) as Dictionary).is_empty(), "Unaffordable card must not play.")
+	_expect((deck.call("play_from_hand", 1) as Dictionary).is_empty(), "Unaffordable card must not play.")
 	_expect(deck.get("hand") == hand_before_failed_play, "Rejected card must remain in hand.")
 	_expect(int(deck.get("energy")) == 2, "Rejected card must not spend energy.")
 
@@ -87,9 +89,13 @@ func _run() -> void:
 	cycle_deck.set("hand_size", 2)
 	cycle_deck.call("start", ["ember_bolt", "guard", "dash_strike"], 3)
 	cycle_deck.call("play_from_hand", 0)
-	cycle_deck.call("play_from_hand", 0)
+	cycle_deck.call("play_from_hand", 1)
 	var redrawn: Array = cycle_deck.call("draw_cards", 3)
-	_expect(redrawn == ["dash_strike", "ember_bolt", "guard"], "Empty draw pile must reshuffle discard in deterministic order.")
+	_expect(
+		redrawn == ["dash_strike"]
+		and (cycle_deck.get("cooldown_pile") as Array).size() == 1,
+		"Fixed cards must remain pinned while timed cards stay out of the draw cycle during cooldown."
+	)
 
 	var redraw_deck := DeckManager.new(database)
 	redraw_deck.start([
@@ -108,9 +114,12 @@ func _run() -> void:
 	_expect((combo.call("get_rules") as Array).size() == 5, "Combo manager must expose five visible combo rules.")
 	_expect(_trigger_combo(combo, database, ["ember_bolt", "inferno_orb"], "ember_chain"), "Two fire cards must trigger Ember Chain.")
 	_expect(_trigger_combo(combo, database, ["ember_bolt", "cleave", "inferno_orb"], "blade_dance"), "Three Strike cards must trigger Blade Dance.")
-	_expect(_trigger_combo(combo, database, ["guard", "iron_skin"], "bulwark"), "Two defense cards must trigger Bulwark.")
+	_expect(
+		not _trigger_combo(combo, database, ["guard", "iron_skin"], "bulwark"),
+		"Redesigned timed Combo cards must not trigger the removed Defense taxonomy."
+	)
 	_expect(_trigger_combo(combo, database, ["quickstep", "cleave"], "storm_step"), "Mobility followed by attack must trigger Storm Step.")
-	_expect(_trigger_combo(combo, database, ["frost_bind", "healing_light", "battle_focus"], "arcane_cycle"), "Control, utility, power must trigger Arcane Cycle.")
+	_expect(_trigger_combo(combo, database, ["frost_bind", "quickstep", "battle_focus"], "arcane_cycle"), "Status, Skill, Power must trigger Arcane Cycle.")
 
 	var evolution: RefCounted = evolution_script.new(database)
 	_expect(bool(evolution.call("load_recipes")), "Evolution recipes must load and validate card references.")

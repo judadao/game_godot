@@ -121,9 +121,20 @@ func add_card_instance(card_id: String, level: int = CardInstance.MIN_LEVEL) -> 
 	if card_id.is_empty() or card_id in FIXED_CARD_IDS:
 		return null
 	var instance := CardInstance.new(card_id, level)
+	return instance if add_existing_card_instance(instance) else null
+
+
+func add_existing_card_instance(instance: CardInstance) -> bool:
+	if (
+		instance == null
+		or not instance.is_valid()
+		or instance.is_fixed()
+		or get_card_instance(instance.instance_id) != null
+	):
+		return false
 	card_instances.append(instance)
-	starting_deck.append(card_id)
-	return instance
+	starting_deck.append(instance.card_id)
+	return true
 
 
 func remove_card_instances(instance_ids: Array[String]) -> bool:

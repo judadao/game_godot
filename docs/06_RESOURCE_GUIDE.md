@@ -179,11 +179,12 @@ icon_path
 combo_tags
 effect
 upgrade_effects
-evolution_condition
-evolution_result
 play_destination
 cooldown_seconds
 ```
+
+Fusion recipes are owned only by `data/evolutions.json`. Card rows must not
+carry the removed passive `evolution_condition` or `evolution_result` fields.
 
 JSON另有`tags`，但它不在current required list。治理與validator要區分required與optional。
 
@@ -961,7 +962,8 @@ only while migrating schema-2 saves and is never written as the new authority.
 Schema-2 card-ID arrays migrate in source order to deterministic IDs
 `legacy-000001`, `legacy-000002`, and so on. Duplicate IDs in schema-3 payloads
 are repaired deterministically, fixed `ember_bolt` and `quickstep` copies are
-forced to level 1, and `MetaState.get_last_migration_report()` /
+forced to level 1, duplicate fixed copies are removed while retaining the first
+stable identity, and `MetaState.get_last_migration_report()` /
 `SaveService.get_last_migration_report()` expose conversion and repair counts.
 Applying an already migrated payload must be idempotent.
 
@@ -972,3 +974,6 @@ for callers during integration and must not be mutated. Catalog fields
 `cooldown_seconds` control post-play routing. Cooldown completion returns the
 same instance to discard; paused cooldown clocks do not advance. Fixed card
 instances ignore exhaust and cooldown destinations and stay reusable.
+New rewards use `RunState.add_existing_card_instance()` and
+`DeckManager.add_existing_instance()` so MetaState, RunState, and every runtime
+pile can share the same validated non-fixed `CardInstance` object.

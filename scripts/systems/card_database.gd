@@ -5,7 +5,7 @@ const DEFAULT_CATALOG_PATH := "res://data/cards.json"
 const REQUIRED_FIELDS := [
 	"id", "name", "type", "rarity", "level", "max_level", "cost", "description",
 	"icon_path", "combo_tags", "effect", "upgrade_effects",
-	"evolution_condition", "evolution_result", "play_destination", "cooldown_seconds",
+	"play_destination", "cooldown_seconds",
 ]
 const VALID_TYPES := ["attack", "skill", "power", "summon", "healing", "status", "ultimate", "combo"]
 const VALID_PLAY_DESTINATIONS := ["discard", "exhaust", "cooldown"]
@@ -86,8 +86,6 @@ func _is_valid_card(card: Dictionary) -> bool:
 	if not card["effect"] is Dictionary or (card["effect"] as Dictionary).is_empty():
 		return false
 	if not card["upgrade_effects"] is Array or not _has_visible_level_three_upgrade(card["upgrade_effects"] as Array):
-		return false
-	if not card["evolution_condition"] is Dictionary or not card["evolution_result"] is String:
 		return false
 	var icon_path := String(card["icon_path"])
 	return not icon_path.is_empty() and ResourceLoader.exists(icon_path)
