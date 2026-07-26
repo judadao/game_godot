@@ -1,0 +1,318 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <title>Autumn Battle Map and HUD Redesign</title>
+  <desc>Figma-ready layered gameplay mockup based on the approved intrinsic Dash and four-card active group contract.</desc>
+  <defs>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#11191c" stop-opacity=".98"/>
+      <stop offset="1" stop-color="#080d0f" stop-opacity=".98"/>
+    </linearGradient>
+    <linearGradient id="panelSoft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#172126" stop-opacity=".96"/>
+      <stop offset="1" stop-color="#0b1114" stop-opacity=".96"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7b5028"/>
+      <stop offset=".5" stop-color="#d0a05c"/>
+      <stop offset="1" stop-color="#6b4322"/>
+    </linearGradient>
+    <linearGradient id="attackCard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7b2f20"/>
+      <stop offset="1" stop-color="#381611"/>
+    </linearGradient>
+    <linearGradient id="statusCard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#185a75"/>
+      <stop offset="1" stop-color="#092a3a"/>
+    </linearGradient>
+    <linearGradient id="comboCard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#58407c"/>
+      <stop offset="1" stop-color="#251b38"/>
+    </linearGradient>
+    <linearGradient id="healCard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#397d45"/>
+      <stop offset="1" stop-color="#17351d"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#000" flood-opacity=".65"/>
+    </filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#72d8ff" flood-opacity=".85"/>
+    </filter>
+    <symbol id="diamond" viewBox="0 0 24 24">
+      <path d="M12 1 23 12 12 23 1 12Z" fill="currentColor"/>
+    </symbol>
+    <symbol id="key" viewBox="0 0 44 44">
+      <rect x="2" y="2" width="40" height="40" rx="7" fill="#121719" stroke="#b88948" stroke-width="2"/>
+    </symbol>
+    <symbol id="slot" viewBox="0 0 76 76">
+      <rect x="2" y="2" width="72" height="72" rx="8" fill="#11191c" stroke="#594a35" stroke-width="3"/>
+      <rect x="10" y="10" width="56" height="56" rx="5" fill="#0b1012" stroke="#2d393d" stroke-width="2"/>
+    </symbol>
+    <style>
+      .font { font-family: "Noto Sans TC","Segoe UI",sans-serif; }
+      .title { fill:#f6e6c2; font-size:20px; font-weight:700; letter-spacing:1px; }
+      .label { fill:#f6e6c2; font-size:17px; font-weight:600; }
+      .small { fill:#bda983; font-size:14px; font-weight:600; }
+      .tiny { fill:#bda983; font-size:12px; font-weight:600; }
+      .number { fill:#fff0c8; font-size:18px; font-weight:800; }
+      .panelStroke { stroke:#a97a3c; stroke-width:3; }
+      .innerStroke { stroke:#3c3327; stroke-width:2; }
+    </style>
+  </defs>
+
+  <g id="01_MAP_BACKGROUND">
+    <image id="MapBackgroundBitmap" x="0" y="0" width="1920" height="1080" preserveAspectRatio="xMidYMid slice" href="autumn-map-background.png" xlink:href="autumn-map-background.png"/>
+    <rect id="GameplayContrastGradient" x="0" y="0" width="1920" height="1080" fill="url(#mapShade)" opacity="0"/>
+    <rect x="0" y="0" width="1920" height="1080" fill="#081014" opacity=".05"/>
+  </g>
+
+  <g id="02_WORLD_OVERLAYS" class="font">
+    <g id="EnemyState" transform="translate(128 474)" filter="url(#shadow)">
+      <rect width="124" height="12" rx="6" fill="#170c09" stroke="#151515" stroke-width="3"/>
+      <rect x="3" y="3" width="86" height="6" rx="3" fill="#d34b31"/>
+      <circle cx="62" cy="52" r="32" fill="#8f432b" stroke="#e07848" stroke-width="3"/>
+      <path d="M35 37 23 23 48 30M89 37 101 23 76 30" fill="#8f432b" stroke="#e07848" stroke-width="3"/>
+      <circle cx="51" cy="49" r="3" fill="#fff0b7"/><circle cx="73" cy="49" r="3" fill="#fff0b7"/>
+    </g>
+    <g id="PlayerMarker" transform="translate(1002 492)" filter="url(#shadow)">
+      <circle cx="0" cy="0" r="35" fill="#cad7d6" stroke="#f4f4e9" stroke-width="4"/>
+      <path d="M-24-3Q0-33 24-3L18 25H-18Z" fill="#344550"/>
+      <path d="M-23-4-11-25-2-10 9-29 13-9 26-19 22 4" fill="#f3f1e8"/>
+      <circle cx="-10" cy="1" r="3" fill="#2a3940"/><circle cx="10" cy="1" r="3" fill="#2a3940"/>
+    </g>
+    <g id="InteractionPrompt" transform="translate(650 390)" filter="url(#shadow)">
+      <rect width="430" height="58" rx="10" fill="#0a1012" fill-opacity=".96" class="panelStroke"/>
+      <use href="#key" x="10" y="7" width="44" height="44"/>
+      <text x="32" y="36" text-anchor="middle" class="label">F</text>
+      <text x="72" y="36" class="label">Trade Cards &#x2014; Wandering Merchant</text>
+    </g>
+    <g id="SkillToast" transform="translate(820 280)" filter="url(#shadow)">
+      <rect width="280" height="58" rx="12" fill="#10171a" fill-opacity=".94" stroke="#7ed8ff" stroke-width="2"/>
+      <use href="#diamond" x="18" y="17" width="24" height="24" style="color:#55c6ef"/>
+      <text x="56" y="27" class="tiny">COMBO ACTIVATED</text>
+      <text x="56" y="47" class="label">Dash Edge</text>
+    </g>
+    <g id="DashHint" transform="translate(1090 622)" filter="url(#shadow)">
+      <rect width="190" height="46" rx="23" fill="#0b1114" fill-opacity=".9" stroke="#b88948" stroke-width="2"/>
+      <use href="#key" x="8" y="3" width="40" height="40"/>
+      <text x="28" y="30" text-anchor="middle" class="small">&#x2423;</text>
+      <text x="58" y="29" class="label">DASH</text>
+      <text x="116" y="29" class="small">0.4s</text>
+    </g>
+  </g>
+
+  <g id="03_TOP_LEFT_COMBAT" class="font" filter="url(#shadow)">
+    <g id="ComboPanel" transform="translate(18 18)">
+      <rect width="300" height="112" rx="10" fill="url(#panel)" class="panelStroke"/>
+      <text x="20" y="32" class="title">COMBO</text>
+      <text x="278" y="42" text-anchor="end" fill="#ffc43d" font-size="38" font-weight="800">&#x00D7;12</text>
+      <line x1="18" y1="47" x2="130" y2="47" stroke="#b88948" stroke-width="2"/>
+      <circle cx="34" cy="80" r="14" fill="none" stroke="#e5c48a" stroke-width="3"/>
+      <path d="M34 64V58M29 57H39M34 80 42 74" stroke="#e5c48a" stroke-width="3" stroke-linecap="round"/>
+      <text x="58" y="87" class="number">8.6s</text>
+      <rect x="128" y="74" width="146" height="12" rx="6" fill="#493e31"/>
+      <rect x="128" y="74" width="105" height="12" rx="6" fill="#f0b72f"/>
+    </g>
+    <g id="MissionPanel" transform="translate(18 142)">
+      <rect width="300" height="184" rx="10" fill="url(#panel)" class="panelStroke"/>
+      <text x="20" y="33" class="title">MISSIONS</text>
+      <line x1="18" y1="48" x2="282" y2="48" stroke="#3d392f" stroke-width="2"/>
+      <use href="#diamond" x="22" y="68" width="17" height="17" style="color:#69ca56"/>
+      <text x="50" y="82" class="label">Defeat all enemies</text>
+      <text x="278" y="82" text-anchor="end" class="number">8/8</text>
+      <use href="#diamond" x="22" y="105" width="17" height="17" style="color:#48b9ef"/>
+      <text x="50" y="119" class="label">Reach 30 Combo</text>
+      <text x="278" y="119" text-anchor="end" class="number">12/30</text>
+      <use href="#diamond" x="22" y="142" width="17" height="17" style="color:#a66de1"/>
+      <text x="50" y="156" class="label">Survive 3 phases</text>
+      <text x="278" y="156" text-anchor="end" class="number">2/3</text>
+    </g>
+  </g>
+
+  <g id="04_TOP_RIGHT_META" class="font" filter="url(#shadow)" transform="translate(1318 18)">
+    <rect width="584" height="72" rx="10" fill="url(#panel)" class="panelStroke"/>
+    <circle cx="36" cy="36" r="14" fill="#e4aa2e" stroke="#ffe397" stroke-width="3"/>
+    <text x="62" y="44" fill="#ffc43d" font-size="24" font-weight="800">713</text>
+    <use href="#diamond" x="190" y="23" width="26" height="26" style="color:#41b9ed"/>
+    <text x="228" y="44" fill="#55c6ef" font-size="24" font-weight="800">98</text>
+    <g id="BagButton" transform="translate(392 14)">
+      <rect width="46" height="44" rx="8" fill="#151c1f" stroke="#53452f" stroke-width="2"/>
+      <path d="M13 16h20l4 21H9Z M17 16c0-8 12-8 12 0" fill="#9b6a35" stroke="#d2a766" stroke-width="2"/>
+    </g>
+    <g id="SettingsButton" transform="translate(452 14)">
+      <rect width="46" height="44" rx="8" fill="#151c1f" stroke="#53452f" stroke-width="2"/>
+      <text x="23" y="31" text-anchor="middle" fill="#c8b18a" font-size="28">&#x2699;</text>
+    </g>
+    <g id="EscButton" transform="translate(512 14)">
+      <rect width="54" height="44" rx="8" fill="#151c1f" stroke="#b88948" stroke-width="2"/>
+      <text x="27" y="29" text-anchor="middle" class="small">ESC</text>
+    </g>
+  </g>
+
+  <g id="05_BOTTOM_DOCK" class="font">
+    <rect id="DockBackdrop" x="0" y="696" width="1920" height="384" fill="#05090a" fill-opacity=".91"/>
+
+    <g id="PlayerVitalsPanel" transform="translate(18 714)" filter="url(#shadow)">
+      <rect width="370" height="274" rx="12" fill="url(#panel)" class="panelStroke"/>
+      <circle cx="82" cy="82" r="52" fill="#0b1114" stroke="url(#gold)" stroke-width="6"/>
+      <circle cx="82" cy="82" r="42" fill="#d9ddda"/>
+      <path d="M50 77Q82 38 114 77L108 112H56Z" fill="#384752"/>
+      <path d="M50 76 61 49 72 63 84 40 91 62 110 48 114 79" fill="#f2f0e9"/>
+      <rect x="144" y="31" width="48" height="30" rx="6" fill="#10171a" stroke="#9a713c" stroke-width="2"/>
+      <text x="168" y="52" text-anchor="middle" class="small">Lv.3</text>
+      <text x="216" y="51" class="small">ADVENTURER</text>
+
+      <text x="142" y="91" class="label">HP</text>
+      <rect x="178" y="72" width="168" height="24" rx="6" fill="#221614" stroke="#6a5b46" stroke-width="2"/>
+      <rect x="182" y="76" width="160" height="16" rx="4" fill="#c64632"/>
+      <text x="334" y="90" text-anchor="end" class="number">128 / 128</text>
+
+      <text x="142" y="128" class="label">SP</text>
+      <rect x="178" y="109" width="168" height="24" rx="6" fill="#111b24" stroke="#6a5b46" stroke-width="2"/>
+      <rect x="182" y="113" width="160" height="16" rx="4" fill="#3d83c5"/>
+      <text x="334" y="127" text-anchor="end" class="number">45 / 45</text>
+
+      <text x="142" y="165" class="label">AP</text>
+      <rect x="178" y="146" width="168" height="24" rx="6" fill="#142014" stroke="#6a5b46" stroke-width="2"/>
+      <rect x="182" y="150" width="128" height="16" rx="4" fill="#65b84b"/>
+      <text x="334" y="164" text-anchor="end" class="number">4 / 5</text>
+
+      <line x1="20" y1="194" x2="350" y2="194" stroke="#3d392f" stroke-width="2"/>
+      <g id="RedrawButton" transform="translate(22 214)">
+        <rect width="142" height="43" rx="8" fill="#11191c" stroke="#604d32" stroke-width="2"/>
+        <use href="#key" x="7" y="3" width="37" height="37"/>
+        <text x="25" y="28" text-anchor="middle" class="small">T</text>
+        <text x="54" y="28" class="label">REDRAW</text>
+      </g>
+      <circle cx="212" cy="235" r="20" fill="#11191c" stroke="#80633d" stroke-width="2"/>
+      <text x="212" y="242" text-anchor="middle" class="label">11</text>
+      <text x="254" y="226" class="tiny">AUTO ATTACK</text>
+      <text x="254" y="246" class="small">Ember Bolt</text>
+    </g>
+
+    <g id="CardDock" transform="translate(406 714)" filter="url(#shadow)">
+      <rect width="1004" height="274" rx="12" fill="url(#panel)" class="panelStroke"/>
+      <g id="ActiveEffectStrip">
+        <rect x="0" y="0" width="1004" height="54" rx="12" fill="#10171a" stroke="#4b3e2d" stroke-width="2"/>
+        <use href="#diamond" x="18" y="17" width="20" height="20" style="color:#9a78d7"/>
+        <text x="50" y="33" class="label">Iron Will</text>
+        <line x1="152" y1="14" x2="152" y2="40" stroke="#5c4b33" stroke-width="2"/>
+        <text x="172" y="33" class="small">AP 1</text>
+        <line x1="236" y1="14" x2="236" y2="40" stroke="#5c4b33" stroke-width="2"/>
+        <text x="256" y="33" class="small">CD 0.1s</text>
+        <text x="850" y="33" class="tiny">SPACE DASH</text>
+        <circle cx="976" cy="27" r="12" fill="none" stroke="#b88948" stroke-width="2"/>
+        <text x="976" y="32" text-anchor="middle" class="small">i</text>
+      </g>
+
+      <g id="GroupSwitcher" transform="translate(12 66)">
+        <rect width="82" height="194" rx="10" fill="#0b1114" stroke="#5d4a30" stroke-width="2"/>
+        <text x="41" y="26" text-anchor="middle" fill="#d0a05c" font-size="22">&#x2303;</text>
+        <use href="#key" x="20" y="30" width="42" height="42"/>
+        <text x="41" y="58" text-anchor="middle" class="small">A</text>
+        <rect x="10" y="78" width="62" height="54" rx="7" fill="#153246" stroke="#327ba0" stroke-width="2"/>
+        <text x="41" y="100" text-anchor="middle" class="tiny">GROUP</text>
+        <text x="41" y="122" text-anchor="middle" fill="#6dd2f6" font-size="17" font-weight="800">1 / 2</text>
+        <use href="#key" x="20" y="138" width="42" height="42"/>
+        <text x="41" y="166" text-anchor="middle" class="small">S</text>
+        <text x="41" y="192" text-anchor="middle" fill="#d0a05c" font-size="22">&#x2304;</text>
+      </g>
+
+      <g id="Card_Q_Status" transform="translate(108 66)">
+        <rect width="190" height="194" rx="12" fill="url(#statusCard)" stroke="#83dcff" stroke-width="4" filter="url(#glow)"/>
+        <text x="95" y="28" text-anchor="middle" class="title">Q</text>
+        <text x="95" y="58" text-anchor="middle" class="label">Frost Bind</text>
+        <text x="95" y="82" text-anchor="middle" fill="#65d4ff" font-size="14" font-weight="800">STATUS</text>
+        <path d="M95 94V144M70 119H120M77 102 113 136M113 102 77 136" stroke="#73d7ff" stroke-width="5" stroke-linecap="round"/>
+        <text x="95" y="164" text-anchor="middle" class="small">Lv. 3</text>
+        <text x="95" y="187" text-anchor="middle" class="number">AP 1</text>
+      </g>
+      <g id="Card_W_Attack" transform="translate(312 66)">
+        <rect width="190" height="194" rx="12" fill="url(#attackCard)" stroke="#d18d4b" stroke-width="3"/>
+        <text x="95" y="28" text-anchor="middle" class="title">W</text>
+        <text x="95" y="58" text-anchor="middle" class="label">Cleave</text>
+        <text x="95" y="82" text-anchor="middle" fill="#ff8d68" font-size="14" font-weight="800">ATTACK</text>
+        <path d="M58 139Q93 91 138 102 97 114 72 151Z" fill="#d45c3c" stroke="#ff9a65" stroke-width="3"/>
+        <text x="95" y="164" text-anchor="middle" class="small">Lv. 1</text>
+        <text x="95" y="187" text-anchor="middle" class="number">AP 2</text>
+      </g>
+      <g id="Card_E_Combo" transform="translate(516 66)">
+        <rect width="190" height="194" rx="12" fill="url(#comboCard)" stroke="#a882d4" stroke-width="3"/>
+        <text x="95" y="28" text-anchor="middle" class="title">E</text>
+        <text x="95" y="58" text-anchor="middle" class="label">Dash Edge</text>
+        <text x="95" y="82" text-anchor="middle" fill="#c7a3f4" font-size="14" font-weight="800">COMBO</text>
+        <path d="M58 136 128 96 106 127 139 124 70 151 90 128Z" fill="#bd8bef" stroke="#ead8ff" stroke-width="3"/>
+        <text x="95" y="164" text-anchor="middle" class="small">Lv. 2</text>
+        <text x="95" y="187" text-anchor="middle" class="number">AP 1</text>
+      </g>
+      <g id="Card_R_Healing" transform="translate(720 66)">
+        <rect width="190" height="194" rx="12" fill="url(#healCard)" stroke="#8ec86d" stroke-width="3"/>
+        <text x="95" y="28" text-anchor="middle" class="title">R</text>
+        <text x="95" y="58" text-anchor="middle" class="label">Renewal</text>
+        <text x="95" y="82" text-anchor="middle" fill="#96df8b" font-size="14" font-weight="800">HEALING</text>
+        <circle cx="95" cy="122" r="25" fill="none" stroke="#9fe793" stroke-width="5"/>
+        <path d="M95 102V142M75 122H115" stroke="#9fe793" stroke-width="6" stroke-linecap="round"/>
+        <text x="95" y="164" text-anchor="middle" class="small">Lv. 1</text>
+        <text x="95" y="187" text-anchor="middle" class="number">AP 2</text>
+      </g>
+      <g id="InactiveGroupPeek" transform="translate(926 66)">
+        <rect width="64" height="194" rx="10" fill="#0b1114" stroke="#493c2b" stroke-width="2"/>
+        <path d="m20 78 20 20-20 20M32 78l20 20-20 20" fill="none" stroke="#bd8542" stroke-width="5"/>
+        <text x="32" y="144" text-anchor="middle" class="tiny">4 MORE</text>
+      </g>
+    </g>
+
+    <g id="SideInfoPanel" transform="translate(1428 714)" filter="url(#shadow)">
+      <rect width="474" height="274" rx="12" fill="url(#panel)" class="panelStroke"/>
+      <g id="ControlHint">
+        <rect width="474" height="54" rx="12" fill="#10171a" stroke="#4b3e2d" stroke-width="2"/>
+        <use href="#key" x="16" y="7" width="40" height="40"/>
+        <text x="36" y="33" text-anchor="middle" class="small">A</text>
+        <text x="64" y="33" class="small">/</text>
+        <use href="#key" x="78" y="7" width="40" height="40"/>
+        <text x="98" y="33" text-anchor="middle" class="small">S</text>
+        <text x="128" y="33" class="small">SWITCH GROUP</text>
+        <use href="#key" x="326" y="7" width="40" height="40"/>
+        <text x="346" y="33" text-anchor="middle" class="small">&#x2423;</text>
+        <text x="376" y="33" class="small">DASH</text>
+      </g>
+      <g id="StatusSummary" transform="translate(0 66)">
+        <rect width="218" height="194" rx="10" fill="url(#panelSoft)" stroke="#4b3e2d" stroke-width="2"/>
+        <text x="109" y="31" text-anchor="middle" class="title">STATUS</text>
+        <text x="28" y="78" font-size="24">&#x2694;</text><text x="70" y="77" class="label">ATK</text><text x="188" y="77" text-anchor="end" class="number">36</text>
+        <text x="28" y="121" font-size="24">&#x25C8;</text><text x="70" y="120" class="label">DEF</text><text x="188" y="120" text-anchor="end" class="number">18</text>
+        <text x="28" y="164" font-size="24">&#x27A4;</text><text x="70" y="163" class="label">SPD</text><text x="188" y="163" text-anchor="end" class="number">12</text>
+      </g>
+      <g id="InventorySummary" transform="translate(230 66)">
+        <rect width="244" height="194" rx="10" fill="url(#panelSoft)" stroke="#4b3e2d" stroke-width="2"/>
+        <text x="122" y="31" text-anchor="middle" class="title">QUICK ITEMS</text>
+        <use href="#slot" x="22" y="48" width="76" height="76"/>
+        <use href="#slot" x="110" y="48" width="76" height="76"/>
+        <circle cx="60" cy="86" r="18" fill="#b53e35" stroke="#edaf72" stroke-width="3"/>
+        <path d="M54 65h12v10H54Z" fill="#a5d3d1" stroke="#d9ffff" stroke-width="2"/>
+        <path d="M133 105 165 67M133 67l32 38" stroke="#74c8ef" stroke-width="7"/>
+        <text x="122" y="156" text-anchor="middle" class="small">I  OPEN INVENTORY</text>
+      </g>
+    </g>
+
+    <g id="PhaseFooter" transform="translate(18 1004)" filter="url(#shadow)">
+      <rect width="1884" height="58" rx="10" fill="url(#panel)" class="panelStroke"/>
+      <text x="24" y="37" class="title">PHASE 2 / 3</text>
+      <g transform="translate(218 15)">
+        <circle cx="14" cy="14" r="12" fill="#c79a59"/>
+        <path d="M4 10 0 3 9 5M24 10l4-7-9 2" fill="#c79a59"/>
+        <path d="M36 14H62" stroke="#d6573d" stroke-width="4"/>
+        <path d="m57 8 8 6-8 6" fill="#d6573d"/>
+        <circle cx="82" cy="14" r="12" fill="#9b3f2e"/>
+        <circle cx="116" cy="14" r="12" fill="#9b3f2e"/>
+        <circle cx="150" cy="14" r="12" fill="#33383a"/>
+        <circle cx="184" cy="14" r="12" fill="#33383a"/>
+      </g>
+      <g transform="translate(1240 8)">
+        <use href="#key" x="0" y="0" width="42" height="42"/><text x="21" y="28" text-anchor="middle" class="small">M</text><text x="52" y="28" class="small">MAP</text>
+        <use href="#key" x="150" y="0" width="42" height="42"/><text x="171" y="28" text-anchor="middle" class="small">I</text><text x="202" y="28" class="small">INVENTORY</text>
+        <use href="#key" x="340" y="0" width="42" height="42"/><text x="361" y="28" text-anchor="middle" class="small">J</text><text x="392" y="28" class="small">JOURNAL</text>
+        <use href="#key" x="500" y="0" width="42" height="42"/><text x="521" y="28" text-anchor="middle" class="small">P</text><text x="552" y="28" class="small">PAUSE</text>
+      </g>
+    </g>
+  </g>
+</svg>
