@@ -48,19 +48,24 @@ func _run() -> void:
 	var deck := game.get("deck_manager") as DeckManager
 	var run := game.get("run_state") as RunState
 	_expect(deck.hand.slice(0, 2) == FIXED_IDS, "Autumn run must open with Q basic attack and W Dash.")
-	_expect(not run.card_levels.has("ember_bolt"), "Basic attack must not enter card-level growth.")
-	_expect(not run.card_levels.has("quickstep"), "Dash must not enter card-level growth.")
 
 	for fixed_id in FIXED_IDS:
+		var fixed_instance: CardInstance
+		for instance in run.card_instances:
+			if instance.card_id == fixed_id:
+				fixed_instance = instance
+				break
+		_expect(fixed_instance != null and fixed_instance.level == 1, "%s must remain one stable Lv1 instance." % fixed_id)
 		var copies_before := int(game.call("_get_card_copy_count", fixed_id))
 		_expect(not bool(game.call("_apply_card_reward", fixed_id)), "%s must reject duplicate card rewards." % fixed_id)
 		_expect(int(game.call("_get_card_copy_count", fixed_id)) == copies_before, "%s reward rejection must not mutate the deck." % fixed_id)
-		run.card_levels[fixed_id] = 1
 		_expect(
-			not bool(game.call("_apply_level_up_choice", {"kind": "upgrade_card", "card_id": fixed_id})),
+			not bool(game.call("_apply_growth_resolution", {
+				"action": "upgrade",
+				"instance_id": fixed_instance.instance_id,
+			})),
 			"%s must reject XP card upgrades." % fixed_id
 		)
-		_expect(not bool(game.call("_merge_card_at_campfire", fixed_id)), "%s must reject campfire merging." % fixed_id)
 
 	run.gold_earned = 200
 	for fixed_id in FIXED_IDS:

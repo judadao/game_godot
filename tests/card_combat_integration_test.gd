@@ -78,10 +78,17 @@ func _run() -> void:
 		"Slow cards must apply a real timed status to modern enemies."
 	)
 
-	var combo := ComboManager.new()
-	var first := combo.record_card(database.get_card("ember_bolt"))
-	var second := combo.record_card(database.get_card("inferno_orb"))
-	_expect(first.is_empty() and not second.is_empty(), "Two fire cards must trigger a visible combo result.")
+	var skills := SkillRecipeManager.new()
+	_expect(skills.load_catalog("res://data/skills.json"), "Passive Skill catalog must load.")
+	_expect(skills.configure_loadout(["iron_momentum"], ["iron_momentum"], 10), "Initial Skill must equip.")
+	for index in 4:
+		_expect(skills.record_card(database.get_card("ember_bolt")).is_empty(), "Skill must wait for five attacks.")
+	var fifth_attack := skills.record_card(database.get_card("inferno_orb"))
+	_expect(
+		fifth_attack.size() == 1
+		and String(fifth_attack[0].get("id", "")) == "iron_momentum",
+		"Five attack cards must trigger the visible Iron Momentum result."
+	)
 
 	var hand_ui := hand_scene.instantiate()
 	root.add_child(hand_ui)

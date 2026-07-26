@@ -1,7 +1,7 @@
 class_name MetaState
 extends RefCounted
 
-const SCHEMA_VERSION := 3
+const SCHEMA_VERSION := 4
 const RESOURCE_IDS := ["gold", "autumn_wood", "stone", "magic_shard", "autumn_core"]
 const FIXED_CARD_IDS: Array[String] = ["ember_bolt", "quickstep"]
 
@@ -37,6 +37,8 @@ var equipment := {"weapon": "", "armor": "", "accessory": ""}
 var equipment_levels: Dictionary = {}
 var unlocked_combos: Array[String] = []
 var unlocked_evolutions: Array[String] = []
+var learned_skill_ids: Array[String] = ["iron_momentum"]
+var active_skill_ids: Array[String] = ["iron_momentum"]
 var boss_defeated := false
 var dash_upgrade_unlocked := false
 var shortcuts: Dictionary = {}
@@ -96,6 +98,8 @@ func to_dict() -> Dictionary:
 		"equipment_levels": equipment_levels.duplicate(true),
 		"unlocked_combos": unlocked_combos.duplicate(),
 		"unlocked_evolutions": unlocked_evolutions.duplicate(),
+		"learned_skill_ids": learned_skill_ids.duplicate(),
+		"active_skill_ids": active_skill_ids.duplicate(),
 		"boss_defeated": boss_defeated,
 		"dash_upgrade_unlocked": dash_upgrade_unlocked,
 		"shortcuts": shortcuts.duplicate(true),
@@ -131,6 +135,21 @@ func apply_dict(data: Dictionary) -> void:
 	equipment_levels = _safe_integer_dictionary(data.get("equipment_levels"), equipment_levels)
 	unlocked_combos = _safe_string_array(data.get("unlocked_combos"), unlocked_combos)
 	unlocked_evolutions = _safe_string_array(data.get("unlocked_evolutions"), unlocked_evolutions)
+	learned_skill_ids = _safe_unique_string_array(
+		data.get("learned_skill_ids"),
+		["iron_momentum"]
+	)
+	active_skill_ids = _safe_unique_string_array(
+		data.get("active_skill_ids"),
+		["iron_momentum"]
+	)
+	active_skill_ids = active_skill_ids.filter(
+		func(skill_id: String) -> bool: return learned_skill_ids.has(skill_id)
+	)
+	if not learned_skill_ids.has("iron_momentum"):
+		learned_skill_ids.push_front("iron_momentum")
+	if active_skill_ids.is_empty():
+		active_skill_ids.append("iron_momentum")
 	boss_defeated = bool(data.get("boss_defeated", boss_defeated))
 	dash_upgrade_unlocked = bool(data.get("dash_upgrade_unlocked", boss_defeated))
 	shortcuts = _safe_dictionary(data.get("shortcuts"), shortcuts)
@@ -238,6 +257,15 @@ func _safe_string_array(value: Variant, fallback: Array[String]) -> Array[String
 			result.append(String(item))
 		return result
 	return fallback.duplicate()
+
+
+func _safe_unique_string_array(value: Variant, fallback: Array[String]) -> Array[String]:
+	var result: Array[String] = []
+	for item in _safe_string_array(value, fallback):
+		var normalized := item.strip_edges()
+		if not normalized.is_empty() and not result.has(normalized):
+			result.append(normalized)
+	return result
 
 
 func _migrate_legacy_selected_deck(

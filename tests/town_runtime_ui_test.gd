@@ -53,7 +53,7 @@ func _run() -> void:
 	root.add_child(ui)
 	ui.call("set_services", town, inventory)
 	await process_frame
-	_expect(int(ui.call("get_building_button_count")) == 4, "Town UI must show all four building upgrades.")
+	_expect(int(ui.call("get_building_button_count")) == 5, "Town UI must show all five buildings including the Memory Library.")
 	_expect(int(ui.call("get_equipment_button_count")) == 10, "Town UI must show all ten fixed equipment items.")
 	_expect(not String(ui.call("get_resource_text")).is_empty(), "Town UI must visibly show permanent resources.")
 	ui.queue_free()

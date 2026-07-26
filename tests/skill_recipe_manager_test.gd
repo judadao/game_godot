@@ -64,6 +64,16 @@ func _run() -> void:
 
 	_expect(not manager.configure_loadout(["grand_strategy"], ["grand_strategy"], 10), "A loadout over memory capacity must be rejected.")
 	_expect(not manager.configure_loadout([], ["iron_momentum"], 10), "An unlearned skill must not be equipped.")
+	var meta := MetaState.new()
+	meta.apply_dict({
+		"learned_skill_ids": ["iron_momentum", "ember_reprise", "ember_reprise"],
+		"active_skill_ids": ["iron_momentum", "ember_reprise", "unknown_skill"],
+	})
+	_expect(
+		meta.learned_skill_ids == ["iron_momentum", "ember_reprise"]
+		and meta.active_skill_ids == ["iron_momentum", "ember_reprise"],
+		"Learned and active Skill loadouts must persist uniquely and discard unlearned entries."
+	)
 
 	if _failures == 0:
 		print("PASS: passive attack-only skill recipes and memory loadouts")

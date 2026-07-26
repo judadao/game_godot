@@ -63,7 +63,7 @@ const COMBO_EVOLUTIONS := [
 @export var run_result_scene: PackedScene = preload("res://scenes/ui/RunResultUI.tscn")
 @export var deck_builder_scene: PackedScene = preload("res://scenes/ui/DeckBuilderUI.tscn")
 @export var card_discard_scene: PackedScene = preload("res://scenes/ui/CardDiscardUI.tscn")
-@export var level_up_scene: PackedScene = preload("res://scenes/ui/LevelUpUI.tscn")
+@export var card_growth_scene: PackedScene = preload("res://scenes/ui/CardGrowthUI.tscn")
 
 @onready var map_root: Node = $MapRoot
 @onready var hud_root: CanvasLayer = $HUDLayer
@@ -86,8 +86,9 @@ var save_service := SaveService.new()
 var map_registry := MAP_REGISTRY_SCRIPT.new()
 var card_database := CardDatabase.new()
 var deck_manager := DeckManager.new(card_database)
-var combo_manager := ComboManager.new()
 var evolution_manager := EvolutionManager.new(card_database)
+var skill_recipe_manager := SkillRecipeManager.new()
+var growth_choice_queue := GrowthChoiceQueue.new()
 var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
 var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
 var _pending_player_state: Dictionary = {}
@@ -129,15 +130,37 @@ func _ready() -> void:
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	card_database.load_catalog()
 	evolution_manager.load_recipes()
+	skill_recipe_manager.load_catalog("res://data/skills.json")
+	_configure_skill_loadout()
 	card_effect_runner.effect_resolved.connect(_on_card_effect_resolved)
 	load_current_map(starting_map)
 	_sync_progression_to_meta()
+
+
+func _configure_skill_loadout() -> void:
+	var capacity := int(town_manager.call("get_skill_memory_capacity"))
+	if skill_recipe_manager.configure_loadout(
+		meta_state.learned_skill_ids,
+		meta_state.active_skill_ids,
+		capacity
+	):
+		return
+	meta_state.learned_skill_ids = ["iron_momentum"]
+	meta_state.active_skill_ids = ["iron_momentum"]
+	skill_recipe_manager.configure_loadout(
+		meta_state.learned_skill_ids,
+		meta_state.active_skill_ids,
+		capacity
+	)
 
 
 func _process(delta: float) -> void:
 	if not run_state.active or get_tree().paused:
 		return
 	var real_delta := delta / maxf(Engine.time_scale, 0.001)
+	deck_manager.tick_cooldowns(real_delta)
+	skill_recipe_manager.tick(real_delta)
+	_refresh_cooldown_display()
 	if _tick_combo_effects(real_delta):
 		_refresh_combo_display()
 	var regen_rate := BASE_AP_REGEN
@@ -160,7 +183,7 @@ func _input(event: InputEvent) -> void:
 	if not ui_stack.is_empty():
 		var top_ui := ui_stack[ui_stack.size() - 1]
 		var top_name := String(_ui_names.get(top_ui, top_ui.name))
-		if top_name in ["CardDiscardUI", "LevelUpUI"]:
+		if top_name in ["CardDiscardUI", "CardGrowthUI"]:
 			return
 		if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
 			close_top_ui()
@@ -272,12 +295,16 @@ func load_hud() -> void:
 
 func load_card_hand() -> void:
 	if card_hand_ui != null:
-		card_hand_ui.queue_free()
+		if hud == null or not hud.is_ancestor_of(card_hand_ui):
+			card_hand_ui.queue_free()
 		card_hand_ui = null
 
 	var hand_instance: Node = current_map.get_node_or_null("EditorHUDReference/CardHandUI") if current_map != null else null
+	if hand_instance == null and hud != null:
+		hand_instance = hud.get_node_or_null("BottomStage/CardStage/AutumnCardHandUI")
 	if hand_instance != null:
-		hand_instance.reparent(hud_root)
+		if hand_instance.get_parent() != null and (hud == null or not hud.is_ancestor_of(hand_instance)):
+			hand_instance.reparent(hud_root)
 	elif card_hand_scene != null:
 		hand_instance = card_hand_scene.instantiate()
 	else:
@@ -446,6 +473,14 @@ func _register_player(spawn_name: StringName) -> void:
 		player.connect("resources_changed", _update_hud_resources)
 	if player.has_signal("defeated") and not player.is_connected("defeated", _on_player_defeated):
 		player.connect("defeated", _on_player_defeated)
+	var status_controller := player.get_node_or_null("CombatStatusController")
+	if (
+		status_controller != null
+		and status_controller.has_signal("statuses_changed")
+		and not status_controller.is_connected("statuses_changed", _on_player_statuses_changed)
+	):
+		status_controller.connect("statuses_changed", _on_player_statuses_changed)
+		_on_player_statuses_changed(player.call("get_combat_status_projection") as Array)
 	_update_hud_resources()
 	player_registered.emit(player)
 
@@ -649,18 +684,31 @@ func _on_experience_gem_spawned(gem: Node, _value: int) -> void:
 
 func _on_experience_collected(value: int) -> void:
 	if run_state.add_experience(value) > 0:
-		call_deferred("_open_next_level_up")
+		_enqueue_experience_growth()
 	_update_hud_player_identity()
 
 
-func _open_next_level_up() -> void:
-	if run_state.pending_level_ups <= 0 or get_open_ui("LevelUpUI") != null:
+func _enqueue_experience_growth() -> void:
+	if run_state.pending_level_ups <= 0:
 		return
-	var ui_control := open_ui("LevelUpUI", level_up_scene, true)
-	if ui_control == null:
+	var upgrades: Array[Dictionary] = []
+	for instance in run_state.card_instances:
+		if instance.is_fixed() or instance.level >= CardInstance.MAX_LEVEL:
+			continue
+		upgrades.append({
+			"instance_id": instance.instance_id,
+			"card_id": instance.card_id,
+			"name": _card_name(instance.card_id),
+			"level": instance.level,
+		})
+	var fusions := evolution_manager.find_available_fusions(run_state.card_instances)
+	for fusion in fusions:
+		fusion["left_name"] = _card_name(String(fusion.get("left_card_id", "")))
+		fusion["right_name"] = _card_name(String(fusion.get("right_card_id", "")))
+		fusion["result_name"] = _card_name(String(fusion.get("result_card_id", "")))
+	if not growth_choice_queue.enqueue_experience_growth(upgrades, fusions):
 		return
-	ui_control.call("set_choices", _build_level_up_choices())
-	ui_control.connect("choice_selected", _on_level_up_choice.bind(ui_control), CONNECT_ONE_SHOT)
+	call_deferred("_open_next_growth_choice")
 
 
 func _build_level_up_choices() -> Array[Dictionary]:
@@ -738,7 +786,69 @@ func _apply_level_up_choice(choice: Dictionary) -> bool:
 
 
 func _get_run_deck_size() -> int:
-	return deck_manager.hand.size() + deck_manager.draw_pile.size() + deck_manager.discard_pile.size()
+	return deck_manager.get_all_instances().size()
+
+
+func _open_next_growth_choice() -> void:
+	if growth_choice_queue.is_empty() or get_open_ui("CardGrowthUI") != null:
+		return
+	var ui_control := open_ui("CardGrowthUI", card_growth_scene, true)
+	if ui_control == null:
+		return
+	ui_control.call("present_page", growth_choice_queue.peek())
+	ui_control.connect(
+		"choice_confirmed",
+		_on_growth_choice_confirmed.bind(ui_control),
+		CONNECT_ONE_SHOT
+	)
+
+
+func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void:
+	var page := growth_choice_queue.peek()
+	var selected: Dictionary = {}
+	for choice_variant in page.get("choices", []) as Array:
+		var choice := choice_variant as Dictionary
+		if String(choice.get("choice_id", "")) == choice_id:
+			selected = choice
+			break
+	if selected.is_empty() or not _apply_growth_resolution(selected):
+		return
+	if growth_choice_queue.resolve(choice_id).is_empty():
+		return
+	if String(page.get("source", "")) == "experience":
+		run_state.consume_pending_level()
+	close_ui(ui_control)
+	_refresh_card_hand()
+	_update_hud_player_identity()
+	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	if run_state.pending_level_ups > 0 and growth_choice_queue.is_empty():
+		_enqueue_experience_growth()
+	elif not growth_choice_queue.is_empty():
+		call_deferred("_open_next_growth_choice")
+
+
+func _apply_growth_resolution(choice: Dictionary) -> bool:
+	match String(choice.get("action", "")):
+		"new_card":
+			return _add_persistent_run_card(String(choice.get("card_id", "")))
+		"upgrade":
+			return meta_state.upgrade_card_instance(String(choice.get("instance_id", "")))
+		"fusion":
+			return _apply_card_fusion(choice)
+		"fallback":
+			var reward_variant: Variant = choice.get("reward", {})
+			if not reward_variant is Dictionary:
+				return false
+			for resource_id in reward_variant:
+				var amount := int(reward_variant[resource_id])
+				if amount <= 0 or not meta_state.add_resource(String(resource_id), amount):
+					return false
+				inventory_manager.call("add_resource", StringName(resource_id), amount)
+			wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
+			if hud != null and hud.has_method("set_currency"):
+				hud.call("set_currency", wallet_gold)
+			return true
+	return false
 
 
 func _on_combat_engaged() -> void:
@@ -831,30 +941,27 @@ func _begin_autumn_run(deck_override: Array = []) -> void:
 	]
 	var selected: Array = deck_override if deck_override.size() > 0 and deck_override.size() <= 16 else meta_state.selected_deck
 	var normalized := _normalize_expedition_deck(selected if selected.size() > 0 and selected.size() <= 16 else fallback_deck)
-	run_state.begin_run(normalized)
+	meta_state.selected_deck = normalized.duplicate()
+	var valid_ids: Array[String] = []
+	for card in card_database.get_all_cards():
+		valid_ids.append(String(card.get("id", "")))
+	meta_state.normalize_selected_deck(valid_ids)
+	run_state.begin_run(meta_state.selected_card_instances)
 	deck_manager.set_protected_cards(FIXED_CARD_IDS)
-	deck_manager.start(run_state.starting_deck, run_state.max_energy, true)
-	for card_id in run_state.starting_deck:
-		if not deck_manager.is_card_protected(card_id):
-			run_state.card_levels[card_id] = 1
-	combo_manager.reset()
+	deck_manager.start(run_state.card_instances, run_state.max_energy, true)
+	_configure_skill_loadout()
 	_last_combo_name = "—"
 	_refresh_card_hand()
 
 
 func _show_card_reward_choices(wave_number: int) -> void:
-	if not run_state.active or not ui_stack.is_empty():
+	if not run_state.active:
 		return
 	var choices_by_wave := {
-		2: ["ember_bolt", "guard", "dash_strike"],
+		2: ["guard", "dash_strike", "cleave"],
 		3: ["frost_bind", "healing_light", "battle_focus"],
 	}
-	var card_ids: Array = choices_by_wave.get(wave_number, ["cleave", "quickstep", "energy_surge"])
-	var ui_control := open_ui("RunUpgradeUI", dialogue_scene, true)
-	if ui_control == null:
-		return
-	ui_control.call("set_speaker_name", "Autumn Blessing")
-	ui_control.call("set_dialogue_text", "Choose a card copy. Merge and upgrades are handled at the campfire.")
+	var card_ids: Array = choices_by_wave.get(wave_number, ["cleave", "iron_skin", "energy_surge"])
 	var choices: Array[Dictionary] = []
 	for card_id in card_ids:
 		var card := card_database.get_card(String(card_id))
@@ -862,8 +969,8 @@ func _show_card_reward_choices(wave_number: int) -> void:
 			"text": "%s — %s" % [String(card.get("name", card_id)), String(card.get("description", ""))],
 			"card_id": String(card_id),
 		})
-	ui_control.call("set_choices", choices)
-	ui_control.connect("choice_selected", _on_card_reward_selected.bind(ui_control), CONNECT_ONE_SHOT)
+	if growth_choice_queue.enqueue_wave_blessing(choices):
+		call_deferred("_open_next_growth_choice")
 
 
 func _on_card_reward_selected(_index: int, _text: String, metadata: Dictionary, ui_control: Control) -> void:
@@ -872,25 +979,78 @@ func _on_card_reward_selected(_index: int, _text: String, metadata: Dictionary, 
 
 
 func _apply_card_reward(card_id: String) -> bool:
-	if not run_state.active or deck_manager.is_card_protected(card_id) or not card_database.has_card(card_id):
+	return _add_persistent_run_card(card_id)
+
+
+func _add_persistent_run_card(card_id: String) -> bool:
+	if (
+		not run_state.active
+		or deck_manager.is_card_protected(card_id)
+		or not card_database.has_card(card_id)
+	):
 		return false
-	if not run_state.card_levels.has(card_id):
-		run_state.card_levels[card_id] = 1
-	run_state.temporary_cards.append(card_id)
-	deck_manager.discard_pile.append(card_id)
+	var instance := meta_state.add_card_instance(card_id, CardInstance.MIN_LEVEL)
+	if instance == null:
+		return false
+	if not run_state.add_existing_card_instance(instance):
+		meta_state.remove_card_instances([instance.instance_id])
+		return false
+	if not deck_manager.add_existing_instance(instance):
+		run_state.remove_card_instances([instance.instance_id])
+		meta_state.remove_card_instances([instance.instance_id])
+		return false
 	if not meta_state.unlocked_cards.has(card_id):
 		meta_state.unlocked_cards.append(card_id)
-		save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	run_state.temporary_cards.append(card_id)
 	_refresh_card_hand()
+	return true
+
+
+func _apply_card_fusion(choice: Dictionary) -> bool:
+	var left_id := String(choice.get("left_instance_id", ""))
+	var right_id := String(choice.get("right_instance_id", ""))
+	var result_id := String(choice.get("result_card_id", ""))
+	if left_id.is_empty() or right_id.is_empty() or left_id == right_id:
+		return false
+	var selected_recipe: Dictionary = {}
+	for fusion in evolution_manager.find_available_fusions(run_state.card_instances):
+		if (
+			String(fusion.get("left_instance_id", "")) == left_id
+			and String(fusion.get("right_instance_id", "")) == right_id
+			and String(fusion.get("result_card_id", "")) == result_id
+		):
+			selected_recipe = fusion
+			break
+	if selected_recipe.is_empty() or not card_database.has_card(result_id):
+		return false
+	var consumed_ids: Array[String] = [left_id, right_id]
+	if (
+		not deck_manager.remove_instances(consumed_ids)
+		or not run_state.remove_card_instances(consumed_ids)
+		or not meta_state.remove_card_instances(consumed_ids)
+	):
+		return false
+	var result := meta_state.add_card_instance(result_id, CardInstance.MIN_LEVEL)
+	if result == null:
+		return false
+	if (
+		not run_state.add_existing_card_instance(result)
+		or not deck_manager.add_existing_instance(result)
+	):
+		return false
+	var recipe_id := String(selected_recipe.get("id", selected_recipe.get("recipe_id", "")))
+	if not recipe_id.is_empty() and not meta_state.unlocked_evolutions.has(recipe_id):
+		meta_state.unlocked_evolutions.append(recipe_id)
+	if not meta_state.unlocked_cards.has(result_id):
+		meta_state.unlocked_cards.append(result_id)
 	return true
 
 
 func _get_card_copy_count(card_id: String) -> int:
 	var count := 0
-	for pile in [deck_manager.hand, deck_manager.draw_pile, deck_manager.discard_pile]:
-		for pile_card_id in pile:
-			if pile_card_id == card_id:
-				count += 1
+	for instance in deck_manager.get_all_instances():
+		if instance.card_id == card_id:
+			count += 1
 	return count
 
 
@@ -989,13 +1149,16 @@ func _finish_run(victory: bool) -> Dictionary:
 func _on_card_selected(index: int) -> void:
 	if not run_state.active or player == null or not ui_stack.is_empty():
 		return
-	if index < 0 or index >= deck_manager.hand.size():
+	if index < 0 or index >= deck_manager.hand_instances.size():
 		return
-	var projected_card := _card_for_cast(deck_manager.hand[index])
+	var instance := deck_manager.hand_instances[index]
+	var projected_card := _card_for_cast(instance)
 	var card := deck_manager.play_from_hand(index, int(projected_card.get("cost", 0)))
 	if card.is_empty():
 		_refresh_card_hand()
 		return
+	for identity_key in ["instance_id", "card_level", "card_instance"]:
+		projected_card[identity_key] = card.get(identity_key)
 	card = projected_card
 	if String(card.get("type", "")) == "combo":
 		_resolve_combo_card(card)
@@ -1011,6 +1174,7 @@ func _on_card_selected(index: int) -> void:
 				if current_map.is_ancestor_of(enemy) and is_instance_valid(enemy):
 					targets.append(enemy)
 	card_effect_runner.cast(card, player, targets)
+	_resolve_skill_triggers(skill_recipe_manager.record_card(card))
 	var effect := card.get("effect", {}) as Dictionary
 	if String(effect.get("kind", "")) == "summon" and String(effect.get("unit_id", "")) == "energy_wisp":
 		run_state.temporary_buffs["ap_wisp_seconds"] = maxf(
@@ -1018,12 +1182,6 @@ func _on_card_selected(index: int) -> void:
 			WISP_DURATION
 		)
 		run_state.temporary_buffs["ap_wisp_rate"] = WISP_AP_REGEN
-	var triggered := combo_manager.record_card(card)
-	if not triggered.is_empty():
-		_last_combo_name = String(triggered[0].get("name", "Combo"))
-		run_state.combo_count += 1
-		if hud != null and hud.has_method("set_objective"):
-			hud.call("set_objective", "COMBO: %s" % _last_combo_name, String(triggered[0].get("description", "")))
 	var draw_count := maxi(0, int(effect.get("draw_cards", 0)))
 	if not deck_manager.last_play_retained:
 		draw_count += 1
@@ -1031,18 +1189,38 @@ func _on_card_selected(index: int) -> void:
 	run_state.energy = deck_manager.energy
 	_set_tactical_slowdown(false)
 	_refresh_card_hand()
-	var overflow := maxi(0, deck_manager.hand.size() - deck_manager.hand_size)
+	var overflow := maxi(0, deck_manager.hand_instances.size() - deck_manager.hand_size)
 	if overflow > 0:
 		call_deferred("_open_hand_overflow_discard", overflow)
+
+
+func _resolve_skill_triggers(triggered: Array[Dictionary]) -> void:
+	for skill in triggered:
+		var skill_id := String(skill.get("id", ""))
+		var skill_name := String(skill.get("name", skill_id.capitalize()))
+		var effect := skill.get("effect", {}) as Dictionary
+		match String(effect.get("kind", "")):
+			"combat_status", "regeneration", "healing_pulses":
+				if player != null and player.has_method("apply_combat_status"):
+					player.call("apply_combat_status", skill_id, skill_name, effect)
+			"action_points":
+				deck_manager.energy = minf(
+					deck_manager.max_energy,
+					deck_manager.energy + maxf(0.0, float(effect.get("amount", 0.0)))
+				)
+				run_state.energy = deck_manager.energy
+		run_state.combo_count += 1
+		if hud != null and hud.has_method("show_skill_toast"):
+			hud.call("show_skill_toast", skill_id, skill_name)
 
 
 func _open_hand_overflow_discard(required_count: int) -> void:
 	if required_count <= 0 or get_open_ui("CardDiscardUI") != null:
 		return
 	var cards: Array[Dictionary] = []
-	for card_id in deck_manager.hand:
-		var card := _card_for_cast(card_id)
-		card["fixed"] = deck_manager.is_card_protected(card_id)
+	for instance in deck_manager.hand_instances:
+		var card := _card_for_cast(instance)
+		card["fixed"] = deck_manager.is_card_protected(instance)
 		cards.append(card)
 	var ui_control := open_ui("CardDiscardUI", card_discard_scene, true)
 	if ui_control == null:
@@ -1052,23 +1230,27 @@ func _open_hand_overflow_discard(required_count: int) -> void:
 
 
 func _on_hand_overflow_confirmed(indices: Array[int], ui_control: Control) -> void:
-	var required_count := maxi(0, deck_manager.hand.size() - deck_manager.hand_size)
+	var required_count := maxi(0, deck_manager.hand_instances.size() - deck_manager.hand_size)
 	if indices.size() != required_count:
 		return
 	for index in indices:
-		if index < 0 or index >= deck_manager.hand.size() or deck_manager.is_card_protected(deck_manager.hand[index]):
+		if (
+			index < 0
+			or index >= deck_manager.hand_instances.size()
+			or deck_manager.is_card_protected(deck_manager.hand_instances[index])
+		):
 			return
 	var sorted_indices := indices.duplicate()
 	sorted_indices.sort()
 	sorted_indices.reverse()
 	for index in sorted_indices:
-		if index < 0 or index >= deck_manager.hand.size():
+		if index < 0 or index >= deck_manager.hand_instances.size():
 			continue
-		var card_id := deck_manager.hand[index]
-		if deck_manager.is_card_protected(card_id):
+		var instance := deck_manager.hand_instances[index]
+		if deck_manager.is_card_protected(instance):
 			continue
-		deck_manager.hand.remove_at(index)
-		deck_manager.discard_pile.append(card_id)
+		if deck_manager.remove_instances([instance.instance_id]):
+			deck_manager.add_existing_instance(instance)
 	close_ui(ui_control)
 	_refresh_card_hand()
 
@@ -1312,11 +1494,17 @@ func _on_card_effect_resolved(_card_id: String, result: Dictionary) -> void:
 	Engine.time_scale = 0.22 if _tactical_slowdown else 1.0
 
 
-func _card_for_cast(card_id: String) -> Dictionary:
+func _card_for_cast(card_or_instance: Variant) -> Dictionary:
+	var instance: CardInstance = card_or_instance as CardInstance if card_or_instance is CardInstance else null
+	var card_id := instance.card_id if instance != null else String(card_or_instance)
 	var card := card_database.get_card(card_id)
 	if card.is_empty():
 		return {}
-	var current_level := 1 if deck_manager.is_card_protected(card_id) else clampi(int(run_state.card_levels.get(card_id, 1)), 1, 3)
+	var current_level := (
+		CardInstance.MIN_LEVEL
+		if deck_manager.is_card_protected(instance if instance != null else card_id)
+		else clampi(instance.level if instance != null else CardInstance.MIN_LEVEL, CardInstance.MIN_LEVEL, CardInstance.MAX_LEVEL)
+	)
 	var effect := (card.get("effect", {}) as Dictionary).duplicate(true)
 	var upgrades := card.get("upgrade_effects", []) as Array
 	for upgrade_variant in upgrades:
@@ -1332,6 +1520,10 @@ func _card_for_cast(card_id: String) -> Dictionary:
 			card["mechanic_change"] = upgrade["mechanic_change"]
 	card["effect"] = effect
 	card["level"] = current_level
+	card["card_level"] = current_level
+	if instance != null:
+		card["instance_id"] = instance.instance_id
+		card["card_instance"] = instance
 	if String(card.get("type", "")) == "combo":
 		var equipment_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
 		card["cost"] = maxi(
@@ -1342,8 +1534,8 @@ func _card_for_cast(card_id: String) -> Dictionary:
 
 
 func _has_affordable_card() -> bool:
-	for card_id in deck_manager.hand:
-		if int(_card_for_cast(card_id).get("cost", 0)) <= deck_manager.energy:
+	for instance in deck_manager.hand_instances:
+		if int(_card_for_cast(instance).get("cost", 0)) <= deck_manager.energy:
 			return true
 	return false
 
@@ -1360,13 +1552,35 @@ func _refresh_card_hand() -> void:
 	if card_hand_ui == null or card_database.get_all_cards().is_empty():
 		return
 	var cards: Array[Dictionary] = []
-	for card_id in deck_manager.hand:
-		var card := _card_for_cast(card_id)
-		card["fixed"] = deck_manager.is_card_protected(card_id)
+	for instance in deck_manager.hand_instances:
+		var card := _card_for_cast(instance)
+		card["fixed"] = deck_manager.is_card_protected(instance)
 		cards.append(card)
 	card_hand_ui.call("set_cards", cards, deck_manager.energy)
 	card_hand_ui.call("set_action_points", deck_manager.energy, deck_manager.max_energy)
-	_refresh_combo_display()
+	_refresh_cooldown_display()
+
+
+func _refresh_cooldown_display() -> void:
+	if hud == null or not hud.has_method("set_cooldown_cards"):
+		return
+	var projection: Array[Dictionary] = []
+	for entry in deck_manager.cooldown_pile:
+		var instance := entry.get("instance") as CardInstance
+		if instance == null:
+			continue
+		projection.append({
+			"instance_id": instance.instance_id,
+			"card_id": instance.card_id,
+			"name": _card_name(instance.card_id),
+			"remaining_seconds": float(entry.get("remaining_seconds", 0.0)),
+		})
+	hud.call("set_cooldown_cards", projection)
+
+
+func _on_player_statuses_changed(statuses: Array) -> void:
+	if hud != null and hud.has_method("set_active_statuses"):
+		hud.call("set_active_statuses", statuses)
 
 
 func _refresh_combo_display() -> void:

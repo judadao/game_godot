@@ -26,7 +26,12 @@ func _run() -> void:
 	meta.apply_dict(legacy_payload)
 	var migrated := meta.to_dict()
 	var instances := migrated.get("selected_card_instances", []) as Array
-	_expect(int(migrated.get("schema_version", 0)) == 3, "Card-instance saves must use schema version three.")
+	_expect(int(migrated.get("schema_version", 0)) == 4, "Card-instance and Skill saves must use schema version four.")
+	_expect(
+		migrated.get("learned_skill_ids", []) == ["iron_momentum"]
+		and migrated.get("active_skill_ids", []) == ["iron_momentum"],
+		"Legacy saves must receive the initial learned and active Skill."
+	)
 	_expect(
 		instances == [
 			{"instance_id": "legacy-000001", "card_id": "ember_bolt", "level": 1},

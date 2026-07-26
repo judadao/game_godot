@@ -70,7 +70,7 @@ func _run() -> void:
 		"res://scenes/ui/RunResultUI.tscn",
 		"res://scenes/ui/DeckBuilderUI.tscn",
 		"res://scenes/ui/CardDiscardUI.tscn",
-		"res://scenes/ui/LevelUpUI.tscn",
+		"res://scenes/ui/CardGrowthUI.tscn",
 		"res://scenes/combat/ExperienceGem.tscn",
 	]:
 		_expect(ResourceLoader.exists(scene_path), "Required scene must exist: %s" % scene_path)

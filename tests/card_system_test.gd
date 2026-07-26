@@ -8,6 +8,7 @@ const EXPECTED_TYPES := [
 	"healing",
 	"status",
 	"ultimate",
+	"combo",
 ]
 
 var _failures := 0
@@ -20,13 +21,11 @@ func _init() -> void:
 func _run() -> void:
 	var database_script := load("res://scripts/systems/card_database.gd") as GDScript
 	var deck_script := load("res://scripts/systems/deck_manager.gd") as GDScript
-	var combo_script := load("res://scripts/systems/combo_manager.gd") as GDScript
 	var evolution_script := load("res://scripts/systems/evolution_manager.gd") as GDScript
 	_expect(database_script != null, "CardDatabase script must load.")
 	_expect(deck_script != null, "DeckManager script must load.")
-	_expect(combo_script != null, "ComboManager script must load.")
 	_expect(evolution_script != null, "EvolutionManager script must load.")
-	if database_script == null or deck_script == null or combo_script == null or evolution_script == null:
+	if database_script == null or deck_script == null or evolution_script == null:
 		quit(1)
 		return
 
@@ -64,6 +63,7 @@ func _run() -> void:
 		_expect(not icon_path.is_empty() and ResourceLoader.exists(icon_path), "%s must reference a loadable icon." % card_id)
 	for card_type in EXPECTED_TYPES:
 		_expect(int(seen_types.get(card_type, 0)) >= 1, "Required card type '%s' must be represented." % card_type)
+	_expect(not seen_types.has("defense"), "Removed Defense taxonomy must not return.")
 
 	var deck: RefCounted = deck_script.new(database)
 	deck.set("hand_size", 3)
@@ -110,43 +110,25 @@ func _run() -> void:
 	_expect(not redraw_deck.redraw_hand_for_all_energy(), "Hand redraw must fail until AP is full again.")
 	_expect((cycle_deck.get("discard_pile") as Array).is_empty(), "Reshuffled cards must leave discard.")
 
-	var combo: RefCounted = combo_script.new()
-	_expect((combo.call("get_rules") as Array).size() == 5, "Combo manager must expose five visible combo rules.")
-	_expect(_trigger_combo(combo, database, ["ember_bolt", "inferno_orb"], "ember_chain"), "Two fire cards must trigger Ember Chain.")
-	_expect(_trigger_combo(combo, database, ["ember_bolt", "cleave", "inferno_orb"], "blade_dance"), "Three Strike cards must trigger Blade Dance.")
-	_expect(
-		not _trigger_combo(combo, database, ["guard", "iron_skin"], "bulwark"),
-		"Redesigned timed Combo cards must not trigger the removed Defense taxonomy."
-	)
-	_expect(_trigger_combo(combo, database, ["quickstep", "cleave"], "storm_step"), "Mobility followed by attack must trigger Storm Step.")
-	_expect(_trigger_combo(combo, database, ["frost_bind", "quickstep", "battle_focus"], "arcane_cycle"), "Status, Skill, Power must trigger Arcane Cycle.")
-
 	var evolution: RefCounted = evolution_script.new(database)
-	_expect(bool(evolution.call("load_recipes")), "Evolution recipes must load and validate card references.")
+	_expect(bool(evolution.call("load_recipes")), "Fusion recipes must load and validate card references.")
 	var recipes: Array = evolution.call("get_all_recipes")
-	_expect(recipes.size() == 6, "Evolution catalog must contain six valid recipes.")
-	var levels := {}
-	var passives: Array[String] = []
+	_expect(recipes.size() == 6, "Fusion catalog must contain six valid recipes.")
+	var fusion_materials: Array = []
+	var instance_index := 0
 	for raw_recipe in recipes:
 		var recipe := raw_recipe as Dictionary
-		levels[String(recipe.get("base_card_id", ""))] = int(recipe.get("required_level", 0))
-		for passive in recipe.get("required_passives", []):
-			if not passives.has(String(passive)):
-				passives.append(String(passive))
-	var available: Array = evolution.call("find_available", levels, passives)
-	_expect(available.size() == 6, "All six recipes must become available when their requirements are met.")
+		for field in ["left_card_id", "right_card_id"]:
+			instance_index += 1
+			fusion_materials.append(CardInstance.new(
+				String(recipe.get(field, "")),
+				3,
+				"fusion-material-%02d" % instance_index
+			))
+	var available: Array = evolution.call("find_available_fusions", fusion_materials)
+	_expect(available.size() >= 6, "All six recipes must become available from distinct matching Lv3 instances.")
 
 	quit(0 if _failures == 0 else 1)
-
-
-func _trigger_combo(combo: RefCounted, database: RefCounted, card_ids: Array[String], expected_id: String) -> bool:
-	combo.call("reset")
-	var triggered_ids: Array[String] = []
-	for card_id in card_ids:
-		var results: Array = combo.call("record_card", database.call("get_card", card_id))
-		for raw_result in results:
-			triggered_ids.append(String((raw_result as Dictionary).get("id", "")))
-	return triggered_ids.has(expected_id)
 
 
 func _find_upgrade(upgrades: Array, level: int) -> Dictionary:

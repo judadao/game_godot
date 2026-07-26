@@ -47,10 +47,9 @@ func _run() -> void:
 	for enemy in director.get_active_enemies():
 		total_health_before += int(enemy.get("health"))
 	var attack_index := deck.hand.find("ember_bolt")
-	if attack_index < 0:
-		deck.hand[0] = "ember_bolt"
-		attack_index = 0
-	game.call("_on_card_selected", attack_index)
+	_expect(attack_index >= 0, "Fixed Ember Bolt must remain in the real hand.")
+	if attack_index >= 0:
+		game.call("_on_card_selected", attack_index)
 	_expect(deck.energy < energy_before, "Playing a card in the real run must spend energy.")
 	var total_health_after := 0
 	for enemy in director.get_active_enemies():
@@ -60,10 +59,17 @@ func _run() -> void:
 	game.call("_process", 2.0)
 	_expect(deck.energy >= 1.29 and not deck.hand.is_empty(), "AP must recover over time so the run cannot deadlock.")
 
-	run.temporary_buffs["passives"] = ["wind_feather"]
-	game.call("_apply_level_up_choice", {"kind": "upgrade_card", "card_id": "dash_strike"})
-	game.call("_apply_level_up_choice", {"kind": "upgrade_card", "card_id": "dash_strike"})
-	_expect(run.card_levels.has("gale_lunge"), "Ordinary run-card growth must produce an Evolution.")
+	var dash_instance: CardInstance
+	for instance in run.card_instances:
+		if instance.card_id == "dash_strike":
+			dash_instance = instance
+			break
+	_expect(dash_instance != null, "The expedition deck must retain a Dash Strike instance.")
+	if dash_instance != null:
+		game.call("_apply_growth_resolution", {"action": "upgrade", "instance_id": dash_instance.instance_id})
+		game.call("_apply_growth_resolution", {"action": "upgrade", "instance_id": dash_instance.instance_id})
+		_expect(dash_instance.level == 3, "Individual run-card growth must upgrade only the selected Dash Strike.")
+		_expect(dash_instance.card_id == "dash_strike", "A level-three card must not passively evolve.")
 
 	for _phase in 4:
 		director.call("advance_survival", 999.0)
