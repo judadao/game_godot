@@ -53,8 +53,8 @@ func find_available(owned_instances: Variant, _legacy_passives: Array = []) -> A
 			continue
 		var instance := raw_instance as Dictionary
 		var card_id := String(instance.get("card_id", ""))
-		var instance_id := String(instance.get("instance_id", ""))
-		if card_id.is_empty() or instance_id.is_empty():
+		var instance_id := int(instance.get("instance_id", 0))
+		if card_id.is_empty() or instance_id <= 0:
 			continue
 		if int(instance.get("level", 0)) < 3:
 			continue
@@ -67,12 +67,14 @@ func find_available(owned_instances: Variant, _legacy_passives: Array = []) -> A
 		var second_id := String(materials[1])
 		if not eligible_by_card_id.has(first_id) or not eligible_by_card_id.has(second_id):
 			continue
-		var candidate := recipe.duplicate(true)
-		candidate["material_instance_ids"] = [
-			String((eligible_by_card_id[first_id] as Array)[0]),
-			String((eligible_by_card_id[second_id] as Array)[0]),
-		]
-		available.append(candidate)
+		for first_instance_id in eligible_by_card_id[first_id] as Array:
+			for second_instance_id in eligible_by_card_id[second_id] as Array:
+				var candidate := recipe.duplicate(true)
+				candidate["material_instance_ids"] = [
+					int(first_instance_id),
+					int(second_instance_id),
+				]
+				available.append(candidate)
 	return available
 
 

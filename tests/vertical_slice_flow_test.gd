@@ -60,10 +60,17 @@ func _run() -> void:
 	game.call("_process", 2.0)
 	_expect(deck.energy >= 1.29 and not deck.hand.is_empty(), "AP must recover over time so the run cannot deadlock.")
 
-	run.temporary_buffs["passives"] = ["wind_feather"]
-	game.call("_apply_level_up_choice", {"kind": "upgrade_card", "card_id": "dash_strike"})
-	game.call("_apply_level_up_choice", {"kind": "upgrade_card", "card_id": "dash_strike"})
-	_expect(run.card_levels.has("gale_lunge"), "Ordinary run-card growth must produce an Evolution.")
+	var dash_instance_id := _find_instance_id(run.card_instances, "dash_strike")
+	run.pending_level_ups = 1
+	game.call("_enqueue_pending_experience_growth")
+	_expect(
+		bool(game.call("_confirm_growth_action", {"page": "upgrade", "kind": "upgrade", "instance_id": dash_instance_id})),
+		"EXP growth must upgrade the selected Dash Strike instance through the queue."
+	)
+	_expect(
+		int((run.get_card_instance(dash_instance_id) as Dictionary).get("level", 0)) == 2,
+		"Queued growth must increase only the selected ordinary instance."
+	)
 
 	for _phase in 4:
 		director.call("advance_survival", 999.0)
@@ -134,3 +141,10 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _find_instance_id(instances: Array[Dictionary], card_id: String) -> int:
+	for instance in instances:
+		if String(instance.get("card_id", "")) == card_id:
+			return int(instance.get("instance_id", 0))
+	return 0

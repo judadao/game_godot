@@ -46,6 +46,19 @@ func add_resource(resource_id: StringName, amount: int) -> bool:
 	return true
 
 
+func add_resources(resources: Dictionary) -> bool:
+	if resources.is_empty():
+		return false
+	for resource_id in resources:
+		var key := String(resource_id)
+		if not _resources.has(key) or not _is_positive_whole_number(resources[resource_id]):
+			return false
+	for resource_id in resources:
+		var key := String(resource_id)
+		_resources[key] = int(_resources[key]) + int(resources[resource_id])
+	return true
+
+
 func set_resource_amount(resource_id: StringName, amount: int) -> bool:
 	var key := String(resource_id)
 	if not _resources.has(key) or amount < 0:

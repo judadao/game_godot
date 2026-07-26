@@ -77,6 +77,48 @@ func consume_pending_level() -> bool:
 	return true
 
 
+func get_card_instance(instance_id: int) -> Dictionary:
+	for instance in card_instances:
+		if int(instance.get("instance_id", 0)) == instance_id:
+			return instance.duplicate(true)
+	return {}
+
+
+func set_card_instance_level(instance_id: int, level: int) -> bool:
+	if level < CardInstance.MIN_LEVEL or level > CardInstance.MAX_LEVEL:
+		return false
+	for instance in card_instances:
+		if int(instance.get("instance_id", 0)) == instance_id:
+			instance["level"] = level
+			return true
+	return false
+
+
+func remove_card_instances(instance_ids: Array[int]) -> bool:
+	if instance_ids.size() != 2 or instance_ids[0] == instance_ids[1]:
+		return false
+	var wanted: Dictionary = {}
+	for instance_id in instance_ids:
+		wanted[instance_id] = true
+	var retained: Array[Dictionary] = []
+	for instance in card_instances:
+		if wanted.has(int(instance.get("instance_id", 0))):
+			continue
+		retained.append(instance)
+	if retained.size() != card_instances.size() - instance_ids.size():
+		return false
+	card_instances = retained
+	starting_deck = _card_ids_from_instances(card_instances)
+	return true
+
+
+func add_card_instance(card_id: String, level: int = CardInstance.MIN_LEVEL) -> Dictionary:
+	var instance := CardInstance.new(card_id, level).to_dict()
+	card_instances.append(instance)
+	starting_deck.append(card_id)
+	return instance.duplicate(true)
+
+
 func _reset_transient() -> void:
 	active = false
 	level = 1
@@ -106,3 +148,10 @@ func _coerce_card_instance(raw_card: Variant) -> Dictionary:
 	if card_id.is_empty():
 		return {}
 	return CardInstance.new(card_id).to_dict()
+
+
+func _card_ids_from_instances(instances: Array[Dictionary]) -> Array[String]:
+	var card_ids: Array[String] = []
+	for instance in instances:
+		card_ids.append(String(instance.get("card_id", "")))
+	return card_ids

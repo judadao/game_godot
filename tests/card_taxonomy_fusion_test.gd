@@ -74,16 +74,16 @@ func _run() -> void:
 			)
 
 	var owned_instances := [
-		{"instance_id": "a", "card_id": "guard", "level": 3},
-		{"instance_id": "b", "card_id": "iron_skin", "level": 3},
-		{"instance_id": "c", "card_id": "guard", "level": 2},
+		{"instance_id": 101, "card_id": "guard", "level": 3},
+		{"instance_id": 102, "card_id": "iron_skin", "level": 3},
+		{"instance_id": 103, "card_id": "guard", "level": 2},
 	]
 	var available := fusion.find_available(owned_instances)
 	_expect(available.size() == 1, "Only the fully eligible selected pair must be available.")
 	if available.size() == 1:
 		_expect(
-			_as_sorted_strings(available[0].get("material_instance_ids", [])) == ["a", "b"],
-			"Fusion availability must identify the exact two instances."
+			available[0].get("material_instance_ids", []) == [101, 102],
+			"Fusion availability must preserve CardInstance's exact numeric IDs."
 		)
 
 	if _failures == 0:
