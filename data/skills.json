@@ -1,0 +1,54 @@
+{
+  "skills": [
+    {
+      "id": "iron_momentum",
+      "name": "Iron Momentum",
+      "memory_cost": 1,
+      "hidden": false,
+      "recipe": {
+        "kind": "count",
+        "attack_ids": ["ember_bolt", "cleave", "inferno_orb"],
+        "required_count": 5,
+        "window_seconds": 8.0
+      },
+      "effect": {"kind": "super_armor", "tier": "weak", "duration_seconds": 3.0},
+      "cooldown_seconds": 10.0
+    },
+    {
+      "id": "ember_crescendo",
+      "name": "Ember Crescendo",
+      "memory_cost": 2,
+      "hidden": false,
+      "recipe": {
+        "kind": "exact",
+        "steps": ["ember_bolt", "cleave", "ember_bolt"]
+      },
+      "effect": {"kind": "bonus_damage", "amount": 18},
+      "cooldown_seconds": 6.0
+    },
+    {
+      "id": "combustion_loop",
+      "name": "Combustion Loop",
+      "memory_cost": 1,
+      "hidden": false,
+      "recipe": {
+        "kind": "exact",
+        "steps": ["ember_bolt", "ember_bolt", "ember_bolt", "ember_bolt", "ember_bolt"]
+      },
+      "effect": {"kind": "burning_wave", "amount": 10},
+      "cooldown_seconds": 10.0
+    },
+    {
+      "id": "hidden_flame",
+      "name": "Hidden Flame",
+      "memory_cost": 2,
+      "hidden": true,
+      "recipe": {
+        "kind": "exact",
+        "steps": ["inferno_orb", "cleave"]
+      },
+      "effect": {"kind": "flame_nova", "amount": 24},
+      "cooldown_seconds": 12.0
+    }
+  ]
+}
