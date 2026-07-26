@@ -83,6 +83,32 @@
           "visual_flag": "show_town_hall_level_3"
         }
       ]
+    },
+    {
+      "id": "memory_library",
+      "name": "Memory Library",
+      "upgrades": [
+        {
+          "level": 1,
+          "cost": {"autumn_wood": 12, "stone": 8, "magic_shard": 4},
+          "visual_flag": "show_memory_library_level_1"
+        },
+        {
+          "level": 2,
+          "cost": {"autumn_wood": 24, "stone": 16, "magic_shard": 8, "gold": 30},
+          "visual_flag": "show_memory_library_level_2"
+        },
+        {
+          "level": 3,
+          "cost": {"autumn_wood": 40, "stone": 28, "magic_shard": 14, "gold": 65},
+          "visual_flag": "show_memory_library_level_3"
+        },
+        {
+          "level": 4,
+          "cost": {"autumn_wood": 60, "stone": 45, "magic_shard": 24, "autumn_core": 12, "gold": 120},
+          "visual_flag": "show_memory_library_level_4"
+        }
+      ]
     }
   ],
   "village_stages": [

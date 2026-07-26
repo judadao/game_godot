@@ -1,6 +1,7 @@
 extends RefCounted
 
 const DEFAULT_DATA_PATH := "res://data/town_upgrades.json"
+const SKILL_MEMORY_CAPACITIES: Array[int] = [10, 14, 18, 24, 30]
 
 var _loaded := false
 var _inventory: RefCounted
@@ -40,6 +41,15 @@ func get_building_level(building_id: StringName) -> int:
 func get_max_building_level(building_id: StringName) -> int:
 	var building := _building_by_id.get(String(building_id), {}) as Dictionary
 	return (building.get("upgrades", []) as Array).size()
+
+
+func get_skill_memory_capacity() -> int:
+	var library_level := clampi(
+		get_building_level(&"memory_library"),
+		0,
+		SKILL_MEMORY_CAPACITIES.size() - 1
+	)
+	return SKILL_MEMORY_CAPACITIES[library_level]
 
 
 func get_next_upgrade_cost(building_id: StringName) -> Dictionary:
