@@ -1,53 +1,47 @@
 {
-  "schema_version": 1,
-  "evolutions": [
+  "schema_version": 2,
+  "fusion_recipes": [
     {
-      "id": "evolve_ember_bolt",
-      "name": "Ember Bolt to Inferno Orb",
-      "base_card_id": "ember_bolt",
-      "required_level": 3,
-      "required_passives": ["ember_core"],
-      "result_card_id": "inferno_orb"
-    },
-    {
-      "id": "evolve_guard",
-      "name": "Guard to Fortress Stance",
-      "base_card_id": "guard",
-      "required_level": 3,
-      "required_passives": ["iron_heart"],
+      "id": "fuse_fortress_stance",
+      "name": "Unbreakable Stance",
+      "left_card_id": "guard",
+      "right_card_id": "iron_skin",
       "result_card_id": "fortress_stance"
     },
     {
-      "id": "evolve_dash_strike",
-      "name": "Dash Strike to Gale Lunge",
-      "base_card_id": "dash_strike",
-      "required_level": 3,
-      "required_passives": ["wind_feather"],
+      "id": "fuse_gale_lunge",
+      "name": "Gale Lunge",
+      "left_card_id": "dash_strike",
+      "right_card_id": "cleave",
       "result_card_id": "gale_lunge"
     },
     {
-      "id": "evolve_frost_bind",
-      "name": "Frost Bind to Time Snare",
-      "base_card_id": "frost_bind",
-      "required_level": 3,
-      "required_passives": ["hourglass_shard"],
+      "id": "fuse_time_snare",
+      "name": "Time Snare",
+      "left_card_id": "frost_bind",
+      "right_card_id": "energy_surge",
       "result_card_id": "time_snare"
     },
     {
-      "id": "evolve_healing_light",
-      "name": "Healing Light to Renewal",
-      "base_card_id": "healing_light",
-      "required_level": 3,
-      "required_passives": ["life_seed"],
+      "id": "fuse_renewal",
+      "name": "Renewal",
+      "left_card_id": "healing_light",
+      "right_card_id": "blood_pact_combo",
       "result_card_id": "renewal"
     },
     {
-      "id": "evolve_battle_focus",
-      "name": "Battle Focus to Overdrive",
-      "base_card_id": "battle_focus",
-      "required_level": 3,
-      "required_passives": ["warrior_emblem"],
+      "id": "fuse_overdrive",
+      "name": "Overdrive",
+      "left_card_id": "battle_focus",
+      "right_card_id": "flame_aura",
       "result_card_id": "overdrive"
+    },
+    {
+      "id": "fuse_inferno_orb",
+      "name": "Inferno Orb",
+      "left_card_id": "cleave",
+      "right_card_id": "flame_aura",
+      "result_card_id": "inferno_orb"
     }
   ]
 }

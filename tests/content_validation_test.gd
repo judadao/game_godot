@@ -22,10 +22,11 @@ func _run() -> void:
 
 	var evolutions := EvolutionManager.new(cards)
 	_expect(evolutions.load_recipes(), "Evolution content must load.")
-	_expect(evolutions.get_all_recipes().size() == 6, "Vertical slice must ship six Evolutions.")
+	_expect(evolutions.get_all_recipes().size() == 6, "Vertical slice must ship six card fusion recipes.")
 	for recipe in evolutions.get_all_recipes():
-		_expect(card_ids.has(String(recipe["base_card_id"])), "Evolution base card must exist.")
-		_expect(card_ids.has(String(recipe["result_card_id"])), "Evolution result card must exist.")
+		_expect(card_ids.has(String(recipe["left_card_id"])), "Fusion left material card must exist.")
+		_expect(card_ids.has(String(recipe["right_card_id"])), "Fusion right material card must exist.")
+		_expect(card_ids.has(String(recipe["result_card_id"])), "Fusion result card must exist.")
 
 	var inventory_script := load("res://scripts/systems/inventory_manager.gd")
 	var inventory: RefCounted = inventory_script.new()

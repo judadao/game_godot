@@ -19,7 +19,7 @@ func load_recipes(path: String = DEFAULT_RECIPES_PATH) -> bool:
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	if not parsed is Dictionary:
 		return false
-	var raw_recipes: Variant = (parsed as Dictionary).get("evolutions", [])
+	var raw_recipes: Variant = (parsed as Dictionary).get("fusion_recipes", [])
 	if not raw_recipes is Array:
 		return false
 	var seen_ids := {}
@@ -43,34 +43,71 @@ func get_all_recipes() -> Array[Dictionary]:
 	return result
 
 
-func find_available(levels: Dictionary, passives: Array) -> Array[Dictionary]:
+func find_available_fusions(card_instances: Array) -> Array[Dictionary]:
+	var eligible: Array[Dictionary] = []
+	for instance_variant in card_instances:
+		var instance := _instance_projection(instance_variant)
+		if (
+			instance.is_empty()
+			or int(instance.get("level", 0)) != 3
+			or bool(instance.get("fixed", false))
+		):
+			continue
+		eligible.append(instance)
 	var available: Array[Dictionary] = []
 	for recipe in _recipes:
-		var base_card_id := String(recipe["base_card_id"])
-		if int(levels.get(base_card_id, 0)) < int(recipe["required_level"]):
-			continue
-		var has_every_passive := true
-		for passive in recipe["required_passives"]:
-			if not passives.has(String(passive)):
-				has_every_passive = false
-				break
-		if has_every_passive:
-			available.append(recipe.duplicate(true))
+		for left in eligible:
+			if String(left.get("card_id", "")) != String(recipe["left_card_id"]):
+				continue
+			for right in eligible:
+				if (
+					String(right.get("card_id", "")) != String(recipe["right_card_id"])
+					or String(left.get("instance_id", "")) == String(right.get("instance_id", ""))
+				):
+					continue
+				var fusion := recipe.duplicate(true)
+				fusion["recipe_id"] = String(recipe["id"])
+				fusion["left_instance_id"] = String(left["instance_id"])
+				fusion["right_instance_id"] = String(right["instance_id"])
+				available.append(fusion)
 	return available
 
 
 func _is_valid_recipe(recipe: Dictionary, seen_ids: Dictionary) -> bool:
-	for field in ["id", "name", "base_card_id", "required_level", "required_passives", "result_card_id"]:
+	for field in ["id", "name", "left_card_id", "right_card_id", "result_card_id"]:
 		if not recipe.has(field):
 			return false
 	var recipe_id := String(recipe["id"])
-	if recipe_id.is_empty() or seen_ids.has(recipe_id) or int(recipe["required_level"]) < 1:
-		return false
-	if not recipe["required_passives"] is Array or (recipe["required_passives"] as Array).is_empty():
+	if (
+		recipe_id.is_empty()
+		or seen_ids.has(recipe_id)
+		or String(recipe["left_card_id"]).is_empty()
+		or String(recipe["right_card_id"]).is_empty()
+		or String(recipe["result_card_id"]).is_empty()
+	):
 		return false
 	if _card_database == null:
 		return true
 	return (
-		bool(_card_database.call("has_card", String(recipe["base_card_id"])))
+		bool(_card_database.call("has_card", String(recipe["left_card_id"])))
+		and bool(_card_database.call("has_card", String(recipe["right_card_id"])))
 		and bool(_card_database.call("has_card", String(recipe["result_card_id"])))
 	)
+
+
+func _instance_projection(value: Variant) -> Dictionary:
+	if value is Dictionary:
+		var data := (value as Dictionary).duplicate(true)
+		var card_id := String(data.get("card_id", ""))
+		data["fixed"] = bool(data.get("fixed", card_id in ["ember_bolt", "quickstep"]))
+		return data
+	if value is Object:
+		var object := value as Object
+		var card_id := String(object.get("card_id"))
+		return {
+			"instance_id": String(object.get("instance_id")),
+			"card_id": card_id,
+			"level": int(object.get("level")),
+			"fixed": bool(object.call("is_fixed")) if object.has_method("is_fixed") else card_id in ["ember_bolt", "quickstep"],
+		}
+	return {}
