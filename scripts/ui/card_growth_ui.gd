@@ -83,6 +83,8 @@ func confirm_selection() -> void:
 	var action := _options[_selected_index].duplicate(true)
 	action["page"] = _active_page
 	action["kind"] = _active_page
+	if _active_page == "fusion" and not action.has("recipe_id"):
+		action["recipe_id"] = String(action.get("id", ""))
 	choice_confirmed.emit(action)
 
 
@@ -146,25 +148,77 @@ func _options_for_page(page: String) -> Array[Dictionary]:
 	var payload: Variant = _entry.get("payload", {})
 	if not payload is Dictionary:
 		return []
-	var keys := {
-		"new_card": ["card_options", "new_card_options"],
-		"upgrade": ["upgrade_options", "upgrades"],
-		"fusion": ["fusion_options", "fusion_recipes"],
-		"reward": ["fallback_rewards", "reward_options"],
-	}
-	for key in keys.get(page, []) as Array:
-		var raw_options: Variant = (payload as Dictionary).get(key, [])
-		if raw_options is Array:
-			return _dictionary_array(raw_options as Array)
+	var payload_dictionary := payload as Dictionary
+	match page:
+		"new_card":
+			return _normalize_options(_first_option_array(payload_dictionary, ["card_options", "new_card_options"]), page)
+		"upgrade":
+			var instance_ids := _int_array(payload_dictionary.get("upgradeable_instance_ids", []))
+			var rich_options := _normalize_options(_option_array(payload_dictionary, "upgradeable_instances"), page)
+			if not rich_options.is_empty():
+				return _filter_upgrade_projections(rich_options, instance_ids)
+			var legacy_options := _normalize_options(_first_option_array(payload_dictionary, ["upgrade_options", "upgrades"]), page)
+			if not legacy_options.is_empty():
+				return legacy_options
+			return _normalize_options(instance_ids, page)
+		"fusion":
+			return _normalize_options(_first_option_array(payload_dictionary, ["fusion_recipes", "fusion_options"]), page)
+		"reward":
+			return _normalize_options(_first_option_array(payload_dictionary, ["fallback_rewards", "reward_options"]), page)
 	return []
 
 
-func _dictionary_array(raw_options: Array) -> Array[Dictionary]:
+func _normalize_options(raw_options: Array, page: String) -> Array[Dictionary]:
 	var options: Array[Dictionary] = []
 	for raw_option in raw_options:
 		if raw_option is Dictionary:
 			options.append((raw_option as Dictionary).duplicate(true))
+		elif page == "new_card" and (raw_option is String or raw_option is StringName):
+			var card_id := String(raw_option).strip_edges()
+			if not card_id.is_empty():
+				options.append({"card_id": card_id, "name": card_id.replace("_", " ").capitalize()})
+		elif page == "upgrade" and (raw_option is int or raw_option is float or String(raw_option).is_valid_int()):
+			var instance_id := int(raw_option)
+			if instance_id > 0:
+				options.append({"instance_id": instance_id, "name": "Card Instance #%d" % instance_id})
+		elif page == "fusion" and (raw_option is String or raw_option is StringName):
+			var recipe_id := String(raw_option).strip_edges()
+			if not recipe_id.is_empty():
+				options.append({"id": recipe_id, "recipe_id": recipe_id})
 	return options
+
+
+func _first_option_array(payload: Dictionary, keys: Array[String]) -> Array:
+	for key in keys:
+		if payload.has(key):
+			return _option_array(payload, key)
+	return []
+
+
+func _option_array(payload: Dictionary, key: String) -> Array:
+	var value: Variant = payload.get(key, [])
+	return value as Array if value is Array else []
+
+
+func _int_array(value: Variant) -> Array[int]:
+	var result: Array[int] = []
+	if not value is Array:
+		return result
+	for raw_value in value as Array:
+		var parsed := int(raw_value)
+		if parsed > 0 and not result.has(parsed):
+			result.append(parsed)
+	return result
+
+
+func _filter_upgrade_projections(options: Array[Dictionary], instance_ids: Array[int]) -> Array[Dictionary]:
+	if instance_ids.is_empty():
+		return options
+	var filtered: Array[Dictionary] = []
+	for option in options:
+		if instance_ids.has(int(option.get("instance_id", 0))):
+			filtered.append(option)
+	return filtered
 
 
 func _rebuild_option_buttons() -> void:
@@ -199,8 +253,15 @@ func _refresh_detail() -> void:
 	var preview_index := _selected_index if _selected_index >= 0 else 0
 	var option := _options[preview_index]
 	detail_title.text = _option_name(option)
-	var before := String(option.get("before", _default_before(option)))
-	var after := String(option.get("after", _default_after(option)))
+	if _active_page == "fusion":
+		detail_text.text = "%s\n\n%s\n\n%s" % [
+			_fusion_before(option),
+			"→ %s Lv. 1" % _card_display_name(String(option.get("result_card_id", "Result Card"))),
+			"Selected — confirm to continue." if _selected_index >= 0 else "Preview — select this option to confirm.",
+		]
+		return
+	var before := str(option.get("before", _default_before(option)))
+	var after := str(option.get("after", _default_after(option)))
 	var description := String(option.get("description", ""))
 	var level_comparison := ""
 	if _active_page == "upgrade":
@@ -218,9 +279,14 @@ func _refresh_detail() -> void:
 func _option_label(option: Dictionary) -> String:
 	var label := _option_name(option)
 	if _active_page == "upgrade":
-		label += "  •  #%s  •  LV. %d" % [str(option.get("instance_id", "?")), int(option.get("level", 1))]
+		label += "  •  #%s" % str(option.get("instance_id", "?"))
+		label += "  •  LV. %d" % int(option["level"]) if option.has("level") else "  •  LEVEL DATA UNAVAILABLE"
 	elif _active_page == "fusion":
-		label += "  •  Full Fusion"
+		label = "%s\n%s → %s LV. 1" % [
+			label,
+			_fusion_material_badges(option),
+			_card_display_name(String(option.get("result_card_id", "Result Card"))),
+		]
 	elif _active_page == "reward":
 		var amount := int(option.get("amount", 0))
 		if amount > 0:
@@ -242,14 +308,41 @@ func _option_name(option: Dictionary) -> String:
 
 func _default_before(option: Dictionary) -> String:
 	if _active_page == "upgrade":
-		return "Lv. %d" % int(option.get("level", 1))
+		return "Lv. %d" % int(option["level"]) if option.has("level") else "Current level unavailable"
 	return "Current choice"
 
 
 func _default_after(option: Dictionary) -> String:
 	if _active_page == "upgrade":
-		return "Lv. %d" % (int(option.get("level", 1)) + 1)
+		return "Lv. %d" % (int(option["level"]) + 1) if option.has("level") else "Upgrade after domain validation"
 	return "Applied on confirmation"
+
+
+func _fusion_material_badges(option: Dictionary) -> String:
+	var card_ids := _string_array(option.get("material_card_ids", []))
+	var instance_ids := _int_array(option.get("material_instance_ids", []))
+	var required_level := int(option.get("required_level", 3))
+	var badges: Array[String] = []
+	for index in mini(card_ids.size(), instance_ids.size()):
+		badges.append("%s #%d LV. %d" % [_card_display_name(card_ids[index]), instance_ids[index], required_level])
+	return " + ".join(badges) if not badges.is_empty() else "Fusion materials"
+
+
+func _fusion_before(option: Dictionary) -> String:
+	return _fusion_material_badges(option).replace("LV.", "Lv.")
+
+
+func _string_array(value: Variant) -> Array[String]:
+	var result: Array[String] = []
+	if not value is Array:
+		return result
+	for raw_value in value as Array:
+		result.append(String(raw_value))
+	return result
+
+
+func _card_display_name(card_id: String) -> String:
+	return card_id.replace("_", " ").capitalize()
 
 
 func _source_title() -> String:
