@@ -7,8 +7,7 @@ const SUPPORTED_EFFECTS := [
 	"damage", "area_damage", "block", "heal", "dash", "dash_damage",
 	"slow", "area_slow", "stun", "attack_power", "damage_aura",
 	"gain_energy", "summon", "projectile_burst", "overdrive",
-	"infusion", "armor", "super_armor", "reduction", "damage_reduction", "retaliation",
-	"fortress", "counterguard", "regeneration", "lifesteal",
+	"infusion",
 ]
 
 
@@ -21,7 +20,7 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 		return {}
 	var effect := card.get("effect", {}) as Dictionary
 	var kind := String(effect.get("kind", ""))
-	var result := {"card_id": String(card.get("id", "")), "kind": kind, "affected": 0, "total": 0, "positive_damage": false}
+	var result := {"card_id": String(card.get("id", "")), "kind": kind, "affected": 0, "total": 0}
 
 	match kind:
 		"damage":
@@ -33,9 +32,10 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 			_damage_targets(caster, selected, int(effect.get("amount", 0)), result)
 			_apply_infused_statuses(selected, effect)
 		"block":
-			pass
-		"armor", "super_armor", "reduction", "damage_reduction", "retaliation", "fortress", "counterguard", "regeneration", "lifesteal":
-			_apply_combat_status(caster, String(card.get("id", "")), kind, effect, result)
+			if caster.has_method("add_block"):
+				caster.call("add_block", int(effect.get("amount", 0)))
+				result["affected"] = 1
+				result["total"] = int(effect.get("amount", 0))
 		"heal":
 			if caster.has_method("restore_health"):
 				result["total"] = int(caster.call("restore_health", int(effect.get("amount", 0))))
@@ -75,9 +75,8 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 		"gain_energy", "projectile_burst", "infusion":
 			result["affected"] = 1
 
-	result["positive_damage"] = int(result.get("total", 0)) > 0
-	if bool(result["positive_damage"]):
-		_restore_timed_lifesteal(caster, int(result["total"]))
+	if float(effect.get("lifesteal_ratio", 0.0)) > 0.0 and int(result.get("total", 0)) > 0 and caster.has_method("restore_health"):
+		caster.call("restore_health", maxi(1, int(round(float(result["total"]) * float(effect["lifesteal_ratio"])))))
 
 	effect_resolved.emit(String(card.get("id", "")), result)
 	return result
@@ -99,29 +98,6 @@ func _damage_targets(caster: Node, targets: Array, raw_damage: int, result: Dict
 		if target_total > 0:
 			result["affected"] = int(result["affected"]) + 1
 			result["total"] = int(result["total"]) + target_total
-
-
-func _apply_combat_status(caster: Node, card_id: String, kind: String, effect: Dictionary, result: Dictionary) -> void:
-	var controller := _get_combat_status_controller(caster)
-	if controller == null or not controller.has_method("apply_effect"):
-		return
-	var source_id := StringName(String(effect.get("source_id", card_id)))
-	if bool(controller.call("apply_effect", source_id, kind, effect)):
-		result["affected"] = 1
-
-
-func _restore_timed_lifesteal(caster: Node, total_damage: int) -> void:
-	var controller := _get_combat_status_controller(caster)
-	if controller != null and controller.has_method("restore_from_damage"):
-		controller.call("restore_from_damage", total_damage)
-
-
-func _get_combat_status_controller(caster: Node) -> Node:
-	if caster.has_method("get_combat_status_controller"):
-		var controller: Variant = caster.call("get_combat_status_controller")
-		if controller is Node and is_instance_valid(controller):
-			return controller
-	return caster.get_node_or_null("CombatStatusController")
 
 
 func _apply_status(targets: Array, status_id: String, effect: Dictionary, result: Dictionary) -> void:

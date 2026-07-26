@@ -10,25 +10,22 @@ func _init() -> void:
 func _run() -> void:
 	var cards := CardDatabase.new()
 	_expect(cards.load_catalog(), "Card content must load.")
-	_expect(cards.get_all_cards().size() == 24, "Vertical slice must ship 24 practical cards.")
+	_expect(cards.get_all_cards().size() == 23, "Vertical slice must ship 23 practical cards.")
 	var card_ids := {}
 	var represented_types := {}
 	for card in cards.get_all_cards():
 		card_ids[String(card["id"])] = true
 		represented_types[String(card["type"]).to_lower()] = true
 		_expect(ResourceLoader.exists(String(card["icon_path"])), "Every card icon path must resolve.")
-	for required_type in ["attack", "utility", "healing", "power", "summon", "status", "ultimate", "combo"]:
+	for required_type in ["attack", "skill", "power", "summon", "defense", "status", "ultimate", "combo"]:
 		_expect(represented_types.has(required_type), "Card catalog must represent %s." % required_type)
-	_expect(not represented_types.has("defense"), "Defense must no longer be a player card type.")
-	_expect(not represented_types.has("skill"), "Skill is reserved for passive attack-sequence recipes.")
 
 	var evolutions := EvolutionManager.new(cards)
-	_expect(evolutions.load_recipes(), "Fusion content must load.")
-	_expect(evolutions.get_all_recipes().size() == 6, "Vertical slice must ship six fusions.")
+	_expect(evolutions.load_recipes(), "Evolution content must load.")
+	_expect(evolutions.get_all_recipes().size() == 6, "Vertical slice must ship six Evolutions.")
 	for recipe in evolutions.get_all_recipes():
-		for material_id in recipe["material_card_ids"]:
-			_expect(card_ids.has(String(material_id)), "Fusion material card must exist.")
-		_expect(card_ids.has(String(recipe["result_card_id"])), "Fusion result card must exist.")
+		_expect(card_ids.has(String(recipe["base_card_id"])), "Evolution base card must exist.")
+		_expect(card_ids.has(String(recipe["result_card_id"])), "Evolution result card must exist.")
 
 	var inventory_script := load("res://scripts/systems/inventory_manager.gd")
 	var inventory: RefCounted = inventory_script.new()
@@ -72,15 +69,10 @@ func _run() -> void:
 		"res://scenes/ui/RunResultUI.tscn",
 		"res://scenes/ui/DeckBuilderUI.tscn",
 		"res://scenes/ui/CardDiscardUI.tscn",
-		"res://scenes/ui/CardGrowthUI.tscn",
+		"res://scenes/ui/LevelUpUI.tscn",
 		"res://scenes/combat/ExperienceGem.tscn",
 	]:
 		_expect(ResourceLoader.exists(scene_path), "Required scene must exist: %s" % scene_path)
-	for obsolete_growth_path in [
-		"res://scenes/ui/LevelUpUI.tscn",
-		"res://scripts/ui/level_up_ui.gd",
-	]:
-		_expect(not ResourceLoader.exists(obsolete_growth_path), "Obsolete growth content must be removed: %s" % obsolete_growth_path)
 	var forest := (load("res://scenes/maps/autumn_forest.tscn") as PackedScene).instantiate()
 	root.add_child(forest)
 	await process_frame

@@ -28,7 +28,7 @@ const REQUIRED_NODE_PATHS: Array[String] = [
 	"ForwardPortal",
 	"EditorHUDReference",
 	"EditorHUDReference/HUD",
-	"EditorHUDReference/HUD/BottomStage/CardHandUI",
+	"EditorHUDReference/CardHandUI",
 	"EditorHelpers",
 ]
 
@@ -103,7 +103,10 @@ func _assert_scene_is_standalone(packed: PackedScene) -> void:
 	)
 	for index in state.get_node_count():
 		var node_path := String(state.get_node_path(index))
-		var is_nested_hud_override := node_path.begins_with("EditorHUDReference/HUD/")
+		var is_nested_hud_override := (
+			node_path.begins_with("EditorHUDReference/HUD/")
+			or node_path.begins_with("EditorHUDReference/CardHandUI/")
+		)
 		_expect(
 			not is_nested_hud_override,
 			"V2 must not serialize nested EditorHUDReference overrides: %s." % node_path

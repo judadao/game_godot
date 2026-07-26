@@ -3,7 +3,6 @@ extends RefCounted
 
 
 func save_meta(path: String, data: Dictionary) -> bool:
-	var normalized_data := _migrate_meta_payload(data)
 	var directory := path.get_base_dir()
 	if not directory.is_empty():
 		var create_error := DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(directory))
@@ -13,7 +12,7 @@ func save_meta(path: String, data: Dictionary) -> bool:
 	var file := FileAccess.open(temporary_path, FileAccess.WRITE)
 	if file == null:
 		return false
-	file.store_string(JSON.stringify(normalized_data, "\t"))
+	file.store_string(JSON.stringify(data, "\t"))
 	file.flush()
 	file = null
 	var validation_file := FileAccess.open(temporary_path, FileAccess.READ)
@@ -42,18 +41,13 @@ func save_meta(path: String, data: Dictionary) -> bool:
 
 
 func load_meta(path: String) -> Dictionary:
+	var meta := MetaState.new()
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
-		return _migrate_meta_payload({})
+		return meta.to_dict()
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	if parsed is Dictionary:
-		return _migrate_meta_payload(parsed)
-	return _migrate_meta_payload({})
-
-
-func _migrate_meta_payload(data: Dictionary) -> Dictionary:
-	var meta := MetaState.new()
-	meta.apply_dict(data)
+		meta.apply_dict(parsed)
 	return meta.to_dict()
 
 

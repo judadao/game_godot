@@ -25,19 +25,12 @@ func _run() -> void:
 		game.queue_free()
 		quit(1)
 		return
-	var player := game.get_player() as Node2D
-	var player_spawn := map.get_node("PlayerSpawn") as Node2D
-	player.global_position = player_spawn.global_position
-	target.global_position = player.global_position + Vector2(120.0, 0.0)
-	game.call("_wire_interactives")
-	await process_frame
-	await process_frame
 	game.call("_on_interaction_available", target, game.get_player())
 	await process_frame
 	await process_frame
 
-	var prompt_label := game.hud.get_node_or_null("BottomStage/InteractionPanel/PromptRow/PromptText") as Label
-	var prompt_panel := game.hud.get_node_or_null("BottomStage/InteractionPanel") as Control
+	var prompt_label := game.hud.get_node_or_null("InteractionPanel/PromptRow/PromptText") as Label
+	var prompt_panel := game.hud.get_node_or_null("InteractionPanel") as Control
 	_expect(prompt_label != null, "Autumn interaction prompt label must exist.")
 	_expect(prompt_panel != null and prompt_panel.visible, "Autumn interaction prompt must become visible.")
 	if prompt_label != null:

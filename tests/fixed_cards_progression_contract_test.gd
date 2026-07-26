@@ -55,27 +55,12 @@ func _run() -> void:
 		var copies_before := int(game.call("_get_card_copy_count", fixed_id))
 		_expect(not bool(game.call("_apply_card_reward", fixed_id)), "%s must reject duplicate card rewards." % fixed_id)
 		_expect(int(game.call("_get_card_copy_count", fixed_id)) == copies_before, "%s reward rejection must not mutate the deck." % fixed_id)
-	var fixed_instance_ids: Array[int] = []
-	for fixed_id in FIXED_IDS:
-		fixed_instance_ids.append(_find_instance_id(run.card_instances, fixed_id))
-	var growth_queue: GrowthChoiceQueue = game.get("growth_choice_queue") as GrowthChoiceQueue
-	_expect(growth_queue != null, "Game must own the current growth queue.")
-	if growth_queue != null:
+		run.card_levels[fixed_id] = 1
 		_expect(
-			growth_queue.enqueue({
-				"source": GrowthChoiceQueue.EXP_LEVEL_SOURCE,
-				"allowed_pages": ["upgrade"],
-				"payload": {"upgradeable_instance_ids": fixed_instance_ids},
-			}),
-			"The queue fixture must accept an EXP upgrade entry."
+			not bool(game.call("_apply_level_up_choice", {"kind": "upgrade_card", "card_id": fixed_id})),
+			"%s must reject XP card upgrades." % fixed_id
 		)
-	for instance_id in fixed_instance_ids:
-		_expect(
-			not bool(game.call("_confirm_growth_action", {"page": "upgrade", "kind": "upgrade", "instance_id": instance_id})),
-			"Fixed card instance %d must reject queued XP upgrades." % instance_id
-		)
-	_expect(growth_queue.get_queue_count() == 1, "Rejected fixed-card growth must retain the queue entry.")
-	_expect(not game.has_method("_merge_card_at_campfire"), "Campfires must not expose obsolete card merging.")
+		_expect(not bool(game.call("_merge_card_at_campfire", fixed_id)), "%s must reject campfire merging." % fixed_id)
 
 	run.gold_earned = 200
 	for fixed_id in FIXED_IDS:
@@ -115,13 +100,6 @@ func _verify_normalized_deck(deck_ids: Array[String], owner_name: String) -> voi
 	_expect(deck_ids.slice(0, 2) == FIXED_IDS, "%s must normalize fixed cards into the first two slots." % owner_name)
 	_expect(deck_ids.count("ember_bolt") == 1, "%s must retain exactly one Ember Bolt." % owner_name)
 	_expect(deck_ids.count("quickstep") == 1, "%s must retain exactly one Quickstep." % owner_name)
-
-
-func _find_instance_id(instances: Array[Dictionary], card_id: String) -> int:
-	for instance in instances:
-		if String(instance.get("card_id", "")) == card_id:
-			return int(instance.get("instance_id", 0))
-	return 0
 
 
 func _expect(condition: bool, message: String) -> void:

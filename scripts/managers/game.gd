@@ -4,8 +4,6 @@ signal map_loaded(map: Node)
 signal player_registered(player_node: Node)
 signal ui_opened(ui_name: String, ui_node: Control)
 signal ui_closed(ui_name: String, ui_node: Control)
-signal growth_save_requested
-signal growth_save_failed(message: String)
 
 const QUICK_SAVE_PATH := "user://saves/quick_save.json"
 const QUICK_SAVE_TEMP_PATH := "user://saves/quick_save.tmp"
@@ -32,11 +30,28 @@ const MAX_COMBO_ABILITIES := 4
 const MAX_COMBO_LEVEL := 3
 const DEFAULT_COMBO_DURATION := 6.0
 const FIXED_CARD_IDS: Array[String] = ["ember_bolt", "quickstep"]
-const EXP_FALLBACK_REWARDS: Array[Dictionary] = [
-	{"resource_id": "gold", "amount": 75},
-	{"resources": {"autumn_wood": 12, "stone": 8}},
-	{"resource_id": "magic_shard", "amount": 4},
+const COMBO_EVOLUTIONS := [
+	{
+		"requires": ["flame", "frost"],
+		"id": "thermal_shatter",
+		"name": "Thermal Shatter",
+		"effect": {
+			"kind": "infusion", "infusion_id": "thermal_shatter",
+			"damage_bonus": 20, "burn_damage": 6, "burn_duration": 6.0,
+			"frost_ratio": 0.50, "frost_duration": 4.0, "combo_stun": 0.5,
+		},
+	},
+	{
+		"requires": ["rhythm", "stoneguard"],
+		"id": "war_cadence",
+		"name": "War Cadence",
+		"effect": {
+			"kind": "infusion", "infusion_id": "war_cadence",
+			"damage_bonus": 8, "block_bonus": 14,
+		},
+	},
 ]
+
 @export var starting_map: PackedScene = preload("res://scenes/maps/town/TownMap.tscn")
 @export var hud_scene: PackedScene = preload("res://scenes/ui/HUD.tscn")
 @export var card_hand_scene: PackedScene = preload("res://scenes/ui/CardHandUI.tscn")
@@ -48,7 +63,7 @@ const EXP_FALLBACK_REWARDS: Array[Dictionary] = [
 @export var run_result_scene: PackedScene = preload("res://scenes/ui/RunResultUI.tscn")
 @export var deck_builder_scene: PackedScene = preload("res://scenes/ui/DeckBuilderUI.tscn")
 @export var card_discard_scene: PackedScene = preload("res://scenes/ui/CardDiscardUI.tscn")
-@export var card_growth_scene: PackedScene = preload("res://scenes/ui/CardGrowthUI.tscn")
+@export var level_up_scene: PackedScene = preload("res://scenes/ui/LevelUpUI.tscn")
 
 @onready var map_root: Node = $MapRoot
 @onready var hud_root: CanvasLayer = $HUDLayer
@@ -63,7 +78,6 @@ var ui_stack: Array[Control] = []
 var current_interactive: Node
 var _ui_names: Dictionary = {}
 var _ui_pause_flags: Dictionary = {}
-var _modal_pause_owners: Dictionary = {}
 var _closing_ui: Dictionary = {}
 var _interaction_candidates: Array[Node] = []
 var meta_state := MetaState.new()
@@ -74,7 +88,6 @@ var card_database := CardDatabase.new()
 var deck_manager := DeckManager.new(card_database)
 var combo_manager := ComboManager.new()
 var evolution_manager := EvolutionManager.new(card_database)
-var growth_choice_queue := GrowthChoiceQueue.new()
 var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
 var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
 var _pending_player_state: Dictionary = {}
@@ -89,7 +102,6 @@ var _merchant_catalogs: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	map_root.process_mode = Node.PROCESS_MODE_PAUSABLE
 	hud_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	meta_state.apply_dict(save_service.load_meta(META_SAVE_PATH))
@@ -117,8 +129,6 @@ func _ready() -> void:
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	card_database.load_catalog()
 	evolution_manager.load_recipes()
-	growth_choice_queue.current_changed.connect(_on_growth_choice_current_changed)
-	growth_choice_queue.action_confirmed.connect(_on_growth_action_confirmed)
 	card_effect_runner.effect_resolved.connect(_on_card_effect_resolved)
 	load_current_map(starting_map)
 	_sync_progression_to_meta()
@@ -150,12 +160,7 @@ func _input(event: InputEvent) -> void:
 	if not ui_stack.is_empty():
 		var top_ui := ui_stack[ui_stack.size() - 1]
 		var top_name := String(_ui_names.get(top_ui, top_ui.name))
-		if top_name == "CardDiscardUI":
-			return
-		if top_name == "CardGrowthUI":
-			if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
-				_on_growth_close_requested()
-				get_viewport().set_input_as_handled()
+		if top_name in ["CardDiscardUI", "LevelUpUI"]:
 			return
 		if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
 			close_top_ui()
@@ -378,9 +383,6 @@ func close_ui(ui: Variant) -> void:
 		return
 
 	var ui_name := String(_ui_names.get(ui_control, ui_control.name))
-	if ui_name == "CardGrowthUI" and not growth_choice_queue.is_empty():
-		ui_control.call("set_growth_entry", growth_choice_queue.peek())
-		return
 	if ui_name == "TownProgressUI":
 		_sync_progression_to_meta()
 		save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
@@ -595,6 +597,11 @@ func _on_run_wave_started(wave_number: int, total_waves: int, enemy_count: int) 
 			"Autumn Tree — Wave %d / %d" % [wave_number, total_waves],
 			"Enemies: %d" % enemy_count
 		)
+	if run_state.active and wave_number == 2:
+		run_state.temporary_buffs["passives"] = [
+			"ember_core", "iron_heart", "wind_feather",
+			"hourglass_shard", "life_seed", "warrior_emblem",
+		]
 	if run_state.active and wave_number > 1 and wave_number < total_waves:
 		call_deferred("_show_card_reward_choices", wave_number)
 	if run_state.active and wave_number == 3:
@@ -642,309 +649,92 @@ func _on_experience_gem_spawned(gem: Node, _value: int) -> void:
 
 func _on_experience_collected(value: int) -> void:
 	if run_state.add_experience(value) > 0:
-		call_deferred("_enqueue_pending_experience_growth")
+		call_deferred("_open_next_level_up")
 	_update_hud_player_identity()
 
 
-func _enqueue_pending_experience_growth() -> void:
-	if run_state.pending_level_ups <= 0 or not growth_choice_queue.is_empty():
+func _open_next_level_up() -> void:
+	if run_state.pending_level_ups <= 0 or get_open_ui("LevelUpUI") != null:
 		return
-	if run_state.consume_pending_level():
-		growth_choice_queue.enqueue(_build_exp_growth_entry())
-
-
-func _build_exp_growth_entry() -> Dictionary:
-	var upgradeable_instance_ids: Array[int] = []
-	var upgradeable_instances: Array[Dictionary] = []
-	for instance in run_state.card_instances:
-		if _is_upgradeable_instance(instance):
-			upgradeable_instance_ids.append(int(instance.get("instance_id", 0)))
-			upgradeable_instances.append(_build_upgradeable_instance_projection(instance))
-	var fusion_recipes := evolution_manager.find_available(run_state.card_instances)
-	if not upgradeable_instance_ids.is_empty() or not fusion_recipes.is_empty():
-		var allowed_pages: Array[String] = []
-		if not upgradeable_instance_ids.is_empty():
-			allowed_pages.append("upgrade")
-		if not fusion_recipes.is_empty():
-			allowed_pages.append("fusion")
-		return {
-			"source": GrowthChoiceQueue.EXP_LEVEL_SOURCE,
-			"allowed_pages": allowed_pages,
-			"payload": {
-				"upgradeable_instance_ids": upgradeable_instance_ids,
-				"upgradeable_instances": upgradeable_instances,
-				"fusion_recipes": fusion_recipes,
-			},
-		}
-	return {
-		"source": GrowthChoiceQueue.EXP_LEVEL_SOURCE,
-		"allowed_pages": ["reward"],
-		"payload": {"fallback_rewards": EXP_FALLBACK_REWARDS.duplicate(true)},
-	}
-
-
-func _build_upgradeable_instance_projection(instance: Dictionary) -> Dictionary:
-	var card_id := String(instance.get("card_id", ""))
-	var level := clampi(int(instance.get("level", CardInstance.MIN_LEVEL)), CardInstance.MIN_LEVEL, CardInstance.MAX_LEVEL)
-	var card := card_database.get_card(card_id)
-	return {
-		"instance_id": int(instance.get("instance_id", 0)),
-		"card_id": card_id,
-		"level": level,
-		"name": String(card.get("name", card_id)),
-		"before": level,
-		"after": mini(CardInstance.MAX_LEVEL, level + 1),
-	}
-
-
-func _confirm_growth_action(action: Dictionary) -> bool:
-	if not _can_apply_growth_action(action):
-		return false
-	if String(action.get("kind", "")) == "reward":
-		var current_payload := growth_choice_queue.peek().get("payload", {}) as Dictionary
-		var reward: Variant = _fallback_reward_for_action(
-			action,
-			current_payload.get("fallback_rewards", []) as Array
-		)
-		if reward == null or not _persist_permanent_growth_reward(reward as Dictionary):
-			return false
-		var applied_action := action.duplicate(true)
-		applied_action["_growth_domain_applied"] = true
-		return growth_choice_queue.confirm(applied_action)
-	return growth_choice_queue.confirm(action)
-
-
-func _on_growth_choice_current_changed(entry: Dictionary) -> void:
-	if entry.is_empty():
-		var completed_modal := get_open_ui("CardGrowthUI")
-		if completed_modal != null:
-			close_ui(completed_modal)
-		release_modal_pause(&"growth_choice_queue")
+	var ui_control := open_ui("LevelUpUI", level_up_scene, true)
+	if ui_control == null:
 		return
-
-	if not _modal_pause_owners.has(&"growth_choice_queue"):
-		acquire_modal_pause(&"growth_choice_queue")
-	var modal := get_open_ui("CardGrowthUI")
-	if modal == null:
-		modal = open_ui("CardGrowthUI", card_growth_scene)
-		if modal == null:
-			return
-		if modal.has_signal("choice_confirmed"):
-			modal.connect("choice_confirmed", _on_growth_choice_confirmed)
-		if modal.has_signal("close_requested"):
-			modal.connect("close_requested", _on_growth_close_requested)
-	modal.call("set_growth_entry", entry)
+	ui_control.call("set_choices", _build_level_up_choices())
+	ui_control.connect("choice_selected", _on_level_up_choice.bind(ui_control), CONNECT_ONE_SHOT)
 
 
-func _on_growth_choice_confirmed(action: Dictionary) -> void:
-	_confirm_growth_action(action)
+func _build_level_up_choices() -> Array[Dictionary]:
+	var choices: Array[Dictionary] = []
+	var card_ids := run_state.card_levels.keys()
+	card_ids.sort()
+	for card_id_variant in card_ids:
+		var card_id := String(card_id_variant)
+		if deck_manager.is_card_protected(card_id):
+			continue
+		var level := int(run_state.card_levels.get(card_id, 1))
+		if level >= 3:
+			continue
+		choices.append({
+			"kind": "upgrade_card",
+			"card_id": card_id,
+			"text": "Upgrade %s  Lv.%d → Lv.%d" % [_card_name(card_id), level, level + 1],
+		})
+		if choices.size() >= 3:
+			return choices
+	if _get_run_deck_size() < 16:
+		for card_id in meta_state.unlocked_cards:
+			if choices.size() >= 3:
+				break
+			if card_database.has_card(card_id):
+				choices.append({"kind": "add_card", "card_id": card_id, "text": "Add %s" % _card_name(card_id)})
+	var fallback := [
+		{"kind": "max_health", "text": "Vital Growth  +10 Max HP"},
+		{"kind": "ap_regen", "text": "Quick Mind  +0.10 AP/sec"},
+		{"kind": "remove_card", "text": "Refine Deck  Remove one card"},
+	]
+	for choice in fallback:
+		if choices.size() >= 3:
+			break
+		choices.append(choice)
+	return choices
 
 
-func _on_growth_close_requested() -> void:
-	if growth_choice_queue.is_empty():
-		close_ui("CardGrowthUI")
+func _on_level_up_choice(choice: Dictionary, ui_control: Control) -> void:
+	if not _apply_level_up_choice(choice):
 		return
-	var modal := get_open_ui("CardGrowthUI")
-	if modal == null:
-		_on_growth_choice_current_changed(growth_choice_queue.peek())
-		return
-	modal.call("set_growth_entry", growth_choice_queue.peek())
-
-
-func _on_growth_action_confirmed(_entry: Dictionary, action: Dictionary) -> void:
-	var applied := bool(action.get("_growth_domain_applied", false))
-	if not applied:
-		applied = _apply_growth_action(action)
-	if not applied:
-		push_error("Confirmed growth action failed domain validation.")
-		return
+	run_state.consume_pending_level()
+	close_ui(ui_control)
 	_refresh_card_hand()
 	_update_hud_player_identity()
-	_enqueue_pending_experience_growth()
+	if run_state.pending_level_ups > 0:
+		call_deferred("_open_next_level_up")
 
 
-func _can_apply_growth_action(action: Dictionary) -> bool:
-	var entry := growth_choice_queue.peek()
-	if entry.is_empty():
-		return false
-	var page := String(action.get("page", ""))
-	if page != String(action.get("kind", "")) or not (entry.get("allowed_pages", []) as Array).has(page):
-		return false
-	var payload := entry.get("payload", {}) as Dictionary
-	match page:
-		"new_card":
-			var card_id := String(action.get("card_id", ""))
-			return (payload.get("card_options", []) as Array).has(card_id) and _can_add_card_reward(card_id)
-		"upgrade":
-			var instance_id := int(action.get("instance_id", 0))
-			return (payload.get("upgradeable_instance_ids", []) as Array).has(instance_id) and _is_upgradeable_instance(run_state.get_card_instance(instance_id))
-		"fusion":
-			return _is_valid_fusion_action(action, payload.get("fusion_recipes", []) as Array)
-		"reward":
-			return _fallback_reward_for_action(action, payload.get("fallback_rewards", []) as Array) != null
+func _apply_level_up_choice(choice: Dictionary) -> bool:
+	match String(choice.get("kind", "")):
+		"upgrade_card":
+			var card_id := String(choice.get("card_id", ""))
+			if deck_manager.is_card_protected(card_id) or not run_state.card_levels.has(card_id) or int(run_state.card_levels[card_id]) >= 3:
+				return false
+			run_state.card_levels[card_id] = int(run_state.card_levels[card_id]) + 1
+			_try_evolve_card(card_id)
+		"add_card":
+			return _apply_card_reward(String(choice.get("card_id", "")))
+		"max_health":
+			if player == null:
+				return false
+			player.max_health += 10
+			player.health += 10
+		"ap_regen":
+			run_state.temporary_buffs["level_ap_regen"] = float(run_state.temporary_buffs.get("level_ap_regen", 0.0)) + 0.10
+		"remove_card":
+			for card_id in deck_manager.hand + deck_manager.draw_pile + deck_manager.discard_pile:
+				if not deck_manager.is_card_protected(card_id):
+					return _remove_one_card_copy(card_id)
+			return false
 		_:
 			return false
-
-
-func _apply_growth_action(action: Dictionary) -> bool:
-	match String(action.get("kind", "")):
-		"new_card":
-			return _apply_card_reward(String(action.get("card_id", "")))
-		"upgrade":
-			var instance_id := int(action.get("instance_id", 0))
-			var instance := run_state.get_card_instance(instance_id)
-			if not _is_upgradeable_instance(instance):
-				return false
-			if not run_state.set_card_instance_level(instance_id, int(instance.get("level", 1)) + 1):
-				return false
-			_synchronize_growth_instances()
-			return true
-		"fusion":
-			return _apply_fusion_action(action)
-		_:
-			return false
-
-
-func _is_upgradeable_instance(instance: Dictionary) -> bool:
-	return (
-		not instance.is_empty()
-		and not FIXED_CARD_IDS.has(String(instance.get("card_id", "")))
-		and int(instance.get("level", 0)) < CardInstance.MAX_LEVEL
-	)
-
-
-func _can_add_card_reward(card_id: String) -> bool:
-	return run_state.active and not FIXED_CARD_IDS.has(card_id) and card_database.has_card(card_id)
-
-
-func _is_valid_fusion_action(action: Dictionary, available_recipes: Array) -> bool:
-	var requested_ids: Variant = action.get("material_instance_ids", [])
-	if not requested_ids is Array or (requested_ids as Array).size() != 2:
-		return false
-	var first_id := int((requested_ids as Array)[0])
-	var second_id := int((requested_ids as Array)[1])
-	if first_id <= 0 or first_id == second_id:
-		return false
-	var recipe_id := String(action.get("recipe_id", ""))
-	for recipe_variant in available_recipes:
-		if not recipe_variant is Dictionary:
-			continue
-		var recipe := recipe_variant as Dictionary
-		if String(recipe.get("id", "")) != recipe_id:
-			continue
-		var expected_ids := recipe.get("material_instance_ids", []) as Array
-		if expected_ids.size() != 2:
-			continue
-		var expected_first := int(expected_ids[0])
-		var expected_second := int(expected_ids[1])
-		if (expected_first == first_id and expected_second == second_id) or (expected_first == second_id and expected_second == first_id):
-			return true
-	return false
-
-
-func _apply_fusion_action(action: Dictionary) -> bool:
-	var available_recipes := evolution_manager.find_available(run_state.card_instances)
-	if not _is_valid_fusion_action(action, available_recipes):
-		return false
-	var requested_ids := action.get("material_instance_ids", []) as Array
-	var material_ids: Array[int] = [int(requested_ids[0]), int(requested_ids[1])]
-	var recipe_id := String(action.get("recipe_id", ""))
-	var result_card_id := ""
-	for recipe_variant in available_recipes:
-		var recipe := recipe_variant as Dictionary
-		if String(recipe.get("id", "")) == recipe_id:
-			result_card_id = String(recipe.get("result_card_id", ""))
-			break
-	if result_card_id.is_empty() or not run_state.remove_card_instances(material_ids):
-		return false
-	_remove_growth_instances_from_deck(material_ids)
-	var result_instance := run_state.add_card_instance(result_card_id)
-	deck_manager.discard_instances.append(result_instance)
-	deck_manager.call("_sync_legacy_piles")
 	return true
-
-
-func _fallback_reward_for_action(action: Dictionary, rewards: Array) -> Variant:
-	for reward_variant in rewards:
-		if not reward_variant is Dictionary:
-			continue
-		var reward := reward_variant as Dictionary
-		if reward.has("resource_id"):
-			if (
-				String(action.get("resource_id", "")) == String(reward.get("resource_id", ""))
-				and int(action.get("amount", 0)) == int(reward.get("amount", 0))
-			):
-				return reward.duplicate(true)
-		elif reward.has("resources") and action.get("resources", {}) == reward.get("resources", {}):
-			return reward.duplicate(true)
-	return null
-
-
-func _grant_permanent_growth_reward(reward: Dictionary) -> bool:
-	var granted := false
-	if reward.has("resource_id"):
-		granted = inventory_manager.call(
-			"add_resource",
-			StringName(String(reward.get("resource_id", ""))),
-			int(reward.get("amount", 0))
-		)
-	elif reward.has("resources"):
-		granted = inventory_manager.call("add_resources", reward.get("resources", {}) as Dictionary)
-	if not granted:
-		return false
-	_sync_progression_to_meta()
-	return true
-
-
-func _persist_permanent_growth_reward(reward: Dictionary) -> bool:
-	var inventory_before := inventory_manager.call("to_dict") as Dictionary
-	var meta_before := meta_state.to_dict()
-	if not _grant_permanent_growth_reward(reward):
-		return false
-	growth_save_requested.emit()
-	if save_service.save_meta(META_SAVE_PATH, meta_state.to_dict()):
-		return true
-	inventory_manager.call("apply_dict", inventory_before)
-	meta_state.apply_dict(meta_before)
-	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
-	growth_save_failed.emit("Permanent growth reward could not be saved.")
-	return false
-
-
-func _synchronize_growth_instances() -> void:
-	var by_instance_id: Dictionary = {}
-	for instance in run_state.card_instances:
-		by_instance_id[int(instance.get("instance_id", 0))] = instance
-	for pile_name in [&"hand_instances", &"draw_instances", &"discard_instances", &"exhaust_instances"]:
-		var pile := deck_manager.get(pile_name) as Array
-		for instance in pile:
-			var authoritative := by_instance_id.get(int((instance as Dictionary).get("instance_id", 0)), {}) as Dictionary
-			if not authoritative.is_empty():
-				(instance as Dictionary)["level"] = int(authoritative.get("level", 1))
-	for cooldown_entry in deck_manager.cooldown_pile:
-		var cooldown_instance := (cooldown_entry as Dictionary).get("instance", {}) as Dictionary
-		var authoritative := by_instance_id.get(int(cooldown_instance.get("instance_id", 0)), {}) as Dictionary
-		if not authoritative.is_empty():
-			cooldown_instance["level"] = int(authoritative.get("level", 1))
-	deck_manager.call("_sync_legacy_piles")
-
-
-func _remove_growth_instances_from_deck(instance_ids: Array[int]) -> void:
-	var wanted: Dictionary = {}
-	for instance_id in instance_ids:
-		wanted[instance_id] = true
-	for pile_name in [&"hand_instances", &"draw_instances", &"discard_instances", &"exhaust_instances"]:
-		var retained: Array[Dictionary] = []
-		for instance in deck_manager.get(pile_name) as Array:
-			if not wanted.has(int((instance as Dictionary).get("instance_id", 0))):
-				retained.append(instance)
-		deck_manager.set(pile_name, retained)
-	var retained_cooldown: Array[Dictionary] = []
-	for entry in deck_manager.cooldown_pile:
-		var cooldown_instance := (entry as Dictionary).get("instance", {}) as Dictionary
-		if not wanted.has(int(cooldown_instance.get("instance_id", 0))):
-			retained_cooldown.append(entry)
-	deck_manager.cooldown_pile = retained_cooldown
 
 
 func _get_run_deck_size() -> int:
@@ -1043,84 +833,132 @@ func _begin_autumn_run(deck_override: Array = []) -> void:
 	var normalized := _normalize_expedition_deck(selected if selected.size() > 0 and selected.size() <= 16 else fallback_deck)
 	run_state.begin_run(normalized)
 	deck_manager.set_protected_cards(FIXED_CARD_IDS)
-	deck_manager.start(run_state.card_instances, run_state.max_energy, true)
+	deck_manager.start(run_state.starting_deck, run_state.max_energy, true)
+	for card_id in run_state.starting_deck:
+		if not deck_manager.is_card_protected(card_id):
+			run_state.card_levels[card_id] = 1
 	combo_manager.reset()
 	_last_combo_name = "—"
 	_refresh_card_hand()
 
 
 func _show_card_reward_choices(wave_number: int) -> void:
-	if not run_state.active:
+	if not run_state.active or not ui_stack.is_empty():
 		return
 	var choices_by_wave := {
-		2: ["guard", "dash_strike", "cleave"],
+		2: ["ember_bolt", "guard", "dash_strike"],
 		3: ["frost_bind", "healing_light", "battle_focus"],
 	}
-	var candidates: Array[String] = []
-	for candidate_variant in choices_by_wave.get(wave_number, ["cleave", "energy_surge", "healing_light"]):
-		var candidate := String(candidate_variant)
-		if _can_add_card_reward(candidate):
-			candidates.append(candidate)
-	if candidates.is_empty():
+	var card_ids: Array = choices_by_wave.get(wave_number, ["cleave", "quickstep", "energy_surge"])
+	var ui_control := open_ui("RunUpgradeUI", dialogue_scene, true)
+	if ui_control == null:
 		return
-	growth_choice_queue.enqueue({
-		"source": GrowthChoiceQueue.WAVE_BLESSING_SOURCE,
-		"allowed_pages": ["new_card"],
-		"payload": {
-			"card_options": candidates,
-			"card_option_details": _build_wave_card_option_details(candidates),
-		},
-	})
-
-
-func _build_wave_card_option_details(card_ids: Array[String]) -> Array[Dictionary]:
-	var details: Array[Dictionary] = []
+	ui_control.call("set_speaker_name", "Autumn Blessing")
+	ui_control.call("set_dialogue_text", "Choose a card copy. Merge and upgrades are handled at the campfire.")
+	var choices: Array[Dictionary] = []
 	for card_id in card_ids:
-		var card := card_database.get_card(card_id)
-		details.append({
-			"card_id": card_id,
-			"name": String(card.get("name", card_id)),
-			"description": String(card.get("description", "")),
+		var card := card_database.get_card(String(card_id))
+		choices.append({
+			"text": "%s — %s" % [String(card.get("name", card_id)), String(card.get("description", ""))],
+			"card_id": String(card_id),
 		})
-	return details
+	ui_control.call("set_choices", choices)
+	ui_control.connect("choice_selected", _on_card_reward_selected.bind(ui_control), CONNECT_ONE_SHOT)
+
+
+func _on_card_reward_selected(_index: int, _text: String, metadata: Dictionary, ui_control: Control) -> void:
+	_apply_card_reward(String(metadata.get("card_id", "")))
+	close_ui(ui_control)
 
 
 func _apply_card_reward(card_id: String) -> bool:
-	if not _can_add_card_reward(card_id):
+	if not run_state.active or deck_manager.is_card_protected(card_id) or not card_database.has_card(card_id):
 		return false
-	var instance := run_state.add_card_instance(card_id)
+	if not run_state.card_levels.has(card_id):
+		run_state.card_levels[card_id] = 1
 	run_state.temporary_cards.append(card_id)
-	deck_manager.discard_instances.append(instance)
-	deck_manager.call("_sync_legacy_piles")
+	deck_manager.discard_pile.append(card_id)
 	if not meta_state.unlocked_cards.has(card_id):
 		meta_state.unlocked_cards.append(card_id)
+		save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
 	_refresh_card_hand()
 	return true
 
 
 func _get_card_copy_count(card_id: String) -> int:
 	var count := 0
-	for pile in [deck_manager.hand_instances, deck_manager.draw_instances, deck_manager.discard_instances, deck_manager.exhaust_instances]:
-		for instance in pile:
-			if String((instance as Dictionary).get("card_id", "")) == card_id:
+	for pile in [deck_manager.hand, deck_manager.draw_pile, deck_manager.discard_pile]:
+		for pile_card_id in pile:
+			if pile_card_id == card_id:
 				count += 1
 	return count
 
 
+func _merge_card_at_campfire(card_id: String) -> bool:
+	if not run_state.active or deck_manager.is_card_protected(card_id) or bool(run_state.temporary_buffs.get("campfire_used", false)):
+		return false
+	if _get_card_copy_count(card_id) < 2 or int(run_state.card_levels.get(card_id, 0)) >= 3:
+		return false
+	var merged := false
+	while _get_card_copy_count(card_id) > 1 and int(run_state.card_levels.get(card_id, 1)) < 3:
+		if not _remove_one_card_copy(card_id):
+			break
+		run_state.card_levels[card_id] = int(run_state.card_levels.get(card_id, 1)) + 1
+		merged = true
+	if not merged:
+		return false
+	run_state.temporary_buffs["campfire_used"] = true
+	_try_evolve_card(card_id)
+	_refresh_card_hand()
+	return true
+
+
+func _upgrade_card_at_campfire(card_id: String) -> bool:
+	if not run_state.active or deck_manager.is_card_protected(card_id) or bool(run_state.temporary_buffs.get("campfire_used", false)):
+		return false
+	if _get_card_copy_count(card_id) <= 0 or int(run_state.card_levels.get(card_id, 0)) >= 3:
+		return false
+	run_state.card_levels[card_id] = int(run_state.card_levels.get(card_id, 1)) + 1
+	run_state.temporary_buffs["campfire_used"] = true
+	_try_evolve_card(card_id)
+	_refresh_card_hand()
+	return true
+
+
 func _remove_one_card_copy(card_id: String) -> bool:
-	for pile_name in [&"discard_instances", &"draw_instances", &"hand_instances"]:
-		var pile := deck_manager.get(pile_name) as Array
-		for index in pile.size():
-			var instance := pile[index] as Dictionary
-			if String(instance.get("card_id", "")) != card_id or deck_manager.is_card_protected(instance):
-				continue
+	if deck_manager.is_card_protected(card_id):
+		return false
+	var piles: Array = [deck_manager.discard_pile, deck_manager.draw_pile, deck_manager.hand]
+	for pile_variant in piles:
+		var pile := pile_variant as Array
+		var index: int = pile.find(card_id)
+		if index >= 0:
 			pile.remove_at(index)
-			for run_index in run_state.card_instances.size():
-				if int(run_state.card_instances[run_index].get("instance_id", 0)) == int(instance.get("instance_id", 0)):
-					run_state.card_instances.remove_at(run_index)
-					break
-			deck_manager.call("_sync_legacy_piles")
 			return true
+	return false
+
+
+func _try_evolve_card(base_card_id: String) -> bool:
+	if deck_manager.is_card_protected(base_card_id):
+		return false
+	var passives_variant: Variant = run_state.temporary_buffs.get("passives", [])
+	var passives: Array = passives_variant if passives_variant is Array else []
+	for recipe in evolution_manager.find_available(run_state.card_levels, passives):
+		if String(recipe.get("base_card_id", "")) != base_card_id:
+			continue
+		var result_id := String(recipe.get("result_card_id", ""))
+		for pile in [deck_manager.hand, deck_manager.draw_pile, deck_manager.discard_pile]:
+			for index in pile.size():
+				if pile[index] == base_card_id:
+					pile[index] = result_id
+		run_state.card_levels.erase(base_card_id)
+		run_state.card_levels[result_id] = 3
+		var recipe_id := String(recipe.get("id", ""))
+		if not meta_state.unlocked_evolutions.has(recipe_id):
+			meta_state.unlocked_evolutions.append(recipe_id)
+		if hud != null and hud.has_method("set_objective"):
+			hud.call("set_objective", "EVOLUTION — %s" % String(recipe.get("name", result_id)), "Build power has reached its peak!")
+		return true
 	return false
 
 
@@ -1153,7 +991,7 @@ func _on_card_selected(index: int) -> void:
 		return
 	if index < 0 or index >= deck_manager.hand.size():
 		return
-	var projected_card := _card_for_cast(deck_manager.hand_instances[index])
+	var projected_card := _card_for_cast(deck_manager.hand[index])
 	var card := deck_manager.play_from_hand(index, int(projected_card.get("cost", 0)))
 	if card.is_empty():
 		_refresh_card_hand()
@@ -1202,9 +1040,9 @@ func _open_hand_overflow_discard(required_count: int) -> void:
 	if required_count <= 0 or get_open_ui("CardDiscardUI") != null:
 		return
 	var cards: Array[Dictionary] = []
-	for instance in deck_manager.hand_instances:
-		var card := _card_for_cast(instance)
-		card["fixed"] = deck_manager.is_card_protected(instance)
+	for card_id in deck_manager.hand:
+		var card := _card_for_cast(card_id)
+		card["fixed"] = deck_manager.is_card_protected(card_id)
 		cards.append(card)
 	var ui_control := open_ui("CardDiscardUI", card_discard_scene, true)
 	if ui_control == null:
@@ -1218,7 +1056,7 @@ func _on_hand_overflow_confirmed(indices: Array[int], ui_control: Control) -> vo
 	if indices.size() != required_count:
 		return
 	for index in indices:
-		if index < 0 or index >= deck_manager.hand_instances.size() or deck_manager.is_card_protected(deck_manager.hand_instances[index]):
+		if index < 0 or index >= deck_manager.hand.size() or deck_manager.is_card_protected(deck_manager.hand[index]):
 			return
 	var sorted_indices := indices.duplicate()
 	sorted_indices.sort()
@@ -1226,12 +1064,11 @@ func _on_hand_overflow_confirmed(indices: Array[int], ui_control: Control) -> vo
 	for index in sorted_indices:
 		if index < 0 or index >= deck_manager.hand.size():
 			continue
-		var instance := deck_manager.hand_instances[index]
-		if deck_manager.is_card_protected(instance):
+		var card_id := deck_manager.hand[index]
+		if deck_manager.is_card_protected(card_id):
 			continue
-		deck_manager.hand_instances.remove_at(index)
-		deck_manager.discard_instances.append(instance)
-	deck_manager.call("_sync_legacy_piles")
+		deck_manager.hand.remove_at(index)
+		deck_manager.discard_pile.append(card_id)
 	close_ui(ui_control)
 	_refresh_card_hand()
 
@@ -1270,7 +1107,51 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 	)
 	effects.append(timed_effect)
 	run_state.temporary_buffs["infusion_effects"] = effects
+	_try_evolve_combo_abilities()
 	return true
+
+
+func _try_evolve_combo_abilities() -> bool:
+	var active_variant: Variant = run_state.temporary_buffs.get("active_infusions", [])
+	var levels_variant: Variant = run_state.temporary_buffs.get("combo_levels", {})
+	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
+	if not active_variant is Array or not levels_variant is Dictionary or not effects_variant is Array:
+		return false
+	var active := active_variant as Array
+	var levels := levels_variant as Dictionary
+	var effects := effects_variant as Array
+	for recipe in COMBO_EVOLUTIONS:
+		var required := recipe["requires"] as Array
+		if required.any(func(combo_id: Variant) -> bool:
+			return int(levels.get(String(combo_id), 0)) < MAX_COMBO_LEVEL
+		):
+			continue
+		var evolved_remaining := 0.0
+		for combo_id in required:
+			active.erase(String(combo_id))
+			levels.erase(String(combo_id))
+			var retained_effects: Array = []
+			for effect_variant in effects:
+				if not effect_variant is Dictionary:
+					continue
+				var timed_effect := effect_variant as Dictionary
+				if String(timed_effect.get("infusion_id", "")) == String(combo_id):
+					evolved_remaining = maxf(evolved_remaining, float(timed_effect.get("remaining_seconds", 0.0)))
+				else:
+					retained_effects.append(effect_variant)
+			effects = retained_effects
+		var evolution_id := String(recipe["id"])
+		active.append(evolution_id)
+		levels[evolution_id] = 1
+		var evolved_effect := (recipe["effect"] as Dictionary).duplicate(true)
+		evolved_effect["remaining_seconds"] = maxf(0.1, evolved_remaining)
+		effects.append(evolved_effect)
+		run_state.temporary_buffs["active_infusions"] = active
+		run_state.temporary_buffs["combo_levels"] = levels
+		run_state.temporary_buffs["infusion_effects"] = effects
+		_last_combo_name = String(recipe["name"])
+		return true
+	return false
 
 
 func _tick_combo_effects(delta: float) -> bool:
@@ -1431,13 +1312,11 @@ func _on_card_effect_resolved(_card_id: String, result: Dictionary) -> void:
 	Engine.time_scale = 0.22 if _tactical_slowdown else 1.0
 
 
-func _card_for_cast(card_or_instance: Variant) -> Dictionary:
-	var instance: Dictionary = card_or_instance as Dictionary if card_or_instance is Dictionary else {}
-	var card_id := String(instance.get("card_id", card_or_instance))
+func _card_for_cast(card_id: String) -> Dictionary:
 	var card := card_database.get_card(card_id)
 	if card.is_empty():
 		return {}
-	var current_level := 1 if deck_manager.is_card_protected(instance if not instance.is_empty() else card_id) else clampi(int(instance.get("level", 1)), 1, 3)
+	var current_level := 1 if deck_manager.is_card_protected(card_id) else clampi(int(run_state.card_levels.get(card_id, 1)), 1, 3)
 	var effect := (card.get("effect", {}) as Dictionary).duplicate(true)
 	var upgrades := card.get("upgrade_effects", []) as Array
 	for upgrade_variant in upgrades:
@@ -1463,8 +1342,8 @@ func _card_for_cast(card_or_instance: Variant) -> Dictionary:
 
 
 func _has_affordable_card() -> bool:
-	for instance in deck_manager.hand_instances:
-		if int(_card_for_cast(instance).get("cost", 0)) <= deck_manager.energy:
+	for card_id in deck_manager.hand:
+		if int(_card_for_cast(card_id).get("cost", 0)) <= deck_manager.energy:
 			return true
 	return false
 
@@ -1481,9 +1360,9 @@ func _refresh_card_hand() -> void:
 	if card_hand_ui == null or card_database.get_all_cards().is_empty():
 		return
 	var cards: Array[Dictionary] = []
-	for instance in deck_manager.hand_instances:
-		var card := _card_for_cast(instance)
-		card["fixed"] = deck_manager.is_card_protected(instance)
+	for card_id in deck_manager.hand:
+		var card := _card_for_cast(card_id)
+		card["fixed"] = deck_manager.is_card_protected(card_id)
 		cards.append(card)
 	card_hand_ui.call("set_cards", cards, deck_manager.energy)
 	card_hand_ui.call("set_action_points", deck_manager.energy, deck_manager.max_energy)
@@ -1787,7 +1666,7 @@ func _resolve_open_ui(ui: Variant) -> Control:
 
 
 func _update_pause_state() -> void:
-	var should_pause := not _modal_pause_owners.is_empty()
+	var should_pause := false
 	for ui_control in ui_stack:
 		if bool(_ui_pause_flags.get(ui_control, false)):
 			should_pause = true
@@ -1797,31 +1676,13 @@ func _update_pause_state() -> void:
 	_update_player_input_state()
 
 
-func acquire_modal_pause(owner_key: StringName) -> void:
-	if owner_key.is_empty():
-		return
-	_modal_pause_owners[owner_key] = int(_modal_pause_owners.get(owner_key, 0)) + 1
-	_update_pause_state()
-
-
-func release_modal_pause(owner_key: StringName) -> void:
-	var remaining := int(_modal_pause_owners.get(owner_key, 0)) - 1
-	if remaining > 0:
-		_modal_pause_owners[owner_key] = remaining
-	else:
-		_modal_pause_owners.erase(owner_key)
-	_update_pause_state()
-
-
 func _update_player_input_state() -> void:
 	if player == null or not player.has_method("set_input_enabled"):
 		return
-	player.call("set_input_enabled", ui_stack.is_empty() and _modal_pause_owners.is_empty())
+	player.call("set_input_enabled", ui_stack.is_empty())
 
 
 func _close_existing_primary_ui(next_ui_name: String) -> void:
-	if next_ui_name == "CardGrowthUI":
-		return
 	for ui_control in ui_stack.duplicate():
 		var ui_name := String(_ui_names.get(ui_control, ui_control.name))
 		if ui_name != next_ui_name:
@@ -2208,6 +2069,30 @@ func _rest_at_campfire() -> bool:
 	player.call("restore_mana", int(player.get("max_mana")))
 	run_state.temporary_buffs["campfire_used"] = true
 	return true
+
+
+func _show_campfire_card_choices(ui_control: Control, merge: bool) -> void:
+	var choices: Array[Dictionary] = []
+	for card_id_variant in run_state.card_levels.keys():
+		var card_id := String(card_id_variant)
+		if deck_manager.is_card_protected(card_id):
+			continue
+		var level := int(run_state.card_levels.get(card_id, 1))
+		if level >= 3:
+			continue
+		if merge and _get_card_copy_count(card_id) < 2:
+			continue
+		choices.append({
+			"text": "%s  Lv.%d  Copies %d" % [_card_name(card_id), level, _get_card_copy_count(card_id)],
+			"campfire_action": "merge_card" if merge else "upgrade_card",
+			"card_id": card_id,
+		})
+	if choices.is_empty():
+		choices.append({"text": "No eligible cards — go back", "campfire_action": "back"})
+	else:
+		choices.append({"text": "Back", "campfire_action": "back"})
+	ui_control.call("set_dialogue_text", "Choose duplicate cards to merge." if merge else "Choose one card to upgrade.")
+	ui_control.call("set_choices", choices)
 
 
 func _show_campfire_result(ui_control: Control, message: String) -> void:

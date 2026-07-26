@@ -1,14 +1,4 @@
 {
-  "memory_library": {
-    "id": "memory_library",
-    "capacities": [10, 14, 18, 24, 30],
-    "upgrades": [
-      {"level": 1, "cost": {"gold": 20, "autumn_wood": 8, "magic_shard": 2}},
-      {"level": 2, "cost": {"gold": 45, "autumn_wood": 16, "stone": 6, "magic_shard": 4}},
-      {"level": 3, "cost": {"gold": 80, "autumn_wood": 28, "stone": 12, "magic_shard": 8}},
-      {"level": 4, "cost": {"gold": 130, "autumn_wood": 45, "stone": 20, "magic_shard": 14, "autumn_core": 2}}
-    ]
-  },
   "buildings": [
     {
       "id": "blacksmith",
