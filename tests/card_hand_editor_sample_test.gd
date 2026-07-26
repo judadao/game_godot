@@ -2,7 +2,7 @@ extends SceneTree
 
 const CARD_HAND_SCENE := preload("res://scenes/ui/CardHandUI.tscn")
 const BASIC_ATTACK_ID := "ember_bolt"
-const FIXED_DASH_ID := "quickstep"
+const DASH_CARD_ID := "quickstep"
 
 var _failures := 0
 
@@ -20,15 +20,15 @@ func _run() -> void:
 		var first_card := samples[0] as Dictionary
 		_expect(
 			String(first_card.get("id", "")) == BASIC_ATTACK_ID,
-			"Editor group one slot one must remain the fixed ember_bolt basic attack."
+			"Editor group one slot one should preview an ordinary attack card."
 		)
 		_expect(
 			String(first_card.get("type", "")) == "attack",
-			"The fixed editor basic card must remain an attack."
+			"The editor attack preview must retain its type."
 		)
 		var second_card := samples[1] as Dictionary
-		_expect(String(second_card.get("id", "")) == FIXED_DASH_ID, "Editor group one slot two must remain fixed Quickstep.")
-		_expect(bool(first_card.get("fixed", false)) and bool(second_card.get("fixed", false)), "Both editor fixed cards must show their lock treatment.")
+		_expect(String(second_card.get("id", "")) == DASH_CARD_ID, "Editor group one slot two must preview Quickstep.")
+		_expect(not bool(first_card.get("fixed", false)) and not bool(second_card.get("fixed", false)), "Attack and Dash previews must not show removed lock treatment.")
 		var iron_will := samples[2] as Dictionary
 		_expect(
 			String(iron_will.get("id", "")) == "guard"

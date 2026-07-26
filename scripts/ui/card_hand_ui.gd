@@ -54,7 +54,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var visible_count := mini(CARDS_PER_GROUP, maxi(0, _cards.size() - group_start))
 	for index in visible_count:
 		if event.is_action_pressed("card_slot_%d" % (index + 1)):
-			select_card(group_start + index)
+			select_card(get_visible_card_global_index(index))
 			get_viewport().set_input_as_handled()
 			return
 
@@ -370,8 +370,8 @@ func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
 
 func _editor_sample_cards() -> Array[Dictionary]:
 	return [
-		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal 12 damage and apply burn.", "cost": 1, "level": 1, "fixed": true},
-		{"id": "quickstep", "name": "Quickstep", "type": "skill", "description": "Dash through danger.", "cost": 1, "level": 1, "fixed": true},
+		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal 12 damage and apply burn.", "cost": 1, "level": 1},
+		{"id": "quickstep", "name": "Quickstep", "type": "skill", "description": "Dash through danger.", "cost": 1, "level": 1},
 		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain weak super armor for four seconds.", "cost": 1, "level": 1},
 		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Strike enemies in an arc.", "cost": 2, "level": 1},
 		{"id": "flame_infusion", "name": "Flame Infusion", "type": "power", "description": "Future attacks gain flame.", "cost": 2, "level": 1},

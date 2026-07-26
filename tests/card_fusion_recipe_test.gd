@@ -23,7 +23,7 @@ func _run() -> void:
 		CardInstanceScript.new("iron_skin", 3, "stone-a"),
 		CardInstanceScript.new("cleave", 3, "cleave-a"),
 		CardInstanceScript.new("flame_aura", 3, "aura-a"),
-		CardInstanceScript.new("ember_bolt", 3, "ember-fixed"),
+		CardInstanceScript.new("ember_bolt", 3, "ember-unmatched"),
 	]
 	var available: Array[Dictionary] = manager.find_available_fusions(cards)
 	_expect(_has_result(available, "fortress_stance"), "Two distinct matching Lv3 instances must offer Unbreakable Stance.")
@@ -35,7 +35,7 @@ func _run() -> void:
 	cards[1].level = 2
 	available = manager.find_available_fusions(cards)
 	_expect(not _has_result(available, "fortress_stance"), "Both fusion materials must be Lv3.")
-	_expect(not available.any(func(fusion: Dictionary) -> bool: return String(fusion.get("left_instance_id", "")) == "ember-fixed" or String(fusion.get("right_instance_id", "")) == "ember-fixed"), "Fixed cards must never be fusion materials.")
+	_expect(not available.any(func(fusion: Dictionary) -> bool: return String(fusion.get("left_instance_id", "")) == "ember-unmatched" or String(fusion.get("right_instance_id", "")) == "ember-unmatched"), "Cards without a matching recipe must not become fusion materials.")
 
 	if _failures == 0:
 		print("PASS: exact two-instance level-three card fusion recipes")

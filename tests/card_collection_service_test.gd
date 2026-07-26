@@ -47,7 +47,7 @@ func _run() -> void:
 	var run := FailingRunState.new()
 	run.begin_run(meta.selected_card_instances)
 	var deck := DeckManager.new(database)
-	deck.set_protected_cards(["ember_bolt", "quickstep"])
+	deck.set_protected_cards([])
 	deck.start(run.card_instances, run.max_energy, false)
 
 	var service: RefCounted = load(SERVICE_PATH).new(
@@ -58,10 +58,8 @@ func _run() -> void:
 		evolution
 	)
 	_expect(service.call("is_configured"), "Collection service must reject missing authorities at its boundary.")
-	_expect(
-		service.call("add_persistent_card", "ember_bolt") == null,
-		"Fixed cards must be rejected before any collection mutation."
-	)
+	var added_attack: CardInstance = service.call("add_persistent_card", "ember_bolt")
+	_expect(added_attack != null, "Automatic-attack candidates must remain ordinary collectible cards.")
 
 	var before_failed_add := service.call("capture_state") as Dictionary
 	run.fail_add = true
@@ -197,8 +195,8 @@ func _run() -> void:
 		and deck.find_instance(added.instance_id) == null,
 		"Exact removal must update Meta, Run, and Deck together."
 	)
-	var fixed := _first_instance(run.card_instances, "ember_bolt")
-	_expect(not service.call("remove_instance", fixed.instance_id), "Fixed cards must remain protected.")
+	var attack := _first_instance(run.card_instances, "ember_bolt")
+	_expect(service.call("remove_instance", attack.instance_id), "Former fixed attacks must be removable by identity.")
 
 	if _failures == 0:
 		print("PASS: card collection service keeps Meta, Run, and Deck atomic")

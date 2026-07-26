@@ -33,7 +33,7 @@ func is_valid() -> bool:
 
 
 func is_fixed() -> bool:
-	return card_id in ["ember_bolt", "quickstep"]
+	return false
 
 
 func duplicate_instance() -> CardInstance:

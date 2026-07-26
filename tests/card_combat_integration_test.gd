@@ -48,10 +48,13 @@ func _run() -> void:
 	_expect(int(result.get("affected", 0)) == 1, "Card result must report affected targets.")
 	_expect(deck.energy == 2, "Playing a one-cost card must spend one energy.")
 	_expect(
-		deck.hand_instances.any(
+		not deck.hand_instances.any(
+			func(instance: CardInstance) -> bool: return instance.card_id == "ember_bolt"
+		)
+		and deck.discard_instances.any(
 			func(instance: CardInstance) -> bool: return instance.card_id == "ember_bolt"
 		),
-		"The fixed basic attack must retain its stable hand instance."
+		"Manual Attack cards must leave the hand and follow ordinary discard routing."
 	)
 
 	var guard_index := deck.hand.find("guard")

@@ -1,8 +1,6 @@
 class_name RunState
 extends RefCounted
 
-const FIXED_CARD_IDS: Array[String] = ["ember_bolt", "quickstep"]
-
 var active := false
 var level := 1
 var experience := 0
@@ -98,7 +96,7 @@ func get_card_instance_payloads() -> Array[Dictionary]:
 
 func upgrade_card_instance(instance_id: String) -> bool:
 	var instance := get_card_instance(instance_id)
-	if instance == null or instance.is_fixed() or instance.level >= CardInstance.MAX_LEVEL:
+	if instance == null or instance.level >= CardInstance.MAX_LEVEL:
 		return false
 	instance.level += 1
 	return true
@@ -108,7 +106,6 @@ func set_card_instance_level(instance_id: String, level: int) -> bool:
 	var instance := get_card_instance(instance_id)
 	if (
 		instance == null
-		or instance.is_fixed()
 		or level < CardInstance.MIN_LEVEL
 		or level > CardInstance.MAX_LEVEL
 	):
@@ -118,7 +115,7 @@ func set_card_instance_level(instance_id: String, level: int) -> bool:
 
 
 func add_card_instance(card_id: String, level: int = CardInstance.MIN_LEVEL) -> CardInstance:
-	if card_id.is_empty() or card_id in FIXED_CARD_IDS:
+	if card_id.is_empty():
 		return null
 	var instance := CardInstance.new(card_id, level)
 	return instance if add_existing_card_instance(instance) else null
@@ -128,7 +125,6 @@ func add_existing_card_instance(instance: CardInstance) -> bool:
 	if (
 		instance == null
 		or not instance.is_valid()
-		or instance.is_fixed()
 		or get_card_instance(instance.instance_id) != null
 	):
 		return false
@@ -145,7 +141,7 @@ func remove_card_instances(instance_ids: Array[String]) -> bool:
 		if instance_id.is_empty() or wanted.has(instance_id):
 			return false
 		var instance := get_card_instance(instance_id)
-		if instance == null or instance.is_fixed():
+		if instance == null:
 			return false
 		wanted[instance_id] = true
 	var retained: Array[CardInstance] = []

@@ -25,6 +25,19 @@ func _run() -> void:
 	_expect(int(ui.call("get_selected_count")) == 16, "Deck builder must restore the saved 16-card backpack.")
 	var restored := ui.call("get_selected_deck") as Array
 	_expect(restored.count("flame_imbue") == 1, "Rare Combo cards must be limited to one starting copy.")
+	ui.call("configure", discovered, [
+		"dash_strike", "dash_strike",
+		"cleave", "cleave", "cleave", "cleave",
+	], "cleave")
+	var clamped := ui.call("get_selected_deck") as Array
+	_expect(
+		clamped.count("dash_strike") == 1 and clamped.count("cleave") == 3,
+		"Restored loadouts must clamp Combo cards to one and ordinary cards to three."
+	)
+	_expect(
+		String(ui.call("get_auto_attack_card_id")) == "cleave",
+		"Deck builder must restore the separately selected automatic attack."
+	)
 	ui.queue_free()
 	await process_frame
 	quit(0 if _failures == 0 else 1)

@@ -32,7 +32,9 @@ const COMBAT_CAMERA_SAFE_OFFSET_Y := 90.0
 const MAX_COMBO_ABILITIES := 4
 const MAX_COMBO_LEVEL := 3
 const DEFAULT_COMBO_DURATION := 6.0
-const FIXED_CARD_IDS: Array[String] = ["ember_bolt", "quickstep"]
+const DEFAULT_AUTO_ATTACK_CARD_ID := "ember_bolt"
+const DEFAULT_AUTO_ATTACK_INTERVAL := 1.0
+const AUTO_ATTACK_RETRY_INTERVAL := 0.15
 const COMBO_EVOLUTIONS := [
 	{
 		"requires": ["flame", "frost"],
@@ -104,6 +106,8 @@ var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
 var _pending_player_state: Dictionary = {}
 var _last_combo_name := "—"
 var _tactical_slowdown := false
+var _run_auto_attack_card_id := DEFAULT_AUTO_ATTACK_CARD_ID
+var _auto_attack_remaining := 0.0
 var wallet_gold: int = 250
 var player_inventory: Dictionary = {
 	"travel_bread": 3,
@@ -139,6 +143,7 @@ func _ready() -> void:
 		town_manager.call("apply_dict", {"building_levels": meta_state.building_levels})
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	card_database.load_catalog()
+	meta_state.auto_attack_card_id = _resolve_auto_attack_card_id(meta_state.auto_attack_card_id)
 	evolution_manager.load_recipes()
 	skill_recipe_manager.load_catalog("res://data/skills.json")
 	_configure_skill_loadout()
@@ -170,6 +175,7 @@ func _process(delta: float) -> void:
 	var real_delta := delta / maxf(Engine.time_scale, 0.001)
 	deck_manager.tick_cooldowns(real_delta)
 	skill_recipe_manager.tick(real_delta)
+	_tick_auto_attack(real_delta)
 	_refresh_cooldown_display()
 	if _tick_combo_effects(real_delta):
 		_refresh_combo_display()
@@ -899,23 +905,26 @@ func _begin_autumn_run(deck_override: Array = []) -> void:
 		return
 	var fallback_deck := [
 		"ember_bolt", "quickstep", "cleave", "cleave",
-		"guard", "guard", "cleave", "dash_strike",
+		"guard", "healing_light", "cleave", "dash_strike",
 		"healing_light", "frost_bind", "energy_surge", "iron_skin",
 		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 	]
 	var selected: Array = deck_override if deck_override.size() > 0 and deck_override.size() <= 16 else meta_state.selected_deck
 	var normalized := _normalize_expedition_deck(selected if selected.size() > 0 and selected.size() <= 16 else fallback_deck)
-	meta_state.selected_deck = normalized.duplicate()
+	meta_state.set_selected_deck(normalized)
 	var valid_ids: Array[String] = []
 	for card in card_database.get_all_cards():
 		valid_ids.append(String(card.get("id", "")))
 	meta_state.normalize_selected_deck(valid_ids)
 	run_state.begin_run(meta_state.selected_card_instances)
-	deck_manager.set_protected_cards(FIXED_CARD_IDS)
+	deck_manager.set_protected_cards([])
 	deck_manager.start(run_state.card_instances, run_state.max_energy, true)
+	_run_auto_attack_card_id = _resolve_auto_attack_card_id(meta_state.auto_attack_card_id)
+	_auto_attack_remaining = 0.0
 	_configure_skill_loadout()
 	_last_combo_name = "—"
 	_refresh_card_hand()
+	_update_player_input_state()
 
 
 func _show_card_reward_choices(wave_number: int) -> void:
@@ -960,6 +969,8 @@ func _finish_run(victory: bool) -> Dictionary:
 	if not run_state.active:
 		return {}
 	var summary := run_state.finish_run(victory)
+	_auto_attack_remaining = 0.0
+	_update_player_input_state()
 	_set_tactical_slowdown(false)
 	card_hand_ui.visible = false
 	card_hand_ui.call("hide_boss_health")
@@ -998,15 +1009,7 @@ func _on_card_selected(index: int) -> void:
 		_resolve_combo_card(card)
 	else:
 		card = _apply_combo_infusions_to_card(card)
-	var targets: Array = []
-	if current_map != null:
-		for director in get_tree().get_nodes_in_group("EncounterDirectors"):
-			if current_map.is_ancestor_of(director) and director.has_method("get_active_enemies"):
-				targets.append_array(director.call("get_active_enemies") as Array)
-		if targets.is_empty():
-			for enemy in get_tree().get_nodes_in_group("Enemies"):
-				if current_map.is_ancestor_of(enemy) and is_instance_valid(enemy):
-					targets.append(enemy)
+	var targets := _get_combat_targets()
 	card_effect_runner.cast(card, player, targets)
 	_resolve_skill_triggers(skill_recipe_manager.record_card(card))
 	var effect := card.get("effect", {}) as Dictionary
@@ -1026,6 +1029,85 @@ func _on_card_selected(index: int) -> void:
 	var overflow := maxi(0, deck_manager.hand_instances.size() - deck_manager.hand_size)
 	if overflow > 0:
 		call_deferred("_open_hand_overflow_discard", overflow)
+
+
+func _tick_auto_attack(delta: float) -> void:
+	if delta <= 0.0 or player == null or current_map == null or not ui_stack.is_empty():
+		return
+	_auto_attack_remaining -= delta
+	if _auto_attack_remaining > 0.0:
+		return
+	var card := _get_auto_attack_card()
+	if card.is_empty():
+		_auto_attack_remaining = AUTO_ATTACK_RETRY_INTERVAL
+		return
+	var targets := _get_combat_targets()
+	var attack_range := maxf(1.0, float(card.get("auto_attack_range", 220.0)))
+	targets = targets.filter(func(target: Variant) -> bool:
+		return (
+			player is Node2D
+			and target is Node2D
+			and is_instance_valid(target)
+			and (player as Node2D).global_position.distance_to(
+				(target as Node2D).global_position
+			) <= attack_range
+		)
+	)
+	if targets.is_empty():
+		_auto_attack_remaining = AUTO_ATTACK_RETRY_INTERVAL
+		return
+	card = _apply_combo_infusions_to_card(card)
+	card["cost"] = 0
+	card_effect_runner.cast(card, player, targets)
+	_auto_attack_remaining = maxf(
+		0.1,
+		float(card.get("auto_attack_interval", DEFAULT_AUTO_ATTACK_INTERVAL))
+	)
+
+
+func _get_auto_attack_card() -> Dictionary:
+	var card := card_database.get_card(_run_auto_attack_card_id)
+	if card.is_empty() or String(card.get("type", "")) != "attack":
+		return {}
+	var best_instance: CardInstance
+	for instance in meta_state.selected_card_instances:
+		if instance.card_id != _run_auto_attack_card_id:
+			continue
+		if best_instance == null or instance.level > best_instance.level:
+			best_instance = instance
+	return _card_for_cast(best_instance) if best_instance != null else card
+
+
+func _resolve_auto_attack_card_id(candidate: String) -> String:
+	var normalized := candidate.strip_edges()
+	if (
+		meta_state.unlocked_cards.has(normalized)
+		and String(card_database.get_card(normalized).get("type", "")) == "attack"
+	):
+		return normalized
+	if (
+		meta_state.unlocked_cards.has(DEFAULT_AUTO_ATTACK_CARD_ID)
+		and card_database.has_card(DEFAULT_AUTO_ATTACK_CARD_ID)
+	):
+		return DEFAULT_AUTO_ATTACK_CARD_ID
+	for card_id in meta_state.unlocked_cards:
+		if String(card_database.get_card(card_id).get("type", "")) == "attack":
+			return card_id
+	return ""
+
+
+func _get_combat_targets() -> Array:
+	var targets: Array = []
+	if current_map == null:
+		return targets
+	for director in get_tree().get_nodes_in_group("EncounterDirectors"):
+		if current_map.is_ancestor_of(director) and director.has_method("get_active_enemies"):
+			targets.append_array(director.call("get_active_enemies") as Array)
+	if targets.is_empty():
+		for enemy in get_tree().get_nodes_in_group("Enemies"):
+			if current_map.is_ancestor_of(enemy) and is_instance_valid(enemy):
+				targets.append(enemy)
+	return targets
 
 
 func _resolve_skill_triggers(triggered: Array[Dictionary]) -> void:
@@ -1263,6 +1345,15 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			continue
 		var infusion := infusion_variant as Dictionary
 		var infusion_id := String(infusion.get("infusion_id", ""))
+		var target_card_id := String(infusion.get("target_card_id", ""))
+		if not target_card_id.is_empty() and String(infused.get("id", "")) != target_card_id:
+			continue
+		if String(infused.get("id", "")) == "quickstep" and target_card_id == "quickstep":
+			effect["kind"] = "dash_damage"
+			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("damage_bonus", 0))
+			for field in ["trail_damage", "pull_strength", "return_damage"]:
+				if infusion.has(field):
+					effect[field] = infusion[field]
 		if String(infused.get("type", "")) == "attack":
 			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("damage_bonus", 0))
 			if float(infusion.get("lifesteal_ratio", 0.0)) > 0.0:
@@ -1728,6 +1819,8 @@ func _update_player_input_state() -> void:
 	if player == null or not player.has_method("set_input_enabled"):
 		return
 	player.call("set_input_enabled", ui_stack.is_empty())
+	if player.has_method("set_direct_dash_enabled"):
+		player.call("set_direct_dash_enabled", not run_state.active)
 
 
 func _close_existing_primary_ui(next_ui_name: String) -> void:
@@ -2032,14 +2125,50 @@ func _open_deck_builder(target_scene_path: String, target_spawn_name: StringName
 		var card := card_database.get_card(card_id)
 		if not card.is_empty():
 			discovered.append(card)
-	ui_control.call("configure", discovered, meta_state.selected_deck)
-	ui_control.connect("deck_confirmed", _on_deck_confirmed.bind(ui_control, target_scene_path, target_spawn_name), CONNECT_ONE_SHOT)
+	ui_control.call(
+		"configure",
+		discovered,
+		meta_state.selected_deck,
+		meta_state.auto_attack_card_id
+	)
+	ui_control.connect(
+		"loadout_confirmed",
+		_on_loadout_confirmed.bind(ui_control, target_scene_path, target_spawn_name),
+		CONNECT_ONE_SHOT
+	)
+	ui_control.connect(
+		"deck_confirmed",
+		_on_deck_confirmed.bind(ui_control, target_scene_path, target_spawn_name),
+		CONNECT_ONE_SHOT
+	)
 
 
 func _on_deck_confirmed(deck_ids: Array[String], ui_control: Control, target_scene_path: String, target_spawn_name: StringName) -> void:
+	_on_loadout_confirmed(
+		deck_ids,
+		meta_state.auto_attack_card_id,
+		ui_control,
+		target_scene_path,
+		target_spawn_name
+	)
+
+
+func _on_loadout_confirmed(
+	deck_ids: Array[String],
+	auto_attack_card_id: String,
+	ui_control: Control,
+	target_scene_path: String,
+	target_spawn_name: StringName
+	) -> void:
+	if run_state.active:
+		return
 	var normalized := _normalize_expedition_deck(deck_ids)
-	meta_state.selected_deck = normalized.duplicate()
-	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	var previous_meta := meta_state.to_dict()
+	meta_state.set_selected_deck(normalized)
+	meta_state.auto_attack_card_id = _resolve_auto_attack_card_id(auto_attack_card_id)
+	if not save_service.save_meta(META_SAVE_PATH, meta_state.to_dict()):
+		meta_state.apply_dict(previous_meta)
+		return
 	close_ui(ui_control)
 	_begin_autumn_run(normalized)
 	load_current_map(load(_resolve_main_scene_path(target_scene_path)) as PackedScene, target_spawn_name)
@@ -2047,15 +2176,19 @@ func _on_deck_confirmed(deck_ids: Array[String], ui_control: Control, target_sce
 
 func _normalize_expedition_deck(deck_ids: Array) -> Array[String]:
 	var normalized: Array[String] = []
-	for fixed_id in FIXED_CARD_IDS:
-		if card_database.has_card(fixed_id):
-			normalized.append(fixed_id)
+	var counts: Dictionary = {}
 	for card_id_variant in deck_ids:
 		if normalized.size() >= 16:
 			break
 		var card_id := String(card_id_variant)
-		if card_database.has_card(card_id) and not FIXED_CARD_IDS.has(card_id):
-			normalized.append(card_id)
+		if not card_database.has_card(card_id):
+			continue
+		var card := card_database.get_card(card_id)
+		var max_copies := 1 if String(card.get("type", "")) == "combo" else 3
+		if int(counts.get(card_id, 0)) >= max_copies:
+			continue
+		counts[card_id] = int(counts.get(card_id, 0)) + 1
+		normalized.append(card_id)
 	return normalized
 
 

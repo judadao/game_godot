@@ -81,7 +81,7 @@ func _run() -> void:
 		_expect(is_equal_approx(float(deck.get("energy")), float(deck.get("max_energy"))), "AP regeneration must clamp to maximum.")
 		deck.set("energy", 2.0)
 	var hand_before_failed_play := (deck.get("hand") as Array).duplicate()
-	_expect((deck.call("play_from_hand", 1) as Dictionary).is_empty(), "Unaffordable card must not play.")
+	_expect((deck.call("play_from_hand", 0) as Dictionary).is_empty(), "Unaffordable card must not play.")
 	_expect(deck.get("hand") == hand_before_failed_play, "Rejected card must remain in hand.")
 	_expect(int(deck.get("energy")) == 2, "Rejected card must not spend energy.")
 
@@ -89,12 +89,12 @@ func _run() -> void:
 	cycle_deck.set("hand_size", 2)
 	cycle_deck.call("start", ["ember_bolt", "guard", "dash_strike"], 3)
 	cycle_deck.call("play_from_hand", 0)
-	cycle_deck.call("play_from_hand", 1)
+	cycle_deck.call("play_from_hand", 0)
 	var redrawn: Array = cycle_deck.call("draw_cards", 3)
 	_expect(
-		redrawn == ["dash_strike"]
+		redrawn == ["dash_strike", "ember_bolt"]
 		and (cycle_deck.get("cooldown_pile") as Array).size() == 1,
-		"Fixed cards must remain pinned while timed cards stay out of the draw cycle during cooldown."
+		"Ordinary cards must recycle while timed cards stay out of the draw cycle during cooldown."
 	)
 
 	var redraw_deck := DeckManager.new(database)

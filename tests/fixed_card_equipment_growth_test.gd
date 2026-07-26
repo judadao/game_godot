@@ -61,7 +61,7 @@ func _run() -> void:
 	await process_frame
 
 	if _failures == 0:
-		print("PASS: fixed cards grow only through equipment and Dash story gating")
+		print("PASS: Dash equipment growth and story gating")
 	quit(1 if _failures > 0 else 0)
 
 

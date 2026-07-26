@@ -26,7 +26,7 @@ func _run() -> void:
 	meta.apply_dict(legacy_payload)
 	var migrated := meta.to_dict()
 	var instances := migrated.get("selected_card_instances", []) as Array
-	_expect(int(migrated.get("schema_version", 0)) == 4, "Card-instance and Skill saves must use schema version four.")
+	_expect(int(migrated.get("schema_version", 0)) == 5, "Automatic-attack loadout saves must use schema version five.")
 	_expect(
 		migrated.get("learned_skill_ids", []) == ["iron_momentum"]
 		and migrated.get("active_skill_ids", []) == ["iron_momentum"],
@@ -34,10 +34,10 @@ func _run() -> void:
 	)
 	_expect(
 		instances == [
-			{"instance_id": "legacy-000001", "card_id": "ember_bolt", "level": 1},
+			{"instance_id": "legacy-000001", "card_id": "ember_bolt", "level": 3},
 			{"instance_id": "legacy-000002", "card_id": "guard", "level": 3},
 			{"instance_id": "legacy-000003", "card_id": "guard", "level": 3},
-			{"instance_id": "legacy-000004", "card_id": "quickstep", "level": 1},
+			{"instance_id": "legacy-000004", "card_id": "quickstep", "level": 2},
 		],
 		"Legacy card arrays and shared levels must migrate deterministically without losing duplicates."
 	)
@@ -48,8 +48,8 @@ func _run() -> void:
 	var report := meta.get_last_migration_report()
 	_expect(
 		int(report.get("migrated_instances", 0)) == 4
-		and int(report.get("fixed_levels_repaired", 0)) == 2,
-		"Migration must expose a useful report for converted cards and fixed-level repairs."
+		and int(report.get("fixed_levels_repaired", 0)) == 0,
+		"Migration must preserve ordinary per-instance levels without fixed-card repairs."
 	)
 
 	var reapplied: MetaState = meta_script.new()
@@ -72,11 +72,11 @@ func _run() -> void:
 	var repaired_payload := repaired.to_dict()
 	_expect(
 		repaired_payload.get("selected_card_instances", []) == [
-			{"instance_id": "same", "card_id": "ember_bolt", "level": 1},
+			{"instance_id": "same", "card_id": "ember_bolt", "level": 3},
 			{"instance_id": "repair-000002", "card_id": "guard", "level": 2},
-			{"instance_id": "dash", "card_id": "quickstep", "level": 1},
+			{"instance_id": "dash", "card_id": "quickstep", "level": 2},
 		],
-		"Duplicate modern IDs and illegal fixed levels must repair deterministically."
+		"Duplicate modern IDs must repair deterministically while ordinary levels remain intact."
 	)
 	var repaired_again: MetaState = meta_script.new()
 	repaired_again.apply_dict(repaired_payload)

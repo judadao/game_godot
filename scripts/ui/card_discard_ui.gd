@@ -125,7 +125,7 @@ func _toggle_card(pressed: bool, index: int) -> void:
 
 func _update_status() -> void:
 	if _status != null:
-		_status.text = "Select exactly %d card(s):  %d / %d  (fixed cards are protected)" % [
+		_status.text = "Select exactly %d card(s):  %d / %d  (protected cards cannot be selected)" % [
 			_required_count, _selected.size(), _required_count,
 		]
 	if _confirm != null:

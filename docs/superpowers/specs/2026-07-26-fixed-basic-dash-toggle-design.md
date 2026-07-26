@@ -207,3 +207,8 @@ Tests must prove:
 - No change to maximum deck size or maximum visible hand size.
 - No change to ordinary card XP, merge, reward, or evolution rules.
 - No generated bitmap lock asset; the lock badge and glow use code-native UI.
+# Superseded
+
+This historical fixed-action design is superseded by the automatic-attack
+loadout contract documented in `docs/12_GAME_DESIGN.md`. Ember Bolt and
+Quickstep are ordinary cards; no fixed actions occupy combat-hand slots.

@@ -1,8 +1,6 @@
 class_name DeckManager
 extends RefCounted
 
-const FIXED_CARD_IDS: Array[String] = ["ember_bolt", "quickstep"]
-
 var hand_size: int = 8
 var max_energy: float = 5.0
 var energy: float = 5.0
@@ -15,8 +13,8 @@ var hand_instances: Array[CardInstance] = []
 var discard_instances: Array[CardInstance] = []
 var exhaust_instances: Array[CardInstance] = []
 var cooldown_pile: Array[Dictionary] = []
-var protected_card_id := "ember_bolt"
-var protected_card_ids: Array[String] = FIXED_CARD_IDS.duplicate()
+var protected_card_id := ""
+var protected_card_ids: Array[String] = []
 var last_play_retained := false
 
 var _card_database: RefCounted
@@ -28,15 +26,19 @@ func _init(card_database: RefCounted = null) -> void:
 	_card_database = card_database
 
 
-func set_protected_cards(_card_ids: Array) -> void:
-	protected_card_ids = FIXED_CARD_IDS.duplicate()
-	protected_card_id = FIXED_CARD_IDS[0]
+func set_protected_cards(card_ids: Array) -> void:
+	protected_card_ids.clear()
+	for card_id_variant in card_ids:
+		var card_id := String(card_id_variant)
+		if not card_id.is_empty() and not protected_card_ids.has(card_id):
+			protected_card_ids.append(card_id)
+	protected_card_id = protected_card_ids[0] if not protected_card_ids.is_empty() else ""
 
 
 func is_card_protected(card_or_instance: Variant) -> bool:
 	if card_or_instance is CardInstance:
 		return _protected_instance_ids.has((card_or_instance as CardInstance).instance_id)
-	return FIXED_CARD_IDS.has(String(card_or_instance))
+	return protected_card_ids.has(String(card_or_instance))
 
 
 func start(deck_ids: Array, starting_energy: float = 5.0, shuffle_deck: bool = false) -> void:
@@ -55,7 +57,7 @@ func start(deck_ids: Array, starting_energy: float = 5.0, shuffle_deck: bool = f
 		if seen_instance_ids.has(instance.instance_id):
 			instance = CardInstance.new(instance.card_id, instance.level)
 		seen_instance_ids[instance.instance_id] = true
-		if FIXED_CARD_IDS.has(instance.card_id):
+		if protected_card_ids.has(instance.card_id):
 			if not fixed_instances.has(instance.card_id):
 				instance.level = CardInstance.MIN_LEVEL
 				fixed_instances[instance.card_id] = instance
@@ -65,7 +67,7 @@ func start(deck_ids: Array, starting_energy: float = 5.0, shuffle_deck: bool = f
 	energy = max_energy
 	if shuffle_deck:
 		draw_instances.shuffle()
-	for fixed_id in FIXED_CARD_IDS:
+	for fixed_id in protected_card_ids:
 		if hand_instances.size() >= hand_size:
 			break
 		if fixed_instances.has(fixed_id):
@@ -213,7 +215,7 @@ func _extract_protected_hand() -> Array[CardInstance]:
 
 
 func _effective_protected_ids() -> Array[String]:
-	return FIXED_CARD_IDS
+	return protected_card_ids.duplicate()
 
 
 func find_hand_index(instance_id: String) -> int:
@@ -255,7 +257,7 @@ func upgrade_instance(instance_id: String) -> bool:
 
 
 func add_instance(card_id: String, level: int = CardInstance.MIN_LEVEL) -> CardInstance:
-	if card_id.is_empty() or FIXED_CARD_IDS.has(card_id) or not _has_card(card_id):
+	if card_id.is_empty() or protected_card_ids.has(card_id) or not _has_card(card_id):
 		return null
 	var instance := CardInstance.new(card_id, level)
 	return instance if add_existing_instance(instance) else null

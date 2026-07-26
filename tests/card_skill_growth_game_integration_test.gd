@@ -54,8 +54,6 @@ func _run() -> void:
 	for run_instance in run.card_instances:
 		var deck_instance := deck.find_instance(run_instance.instance_id)
 		_expect(deck_instance == run_instance, "Deck and run must share exact CardInstance objects.")
-		if run_instance.is_fixed():
-			_expect(run_instance.level == 1, "Fixed cards must remain Lv1.")
 	var embedded_hand := game.get("hud").get_node_or_null("BottomStage/CardStage/AutumnCardHandUI") as Control
 	_expect(embedded_hand != null, "Autumn HUD must own the embedded hand renderer.")
 	_expect(game.get("card_hand_ui") == embedded_hand, "Game must bind to the embedded renderer instead of creating a duplicate hand.")

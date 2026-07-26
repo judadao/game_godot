@@ -67,14 +67,12 @@ func _refresh() -> void:
 	_update_ap_display()
 	_apply_responsive_geometry()
 
-	var visible_card_count := mini(_cards.size(), CARDS_PER_GROUP * 2)
-	for global_index in visible_card_count:
+	for global_index in mini(_cards.size(), CARDS_PER_GROUP * 2):
 		var card := _cards[global_index]
 		var local_index := global_index % CARDS_PER_GROUP
 		var button := _build_card_button(card, local_index, global_index)
-		var group_index := global_index / CARDS_PER_GROUP
-		var target_row := _front_row if group_index == 0 else _back_row
-		target_row.add_child(button)
+		var row := _front_row if global_index < CARDS_PER_GROUP else _back_row
+		row.add_child(button)
 		_buttons.append(button)
 	_group_label.text = "A / S / LT / RT  TOGGLE  %d / %d" % [_active_group + 1, get_group_count()]
 	_capture_after_container_sort()
@@ -109,9 +107,8 @@ func _capture_resting_layouts() -> void:
 	for index in _buttons.size():
 		var button := _buttons[index]
 		var global_index := int(button.get_meta("global_card_index", index))
-		var group_index := global_index / CARDS_PER_GROUP
 		var local_index := global_index % CARDS_PER_GROUP
-		var is_active := group_index == _active_group
+		var is_active := global_index / CARDS_PER_GROUP == _active_group
 		var affordable := (
 			global_index < _cards.size()
 			and float(_cards[global_index].get("cost", 0)) <= _energy
@@ -120,7 +117,7 @@ func _capture_resting_layouts() -> void:
 			"position": button.position,
 			"rotation": 0.0,
 			"scale": ACTIVE_SCALE if is_active else INACTIVE_SCALE,
-			"z_index": 180 + local_index if is_active else 20 + local_index,
+			"z_index": (180 if is_active else 20) + local_index,
 		}
 		_resting_layouts.append(resting)
 		button.mouse_filter = Control.MOUSE_FILTER_STOP if is_active else Control.MOUSE_FILTER_IGNORE

@@ -224,7 +224,8 @@ Autumn Blessing、EXP 升級與 Campfire 卡牌成長邏輯，統一改由一個
 | Battle Focus | Flame Aura | Overdrive |
 | Cleave | Flame Aura | Inferno Orb |
 
-移除舊版以 passive 為條件的 evolution 契約。固定卡 Ember Bolt 永遠不能作為融合材料。
+移除舊版以 passive 為條件的 evolution 契約。Ember Bolt 已是一般卡牌；
+是否能作為融合材料只由明確的融合 recipe 決定。
 
 ### 8.4 資源補償
 

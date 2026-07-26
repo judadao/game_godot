@@ -99,14 +99,14 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 				card.has_node(node_path),
 				"Card %d must expose %s at %s." % [index, node_path, viewport_size]
 			)
-		_expect(card.has_method("is_fixed"), "Autumn card %d must expose fixed-card state." % index)
+		_expect(card.has_method("is_fixed"), "Autumn card %d must expose lock-state projection." % index)
 		if card.has_method("is_fixed"):
 			_expect(
-				bool(card.call("is_fixed")) == (index < 2),
-				"Only Autumn slots Q and W may show the persistent fixed-card treatment at %s." % viewport_size
+				not bool(card.call("is_fixed")),
+				"No random-hand slot may show removed fixed-card treatment at %s." % viewport_size
 			)
 			var lock_badge := card.get_node("LockBadge") as Control
-			_expect(lock_badge.visible == (index < 2), "Lock badge visibility must match fixed-card state.")
+			_expect(not lock_badge.visible, "Random-hand cards must hide the old lock badge.")
 		var aspect := card.size.x / maxf(1.0, card.size.y)
 		_expect(
 			aspect >= 0.68 and aspect <= 0.78,
@@ -189,8 +189,8 @@ func _inside_lower_hud(card: Control, viewport_size: Vector2i) -> bool:
 
 func _sample_cards() -> Array:
 	return [
-		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal damage and burn.", "cost": 1, "level": 1, "fixed": true},
-		{"id": "quickstep", "name": "Quickstep", "type": "utility", "description": "Dash and evade.", "cost": 1, "level": 1, "fixed": true},
+		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal damage and burn.", "cost": 1, "level": 1},
+		{"id": "quickstep", "name": "Quickstep", "type": "skill", "description": "Dash and evade.", "cost": 1, "level": 1},
 		{"id": "frost_burst", "name": "Frost Burst", "type": "status", "description": "Add frost.", "cost": 1, "level": 1},
 		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Arc strike.", "cost": 2, "level": 1},
 		{"id": "blade_dance", "name": "Blade Dance", "type": "combo", "description": "Gain a timed effect.", "cost": 2, "level": 3},

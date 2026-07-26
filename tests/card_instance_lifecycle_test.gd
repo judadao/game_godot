@@ -83,10 +83,10 @@ func _run() -> void:
 	], 9.0)
 	_expect(
 		deck.hand_instances[0].instance_id == "fixed-ember"
-		and deck.hand_instances[0].level == 1
+		and deck.hand_instances[0].level == 3
 		and deck.hand_instances[1].instance_id == "fixed-dash"
-		and deck.hand_instances[1].level == 1,
-		"Exactly one stable level-one instance of each fixed card must be pinned."
+		and deck.hand_instances[1].level == 2,
+		"Former fixed cards must preserve their ordinary per-instance levels."
 	)
 	var pile_instances: Array = (
 		deck.hand_instances
@@ -140,23 +140,35 @@ func _run() -> void:
 		"Discard routing must keep reusable cards in the draw cycle."
 	)
 
-	var fixed_ember_id := deck.hand_instances[0].instance_id
-	deck.play_from_hand(0)
+	var ember_id := "fixed-ember"
+	deck.play_from_hand(deck.find_hand_index(ember_id))
 	_expect(
-		deck.hand_instances[0].instance_id == fixed_ember_id
-		and not deck.exhaust_instances.any(
+		deck.find_hand_index(ember_id) < 0
+		and deck.exhaust_instances.any(
 			func(card: CardInstance) -> bool: return card.card_id == "ember_bolt"
-		)
-		and deck.cooldown_pile.is_empty(),
-		"Fixed cards must ignore catalog exhaust/cooldown routing and retain their stable instances."
+		),
+		"Attack cards in the backpack must obey ordinary exhaust routing."
+	)
+	var dash_id := "fixed-dash"
+	deck.play_from_hand(deck.find_hand_index(dash_id))
+	var dash_on_cooldown := false
+	for entry in deck.cooldown_pile:
+		var cooldown_instance := entry.get("instance") as CardInstance
+		if cooldown_instance != null and cooldown_instance.instance_id == dash_id:
+			dash_on_cooldown = true
+	_expect(
+		deck.find_hand_index(dash_id) < 0
+		and dash_on_cooldown,
+		"Quickstep must obey ordinary cooldown routing."
 	)
 
 	var run: RunState = run_script.new()
 	run.begin_run(deck.get_all_instances())
 	_expect(
-		not run.upgrade_card_instance(fixed_ember_id),
-		"Fixed cards must reject per-instance upgrades."
+		not run.upgrade_card_instance(ember_id),
+		"A level-three automatic-attack candidate must reject further upgrades."
 	)
+	_expect(run.upgrade_card_instance(dash_id), "Quickstep must support ordinary per-instance upgrades.")
 	_expect(run.upgrade_card_instance("guard-low"), "A non-fixed instance below level three must upgrade.")
 	_expect(
 		run.get_card_instance("guard-low").level == 2
@@ -174,8 +186,8 @@ func _run() -> void:
 		"A failed atomic removal must not partially remove cards."
 	)
 	_expect(
-		not run.remove_card_instances([fixed_ember_id]),
-		"Fixed instances must reject removal."
+		run.remove_card_instances([ember_id]),
+		"Former fixed cards must support ordinary instance removal."
 	)
 
 	var atomic_deck: DeckManager = deck_script.new(RoutingCatalog.new())

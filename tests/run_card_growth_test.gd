@@ -32,11 +32,12 @@ func _run() -> void:
 		and meta.get_card_instance(upgraded.instance_id) == upgraded,
 		"Upgrade must remain visible through shared Meta, Run, and Deck identity."
 	)
-	var fixed := _first_instance(run.card_instances, "ember_bolt")
-	_expect(not game.call("_apply_growth_resolution", {
+	var attack := _first_instance(run.card_instances, "ember_bolt")
+	_expect(game.call("_apply_growth_resolution", {
 		"action": "upgrade",
-		"instance_id": fixed.instance_id,
-	}), "A fixed card must reject upgrades.")
+		"instance_id": attack.instance_id,
+	}), "Automatic-attack candidates must support ordinary individual upgrades.")
+	_expect(attack.level == 2, "The selected attack instance must gain one level.")
 
 	var guard := _first_instance(run.card_instances, "guard")
 	var stone := _first_instance(run.card_instances, "iron_skin")

@@ -99,7 +99,7 @@ func _instance_projection(value: Variant) -> Dictionary:
 	if value is Dictionary:
 		var data := (value as Dictionary).duplicate(true)
 		var card_id := String(data.get("card_id", ""))
-		data["fixed"] = bool(data.get("fixed", card_id in ["ember_bolt", "quickstep"]))
+		data["fixed"] = bool(data.get("fixed", false))
 		return data
 	if value is Object:
 		var object := value as Object
@@ -108,6 +108,6 @@ func _instance_projection(value: Variant) -> Dictionary:
 			"instance_id": String(object.get("instance_id")),
 			"card_id": card_id,
 			"level": int(object.get("level")),
-			"fixed": bool(object.call("is_fixed")) if object.has_method("is_fixed") else card_id in ["ember_bolt", "quickstep"],
+			"fixed": bool(object.call("is_fixed")) if object.has_method("is_fixed") else false,
 		}
 	return {}

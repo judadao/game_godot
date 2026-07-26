@@ -153,3 +153,8 @@
 - [ ] Launch the project, Autumn map, combat preview, and headless editor and
   reject parser, missing-node, or runtime errors.
 - [ ] Run `git diff --check` and confirm no temporary capture scripts remain.
+# Superseded
+
+This implementation plan is retained as history only. The active contract is
+the pre-battle automatic-attack selection plus a shuffled, unpinned eight-card
+combat hand documented in `docs/12_GAME_DESIGN.md`.

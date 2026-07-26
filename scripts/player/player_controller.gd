@@ -43,6 +43,7 @@ const JUMP_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/leg
 var facing_direction: int = 1
 var current_state: StringName = STATE_IDLE
 var _dash_cooldown_remaining: float = 0.0
+var direct_dash_enabled := true
 var _animation_name: StringName = &""
 var _animation_elapsed: float = 0.0
 var input_enabled: bool = true
@@ -68,7 +69,7 @@ func _physics_process(delta: float) -> void:
 	elif _is_action_just_pressed(ACTION_JUMP, [FALLBACK_JUMP, FALLBACK_JUMP_ALT]):
 		velocity.y = jump_velocity
 
-	if _is_action_just_pressed(&"dash"):
+	if direct_dash_enabled and _is_action_just_pressed(&"dash"):
 		try_dash(signi(direction) if direction != 0.0 else facing_direction)
 
 	move_and_slide()
@@ -93,6 +94,10 @@ func set_input_enabled(is_enabled: bool) -> void:
 		return
 	velocity.x = 0.0
 	_update_state(0.0)
+
+
+func set_direct_dash_enabled(is_enabled: bool) -> void:
+	direct_dash_enabled = is_enabled
 
 func set_facing_direction(direction: int) -> void:
 	if direction == 0:

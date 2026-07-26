@@ -80,11 +80,11 @@ func _run() -> void:
 		)
 		_expect(
 			not bool(deck.call("add_existing_instance", reward_instance))
-			and not bool(deck.call(
+			and bool(deck.call(
 				"add_existing_instance",
 				CardInstance.new("ember_bolt", 1, "illegal-fixed")
 			)),
-			"Existing-instance insertion must reject duplicate IDs and fixed-card injection."
+			"Existing-instance insertion must reject duplicate IDs but accept ordinary attacks."
 		)
 
 	var run := RunState.new()
@@ -106,11 +106,11 @@ func _run() -> void:
 		)
 		_expect(
 			not bool(run.call("add_existing_card_instance", reward_instance))
-			and not bool(run.call(
+			and bool(run.call(
 				"add_existing_card_instance",
 				CardInstance.new("quickstep", 1, "illegal-run-fixed")
 			)),
-			"RunState existing-instance insertion must reject duplicate IDs and fixed cards."
+			"RunState existing-instance insertion must reject duplicate IDs but accept ordinary Dash cards."
 		)
 
 	var meta := MetaState.new()
@@ -126,9 +126,9 @@ func _run() -> void:
 	})
 	var payloads := meta.get_selected_card_payloads()
 	_expect(
-		_count_card(payloads, "ember_bolt") == 1
-		and _count_card(payloads, "quickstep") == 1,
-		"Modern save repair must retain exactly one stable instance of each fixed card."
+		_count_card(payloads, "ember_bolt") == 2
+		and _count_card(payloads, "quickstep") == 2,
+		"Modern saves must retain duplicate ordinary Attack and Dash instances."
 	)
 	_expect(
 		payloads.any(
@@ -137,7 +137,7 @@ func _run() -> void:
 				and int(payload.get("level", 0)) == 2
 			)
 		),
-		"Fixed-card repair must not alter unrelated card identity or levels."
+		"Ordinary-card migration must not alter unrelated card identity or levels."
 	)
 
 	runner.queue_free()
