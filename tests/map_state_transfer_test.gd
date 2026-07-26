@@ -26,7 +26,8 @@ func _run() -> void:
 	original_player.set("level", 4)
 	original_player.set("experience", 23)
 
-	var forest := load("res://scenes/maps/autumn_forest.tscn") as PackedScene
+	(game.get("meta_state") as MetaState).shortcuts["forest_gate"] = true
+	var forest := load("res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn") as PackedScene
 	game.call("load_current_map", forest)
 	var forest_player := game.get("player") as Node
 	_expect(forest_player != original_player, "Map swap should instantiate the destination player.")
@@ -34,6 +35,14 @@ func _run() -> void:
 	_expect(int(forest_player.get("mana")) == 17, "Portal travel must preserve current mana.")
 	_expect(int(forest_player.get("level")) == 4, "Portal travel must preserve run level.")
 	_expect(int(forest_player.get("experience")) == 23, "Portal travel must preserve run experience.")
+	var shortcut_spawn := game.get("current_map").get_node_or_null("ForestShortcutSpawn") as Marker2D
+	_expect(shortcut_spawn != null, "Autumn Battle V2 must expose an authored shortcut spawn.")
+	_expect(
+		shortcut_spawn != null
+		and (forest_player as Node2D).global_position.is_equal_approx(shortcut_spawn.global_position)
+		and shortcut_spawn.global_position.y <= 540.0,
+		"Unlocked forest shortcuts must use the V2 marker above the HUD boundary."
+	)
 
 	game.call("_begin_autumn_run")
 	var run := game.get("run_state") as RunState

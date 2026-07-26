@@ -19,7 +19,7 @@ func _run() -> void:
 	portal.connect("portal_entered", func(_portal: Node, _path: String, _spawn: StringName, _interactor: Node) -> void: entered.append(true))
 	_expect(bool(portal.call("interact", null)) and entered == [true], "Unlocked portal must emit normal travel.")
 
-	var forest := (load("res://scenes/maps/autumn_forest.tscn") as PackedScene).instantiate()
+	var forest := (load("res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn") as PackedScene).instantiate()
 	root.add_child(forest)
 	await process_frame
 	_expect(forest.has_node("ForwardPortal"), "Battle stage must contain a boss-gated forward portal.")

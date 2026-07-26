@@ -307,7 +307,7 @@ Anchor 是相對 parent rect 的比例：
 
 Current examples：
 
-- `CardSafeArea`：bottom anchor，固定 184 px 高。
+- `CardSafeArea`：`anchor_top = 0.75`，固定使用 viewport 底部 25%，容納兩組完整卡牌。
 - HUD status/quest/progress：bottom corners。
 - DialoguePanel：使用 viewport 比例 anchors。
 
@@ -476,7 +476,7 @@ HUD
 - `interaction_prompt_accepted` signal 有宣告與 Game connection，但 HUD 不 emit。
 - hidden legacy subtree 尚未清理。
 - HUDNavigationGroup/HUDStatusBar scene 目前無 production reference。
-- HUDStatus/HUDQuestTracker 使用 0.75/0.72 scale，非 pixel-perfect。
+- HUDStatus/HUDQuestTracker 放在五欄 Container 的縮放 proxy 中，保持模組原始比例。
 
 ## 11. CardHand 與 Battle UI
 
@@ -488,8 +488,10 @@ HUD
 HUDLayer
 ├── HUD
 └── CardHandUI
-    ├── bottom 184 px CardSafeArea
-    ├── runtime CardFan buttons
+    ├── bottom 25% CardSafeArea
+    ├── CardRows (VBoxContainer)
+    │   ├── BackRow (HBoxContainer)
+    │   └── FrontRow (HBoxContainer)
     ├── AP / redraw / combo
     └── boss name / health
 ```
@@ -500,8 +502,10 @@ HUDLayer
 修改時必須保留：
 
 - 每組最多 4 張 visible cards。
-- `CARD_SIZE = 132×168`。
-- bottom safe area 184 px。
+- compact card minimum 為 `82×78`。
+- bottom safe area 為 viewport 高度的 25%。
+- 八張手牌分成兩組四張；A/S 選取的組別放在 `FrontRow` 並接收
+  Q/W/E/R，未選組別完整顯示於 `BackRow`。
 - hover 仍在 viewport 內。
 - cards 不遮 HUD status/quest/progress。
 - viewport size change 重新 layout。
@@ -862,8 +866,12 @@ ScreenRoot (Control, Full Rect)
 HUDLayer (CanvasLayer)
 ├── HUD (Control, Full Rect, display-only)
 └── CardHandUI (Control, Full Rect)
-    └── CardSafeArea (bottom anchored)
-        └── CardFan
+    └── CardSafeArea (anchor_top = 0.75)
+        └── BottomRow (five proportional columns)
+            └── HandSlot
+                └── CardRows (VBoxContainer)
+                    ├── BackRow (HBoxContainer)
+                    └── FrontRow (HBoxContainer)
 ```
 
 ## 25. Godot Example (Godot 4)
@@ -872,7 +880,8 @@ HUDLayer (CanvasLayer)
 overlay：
 
 ```gdscript
-@onready var card_fan: Control = %CardFan
+@onready var back_row: HBoxContainer = %BackRow
+@onready var front_row: HBoxContainer = %FrontRow
 
 func _ready() -> void:
 	var viewport := get_viewport()
@@ -880,9 +889,8 @@ func _ready() -> void:
 		viewport.size_changed.connect(_on_viewport_size_changed)
 
 func _on_viewport_size_changed() -> void:
-	if not is_inside_tree():
-		return
-	_layout_cards()
+	if is_inside_tree():
+		_capture_resting_layouts.call_deferred()
 ```
 
 Godot 4 使用 typed signals、`Control.PRESET_*`、`size_flags_*` 與
@@ -987,3 +995,60 @@ Godot 4 使用 typed signals、`Control.PRESET_*`、`size_flags_*` 與
 - `docs/12_GAME_DESIGN.md`
 - `docs/13_ROADMAP.md`
 - `docs/rule_1.md`
+
+## 33. Autumn Battle V2 HUD
+
+Autumn Battle V2 deliberately does not share the Town presentation scenes.
+Its runtime and editor-preview UI is authored in:
+
+- `res://scenes/ui/autumn/AutumnHUD.tscn`
+- `res://scenes/ui/autumn/AutumnCardHandUI.tscn`
+- `res://scenes/ui/autumn/AutumnInteractionPrompt.tscn`
+- `res://scenes/dev/AutumnEditorHUDReference.tscn`
+
+The world-safe area is the upper 75% of the viewport. The lower 25% uses one
+six-column container contract in both the HUD and card scene:
+
+`23 status / 8 AP / 40 hand / 10 group guide / 11 objective+combo / 8 economy`
+
+The hand is two rows of four cards. Q/W/E/R operate the active row; A/S and
+LT/RT switch rows. Avoid manual card positions: row containers own spacing and
+card minimum sizes. The interaction prompt accepts an optional `CanvasItem`
+target, follows its canvas transform, and clamps above the world-safe boundary.
+Town continues to use the shared `HUD.tscn` and `CardHandUI.tscn`.
+
+### Autumn structured cards
+
+Autumn Battle V2 renders each visible card through
+`res://scenes/ui/autumn/AutumnBattleCard.tscn`. The card root is the only
+interactive `Button`; its shortcut, name, type, icon stage, level, and AP
+labels use `MOUSE_FILTER_IGNORE`.
+
+`res://scripts/ui/autumn_card_hand_ui.gd` derives from the shared hand
+controller but owns Autumn presentation. Group one remains in `FrontRow` and
+group two remains in `BackRow`. The active row is bright, full scale,
+focusable, and above the inactive row. The inactive row remains visible as
+recessed card headers but is dimmed, non-focusable, and mouse-transparent.
+Switching groups reverses those states without changing card indices.
+
+Card height is derived from the lower-HUD height and hand-column width. The
+renderer preserves a `0.72` width-to-height ratio and updates the negative
+vertical row separation on viewport resize. Do not add per-resolution card
+positions or resize these cards from gameplay code.
+
+### Fixed-card and group-toggle contract
+
+Autumn slot Q is the fixed `ember_bolt` basic attack and slot W is the fixed
+`quickstep` Dash. The renderer receives `fixed = true` from `Game` and shows a
+LOCK badge plus a persistent gold border/shadow. This treatment is state, not
+an index-only decoration; editor samples must also mark both cards as fixed.
+
+A, S, LT, and RT all call the same toggle operation. Pressing any one of them
+alternates between group 1 and group 2. With only one group, the operation is a
+no-op. Do not restore the previous "A selects group 1 / S selects group 2"
+behavior.
+
+The Combo label includes the longest remaining effect time (for example,
+`Flame [2/4] 4.8s`). It updates during combat without moving or rebuilding the
+hand rows. Equipment-modified AP costs must be projected into the card
+component before affordability and input checks.

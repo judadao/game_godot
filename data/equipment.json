@@ -62,7 +62,13 @@
       "slot": "accessory",
       "purchase_cost": {"gold": 65, "magic_shard": 3},
       "effects": {"move_speed_multiplier": 0.08},
-      "special_ability": {"id": "afterimage", "description": "Dash cooldown is reduced.", "dash_cooldown_reduction": 0.12}
+      "upgrade_requirement": "dash_upgrade_unlocked",
+      "special_ability": {
+        "id": "afterimage",
+        "description": "After the forest story unlocks it, Quickstep gains +30 distance and +0.1 sec evasion.",
+        "dash_distance_bonus": 30,
+        "dash_evasion_bonus": 0.1
+      }
     },
     {
       "id": "vitality_charm",
@@ -78,7 +84,13 @@
       "slot": "accessory",
       "purchase_cost": {"gold": 70, "magic_shard": 5},
       "effects": {"critical_chance": 0.05, "max_mana": 5},
-      "special_ability": {"id": "steady_focus", "description": "Attack cards deal +1 damage.", "card_damage_bonus": 1}
+      "special_ability": {
+        "id": "steady_focus",
+        "description": "Attack cards deal +1 damage; Combo cards cost 1 less AP and last 2 seconds longer.",
+        "card_damage_bonus": 1,
+        "combo_cost_reduction": 1,
+        "combo_duration_bonus": 2.0
+      }
     },
     {
       "id": "merchant_seal",

@@ -57,42 +57,115 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_hud")
 
-[node name="HUDStatus" parent="." unique_id=1176208436 instance=ExtResource("3_status")]
-anchors_preset = 2
-anchor_top = 1.0
+[node name="BottomHUD" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 9
+anchor_top = 0.75
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = -114.0
-offset_right = 456.0
-offset_bottom = 22.0
-grow_vertical = 0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_bottom = 4
+mouse_filter = 2
+
+[node name="HUDGrid" type="HBoxContainer" parent="BottomHUD"]
+layout_mode = 2
+theme_override_constants/separation = 0
+mouse_filter = 2
+
+[node name="StatusColumn" type="Control" parent="BottomHUD/HUDGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 22.0
+mouse_filter = 2
+
+[node name="StatusCenter" type="CenterContainer" parent="BottomHUD/HUDGrid/StatusColumn"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatusProxy" type="Control" parent="BottomHUD/HUDGrid/StatusColumn/StatusCenter"]
+custom_minimum_size = Vector2(249, 76)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HUDStatus" parent="BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy" unique_id=1176208436 instance=ExtResource("3_status")]
+layout_mode = 0
+scale = Vector2(0.56, 0.56)
+
+[node name="APReserve" type="Control" parent="BottomHUD/HUDGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 8.0
+mouse_filter = 2
+
+[node name="HandReserve" type="Control" parent="BottomHUD/HUDGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 40.0
+mouse_filter = 2
+
+[node name="InfoColumn" type="Control" parent="BottomHUD/HUDGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 18.0
+mouse_filter = 2
+
+[node name="QuestCenter" type="VBoxContainer" parent="BottomHUD/HUDGrid/InfoColumn"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 2
+mouse_filter = 2
+
+[node name="QuestProxy" type="Control" parent="BottomHUD/HUDGrid/InfoColumn/QuestCenter"]
+custom_minimum_size = Vector2(210, 89)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+
+[node name="HUDQuestTracker" parent="BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy" unique_id=1373074750 instance=ExtResource("5_quest")]
+layout_mode = 0
 scale = Vector2(0.75, 0.75)
 
-[node name="HUDProgressPanel" parent="." unique_id=854433835 instance=ExtResource("4_progress")]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -194.0
-offset_top = -104.0
-offset_right = -20.0
-offset_bottom = -32.0
-grow_horizontal = 0
-grow_vertical = 0
+[node name="ProgressColumn" type="Control" parent="BottomHUD/HUDGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 12.0
+mouse_filter = 2
 
-[node name="HUDQuestTracker" parent="." unique_id=1373074750 instance=ExtResource("5_quest")]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
+[node name="ProgressCenter" type="CenterContainer" parent="BottomHUD/HUDGrid/ProgressColumn"]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -410.0
-offset_top = -114.0
-offset_right = -130.0
-offset_bottom = 4.0
-grow_horizontal = 0
-grow_vertical = 0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ProgressProxy" type="Control" parent="BottomHUD/HUDGrid/ProgressColumn/ProgressCenter"]
+custom_minimum_size = Vector2(125, 52)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HUDProgressPanel" parent="BottomHUD/HUDGrid/ProgressColumn/ProgressCenter/ProgressProxy" unique_id=854433835 instance=ExtResource("4_progress")]
+layout_mode = 0
+anchors_preset = 0
+anchor_left = 0.0
+anchor_right = 0.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 174.0
+offset_bottom = 72.0
+grow_horizontal = 1
 scale = Vector2(0.72, 0.72)
 
 [node name="HUDHotbar" parent="." unique_id=1489913082 instance=ExtResource("6_hotbar")]

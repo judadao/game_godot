@@ -1,0 +1,149 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/components/AutumnBattleBackdrop.tscn" id="1_backdrop"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/components/AutumnBattleTerrain.tscn" id="2_terrain"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/components/AutumnBattleSetDressing.tscn" id="3_dressing"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/components/AutumnBattleWorldCollision.tscn" id="4_collision"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="5_player"]
+[ext_resource type="Script" path="res://scripts/combat/survival_wave_director.gd" id="6_director"]
+[ext_resource type="PackedScene" path="res://scenes/props/Chest.tscn" id="7_chest"]
+[ext_resource type="PackedScene" path="res://scenes/npc/Merchant.tscn" id="8_merchant"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="9_portal"]
+[ext_resource type="PackedScene" path="res://scenes/dev/AutumnEditorHUDReference.tscn" id="10_ui"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnBattleMapV2EditorHelpers.tscn" id="11_helpers"]
+
+[node name="AutumnBattleMapV2" type="Node2D"]
+metadata/map_width = 2600
+metadata/map_height = 720
+metadata/camera_limit_left = 0
+metadata/camera_limit_top = 0
+metadata/camera_limit_right = 2600
+metadata/camera_limit_bottom = 720
+
+[node name="Background" parent="." instance=ExtResource("1_backdrop")]
+
+[node name="Ground" parent="." instance=ExtResource("2_terrain")]
+
+[node name="SetDressing" parent="." instance=ExtResource("3_dressing")]
+
+[node name="GameplayZones" type="Node2D" parent="."]
+
+[node name="SpawnZone" type="Marker2D" parent="GameplayZones"]
+position = Vector2(210, 450)
+metadata/route_label = "SPAWN / CABIN"
+
+[node name="EventChoiceZone" type="Marker2D" parent="GameplayZones"]
+position = Vector2(620, 450)
+metadata/route_label = "EVENT / CHOICE"
+
+[node name="EnemyWaveZone" type="Marker2D" parent="GameplayZones"]
+position = Vector2(1235, 450)
+metadata/route_label = "SURVIVAL WAVES"
+
+[node name="MerchantZone" type="Marker2D" parent="GameplayZones"]
+position = Vector2(1875, 450)
+metadata/route_label = "CAMPFIRE / MERCHANT"
+
+[node name="ExitZone" type="Marker2D" parent="GameplayZones"]
+position = Vector2(2350, 450)
+metadata/route_label = "BOSS GATE / NEXT MAP"
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(340, 470)
+
+[node name="ForestShortcutSpawn" type="Marker2D" parent="."]
+position = Vector2(1980, 470)
+
+[node name="Player" parent="." instance=ExtResource("5_player")]
+position = Vector2(340, 470)
+z_index = 30
+
+[node name="AutumnRunDirector" type="Node2D" parent="." groups=["EncounterDirectors"]]
+position = Vector2(1235, 470)
+z_index = 25
+script = ExtResource("6_director")
+auto_start = false
+engage_radius = 520.0
+leash_radius = 700.0
+disengage_duration = 5.0
+
+[node name="HiddenBranchCache" parent="." instance=ExtResource("7_chest")]
+position = Vector2(690, 485)
+z_index = 24
+interaction_id = &"forest_hidden_cache"
+prompt_text = "Open hidden cache"
+loot_table_id = &"forest_hidden_cache"
+
+[node name="ForestRest" parent="." instance=ExtResource("7_chest")]
+position = Vector2(1740, 485)
+z_index = 24
+interaction_id = &"forest_rest"
+prompt_text = "Rest at campfire"
+loot_table_id = &"forest_rest"
+
+[node name="Visual" parent="ForestRest" index="0"]
+visible = false
+
+[node name="WanderingCardMerchant" parent="." instance=ExtResource("8_merchant")]
+position = Vector2(1900, 492)
+z_index = 24
+interaction_id = &"wandering_card_merchant"
+prompt_text = "Trade Cards"
+display_name = "Wandering Cardwright"
+dialogue_id = &"wandering_card_greeting"
+shop_id = &"wandering_cards"
+
+[node name="ShortcutLever" parent="." instance=ExtResource("7_chest")]
+position = Vector2(2050, 485)
+z_index = 24
+interaction_id = &"forest_shortcut"
+prompt_text = "Unlock forest shortcut"
+loot_table_id = &"forest_shortcut"
+
+[node name="TownPortal" parent="." instance=ExtResource("9_portal")]
+position = Vector2(45, 495)
+z_index = 22
+interaction_id = &"autumn_forest_return"
+prompt_text = "Return to Town"
+target_scene_path = "res://scenes/maps/town.tscn"
+target_spawn_name = &"PlayerSpawn"
+
+[node name="Visual" parent="TownPortal" index="0"]
+scale = Vector2(0.36, 0.36)
+
+[node name="ForwardPortal" parent="." instance=ExtResource("9_portal")]
+position = Vector2(2350, 500)
+z_index = 22
+interaction_id = &"autumn_forward_gate"
+prompt_text = "Continue Expedition"
+target_scene_path = "res://scenes/maps/crystal_caves.tscn"
+target_spawn_name = &"PlayerSpawn"
+locked = true
+locked_reason = "Defeat the Heartwood Guardian"
+
+[node name="WorldCollision" parent="." instance=ExtResource("4_collision")]
+
+[node name="EditorHUDReference" parent="." instance=ExtResource("10_ui")]
+
+[node name="EditorHelpers" parent="." instance=ExtResource("11_helpers")]
+
+[editable path="HiddenBranchCache"]
+[editable path="HiddenBranchCache/InteractionArea"]
+[editable path="ForestRest"]
+[editable path="ForestRest/InteractionArea"]
+[editable path="ShortcutLever"]
+[editable path="ShortcutLever/InteractionArea"]
+[editable path="WanderingCardMerchant"]
+[editable path="WanderingCardMerchant/InteractionArea"]
+[editable path="TownPortal"]
+[editable path="TownPortal/InteractionArea"]
+[editable path="ForwardPortal"]
+[editable path="ForwardPortal/InteractionArea"]
+[editable path="Background"]
+[editable path="Ground"]
+[editable path="SetDressing"]
+[editable path="WorldCollision"]
+[editable path="EditorHUDReference"]
+[editable path="EditorHUDReference/HUD"]
+[editable path="EditorHUDReference/CardHandUI"]
+[editable path="EditorHelpers"]

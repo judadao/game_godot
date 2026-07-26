@@ -21,10 +21,11 @@ func _run() -> void:
 	)
 	hud.set_player_level(7)
 	hud.set_player_class("Ranger")
-	_expect((hud.get_node("HUDStatus/LevelLabel") as Label).text == "Lv. 7", "HUD level updates dynamically")
-	_expect((hud.get_node("HUDStatus/ClassLabel") as Label).text == "RANGER", "HUD class updates dynamically")
-	var hp_frame := hud.get_node("HUDStatus/HPBar/Frame") as CanvasItem
-	var hp_fill := hud.get_node("HUDStatus/HPBar/Fill") as CanvasItem
+	var status_path := "BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus"
+	_expect((hud.get_node(status_path + "/LevelLabel") as Label).text == "Lv. 7", "HUD level updates dynamically")
+	_expect((hud.get_node(status_path + "/ClassLabel") as Label).text == "RANGER", "HUD class updates dynamically")
+	var hp_frame := hud.get_node(status_path + "/HPBar/Frame") as CanvasItem
+	var hp_fill := hud.get_node(status_path + "/HPBar/Fill") as CanvasItem
 	_expect(
 		hp_frame.z_index > hp_fill.z_index or hp_frame.get_index() > hp_fill.get_index(),
 		"Status frame renders above health fill"

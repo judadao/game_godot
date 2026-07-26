@@ -5,19 +5,23 @@ const VIEWPORT_SIZES := [
 	Vector2i(1280, 720),
 	Vector2i(1600, 900),
 	Vector2i(1920, 1080),
+	Vector2i(2560, 1080),
 	Vector2i(2560, 1440),
 ]
 const CARD_SCENE := preload("res://scenes/ui/CardHandUI.tscn")
 const HUD_SCENE := preload("res://scenes/ui/HUD.tscn")
-const SAFE_AREA_HEIGHT := 184.0
+const SAFE_AREA_RATIO := 0.25
 const REQUIRED_CARD_PATHS := [
 	"CardSafeArea",
 	"CardSafeArea/BottomMargin",
 	"CardSafeArea/BottomMargin/BottomRow",
-	"CardSafeArea/BottomMargin/BottomRow/LeftSlot/LeftControls",
-	"CardSafeArea/BottomMargin/BottomRow/HandSlot/CardFan",
-	"CardSafeArea/BottomMargin/BottomRow/RightSlot/ComboHint",
-	"CardGroupCenter/CardGroupBadge",
+	"CardSafeArea/BottomMargin/BottomRow/APSlot/APControls",
+	"CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows",
+	"CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows/BackRow",
+	"CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows/FrontRow",
+	"CardSafeArea/BottomMargin/BottomRow/InfoSlot/InfoControls",
+	"CardSafeArea/BottomMargin/BottomRow/InfoSlot/InfoControls/ComboHint",
+	"CardSafeArea/BottomMargin/BottomRow/InfoSlot/InfoControls/CardGroupBadge",
 	"BossCenter/BossStack/BossName",
 	"BossCenter/BossStack/BossHealth",
 ]
@@ -63,14 +67,17 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 		return
 
 	var safe_area := card_hand.get_node("CardSafeArea") as Control
-	var left_controls := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/LeftSlot/LeftControls") as Control
-	var card_fan := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/HandSlot/CardFan") as Control
-	var redraw_button := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/LeftSlot/LeftControls/RedrawHand") as Button
-	var energy_badge := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/LeftSlot/LeftControls/EnergyBadge") as Control
-	var combo_hint := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/RightSlot/ComboHint") as Control
+	var ap_controls := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/APSlot/APControls") as Control
+	var card_rows := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows") as VBoxContainer
+	var back_row := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows/BackRow") as HBoxContainer
+	var front_row := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows/FrontRow") as HBoxContainer
+	var redraw_button := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/APSlot/APControls/RedrawHand") as Button
+	var energy_badge := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/APSlot/APControls/EnergyBadge") as Control
+	var combo_hint := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/InfoSlot/InfoControls/ComboHint") as Control
+	var group_badge := card_hand.get_node("CardSafeArea/BottomMargin/BottomRow/InfoSlot/InfoControls/CardGroupBadge") as Control
 	var boss_name := card_hand.get_node("BossCenter/BossStack/BossName") as Control
 	var boss_health := card_hand.get_node("BossCenter/BossStack/BossHealth") as Control
-	_expect(card_fan.get_child_count() == 0, "CardFan must be empty before runtime cards are supplied at %s." % viewport_size)
+	_expect(back_row.get_child_count() == 0 and front_row.get_child_count() == 0, "Card rows must be empty before runtime cards are supplied at %s." % viewport_size)
 	_expect(not boss_name.visible and not boss_health.visible, "Boss placeholder must start hidden at runtime at %s." % viewport_size)
 
 	card_hand.call("set_cards", _sample_cards(), 5.0)
@@ -78,13 +85,16 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	await _wait_for_layout()
 
 	var safe_rect := _canvas_rect(safe_area)
-	var fan_rect := _canvas_rect(card_fan)
-	_expect(is_equal_approx(safe_rect.position.y, float(viewport_size.y) - SAFE_AREA_HEIGHT), "Card safe area must stay 184 pixels tall at %s." % viewport_size)
-	_expect(is_equal_approx(safe_rect.size.y, SAFE_AREA_HEIGHT), "Card safe area must remain 184 pixels tall at %s." % viewport_size)
+	var rows_rect := _canvas_rect(card_rows)
+	var expected_height := float(viewport_size.y) * SAFE_AREA_RATIO
+	_expect(is_equal_approx(safe_rect.position.y, float(viewport_size.y) * (1.0 - SAFE_AREA_RATIO)), "Card safe area must begin at 75%% viewport height at %s." % viewport_size)
+	_expect(is_equal_approx(safe_rect.size.y, expected_height), "Card safe area must remain 25%% viewport height at %s." % viewport_size)
 	_expect(is_equal_approx(safe_rect.end.y, float(viewport_size.y)), "Card safe area must end at the viewport bottom at %s." % viewport_size)
 	_expect(_inside_viewport(safe_rect, viewport_size), "Card safe area must remain inside %s." % viewport_size)
-	_expect(not _canvas_rect(left_controls).intersects(fan_rect), "Left card controls must not overlap CardFan at %s." % viewport_size)
-	_expect(not _canvas_rect(combo_hint).intersects(fan_rect), "Combo controls must not overlap CardFan at %s." % viewport_size)
+	_expect(not _canvas_rect(ap_controls).intersects(rows_rect), "AP controls must not overlap card rows at %s." % viewport_size)
+	_expect(not _canvas_rect(combo_hint).intersects(rows_rect), "Combo controls must not overlap card rows at %s." % viewport_size)
+	_expect(safe_rect.encloses(_canvas_rect(combo_hint)), "Combo controls must remain inside CardSafeArea instead of covering the map at %s." % viewport_size)
+	_expect(safe_rect.encloses(_canvas_rect(group_badge)), "Card group controls must remain inside CardSafeArea instead of covering the map at %s." % viewport_size)
 	_expect(safe_area is ColorRect and is_equal_approx((safe_area as ColorRect).color.a, 1.0), "Card safe-area background must remain opaque at %s." % viewport_size)
 	_expect(
 		_effective_z_index(safe_area) < _effective_z_index(hud),
@@ -92,9 +102,14 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	)
 	_expect(not redraw_button.disabled, "Full AP must leave the authored redraw control usable at %s." % viewport_size)
 
-	var buttons := card_fan.get_children()
-	_expect(buttons.size() == 4, "CardFan must contain exactly four visible cards at %s." % viewport_size)
+	var buttons: Array[Node] = []
+	buttons.append_array(front_row.get_children())
+	buttons.append_array(back_row.get_children())
+	_expect(front_row.get_child_count() == 4, "FrontRow must contain the active four-card group at %s." % viewport_size)
+	_expect(back_row.get_child_count() == 4, "BackRow must contain the inactive four-card group at %s." % viewport_size)
+	_expect(buttons.size() == 8, "The two authored rows must contain all eight cards at %s." % viewport_size)
 	var union_rect := Rect2()
+	var active_union_rect := Rect2()
 	for index in buttons.size():
 		var button := buttons[index] as Control
 		_expect(button != null, "CardFan children must be Controls.")
@@ -102,18 +117,26 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 			continue
 		var card_rect := _canvas_rect(button)
 		union_rect = card_rect if index == 0 else union_rect.merge(card_rect)
+		if button.get_parent() == front_row:
+			active_union_rect = card_rect if index == 0 else active_union_rect.merge(card_rect)
 		_expect(_inside_viewport(card_rect, viewport_size), "Resting card %d must be fully visible at %s." % [index, viewport_size])
 		_expect(safe_rect.encloses(card_rect), "Resting card %d must remain in CardSafeArea at %s." % [index, viewport_size])
+		if button.get_parent() == front_row:
+			_expect(
+				_effective_z_index(button) >= _effective_z_index(hud),
+				"Active card content must remain at or above the HUD content layer at %s." % viewport_size
+			)
 		_expect(
-			_effective_z_index(button) >= _effective_z_index(hud),
-			"Card content must remain at or above the HUD content layer at %s." % viewport_size
+			button.mouse_filter
+			== (Control.MOUSE_FILTER_STOP if button.get_parent() == front_row else Control.MOUSE_FILTER_IGNORE),
+			"Only the active card group may receive pointer input for card %d at %s."
+			% [index, viewport_size]
 		)
-		_expect(button.mouse_filter == Control.MOUSE_FILTER_STOP, "Card %d must remain interactive at %s." % [index, viewport_size])
-	_expect(absf(union_rect.get_center().x - float(viewport_size.x) * 0.5) <= 4.0, "Four-card hand must remain centered at %s." % viewport_size)
+	_expect(absf(active_union_rect.get_center().x - float(viewport_size.x) * 0.5) <= 4.0, "Active four-card group must remain centered at %s." % viewport_size)
 
-	var status_rect := _canvas_rect(hud.get_node("HUDStatus") as Control)
-	var quest_rect := _canvas_rect(hud.get_node("HUDQuestTracker") as Control)
-	var progress_rect := _canvas_rect(hud.get_node("HUDProgressPanel") as Control)
+	var status_rect := _canvas_rect(hud.get_node("BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus") as Control)
+	var quest_rect := _canvas_rect(hud.get_node("BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy/HUDQuestTracker") as Control)
+	var progress_rect := _canvas_rect(hud.get_node("BottomHUD/HUDGrid/ProgressColumn/ProgressCenter/ProgressProxy/HUDProgressPanel") as Control)
 	_expect(_inside_viewport(status_rect, viewport_size), "HUD status must remain inside %s." % viewport_size)
 	_expect(_inside_viewport(quest_rect, viewport_size), "HUD quest tracker must remain inside %s." % viewport_size)
 	_expect(_inside_viewport(progress_rect, viewport_size), "HUD progress panel must remain inside %s." % viewport_size)
@@ -145,7 +168,7 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 			)
 
 	var redraw_rect := _canvas_rect(redraw_button)
-	for index in buttons.size():
+	for index in 4:
 		card_hand.call("preview_card_hover", index, true)
 		var hover_rect := _canvas_rect(buttons[index] as Control)
 		_expect(_inside_viewport(hover_rect, viewport_size), "Hovered card %d must remain inside %s." % [index, viewport_size])
@@ -200,6 +223,10 @@ func _sample_cards() -> Array[Dictionary]:
 		{"name": "Guard", "type": "defense", "description": "Gain 12 block.", "cost": 1, "level": 1},
 		{"name": "Quickstep", "type": "skill", "description": "Dash through danger.", "cost": 1, "level": 1},
 		{"name": "Cleave", "type": "attack", "description": "Strike enemies in an arc.", "cost": 2, "level": 1},
+		{"name": "Flame Infusion", "type": "power", "description": "Future attacks gain flame.", "cost": 2, "level": 1},
+		{"name": "Frost Burst", "type": "power", "description": "Future attacks gain frost.", "cost": 2, "level": 1},
+		{"name": "Healing Light", "type": "skill", "description": "Restore health over time.", "cost": 2, "level": 1},
+		{"name": "Meteor", "type": "ultimate", "description": "Call down a devastating meteor.", "cost": 5, "level": 1},
 	]
 
 

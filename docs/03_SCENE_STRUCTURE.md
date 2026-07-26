@@ -76,7 +76,7 @@ scenes/
 - Script：snake_case，例如 `player_controller.gd`。
 - Node：描述責任，例如 `PlayerSpawn`、`WorldCollision`、`InteractionArea`。
 - Map authoritative entry：沿用current naming：
-  `TownMap.tscn`、`AutumnTreeMap.tscn`、`*Layout.tscn`。
+  `TownMap.tscn`、`AutumnBattleMapV2.tscn`、`*Layout.tscn`。
 - Editor-only helper：`EditorHUDReference`、`EditorHelpers`，不得取模糊名稱。
 - 禁止：`new_scene.tscn`、`temp.tscn`、`test2.tscn`、`final_final.tscn`。
 
@@ -144,7 +144,7 @@ Current map identity：
 | Canonical content | Authoritative editor/runtime |
 |---|---|
 | `res://scenes/maps/town.tscn` | `res://scenes/maps/town/TownMap.tscn` |
-| `res://scenes/maps/autumn_forest.tscn` | `res://scenes/maps/autumn_tree/AutumnTreeMap.tscn` |
+| `res://scenes/maps/autumn_forest.tscn` | `res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn` |
 | `res://scenes/maps/crystal_caves.tscn` | `res://scenes/maps/layouts/CrystalCavesLayout.tscn` |
 | `res://scenes/maps/forbidden_graveyard.tscn` | `res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn` |
 
@@ -181,10 +181,10 @@ Town canonical scene另有：
 
 ### 5.3 Autumn required contract
 
-`res://scenes/maps/autumn_tree/AutumnTreeMap.tscn`：
+`res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn`：
 
 ```text
-AutumnTreeMap
+AutumnBattleMapV2
 ├── Background / RearSilhouettes / Architecture
 ├── Ground / Platforms / SetDressing
 ├── PlayerSpawn
@@ -666,7 +666,7 @@ InventoryUI (Control)
 
 ```text
 Game/MapRoot
-└── AutumnTreeMap
+└── AutumnBattleMapV2
     ├── world-authored nodes
     ├── Player
     ├── AutumnRunDirector

@@ -8,8 +8,8 @@ const LAYOUTS := [
 	},
 	{
 		"canonical": "res://scenes/maps/autumn_forest.tscn",
-		"layout": "res://scenes/maps/autumn_tree/AutumnTreeMap.tscn",
-		"root": "AutumnTreeMap",
+		"layout": "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn",
+		"root": "AutumnBattleMapV2",
 	},
 	{
 		"canonical": "res://scenes/maps/crystal_caves.tscn",
@@ -48,6 +48,10 @@ func _init() -> void:
 
 
 func _run() -> void:
+	_expect(
+		not ResourceLoader.exists("res://scenes/maps/layouts/AutumnForestLayout.tscn"),
+		"Obsolete AutumnForestLayout must not compete with the authoritative AutumnBattleMapV2 scene."
+	)
 	var map_root_layouts: Dictionary = {}
 	for spec in LAYOUTS:
 		var layout_path := String(spec["layout"])

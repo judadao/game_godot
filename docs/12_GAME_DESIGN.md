@@ -93,7 +93,7 @@ Town
 4. 建立新的 `RunState`；
 5. 建立抽牌堆、手牌、棄牌堆與消耗牌堆；
 6. 洗牌後確保 `ember_bolt` 在起始手牌；
-7. 載入 `scenes/maps/autumn_tree/AutumnTreeMap.tscn`。
+7. 載入 `scenes/maps/autumn_battle/AutumnBattleMapV2.tscn`。
 
 ### 2.3 Run 的結束
 
@@ -115,7 +115,7 @@ Guardian 死亡本身不是最終結算點；目前成功是在玩家使用 forw
 |---|---|---|
 | Game entry | `res://scenes/game/game.tscn` | 已實作 |
 | Town | `res://scenes/maps/town/TownMap.tscn` | Hub gameplay |
-| Autumn | `res://scenes/maps/autumn_tree/AutumnTreeMap.tscn` | 完整 survival vertical slice |
+| Autumn | `res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn` | 完整 survival vertical slice |
 | Crystal Caves | `res://scenes/maps/layouts/CrystalCavesLayout.tscn` | Layout only |
 | Forbidden Graveyard | `res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn` | Layout only |
 
@@ -301,7 +301,7 @@ Guardian 死亡後：
 - `discard_pile`；
 - `exhaust_pile`。
 
-手牌容量為 8，但不足 8 張的 deck 不會憑空補牌。UI 一次顯示最多 4 張，透過兩個 card group 切換。打出一般卡後進入 discard；combo type 卡進入 exhaust。
+手牌容量為 8，但不足 8 張的 deck 不會憑空補牌。戰鬥 UI 的底部 25% 會同時完整顯示兩組、每組最多 4 張：目前組位於 `FrontRow` 並由 Q/W/E/R 使用，另一組位於 `BackRow`；A/S 可快速切換目前組。第一組第一格固定保留普攻卡 `ember_bolt`。打出一般卡後進入 discard；combo type 卡進入 exhaust。
 
 `ember_bolt` 是 protected card：
 
@@ -648,7 +648,7 @@ UI 顯示不得宣告 backend 尚未提供的能力。
 ```text
 Game (Node)                         scenes/game/game.tscn
 ├── MapRoot (Node)
-│   └── AutumnTreeMap (Node2D)      runtime instance
+│   └── AutumnBattleMapV2 (Node2D)  runtime instance
 │       ├── PlayerSpawn (Marker2D)
 │       ├── Player (CharacterBody2D)
 │       ├── AutumnRunDirector (Node2D)
@@ -740,6 +740,46 @@ func _on_survival_phase_time_changed(
 ```
 
 這是 Godot 4 signal 語法示例；實際專案由 `Game` 的既有 wiring method 管理連接。
+
+### Fixed basic attack and Dash progression
+
+Every normalized expedition deck begins with exactly one `ember_bolt` and one
+`quickstep`. They occupy Q and W, count inside the maximum of 16 cards, remain
+in hand after use, and survive redraw/end-turn cycling. Neither card can be
+added as a reward, discarded, exhausted, purged, merged, evolved, or upgraded
+by experience.
+
+Their progression is equipment-only:
+
+- weapon card-damage bonuses improve `ember_bolt`;
+- `quickstep` costs 1 AP, moves 120 pixels, grants 0.2 seconds of evasion, and
+  does not draw cards;
+- defeating the Heartwood Guardian permanently sets
+  `dash_upgrade_unlocked`;
+- before that flag, Dash-special equipment cannot upgrade or apply its Dash
+  bonuses;
+- after unlock, Swift Ring adds Dash distance and evasion time.
+
+The eight-card hand remains two groups of four. Q/W/E/R play the active group,
+while A, S, LT, and RT each toggle to the other group.
+
+### Timed Combo windows
+
+Combo effect cards exhaust after play and add one independently timed effect
+stack. The base window is six real-time seconds. Fast play can therefore keep
+several stacks active at once; when an older stack expires, only that stack is
+removed and the displayed level falls accordingly. Four distinct Combo types
+and three stacks per type remain the limits. Evolved Combo effects inherit the
+longest remaining time from their consumed ingredients.
+
+The HUD shows the longest remaining Combo timer. Equipment special effects may
+modify this loop through:
+
+- `combo_cost_reduction`, applied to Combo cards with a minimum cost of 1 AP;
+- `combo_duration_bonus`, added when each new timed stack is created.
+
+Focus Amulet currently provides `-1 Combo AP` and `+2 seconds`. Countdown uses
+real time even during tactical slowdown, so slowdown cannot extend the window.
 
 ## 16. Best Practice
 
@@ -846,3 +886,19 @@ Future Extension 不等於承諾，不代表已排期，也不可用來填補現
 - `docs/rule_1.md`
 - `docs/rule_2.md`
 - `.superpowers/sdd/2026-07-25-project-governance/gameplay-testing-audit.md`
+
+## 23. Autumn Battle V2 Presentation Contract
+
+Autumn Battle V2 reserves the upper 75% of the viewport for world play and the
+lower 25% for combat information. The lower HUD presents character status, AP,
+two groups of four cards, group-switch guidance, objective and Combo state, and
+economy information without covering gameplay.
+
+Q/W/E/R play the current four-card group. A/S and LT/RT switch between the two
+groups; the inactive group remains visible but dimmed and locked. The first
+slot of the first group remains the protected basic attack defined by the deck
+rules.
+
+Autumn interactions use a compact F prompt attached to the current world
+object. It follows the object and clamps above the HUD boundary so merchants,
+caches, portals, and events do not create a second competing bottom overlay.

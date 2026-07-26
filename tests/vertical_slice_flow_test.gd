@@ -33,8 +33,8 @@ func _run() -> void:
 		await process_frame
 		await process_frame
 	_expect(
-		game.get("current_map").scene_file_path == "res://scenes/maps/autumn_tree/AutumnTreeMap.tscn",
-		"Town portal must enter the authoritative Autumn Tree main scene."
+		game.get("current_map").scene_file_path == "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn",
+		"Town portal must enter the authoritative Autumn Battle V2 scene."
 	)
 	var run := game.get("run_state") as RunState
 	_expect(run.active, "Entering Autumn Forest must start transient run state.")
@@ -60,10 +60,10 @@ func _run() -> void:
 	game.call("_process", 2.0)
 	_expect(deck.energy >= 1.29 and not deck.hand.is_empty(), "AP must recover over time so the run cannot deadlock.")
 
-	run.temporary_buffs["passives"] = ["ember_core"]
-	game.call("_apply_level_up_choice", {"kind": "upgrade_card", "card_id": "ember_bolt"})
-	game.call("_apply_level_up_choice", {"kind": "upgrade_card", "card_id": "ember_bolt"})
-	_expect(run.card_levels.has("inferno_orb"), "Run card growth must produce an Evolution.")
+	run.temporary_buffs["passives"] = ["wind_feather"]
+	game.call("_apply_level_up_choice", {"kind": "upgrade_card", "card_id": "dash_strike"})
+	game.call("_apply_level_up_choice", {"kind": "upgrade_card", "card_id": "dash_strike"})
+	_expect(run.card_levels.has("gale_lunge"), "Ordinary run-card growth must produce an Evolution.")
 
 	for _phase in 4:
 		director.call("advance_survival", 999.0)
@@ -79,6 +79,7 @@ func _run() -> void:
 	await process_frame
 	_expect(not bool(director.get("_running")), "Defeating the boss must stop survival spawning.")
 	_expect((game.get("meta_state") as MetaState).boss_defeated, "Boss victory must become permanent progress.")
+	_expect((game.get("meta_state") as MetaState).dash_upgrade_unlocked, "Heartwood Guardian victory must unlock Dash equipment growth.")
 	_expect(
 		int((game.get("meta_state") as MetaState).resources.get("autumn_core", 0)) >= 1,
 		"Boss victory must award an Autumn Core."
@@ -110,7 +111,7 @@ func _run() -> void:
 	var permanent_gold_before := int((game.get("meta_state") as MetaState).resources.get("gold", 0))
 	game.call("_begin_autumn_run")
 	run.gold_earned = 11
-	var forest := load("res://scenes/maps/autumn_forest.tscn") as PackedScene
+	var forest := load("res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn") as PackedScene
 	game.call("load_current_map", forest)
 	await process_frame
 	await game.call("_on_player_defeated")

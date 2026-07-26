@@ -6,14 +6,11 @@ signal card_selected(index: int)
 signal redraw_requested
 signal group_changed(group_index: int)
 
-const CARD_SIZE := Vector2(132.0, 168.0)
+const CARD_SIZE := Vector2(82.0, 78.0)
 const RESTING_VISIBLE_HEIGHT := CARD_SIZE.y
-const CARD_BOTTOM_MARGIN := 10.0
-const HOVER_RISE := 75.0
+const BACK_ROW_SCALE := Vector2(0.92, 0.92)
+const HOVER_RISE := 10.0
 const HOVER_SCALE := Vector2(1.08, 1.08)
-const HOVER_SIDE_INSET := 6.0
-const MAX_HAND_SPAN := 520.0
-const MAX_CARD_SPACING := 104.0
 const SHORTCUT_LABELS := ["Q", "W", "E", "R"]
 const CARDS_PER_GROUP := 4
 
@@ -25,13 +22,14 @@ var _energy := 0.0
 var _max_energy := 5.0
 var _active_group := 0
 
-@onready var _card_fan: Control = $CardSafeArea/BottomMargin/BottomRow/HandSlot/CardFan
-@onready var _energy_label: Label = $CardSafeArea/BottomMargin/BottomRow/LeftSlot/LeftControls/EnergyBadge
-@onready var _combo_label: Label = $CardSafeArea/BottomMargin/BottomRow/RightSlot/ComboHint
+@onready var _back_row: HBoxContainer = $CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows/BackRow
+@onready var _front_row: HBoxContainer = $CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows/FrontRow
+@onready var _energy_label: Label = $CardSafeArea/BottomMargin/BottomRow/APSlot/APControls/EnergyBadge
+@onready var _combo_label: Label = find_child("ComboHint", true, false) as Label
 @onready var _boss_label: Label = $BossCenter/BossStack/BossName
 @onready var _boss_bar: ProgressBar = $BossCenter/BossStack/BossHealth
-@onready var _redraw_button: Button = $CardSafeArea/BottomMargin/BottomRow/LeftSlot/LeftControls/RedrawHand
-@onready var _group_label: Label = $CardGroupCenter/CardGroupBadge
+@onready var _redraw_button: Button = $CardSafeArea/BottomMargin/BottomRow/APSlot/APControls/RedrawHand
+@onready var _group_label: Label = find_child("CardGroupBadge", true, false) as Label
 
 
 func _ready() -> void:
@@ -48,12 +46,8 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible or not event.is_pressed() or event.is_echo():
 		return
-	if event.is_action_pressed("card_group_1"):
-		set_active_group(0)
-		get_viewport().set_input_as_handled()
-		return
-	if event.is_action_pressed("card_group_2"):
-		set_active_group(1)
+	if event.is_action_pressed("card_group_1") or event.is_action_pressed("card_group_2"):
+		toggle_active_group()
 		get_viewport().set_input_as_handled()
 		return
 	var group_start := _active_group * CARDS_PER_GROUP
@@ -83,7 +77,7 @@ func set_action_points(current: float, maximum: float) -> void:
 		return
 	_update_ap_display()
 	for index in _buttons.size():
-		var global_index := get_visible_card_global_index(index)
+		var global_index := int(_buttons[index].get_meta("global_card_index", index))
 		_buttons[index].disabled = global_index >= _cards.size() or float(_cards[global_index].get("cost", 0)) > _energy
 
 
@@ -103,6 +97,12 @@ func set_active_group(group_index: int) -> void:
 	group_changed.emit(_active_group)
 
 
+func toggle_active_group() -> void:
+	if get_group_count() <= 1:
+		return
+	set_active_group((_active_group + 1) % get_group_count())
+
+
 func get_active_group() -> int:
 	return _active_group
 
@@ -117,6 +117,10 @@ func get_visible_card_global_index(local_index: int) -> int:
 
 func get_card_button_count() -> int:
 	return _buttons.size()
+
+
+func get_card_button(index: int) -> Button:
+	return _buttons[index] if index >= 0 and index < _buttons.size() else null
 
 
 func get_shortcut_label(index: int) -> String:
@@ -135,8 +139,12 @@ func get_card_layout(index: int) -> Dictionary:
 	if index < 0 or index >= _buttons.size():
 		return {}
 	var button := _buttons[index]
+	var parent_item := button.get_parent() as CanvasItem
+	var layout_position := get_global_transform_with_canvas().affine_inverse() * (
+		parent_item.get_global_transform_with_canvas() * button.position
+	)
 	return {
-		"position": get_global_transform().affine_inverse() * button.get_global_position(),
+		"position": layout_position,
 		"scale": button.scale,
 		"rotation": button.rotation,
 		"z_index": button.z_index,
@@ -189,46 +197,52 @@ func _refresh() -> void:
 	_card_tweens.clear()
 	for button in _buttons:
 		if is_instance_valid(button):
+			var parent := button.get_parent()
+			if parent != null:
+				parent.remove_child(button)
 			button.queue_free()
 	_buttons.clear()
 	_resting_layouts.clear()
 	_update_ap_display()
 
-	var group_start := _active_group * CARDS_PER_GROUP
-	var group_end := mini(_cards.size(), group_start + CARDS_PER_GROUP)
-	for global_index in range(group_start, group_end):
+	var visible_card_count := mini(_cards.size(), CARDS_PER_GROUP * 2)
+	for global_index in visible_card_count:
 		var card := _cards[global_index]
-		var local_index := global_index - group_start
+		var local_index := global_index % CARDS_PER_GROUP
 		var button := _build_card_button(card, local_index, global_index)
-		_card_fan.add_child(button)
+		var group_index := global_index / CARDS_PER_GROUP
+		var target_row := _front_row if group_index == _active_group else _back_row
+		target_row.add_child(button)
 		_buttons.append(button)
-	_group_label.text = "A / LT  GROUP  %d / %d  S / RT" % [_active_group + 1, get_group_count()]
-	_layout_cards()
+	_group_label.text = "A / S / LT / RT  TOGGLE  %d / %d" % [_active_group + 1, get_group_count()]
+	_capture_after_container_sort()
 
 
 func _build_card_button(card: Dictionary, local_index: int, global_index: int) -> Button:
 	var button := Button.new()
 	button.name = "Card_%d" % global_index
-	button.size = CARD_SIZE
 	button.custom_minimum_size = CARD_SIZE
+	button.size_flags_horizontal = Control.SIZE_FILL
+	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	button.size_flags_stretch_ratio = 1.0
 	button.pivot_offset = CARD_SIZE * 0.5
 	button.mouse_filter = Control.MOUSE_FILTER_STOP
 	button.focus_mode = Control.FOCUS_ALL
+	button.set_meta("global_card_index", global_index)
 	button.clip_text = true
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var card_type := String(card.get("type", "card")).to_upper()
 	var level := maxi(1, int(card.get("level", 1)))
-	button.text = "%s    %s\n%s  •  LV.%d\n\n%s\n\nCOST  %d" % [
+	button.text = "%s  %s\n%s · LV.%d · AP %d" % [
 		get_shortcut_label(local_index),
 		String(card.get("name", "Card")),
 		card_type,
 		level,
-		String(card.get("description", "")),
 		int(card.get("cost", 0)),
 	]
 	button.tooltip_text = String(card.get("description", ""))
 	button.disabled = float(card.get("cost", 0)) > _energy
-	button.add_theme_font_size_override("font_size", 11)
+	button.add_theme_font_size_override("font_size", 9)
 	button.add_theme_color_override("font_color", Color(0.96, 0.90, 0.75))
 	button.add_theme_color_override("font_hover_color", Color.WHITE)
 	button.add_theme_color_override("font_disabled_color", Color(0.58, 0.55, 0.51, 0.72))
@@ -243,38 +257,41 @@ func _build_card_button(card: Dictionary, local_index: int, global_index: int) -
 		button.expand_icon = true
 		button.add_theme_constant_override("icon_max_width", 28)
 	button.pressed.connect(select_card.bind(global_index))
-	button.mouse_entered.connect(_set_card_hover.bind(local_index, true, true))
-	button.mouse_exited.connect(_set_card_hover.bind(local_index, false, true))
+	button.mouse_entered.connect(_set_card_hover.bind(global_index, true, true))
+	button.mouse_exited.connect(_set_card_hover.bind(global_index, false, true))
+	button.resized.connect(_center_card_pivot.bind(button))
 	return button
 
 
-func _layout_cards() -> void:
-	if _card_fan == null or not is_inside_tree():
+func _capture_resting_layouts() -> void:
+	if not is_inside_tree():
 		return
-	var count := _buttons.size()
-	var spacing := 0.0
-	if count > 1:
-		var available_spacing := maxf(
-			0.0,
-			(_card_fan.size.x - CARD_SIZE.x - HOVER_SIDE_INSET * 2.0) / float(count - 1)
-		)
-		spacing = minf(MAX_CARD_SPACING, minf(MAX_HAND_SPAN / float(count - 1), available_spacing))
-	var base_y := maxf(0.0, _card_fan.size.y - CARD_SIZE.y - CARD_BOTTOM_MARGIN)
 	_resting_layouts.clear()
-	for index in count:
-		var center_offset := float(index) - float(count - 1) * 0.5
-		var edge_drop := absf(center_offset) * 4.0
+	for index in _buttons.size():
+		var button := _buttons[index]
+		var global_index := int(button.get_meta("global_card_index", index))
+		var group_index := floori(float(global_index) / float(CARDS_PER_GROUP))
+		var local_index := global_index % CARDS_PER_GROUP
+		var is_active := group_index == _active_group
 		var resting := {
-			"position": Vector2(
-				_card_fan.size.x * 0.5 + center_offset * spacing - CARD_SIZE.x * 0.5,
-				base_y + edge_drop
-			),
-			"rotation": deg_to_rad(clampf(center_offset * 2.0, -6.0, 6.0)),
-			"scale": Vector2.ONE,
-			"z_index": index,
+			"position": button.position,
+			"rotation": 0.0,
+			"scale": Vector2.ONE if is_active else BACK_ROW_SCALE,
+			"z_index": 100 + local_index if is_active else local_index,
 		}
 		_resting_layouts.append(resting)
-		_apply_card_layout(_buttons[index], resting)
+		button.mouse_filter = Control.MOUSE_FILTER_STOP if is_active else Control.MOUSE_FILTER_IGNORE
+		button.focus_mode = Control.FOCUS_ALL if is_active else Control.FOCUS_NONE
+		_apply_card_layout(button, resting)
+
+
+func _capture_after_container_sort() -> void:
+	await get_tree().process_frame
+	_capture_resting_layouts()
+
+
+func _center_card_pivot(button: Button) -> void:
+	button.pivot_offset = button.size * 0.5
 
 
 func _set_card_hover(index: int, hovered: bool, animate: bool = true) -> void:
@@ -282,12 +299,15 @@ func _set_card_hover(index: int, hovered: bool, animate: bool = true) -> void:
 		return
 	var button := _buttons[index]
 	var resting := _resting_layouts[index]
+	var global_index := int(button.get_meta("global_card_index", index))
+	if floori(float(global_index) / float(CARDS_PER_GROUP)) != _active_group:
+		return
 	var target := resting.duplicate(true)
 	if hovered:
 		target["position"] = (resting["position"] as Vector2) + Vector2(0, -HOVER_RISE)
 		target["rotation"] = 0.0
 		target["scale"] = HOVER_SCALE
-		target["z_index"] = 100 + index
+		target["z_index"] = 300 + index
 	var instance_id := button.get_instance_id()
 	var existing: Variant = _card_tweens.get(instance_id)
 	if existing is Tween and (existing as Tween).is_valid():
@@ -314,7 +334,7 @@ func _apply_card_layout(button: Button, layout: Dictionary) -> void:
 
 
 func _on_viewport_size_changed() -> void:
-	_layout_cards()
+	_capture_after_container_sort()
 
 
 func _update_ap_display() -> void:
@@ -336,21 +356,25 @@ func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color_by_type.get(card_type, Color(0.12, 0.075, 0.045, 0.96))
 	style.border_color = Color(1.0, 0.76, 0.30, 1.0) if hovered else Color(0.69, 0.43, 0.18, 0.95)
-	style.set_border_width_all(4 if hovered else 3)
-	style.set_corner_radius_all(12)
-	style.content_margin_left = 9.0
-	style.content_margin_top = 9.0
-	style.content_margin_right = 9.0
-	style.content_margin_bottom = 8.0
+	style.set_border_width_all(3 if hovered else 2)
+	style.set_corner_radius_all(8)
+	style.content_margin_left = 4.0
+	style.content_margin_top = 4.0
+	style.content_margin_right = 4.0
+	style.content_margin_bottom = 4.0
 	style.shadow_color = Color(0.0, 0.0, 0.0, 0.55)
-	style.shadow_size = 8 if hovered else 4
+	style.shadow_size = 4 if hovered else 2
 	return style
 
 
 func _editor_sample_cards() -> Array[Dictionary]:
 	return [
-		{"name": "Ember Bolt", "type": "attack", "description": "Deal 12 damage and apply burn.", "cost": 1, "level": 1},
-		{"name": "Guard", "type": "defense", "description": "Gain 12 block.", "cost": 1, "level": 1},
-		{"name": "Quickstep", "type": "skill", "description": "Dash through danger.", "cost": 1, "level": 1},
-		{"name": "Cleave", "type": "attack", "description": "Strike enemies in an arc.", "cost": 2, "level": 1},
+		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal 12 damage and apply burn.", "cost": 1, "level": 1, "fixed": true},
+		{"id": "quickstep", "name": "Quickstep", "type": "skill", "description": "Dash through danger.", "cost": 1, "level": 1, "fixed": true},
+		{"id": "guard", "name": "Guard", "type": "defense", "description": "Gain 12 block.", "cost": 1, "level": 1},
+		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Strike enemies in an arc.", "cost": 2, "level": 1},
+		{"id": "flame_infusion", "name": "Flame Infusion", "type": "power", "description": "Future attacks gain flame.", "cost": 2, "level": 1},
+		{"id": "frost_burst", "name": "Frost Burst", "type": "power", "description": "Future attacks gain frost.", "cost": 2, "level": 1},
+		{"id": "healing_light", "name": "Healing Light", "type": "skill", "description": "Restore health over time.", "cost": 2, "level": 1},
+		{"id": "meteor", "name": "Meteor", "type": "ultimate", "description": "Call down a devastating meteor.", "cost": 5, "level": 1},
 	]

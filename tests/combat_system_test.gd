@@ -8,7 +8,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var map := (load("res://scenes/maps/autumn_forest.tscn") as PackedScene).instantiate()
+	var map := (load("res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn") as PackedScene).instantiate()
 	root.add_child(map)
 	await process_frame
 	await physics_frame
@@ -20,28 +20,25 @@ func _run() -> void:
 	_expect(player.is_in_group("Player"), "Player must be discoverable by combat AI.")
 	_expect((zone.get_active_enemies() as Array).size() >= 3, "Survival battle must open with an initial enemy group and continue replenishing it.")
 	var floor_collision := map.get_node("WorldCollision/FloorCollision") as CollisionShape2D
-	var west_ledge := map.get_node("WorldCollision/WestLowCollision") as CollisionShape2D
-	var west_high := map.get_node("WorldCollision/WestHighCollision") as CollisionShape2D
-	var arena_low := map.get_node("WorldCollision/ArenaLowCollision") as CollisionShape2D
-	var arena_high := map.get_node("WorldCollision/ArenaHighCollision") as CollisionShape2D
-	var east_mid := map.get_node("WorldCollision/EastMidCollision") as CollisionShape2D
-	var floor_top := floor_collision.position.y - 30.0
-	var west_top := west_ledge.position.y - 12.0
-	var west_high_top := west_high.position.y - 9.0
-	var arena_low_top := arena_low.position.y - 9.0
-	var arena_high_top := arena_high.position.y - 9.0
-	var east_mid_top := east_mid.position.y - 9.0
-	var bridge_ledge := map.get_node("WorldCollision/EastBridgeCollision") as CollisionShape2D
-	var bridge_top := bridge_ledge.position.y - 12.0
+	var event_ledge := map.get_node("WorldCollision/EventLookoutCollision") as CollisionShape2D
+	var arena_west := map.get_node("WorldCollision/ArenaWestCollision") as CollisionShape2D
+	var arena_bridge := map.get_node("WorldCollision/ArenaCenterBridgeCollision") as CollisionShape2D
+	var arena_east := map.get_node("WorldCollision/ArenaEastCollision") as CollisionShape2D
+	var merchant_ledge := map.get_node("WorldCollision/MerchantAwningCollision") as CollisionShape2D
+	var floor_top := _shape_top(floor_collision)
+	var event_top := _shape_top(event_ledge)
+	var arena_west_top := _shape_top(arena_west)
+	var arena_bridge_top := _shape_top(arena_bridge)
+	var arena_east_top := _shape_top(arena_east)
+	var merchant_top := _shape_top(merchant_ledge)
 	var maximum_jump_height := pow(float(player.get("jump_velocity")), 2.0) / (2.0 * float(player.get("gravity")))
-	_expect(floor_top - west_top < maximum_jump_height, "First forest platform must be reachable from ground.")
-	_expect(west_top - west_high_top < maximum_jump_height, "West high platform must be reachable from west low.")
-	_expect(floor_top - arena_low_top < maximum_jump_height, "Arena low platform must be reachable from ground.")
-	_expect(arena_low_top - arena_high_top < maximum_jump_height, "Arena high platform must be reachable from arena low.")
-	_expect(floor_top - east_mid_top < maximum_jump_height, "East middle platform must be reachable from ground.")
-	_expect(floor_top - bridge_top < maximum_jump_height, "Bridge platform must be reachable from ground.")
-	_expect(west_ledge.one_way_collision, "First forest platform must allow jumping through from below.")
-	_expect(west_high.one_way_collision and arena_high.one_way_collision, "High platforms must be one-way.")
+	_expect(floor_top - event_top < maximum_jump_height, "Event lookout must be reachable from ground.")
+	_expect(floor_top - arena_west_top < maximum_jump_height, "Arena west platform must be reachable from ground.")
+	_expect(arena_west_top - arena_bridge_top < maximum_jump_height, "Arena bridge must be reachable from the west platform.")
+	_expect(floor_top - arena_east_top < maximum_jump_height, "Arena east platform must be reachable from ground.")
+	_expect(floor_top - merchant_top < maximum_jump_height, "Merchant platform must be reachable from ground.")
+	_expect(event_ledge.one_way_collision, "Event lookout must allow jumping through from below.")
+	_expect(arena_bridge.one_way_collision and merchant_ledge.one_way_collision, "Raised platforms must be one-way.")
 	_expect(map.get_node_or_null("Barriers") == null, "Forest must not contain invisible barrier bodies.")
 	_expect(map.get_node_or_null("Collectibles") == null, "Legacy floating collectible art must be removed.")
 
@@ -69,3 +66,8 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _shape_top(collision: CollisionShape2D) -> float:
+	var rectangle := collision.shape as RectangleShape2D
+	return collision.position.y - rectangle.size.y * 0.5

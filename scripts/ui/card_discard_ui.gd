@@ -5,7 +5,7 @@ signal discard_confirmed(indices: Array[int])
 
 var _cards: Array[Dictionary] = []
 var _required_count := 0
-var _protected_index := -1
+var _protected_indices: Array[int] = []
 var _selected: Array[int] = []
 var _buttons: Array[Button] = []
 var _status: Label
@@ -19,24 +19,33 @@ func _ready() -> void:
 	_build_layout()
 
 
-func configure(cards: Array, required_count: int, protected_card_id: String = "") -> void:
+func configure(cards: Array, required_count: int, protected_card_ids: Variant = []) -> void:
 	_cards.clear()
 	for card_variant in cards:
 		if card_variant is Dictionary:
 			_cards.append((card_variant as Dictionary).duplicate(true))
 	_required_count = maxi(0, required_count)
-	_protected_index = -1
+	var protected_lookup: Dictionary = {}
+	if protected_card_ids is String:
+		protected_lookup[String(protected_card_ids)] = true
+	elif protected_card_ids is Array:
+		for card_id in protected_card_ids:
+			protected_lookup[String(card_id)] = true
+	_protected_indices.clear()
 	for index in _cards.size():
-		if String(_cards[index].get("id", "")) == protected_card_id:
-			_protected_index = index
-			break
+		if protected_lookup.has(String(_cards[index].get("id", ""))):
+			_protected_indices.append(index)
 	_selected.clear()
 	if is_node_ready():
 		_rebuild_cards()
 
 
 func get_protected_index() -> int:
-	return _protected_index
+	return _protected_indices[0] if not _protected_indices.is_empty() else -1
+
+
+func get_protected_indices() -> Array[int]:
+	return _protected_indices.duplicate()
 
 
 func get_selected_indices() -> Array[int]:
@@ -91,10 +100,10 @@ func _rebuild_cards() -> void:
 		button.toggle_mode = true
 		button.text = "%s\n%s  AP %d" % [
 			String(card.get("name", "Card")),
-			"FIXED BASIC" if index == _protected_index else String(card.get("type", "")).to_upper(),
+			"FIXED CARD" if _protected_indices.has(index) else String(card.get("type", "")).to_upper(),
 			int(card.get("cost", 0)),
 		]
-		button.disabled = index == _protected_index
+		button.disabled = _protected_indices.has(index)
 		button.toggled.connect(_toggle_card.bind(index))
 		grid.add_child(button)
 		_buttons.append(button)
@@ -102,7 +111,7 @@ func _rebuild_cards() -> void:
 
 
 func _toggle_card(pressed: bool, index: int) -> void:
-	if index == _protected_index:
+	if _protected_indices.has(index):
 		return
 	if pressed:
 		if _selected.size() >= _required_count:
@@ -116,7 +125,7 @@ func _toggle_card(pressed: bool, index: int) -> void:
 
 func _update_status() -> void:
 	if _status != null:
-		_status.text = "Select exactly %d card(s):  %d / %d  (fixed basic attack is protected)" % [
+		_status.text = "Select exactly %d card(s):  %d / %d  (fixed cards are protected)" % [
 			_required_count, _selected.size(), _required_count,
 		]
 	if _confirm != null:

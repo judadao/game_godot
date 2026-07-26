@@ -1,6 +1,7 @@
 extends SceneTree
 
 const PREVIEW_SCENE_PATH := "res://scenes/dev/CombatLayoutPreview.tscn"
+const AUTUMN_MAIN_SCENE_PATH := "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn"
 
 var _failures := 0
 
@@ -21,24 +22,57 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 
-	var map := preview.get_node_or_null("AutumnForest")
+	var map := preview.get_node_or_null("AutumnBattleMapV2")
 	var camera := preview.get_node_or_null("PreviewCamera") as Camera2D
 	var hud := preview.get_node_or_null("HUDLayer/HUD") as Control
 	var hand := preview.get_node_or_null("HUDLayer/CardHandUI") as Control
 	_expect(map != null, "Preview must instance the real autumn forest map.")
+	_expect(
+		map != null and map.scene_file_path == AUTUMN_MAIN_SCENE_PATH,
+		"Preview must use the authoritative AutumnBattleMapV2 scene."
+	)
 	_expect(map != null and map.process_mode == Node.PROCESS_MODE_DISABLED, "Preview map gameplay must remain disabled.")
 	_expect(camera != null and camera.enabled, "Preview must provide an enabled layout camera.")
+	_expect(preview.has_method("_preview_zoom_for_size"), "Preview must expose responsive camera scaling.")
+	if preview.has_method("_preview_zoom_for_size"):
+		_expect(
+			(preview.call("_preview_zoom_for_size", Vector2(1280, 720)) as Vector2).is_equal_approx(Vector2.ONE)
+			and (preview.call("_preview_zoom_for_size", Vector2(2560, 1440)) as Vector2).is_equal_approx(Vector2(2, 2)),
+			"Preview camera must preserve the same world framing from 720p through 1440p."
+		)
 	_expect(hud != null and hud.visible, "Preview must show the real HUD.")
 	_expect(hand != null and hand.visible, "Preview must show the real card hand.")
 	_expect(
-		hand != null and int(hand.call("get_card_button_count")) == 4,
-		"Preview must populate one visible Q/W/E/R card group."
+		hud != null and hand != null and hud.get_index() < hand.get_index(),
+		"Preview must draw HUD before CardHandUI so cards stay above the safe-area background."
+	)
+	_expect(
+		hand != null and int(hand.call("get_card_button_count")) == 8,
+		"Preview must populate two visible four-card groups."
 	)
 	if hud != null:
 		_expect(
-			(hud.get_node("HUDQuestTracker/QuestRows/QuestText") as Label).text == "SURVIVAL PHASE 1",
+			(
+				hud.get_node(
+					"BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy/HUDQuestTracker/QuestRows/QuestText"
+				) as Label
+			).text
+			== "SURVIVAL PHASE 1",
 			"Preview must populate stable sample objective text."
 		)
+	if hud != null and hand != null:
+		var safe_rect := _canvas_rect(hand.get_node("CardSafeArea") as Control)
+		var hud_paths := {
+			"HUDStatus": "BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus",
+			"HUDQuestTracker": "BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy/HUDQuestTracker",
+			"HUDProgressPanel": "BottomHUD/HUDGrid/ProgressColumn/ProgressCenter/ProgressProxy/HUDProgressPanel",
+		}
+		for node_name in hud_paths:
+			var hud_rect := _canvas_rect(hud.get_node(hud_paths[node_name]) as Control)
+			_expect(
+				safe_rect.encloses(hud_rect),
+				"Preview %s must stay inside the bottom UI safe area." % node_name
+			)
 
 	preview.queue_free()
 	await process_frame
@@ -50,3 +84,7 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _canvas_rect(control: Control) -> Rect2:
+	return control.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, control.size)

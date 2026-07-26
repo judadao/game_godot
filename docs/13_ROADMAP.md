@@ -66,7 +66,7 @@ Roadmap item 的建立與關閉依序使用：
 - 進入 Autumn 前有 1–16 張 Deck Builder；
 - protected `ember_bolt` 會進入起始手牌；
 - Autumn 有四個 timed survival phase 與 Guardian phase；
-- 卡牌使用 real-time AP，hand capacity 為 8、UI 分兩組各顯示最多 4 張；
+- 卡牌使用 real-time AP，hand capacity 為 8；UI 在底部 25% 以 Container 雙排完整顯示兩組各最多 4 張，並用 A/S 切換；
 - sequence combo、combo-type infusion 與 card evolution 已存在；
 - ExperienceGem、跨級 XP queue 與 level-up modal 已存在；
 - Campfire accessible UI 為 Rest／Leave；
@@ -520,7 +520,7 @@ Game (Node)
 Performance item 的觀察樹：
 
 ```text
-AutumnTreeMap
+AutumnBattleMapV2
 ├── Player
 ├── AutumnRunDirector
 │   ├── spawned EnemyBase nodes

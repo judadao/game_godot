@@ -128,12 +128,12 @@
       "rarity": "common",
       "level": 1,
       "max_level": 3,
-      "cost": 0,
-      "description": "Dash 120 pixels, gain brief evasion, and draw two extra cards.",
+      "cost": 1,
+      "description": "Dash 120 pixels and gain brief evasion.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0006_Boots.png",
       "tags": ["mobility", "dash"],
       "combo_tags": ["mobility"],
-      "effect": {"kind": "dash", "distance": 120, "evasion_seconds": 0.2, "draw_cards": 2},
+      "effect": {"kind": "dash", "distance": 120, "evasion_seconds": 0.2},
       "upgrade_effects": [
         {"level": 2, "description": "Dash distance increases.", "effect": {"distance": 160}},
         {"level": 3, "description": "Leaves a visible decoy afterimage that draws attacks.", "mechanic_change": "decoy_afterimage", "effect": {"decoy_duration": 1.5}}
@@ -349,11 +349,11 @@
       "level": 1,
       "max_level": 3,
       "cost": 3,
-      "description": "All later attacks gain fire damage and inflict Burn this run.",
+      "description": "For 6 seconds, attacks gain fire damage and inflict Burn.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
       "tags": ["combo", "fire", "infusion"],
       "combo_tags": ["combo", "fire"],
-      "effect": {"kind": "infusion", "infusion_id": "flame", "damage_bonus": 4, "burn_damage": 3, "burn_duration": 3.0},
+      "effect": {"kind": "infusion", "infusion_id": "flame", "combo_duration": 6.0, "damage_bonus": 4, "burn_damage": 3, "burn_duration": 3.0},
       "upgrade_effects": [
         {"level": 2, "description": "Fire bonus increases to six.", "effect": {"damage_bonus": 6}},
         {"level": 3, "description": "Burn lasts five seconds.", "mechanic_change": "wildfire_infusion", "effect": {"burn_duration": 5.0}}
@@ -369,11 +369,11 @@
       "level": 1,
       "max_level": 3,
       "cost": 3,
-      "description": "All later attacks gain frost damage and Slow this run.",
+      "description": "For 6 seconds, attacks gain frost damage and Slow.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png",
       "tags": ["combo", "frost", "infusion"],
       "combo_tags": ["combo", "frost"],
-      "effect": {"kind": "infusion", "infusion_id": "frost", "damage_bonus": 2, "frost_ratio": 0.30, "frost_duration": 2.0},
+      "effect": {"kind": "infusion", "infusion_id": "frost", "combo_duration": 6.0, "damage_bonus": 2, "frost_ratio": 0.30, "frost_duration": 2.0},
       "upgrade_effects": [
         {"level": 2, "description": "Frost bonus increases to four.", "effect": {"damage_bonus": 4}},
         {"level": 3, "description": "Slow becomes stronger.", "mechanic_change": "deep_freeze_infusion", "effect": {"frost_ratio": 0.45}}
@@ -389,11 +389,11 @@
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "description": "Gain a run-long rhythm buff: attacks deal two extra damage.",
+      "description": "For 6 seconds, attacks deal two extra damage.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0005_Gloves.png",
       "tags": ["combo", "buff", "power"],
       "combo_tags": ["combo", "power"],
-      "effect": {"kind": "infusion", "infusion_id": "rhythm", "damage_bonus": 2},
+      "effect": {"kind": "infusion", "infusion_id": "rhythm", "combo_duration": 6.0, "damage_bonus": 2},
       "upgrade_effects": [
         {"level": 2, "description": "Rhythm grants three extra damage.", "effect": {"damage_bonus": 3}},
         {"level": 3, "description": "Rhythm grants four extra damage.", "mechanic_change": "perfect_rhythm", "effect": {"damage_bonus": 4}}
@@ -409,11 +409,11 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "description": "All later Defense cards gain six Block this run.",
+      "description": "For 6 seconds, Defense cards gain six Block.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
       "tags": ["combo", "buff", "armor"],
       "combo_tags": ["combo", "guard"],
-      "effect": {"kind": "infusion", "infusion_id": "stoneguard", "block_bonus": 6},
+      "effect": {"kind": "infusion", "infusion_id": "stoneguard", "combo_duration": 6.0, "block_bonus": 6},
       "upgrade_effects": [
         {"level": 2, "description": "Defense cards gain eight Block.", "effect": {"block_bonus": 8}},
         {"level": 3, "description": "Defense cards gain ten Block.", "mechanic_change": "living_bulwark", "effect": {"block_bonus": 10}}
@@ -429,11 +429,11 @@
       "level": 1,
       "max_level": 3,
       "cost": 3,
-      "description": "Later attacks heal for 15 percent of damage this run.",
+      "description": "For 6 seconds, attacks heal for 15 percent of damage.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0005_Gloves.png",
       "tags": ["combo", "buff", "healing"],
       "combo_tags": ["combo", "support"],
-      "effect": {"kind": "infusion", "infusion_id": "blood_pact", "lifesteal_ratio": 0.15},
+      "effect": {"kind": "infusion", "infusion_id": "blood_pact", "combo_duration": 6.0, "lifesteal_ratio": 0.15},
       "upgrade_effects": [
         {"level": 2, "description": "Lifesteal increases to 20 percent.", "effect": {"lifesteal_ratio": 0.20}},
         {"level": 3, "description": "Lifesteal increases to 25 percent.", "mechanic_change": "crimson_feast", "effect": {"lifesteal_ratio": 0.25}}

@@ -1,0 +1,285 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDStatus.tscn" id="2_status"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDQuestTracker.tscn" id="3_quest"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDProgressPanel.tscn" id="4_progress"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDHotbar.tscn" id="5_hotbar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnInteractionPrompt.tscn" id="6_prompt"]
+
+[sub_resource type="StyleBoxFlat" id="BottomFrame"]
+bg_color = Color(0.014, 0.013, 0.012, 1)
+border_width_top = 2
+border_color = Color(0.32, 0.27, 0.2, 1)
+
+[sub_resource type="StyleBoxFlat" id="GoldPanel"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.045, 0.039, 0.032, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.49, 0.37, 0.2, 0.92)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="ObjectivePanel"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.055, 0.045, 0.034, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.68, 0.47, 0.18, 0.96)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="EconomyPanel"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.035, 0.034, 0.031, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.55, 0.39, 0.18, 0.94)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="AreaStyle"]
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+bg_color = Color(0.04, 0.035, 0.03, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.58, 0.42, 0.2, 0.82)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="BottomHUD" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 9
+anchor_top = 0.75
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Backdrop" type="Panel" parent="BottomHUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BottomFrame")
+
+[node name="HUDGrid" type="HBoxContainer" parent="BottomHUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+mouse_filter = 2
+
+[node name="StatusColumn" type="Control" parent="BottomHUD/HUDGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 23.0
+mouse_filter = 2
+
+[node name="StatusFrame" type="PanelContainer" parent="BottomHUD/HUDGrid/StatusColumn"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("GoldPanel")
+
+[node name="StatusCenter" type="CenterContainer" parent="BottomHUD/HUDGrid/StatusColumn"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatusProxy" type="Control" parent="BottomHUD/HUDGrid/StatusColumn/StatusCenter"]
+custom_minimum_size = Vector2(280, 92)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HUDStatus" parent="BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy" instance=ExtResource("2_status")]
+layout_mode = 0
+scale = Vector2(0.63, 0.63)
+
+[node name="APReserve" type="Control" parent="BottomHUD/HUDGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 8.0
+mouse_filter = 2
+
+[node name="HandReserve" type="Control" parent="BottomHUD/HUDGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 40.0
+mouse_filter = 2
+
+[node name="HintReserve" type="Control" parent="BottomHUD/HUDGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 10.0
+mouse_filter = 2
+
+[node name="InfoColumn" type="Control" parent="BottomHUD/HUDGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 11.0
+mouse_filter = 2
+
+[node name="ObjectiveFrame" type="PanelContainer" parent="BottomHUD/HUDGrid/InfoColumn"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 70.0
+offset_right = -3.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("ObjectivePanel")
+
+[node name="QuestCenter" type="CenterContainer" parent="BottomHUD/HUDGrid/InfoColumn"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 66.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="QuestProxy" type="Control" parent="BottomHUD/HUDGrid/InfoColumn/QuestCenter"]
+custom_minimum_size = Vector2(135, 76)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HUDQuestTracker" parent="BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy" instance=ExtResource("3_quest")]
+layout_mode = 0
+scale = Vector2(0.48, 0.48)
+
+[node name="ProgressColumn" type="Control" parent="BottomHUD/HUDGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 8.0
+mouse_filter = 2
+
+[node name="EconomyFrame" type="PanelContainer" parent="BottomHUD/HUDGrid/ProgressColumn"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 12.0
+offset_right = -3.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("EconomyPanel")
+
+[node name="ProgressCenter" type="CenterContainer" parent="BottomHUD/HUDGrid/ProgressColumn"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ProgressProxy" type="Control" parent="BottomHUD/HUDGrid/ProgressColumn/ProgressCenter"]
+custom_minimum_size = Vector2(96, 48)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HUDProgressPanel" parent="BottomHUD/HUDGrid/ProgressColumn/ProgressCenter/ProgressProxy" instance=ExtResource("4_progress")]
+layout_mode = 0
+scale = Vector2(0.55, 0.55)
+
+[node name="AreaPanel" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 238.0
+offset_bottom = 70.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("AreaStyle")
+
+[node name="AreaRows" type="VBoxContainer" parent="AreaPanel"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="AreaHeading" type="Label" parent="AreaPanel/AreaRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.6, 0.32, 1)
+theme_override_font_sizes/font_size = 11
+text = "CURRENT AREA"
+
+[node name="AreaName" type="Label" parent="AreaPanel/AreaRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.88, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "Autumn Forest"
+
+[node name="HUDHotbar" parent="." instance=ExtResource("5_hotbar")]
+visible = false
+
+[node name="InteractionPanel" parent="." instance=ExtResource("6_prompt")]

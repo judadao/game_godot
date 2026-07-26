@@ -1,7 +1,7 @@
 extends SceneTree
 
 const MAP_SCENES := [
-	"res://scenes/maps/autumn_tree/AutumnTreeMap.tscn",
+	"res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn",
 	"res://scenes/maps/crystal_caves.tscn",
 	"res://scenes/maps/forbidden_graveyard.tscn",
 ]

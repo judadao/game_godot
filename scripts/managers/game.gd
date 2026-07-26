@@ -15,6 +15,7 @@ const AUTUMN_FOREST_SCENE_PATH := MAP_REGISTRY_SCRIPT.AUTUMN_FOREST_SCENE_PATH
 const CRYSTAL_CAVES_SCENE_PATH := MAP_REGISTRY_SCRIPT.CRYSTAL_CAVES_SCENE_PATH
 const FORBIDDEN_GRAVEYARD_SCENE_PATH := MAP_REGISTRY_SCRIPT.FORBIDDEN_GRAVEYARD_SCENE_PATH
 const TOWN_MAIN_SCENE_PATH := MAP_REGISTRY_SCRIPT.TOWN_MAIN_SCENE_PATH
+const AUTUMN_BATTLE_MAIN_SCENE_PATH := MAP_REGISTRY_SCRIPT.AUTUMN_BATTLE_MAIN_SCENE_PATH
 const AUTUMN_TREE_MAIN_SCENE_PATH := MAP_REGISTRY_SCRIPT.AUTUMN_TREE_MAIN_SCENE_PATH
 const CRYSTAL_CAVES_LAYOUT_SCENE_PATH := MAP_REGISTRY_SCRIPT.CRYSTAL_CAVES_LAYOUT_SCENE_PATH
 const FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH := MAP_REGISTRY_SCRIPT.FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH
@@ -24,9 +25,11 @@ const TOWN_MANAGER_SCRIPT := preload("res://scripts/systems/town_manager.gd")
 const BASE_AP_REGEN := 0.65
 const WISP_AP_REGEN := 0.35
 const WISP_DURATION := 6.0
-const COMBAT_CAMERA_SAFE_OFFSET_Y := 92.0
+const COMBAT_CAMERA_SAFE_OFFSET_Y := 90.0
 const MAX_COMBO_ABILITIES := 4
 const MAX_COMBO_LEVEL := 3
+const DEFAULT_COMBO_DURATION := 6.0
+const FIXED_CARD_IDS: Array[String] = ["ember_bolt", "quickstep"]
 const COMBO_EVOLUTIONS := [
 	{
 		"requires": ["flame", "frost"],
@@ -102,6 +105,9 @@ func _ready() -> void:
 	hud_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	meta_state.apply_dict(save_service.load_meta(META_SAVE_PATH))
+	inventory_manager.call("set_progression_unlocks", {
+		"dash_upgrade_unlocked": meta_state.dash_upgrade_unlocked,
+	})
 	if not meta_state.inventory_state.is_empty():
 		inventory_manager.call("apply_dict", meta_state.inventory_state)
 	elif _has_legacy_inventory_progress():
@@ -131,6 +137,9 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not run_state.active or get_tree().paused:
 		return
+	var real_delta := delta / maxf(Engine.time_scale, 0.001)
+	if _tick_combo_effects(real_delta):
+		_refresh_combo_display()
 	var regen_rate := BASE_AP_REGEN
 	regen_rate += float((inventory_manager.call("get_special_ability_totals") as Dictionary).get("ap_regen", 0.0))
 	regen_rate += float(run_state.temporary_buffs.get("level_ap_regen", 0.0))
@@ -617,6 +626,8 @@ func _on_boss_stage_completed() -> void:
 		return
 	run_state.boss_defeated = true
 	meta_state.boss_defeated = true
+	meta_state.dash_upgrade_unlocked = true
+	inventory_manager.call("set_progression_unlocks", {"dash_upgrade_unlocked": true})
 	run_state.add_reward("autumn_wood", 18)
 	run_state.add_reward("magic_shard", 7)
 	meta_state.add_resource("autumn_core", 1)
@@ -658,6 +669,8 @@ func _build_level_up_choices() -> Array[Dictionary]:
 	card_ids.sort()
 	for card_id_variant in card_ids:
 		var card_id := String(card_id_variant)
+		if deck_manager.is_card_protected(card_id):
+			continue
 		var level := int(run_state.card_levels.get(card_id, 1))
 		if level >= 3:
 			continue
@@ -701,7 +714,7 @@ func _apply_level_up_choice(choice: Dictionary) -> bool:
 	match String(choice.get("kind", "")):
 		"upgrade_card":
 			var card_id := String(choice.get("card_id", ""))
-			if not run_state.card_levels.has(card_id) or int(run_state.card_levels[card_id]) >= 3:
+			if deck_manager.is_card_protected(card_id) or not run_state.card_levels.has(card_id) or int(run_state.card_levels[card_id]) >= 3:
 				return false
 			run_state.card_levels[card_id] = int(run_state.card_levels[card_id]) + 1
 			_try_evolve_card(card_id)
@@ -716,7 +729,7 @@ func _apply_level_up_choice(choice: Dictionary) -> bool:
 			run_state.temporary_buffs["level_ap_regen"] = float(run_state.temporary_buffs.get("level_ap_regen", 0.0)) + 0.10
 		"remove_card":
 			for card_id in deck_manager.hand + deck_manager.draw_pile + deck_manager.discard_pile:
-				if card_id != deck_manager.protected_card_id:
+				if not deck_manager.is_card_protected(card_id):
 					return _remove_one_card_copy(card_id)
 			return false
 		_:
@@ -778,6 +791,8 @@ func _on_run_encounter_cleared(experience_reward: int, gold_reward: int) -> void
 	run_state.add_reward("autumn_wood", 18)
 	run_state.add_reward("magic_shard", 7)
 	run_state.boss_defeated = true
+	meta_state.dash_upgrade_unlocked = true
+	inventory_manager.call("set_progression_unlocks", {"dash_upgrade_unlocked": true})
 	_discover_equipment_reward()
 	meta_state.add_resource("autumn_core", 1)
 	inventory_manager.call("add_resource", &"autumn_core", 1)
@@ -810,16 +825,18 @@ func _begin_autumn_run(deck_override: Array = []) -> void:
 		return
 	var fallback_deck := [
 		"ember_bolt", "quickstep", "cleave", "cleave",
-		"guard", "guard", "quickstep", "dash_strike",
+		"guard", "guard", "cleave", "dash_strike",
 		"healing_light", "frost_bind", "energy_surge", "iron_skin",
 		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 	]
 	var selected: Array = deck_override if deck_override.size() > 0 and deck_override.size() <= 16 else meta_state.selected_deck
-	run_state.begin_run(selected if selected.size() > 0 and selected.size() <= 16 else fallback_deck)
-	deck_manager.protected_card_id = "ember_bolt"
+	var normalized := _normalize_expedition_deck(selected if selected.size() > 0 and selected.size() <= 16 else fallback_deck)
+	run_state.begin_run(normalized)
+	deck_manager.set_protected_cards(FIXED_CARD_IDS)
 	deck_manager.start(run_state.starting_deck, run_state.max_energy, true)
 	for card_id in run_state.starting_deck:
-		run_state.card_levels[card_id] = 1
+		if not deck_manager.is_card_protected(card_id):
+			run_state.card_levels[card_id] = 1
 	combo_manager.reset()
 	_last_combo_name = "—"
 	_refresh_card_hand()
@@ -855,7 +872,7 @@ func _on_card_reward_selected(_index: int, _text: String, metadata: Dictionary, 
 
 
 func _apply_card_reward(card_id: String) -> bool:
-	if not run_state.active or not card_database.has_card(card_id):
+	if not run_state.active or deck_manager.is_card_protected(card_id) or not card_database.has_card(card_id):
 		return false
 	if not run_state.card_levels.has(card_id):
 		run_state.card_levels[card_id] = 1
@@ -878,7 +895,7 @@ func _get_card_copy_count(card_id: String) -> int:
 
 
 func _merge_card_at_campfire(card_id: String) -> bool:
-	if not run_state.active or bool(run_state.temporary_buffs.get("campfire_used", false)):
+	if not run_state.active or deck_manager.is_card_protected(card_id) or bool(run_state.temporary_buffs.get("campfire_used", false)):
 		return false
 	if _get_card_copy_count(card_id) < 2 or int(run_state.card_levels.get(card_id, 0)) >= 3:
 		return false
@@ -897,7 +914,7 @@ func _merge_card_at_campfire(card_id: String) -> bool:
 
 
 func _upgrade_card_at_campfire(card_id: String) -> bool:
-	if not run_state.active or bool(run_state.temporary_buffs.get("campfire_used", false)):
+	if not run_state.active or deck_manager.is_card_protected(card_id) or bool(run_state.temporary_buffs.get("campfire_used", false)):
 		return false
 	if _get_card_copy_count(card_id) <= 0 or int(run_state.card_levels.get(card_id, 0)) >= 3:
 		return false
@@ -909,6 +926,8 @@ func _upgrade_card_at_campfire(card_id: String) -> bool:
 
 
 func _remove_one_card_copy(card_id: String) -> bool:
+	if deck_manager.is_card_protected(card_id):
+		return false
 	var piles: Array = [deck_manager.discard_pile, deck_manager.draw_pile, deck_manager.hand]
 	for pile_variant in piles:
 		var pile := pile_variant as Array
@@ -920,6 +939,8 @@ func _remove_one_card_copy(card_id: String) -> bool:
 
 
 func _try_evolve_card(base_card_id: String) -> bool:
+	if deck_manager.is_card_protected(base_card_id):
+		return false
 	var passives_variant: Variant = run_state.temporary_buffs.get("passives", [])
 	var passives: Array = passives_variant if passives_variant is Array else []
 	for recipe in evolution_manager.find_available(run_state.card_levels, passives):
@@ -968,11 +989,14 @@ func _finish_run(victory: bool) -> Dictionary:
 func _on_card_selected(index: int) -> void:
 	if not run_state.active or player == null or not ui_stack.is_empty():
 		return
-	var card := deck_manager.play_from_hand(index)
+	if index < 0 or index >= deck_manager.hand.size():
+		return
+	var projected_card := _card_for_cast(deck_manager.hand[index])
+	var card := deck_manager.play_from_hand(index, int(projected_card.get("cost", 0)))
 	if card.is_empty():
 		_refresh_card_hand()
 		return
-	card = _card_for_cast(String(card.get("id", "")))
+	card = projected_card
 	if String(card.get("type", "")) == "combo":
 		_resolve_combo_card(card)
 	else:
@@ -1017,11 +1041,13 @@ func _open_hand_overflow_discard(required_count: int) -> void:
 		return
 	var cards: Array[Dictionary] = []
 	for card_id in deck_manager.hand:
-		cards.append(_card_for_cast(card_id))
+		var card := _card_for_cast(card_id)
+		card["fixed"] = deck_manager.is_card_protected(card_id)
+		cards.append(card)
 	var ui_control := open_ui("CardDiscardUI", card_discard_scene, true)
 	if ui_control == null:
 		return
-	ui_control.call("configure", cards, required_count, deck_manager.protected_card_id)
+	ui_control.call("configure", cards, required_count, deck_manager.protected_card_ids)
 	ui_control.connect("discard_confirmed", _on_hand_overflow_confirmed.bind(ui_control), CONNECT_ONE_SHOT)
 
 
@@ -1030,7 +1056,7 @@ func _on_hand_overflow_confirmed(indices: Array[int], ui_control: Control) -> vo
 	if indices.size() != required_count:
 		return
 	for index in indices:
-		if index < 0 or index >= deck_manager.hand.size() or deck_manager.hand[index] == deck_manager.protected_card_id:
+		if index < 0 or index >= deck_manager.hand.size() or deck_manager.is_card_protected(deck_manager.hand[index]):
 			return
 	var sorted_indices := indices.duplicate()
 	sorted_indices.sort()
@@ -1039,7 +1065,7 @@ func _on_hand_overflow_confirmed(indices: Array[int], ui_control: Control) -> vo
 		if index < 0 or index >= deck_manager.hand.size():
 			continue
 		var card_id := deck_manager.hand[index]
-		if card_id == deck_manager.protected_card_id:
+		if deck_manager.is_card_protected(card_id):
 			continue
 		deck_manager.hand.remove_at(index)
 		deck_manager.discard_pile.append(card_id)
@@ -1072,7 +1098,14 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 	run_state.temporary_buffs["combo_levels"] = levels
 	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
 	var effects: Array = effects_variant if effects_variant is Array else []
-	effects.append(effect.duplicate(true))
+	var timed_effect := effect.duplicate(true)
+	var equipment_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
+	timed_effect["remaining_seconds"] = maxf(
+		0.1,
+		float(effect.get("combo_duration", DEFAULT_COMBO_DURATION))
+		+ float(equipment_specials.get("combo_duration_bonus", 0.0))
+	)
+	effects.append(timed_effect)
 	run_state.temporary_buffs["infusion_effects"] = effects
 	_try_evolve_combo_abilities()
 	return true
@@ -1093,24 +1126,99 @@ func _try_evolve_combo_abilities() -> bool:
 			return int(levels.get(String(combo_id), 0)) < MAX_COMBO_LEVEL
 		):
 			continue
+		var evolved_remaining := 0.0
 		for combo_id in required:
 			active.erase(String(combo_id))
 			levels.erase(String(combo_id))
 			var retained_effects: Array = []
 			for effect_variant in effects:
-				if effect_variant is Dictionary and String((effect_variant as Dictionary).get("infusion_id", "")) != String(combo_id):
+				if not effect_variant is Dictionary:
+					continue
+				var timed_effect := effect_variant as Dictionary
+				if String(timed_effect.get("infusion_id", "")) == String(combo_id):
+					evolved_remaining = maxf(evolved_remaining, float(timed_effect.get("remaining_seconds", 0.0)))
+				else:
 					retained_effects.append(effect_variant)
 			effects = retained_effects
 		var evolution_id := String(recipe["id"])
 		active.append(evolution_id)
 		levels[evolution_id] = 1
-		effects.append((recipe["effect"] as Dictionary).duplicate(true))
+		var evolved_effect := (recipe["effect"] as Dictionary).duplicate(true)
+		evolved_effect["remaining_seconds"] = maxf(0.1, evolved_remaining)
+		effects.append(evolved_effect)
 		run_state.temporary_buffs["active_infusions"] = active
 		run_state.temporary_buffs["combo_levels"] = levels
 		run_state.temporary_buffs["infusion_effects"] = effects
 		_last_combo_name = String(recipe["name"])
 		return true
 	return false
+
+
+func _tick_combo_effects(delta: float) -> bool:
+	if delta <= 0.0:
+		return false
+	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
+	if not effects_variant is Array:
+		return false
+	var effects := effects_variant as Array
+	if effects.is_empty():
+		return false
+	var retained: Array = []
+	var changed := false
+	for effect_variant in effects:
+		if not effect_variant is Dictionary:
+			changed = true
+			continue
+		var timed_effect := (effect_variant as Dictionary).duplicate(true)
+		var remaining := float(timed_effect.get(
+			"remaining_seconds",
+			timed_effect.get("combo_duration", DEFAULT_COMBO_DURATION)
+		)) - delta
+		if remaining <= 0.0:
+			changed = true
+			continue
+		timed_effect["remaining_seconds"] = remaining
+		retained.append(timed_effect)
+		changed = true
+	run_state.temporary_buffs["infusion_effects"] = retained
+	_rebuild_combo_state_from_effects(retained)
+	if retained.is_empty():
+		_last_combo_name = "—"
+	return changed
+
+
+func _rebuild_combo_state_from_effects(effects: Array) -> void:
+	var previous_variant: Variant = run_state.temporary_buffs.get("active_infusions", [])
+	var previous: Array = previous_variant if previous_variant is Array else []
+	var levels: Dictionary = {}
+	for effect_variant in effects:
+		if not effect_variant is Dictionary:
+			continue
+		var infusion_id := String((effect_variant as Dictionary).get("infusion_id", ""))
+		if infusion_id.is_empty():
+			continue
+		levels[infusion_id] = mini(MAX_COMBO_LEVEL, int(levels.get(infusion_id, 0)) + 1)
+	var active: Array = []
+	for infusion_id_variant in previous:
+		var infusion_id := String(infusion_id_variant)
+		if levels.has(infusion_id) and not active.has(infusion_id):
+			active.append(infusion_id)
+	for infusion_id_variant in levels:
+		var infusion_id := String(infusion_id_variant)
+		if not active.has(infusion_id):
+			active.append(infusion_id)
+	run_state.temporary_buffs["active_infusions"] = active
+	run_state.temporary_buffs["combo_levels"] = levels
+
+
+func _get_combo_time_remaining() -> float:
+	var maximum := 0.0
+	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
+	if effects_variant is Array:
+		for effect_variant in effects_variant:
+			if effect_variant is Dictionary:
+				maximum = maxf(maximum, float((effect_variant as Dictionary).get("remaining_seconds", 0.0)))
+	return maximum
 
 
 func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
@@ -1125,6 +1233,9 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 		"skill":
 			if String(effect.get("kind", "")) == "heal":
 				effect["amount"] = int(effect.get("amount", 0)) + int(equipment_specials.get("card_heal_bonus", 0))
+	if String(infused.get("id", "")) == "quickstep" and meta_state.dash_upgrade_unlocked:
+		effect["distance"] = float(effect.get("distance", 0.0)) + float(equipment_specials.get("dash_distance_bonus", 0.0))
+		effect["evasion_seconds"] = float(effect.get("evasion_seconds", 0.0)) + float(equipment_specials.get("dash_evasion_bonus", 0.0))
 	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
 	if not effects_variant is Array:
 		return infused
@@ -1205,7 +1316,7 @@ func _card_for_cast(card_id: String) -> Dictionary:
 	var card := card_database.get_card(card_id)
 	if card.is_empty():
 		return {}
-	var current_level := clampi(int(run_state.card_levels.get(card_id, 1)), 1, 3)
+	var current_level := 1 if deck_manager.is_card_protected(card_id) else clampi(int(run_state.card_levels.get(card_id, 1)), 1, 3)
 	var effect := (card.get("effect", {}) as Dictionary).duplicate(true)
 	var upgrades := card.get("upgrade_effects", []) as Array
 	for upgrade_variant in upgrades:
@@ -1221,12 +1332,18 @@ func _card_for_cast(card_id: String) -> Dictionary:
 			card["mechanic_change"] = upgrade["mechanic_change"]
 	card["effect"] = effect
 	card["level"] = current_level
+	if String(card.get("type", "")) == "combo":
+		var equipment_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
+		card["cost"] = maxi(
+			1,
+			int(card.get("cost", 0)) - int(equipment_specials.get("combo_cost_reduction", 0))
+		)
 	return card
 
 
 func _has_affordable_card() -> bool:
 	for card_id in deck_manager.hand:
-		if int(card_database.get_card(card_id).get("cost", 0)) <= deck_manager.energy:
+		if int(_card_for_cast(card_id).get("cost", 0)) <= deck_manager.energy:
 			return true
 	return false
 
@@ -1244,12 +1361,25 @@ func _refresh_card_hand() -> void:
 		return
 	var cards: Array[Dictionary] = []
 	for card_id in deck_manager.hand:
-		cards.append(_card_for_cast(card_id))
+		var card := _card_for_cast(card_id)
+		card["fixed"] = deck_manager.is_card_protected(card_id)
+		cards.append(card)
 	card_hand_ui.call("set_cards", cards, deck_manager.energy)
 	card_hand_ui.call("set_action_points", deck_manager.energy, deck_manager.max_energy)
+	_refresh_combo_display()
+
+
+func _refresh_combo_display() -> void:
+	if card_hand_ui == null:
+		return
 	var combo_kinds_variant: Variant = run_state.temporary_buffs.get("active_infusions", [])
 	var combo_count := (combo_kinds_variant as Array).size() if combo_kinds_variant is Array else 0
-	card_hand_ui.call("set_combo", "%s  [%d/%d]" % [_last_combo_name, combo_count, MAX_COMBO_ABILITIES], "Same type stacks / four types max")
+	var seconds := _get_combo_time_remaining()
+	card_hand_ui.call(
+		"set_combo",
+		"%s  [%d/%d]  %.1fs" % [_last_combo_name, combo_count, MAX_COMBO_ABILITIES, seconds],
+		"Fast play stacks / equipment lowers AP and extends time"
+	)
 
 
 func _update_card_hand_visibility() -> void:
@@ -1313,7 +1443,9 @@ func _apply_shortcut_spawn() -> void:
 		and _current_map_matches(AUTUMN_FOREST_SCENE_PATH)
 		and bool(meta_state.shortcuts.get("forest_gate", false))
 	):
-		(player as Node2D).global_position = Vector2(1580, 576)
+		var shortcut_spawn := current_map.get_node_or_null("ForestShortcutSpawn") as Node2D
+		if shortcut_spawn != null:
+			(player as Node2D).global_position = shortcut_spawn.global_position
 
 
 func _connect_if_present(node: Node, signal_name: StringName, method_name: StringName) -> void:
@@ -1743,7 +1875,7 @@ func _build_wandering_stock() -> Array[Dictionary]:
 		rare_id = "flame_imbue"
 	var removable_id := ""
 	for card_id in deck_manager.hand + deck_manager.draw_pile + deck_manager.discard_pile:
-		if card_id != deck_manager.protected_card_id:
+		if not deck_manager.is_card_protected(card_id):
 			removable_id = card_id
 			break
 	var stock: Array[Dictionary] = [
@@ -1784,7 +1916,7 @@ func _purchase_wandering_offer(offer: Dictionary) -> bool:
 			deck_manager.discard_pile.append(card_id)
 		"purge":
 			var card_id := String(offer.get("card_id", ""))
-			if card_id.is_empty() or card_id == deck_manager.protected_card_id or not _remove_one_card_copy(card_id):
+			if card_id.is_empty() or deck_manager.is_card_protected(card_id) or not _remove_one_card_copy(card_id):
 				return false
 	run_state.gold_earned -= price
 	return true
@@ -1857,18 +1989,15 @@ func _on_deck_confirmed(deck_ids: Array[String], ui_control: Control, target_sce
 
 func _normalize_expedition_deck(deck_ids: Array) -> Array[String]:
 	var normalized: Array[String] = []
+	for fixed_id in FIXED_CARD_IDS:
+		if card_database.has_card(fixed_id):
+			normalized.append(fixed_id)
 	for card_id_variant in deck_ids:
 		if normalized.size() >= 16:
 			break
 		var card_id := String(card_id_variant)
-		if card_database.has_card(card_id):
+		if card_database.has_card(card_id) and not FIXED_CARD_IDS.has(card_id):
 			normalized.append(card_id)
-	if not normalized.has("ember_bolt"):
-		if normalized.size() >= 16:
-			normalized.pop_back()
-		normalized.push_front("ember_bolt")
-	if normalized.is_empty():
-		normalized.append("ember_bolt")
 	return normalized
 
 
@@ -1946,6 +2075,8 @@ func _show_campfire_card_choices(ui_control: Control, merge: bool) -> void:
 	var choices: Array[Dictionary] = []
 	for card_id_variant in run_state.card_levels.keys():
 		var card_id := String(card_id_variant)
+		if deck_manager.is_card_protected(card_id):
+			continue
 		var level := int(run_state.card_levels.get(card_id, 1))
 		if level >= 3:
 			continue
@@ -1991,7 +2122,7 @@ func _update_interaction_prompt() -> void:
 		if not display_name.is_empty():
 			prompt = "%s — %s" % [prompt, display_name]
 	if hud.has_method("set_interaction_prompt"):
-		hud.call("set_interaction_prompt", prompt, "F")
+		hud.call("set_interaction_prompt", prompt, "F", current_interactive)
 
 
 func _dialogue_text_for(dialogue_id: StringName, display_name: String) -> String:

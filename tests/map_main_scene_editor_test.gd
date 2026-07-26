@@ -16,12 +16,12 @@ const MAIN_SCENES := [
 		],
 	},
 	{
-		"path": "res://scenes/maps/autumn_tree/AutumnTreeMap.tscn",
-		"root": "AutumnTreeMap",
+		"path": "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn",
+		"root": "AutumnBattleMapV2",
 		"required": [
 			"Background",
 			"Ground",
-			"Platforms",
+			"Ground/Platforms",
 			"SetDressing",
 			"AutumnRunDirector",
 			"HiddenBranchCache",
@@ -84,7 +84,7 @@ func _run() -> void:
 	_expect(
 		String(game.call("_resolve_main_scene_path", "res://scenes/maps/autumn_forest.tscn"))
 		== String(MAIN_SCENES[1]["path"]),
-		"Canonical Autumn portal path must resolve to AutumnTreeMap.tscn."
+		"Canonical Autumn portal path must resolve to AutumnBattleMapV2.tscn."
 	)
 	game.queue_free()
 	await process_frame

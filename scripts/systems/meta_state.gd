@@ -3,6 +3,7 @@ extends RefCounted
 
 const SCHEMA_VERSION := 2
 const RESOURCE_IDS := ["gold", "autumn_wood", "stone", "magic_shard", "autumn_core"]
+const FIXED_CARD_IDS: Array[String] = ["ember_bolt", "quickstep"]
 
 var resources := {
 	"gold": 0,
@@ -26,7 +27,7 @@ var unlocked_cards: Array[String] = [
 ]
 var selected_deck: Array[String] = [
 	"ember_bolt", "quickstep", "cleave", "cleave",
-	"guard", "guard", "quickstep", "dash_strike",
+	"guard", "guard", "cleave", "dash_strike",
 	"healing_light", "frost_bind", "energy_surge", "iron_skin",
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 ]
@@ -36,6 +37,7 @@ var equipment_levels: Dictionary = {}
 var unlocked_combos: Array[String] = []
 var unlocked_evolutions: Array[String] = []
 var boss_defeated := false
+var dash_upgrade_unlocked := false
 var shortcuts: Dictionary = {}
 var settings := {"master_volume": 1.0, "camera_shake": 0.65}
 var inventory_state: Dictionary = {}
@@ -88,6 +90,7 @@ func to_dict() -> Dictionary:
 		"unlocked_combos": unlocked_combos.duplicate(),
 		"unlocked_evolutions": unlocked_evolutions.duplicate(),
 		"boss_defeated": boss_defeated,
+		"dash_upgrade_unlocked": dash_upgrade_unlocked,
 		"shortcuts": shortcuts.duplicate(true),
 		"settings": settings.duplicate(true),
 		"inventory_state": inventory_state.duplicate(true),
@@ -110,6 +113,7 @@ func apply_dict(data: Dictionary) -> void:
 	unlocked_combos = _safe_string_array(data.get("unlocked_combos"), unlocked_combos)
 	unlocked_evolutions = _safe_string_array(data.get("unlocked_evolutions"), unlocked_evolutions)
 	boss_defeated = bool(data.get("boss_defeated", boss_defeated))
+	dash_upgrade_unlocked = bool(data.get("dash_upgrade_unlocked", boss_defeated))
 	shortcuts = _safe_dictionary(data.get("shortcuts"), shortcuts)
 	settings = _safe_dictionary(data.get("settings"), settings)
 	inventory_state = _safe_dictionary(data.get("inventory_state"), inventory_state)
@@ -121,17 +125,14 @@ func normalize_selected_deck(valid_ids: Array[String]) -> Array[String]:
 	for card_id in valid_ids:
 		valid_lookup[card_id] = true
 	var normalized: Array[String] = []
+	for fixed_id in FIXED_CARD_IDS:
+		if valid_lookup.has(fixed_id):
+			normalized.append(fixed_id)
 	for card_id in selected_deck:
 		if normalized.size() >= 16:
 			break
-		if valid_lookup.has(card_id):
+		if valid_lookup.has(card_id) and not FIXED_CARD_IDS.has(card_id):
 			normalized.append(card_id)
-	if not normalized.has("ember_bolt") and valid_lookup.has("ember_bolt"):
-		if normalized.size() >= 16:
-			normalized.pop_back()
-		normalized.push_front("ember_bolt")
-	if normalized.is_empty() and valid_lookup.has("ember_bolt"):
-		normalized.append("ember_bolt")
 	selected_deck = normalized
 	return selected_deck.duplicate()
 

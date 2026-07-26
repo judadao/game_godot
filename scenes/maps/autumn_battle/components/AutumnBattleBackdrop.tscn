@@ -1,0 +1,64 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_forest_background.png" id="1_panorama"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_trees_atlas.png" id="2_trees"]
+
+[sub_resource type="AtlasTexture" id="AtlasOak"]
+atlas = ExtResource("2_trees")
+region = Rect2(34, 122, 650, 632)
+
+[sub_resource type="AtlasTexture" id="AtlasMaple"]
+atlas = ExtResource("2_trees")
+region = Rect2(700, 64, 260, 690)
+
+[sub_resource type="AtlasTexture" id="AtlasAmberTree"]
+atlas = ExtResource("2_trees")
+region = Rect2(964, 166, 370, 590)
+
+[node name="AutumnBattleBackdrop" type="Node2D"]
+z_index = -100
+
+[node name="SkyFill" type="ColorRect" parent="."]
+offset_right = 2600.0
+offset_bottom = 540.0
+mouse_filter = 2
+color = Color(0.36, 0.69, 0.82, 1)
+
+[node name="AutumnPanorama" type="Sprite2D" parent="."]
+position = Vector2(1300, 270)
+scale = Vector2(1.2, 0.746)
+texture = ExtResource("1_panorama")
+
+[node name="RearSilhouettes" type="Node2D" parent="."]
+z_index = 10
+modulate = Color(0.62, 0.49, 0.37, 0.7)
+
+[node name="SpawnOak" type="Sprite2D" parent="RearSilhouettes"]
+position = Vector2(405, 408)
+scale = Vector2(0.34, 0.34)
+texture = SubResource("AtlasOak")
+
+[node name="EventMaple" type="Sprite2D" parent="RearSilhouettes"]
+position = Vector2(735, 396)
+scale = Vector2(0.31, 0.31)
+texture = SubResource("AtlasMaple")
+
+[node name="ArenaWestAmber" type="Sprite2D" parent="RearSilhouettes"]
+position = Vector2(905, 405)
+scale = Vector2(0.31, 0.31)
+texture = SubResource("AtlasAmberTree")
+
+[node name="ArenaEastMaple" type="Sprite2D" parent="RearSilhouettes"]
+position = Vector2(1610, 400)
+scale = Vector2(0.32, 0.32)
+texture = SubResource("AtlasMaple")
+
+[node name="MerchantOak" type="Sprite2D" parent="RearSilhouettes"]
+position = Vector2(1940, 406)
+scale = Vector2(0.32, 0.32)
+texture = SubResource("AtlasOak")
+
+[node name="ExitAmber" type="Sprite2D" parent="RearSilhouettes"]
+position = Vector2(2490, 405)
+scale = Vector2(0.32, 0.32)
+texture = SubResource("AtlasAmberTree")

@@ -9,7 +9,7 @@ const MAP_CASES: Array[Dictionary] = [
 	},
 	{
 		"canonical": "res://scenes/maps/autumn_forest.tscn",
-		"authoritative": "res://scenes/maps/autumn_tree/AutumnTreeMap.tscn",
+		"authoritative": "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn",
 	},
 	{
 		"canonical": "res://scenes/maps/crystal_caves.tscn",

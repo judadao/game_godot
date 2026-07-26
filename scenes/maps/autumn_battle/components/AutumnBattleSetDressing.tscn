@@ -1,0 +1,133 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_props_atlas.png" id="1_props"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_trees_atlas.png" id="2_trees"]
+
+[sub_resource type="AtlasTexture" id="AtlasCabin"]
+atlas = ExtResource("1_props")
+region = Rect2(62, 114, 492, 370)
+
+[sub_resource type="AtlasTexture" id="AtlasSign"]
+atlas = ExtResource("1_props")
+region = Rect2(588, 140, 242, 342)
+
+[sub_resource type="AtlasTexture" id="AtlasFence"]
+atlas = ExtResource("1_props")
+region = Rect2(850, 270, 326, 214)
+
+[sub_resource type="AtlasTexture" id="AtlasFire"]
+atlas = ExtResource("1_props")
+region = Rect2(1200, 296, 302, 190)
+
+[sub_resource type="AtlasTexture" id="AtlasCrates"]
+atlas = ExtResource("1_props")
+region = Rect2(94, 584, 320, 324)
+
+[sub_resource type="AtlasTexture" id="AtlasBarrel"]
+atlas = ExtResource("1_props")
+region = Rect2(492, 628, 230, 286)
+
+[sub_resource type="AtlasTexture" id="AtlasRocks"]
+atlas = ExtResource("1_props")
+region = Rect2(778, 638, 362, 280)
+
+[sub_resource type="AtlasTexture" id="AtlasLantern"]
+atlas = ExtResource("1_props")
+region = Rect2(1220, 532, 260, 390)
+
+[sub_resource type="AtlasTexture" id="AtlasBushes"]
+atlas = ExtResource("2_trees")
+region = Rect2(1290, 494, 474, 270)
+
+[node name="AutumnBattleSetDressing" type="Node2D"]
+z_index = 12
+
+[node name="SpawnLandmark" type="Node2D" parent="."]
+
+[node name="RangerCabin" type="Sprite2D" parent="SpawnLandmark"]
+position = Vector2(285, 367)
+scale = Vector2(0.55, 0.55)
+texture = SubResource("AtlasCabin")
+
+[node name="SpawnFence" type="Sprite2D" parent="SpawnLandmark"]
+position = Vector2(432, 433)
+scale = Vector2(0.35, 0.35)
+texture = SubResource("AtlasFence")
+
+[node name="SpawnBushes" type="Sprite2D" parent="SpawnLandmark"]
+position = Vector2(390, 447)
+scale = Vector2(0.28, 0.28)
+texture = SubResource("AtlasBushes")
+
+[node name="EventChoiceLandmark" type="Node2D" parent="."]
+
+[node name="EventCrossroadSign" type="Sprite2D" parent="EventChoiceLandmark"]
+position = Vector2(590, 408)
+scale = Vector2(0.38, 0.38)
+texture = SubResource("AtlasSign")
+
+[node name="EventCacheRocks" type="Sprite2D" parent="EventChoiceLandmark"]
+position = Vector2(755, 445)
+scale = Vector2(0.26, 0.26)
+texture = SubResource("AtlasRocks")
+
+[node name="EnemyArenaLandmark" type="Node2D" parent="."]
+
+[node name="ArenaWestFence" type="Sprite2D" parent="EnemyArenaLandmark"]
+position = Vector2(860, 438)
+scale = Vector2(0.31, 0.31)
+texture = SubResource("AtlasFence")
+
+[node name="ArenaWestRocks" type="Sprite2D" parent="EnemyArenaLandmark"]
+position = Vector2(960, 450)
+scale = Vector2(0.22, 0.22)
+texture = SubResource("AtlasRocks")
+
+[node name="ArenaEastRocks" type="Sprite2D" parent="EnemyArenaLandmark"]
+position = Vector2(1585, 450)
+scale = Vector2(0.22, 0.22)
+texture = SubResource("AtlasRocks")
+
+[node name="ArenaEastFence" type="Sprite2D" parent="EnemyArenaLandmark"]
+position = Vector2(1660, 438)
+scale = Vector2(0.31, 0.31)
+texture = SubResource("AtlasFence")
+
+[node name="MerchantCampLandmark" type="Node2D" parent="."]
+
+[node name="Campfire" type="Sprite2D" parent="MerchantCampLandmark"]
+position = Vector2(1740, 447)
+scale = Vector2(0.36, 0.36)
+texture = SubResource("AtlasFire")
+
+[node name="MerchantCrates" type="Sprite2D" parent="MerchantCampLandmark"]
+position = Vector2(1995, 427)
+scale = Vector2(0.28, 0.28)
+texture = SubResource("AtlasCrates")
+
+[node name="MerchantBarrel" type="Sprite2D" parent="MerchantCampLandmark"]
+position = Vector2(2065, 444)
+scale = Vector2(0.28, 0.28)
+texture = SubResource("AtlasBarrel")
+
+[node name="MerchantLantern" type="Sprite2D" parent="MerchantCampLandmark"]
+position = Vector2(2120, 407)
+scale = Vector2(0.28, 0.28)
+texture = SubResource("AtlasLantern")
+
+[node name="ExitLandmark" type="Node2D" parent="."]
+
+[node name="PortalWestLantern" type="Sprite2D" parent="ExitLandmark"]
+position = Vector2(2240, 400)
+scale = Vector2(0.3, 0.3)
+texture = SubResource("AtlasLantern")
+
+[node name="PortalRocks" type="Sprite2D" parent="ExitLandmark"]
+position = Vector2(2350, 451)
+scale = Vector2(0.28, 0.28)
+texture = SubResource("AtlasRocks")
+
+[node name="NextAreaSign" type="Sprite2D" parent="ExitLandmark"]
+position = Vector2(2510, 408)
+scale = Vector2(-0.34, 0.34)
+texture = SubResource("AtlasSign")

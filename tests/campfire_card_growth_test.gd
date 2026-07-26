@@ -13,7 +13,13 @@ func _run() -> void:
 	root.add_child(merge_game)
 	await process_frame
 	await process_frame
-	merge_game.call("_begin_autumn_run")
+	var test_deck := [
+		"ember_bolt", "quickstep", "guard", "guard",
+		"cleave", "cleave", "cleave", "dash_strike",
+		"healing_light", "frost_bind", "energy_surge", "iron_skin",
+		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
+	]
+	merge_game.call("_begin_autumn_run", test_deck)
 	var merge_run := merge_game.get("run_state") as RunState
 	var merge_deck := merge_game.get("deck_manager") as DeckManager
 	var guard_before := int(merge_game.call("_get_card_copy_count", "guard")) if merge_game.has_method("_get_card_copy_count") else 0
@@ -31,7 +37,7 @@ func _run() -> void:
 	root.add_child(upgrade_game)
 	await process_frame
 	await process_frame
-	upgrade_game.call("_begin_autumn_run")
+	upgrade_game.call("_begin_autumn_run", test_deck)
 	var upgrade_run := upgrade_game.get("run_state") as RunState
 	var cleave_before := int(upgrade_game.call("_get_card_copy_count", "cleave")) if upgrade_game.has_method("_get_card_copy_count") else 0
 	_expect(bool(upgrade_game.call("_upgrade_card_at_campfire", "cleave")), "Campfire upgrade must level an owned card.")

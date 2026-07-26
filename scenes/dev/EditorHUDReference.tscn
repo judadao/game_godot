@@ -28,7 +28,7 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("ViewportBorder")
 
 [node name="CardStageGuide" type="Panel" parent="."]
-offset_top = 536.0
+offset_top = 540.0
 offset_right = 1280.0
 offset_bottom = 720.0
 mouse_filter = 2
@@ -46,7 +46,7 @@ theme_override_colors/font_color = Color(0.65, 0.82, 0.92, 0.9)
 theme_override_colors/font_outline_color = Color(0.02, 0.04, 0.06, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 13
-text = "CARD HAND SAFE AREA — CardHandUI.tscn / CardFan is the runtime-authoritative layout; gameplay only adds card buttons to CardFan"
+text = "BATTLE UI 2.0 — bottom 25% / five proportional columns / BackRow + FrontRow are runtime-authoritative"
 horizontal_alignment = 1
 
 [node name="HUD" parent="." instance=ExtResource("2_hud")]

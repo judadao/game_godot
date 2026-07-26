@@ -449,7 +449,7 @@ signal item_selected(item_id: StringName)
 
 ### 9.2 Current runtime contract
 
-- 固定 `132×168`
+- compact minimum `82×78`，由 `BackRow`／`FrontRow` Container 分配實際尺寸
 - `clip_text = true`
 - word-smart autowrap
 - tooltip = description
@@ -1404,3 +1404,61 @@ func _emit_selection() -> void:
 - `docs/12_GAME_DESIGN.md`
 - `docs/13_ROADMAP.md`
 - `docs/rule_1.md`
+
+## 32. Autumn Battle UI Components
+
+### AutumnHUD
+
+- Scene: `res://scenes/ui/autumn/AutumnHUD.tscn`
+- Script contract: `res://scripts/ui/hud.gd`
+- Owner: Autumn Battle V2 only
+- Responsibility: status, AP reserve, card reserve, group guide, objective,
+  Combo, and economy columns in the lower 25% safe area
+
+### AutumnCardHandUI
+
+- Scene: `res://scenes/ui/autumn/AutumnCardHandUI.tscn`
+- Script contract: `res://scripts/ui/card_hand_ui.gd`
+- Owner: Autumn Battle V2 only
+- Responsibility: two container-managed rows of four cards and the active-group
+  presentation; gameplay creates card buttons only inside the authored rows
+
+### AutumnInteractionPrompt
+
+- Scene: `res://scenes/ui/autumn/AutumnInteractionPrompt.tscn`
+- Script: `res://scripts/ui/autumn_interaction_prompt.gd`
+- Owner: the Autumn HUD
+- Responsibility: display the F interaction affordance near the active
+  `CanvasItem`, follow moving targets, clamp to horizontal margins, and remain
+  above the bottom-HUD boundary
+
+### AutumnEditorHUDReference
+
+- Scene: `res://scenes/dev/AutumnEditorHUDReference.tscn`
+- Owner: `AutumnBattleMapV2.tscn`
+- Responsibility: expose the exact runtime HUD and card instances in the map
+  editor. Runtime adoption reparents these same instances; it must not recreate
+  or normalize their authored geometry.
+
+### AutumnBattleCard
+
+- Scene: `res://scenes/ui/autumn/AutumnBattleCard.tscn`
+- Script: `res://scripts/ui/autumn_battle_card.gd`
+- Owner: `AutumnCardHandUI`
+- Public methods:
+  - `configure(card: Dictionary, shortcut: String, affordable: bool)`
+  - `set_row_active(active: bool, affordable: bool)`
+  - `set_affordable(affordable: bool)`
+  - `set_hovered(hovered: bool)`
+- Responsibility: present a tall, structured dark-fantasy card while keeping
+  the root `Button` as the single input and focus owner
+
+### AutumnCardHandUI renderer
+
+- Script: `res://scripts/ui/autumn_card_hand_ui.gd`
+- Base: `CardHandUI`
+- Responsibility: create AutumnBattleCard instances, keep card groups in
+  stable scene-authored rows, calculate responsive card dimensions, overlap
+  the rows, and apply active/inactive group presentation
+- Isolation: Town continues to use `res://scripts/ui/card_hand_ui.gd`; Autumn
+  visual changes must not be added to the shared renderer

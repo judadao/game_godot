@@ -10,6 +10,7 @@ var _equipment_catalog: Array[Dictionary] = []
 var _equipment_by_id: Dictionary = {}
 var _owned_equipment: Dictionary = {}
 var _equipment_levels: Dictionary = {}
+var _progression_unlocks: Dictionary = {}
 var _equipped: Dictionary = {
 	"weapon": StringName(),
 	"armor": StringName(),
@@ -169,6 +170,8 @@ func get_special_ability_totals() -> Dictionary:
 		if item_id.is_empty():
 			continue
 		var item := _equipment_by_id.get(String(item_id), {}) as Dictionary
+		if not _meets_upgrade_requirement(item):
+			continue
 		var ability := item.get("special_ability", {}) as Dictionary
 		for key_variant in ability:
 			var key := String(key_variant)
@@ -197,11 +200,18 @@ func upgrade_equipment(item_id: StringName) -> bool:
 	var key := String(item_id)
 	if not _owned_equipment.has(key):
 		return false
+	var item := _equipment_by_id.get(key, {}) as Dictionary
+	if not _meets_upgrade_requirement(item):
+		return false
 	var cost := get_equipment_upgrade_cost(item_id)
 	if cost.is_empty() or not spend_resources(cost):
 		return false
 	_equipment_levels[key] = int(_equipment_levels[key]) + 1
 	return true
+
+
+func set_progression_unlocks(unlocks: Dictionary) -> void:
+	_progression_unlocks = unlocks.duplicate(true)
 
 
 func to_dict() -> Dictionary:
@@ -299,3 +309,8 @@ func _is_non_negative_whole_number(value: Variant) -> bool:
 		return false
 	var number := float(value)
 	return number >= 0.0 and is_equal_approx(number, floorf(number))
+
+
+func _meets_upgrade_requirement(item: Dictionary) -> bool:
+	var requirement := String(item.get("upgrade_requirement", ""))
+	return requirement.is_empty() or bool(_progression_unlocks.get(requirement, false))

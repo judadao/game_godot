@@ -3,19 +3,19 @@ class_name HUD
 
 signal interaction_prompt_accepted
 
-@onready var hp_fill: ColorRect = $HUDStatus/HPBar/Fill
-@onready var hp_value: Label = $HUDStatus/HPBar/Value
-@onready var mp_fill: ColorRect = $HUDStatus/MPBar/Fill
-@onready var mp_value: Label = $HUDStatus/MPBar/Value
-@onready var stamina_fill: ColorRect = $HUDStatus/StaminaBar/Fill
-@onready var stamina_value: Label = $HUDStatus/StaminaBar/Value
-@onready var level_label: Label = $HUDStatus/LevelLabel
-@onready var class_label: Label = $HUDStatus/ClassLabel
-@onready var currency_value: Label = $HUDProgressPanel/Rows/GoldRow/CurrencyValue
-@onready var experience_value: Label = $HUDProgressPanel/Rows/ExperienceRow/ExperienceValue
+@onready var hp_fill: ColorRect = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/HPBar/Fill
+@onready var hp_value: Label = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/HPBar/Value
+@onready var mp_fill: ColorRect = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/MPBar/Fill
+@onready var mp_value: Label = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/MPBar/Value
+@onready var stamina_fill: ColorRect = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/StaminaBar/Fill
+@onready var stamina_value: Label = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/StaminaBar/Value
+@onready var level_label: Label = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/LevelLabel
+@onready var class_label: Label = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/ClassLabel
+@onready var currency_value: Label = $BottomHUD/HUDGrid/ProgressColumn/ProgressCenter/ProgressProxy/HUDProgressPanel/Rows/GoldRow/CurrencyValue
+@onready var experience_value: Label = $BottomHUD/HUDGrid/ProgressColumn/ProgressCenter/ProgressProxy/HUDProgressPanel/Rows/ExperienceRow/ExperienceValue
 @onready var area_name: Label = $AreaPanel/AreaRows/AreaName
-@onready var quest_text: Label = $HUDQuestTracker/QuestRows/QuestText
-@onready var quest_progress: Label = $HUDQuestTracker/QuestRows/QuestProgress
+@onready var quest_text: Label = $BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy/HUDQuestTracker/QuestRows/QuestText
+@onready var quest_progress: Label = $BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy/HUDQuestTracker/QuestRows/QuestProgress
 @onready var interaction_panel: Control = $InteractionPanel
 @onready var key_label: Label = $InteractionPanel/PromptRow/Keycap/KeyLabel
 @onready var prompt_text: Label = $InteractionPanel/PromptRow/PromptText
@@ -83,12 +83,20 @@ func set_objective(text: String, progress: String = "") -> void:
 	quest_progress.text = progress
 	quest_progress.visible = not progress.is_empty()
 
-func set_interaction_prompt(action_text: String, key_text: String = "F") -> void:
+func set_interaction_prompt(
+	action_text: String,
+	key_text: String = "F",
+	target: CanvasItem = null
+) -> void:
 	prompt_text.text = action_text
 	key_label.text = key_text
 	interaction_panel.visible = not action_text.is_empty()
+	if interaction_panel.has_method("set_target"):
+		interaction_panel.call("set_target", target)
 
 func clear_interaction_prompt() -> void:
+	if interaction_panel.has_method("clear_target"):
+		interaction_panel.call("clear_target")
 	interaction_panel.visible = false
 
 func set_interaction_visible(is_visible: bool) -> void:

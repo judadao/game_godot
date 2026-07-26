@@ -5,7 +5,7 @@ signal deck_confirmed(deck_ids: Array[String])
 signal canceled
 
 const REQUIRED_DECK_SIZE := 16
-const PROTECTED_BASIC_CARD := "ember_bolt"
+const FIXED_CARD_IDS: Array[String] = ["ember_bolt", "quickstep"]
 
 var _catalog: Array[Dictionary] = []
 var _counts: Dictionary = {}
@@ -34,8 +34,9 @@ func configure(cards: Array, current_deck: Array) -> void:
 		var card_id := String(card_id_variant)
 		if _counts.has(card_id):
 			_counts[card_id] = int(_counts[card_id]) + 1
-	if _counts.has(PROTECTED_BASIC_CARD):
-		_counts[PROTECTED_BASIC_CARD] = 1
+	for fixed_id in FIXED_CARD_IDS:
+		if _counts.has(fixed_id):
+			_counts[fixed_id] = 1
 	if is_node_ready():
 		_rebuild_cards()
 
@@ -81,7 +82,7 @@ func _build_layout() -> void:
 	title.add_theme_font_size_override("font_size", 24)
 	column.add_child(title)
 	var hint := Label.new()
-	hint.text = "Ember Bolt is fixed. Bring up to 15 more cards. Normal: 3 copies; rare Combo: 1."
+	hint.text = "Ember Bolt and Quickstep are fixed. Bring up to 14 more cards. Normal: 3 copies; rare Combo: 1."
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(hint)
 
@@ -160,8 +161,8 @@ func _change_count(card_id: String, amount: int) -> void:
 	if not _rows.has(card_id):
 		return
 	var card := (_rows[card_id] as Dictionary)["card"] as Dictionary
-	var max_copies := 1 if String(card.get("type", "")) == "combo" or card_id == PROTECTED_BASIC_CARD else 3
-	var min_copies := 1 if card_id == PROTECTED_BASIC_CARD else 0
+	var max_copies := 1 if String(card.get("type", "")) == "combo" or FIXED_CARD_IDS.has(card_id) else 3
+	var min_copies := 1 if FIXED_CARD_IDS.has(card_id) else 0
 	var current := int(_counts.get(card_id, 0))
 	if amount > 0 and get_selected_count() >= REQUIRED_DECK_SIZE:
 		return
@@ -175,8 +176,8 @@ func _update_controls() -> void:
 		var row := _rows[card_id] as Dictionary
 		var card := row["card"] as Dictionary
 		var current := int(_counts.get(card_id, 0))
-		var max_copies := 1 if String(card.get("type", "")) == "combo" or card_id == PROTECTED_BASIC_CARD else 3
-		var min_copies := 1 if card_id == PROTECTED_BASIC_CARD else 0
+		var max_copies := 1 if String(card.get("type", "")) == "combo" or FIXED_CARD_IDS.has(card_id) else 3
+		var min_copies := 1 if FIXED_CARD_IDS.has(card_id) else 0
 		(row["count"] as Label).text = "%d/%d" % [current, max_copies]
 		(row["minus"] as Button).disabled = current <= min_copies
 		(row["plus"] as Button).disabled = current >= max_copies or total >= REQUIRED_DECK_SIZE

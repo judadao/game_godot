@@ -1,7 +1,9 @@
 extends SceneTree
 
-const CARD_FAN_PATH := "CardSafeArea/BottomMargin/BottomRow/HandSlot/CardFan"
-const ENERGY_BADGE_PATH := "CardSafeArea/BottomMargin/BottomRow/LeftSlot/LeftControls/EnergyBadge"
+const CARD_ROWS_PATH := "CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows"
+const BACK_ROW_PATH := CARD_ROWS_PATH + "/BackRow"
+const FRONT_ROW_PATH := CARD_ROWS_PATH + "/FrontRow"
+const ENERGY_BADGE_PATH := "CardSafeArea/BottomMargin/BottomRow/APSlot/APControls/EnergyBadge"
 
 var _failures := 0
 
@@ -43,8 +45,8 @@ func _run() -> void:
 	var safe_area := ui.get_node("CardSafeArea") as ColorRect
 	var viewport_height: float = ui.get_viewport_rect().size.y
 	_expect(
-		safe_area.position.y >= viewport_height - 196.0,
-		"Card stage must not hide more than 196 pixels of the battle map."
+		is_equal_approx(safe_area.position.y, viewport_height * 0.75),
+		"Two-row card stage must reserve exactly the bottom 25 percent of the viewport."
 	)
 	_expect(
 		is_equal_approx(safe_area.size.y, viewport_height - safe_area.position.y),
@@ -55,19 +57,23 @@ func _run() -> void:
 		"Card stage must be opaque so the battle map cannot show through the hand."
 	)
 	_expect(
-		is_equal_approx(float(ui.call("get_resting_visible_height")), 168.0),
-		"Resting hand must expose the full card."
+		float(ui.call("get_resting_visible_height")) <= 82.0,
+		"Compact resting cards must fit two complete rows inside the bottom HUD."
 	)
-	var card_fan := ui.get_node_or_null(CARD_FAN_PATH) as Control
-	_expect(card_fan != null, "Card hand must provide the scene-authored CardFan.")
-	if card_fan == null:
+	var card_rows := ui.get_node_or_null(CARD_ROWS_PATH) as VBoxContainer
+	var back_row := ui.get_node_or_null(BACK_ROW_PATH) as HBoxContainer
+	var front_row := ui.get_node_or_null(FRONT_ROW_PATH) as HBoxContainer
+	_expect(card_rows != null and back_row != null and front_row != null, "Card hand must provide scene-authored VBox/BackRow/FrontRow containers.")
+	if card_rows == null or back_row == null or front_row == null:
 		ui.queue_free()
 		await process_frame
 		quit(1)
 		return
-	var buttons := card_fan.get_children()
-	_expect(buttons.size() == 4, "The active card group must create four runtime cards inside CardFan.")
-	if buttons.size() != 4:
+	var buttons: Array[Node] = []
+	buttons.append_array(front_row.get_children())
+	buttons.append_array(back_row.get_children())
+	_expect(buttons.size() == cards.size(), "The two rows must create every held card across both groups.")
+	if buttons.size() != cards.size():
 		ui.queue_free()
 		await process_frame
 		quit(1)
@@ -82,12 +88,12 @@ func _run() -> void:
 		quit(1)
 		return
 	_expect(
-		second.position.x - first.position.x < first.size.x,
-		"Cards must overlap instead of spanning a wide opaque bar."
+		second.position.x >= first.position.x + first.size.x,
+		"Cards in a row must be laid out by HBoxContainer without overlap."
 	)
 	_expect(
-		absf((second.position.x + middle.position.x) * 0.5 + middle.size.x * 0.5 - card_fan.size.x * 0.5) <= 8.0,
-		"Visible four-card group must remain centered in the scene-authored CardFan."
+		front_row.get_child_count() == 4 and back_row.get_child_count() == 1,
+		"Group one must occupy FrontRow and the partial second group must occupy BackRow."
 	)
 	var safe_rect := _canvas_rect(safe_area)
 	for index in buttons.size():
@@ -95,15 +101,21 @@ func _run() -> void:
 		if card == null:
 			continue
 		var card_rect := _canvas_rect(card)
-		_expect(safe_rect.encloses(card_rect), "Resting card %d must remain inside the dedicated bottom card stage." % index)
+		_expect(
+			safe_rect.encloses(card_rect),
+			"Resting card %d must remain inside the dedicated bottom card stage. safe=%s fan=%s local=%s card=%s layout=%s"
+			% [index, safe_rect, _canvas_rect(card_rows), card.position, card_rect, ui.call("get_card_layout", index)]
+		)
 		_expect(_inside_viewport(card_rect, ui.get_viewport_rect().size), "Resting card %d must remain fully visible above the viewport edge." % index)
 	var resting := ui.call("get_card_layout", 2) as Dictionary
 	var resting_position := resting.get("position", Vector2.ZERO) as Vector2
 	ui.call("preview_card_hover", 2, true)
 	var raised := ui.call("get_card_layout", 2) as Dictionary
 	_expect(
-		float((raised.get("position", Vector2.ZERO) as Vector2).y) <= resting_position.y - 70.0,
-		"Hovered card must rise enough to reveal its complete text."
+		float((raised.get("position", Vector2.ZERO) as Vector2).y) <= resting_position.y - 8.0
+		and float((raised.get("position", Vector2.ZERO) as Vector2).y) >= resting_position.y - 12.0,
+		"Hovered card must rise 8–12 pixels without leaving its row. resting=%s raised=%s"
+		% [resting_position, raised.get("position", Vector2.ZERO)]
 	)
 	_expect(int(raised.get("z_index", 0)) >= 100, "Hovered card must draw in front of the hand.")
 	_expect((raised.get("scale", Vector2.ONE) as Vector2).x >= 1.08, "Hovered card must enlarge.")
@@ -134,14 +146,14 @@ func _run() -> void:
 	var attached_badge_position := energy_badge.position
 	var attached_card_position := middle.position
 	root.remove_child(ui)
-	ui.call("_layout_cards")
+	ui.call("_capture_resting_layouts")
 	_expect(
 		energy_badge.position == attached_badge_position,
 		"Detached editor card hand must not move scene-authored controls."
 	)
 	_expect(
 		middle.position == attached_card_position,
-		"Detached editor card hand must not recalculate CardFan-local card positions from an unavailable viewport."
+		"Detached editor card hand must not recalculate container-managed card positions from an unavailable viewport."
 	)
 	ui.free()
 	await process_frame

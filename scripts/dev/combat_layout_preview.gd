@@ -6,10 +6,13 @@ extends Node2D
 
 
 func _ready() -> void:
-	var gameplay_camera := get_node_or_null("AutumnForest/Player/Camera2D") as Camera2D
+	var gameplay_camera := get_node_or_null("AutumnBattleMapV2/Player/Camera2D") as Camera2D
 	if gameplay_camera != null:
 		gameplay_camera.enabled = false
 	preview_camera.enabled = true
+	_apply_preview_camera_scale()
+	if not get_viewport().size_changed.is_connected(_apply_preview_camera_scale):
+		get_viewport().size_changed.connect(_apply_preview_camera_scale)
 
 	hud.set_health(43, 100)
 	hud.set_mana(31, 50)
@@ -25,11 +28,20 @@ func _ready() -> void:
 	card_hand.set_combo("—  [0/4]", "Same type stacks / four types max")
 
 
+func _apply_preview_camera_scale() -> void:
+	preview_camera.zoom = _preview_zoom_for_size(get_viewport_rect().size)
+
+
+func _preview_zoom_for_size(viewport_size: Vector2) -> Vector2:
+	var scale := maxf(0.5, viewport_size.y / 720.0)
+	return Vector2.ONE * scale
+
+
 func _sample_cards() -> Array[Dictionary]:
 	return [
-		_card("Ember Bolt", "attack", "Deal 12 damage and apply burn.", 1),
+		_card("Ember Bolt", "attack", "Deal 12 damage and apply burn.", 1, "ember_bolt", true),
+		_card("Quickstep", "skill", "Dash through danger.", 1, "quickstep", true),
 		_card("Guard", "defense", "Gain 12 block.", 1),
-		_card("Quickstep", "skill", "Dash through danger.", 1),
 		_card("Cleave", "attack", "Strike enemies in an arc.", 2),
 		_card("Flame Infusion", "power", "Future attacks gain flame.", 2),
 		_card("Frost Burst", "power", "Future attacks gain frost.", 2),
@@ -38,11 +50,20 @@ func _sample_cards() -> Array[Dictionary]:
 	]
 
 
-func _card(name_text: String, type_text: String, description: String, cost: int) -> Dictionary:
+func _card(
+	name_text: String,
+	type_text: String,
+	description: String,
+	cost: int,
+	card_id: String = "",
+	fixed: bool = false
+) -> Dictionary:
 	return {
+		"id": card_id,
 		"name": name_text,
 		"type": type_text,
 		"description": description,
 		"cost": cost,
 		"level": 1,
+		"fixed": fixed,
 	}

@@ -178,7 +178,7 @@ wrappers，讓 portal、HUD、save 與既有測試不需知道實作已抽離：
 | Canonical path | Authoritative path | Runtime root |
 |---|---|---|
 | `res://scenes/maps/town.tscn` | `res://scenes/maps/town/TownMap.tscn` | `TownMap` |
-| `res://scenes/maps/autumn_forest.tscn` | `res://scenes/maps/autumn_tree/AutumnTreeMap.tscn` | `AutumnTreeMap` |
+| `res://scenes/maps/autumn_forest.tscn` | `res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn` | `AutumnBattleMapV2` |
 | `res://scenes/maps/crystal_caves.tscn` | `res://scenes/maps/layouts/CrystalCavesLayout.tscn` | `CrystalCaves` |
 | `res://scenes/maps/forbidden_graveyard.tscn` | `res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn` | `ForbiddenGraveyard` |
 

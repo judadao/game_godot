@@ -13,13 +13,13 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	game.call("_begin_autumn_run")
-	game.call("load_current_map", load("res://scenes/maps/autumn_forest.tscn") as PackedScene)
+	game.call("load_current_map", load("res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn") as PackedScene)
 	await process_frame
 	var player := game.get("player") as Node
 	var camera := player.find_child("Camera2D", true, false) as Camera2D
 	_expect(
-		camera != null and camera.position.y >= 90.0 and camera.position.y <= 100.0,
-		"Battle camera offset must match the compact bottom card stage without over-shifting the map."
+		camera != null and camera.position.y >= 88.0 and camera.position.y <= 92.0,
+		"Battle camera offset must center gameplay inside the upper 75 percent world region."
 	)
 	game.queue_free()
 	await process_frame

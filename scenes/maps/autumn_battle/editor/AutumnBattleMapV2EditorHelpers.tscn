@@ -1,0 +1,130 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/map_editor_helpers.gd" id="1_helpers"]
+
+[node name="EditorHelpers" type="Node2D"]
+z_index = 200
+script = ExtResource("1_helpers")
+
+[node name="MapBounds" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0, 2600, 0, 2600, 720, 0, 720, 0, 0)
+width = 4.0
+default_color = Color(1, 0.24, 0.18, 0.9)
+
+[node name="CombatCameraSafeView" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0, 1280, 0, 1280, 540, 0, 540, 0, 0)
+width = 3.0
+default_color = Color(1, 0.8, 0.2, 0.9)
+
+[node name="WorldHudBoundary" type="Line2D" parent="."]
+points = PackedVector2Array(0, 540, 2600, 540)
+width = 5.0
+default_color = Color(0.3, 0.72, 1, 0.95)
+
+[node name="SpawnZoneGuide" type="Line2D" parent="."]
+points = PackedVector2Array(0, 0, 420, 0, 420, 540, 0, 540, 0, 0)
+width = 3.0
+default_color = Color(0.28, 1, 0.48, 0.85)
+
+[node name="EventChoiceZoneGuide" type="Line2D" parent="."]
+points = PackedVector2Array(420, 0, 820, 0, 820, 540, 420, 540, 420, 0)
+width = 3.0
+default_color = Color(1, 0.72, 0.24, 0.85)
+
+[node name="EnemyWaveZoneGuide" type="Line2D" parent="."]
+points = PackedVector2Array(820, 0, 1650, 0, 1650, 540, 820, 540, 820, 0)
+width = 4.0
+default_color = Color(1, 0.3, 0.22, 0.9)
+
+[node name="MerchantZoneGuide" type="Line2D" parent="."]
+points = PackedVector2Array(1650, 0, 2100, 0, 2100, 540, 1650, 540, 1650, 0)
+width = 3.0
+default_color = Color(0.32, 0.76, 1, 0.85)
+
+[node name="ExitZoneGuide" type="Line2D" parent="."]
+points = PackedVector2Array(2100, 0, 2600, 0, 2600, 540, 2100, 540, 2100, 0)
+width = 3.0
+default_color = Color(0.76, 0.44, 1, 0.9)
+
+[node name="MapTitle" type="Label" parent="."]
+offset_left = 24.0
+offset_top = 18.0
+offset_right = 560.0
+offset_bottom = 56.0
+theme_override_colors/font_color = Color(1, 0.8, 0.38, 1)
+theme_override_colors/font_outline_color = Color(0.08, 0.04, 0.02, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 24
+text = "AUTUMN BATTLE MAP V2 — 2600 x 720"
+
+[node name="CameraSafeLabel" type="Label" parent="."]
+offset_left = 925.0
+offset_top = 500.0
+offset_right = 1270.0
+offset_bottom = 534.0
+theme_override_colors/font_color = Color(1, 0.84, 0.28, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.01, 1)
+theme_override_constants/outline_size = 4
+text = "1280 x 540 CAMERA SAFE VIEW"
+horizontal_alignment = 2
+
+[node name="HudBoundaryLabel" type="Label" parent="."]
+offset_left = 1030.0
+offset_top = 544.0
+offset_right = 1570.0
+offset_bottom = 578.0
+theme_override_colors/font_color = Color(0.4, 0.82, 1, 1)
+theme_override_colors/font_outline_color = Color(0.02, 0.06, 0.1, 1)
+theme_override_constants/outline_size = 4
+text = "WORLD / BATTLE HUD BOUNDARY — Y = 540"
+horizontal_alignment = 1
+
+[node name="SpawnZoneLabel" type="Label" parent="."]
+offset_left = 42.0
+offset_top = 80.0
+offset_right = 382.0
+offset_bottom = 116.0
+theme_override_colors/font_color = Color(0.36, 1, 0.54, 1)
+theme_override_constants/outline_size = 4
+text = "1  SPAWN / TOWN RETURN"
+horizontal_alignment = 1
+
+[node name="EventChoiceZoneLabel" type="Label" parent="."]
+offset_left = 448.0
+offset_top = 80.0
+offset_right = 792.0
+offset_bottom = 116.0
+theme_override_colors/font_color = Color(1, 0.78, 0.32, 1)
+theme_override_constants/outline_size = 4
+text = "2  EVENT / CHOICE"
+horizontal_alignment = 1
+
+[node name="EnemyWaveZoneLabel" type="Label" parent="."]
+offset_left = 980.0
+offset_top = 80.0
+offset_right = 1490.0
+offset_bottom = 116.0
+theme_override_colors/font_color = Color(1, 0.38, 0.28, 1)
+theme_override_constants/outline_size = 4
+text = "3  SURVIVAL WAVES / GUARDIAN"
+horizontal_alignment = 1
+
+[node name="MerchantZoneLabel" type="Label" parent="."]
+offset_left = 1690.0
+offset_top = 80.0
+offset_right = 2060.0
+offset_bottom = 116.0
+theme_override_colors/font_color = Color(0.4, 0.82, 1, 1)
+theme_override_constants/outline_size = 4
+text = "4  CAMPFIRE / MERCHANT"
+horizontal_alignment = 1
+
+[node name="ExitZoneLabel" type="Label" parent="."]
+offset_left = 2140.0
+offset_top = 80.0
+offset_right = 2560.0
+offset_bottom = 116.0
+theme_override_colors/font_color = Color(0.82, 0.58, 1, 1)
+theme_override_constants/outline_size = 4
+text = "5  LOCKED EXIT / NEXT MAP"
+horizontal_alignment = 1

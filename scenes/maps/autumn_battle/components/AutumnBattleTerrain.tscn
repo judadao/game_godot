@@ -1,0 +1,78 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_ground_atlas.png" id="1_ground"]
+
+[sub_resource type="AtlasTexture" id="AtlasGround"]
+atlas = ExtResource("1_ground")
+region = Rect2(14, 320, 996, 174)
+
+[sub_resource type="AtlasTexture" id="AtlasPlatform"]
+atlas = ExtResource("1_ground")
+region = Rect2(24, 684, 506, 198)
+
+[sub_resource type="AtlasTexture" id="AtlasBridge"]
+atlas = ExtResource("1_ground")
+region = Rect2(552, 704, 438, 178)
+
+[node name="AutumnBattleTerrain" type="Node2D"]
+z_index = 0
+
+[node name="Ground" type="Node2D" parent="."]
+
+[node name="GroundTile01" type="Sprite2D" parent="Ground"]
+position = Vector2(220, 496)
+scale = Vector2(0.5, 0.5)
+texture = SubResource("AtlasGround")
+
+[node name="GroundTile02" type="Sprite2D" parent="Ground"]
+position = Vector2(660, 496)
+scale = Vector2(0.5, 0.5)
+texture = SubResource("AtlasGround")
+
+[node name="GroundTile03" type="Sprite2D" parent="Ground"]
+position = Vector2(1100, 496)
+scale = Vector2(0.5, 0.5)
+texture = SubResource("AtlasGround")
+
+[node name="GroundTile04" type="Sprite2D" parent="Ground"]
+position = Vector2(1540, 496)
+scale = Vector2(0.5, 0.5)
+texture = SubResource("AtlasGround")
+
+[node name="GroundTile05" type="Sprite2D" parent="Ground"]
+position = Vector2(1980, 496)
+scale = Vector2(0.5, 0.5)
+texture = SubResource("AtlasGround")
+
+[node name="GroundTile06" type="Sprite2D" parent="Ground"]
+position = Vector2(2420, 496)
+scale = Vector2(0.5, 0.5)
+texture = SubResource("AtlasGround")
+
+[node name="Platforms" type="Node2D" parent="."]
+z_index = 4
+
+[node name="EventLookout" type="Sprite2D" parent="Platforms"]
+position = Vector2(690, 430)
+scale = Vector2(0.34, 0.34)
+texture = SubResource("AtlasPlatform")
+
+[node name="ArenaWestPlatform" type="Sprite2D" parent="Platforms"]
+position = Vector2(1010, 420)
+scale = Vector2(0.34, 0.34)
+texture = SubResource("AtlasPlatform")
+
+[node name="ArenaCenterBridge" type="Sprite2D" parent="Platforms"]
+position = Vector2(1280, 350)
+scale = Vector2(0.42, 0.42)
+texture = SubResource("AtlasBridge")
+
+[node name="ArenaEastPlatform" type="Sprite2D" parent="Platforms"]
+position = Vector2(1550, 420)
+scale = Vector2(0.34, 0.34)
+texture = SubResource("AtlasPlatform")
+
+[node name="MerchantAwningPlatform" type="Sprite2D" parent="Platforms"]
+position = Vector2(1890, 430)
+scale = Vector2(0.32, 0.32)
+texture = SubResource("AtlasPlatform")
