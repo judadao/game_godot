@@ -1,53 +1,42 @@
-# Card, Skill, Growth, and Autumn HUD Redesign
+# 卡牌、Skill、成長系統與秋季 HUD 重製設計
 
-Date: 2026-07-26
+日期：2026-07-26
 
-Status: Approved for implementation planning
+狀態：已核准，可進入實作規劃
 
-## 1. Goal
+## 1. 目標
 
-Replace the current block-oriented Defense cards, ambiguous card-growth
-dialogue, shared-level card model, and fragile Autumn HUD with one coherent
-combat progression design.
+以一套一致的戰鬥成長設計，取代目前以 Block 為核心的 Defense 卡、語意不明的卡牌成長對話框、共用等級的卡牌模型，以及容易跑版的秋季 HUD。
 
-The redesign must:
+本次重製必須：
 
-- remove the `defense` card type and direct Block-card gameplay;
-- introduce reusable timed defensive Combo cards;
-- make every healing card visually green and mechanically identifiable;
-- add a memory-capacity Skill system driven only by successful attack-card
-  combinations;
-- track the level of every card copy independently;
-- unify new-card rewards, card upgrades, full-level fusion, and resource
-  fallback in one paused growth UI;
-- replace the Autumn battle HUD rather than incrementally moving its current
-  nodes;
-- leave the Town HUD unchanged.
+- 移除 `defense` 卡牌類型與直接給予 Block 的卡牌玩法。
+- 加入可重複使用、具有持續時間的防禦型 Combo 卡。
+- 讓所有治療卡在視覺上統一為綠色，並可從資料語意上明確辨識。
+- 加入具備記憶容量的 Skill 系統；Skill 只會由成功命中的攻擊卡組合觸發。
+- 每一張卡牌副本各自保存等級。
+- 用單一、會暫停遊戲的成長 UI，整合新卡獎勵、卡牌升級、滿等融合與資源補償。
+- 完整替換秋季戰鬥 HUD，不在現有節點上逐步搬動。
+- 城鎮 HUD 維持不變。
 
-## 2. Terminology
+## 2. 名詞定義
 
-The word **Skill** is reserved for passive attack-combination recipes stored in
-the Skill memory backpack. It no longer describes an ordinary card category.
+**Skill** 一詞只代表存放於 Skill 記憶背包中的被動攻擊組合配方，不再用來表示普通卡牌類型。
 
-The runtime concepts are:
+執行期概念如下：
 
-- **Card definition**: immutable catalog data identified by `card_id`.
-- **Card instance**: one owned copy with a unique `instance_id` and its own
-  level.
-- **Combo card**: an active hand card that applies a timed combat effect.
-- **Healing card**: a green hand card whose primary result restores health.
-- **Skill**: a learned passive recipe that observes successful attack cards and
-  automatically produces an effect.
-- **Fusion**: consuming two different full-level card instances named by a
-  recipe to create one higher-tier level-one card instance.
+- **卡牌定義（Card definition）**：以 `card_id` 識別的唯讀 catalog 資料。
+- **卡牌實例（Card instance）**：玩家實際擁有的一張卡，具有唯一 `instance_id` 與獨立等級。
+- **Combo 卡**：手牌中的主動卡，使用後施加具有持續時間的戰鬥效果。
+- **Healing 卡**：以綠色呈現，主要效果為恢復生命的手牌。
+- **Skill**：已學會的被動配方；監聽成功的攻擊卡，條件完成時自動產生效果。
+- **融合（Fusion）**：依配方消耗兩張不同、已滿等的卡牌實例，生成一張高階 Lv.1 卡牌實例。
 
-Existing cards with type `skill` must be reclassified. Offensive cards such as
-Dash Strike become `attack`; pure movement or utility cards become `utility`;
-Healing Light becomes `healing`.
+現有 `skill` 類型卡必須重新分類。Dash Strike 等攻擊型卡改為 `attack`；純位移或輔助卡改為 `utility`；Healing Light 改為 `healing`。
 
-## 3. Card Instance Model
+## 3. 卡牌實例模型
 
-Every non-fixed card copy has independent progression:
+每一張非固定卡副本都要獨立成長：
 
 ```text
 CardInstance
@@ -56,11 +45,10 @@ CardInstance
 └── level: int
 ```
 
-Two Cleave copies may therefore be level one and level three at the same time.
-All deck zones retain instance identity:
+因此兩張 Cleave 可以同時分別為 Lv.1 與 Lv.3。所有牌堆區域都必須保留實例身分：
 
 ```text
-owned instances
+玩家擁有的卡牌實例
 ├── hand
 ├── draw pile
 ├── discard pile
@@ -68,255 +56,211 @@ owned instances
 └── cooldown pile
 ```
 
-Zone entries must never collapse to a shared card ID. Card projections resolve
-catalog data by `card_id`, then apply only that instance's level.
+牌堆內容不得再簡化為共用的 card ID。卡牌 projection 先透過 `card_id` 取得 catalog 資料，再只套用該實例自己的等級。
 
-The fixed `ember_bolt` and `quickstep` cards also receive stable instances so
-zone operations remain uniform. They stay locked at level one and are excluded
-from rewards, upgrades, fusion, purge, merge, and per-card growth data.
+固定卡 `ember_bolt` 與 `quickstep` 也會取得穩定實例，讓所有牌堆操作使用相同模型。兩者固定鎖定在 Lv.1，不能成為獎勵、升級、融合、移除、合併或個別卡牌成長的對象。
 
-### 3.1 Save migration
+### 3.1 存檔遷移
 
-Old card-ID arrays migrate in their existing order. Each occurrence creates a
-new stable instance ID. An old shared `card_levels[card_id]` value is copied to
-every migrated instance of that definition so existing progress is not lost.
-Unknown cards are preserved in a recoverable migration report and excluded
-from the active deck rather than silently deleted.
+舊版 card-ID 陣列依原有順序遷移，每一次出現都建立一個新的穩定 instance ID。舊版共用的 `card_levels[card_id]` 會複製到該定義的每一張遷移實例，避免玩家失去既有進度。
 
-Migration is idempotent: loading an already instance-based save must not
-generate new IDs.
+無法辨識的卡牌要保留在可復原的 migration report 中，並排除於目前生效牌組之外，不得靜默刪除。
 
-## 4. Card Taxonomy and Defensive Combo Cards
+遷移必須具備冪等性：已經是實例格式的存檔再次載入時，不得產生新的 ID。
 
-The `defense` type and ordinary Block effects are removed. Player defense is
-expressed through two independent timed statuses:
+## 4. 卡牌分類與防禦型 Combo 卡
 
-- `super_armor`: prevents interruption and knockback but does not reduce
-  damage;
-- `damage_reduction`: reduces health damage but does not prevent interruption.
+移除 `defense` 類型與一般 Block 效果。玩家的防禦改由兩種彼此獨立的限時狀態表示：
 
-Weak super armor ignores ordinary enemy hit reactions. Strong super armor also
-ignores heavy reactions. Explicit boss-unblockable attacks bypass both armor
-tiers. Different damage-reduction sources may coexist, but total reduction is
-capped at 60 percent. The strongest armor tier wins; the same status source
-refreshes its duration and never stacks with itself.
+- `super_armor`：防止硬直、打斷與擊退，但不降低傷害。
+- `damage_reduction`：降低生命傷害，但不防止硬直或打斷。
 
-Initial Defense-card conversions are:
+弱霸體會忽略普通敵人的一般受擊反應；強霸體也會忽略重型受擊反應。明確標記為 Boss 不可抵抗的攻擊可以穿透兩種霸體。
 
-| Existing ID | Display name | Type | Cost | Effect | Cooldown |
+不同來源的減傷可以並存，但總減傷上限為 60%。霸體只採用目前最高等級；同一來源的狀態只刷新時間，不與自己疊加。
+
+第一批 Defense 卡轉換如下：
+
+| 現有 ID | 顯示名稱 | 類型 | 費用 | 效果 | 冷卻 |
 |---|---|---:|---:|---|---:|
-| `guard` | Iron Will | combo | 1 AP | Weak super armor for 4 seconds | 8 seconds |
-| `iron_skin` | Stone Form | combo | 2 AP | 30% damage reduction for 5 seconds | 12 seconds |
-| `fortress_stance` | Unbreakable Stance | combo | 4 AP | Strong super armor and 40% reduction for 4 seconds | 18 seconds |
-| `stoneguard_combo` | Counterguard | combo | 3 AP | 25% reduction and retaliation for 6 seconds | 14 seconds |
+| `guard` | Iron Will | combo | 1 AP | 弱霸體 4 秒 | 8 秒 |
+| `iron_skin` | Stone Form | combo | 2 AP | 30% 減傷 5 秒 | 12 秒 |
+| `fortress_stance` | Unbreakable Stance | combo | 4 AP | 強霸體與 40% 減傷 4 秒 | 18 秒 |
+| `stoneguard_combo` | Counterguard | combo | 3 AP | 25% 減傷與反擊 6 秒 | 14 秒 |
 
-All defensive Combo cards are reusable. After play they enter the cooldown
-pile, do not occupy a hand slot, and move to the discard pile only after their
-cooldown expires. Cooldowns advance only while gameplay is not paused.
+所有防禦型 Combo 卡皆可重複使用。打出後進入 cooldown pile，不占用手牌位置；冷卻結束後才進入 discard pile。遊戲暫停期間冷卻不得推進。
 
-## 5. Green Healing Family
+## 5. 綠色 Healing 卡系
 
-Every card whose primary purpose restores health uses type `healing` and one
-shared green visual language:
+主要用途為恢復生命的卡牌全部使用 `healing` 類型，並共用一致的綠色視覺語言：
 
-- dark emerald body;
-- brighter green border;
-- health-cross, leaf, blood-drop, or spirit icon appropriate to the subtype;
-- explicit `restore`, `regeneration`, `lifesteal`, or `healing_summon` tag.
+- 深翠綠卡身。
+- 較明亮的綠色邊框。
+- 依子類型使用生命十字、葉片、血滴或靈體圖示。
+- 明確標示 `restore`、`regeneration`、`lifesteal` 或 `healing_summon` tag。
 
-Initial conversions and additions are:
+第一批轉換與新增內容如下：
 
-| Card | Healing mode | Lifecycle |
+| 卡牌 | 治療模式 | 使用後流向 |
 |---|---|---|
-| Healing Light | Immediate restore | Exhaust after use |
-| Renewal Spirit | Repeated healing pulses | Healing summon contract |
-| Blood Pact | Timed lifesteal | Reusable; enters cooldown |
-| Verdant Renewal | Timed regeneration | Reusable; enters cooldown |
+| Healing Light | 立即回復 | 使用後 Exhaust |
+| Renewal Spirit | 多次治療脈衝 | 遵循治療召喚物契約 |
+| Blood Pact | 限時吸血 | 可重複使用；進入 cooldown |
+| Verdant Renewal | 限時再生 | 可重複使用；進入 cooldown |
 
-Immediate restore cards exhaust so AP regeneration and redraw cannot produce
-infinite safe healing. Regeneration and lifesteal may cycle, but the same
-source only refreshes its duration. It never stacks with itself.
+立即回復卡使用後 Exhaust，避免 AP 自動回復與重抽形成無限安全治療。再生與吸血可以循環，但同一來源只能刷新持續時間，不能與自己疊加。
 
-Healing cards may have attack-independent tags for content rules, but they
-never count as steps in Skill recipes.
+Healing 卡可以擁有不依賴攻擊的內容 tag，但永遠不能作為 Skill 配方步驟。
 
-## 6. Skill Memory System
+## 6. Skill 記憶系統
 
-### 6.1 Ownership and capacity
+### 6.1 所有權與容量
 
-Learned Skills are permanent. The active Skill memory backpack has a point
-capacity rather than a fixed slot count:
+學會的 Skill 是永久進度。啟用中的 Skill 記憶背包使用點數容量，而非固定欄位數：
 
-- initial capacity: 10 points;
-- common automatic Skills: 1 point;
-- intermediate exact sequences: 2–3 points;
-- long or powerful sequences: 4 or more points;
-- the Town Memory Library expands permanent capacity through levels with
-  capacities 10, 14, 18, 24, and 30.
+- 初始容量：10 點。
+- 常見自動型 Skill：1 點。
+- 中階精確順序 Skill：2–3 點。
+- 長連段或強力 Skill：4 點以上。
+- 城鎮 Memory Library 透過升級永久擴充容量，容量依序為 10、14、18、24、30。
 
-The backpack may be edited only in Town or another explicit safe area.
+玩家只能在城鎮或其他明確安全區調整 Skill 背包。
 
-Skills are learned from three sources:
+Skill 有三種學習來源：
 
-- Skill Tomes awarded by bosses, treasure, quests, and special merchants;
-- purchases from the Town Memory Library using permanent gold and materials;
-- hidden Skills permanently discovered the first time their secret attack
-  sequence succeeds.
+- Boss、寶箱、任務與特殊商人提供的 Skill Tome。
+- 使用永久金錢與素材在城鎮 Memory Library 購買。
+- 第一次成功完成秘密攻擊順序時，永久發現隱藏 Skill。
 
-Learning does not activate a Skill. The player must place it in the memory
-backpack and remain within the point budget.
+學會不代表啟用。玩家仍須把 Skill 放入記憶背包，且總成本不得超過容量。
 
-### 6.2 Recipe input
+### 6.2 配方輸入
 
-Only a successfully damaging attack card produces a Skill-recipe event. One
-resolved card contributes at most one event even when it deals multiple hits.
-Missed, cancelled, or zero-damage attacks do not contribute.
+只有成功造成傷害的攻擊卡會產生 Skill 配方事件。一張卡即使造成多段傷害，也最多貢獻一次事件。未命中、遭取消或造成零傷害的攻擊不計入。
 
-Recipes have two supported modes:
+配方只支援兩種模式：
 
-1. **Count recipe**: a specified number of successful attack cards within a
-   refreshing time window.
-2. **Exact sequence recipe**: specific attack card IDs in an exact order.
+1. **計數型配方**：在會刷新的時間視窗內，成功使用指定數量的攻擊卡。
+2. **精確順序配方**：依照指定的 card ID 順序成功使用攻擊卡。
 
-Count recipes:
+計數型配方規則：
 
-- begin their window on the first valid attack;
-- refresh the eight-second window after every valid attack;
-- ignore non-attack cards;
-- reset after triggering or timing out.
+- 第一次有效攻擊時啟動視窗。
+- 每次有效攻擊都把視窗刷新為 8 秒。
+- 忽略非攻擊卡。
+- 觸發或超時後歸零。
 
-Exact sequences:
+精確順序配方規則：
 
-- contain only explicit attack card IDs;
-- reset on an incorrect attack or any successfully played non-attack card;
-- treat a mismatching attack as a new first step when it equals the recipe's
-  first card;
-- never use Healing, Combo, Utility, or generic tag placeholders.
+- 只包含明確指定的攻擊 card ID。
+- 使用錯誤攻擊，或成功使用任何非攻擊卡時歸零。
+- 若造成錯誤的攻擊剛好是配方第一步，立即把它視為新連段起點。
+- 不使用 Healing、Combo、Utility 或泛用 tag 作為替代步驟。
 
-Taking damage does not reset either recipe type.
+玩家受傷不會重置任何一種配方。
 
-### 6.3 Parallel tracking and first Skill
+### 6.3 平行追蹤與第一個 Skill
 
-Every equipped Skill tracks independently. One attack event may advance many
-recipes, and all completed recipes may trigger together. Each Skill has its
-own cooldown; completing one never consumes another Skill's progress.
+每個已裝備 Skill 都獨立追蹤。同一個攻擊事件可以同時推進多個配方；同時完成的配方可以一起觸發。每個 Skill 有自己的冷卻；完成一個 Skill 不會消耗其他 Skill 的進度。
 
-The initial common Skill is:
+第一個常見 Skill 為：
 
 ```text
 Iron Momentum
-Memory cost: 1
-Recipe: any successful attack card ×5
-Window: 8 seconds, refreshed per valid attack
-Effect: weak super armor for 3 seconds
-Cooldown: 10 seconds
+記憶成本：1
+配方：任意成功攻擊卡 ×5
+視窗：8 秒；每次有效攻擊刷新
+效果：弱霸體 3 秒
+冷卻：10 秒
 ```
 
-## 7. Combat Status Ownership
+## 7. 戰鬥狀態所有權
 
-A focused combat-status controller owns:
+建立專責的戰鬥狀態控制器，管理：
 
-- weak and strong super armor;
-- damage reduction and its 60% cap;
-- retaliation;
-- regeneration;
-- lifesteal;
-- status-source identity, duration, refresh, expiry, and pause behavior.
+- 弱霸體與強霸體。
+- 減傷與 60% 上限。
+- 反擊。
+- 再生。
+- 吸血。
+- 狀態來源身分、持續時間、刷新、到期與暫停行為。
 
-The player controller queries the status controller when resolving hit
-reaction and damage. `Game.gd` orchestrates signals but does not own status
-math or recipe tracking.
+Player controller 在處理受擊反應與傷害時查詢狀態控制器。`Game.gd` 只協調 signal，不擁有狀態數學或配方追蹤。
 
-The status controller emits projections for the HUD. Expired states are
-removed once, and stale timers cannot clear a newer refreshed state.
+狀態控制器提供 HUD projection。到期狀態只移除一次；舊 timer 不得清除已被刷新成較新版本的狀態。
 
-## 8. Growth Choice Queue
+## 8. 成長選擇佇列
 
-Autumn Blessing, EXP level-up, and Campfire card-growth logic are replaced by
-one queue and one authoritative `CardGrowthUI`.
+Autumn Blessing、EXP 升級與 Campfire 卡牌成長邏輯，統一改由一個 queue 與一個權威 `CardGrowthUI` 處理。
 
-Growth entries are source-aware:
+成長項目依來源限制功能：
 
-- **Wave Blessing** opens only the New Card page.
-- **EXP Level Up** opens Upgrade and Full-Level Fusion.
-- multiple pending events are processed one at a time.
+- **Wave Blessing**：只開啟「取得新卡」頁面。
+- **EXP Level Up**：開啟「升級」與「滿等融合」頁面。
+- 多個待處理項目一次只處理一筆。
 
-Each event grants exactly one completed action.
+每個成長項目只能完成一個操作。
 
-### 8.1 New Card
+### 8.1 取得新卡
 
-The player chooses one offered card definition. The result is a new level-one
-instance. Fixed cards never appear.
+玩家從候選卡牌定義中選擇一張，生成新的 Lv.1 實例。固定卡永遠不會出現。
 
-### 8.2 Upgrade
+### 8.2 升級
 
-The player chooses one owned non-fixed instance below level three. Only that
-instance gains one level. Same-name copies remain unchanged.
+玩家選擇一張低於 Lv.3 的非固定卡實例。只有該實例提升一級；其他同名副本保持不變。
 
-### 8.3 Full-level fusion
+### 8.3 滿等融合
 
-A fusion recipe requires two different named card definitions, and the player
-must select one level-three instance of each. Both chosen instances are
-consumed. One level-one result instance is added, so the deck count decreases
-by one.
+融合配方必須指定兩種不同的卡牌定義。玩家需各選擇一張 Lv.3 實例。兩張被選中的實例都會被消耗，並加入一張 Lv.1 結果實例，因此牌組張數淨減 1。
 
-The initial recipe migration is:
+第一批融合配方調整如下：
 
-| First Lv.3 card | Second Lv.3 card | Result Lv.1 card |
+| 第一張 Lv.3 卡 | 第二張 Lv.3 卡 | 生成的 Lv.1 卡 |
 |---|---|---|
-| Iron Will (`guard`) | Stone Form (`iron_skin`) | Unbreakable Stance (`fortress_stance`) |
+| Iron Will（`guard`） | Stone Form（`iron_skin`） | Unbreakable Stance（`fortress_stance`） |
 | Dash Strike | Cleave | Gale Lunge |
 | Frost Bind | Energy Surge | Time Snare |
 | Healing Light | Blood Pact | Renewal |
 | Battle Focus | Flame Aura | Overdrive |
 | Cleave | Flame Aura | Inferno Orb |
 
-The old passive-gated evolution contract is removed. Fixed Ember Bolt never
-acts as fusion material.
+移除舊版以 passive 為條件的 evolution 契約。固定卡 Ember Bolt 永遠不能作為融合材料。
 
-### 8.4 Resource fallback
+### 8.4 資源補償
 
-If an EXP Level Up has no legal upgrade and no available fusion, it becomes a
-permanent resource choice:
+若 EXP Level Up 沒有合法升級，也沒有可用融合，該次成長改為永久資源三選一：
 
-- 75 gold;
-- 12 autumn wood and 8 stone;
-- 4 magic shards.
+- 75 gold。
+- 12 autumn wood 與 8 stone。
+- 4 magic shards。
 
-An Autumn Core may replace one choice only for an explicitly configured boss
-tier. Selected resources are saved immediately to the permanent
-Meta/Inventory economy and survive later Run failure.
+只有明確設定的 Boss 階級可以用 Autumn Core 替換其中一個選項。玩家選擇後立即存入永久 Meta／Inventory 經濟；即使之後 Run 失敗也會保留。
 
-## 9. Card Growth UI
+## 9. 卡牌成長 UI
 
-The current Autumn Blessing dialogue and old LevelUpUI are removed after
-caller migration. The replacement is a centered, responsive modal with:
+完成 caller 遷移後，移除目前的 Autumn Blessing 對話框與舊 LevelUpUI。新 UI 是置中、可響應尺寸的 modal，包含：
 
-- an explicit source title;
-- only the pages allowed by that source;
-- a scrollable card grid;
-- an instance-level badge on every card;
-- a detail panel comparing current and resulting effects;
-- an explicit selection followed by confirmation;
-- keyboard, controller, and mouse focus parity;
-- clear empty-state and disabled-reason text;
-- no speaker portrait, dialogue affordance, or decorative `A` tile.
+- 明確的來源標題。
+- 只顯示該來源允許的頁面。
+- 可捲動的卡牌 grid。
+- 每張卡都顯示該實例自己的等級 badge。
+- 比較目前效果與升級／融合後效果的詳細面板。
+- 先選取、再明確確認的操作流程。
+- 鍵盤、控制器與滑鼠一致的 focus 行為。
+- 清楚的空狀態與禁用原因。
+- 不使用說話者頭像、對話語意或裝飾性 `A` 方塊。
 
-Opening the UI acquires a gameplay pause token. Enemies, projectiles, waves,
-AP regeneration, card cooldowns, Combo status timers, and Skill windows stop.
-The UI itself uses always-processing mode. Gameplay resumes only after the
-queue is empty and no other modal owns a pause token.
+UI 開啟時取得 gameplay pause token。敵人、投射物、波次、AP 回復、卡牌冷卻、Combo 狀態時間與 Skill 視窗全部停止。UI 本身使用 always-processing 模式。
 
-Closing, scene replacement, or invalid selection must not consume the pending
-growth entry.
+只有當 queue 已清空，且沒有其他 modal 持有 pause token 時，遊戲才會恢復。
 
-## 10. New Autumn Combat HUD
+關閉 UI、切換 scene 或選擇無效項目時，不得消耗待處理的成長項目。
 
-The Autumn HUD is rebuilt as one editor-authored authoritative scene. The
-existing Autumn HUD is not incrementally rearranged and does not remain as a
-parallel authority. Town rendering remains unchanged.
+## 10. 全新秋季戰鬥 HUD
 
-The new layout is:
+秋季 HUD 重新建立為一個 editor-authored 權威場景。既有秋季 HUD 不採逐步搬移，也不能保留為平行權威。城鎮 HUD 維持不變。
+
+新 Scene Tree 如下：
 
 ```text
 AutumnCombatHUD
@@ -336,125 +280,102 @@ AutumnCombatHUD
 │   └── PersonalResources
 ```
 
-Responsibilities:
+各區責任如下：
 
-- top-left status rows show effect name, icon, and remaining duration and
-  disappear on expiry;
-- the objective sits directly below statuses;
-- boss health occupies top center only while a boss is active;
-- Skill activation toasts appear below the boss region, stack to at most three
-  rows, and fade after 1.5 seconds;
-- repeated notification of the same visible Skill refreshes its row;
-- bottom-left shows portrait, level, HP, MP, and SP;
-- bottom-center shows AP, cooldown cards, and both card rows;
-- compact input glyphs beside the hand show group toggle and full-AP redraw;
-- bottom-right contains only gold, EXP, and personal resource information.
+- 左上狀態列顯示效果名稱、圖示與剩餘時間，效果到期後消失。
+- 目前目標位於狀態列正下方。
+- 只有 Boss 存在時，Boss 血條才占用上方中央。
+- Skill 觸發通知顯示在 Boss 區域下方，最多堆疊三列，1.5 秒後淡出。
+- 同一個仍可見的 Skill 再次通知時，只刷新原有列。
+- 左下顯示頭像、等級、HP、MP、SP。
+- 下方中央顯示 AP、冷卻中的卡與兩排手牌。
+- 手牌旁只放精簡的牌組切換與全 AP 重抽輸入圖示。
+- 右下只保留 gold、EXP 與個人資源資訊。
 
-Panels use translucent dark backgrounds and stable authored containers. The
-HUD has no permanent Skill recipe or progress display; players rely on memory.
+面板使用半透明深色背景與穩定的 authored Container。HUD 不顯示永久 Skill 配方或進度；玩家必須依靠記憶。
 
-The supported viewport matrix is:
+支援的 viewport：
 
-- 1152×720;
-- 1280×720;
-- 1600×900;
-- 1920×1080;
-- 2560×1080;
-- 2560×1440.
+- 1152×720。
+- 1280×720。
+- 1600×900。
+- 1920×1080。
+- 2560×1080。
+- 2560×1440。
 
-Narrow layouts shorten text and spacing but never overlap the battle-safe
-viewport or move panels outside the screen.
+窄畫面會縮短文字與間距，但不得遮擋戰鬥安全區，或把面板移出螢幕。
 
-## 11. Data and Component Boundaries
+## 11. 資料與元件邊界
 
-The implementation introduces or refactors these authorities:
+實作將新增或重構下列權威：
 
-- `CardInstance`: stable identity and serialization;
-- `DeckManager`: instance zones and cooldown pile;
-- `SkillRecipeManager`: learned/active Skills, memory budget, recipe trackers,
-  cooldowns, and hidden discovery;
-- `CombatStatusController`: timed survival and healing effects;
-- `GrowthChoiceQueue`: source-aware pending growth and pause ownership;
-- `CardGrowthUI`: growth presentation and selection signals;
-- `AutumnCombatHUD`: Autumn-only layout and status projections.
+- `CardInstance`：穩定身分與序列化。
+- `DeckManager`：卡牌實例區域與 cooldown pile。
+- `SkillRecipeManager`：已學／啟用 Skill、記憶容量、配方 tracker、冷卻與隱藏發現。
+- `CombatStatusController`：限時生存與治療效果。
+- `GrowthChoiceQueue`：依來源限制的待處理成長與 pause 所有權。
+- `CardGrowthUI`：成長顯示與選擇 signal。
+- `AutumnCombatHUD`：僅供秋季使用的排版與狀態 projection。
 
-Static content remains data-driven:
+靜態內容維持資料驅動：
 
-- `data/cards.json`: reclassified card definitions and effect fields;
-- `data/skills.json`: Skill cost, acquisition, recipe, effect, and cooldown;
-- `data/evolutions.json`: two-card full-level fusion recipes;
-- `data/town_upgrades.json`: Memory Library levels and resource costs.
+- `data/cards.json`：重新分類的卡牌定義與效果欄位。
+- `data/skills.json`：Skill 成本、取得方式、配方、效果與冷卻。
+- `data/evolutions.json`：兩張滿等卡的融合配方。
+- `data/town_upgrades.json`：Memory Library 等級與資源成本。
 
-UI receives immutable projections and emits selections. It never mutates card
-instances, Skill loadouts, status state, or permanent resources directly.
+UI 只接收不可變 projection 並發出選擇 signal，不得直接修改卡牌實例、Skill 背包、狀態或永久資源。
 
-## 12. Error Handling
+## 12. 錯誤處理
 
-- Invalid card instances are reported with instance and catalog IDs and are
-  excluded from active zones without deleting their serialized record.
-- Invalid Skill recipes or memory costs are rejected during catalog load.
-- Duplicate instance IDs fail migration validation and receive deterministic
-  replacements recorded in the migration report.
-- A fusion revalidates both selected instances immediately before mutation.
-- A failed growth action leaves the queue entry pending and shows a readable
-  error.
-- Pause tokens are reference-counted so one modal cannot resume another
-  modal's paused gameplay.
-- Scene teardown clears HUD subscriptions and status callbacks without
-  applying queued actions.
+- 無效卡牌實例必須回報 instance ID 與 catalog ID，並從生效牌堆中排除，但不得刪除其序列化記錄。
+- 無效 Skill 配方或記憶成本在 catalog 載入時拒絕。
+- 重複 instance ID 必須讓 migration validation 失敗，並取得記錄於 migration report 的 deterministic 替代 ID。
+- 融合在實際修改前，必須再次驗證兩張被選中的實例。
+- 成長操作失敗時，queue 項目保持待處理，並顯示可理解的錯誤。
+- Pause token 使用 reference count，避免一個 modal 恢復另一個 modal 暫停的遊戲。
+- Scene teardown 必須清除 HUD subscription 與狀態 callback，不得套用尚未確認的 queue 操作。
 
-## 13. Testing
+## 13. 測試
 
-Automated contracts must prove:
+自動化契約必須證明：
 
-- card copies have independent levels and stable IDs across save/load;
-- old shared-level saves migrate deterministically and idempotently;
-- every deck zone preserves instance identity;
-- cooldown cards leave the hand, wait while gameplay runs, freeze while
-  paused, and return through discard;
-- Defense no longer exists in the validated card taxonomy;
-- Healing cards use the green semantic type and correct lifecycle;
-- super armor and reduction are independent, refresh correctly, and respect
-  the 60% cap;
-- count and exact-sequence Skills obey their distinct interruption rules;
-- one attack advances multiple Skills and simultaneous completion triggers all
-  eligible effects;
-- non-attack cards do not reset count recipes but do reset exact sequences;
-- Growth pages are restricted by source;
-- upgrade changes one selected instance only;
-- fusion consumes exactly two selected level-three instances and creates one
-  level-one result;
-- unavailable EXP growth yields a permanent resource choice;
-- fixed cards are absent from reward, upgrade, and fusion candidates;
-- queued growth pauses every gameplay clock and resumes only after all modal
-  owners release pause;
-- the new Autumn HUD fits every supported viewport and Town HUD identity is
-  unchanged.
+- 卡牌副本擁有獨立等級，且 ID 經過存檔／載入後保持穩定。
+- 舊共用等級存檔可以 deterministic、idempotent 地遷移。
+- 每個牌堆區域都保留卡牌實例身分。
+- 冷卻卡離開手牌，只在遊戲運作時倒數；暫停期間凍結，完成後透過 discard 回歸。
+- 驗證後的卡牌分類不再包含 Defense。
+- Healing 卡使用綠色語意類型與正確 lifecycle。
+- 霸體與減傷彼此獨立、可正確刷新，且遵守 60% 上限。
+- 計數型與精確順序型 Skill 分別遵守自己的中斷規則。
+- 一次攻擊可推進多個 Skill；同時完成時會觸發所有合法效果。
+- 非攻擊卡不重置計數型配方，但會重置精確順序配方。
+- Growth 頁面依來源受到限制。
+- 升級只修改被選中的單一卡牌實例。
+- 融合只消耗兩張被選中的 Lv.3 實例，並建立一張 Lv.1 結果。
+- 無法進行 EXP 卡牌成長時會提供永久資源選擇。
+- 固定卡不會出現在獎勵、升級或融合候選中。
+- 排隊中的成長會暫停所有 gameplay clock，且只有所有 modal owner 釋放 pause 後才恢復。
+- 新秋季 HUD 適用所有支援 viewport，且 Town HUD identity 不變。
 
-Manual validation must capture both active card groups at 1280×720 and
-2560×1440, active status rows, stacked Skill toasts, cooldown cards, each
-Growth UI page, long card text, controller focus, and resource fallback.
+人工驗證必須擷取 1280×720 與 2560×1440 下的兩個作用中牌組、作用中狀態列、堆疊 Skill toast、冷卻卡、每一個 Growth UI 頁面、長卡牌文字、控制器 focus 與資源補償。
 
-## 14. Non-Goals
+## 14. 非目標
 
-- No Town HUD redesign.
-- No free-form combo DSL, optional steps, branching recipes, or input timing
-  beyond count and exact-card sequences.
-- No Skill progress meter or persistent recipe hint in combat.
-- No arbitrary fusion between cards without an authored recipe.
-- No fixed-card leveling or fusion.
-- No change to Q/W/E/R card activation.
+- 不重製 Town HUD。
+- 不建立自由格式 Combo DSL、可選步驟、分支配方，或計數／精確卡牌順序以外的輸入時序。
+- 戰鬥中不顯示 Skill 進度條或永久配方提示。
+- 不允許沒有 authored recipe 的任意卡牌融合。
+- 固定卡不能升級或融合。
+- 不改變 Q/W/E/R 卡牌啟動方式。
 
-## 15. Completion Criteria
+## 15. 完成條件
 
-The redesign is complete only when:
+只有在下列條件全部成立時，才算完成重製：
 
-- old Autumn HUD, Blessing dialogue growth, shared card-level authority, and
-  obsolete LevelUpUI have no runtime callers;
-- code, scenes, catalogs, saves, tests, and governance docs describe the same
-  contracts;
-- focused and full regression suites pass without Godot error markers;
-- editor, main scene, Autumn map, Growth UI, and combat preview smoke checks
-  pass;
-- all required viewport captures have been visually inspected;
-- no duplicate UI authority or temporary capture script remains.
+- 舊秋季 HUD、Blessing 對話成長、共用卡牌等級權威與過時 LevelUpUI 都沒有 runtime caller。
+- Code、scene、catalog、save、test 與治理文件描述相同契約。
+- Focused 與 full regression 全部通過，且沒有 Godot error marker。
+- Editor、main scene、秋季地圖、Growth UI 與 combat preview smoke check 通過。
+- 所有必要 viewport capture 都已人工檢查。
+- 沒有重複 UI 權威或暫時 capture script。
