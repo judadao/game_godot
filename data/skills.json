@@ -1,0 +1,60 @@
+{
+  "memory_capacity_by_library_level": [10, 14, 18, 24, 30],
+  "skills": [
+    {
+      "id": "iron_momentum",
+      "name": "Iron Momentum",
+      "memory_cost": 1,
+      "match_mode": "count",
+      "attack_count": 5,
+      "window_seconds": 8.0,
+      "cooldown_seconds": 10.0,
+      "effect": {
+        "kind": "super_armor",
+        "tier": "weak",
+        "duration": 3.0
+      }
+    },
+    {
+      "id": "ember_reprise",
+      "name": "Ember Reprise",
+      "memory_cost": 3,
+      "match_mode": "sequence",
+      "sequence": ["ember_bolt", "ember_bolt", "cleave"],
+      "window_seconds": 8.0,
+      "cooldown_seconds": 12.0,
+      "effect": {
+        "kind": "damage_bonus",
+        "amount": 10,
+        "duration": 4.0
+      }
+    },
+    {
+      "id": "battle_tempo",
+      "name": "Battle Tempo",
+      "memory_cost": 2,
+      "match_mode": "count",
+      "attack_count": 5,
+      "window_seconds": 8.0,
+      "cooldown_seconds": 14.0,
+      "effect": {
+        "kind": "action_points",
+        "amount": 1
+      }
+    },
+    {
+      "id": "grand_strategy",
+      "name": "Grand Strategy",
+      "memory_cost": 12,
+      "match_mode": "sequence",
+      "sequence": ["ember_bolt", "cleave", "dash_strike", "ember_bolt"],
+      "window_seconds": 8.0,
+      "cooldown_seconds": 20.0,
+      "effect": {
+        "kind": "damage_reduction",
+        "ratio": 0.35,
+        "duration": 5.0
+      }
+    }
+  ]
+}
