@@ -87,7 +87,8 @@ Game (Node, scripts/managers/game.gd)
 2. 透過 `SaveService.load_meta()` 讀取 `user://saves/meta_progress.json`。
 3. 將 `MetaState.inventory_state`／legacy fields 套入 Inventory runtime state。
 4. 將 `MetaState.town_state`／legacy fields 套入 Town runtime state。
-5. 載入 `CardDatabase` 與 `EvolutionManager` 的 JSON catalog。
+5. 載入卡牌、技能與合成 recipe catalog；實際的 `SkillRecipeManager`、
+   `GrowthChoiceQueue` 與成長 UI caller 由 `Game` 組裝。
 6. 連接 `CardEffectRunner.effect_resolved`。
 7. 呼叫 `load_current_map(starting_map)`。
 8. 將 runtime progression 同步回 `MetaState`。
@@ -120,8 +121,8 @@ Game
 │   ├── world/collision/portals/NPCs
 │   └── encounter-owned runtime enemies and drops
 ├── HUDLayer
-│   ├── adopted HUD
-│   └── adopted CardHandUI
+│   └── adopted HUD
+│       └── embedded AutumnCardHandUI（僅 Autumn HUD）
 ├── MenuLayer
 │   └── ui_stack managed modal/primary UI
 ├── CardEffectRunner
@@ -132,7 +133,8 @@ Game
     ├── CardDatabase
     ├── DeckManager
     ├── ComboManager
-    ├── EvolutionManager
+    ├── SkillRecipeManager
+    ├── GrowthChoiceQueue
     ├── inventory_manager.gd instance
     └── town_manager.gd instance
 ```
@@ -142,7 +144,8 @@ Game
 - `MapRoot` 擁有當前地圖 instance；換圖時舊 children `queue_free()`。
 - 地圖 Scene 擁有 Player、spawn、world collision、Portal、NPC 與靜態佈局。
 - Encounter director 擁有 runtime-spawned enemy、guardian 與 experience gem。
-- `HUDLayer` 擁有 current HUD/CardHandUI；換圖時釋放舊 instance。
+- `HUDLayer` 擁有 current HUD；Autumn 的手牌是 `AutumnHUD` 內嵌 presentation，
+  不得再作為與 HUD 並列的第二個 runtime root。換圖時釋放舊 HUD instance。
 - `MenuLayer` 擁有 Inventory、Pause、Dialogue、Shop、TownProgress 等 runtime UI。
 - Dynamic damage number、summon visual、boss telegraph 使用短生命週期 Node/Tween，
   建立端同時負責 cleanup。
@@ -157,9 +160,10 @@ State/system instances由 `Game` 建立並持有，不加入 SceneTree：
 | `run_state` | `RunState` | 一輪 expedition 的 transient state |
 | `save_service` | `SaveService` | meta JSON 安全寫入與載入 |
 | `card_database` | `CardDatabase` | validated card catalog |
-| `deck_manager` | `DeckManager` | draw/hand/discard/exhaust/AP |
+| `deck_manager` | `DeckManager` | CardInstance 的 draw/hand/discard/exhaust/cooldown 與 AP |
 | `combo_manager` | `ComboManager` | 牌序 combo 判定 |
-| `evolution_manager` | `EvolutionManager` | evolution recipe validation/query |
+| `skill_recipe_manager` | `SkillRecipeManager` | 已裝備的攻擊 recipe、視窗、進度與 cooldown |
+| `growth_choice_queue` | `GrowthChoiceQueue` | wave/EXP 成長事件的單一 FIFO queue |
 | `inventory_manager` | unnamed `RefCounted` script | resources/equipment runtime model |
 | `town_manager` | unnamed `RefCounted` script | building levels/village stage |
 
@@ -207,7 +211,7 @@ Portal.portal_entered
    ├── capture transferable Player state
    ├── queue_free old map
    ├── instantiate authoritative map
-   ├── adopt HUD/CardHandUI
+   ├── adopt HUD（Autumn hand 已內嵌）
    ├── register Player at named spawn
    ├── apply transferred/equipment state
    ├── wire Interactives/EncounterDirectors
@@ -224,19 +228,19 @@ Authoritative map 包含 editor-visible `EditorHUDReference`：
 
 ```text
 EditorHUDReference (CanvasLayer)
-├── HUD (Control)
-└── CardHandUI (Control)
+└── HUD (Control)
+    └── AutumnCardHandUI（僅 Autumn）
 ```
 
-Runtime 時 `Game.load_hud()`／`load_card_hand()` 將這兩個 **exact instances**
-`reparent()` 到 `Game/HUDLayer`。這不是複製，也不是重新 instantiate。只有地圖沒有
-對應 instance 時才使用 exported fallback PackedScene。
+Runtime 時 `Game.load_hud()` 將 **exact HUD instance** `reparent()` 到
+`Game/HUDLayer`。這不是複製，也不是重新 instantiate。Autumn 不再呼叫獨立的
+`load_card_hand()` 來建立第二個 root；Town 的既有 HUD 契約不因這次改版改動。
 
 重要 contract：
 
 - reparent 前後 root anchors、offsets、position、scale、metadata 必須保持。
-- 換圖時 previous HUD 與 CardHandUI 必須釋放。
-- 每次 runtime 只允許一個 HUD 與一個 CardHandUI。
+- 換圖時 previous HUD（連同其內嵌 hand）必須釋放。
+- Autumn runtime 只允許一個 HUD authority；不得另掛獨立 CardHand root。
 - `tests/map_layout_scenes_test.gd` 驗證 exact instance identity。
 
 Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
@@ -252,7 +256,9 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `CardDatabase` | `scripts/systems/card_database.gd` | `load_catalog`, `get_card`, `has_card`, `get_all_cards` |
 | `DeckManager` | `scripts/systems/deck_manager.gd` | `start`, `draw_cards`, `play_from_hand`, `regenerate_energy`, `redraw_hand_for_all_energy`, `end_turn` |
 | `ComboManager` | `scripts/systems/combo_manager.gd` | `record_card`, `get_rules`, `reset` |
-| `EvolutionManager` | `scripts/systems/evolution_manager.gd` | `load_recipes`, `get_all_recipes`, `find_available` |
+| `CardInstance` | `scripts/systems/card_instance.gd` | `instance_id`, `card_id`, `level`, `is_fixed`, `to_dict`, `from_dict` |
+| `SkillRecipeManager` | `scripts/systems/skill_recipe_manager.gd` | `load_catalog`, `configure_loadout`, `record_card`, `tick`, `reset_runtime` |
+| `GrowthChoiceQueue` | `scripts/systems/growth_choice_queue.gd` | `enqueue_wave_blessing`, `enqueue_experience_growth`, `peek`, `resolve` |
 | `SaveService` | `scripts/systems/save_service.gd` | `save_meta`, `load_meta` |
 
 ### 5.2 Combat
@@ -260,6 +266,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | Class | Source | Contract |
 |---|---|---|
 | `CardEffectRunner` | `scripts/combat/card_effect_runner.gd` | `cast()` 修改 caster/targets，emit `effect_resolved` |
+| `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
 | `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | timed phases、boss stage、XP gem |
 | `EnemyBase` | `scripts/monsters/enemy_base.gd` | archetype、attack、damage、status、reset |
@@ -612,8 +619,8 @@ Game
 │       ├── Interactives
 │       └── EncounterDirector
 ├── HUDLayer
-│   ├── HUD
-│   └── CardHandUI
+│   └── HUD
+│       └── AutumnCardHandUI（Autumn only）
 ├── MenuLayer
 │   └── [runtime modal UI]
 └── CardEffectRunner
@@ -713,3 +720,80 @@ Godot 4 使用 `Signal.connect()`／`Object.connect()`與 `Callable`。不得引
 - `docs/12_GAME_DESIGN.md`
 - `docs/13_ROADMAP.md`
 - `docs/rule_1.md`
+
+## 21. Card、Skill、Growth 與 Autumn HUD 契約（2026-07-26）
+
+本節取代本文較早的 Autumn「HUD 與 CardHand 並列」、Defense 卡牌及被動
+evolution 描述。系統 class 與 scene 已建立；把它們接到完整 expedition lifecycle
+仍是 `Game` composition root 的組裝責任，未完成 caller 不得在 UI 中假裝可用。
+
+### 21.1 Instance、牌堆與存檔邊界
+
+`CardInstance` 是 runtime 與持久化卡牌 identity：
+
+```text
+CardInstance
+├── instance_id: String
+├── card_id: String
+└── level: int（1..3）
+```
+
+`DeckManager` 的 hand、draw、discard、exhaust、cooldown 五個區域都必須保留同一
+instance identity。cooldown 到期回 discard；modal pause 時 cooldown 不前進。
+`ember_bolt` 與 `quickstep` 是各一張、永久 Lv.1 的 fixed instances，不得升級、
+合成、移除、exhaust 或進 cooldown。
+
+`MetaState` schema version 3 以 `selected_card_instances` 儲存 instance payload，
+同時保留必要的舊 `selected_deck` projection 作 compatibility。舊 card-id 陣列 migration
+必須 deterministic、idempotent，修復重複 fixed card、非法 level 與重複/缺失
+instance ID，並提供 migration report。`RunState.card_instances` 是 expedition 期間
+的同一 identity projection，不另造 card-id 等級表。
+
+### 21.2 Combat 與 skill services
+
+- `CombatStatusController` 是 timed combat status authority。同 source 重放刷新；
+  super armor 取最高 tier；damage reduction 合計上限 60%；unblockable damage
+  必須繞過 reduction。它也負責 regeneration、lifesteal、retaliation 與 pause。
+- 卡牌 taxonomy 不再有 `defense`。原防禦牌是 `combo`，治療牌是綠色
+  `healing`，效果分為 immediate restore、regeneration、lifesteal 等明確語意。
+- `SkillRecipeManager` 只接收成功且正傷害的 attack card event。count 與 exact
+  sequence 都有 8 秒 window；non-attack 不推進，exact sequence 的錯誤 attack
+  會重設並允許從第一步重新開始。各 active skill 可同時判定並有獨立 cooldown。
+- 已學會 skill 永久保存；active loadout 受 Memory Library capacity
+  10/14/18/24/30 限制。初始 `Iron Momentum` 使用 1 memory：五次 attack 觸發
+  三秒弱霸體，十秒 cooldown。
+
+### 21.3 成長與 UI ownership
+
+`GrowthChoiceQueue` 將 wave blessing 與 EXP level-up 排成單一 FIFO。wave 只提供
+new card；EXP 提供單一 instance upgrade 或兩張不同 Lv.3 instances 的 fusion。
+fusion 消耗兩張材料並加入一張 Lv.1 結果，牌組淨減一。若沒有合法 upgrade/fusion，
+才提供 75 gold、12 wood + 8 stone、或 4 magic shards 的永久 fallback。
+
+`CardGrowthUI` 只 projection queue page 並 emit choice intent。modal 開啟期間，
+`Game` 必須以成對 pause token 暫停 gameplay、AP、card cooldown、status/skill
+timers、wave 與 projectile；UI 使用 always process。close/teardown 必須釋放 token。
+
+Autumn 的唯一 combat presentation root 是
+`res://scenes/ui/autumn/AutumnHUD.tscn`。它內嵌 card hand，語意樹如下：
+
+```text
+AutumnHUD
+├── TopLeftStack
+│   ├── ActiveStatusList
+│   └── ObjectivePanel
+├── TopCenterStack
+│   ├── BossHealth
+│   └── SkillToastStack
+└── BottomStage
+    ├── PlayerVitals
+    ├── ActionPoints
+    ├── CardStage
+    │   ├── CooldownStrip
+    │   └── AutumnCardHandUI
+    ├── InputGlyphHints
+    └── PersonalResources
+```
+
+Town HUD 不受影響。Autumn skill toast 最多三筆、顯示約 1.5 秒後淡出；相同 skill
+重複觸發刷新既有 toast。HUD 不顯示常駐 recipe progress。

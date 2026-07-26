@@ -1410,18 +1410,26 @@ func _emit_selection() -> void:
 ### AutumnHUD
 
 - Scene: `res://scenes/ui/autumn/AutumnHUD.tscn`
-- Script contract: `res://scripts/ui/hud.gd`
+- Script contract: `res://scripts/ui/autumn_combat_hud.gd`
 - Owner: Autumn Battle V2 only
-- Responsibility: status, AP reserve, card reserve, group guide, objective,
-  Combo, and economy columns in the lower 25% safe area
+- Responsibility: the sole Autumn combat HUD authority. It owns
+  `TopLeftStack`, `TopCenterStack`, `BottomStage`, and the embedded hand.
 
-### AutumnCardHandUI
+Required semantic children:
 
-- Scene: `res://scenes/ui/autumn/AutumnCardHandUI.tscn`
-- Script contract: `res://scripts/ui/card_hand_ui.gd`
-- Owner: Autumn Battle V2 only
-- Responsibility: two container-managed rows of four cards and the active-group
-  presentation; gameplay creates card buttons only inside the authored rows
+- `TopLeftStack/ActiveStatusList`
+- `TopLeftStack/ObjectivePanel`
+- `TopCenterStack/BossHealth`
+- `TopCenterStack/SkillToastStack`
+- `BottomStage/PlayerVitals`
+- `BottomStage/ActionPoints`
+- `BottomStage/CardStage/CooldownStrip`
+- `BottomStage/CardStage/AutumnCardHandUI`
+- `BottomStage/InputGlyphHints`
+- `BottomStage/PersonalResources`
+
+`AutumnCardHandUI` 是 HUD 內的 presentation subtree，不是可被 map 或 `Game`
+另外 adopt 的 sibling authority。
 
 ### AutumnInteractionPrompt
 
@@ -1436,9 +1444,9 @@ func _emit_selection() -> void:
 
 - Scene: `res://scenes/dev/AutumnEditorHUDReference.tscn`
 - Owner: `AutumnBattleMapV2.tscn`
-- Responsibility: expose the exact runtime HUD and card instances in the map
-  editor. Runtime adoption reparents these same instances; it must not recreate
-  or normalize their authored geometry.
+- Responsibility: expose the exact runtime HUD instance in the map editor.
+  Runtime adoption reparents this instance（連同內嵌 hand）；不得 recreate、
+  normalize geometry 或再掛獨立 hand。
 
 ### AutumnBattleCard
 
@@ -1456,9 +1464,36 @@ func _emit_selection() -> void:
 ### AutumnCardHandUI renderer
 
 - Script: `res://scripts/ui/autumn_card_hand_ui.gd`
-- Base: `CardHandUI`
+- Owner: `AutumnHUD/BottomStage/CardStage`
 - Responsibility: create AutumnBattleCard instances, keep card groups in
   stable scene-authored rows, calculate responsive card dimensions, overlap
   the rows, and apply active/inactive group presentation
 - Isolation: Town continues to use `res://scripts/ui/card_hand_ui.gd`; Autumn
   visual changes must not be added to the shared renderer
+
+### CombatStatusController
+
+- Scene: `res://scenes/combat/CombatStatusController.tscn`
+- Script: `res://scripts/combat/combat_status_controller.gd`
+- Owner: Player
+- Responsibility: timed super armor, damage reduction, lifesteal,
+  regeneration and retaliation; emit status projection for HUD
+- Rule: same source refreshes, strongest armor tier wins, reduction caps at
+  60%, and timer pause must follow the growth modal pause token
+
+### CardGrowthUI
+
+- Scene: `res://scenes/ui/CardGrowthUI.tscn`
+- Script: `res://scripts/ui/card_growth_ui.gd`
+- Owner: `Game/MenuLayer` while the growth queue is non-empty
+- Signal: `choice_confirmed(choice_id: String)`
+- Responsibility: render one `GrowthChoiceQueue` page and expose a single
+  selected choice; it does not mutate deck, fusion materials, Meta or resources
+- Replaces: Autumn Blessing popup and `LevelUpUI` in the card-growth flow
+
+### SkillToastStack
+
+- Owner: `AutumnHUD/TopCenterStack`
+- Responsibility: transient “used skill” projection only
+- Contract: maximum three entries; duplicate skill refreshes; each entry fades
+  after about 1.5 seconds; no permanent recipe-progress rows

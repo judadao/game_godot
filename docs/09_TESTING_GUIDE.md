@@ -110,7 +110,7 @@ ERROR:
 
 ## 6. UI 與多解析度驗證
 
-HUD 與 CardHandUI 至少驗證以下視窗尺寸：
+AutumnHUD（含內嵌 CardHandUI）至少驗證以下視窗尺寸：
 
 - 1280×720（專案基準）
 - 1600×900
@@ -228,19 +228,20 @@ Game
 ├── MapRoot
 │   └── CurrentMap (AutumnForest)
 ├── HUDLayer
-│   ├── HUD
-│   └── CardHandUI
+│   └── HUD
+│       └── AutumnCardHandUI
 └── MenuLayer
 ```
 
-整合測試應確認 HUD 與 CardHandUI 掛在預期 CanvasLayer 下，地圖切換不會複製或遺失這些共用 UI。
+整合測試應確認 Autumn 只有一個 HUD root 掛在預期 CanvasLayer 下，手牌位於
+HUD 的 `CardStage` 內；地圖切換不會複製或遺失 HUD subtree。
 
 ## 15. Godot Example
 
 ```gdscript
-var packed := load("res://scenes/ui/CardHandUI.tscn") as PackedScene
+var packed := load("res://scenes/ui/autumn/AutumnHUD.tscn") as PackedScene
 if packed == null:
-	push_error("CardHandUI scene failed to load")
+	push_error("AutumnHUD scene failed to load")
 	quit(1)
 	return
 
@@ -248,7 +249,7 @@ var instance := packed.instantiate()
 root.add_child(instance)
 await process_frame
 if not instance.is_inside_tree():
-	push_error("CardHandUI was not added to SceneTree")
+	push_error("AutumnHUD was not added to SceneTree")
 instance.queue_free()
 ```
 
@@ -262,7 +263,38 @@ instance.queue_free()
 - [ ] 測試命令可從 repository root 重現。
 - [ ] 報告清楚區分自動驗證與人工驗證。
 
-## 17. Future Extension
+## 17. Card、Skill、Growth 與 Autumn HUD 必測矩陣
+
+| Area | Minimum contract evidence |
+|---|---|
+| CardInstance | 五牌堆 identity 不變；個別 level；fixed cards 唯一且永久 Lv.1 |
+| Migration | schema v3 舊 payload deterministic、idempotent；修復 report 可驗證 |
+| Cooldown/exhaust | cooldown 到期回 discard；exhaust 不回收；pause 時 timer 不動 |
+| Status | source refresh、最高 armor tier、reduction cap 60%、unblockable bypass、regen/lifesteal |
+| Skill recipe | attack-only、multi-hit 一次 event、8 秒 window、count/exact sequence reset、獨立 cooldown |
+| Memory Library | capacity 10/14/18/24/30；learned 與 active loadout 分離 |
+| Growth queue | wave new-card only；EXP upgrade/fusion；無候選才 fallback；FIFO 不漏頁 |
+| Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一；fixed 不可作材料 |
+| Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |
+| HUD authority | Autumn 只有一個 HUD root；hand 在 `CardStage`；Town HUD identity 不變 |
+| HUD projection | status/objective 左上、boss/toast 上中、bottom stage 完整；toast max 3/1.5 秒/duplicate refresh |
+
+六解析度 geometry test 要逐一 assert：
+
+- semantic node rect 在 viewport 內；
+- top-left 與 top-center 不互蓋；
+- bottom stage 不蓋 world interaction prompt；
+- 兩列 cards、cooldown strip、AP、resources 不裁切；
+- 1152×720 與 2560×1080 仍保持相同 ownership，不生成替代 layout；
+- modal choice grid、繁中/英文長字、focus navigation 與 confirm button 可用。
+
+建議 focused entrypoints 應以 repository 實際存在檔名為準，至少涵蓋
+`card_instance_*`、`combat_status_controller_test.gd`、
+`skill_recipe_manager_test.gd`、`growth_choice_queue_test.gd`、
+`card_growth_ui_*` 與 `autumn_hud_v3_*`。最後仍需執行全量 SceneTree tests、
+editor smoke、main smoke 與人工六尺寸截圖/操作檢查。
+
+## 18. Future Extension
 
 - TODO：新增統一測試 runner，明確納入所有測試檔。
 - TODO：評估導入 GUT；導入前保留既有 SceneTree 測試可執行性。
@@ -271,7 +303,7 @@ instance.queue_free()
 - TODO：將目前人工量測升級為效能預算、記憶體成長與長時間波次自動測試。
 - TODO：建立 coverage/需求追蹤表，但不得用數字取代行為驗證。
 
-## 18. Related Documents
+## 19. Related Documents
 
 - [AI Guide](01_AI_GUIDE.md)
 - [Scene Structure](03_SCENE_STRUCTURE.md)

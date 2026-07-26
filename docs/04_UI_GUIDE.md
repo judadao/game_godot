@@ -87,7 +87,7 @@ Game (Node, scripts/managers/game.gd)
 
 Current ownership：
 
-- `HUDLayer`：持有一個 `HUD` 與一個 `CardHandUI`。
+- `HUDLayer`：持有一個 `HUD` authority；Autumn hand 內嵌在 AutumnHUD。
 - `MenuLayer`：持有 `ui_stack` 中的 Inventory、Pause、Dialogue、Shop、TownProgress、
   DeckBuilder、CardDiscard、LevelUp、RunResult 等 screen。
 - `Game.open_ui()`：instantiate、加入 stack、設定 pause flag、連 lifecycle、呼叫
@@ -103,12 +103,13 @@ Authoritative map 透過 `scenes/dev/EditorHUDReference.tscn` author HUD：
 EditorHUDReference (CanvasLayer, editor-visible authoring layer)
 ├── ViewportBoundary
 ├── CardStageGuide
-├── HUD
-└── CardHandUI
+└── HUD
+    └── AutumnCardHandUI（Autumn only）
 ```
 
-Runtime 時 `Game.load_hud()` 與 `load_card_hand()` 將這兩個 exact instances
-`reparent()` 到 `Game/HUDLayer`，原 reference layer 仍進入 runtime tree，但由
+Runtime 時 `Game.load_hud()` 將 exact HUD instance `reparent()` 到
+`Game/HUDLayer`；Autumn hand 隨 HUD 移動，不另成第二個 root。原 reference layer
+仍進入 runtime tree，但由
 `editor_hud_reference.gd` 隱藏。不得在 `_ready()` 重設 root anchor、offset、
 position 或 scale，否則會破壞 map-authored override。
 
@@ -146,8 +147,8 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 ```
 
-但 HUD/CardHand 有 map-authored root override，因此它們的 `_ready()` 不得重套 Full
-Rect。Current `card_hand_ui.gd` 正確保留 root layout，並由 tests 驗證。
+但 HUD 有 map-authored root override，因此它的 `_ready()` 不得重套 Full Rect。
+AutumnCardHandUI 的 geometry 由 AutumnHUD 內的 `CardStage` container 擁有。
 
 ### 3.3 Mouse filter
 
@@ -482,18 +483,17 @@ HUD
 
 ### 11.1 Current
 
-專案沒有獨立 `BattleUI.tscn`。Battle UI 是：
+專案沒有獨立 `BattleUI.tscn`。Town 保留既有 presentation；Autumn Battle UI 是
+單一 HUD root：
 
 ```text
 HUDLayer
-├── HUD
-└── CardHandUI
-    ├── bottom 25% CardSafeArea
-    ├── CardRows (VBoxContainer)
-    │   ├── BackRow (HBoxContainer)
-    │   └── FrontRow (HBoxContainer)
-    ├── AP / redraw / combo
-    └── boss name / health
+└── AutumnHUD
+    ├── TopLeftStack
+    ├── TopCenterStack
+    └── BottomStage
+        └── CardStage
+            └── AutumnCardHandUI
 ```
 
 ### 11.2 Card layout exception
@@ -656,16 +656,17 @@ wide fixture 是 Proposed test value；實際新增前同步 `docs/09_TESTING_GU
 
 ### 16.3 Current coverage
 
-`tests/ui_layout_guardrails_test.gd` 只測 HUD/CardHand：
+generic `tests/ui_layout_guardrails_test.gd` 與 Autumn 專用 geometry tests 合併覆蓋：
 
 - 1152×720
 - 1280×720
 - 1600×900
 - 1920×1080
+- 2560×1080
 - 2560×1440
 
-缺較寬比例，也未覆蓋其他 9 個 top-level screens。不得把這組測試描述成全 UI
-responsive certification。
+這仍不是其他 top-level screens 的 responsive certification；Autumn 改版必須另有
+`autumn_hud_v3_*` 與 `card_growth_ui_layout_test.gd` 的完整證據。
 
 ## 17. Pixel Perfect
 
@@ -864,14 +865,13 @@ ScreenRoot (Control, Full Rect)
 
 ```text
 HUDLayer (CanvasLayer)
-├── HUD (Control, Full Rect, display-only)
-└── CardHandUI (Control, Full Rect)
-    └── CardSafeArea (anchor_top = 0.75)
-        └── BottomRow (five proportional columns)
-            └── HandSlot
-                └── CardRows (VBoxContainer)
-                    ├── BackRow (HBoxContainer)
-                    └── FrontRow (HBoxContainer)
+└── AutumnHUD (Control, Full Rect)
+    ├── TopLeftStack
+    ├── TopCenterStack
+    └── BottomStage
+        └── CardStage
+            ├── CooldownStrip
+            └── AutumnCardHandUI
 ```
 
 ## 25. Godot Example (Godot 4)
@@ -927,7 +927,7 @@ Godot 4 使用 typed signals、`Control.PRESET_*`、`size_flags_*` 與
 - 主要 UI 放在世界 Node2D。
 - 另建第二套 HUD/Menu stack。
 - UI 直接執行交易、傷害、存檔或 quest rule。
-- 覆寫 HUD/CardHand map-authored root layout。
+- 覆寫 map-authored HUD root 或把 Autumn hand 拆成第二個 root。
 - 用空白或手動換行對齊欄位。
 - 超出 viewport 的內容沒有 scroll/clamp。
 - 只測 parser 就宣稱 UI 完成。
@@ -998,24 +998,37 @@ Godot 4 使用 typed signals、`Control.PRESET_*`、`size_flags_*` 與
 
 ## 33. Autumn Battle V2 HUD
 
-Autumn Battle V2 deliberately does not share the Town presentation scenes.
-Its runtime and editor-preview UI is authored in:
+Autumn Battle V2 不共用 Town presentation；Town HUD 本次不改。Autumn runtime 與
+editor preview 只採用一個 authority：
 
 - `res://scenes/ui/autumn/AutumnHUD.tscn`
-- `res://scenes/ui/autumn/AutumnCardHandUI.tscn`
 - `res://scenes/ui/autumn/AutumnInteractionPrompt.tscn`
 - `res://scenes/dev/AutumnEditorHUDReference.tscn`
 
-The world-safe area is the upper 75% of the viewport. The lower 25% uses one
-six-column container contract in both the HUD and card scene:
+`AutumnHUD.tscn` 內嵌 `AutumnCardHandUI`，不允許 sibling CardHand root。靜態 layout
+必須使用 scene-authored containers：
 
-`23 status / 8 AP / 40 hand / 10 group guide / 11 objective+combo / 8 economy`
+```text
+AutumnHUD
+├── TopLeftStack
+│   ├── ActiveStatusList
+│   └── ObjectivePanel
+├── TopCenterStack
+│   ├── BossHealth
+│   └── SkillToastStack
+└── BottomStage
+    ├── PlayerVitals
+    ├── ActionPoints
+    ├── CardStage
+    │   ├── CooldownStrip
+    │   └── AutumnCardHandUI
+    ├── InputGlyphHints
+    └── PersonalResources
+```
 
-The hand is two rows of four cards. Q/W/E/R operate the active row; A/S and
-LT/RT switch rows. Avoid manual card positions: row containers own spacing and
-card minimum sizes. The interaction prompt accepts an optional `CanvasItem`
-target, follows its canvas transform, and clamps above the world-safe boundary.
-Town continues to use the shared `HUD.tscn` and `CardHandUI.tscn`.
+狀態與目前目標固定在左上；Boss health 與 skill toast 在上方中央；底部只放玩家
+狀態、AP、牌、按鍵提示與個人資源。不可恢復常駐 combo/recipe progress panel。
+skill toast 最多三筆、約 1.5 秒淡出；相同技能重複觸發刷新既有 toast。
 
 ### Autumn structured cards
 
@@ -1024,12 +1037,9 @@ Autumn Battle V2 renders each visible card through
 interactive `Button`; its shortcut, name, type, icon stage, level, and AP
 labels use `MOUSE_FILTER_IGNORE`.
 
-`res://scripts/ui/autumn_card_hand_ui.gd` derives from the shared hand
-controller but owns Autumn presentation. Group one remains in `FrontRow` and
-group two remains in `BackRow`. The active row is bright, full scale,
-focusable, and above the inactive row. The inactive row remains visible as
-recessed card headers but is dimmed, non-focusable, and mouse-transparent.
-Switching groups reverses those states without changing card indices.
+`res://scripts/ui/autumn_card_hand_ui.gd` owns Autumn hand presentation within
+`CardStage`。Group one 保持 `FrontRow`，group two 保持 `BackRow`；active row
+focusable 且在上層，inactive row 保留可辨識 header 但不搶 input。
 
 Card height is derived from the lower-HUD height and hand-column width. The
 renderer preserves a `0.72` width-to-height ratio and updates the negative
@@ -1048,7 +1058,34 @@ alternates between group 1 and group 2. With only one group, the operation is a
 no-op. Do not restore the previous "A selects group 1 / S selects group 2"
 behavior.
 
-The Combo label includes the longest remaining effect time (for example,
-`Flame [2/4] 4.8s`). It updates during combat without moving or rebuilding the
-hand rows. Equipment-modified AP costs must be projected into the card
-component before affordability and input checks.
+equipment-modified AP cost 必須在 affordability 與 input check 前 projection 到 card。
+Card cooldown 另投影至 `CooldownStrip`；cooldown timer 在 growth modal pause 時停止。
+
+### Responsive contract
+
+以下六種 viewport 全部是必要驗證，不是抽樣：
+
+- 1152×720
+- 1280×720
+- 1600×900
+- 1920×1080
+- 2560×1080
+- 2560×1440
+
+每個尺寸都要確認 top-left stack、top-center stack、bottom stage、兩列 cards、
+cooldown strip、interaction prompt 與 world-safe area 不重疊、不裁切、不超界。
+禁止用 gameplay script 為單一解析度寫絕對位置。
+
+## 34. Card Growth Modal
+
+`res://scenes/ui/CardGrowthUI.tscn` 是 wave blessing 與 EXP growth 的單一 modal。
+舊 `LevelUpUI` 與 Autumn Blessing popup 不再是這條流程的 authority。
+
+- wave page 只顯示 new card。
+- EXP page 顯示個別 instance upgrade、兩張不同 Lv.3 instance fusion；沒有合法
+  growth 時才顯示三種永久資源 fallback。
+- UI 必須清楚標示 instance level、兩張 fusion 材料與 Lv.1 結果。
+- `CardGrowthUI` 只 emit choice intent，不能直接改 deck、Meta 或 inventory。
+- modal 開啟期間 gameplay clock、AP、cooldowns、status、skills、waves 與 projectile
+  都必須暫停；UI 保持 always-processing 與可操作 focus。
+- queue 逐頁處理；close/teardown 只有在 queue 清空後才釋放 pause token。

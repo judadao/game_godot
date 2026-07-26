@@ -128,7 +128,7 @@ Game (Node, scripts/managers/game.gd)
 ### 4.3 Responsibilities
 
 - `MapRoot`：一次一個current map。
-- `HUDLayer`：一次一個adopted HUD與CardHandUI。
+- `HUDLayer`：一次一個 adopted HUD；AutumnCardHandUI 是 AutumnHUD 的 child。
 - `MenuLayer`：runtime menus/modal UI stack。
 - `CardEffectRunner`：解析卡牌effect，不擁有地圖或UI。
 
@@ -232,21 +232,22 @@ collision、portal reachability與`tests/map_navigation_contract_test.gd`。
 
 ```text
 EditorHUDReference (CanvasLayer)
-├── HUD (Control)
-└── CardHandUI (Control)
+└── HUD (Control)
+    └── AutumnCardHandUI（Autumn only）
 ```
 
 Editor中：
 
-- `EditorHUDReference`讓HUD與CardHand可在map主Scene預覽與調整。
+- `EditorHUDReference` 讓單一 HUD authority（含 Autumn 內嵌 hand）可在 map 主
+  Scene 預覽與調整。
 - `EditorHUDReference` script使用`Engine.is_editor_hint()`控制visibility。
 - map用`[editable path]`暴露需要調整的children。
 
 Runtime：
 
-- `Game.load_hud()`將exact `HUD` instance reparent到`HUDLayer`。
-- `Game.load_card_hand()`將exact `CardHandUI` instance reparent到`HUDLayer`。
-- `EditorHUDReference/HUD`與`CardHandUI`因此不再留在current map下。
+- `Game.load_hud()` 將 exact `HUD` instance reparent 到 `HUDLayer`。
+- Autumn 不得把 hand 再 reparent 成第二個 root；它隨 HUD 一起移動。
+- `EditorHUDReference/HUD` 因此不再留在 current map 下。
 - identity、anchors、offsets、scale與layout overrides必須保留。
 
 不要再放第二份HUD到map或Game。不要以script重建map-authored root layout。
@@ -578,7 +579,7 @@ Deep path出現在HUD/Inventory/Shop scripts，Scene rename時必須：
 | Before unload | Game capture selected Player properties |
 | Unload | queue_free MapRoot children，清current references |
 | Instantiate | add authoritative map under MapRoot |
-| UI | adopt map HUD/CardHandUI |
+| UI | adopt map HUD（Autumn hand 已內嵌） |
 | Player | find Player，move to spawn，apply state/equipment |
 | Wiring | connect interactive/director/player signals |
 | Ready | update HUD，emit `map_loaded` |
@@ -719,7 +720,7 @@ func _ready() -> void:
 ## 17. Anti Pattern
 
 - 直接runtime load canonical base map，繞過authoritative wrapper。
-- 同一map放兩個Player、Camera、HUD或CardHandUI。
+- 同一 map 放兩個 Player、Camera 或 HUD authority；Autumn 另掛獨立 CardHandUI。
 - script在`_ready()`重建可在Scene editor authored的整套layout。
 - copy/paste component tree而不instance共享Scene。
 - rename required node但只修一個script。
@@ -747,7 +748,7 @@ func _ready() -> void:
 - [ ] Required child與NodePath存在。
 - [ ] Groups與signals正確且未重複連接。
 - [ ] Instance不是copy，editable override保留。
-- [ ] Authoritative map的Player/Camera/HUD/CardHand數量正確。
+- [ ] Authoritative map 的 Player/Camera/HUD 數量正確，Autumn hand 只存在 HUD 內。
 - [ ] Runtime adoption後HUD identity/layout保持。
 - [ ] Map F6與Main都可操作。
 - [ ] Portal destination/spawn與canonical mapping一致。
@@ -767,7 +768,52 @@ func _ready() -> void:
 - 若導入NPC navigation、Quest Scene或Audio emitter，先定義ownership與save boundary。
 - 若導入`AnimationPlayer`／`AnimationTree`，定義Scene child naming與animation event contract。
 
-## 21. Related Documents
+## 21. Autumn HUD 與 Growth Scene Contract
+
+本節是 Autumn 改版後的 scene authority；若前文 generic HUD 範例與本節衝突，
+以本節為準。Town 仍沿用自己的 HUD 與 CardHand scene，不因 Autumn 改版而重組。
+
+```text
+AutumnBattleMapV2
+└── EditorHUDReference (CanvasLayer)
+    └── HUD (AutumnHUD exact instance)
+        ├── TopLeftStack
+        │   ├── ActiveStatusList
+        │   └── ObjectivePanel
+        ├── TopCenterStack
+        │   ├── BossHealth
+        │   └── SkillToastStack
+        └── BottomStage
+            ├── PlayerVitals
+            ├── ActionPoints
+            ├── CardStage
+            │   ├── CooldownStrip
+            │   └── AutumnCardHandUI
+            ├── InputGlyphHints
+            └── PersonalResources
+```
+
+靜態區塊必須 editor-authored；script 只建立 cards、statuses 與 toast 等動態內容。
+`Game` adoption 只 reparent `HUD` exact instance。不得在 map、`HUDLayer` 或 preview
+helper 中保留另一個 Autumn hand authority。
+
+Growth modal scene contract：
+
+```text
+Game/MenuLayer
+└── CardGrowthUI（runtime modal）
+    ├── Header
+    ├── ChoiceGrid
+    ├── Detail/selection state
+    └── Confirm action
+```
+
+`CardGrowthUI` 不擁有 upgrade/fusion 規則，也不直接寫 Meta。它只顯示
+`GrowthChoiceQueue.peek()` 的 page，並 emit choice ID。`Game` 必須在 caller
+整合時負責 resolve、套用 mutation、永久 fallback save、下一頁與 pause token。
+舊 `LevelUpUI` 不再是 Autumn/EXP 成長的 scene authority。
+
+## 22. Related Documents
 
 - `docs/README.md`
 - `docs/01_AI_GUIDE.md`

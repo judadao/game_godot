@@ -12,7 +12,7 @@
 4. [玩家移動與生存狀態](#4-玩家移動與生存狀態)
 5. [秋季生存關卡與 Guardian](#5-秋季生存關卡與-guardian)
 6. [卡牌、牌組、手牌與 AP](#6-卡牌牌組手牌與-ap)
-7. [Combo、Infusion 與 Evolution](#7-comboinfusion-與-evolution)
+7. [Combo、Skill 與 Fusion](#7-comboskill-與-fusion)
 8. [經驗值、升級與 Run 成長](#8-經驗值升級與-run-成長)
 9. [城鎮、資源與裝備](#9-城鎮資源與裝備)
 10. [營火、商人、寶箱與捷徑](#10-營火商人寶箱與捷徑)
@@ -268,18 +268,21 @@ Guardian 死亡後：
 
 ### 6.1 Card catalog
 
-`res://data/cards.json` 目前有 23 張通過 loader 驗證的卡。有效類型包括：
+`res://data/cards.json` 的有效 gameplay 類型包括：
 
 - attack；
 - skill；
 - power；
 - summon；
-- defense；
+- healing；
 - status；
 - ultimate；
 - combo。
 
-卡片資料包含 ID、名稱、類型、cost、tag、effect、icon path 與 level upgrade。六組 evolution recipe 位於 `res://data/evolutions.json`。
+`defense` 不再是有效卡牌類型；原防禦牌改為具 cooldown 的 combo status cards。
+Healing 卡以綠色呈現，效果明確區分 immediate restore、regeneration 與
+lifesteal。卡片資料包含 ID、名稱、類型、cost、tag、effect、icon path 與
+level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 
 ### 6.2 Deck Builder
 
@@ -299,16 +302,21 @@ Guardian 死亡後：
 - `draw_pile`；
 - `hand`；
 - `discard_pile`；
-- `exhaust_pile`。
+- `exhaust_pile`；
+- `cooldown_pile`。
 
-手牌容量為 8，但不足 8 張的 deck 不會憑空補牌。戰鬥 UI 的底部 25% 會同時完整顯示兩組、每組最多 4 張：目前組位於 `FrontRow` 並由 Q/W/E/R 使用，另一組位於 `BackRow`；A/S 可快速切換目前組。第一組第一格固定保留普攻卡 `ember_bolt`。打出一般卡後進入 discard；combo type 卡進入 exhaust。
+五個牌區都保存 `CardInstance(instance_id, card_id, level)` identity。手牌容量為 8，
+不足 8 張的 deck 不會憑空補牌。戰鬥 UI 同時顯示兩組、每組最多 4 張：
+目前組位於 `FrontRow` 並由 Q/W/E/R 使用，另一組位於 `BackRow`；A/S 可快速
+切換目前組。一般卡進 discard；標記 exhaust 的卡進 exhaust；有 cooldown 的
+combo/healing 卡暫入 cooldown，到期後回 discard。
 
-`ember_bolt` 是 protected card：
+`ember_bolt` 與 `quickstep` 是 fixed cards：
 
-- 起始時優先放入 hand；
-- 打出後不移出 hand；
-- redraw 與 end-turn cleanup 會保留一張；
-- overflow discard 不允許選它。
+- 各恰好一張、起始時優先放入 hand；
+- 永久 Lv.1，打出後不移出 hand；
+- redraw 與 end-turn cleanup 會保留；
+- 不可 overflow discard、升級、fusion、purge、exhaust 或進 cooldown。
 
 ### 6.4 AP
 
@@ -339,7 +347,7 @@ protected card 離開手牌後補抽一張 replacement，再加上卡片 effect 
 
 Card focus 會把 `Engine.time_scale` 設為 0.22，hit stop 也會短暫改變全域 time scale。正常路徑會恢復，但節點中途離開時缺少統一 teardown 保證，列入 TODO。
 
-## 7. Combo、Infusion 與 Evolution
+## 7. Combo、Skill 與 Fusion
 
 ### 7.1 Sequence Combo
 
@@ -353,31 +361,38 @@ Card focus 會把 `Engine.time_scale` 設為 0.22，hit stop 也會短暫改變�
 
 每條 sequence combo 每個 Run 最多觸發一次，觸發後更新 combo count 與 HUD 顯示。
 
-### 7.2 Combo-type infusion cards
+### 7.2 Passive attack Skill
 
-Combo 類型卡與 sequence combo 是兩個不同系統。現有五種 infusion：
+Skill recipe 不是卡牌類型，也不由 non-attack card 推進。每次成功且正傷害的
+attack card 只產生一個 skill event；multi-hit 仍算一個。active skills 可平行判定：
 
-- flame；
-- frost；
-- rhythm；
-- stoneguard；
-- blood pact。
+- count recipe 在 8 秒 window 內累積攻擊次數；
+- exact sequence 只接受指定 attack card ID；錯誤 attack 重設，若它也是第一步
+  則立即從第一步重新開始；
+- non-attack 不推進 recipe；
+- 每個 skill 有獨立 cooldown，同一次 attack 可觸發多個 skill。
 
-Combo-type card 打出後進入 exhaust，對本 Run 啟用持續 infusion，最多四種。每個 infusion 可升至 level 3。
+學會的 skill 永久保留，出發前在安全區/Town 編輯 active loadout。Memory Library
+level 的 capacity 是 10/14/18/24/30。初始 `Iron Momentum` 使用 1 memory，五次
+attack 觸發三秒弱霸體，cooldown 十秒。
 
-目前組合 evolution：
+### 7.3 Card upgrade 與 fusion
 
-- flame + frost → Thermal Shatter；
-- rhythm + stoneguard → War Cadence。
+EXP growth 對個別 `CardInstance` 升級，最高 Lv.3；同 card ID 的兩張卡可有不同
+level。fusion 必須明確選兩張不同的 Lv.3 instances，消耗兩張材料並建立一張
+Lv.1 結果，牌組淨減一：
 
-### 7.3 Card evolution
+| Lv.3 material A | Lv.3 material B | Lv.1 result |
+|---|---|---|
+| Iron Will (`guard`) | Stone Form (`iron_skin`) | Unbreakable Stance (`fortress_stance`) |
+| Dash Strike | Cleave | Gale Lunge |
+| Frost Bind | Energy Surge | Time Snare |
+| Healing Light | Blood Pact | Renewal |
+| Battle Focus | Flame Aura | Overdrive |
+| Cleave | Flame Aura | Inferno Orb |
 
-生存階段 2 開始時，六個 evolution passive 會注入本次 Run。符合 recipe 的 base card 到 level 3 時：
-
-- hand 中相同 base card 轉換；
-- draw pile 中相同 base card 轉換；
-- discard pile 中相同 base card 轉換；
-- Meta 記錄 unlocked evolution。
+fixed cards 不可升級或作材料。舊「階段 2 自動注入 passive evolution、批次轉換
+所有同名卡」不再是 gameplay contract。
 
 ### 7.4 效果語意限制
 
@@ -411,15 +426,16 @@ next_required = ceil(previous_required * 1.32 + 12)
 
 ### 8.2 Level-up choices
 
-目前 choice generator 可提供：
+每一個 pending level-up enqueue 一頁 EXP growth choice：
 
-- 升級 Run deck 中低於 level 3 的卡；
-- Run deck 少於 16 張時加入已解鎖卡；
-- fallback：增加 10 max health；
-- fallback：增加 0.10 AP regeneration；
-- fallback：移除一張可移除卡。
+- 選一張低於 Lv.3 的非 fixed `CardInstance` 個別升級；
+- 或選兩張不同的合法 Lv.3 instances 進行 fusion；
+- 只有兩者都沒有候選時，改選 75 gold、12 autumn wood + 8 stone、
+  或 4 magic shards。
 
-目前沒有獨立的「升級已啟用 combo」choice。Combo card 若在 deck 中，只能走一般 card upgrade 規則。設計文件若提到 combo-specific choice，必須標記 `TODO`。
+Wave blessing 是另一種 queue source，只提供 new card，不混入 upgrade/fusion。
+`CardGrowthUI` 依 FIFO 一頁一頁處理；舊 max-health/AP-regen/purge fallback 不再是
+這條卡牌成長流程的 contract。
 
 ## 9. 城鎮、資源與裝備
 
@@ -554,7 +570,7 @@ Stock 存在 `RunState.temporary_buffs` 中，只對本次 Run 有效。
 
 - active、level、experience、pending level-ups；
 - AP；
-- starting deck、temporary cards、card levels；
+- starting deck compatibility projection、`card_instances`；
 - combo count、temporary buffs；
 - run gold、materials；
 - defeated enemy／elite／boss flags。
@@ -563,19 +579,21 @@ Stock 存在 `RunState.temporary_buffs` 中，只對本次 Run 有效。
 
 ### 11.2 MetaState
 
-`MetaState` schema version 為 2，保存：
+`MetaState` schema version 為 3，保存：
 
 - persistent resources；
 - village／building progression；
-- unlocked cards、evolutions、combos；
-- selected deck；
+- unlocked cards 與相容 progression fields；
+- `selected_card_instances`（instance ID、card ID、level）；
+- legacy `selected_deck` compatibility projection；
 - equipment 與 equipment level；
 - settings；
 - shortcut flags；
 - inventory/town nested state；
 - boss state。
 
-`permanent_card_levels` 與 `unlocked_combos` 目前有序列化欄位，但尚未找到 gameplay consumer，列為 TODO。
+舊 payload 在載入時 deterministic、idempotent migration；fixed cards 重複、非法
+level、重複/缺失 instance ID 必須修復並留下 report。
 
 ### 11.3 Meta save
 
@@ -659,11 +677,11 @@ Game (Node)                         scenes/game/game.tscn
 │       ├── ForwardPortal
 │       └── WanderingCardMerchant
 ├── HUDLayer (CanvasLayer)
-│   ├── HUD (Control)
-│   └── CardHandUI (Control)
+│   └── HUD (AutumnHUD)
+│       └── AutumnCardHandUI (Control)
 ├── MenuLayer (CanvasLayer)
 │   ├── DeckBuilderUI (Control)     created when opened
-│   ├── LevelUpUI (Control)         created when opened
+│   ├── CardGrowthUI (Control)      created while queue is non-empty
 │   └── RunResultUI (Control)       created when opened
 └── CardEffectRunner (Node)
 ```
@@ -829,11 +847,11 @@ Reviewer 必須確認：
 - [ ] 沒有新增未核准玩法。
 - [ ] 所有不確定內容都標記 TODO。
 - [ ] Town → Autumn → Guardian → Result 流程未被破壞。
-- [ ] Deck 維持 1–16 張與 protected `ember_bolt`。
-- [ ] Hand、兩組顯示、discard、exhaust、overflow 規則一致。
+- [ ] Deck 維持 1–16 張，`ember_bolt`/`quickstep` fixed identity 正確。
+- [ ] Hand、draw、discard、exhaust、cooldown、overflow 的 instance identity 一致。
 - [ ] AP cost、regen 與 redraw 行為有測試。
-- [ ] XP 跨級 queue 與 level-up choice 有測試。
-- [ ] Sequence combo、infusion、evolution 各自有明確 contract。
+- [ ] XP 跨級 queue 與 CardGrowth upgrade/fusion/fallback 有測試。
+- [ ] Sequence combo、passive attack skill、fusion 各自有明確 contract。
 - [ ] Equipment 實際 consumer 與文件一致。
 - [ ] Campfire／Merchant 的 UI 可到達行為與文件一致。
 - [ ] Run result、Meta save、quick save 的能力沒有誇大。
@@ -846,7 +864,8 @@ Reviewer 必須確認：
 - [ ] Guardian victory 後處理剩餘 gem 與 support enemy。
 - [ ] 決定並驗證 `autumn_route_cleared` 重入行為。
 - [ ] 讓 Boss 獎勵在定義的持久化時點可靠落盤。
-- [ ] 使 combo-specific level-up 設計與 runtime 一致。
+- [ ] 完成 `Game` 對 SkillRecipeManager、GrowthChoiceQueue、CardGrowthUI 與 pause
+  token 的 composition-root 組裝。
 - [ ] 移除或正式保留不可到達的 Campfire card-growth logic。
 - [ ] 處理 dormant equipment effect consumer。
 - [ ] 定義 expedition 中 quick save 的支援邊界。
