@@ -12,6 +12,15 @@ const AUTUMN_HOVER_RISE := 9.0
 const AUTUMN_HOVER_SCALE := Vector2(1.055, 1.055)
 
 
+func _ready() -> void:
+	super._ready()
+	_hide_persistent_feedback()
+
+
+func set_combo(_current: String, _next_hint: String) -> void:
+	_hide_persistent_feedback()
+
+
 func set_boss_health(name_text: String, current: int, maximum: int) -> void:
 	var combat_hud := _find_combat_hud()
 	if combat_hud != null:
@@ -192,3 +201,16 @@ func _find_combat_hud() -> Control:
 			return candidate as Control
 		candidate = candidate.get_parent()
 	return null
+
+
+func _hide_persistent_feedback() -> void:
+	var combo_frame := get_node_or_null("CardSafeArea/BottomMargin/BottomRow/InfoSlot/ComboFrame") as Control
+	var combo_controls := get_node_or_null("CardSafeArea/BottomMargin/BottomRow/InfoSlot/InfoControls") as Control
+	if combo_frame != null:
+		combo_frame.visible = false
+	if combo_controls != null:
+		combo_controls.visible = false
+	if _boss_label != null:
+		_boss_label.visible = false
+	if _boss_bar != null:
+		_boss_bar.visible = false

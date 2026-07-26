@@ -21,16 +21,39 @@ func _run() -> void:
 	await process_frame
 	for node_path in [
 		"TopLeftStack",
-		"TopLeftStack/StatusPanel/StatusRows",
+		"TopLeftStack/ActiveStatusList",
+		"TopLeftStack/ObjectivePanel/ObjectiveRows",
 		"TopCenterStack",
 		"TopCenterStack/BossStack",
 		"TopCenterStack/SkillToastStack",
 		"BottomStage",
+		"BottomStage/PlayerVitals/VitalsRows",
 		"BottomStage/CardHandUI",
 		"BottomStage/BottomRightPanel/ResourceRows",
-		"BottomStage/ObjectivePanel/ObjectiveRows",
 	]:
 		_expect(hud.has_node(node_path), "Autumn combat HUD must author %s." % node_path)
+	var top_left := hud.get_node("TopLeftStack")
+	var active_status_list := top_left.get_node_or_null("ActiveStatusList")
+	var objective_panel := top_left.get_node_or_null("ObjectivePanel")
+	_expect(active_status_list != null and active_status_list.get_parent() == top_left, "ActiveStatusList must be a direct TopLeftStack child.")
+	_expect(objective_panel != null and objective_panel.get_parent() == top_left, "ObjectivePanel must be a direct TopLeftStack child.")
+	_expect(hud.has_method("set_active_statuses"), "HUD root must project transient active statuses.")
+	if active_status_list != null and hud.has_method("set_active_statuses"):
+		hud.call("set_active_statuses", ["Armor 3s", "Regeneration 5s"])
+		var visible_statuses := 0
+		for status_row in active_status_list.get_node("StatusRows").get_children():
+			if status_row is Control and (status_row as Control).visible:
+				visible_statuses += 1
+		_expect(visible_statuses == 2, "ActiveStatusList must show only projected active statuses.")
+	var bottom_stage := hud.get_node("BottomStage")
+	for bottom_path in [
+		"PlayerVitals",
+		"CardHandUI",
+		"CardHandUI/CardSafeArea/BottomMargin/BottomRow/APSlot/APControls/EnergyBadge",
+		"CardHandUI/CardSafeArea/BottomMargin/BottomRow/HintSlot/HintControls/CardGroupBadge",
+		"BottomRightPanel/ResourceRows",
+	]:
+		_expect(bottom_stage.has_node(bottom_path), "BottomStage must own %s." % bottom_path)
 	var hands := hud.find_children("*", "AutumnCardHandUI", true, false)
 	_expect(hands.size() == 1, "Autumn combat HUD must contain exactly one embedded card hand.")
 	if hands.size() == 1:
@@ -41,19 +64,36 @@ func _run() -> void:
 		)
 	_expect(hud.has_method("set_boss_health"), "HUD root must own boss projection.")
 	_expect(hud.has_method("show_skill_toast"), "HUD root must own skill-toast projection.")
+	_expect(not hud.has_method("set_combo"), "Combat HUD must not expose persistent combo projection.")
+	var embedded_hand := hud.get_node("BottomStage/CardHandUI") as AutumnCardHandUI
+	var combo_frame := embedded_hand.get_node("CardSafeArea/BottomMargin/BottomRow/InfoSlot/ComboFrame") as Control
+	_expect(not combo_frame.visible, "Embedded Autumn card hand must hide the inherited persistent combo frame.")
+	embedded_hand.set_combo("PERSISTENT", "MUST STAY HIDDEN")
+	_expect(not combo_frame.visible, "set_combo compatibility calls must not restore persistent combo UI.")
 	if hud.has_method("set_boss_health"):
 		hud.call("set_boss_health", "Heartwood Guardian", 55, 100)
 		var boss := hud.get_node("TopCenterStack/BossStack") as Control
 		_expect(boss.visible, "Boss stack must become visible when a boss is projected.")
 	if hud.has_method("show_skill_toast"):
+		var toast_stack := hud.get_node("TopCenterStack/SkillToastStack")
+		for skill in ["iron_momentum", "ember_chain", "gale_sequence", "fourth_skill"]:
+			hud.call("show_skill_toast", skill, skill.capitalize())
+		_expect(_visible_toast_count(toast_stack) == 3, "Distinct skill triggers must never exceed three visible toast rows.")
+		await create_timer(1.6).timeout
+		_expect(_visible_toast_count(toast_stack) == 0, "Every skill toast must hide and recycle after 1.5 seconds.")
+
 		hud.call("show_skill_toast", "iron_momentum", "Iron Momentum")
-		hud.call("show_skill_toast", "iron_momentum", "Iron Momentum")
-		var toasts := hud.get_node("TopCenterStack/SkillToastStack").get_children()
-		var visible_count := 0
-		for toast in toasts:
-			if toast is Control and (toast as Control).visible:
-				visible_count += 1
-		_expect(visible_count == 1, "Visible duplicate skill triggers must refresh one toast, not add another.")
+		await create_timer(0.75).timeout
+		var active_toast := _visible_toast(toast_stack)
+		_expect(active_toast != null and active_toast.modulate.a < 0.75, "Skill toast must visibly alpha-fade before expiry.")
+		hud.call("show_skill_toast", "iron_momentum", "Iron Momentum Refreshed")
+		active_toast = _visible_toast(toast_stack)
+		_expect(_visible_toast_count(toast_stack) == 1, "Visible duplicate skill triggers must refresh one toast, not add another.")
+		_expect(active_toast != null and active_toast.modulate.a > 0.95, "Duplicate trigger must restart the toast fade at full alpha.")
+		await create_timer(0.85).timeout
+		_expect(_visible_toast_count(toast_stack) == 1, "Duplicate refresh must extend visibility past the original expiry.")
+		await create_timer(0.75).timeout
+		_expect(_visible_toast_count(toast_stack) == 0, "Refreshed toast must still finish and recycle 1.5 seconds later.")
 	hud.queue_free()
 
 	var autumn_map := (load(MAP_PATH) as PackedScene).instantiate()
@@ -74,3 +114,18 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _visible_toast_count(stack: Node) -> int:
+	var count := 0
+	for toast in stack.get_children():
+		if toast is Control and (toast as Control).visible:
+			count += 1
+	return count
+
+
+func _visible_toast(stack: Node) -> Control:
+	for toast in stack.get_children():
+		if toast is Control and (toast as Control).visible:
+			return toast as Control
+	return null

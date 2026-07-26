@@ -50,8 +50,11 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	var safe_rect := _canvas_rect(safe_area)
 	for card in hand.find_children("Card_*", "Button", true, false):
 		_expect(safe_rect.encloses(_canvas_rect(card as Control)), "Every card must stay within the embedded bottom stage at %s." % viewport_size)
-	for panel_path in ["TopLeftStack/StatusPanel", "TopCenterStack/BossStack", "BottomStage/BottomRightPanel"]:
-		var panel := hud.get_node(panel_path) as Control
+	for panel_path in ["TopLeftStack/ActiveStatusList", "TopLeftStack/ObjectivePanel", "TopCenterStack/BossStack", "BottomStage/PlayerVitals", "BottomStage/BottomRightPanel"]:
+		var panel := hud.get_node_or_null(panel_path) as Control
+		_expect(panel != null, "%s must be authored at %s." % [panel_path, viewport_size])
+		if panel == null:
+			continue
 		_expect(_inside_viewport(_canvas_rect(panel), viewport_size), "%s must remain readable at %s." % [panel_path, viewport_size])
 	viewport.queue_free()
 	await process_frame

@@ -1,7 +1,8 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/autumn_combat_hud.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnCardHandUI.tscn" id="2_hand"]
+[ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnInteractionPrompt.tscn" id="3_prompt"]
 
 [sub_resource type="StyleBoxFlat" id="DarkPanel"]
 bg_color = Color(0.025, 0.022, 0.019, 0.9)
@@ -61,35 +62,49 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 6
 
-[node name="StatusPanel" type="PanelContainer" parent="TopLeftStack"]
-custom_minimum_size = Vector2(250, 126)
+[node name="ActiveStatusList" type="PanelContainer" parent="TopLeftStack"]
+custom_minimum_size = Vector2(250, 72)
 layout_mode = 2
 theme_override_styles/panel = SubResource("DarkPanel")
 
-[node name="StatusRows" type="VBoxContainer" parent="TopLeftStack/StatusPanel"]
+[node name="StatusRows" type="VBoxContainer" parent="TopLeftStack/ActiveStatusList"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 2
 
-[node name="IdentityValue" type="Label" parent="TopLeftStack/StatusPanel/StatusRows"]
+[node name="StatusOne" type="Label" parent="TopLeftStack/ActiveStatusList/StatusRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.95, 0.78, 1)
+text = "ARMOR  3.0s"
+
+[node name="StatusTwo" type="Label" parent="TopLeftStack/ActiveStatusList/StatusRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.95, 0.78, 1)
+text = "REGENERATION  5.0s"
+
+[node name="StatusThree" type="Label" parent="TopLeftStack/ActiveStatusList/StatusRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.95, 0.78, 1)
+text = "LIFESTEAL  2.0s"
+
+[node name="ObjectivePanel" type="PanelContainer" parent="TopLeftStack"]
+custom_minimum_size = Vector2(250, 62)
+layout_mode = 2
+theme_override_styles/panel = SubResource("DarkPanel")
+
+[node name="ObjectiveRows" type="VBoxContainer" parent="TopLeftStack/ObjectivePanel"]
+layout_mode = 2
+
+[node name="ObjectiveValue" type="Label" parent="TopLeftStack/ObjectivePanel/ObjectiveRows"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.84, 0.48, 1)
-theme_override_font_sizes/font_size = 15
-text = "LV.1  ADVENTURER"
+theme_override_font_sizes/font_size = 12
+text = "SURVIVAL PHASE"
+autowrap_mode = 2
 
-[node name="HealthValue" type="Label" parent="TopLeftStack/StatusPanel/StatusRows"]
+[node name="ObjectiveProgress" type="Label" parent="TopLeftStack/ObjectivePanel/ObjectiveRows"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.5, 0.38, 1)
-text = "HP  100 / 100"
-
-[node name="ManaValue" type="Label" parent="TopLeftStack/StatusPanel/StatusRows"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.45, 0.72, 1, 1)
-text = "MP  50 / 50"
-
-[node name="StaminaValue" type="Label" parent="TopLeftStack/StatusPanel/StatusRows"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.46, 0.95, 0.58, 1)
-text = "STA  100 / 100"
+theme_override_colors/font_color = Color(0.8, 0.76, 0.66, 1)
+text = "Enemies 0 / 8"
 
 [node name="AreaPanel" type="PanelContainer" parent="TopLeftStack"]
 layout_mode = 2
@@ -181,31 +196,41 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("BottomFrame")
 
-[node name="ObjectivePanel" type="PanelContainer" parent="BottomStage"]
+[node name="PlayerVitals" type="PanelContainer" parent="BottomStage"]
 layout_mode = 1
-anchors_preset = 10
-anchor_left = 0.62
+anchors_preset = 0
+anchor_left = 0.015
 anchor_top = 0.76
-anchor_right = 0.79
-anchor_bottom = 0.93
+anchor_right = 0.225
+anchor_bottom = 0.96
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("DarkPanel")
 
-[node name="ObjectiveRows" type="VBoxContainer" parent="BottomStage/ObjectivePanel"]
+[node name="VitalsRows" type="VBoxContainer" parent="BottomStage/PlayerVitals"]
 layout_mode = 2
+theme_override_constants/separation = 3
 
-[node name="ObjectiveValue" type="Label" parent="BottomStage/ObjectivePanel/ObjectiveRows"]
+[node name="IdentityValue" type="Label" parent="BottomStage/PlayerVitals/VitalsRows"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.84, 0.48, 1)
-theme_override_font_sizes/font_size = 12
-text = "SURVIVAL PHASE"
-autowrap_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "LV.1  ADVENTURER"
 
-[node name="ObjectiveProgress" type="Label" parent="BottomStage/ObjectivePanel/ObjectiveRows"]
+[node name="HealthValue" type="Label" parent="BottomStage/PlayerVitals/VitalsRows"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.76, 0.66, 1)
-text = "Enemies 0 / 8"
+theme_override_colors/font_color = Color(1, 0.5, 0.38, 1)
+text = "HP  100 / 100"
+
+[node name="ManaValue" type="Label" parent="BottomStage/PlayerVitals/VitalsRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.72, 1, 1)
+text = "MP  50 / 50"
+
+[node name="StaminaValue" type="Label" parent="BottomStage/PlayerVitals/VitalsRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.46, 0.95, 0.58, 1)
+text = "STA  100 / 100"
 
 [node name="BottomRightPanel" type="PanelContainer" parent="BottomStage"]
 layout_mode = 1
@@ -231,30 +256,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.82, 1, 1)
 text = "EXP  0 / 100"
 
-[node name="InteractionPanel" type="PanelContainer" parent="BottomStage"]
-layout_mode = 1
-anchors_preset = 10
-anchor_left = 0.36
-anchor_top = 0.64
-anchor_right = 0.64
-anchor_bottom = 0.71
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/panel = SubResource("DarkPanel")
-
-[node name="PromptRows" type="HBoxContainer" parent="BottomStage/InteractionPanel"]
-layout_mode = 2
-alignment = 1
-
-[node name="KeyValue" type="Label" parent="BottomStage/InteractionPanel/PromptRows"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
-text = "F"
-
-[node name="PromptValue" type="Label" parent="BottomStage/InteractionPanel/PromptRows"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.9, 0.76, 1)
-text = "Interact"
+[node name="InteractionPanel" parent="BottomStage" instance=ExtResource("3_prompt")]
 
 [node name="CardHandUI" parent="BottomStage" instance=ExtResource("2_hand")]
 layout_mode = 1

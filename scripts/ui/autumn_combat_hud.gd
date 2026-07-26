@@ -5,28 +5,32 @@ extends Control
 const MAX_VISIBLE_SKILL_TOASTS := 3
 const SKILL_TOAST_DURATION_SECONDS := 1.5
 
-@onready var _health_value: Label = $TopLeftStack/StatusPanel/StatusRows/HealthValue
-@onready var _mana_value: Label = $TopLeftStack/StatusPanel/StatusRows/ManaValue
-@onready var _stamina_value: Label = $TopLeftStack/StatusPanel/StatusRows/StaminaValue
-@onready var _identity_value: Label = $TopLeftStack/StatusPanel/StatusRows/IdentityValue
+@onready var _health_value: Label = $BottomStage/PlayerVitals/VitalsRows/HealthValue
+@onready var _mana_value: Label = $BottomStage/PlayerVitals/VitalsRows/ManaValue
+@onready var _stamina_value: Label = $BottomStage/PlayerVitals/VitalsRows/StaminaValue
+@onready var _identity_value: Label = $BottomStage/PlayerVitals/VitalsRows/IdentityValue
 @onready var _area_value: Label = $TopLeftStack/AreaPanel/AreaValue
+@onready var _status_rows: VBoxContainer = $TopLeftStack/ActiveStatusList/StatusRows
 @onready var _boss_stack: Control = $TopCenterStack/BossStack
 @onready var _boss_name: Label = $TopCenterStack/BossStack/BossName
 @onready var _boss_health: ProgressBar = $TopCenterStack/BossStack/BossHealth
 @onready var _toast_stack: VBoxContainer = $TopCenterStack/SkillToastStack
-@onready var _objective_value: Label = $BottomStage/ObjectivePanel/ObjectiveRows/ObjectiveValue
-@onready var _objective_progress: Label = $BottomStage/ObjectivePanel/ObjectiveRows/ObjectiveProgress
+@onready var _objective_value: Label = $TopLeftStack/ObjectivePanel/ObjectiveRows/ObjectiveValue
+@onready var _objective_progress: Label = $TopLeftStack/ObjectivePanel/ObjectiveRows/ObjectiveProgress
 @onready var _gold_value: Label = $BottomStage/BottomRightPanel/ResourceRows/GoldValue
 @onready var _experience_value: Label = $BottomStage/BottomRightPanel/ResourceRows/ExperienceValue
 @onready var _interaction_panel: Control = $BottomStage/InteractionPanel
-@onready var _interaction_key: Label = $BottomStage/InteractionPanel/PromptRows/KeyValue
-@onready var _interaction_text: Label = $BottomStage/InteractionPanel/PromptRows/PromptValue
+@onready var _interaction_key: Label = $BottomStage/InteractionPanel/PromptRow/Keycap/KeyLabel
+@onready var _interaction_text: Label = $BottomStage/InteractionPanel/PromptRow/PromptText
 @onready var _card_hand: AutumnCardHandUI = $BottomStage/CardHandUI
+
+var _toast_tweens: Dictionary = {}
 
 
 func _ready() -> void:
 	_make_display_only(self)
 	_boss_stack.visible = false
+	set_active_statuses(["ARMOR  3.0s", "REGENERATION  5.0s"] if Engine.is_editor_hint() else [])
 	for toast in _toast_stack.get_children():
 		if toast is Control:
 			(toast as Control).visible = false
@@ -67,19 +71,32 @@ func set_area_name(value: String) -> void:
 	_area_value.text = value.strip_edges() if not value.strip_edges().is_empty() else "AUTUMN FOREST"
 
 
+func set_active_statuses(statuses: Array) -> void:
+	for index in _status_rows.get_child_count():
+		var row := _status_rows.get_child(index) as Label
+		var has_status := index < statuses.size()
+		row.visible = has_status
+		if has_status:
+			row.text = String(statuses[index])
+
+
 func set_objective(text: String, progress: String = "") -> void:
 	_objective_value.text = text
 	_objective_progress.text = progress
 	_objective_progress.visible = not progress.is_empty()
 
 
-func set_interaction_prompt(action_text: String, key_text: String = "F", _target: CanvasItem = null) -> void:
+func set_interaction_prompt(action_text: String, key_text: String = "F", target: CanvasItem = null) -> void:
 	_interaction_text.text = action_text
 	_interaction_key.text = key_text
 	_interaction_panel.visible = not action_text.is_empty()
+	if _interaction_panel.has_method("set_target"):
+		_interaction_panel.call("set_target", target)
 
 
 func clear_interaction_prompt() -> void:
+	if _interaction_panel.has_method("clear_target"):
+		_interaction_panel.call("clear_target")
 	_interaction_panel.visible = false
 
 
@@ -99,10 +116,9 @@ func hide_boss_health() -> void:
 
 
 func show_skill_toast(skill_id: StringName, message: String) -> void:
-	var now := Time.get_ticks_msec()
 	for toast in _toast_stack.get_children():
 		if toast is Label and (toast as Control).visible and StringName(toast.get_meta("skill_id", &"")) == skill_id:
-			_refresh_toast(toast as Label, skill_id, message, now)
+			_refresh_toast(toast as Label, skill_id, message)
 			return
 	var target: Label = null
 	for toast in _toast_stack.get_children():
@@ -111,24 +127,33 @@ func show_skill_toast(skill_id: StringName, message: String) -> void:
 			break
 	if target == null:
 		target = _toast_stack.get_child(0) as Label
-	_refresh_toast(target, skill_id, message, now)
+	_refresh_toast(target, skill_id, message)
 
 
-func _process(_delta: float) -> void:
-	if not is_node_ready():
-		return
-	var now := Time.get_ticks_msec()
-	for toast in _toast_stack.get_children():
-		if toast is Label and (toast as Control).visible and now >= int(toast.get_meta("expires_at", 0)):
-			(toast as Control).visible = false
-
-
-func _refresh_toast(toast: Label, skill_id: StringName, message: String, now: int) -> void:
+func _refresh_toast(toast: Label, skill_id: StringName, message: String) -> void:
+	var toast_key := toast.get_instance_id()
+	var existing: Variant = _toast_tweens.get(toast_key)
+	if existing is Tween and (existing as Tween).is_valid():
+		(existing as Tween).kill()
 	toast.text = message
 	toast.set_meta("skill_id", skill_id)
-	toast.set_meta("expires_at", now + roundi(SKILL_TOAST_DURATION_SECONDS * 1000.0))
 	toast.modulate = Color.WHITE
 	toast.visible = true
+	var tween := toast.create_tween()
+	tween.set_trans(Tween.TRANS_LINEAR)
+	tween.set_ease(Tween.EASE_IN)
+	tween.tween_property(toast, "modulate:a", 0.0, SKILL_TOAST_DURATION_SECONDS)
+	tween.tween_callback(_recycle_toast.bind(toast, skill_id))
+	_toast_tweens[toast_key] = tween
+
+
+func _recycle_toast(toast: Label, skill_id: StringName) -> void:
+	if not is_instance_valid(toast) or StringName(toast.get_meta("skill_id", &"")) != skill_id:
+		return
+	toast.visible = false
+	toast.modulate = Color.WHITE
+	toast.set_meta("skill_id", &"")
+	_toast_tweens.erase(toast.get_instance_id())
 
 
 func set_cards(cards: Array, energy: float) -> void:
@@ -137,10 +162,6 @@ func set_cards(cards: Array, energy: float) -> void:
 
 func set_action_points(current: float, maximum: float) -> void:
 	_card_hand.set_action_points(current, maximum)
-
-
-func set_combo(current: String, next_hint: String) -> void:
-	_card_hand.set_combo(current, next_hint)
 
 
 func _make_display_only(node: Node) -> void:
