@@ -5,6 +5,7 @@ signal player_registered(player_node: Node)
 signal ui_opened(ui_name: String, ui_node: Control)
 signal ui_closed(ui_name: String, ui_node: Control)
 signal growth_save_requested
+signal growth_save_failed(message: String)
 
 const QUICK_SAVE_PATH := "user://saves/quick_save.json"
 const QUICK_SAVE_TEMP_PATH := "user://saves/quick_save.tmp"
@@ -36,28 +37,6 @@ const EXP_FALLBACK_REWARDS: Array[Dictionary] = [
 	{"resources": {"autumn_wood": 12, "stone": 8}},
 	{"resource_id": "magic_shard", "amount": 4},
 ]
-const COMBO_EVOLUTIONS := [
-	{
-		"requires": ["flame", "frost"],
-		"id": "thermal_shatter",
-		"name": "Thermal Shatter",
-		"effect": {
-			"kind": "infusion", "infusion_id": "thermal_shatter",
-			"damage_bonus": 20, "burn_damage": 6, "burn_duration": 6.0,
-			"frost_ratio": 0.50, "frost_duration": 4.0, "combo_stun": 0.5,
-		},
-	},
-	{
-		"requires": ["rhythm", "stoneguard"],
-		"id": "war_cadence",
-		"name": "War Cadence",
-		"effect": {
-			"kind": "infusion", "infusion_id": "war_cadence",
-			"damage_bonus": 8, "block_bonus": 14,
-		},
-	},
-]
-
 @export var starting_map: PackedScene = preload("res://scenes/maps/town/TownMap.tscn")
 @export var hud_scene: PackedScene = preload("res://scenes/ui/HUD.tscn")
 @export var card_hand_scene: PackedScene = preload("res://scenes/ui/CardHandUI.tscn")
@@ -656,7 +635,9 @@ func _on_experience_collected(value: int) -> void:
 
 
 func _enqueue_pending_experience_growth() -> void:
-	while run_state.consume_pending_level():
+	if run_state.pending_level_ups <= 0 or not growth_choice_queue.is_empty():
+		return
+	if run_state.consume_pending_level():
 		growth_choice_queue.enqueue(_build_exp_growth_entry())
 
 
@@ -707,15 +688,30 @@ func _build_upgradeable_instance_projection(instance: Dictionary) -> Dictionary:
 func _confirm_growth_action(action: Dictionary) -> bool:
 	if not _can_apply_growth_action(action):
 		return false
+	if String(action.get("kind", "")) == "reward":
+		var current_payload := growth_choice_queue.peek().get("payload", {}) as Dictionary
+		var reward: Variant = _fallback_reward_for_action(
+			action,
+			current_payload.get("fallback_rewards", []) as Array
+		)
+		if reward == null or not _persist_permanent_growth_reward(reward as Dictionary):
+			return false
+		var applied_action := action.duplicate(true)
+		applied_action["_growth_domain_applied"] = true
+		return growth_choice_queue.confirm(applied_action)
 	return growth_choice_queue.confirm(action)
 
 
 func _on_growth_action_confirmed(_entry: Dictionary, action: Dictionary) -> void:
-	if not _apply_growth_action(action):
+	var applied := bool(action.get("_growth_domain_applied", false))
+	if not applied:
+		applied = _apply_growth_action(action)
+	if not applied:
 		push_error("Confirmed growth action failed domain validation.")
 		return
 	_refresh_card_hand()
 	_update_hud_player_identity()
+	_enqueue_pending_experience_growth()
 
 
 func _can_apply_growth_action(action: Dictionary) -> bool:
@@ -756,15 +752,6 @@ func _apply_growth_action(action: Dictionary) -> bool:
 			return true
 		"fusion":
 			return _apply_fusion_action(action)
-		"reward":
-			var reward: Variant = _fallback_reward_for_action(action, EXP_FALLBACK_REWARDS)
-			if reward == null:
-				return false
-			var granted := _grant_permanent_growth_reward(reward as Dictionary)
-			if granted:
-				growth_save_requested.emit()
-				save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
-			return granted
 		_:
 			return false
 
@@ -858,6 +845,21 @@ func _grant_permanent_growth_reward(reward: Dictionary) -> bool:
 		return false
 	_sync_progression_to_meta()
 	return true
+
+
+func _persist_permanent_growth_reward(reward: Dictionary) -> bool:
+	var inventory_before := inventory_manager.call("to_dict") as Dictionary
+	var meta_before := meta_state.to_dict()
+	if not _grant_permanent_growth_reward(reward):
+		return false
+	growth_save_requested.emit()
+	if save_service.save_meta(META_SAVE_PATH, meta_state.to_dict()):
+		return true
+	inventory_manager.call("apply_dict", inventory_before)
+	meta_state.apply_dict(meta_before)
+	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
+	growth_save_failed.emit("Permanent growth reward could not be saved.")
+	return false
 
 
 func _synchronize_growth_instances() -> void:
@@ -1219,51 +1221,7 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 	)
 	effects.append(timed_effect)
 	run_state.temporary_buffs["infusion_effects"] = effects
-	_try_evolve_combo_abilities()
 	return true
-
-
-func _try_evolve_combo_abilities() -> bool:
-	var active_variant: Variant = run_state.temporary_buffs.get("active_infusions", [])
-	var levels_variant: Variant = run_state.temporary_buffs.get("combo_levels", {})
-	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
-	if not active_variant is Array or not levels_variant is Dictionary or not effects_variant is Array:
-		return false
-	var active := active_variant as Array
-	var levels := levels_variant as Dictionary
-	var effects := effects_variant as Array
-	for recipe in COMBO_EVOLUTIONS:
-		var required := recipe["requires"] as Array
-		if required.any(func(combo_id: Variant) -> bool:
-			return int(levels.get(String(combo_id), 0)) < MAX_COMBO_LEVEL
-		):
-			continue
-		var evolved_remaining := 0.0
-		for combo_id in required:
-			active.erase(String(combo_id))
-			levels.erase(String(combo_id))
-			var retained_effects: Array = []
-			for effect_variant in effects:
-				if not effect_variant is Dictionary:
-					continue
-				var timed_effect := effect_variant as Dictionary
-				if String(timed_effect.get("infusion_id", "")) == String(combo_id):
-					evolved_remaining = maxf(evolved_remaining, float(timed_effect.get("remaining_seconds", 0.0)))
-				else:
-					retained_effects.append(effect_variant)
-			effects = retained_effects
-		var evolution_id := String(recipe["id"])
-		active.append(evolution_id)
-		levels[evolution_id] = 1
-		var evolved_effect := (recipe["effect"] as Dictionary).duplicate(true)
-		evolved_effect["remaining_seconds"] = maxf(0.1, evolved_remaining)
-		effects.append(evolved_effect)
-		run_state.temporary_buffs["active_infusions"] = active
-		run_state.temporary_buffs["combo_levels"] = levels
-		run_state.temporary_buffs["infusion_effects"] = effects
-		_last_combo_name = String(recipe["name"])
-		return true
-	return false
 
 
 func _tick_combo_effects(delta: float) -> bool:
