@@ -12,7 +12,10 @@
 Drag only `autumn-hud-redesign-figma.svg` into a blank Figma page. The imported
 root is clipped to an exact 1920×1080 canvas so drop shadows cannot expand its
 bounds. UI regions, panels, cards, text, icons, and map overlay remain independently
-editable. The bitmap map is intentionally isolated as the bottom layer.
+editable. The bitmap map is intentionally isolated as the bottom layer. The map
+bitmap, enemy state, player marker, and interaction prompt are grouped under
+`01_WORLD_VIEWPORT` and shifted upward by 130 px as one world-space composition.
+Screen-space HUD, missions, meta controls, and the Dash hint remain fixed.
 
 Do not import `autumn-hud-redesign-source.svg` beside it. That file contains an
 external bitmap reference for rebuilding the self-contained artifact and creates a
