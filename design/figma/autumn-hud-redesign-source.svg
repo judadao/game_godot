@@ -1,7 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1920" height="1080" viewBox="0 0 1920 1080">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1920" height="1080" viewBox="0 0 1920 1080" overflow="hidden">
   <title>Autumn Battle Map and HUD Redesign</title>
   <desc>Figma-ready layered gameplay mockup based on the approved intrinsic Dash and four-card active group contract.</desc>
   <defs>
+    <clipPath id="canvasClip">
+      <rect x="0" y="0" width="1920" height="1080"/>
+    </clipPath>
     <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#11191c" stop-opacity=".98"/>
       <stop offset="1" stop-color="#080d0f" stop-opacity=".98"/>
@@ -59,8 +62,10 @@
     </style>
   </defs>
 
+  <g id="Canvas_1920x1080" clip-path="url(#canvasClip)">
+  <rect id="CanvasBounds" x="0" y="0" width="1920" height="1080" fill="#05090a"/>
   <g id="01_MAP_BACKGROUND">
-    <image id="MapBackgroundBitmap" x="0" y="0" width="1920" height="1080" preserveAspectRatio="xMidYMid slice" href="autumn-map-background.png" xlink:href="autumn-map-background.png"/>
+    <image id="MapBackgroundBitmap" x="0" y="0" width="1920" height="1080" preserveAspectRatio="none" href="autumn-map-background.png" xlink:href="autumn-map-background.png"/>
     <rect id="GameplayContrastGradient" x="0" y="0" width="1920" height="1080" fill="url(#mapShade)" opacity="0"/>
     <rect x="0" y="0" width="1920" height="1080" fill="#081014" opacity=".05"/>
   </g>
@@ -152,10 +157,11 @@
 
       <g id="ActionPointCounter" transform="translate(142 116)">
         <rect width="204" height="58" rx="8" fill="#11191c" stroke="#6a5b46" stroke-width="2"/>
-        <text x="18" y="24" class="tiny">ACTION POINTS</text>
-        <text x="182" y="39" text-anchor="end" fill="#91d976" font-size="30" font-weight="800">4 / 5</text>
-        <rect x="18" y="42" width="116" height="6" rx="3" fill="#65b84b"/>
-        <rect x="134" y="42" width="48" height="6" rx="3" fill="#354337"/>
+        <text x="16" y="16" class="tiny">AP</text>
+        <text x="48" y="16" class="tiny">+0.8 / sec</text>
+        <text x="188" y="39" text-anchor="end" fill="#91d976" font-size="27" font-weight="800">3.7 / 5.0</text>
+        <rect x="16" y="46" width="172" height="6" rx="3" fill="#354337"/>
+        <rect x="16" y="46" width="127" height="6" rx="3" fill="#65b84b"/>
       </g>
 
       <line x1="20" y1="194" x2="350" y2="194" stroke="#3d392f" stroke-width="2"/>
@@ -302,5 +308,6 @@
         <use href="#key" x="500" y="0" width="42" height="42"/><text x="521" y="28" text-anchor="middle" class="small">P</text><text x="552" y="28" class="small">PAUSE</text>
       </g>
     </g>
+  </g>
   </g>
 </svg>

@@ -2,16 +2,22 @@
 
 ## Files
 
-- `autumn-hud-redesign-figma.svg`: self-contained import file for Figma.
-- `autumn-hud-redesign-source.svg`: editable source that references the background PNG.
+- `autumn-hud-redesign-figma.svg`: the only file that should be imported into Figma.
+- `autumn-hud-redesign-source.svg`: build source for repository maintenance; do not
+  import this second file into the same Figma page.
 - `autumn-map-background.png`: generated map-only concept layer.
 
 ## Import
 
-Drag `autumn-hud-redesign-figma.svg` into a blank Figma page. The imported root is
-1920×1080. UI regions, panels, cards, text, icons, and map overlay are grouped and
-remain independently editable. The bitmap map is intentionally isolated as the
-bottom layer.
+Drag only `autumn-hud-redesign-figma.svg` into a blank Figma page. The imported
+root is clipped to an exact 1920×1080 canvas so drop shadows cannot expand its
+bounds. UI regions, panels, cards, text, icons, and map overlay remain independently
+editable. The bitmap map is intentionally isolated as the bottom layer.
+
+Do not import `autumn-hud-redesign-source.svg` beside it. That file contains an
+external bitmap reference for rebuilding the self-contained artifact and creates a
+second similarly named group in Figma. When replacing an older mockup, delete the
+old imported group and import the new self-contained file at 100% scale.
 
 ## Contract represented by the mockup
 
@@ -22,7 +28,8 @@ bottom layer.
 - A/S switches between the two groups.
 - Automatic attack is shown as a passive loadout status, not a hand card.
 - Redraw lives in the card action strip instead of the player vitals panel.
-- AP uses one compact numeric counter; HP remains the only persistent resource bar.
+- AP uses a decimal real-time counter (`3.7 / 5.0`) with regeneration rate and a
+  continuously filling progress bar; HP remains the only persistent resource bar.
 - Skill/Combo activation uses a three-row fading feed on the lower right.
 - The large top-left Combo panel is removed to preserve combat visibility.
 - The map preserves an open combat lane on the left, merchant/camp landmark in the
