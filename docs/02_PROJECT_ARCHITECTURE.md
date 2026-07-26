@@ -439,7 +439,7 @@ Quick save：
 
 | Action | Current consumer |
 |---|---|
-| move/jump/dash | `player_controller.gd` |
+| move／↑ Jump／Space Dash | `player_controller.gd` |
 | interact/inventory/pause/card focus/redraw | `game.gd` |
 | card group/slot | `card_hand_ui.gd` |
 | UI navigation | individual UI scripts |
@@ -743,7 +743,9 @@ CardInstance
 `DeckManager` 的 hand、draw、discard、exhaust、cooldown 五個區域都必須保留同一
 instance identity。cooldown 到期回 discard；modal pause 時 cooldown 不前進。
 expedition deck 是 16 張普通 `CardInstance`；洗牌後抽 8 張，UI 分成兩組各 4 張。
-`ember_bolt` 與 `quickstep` 都是普通卡，遵循一般抽牌、棄牌、升級、融合與移除規則。
+`ember_bolt` 是普通卡，遵循一般抽牌、棄牌、升級、融合與移除規則。`quickstep`
+已從正式卡表移除。玩家固有 Dash 由 `PlayerController` 的 Space action 擁有，
+不是 `CardInstance`，不進 deck/hand/piles、不花 AP，也不觸發出牌事件。
 
 戰前另由 `DeckBuilderUI` 從已解鎖 attack cards 選一個 auto attack。選擇保存於
 `MetaState.auto_attack_card_id`，Run 開始時複製到 run-local lock；戰鬥中不可切換。
@@ -751,10 +753,13 @@ auto attack 不建立額外 CardInstance、不進 hand 或任一牌堆、不花 
 `SkillRecipeManager.record_card()`。只有有效敵人進入該 attack 的近距離 range 時
 才依 interval 自動施放。
 
+Dash Edge 與 Gale Drive 仍是 Combo cards；其 infusion 以
+`target_action = "dash"` 暫時投影到玩家固有 Dash，不建立或尋找 Dash 卡。
+
 `MetaState` schema version 5 以 `selected_card_instances` 儲存 instance payload，
 同時保留必要的舊 `selected_deck` projection 作 compatibility。舊 card-id 陣列 migration
 必須 deterministic、idempotent，修復非法 level 與重複/缺失 instance ID，並提供
-migration report。schema 5 另保存 `auto_attack_card_id`、`learned_skill_ids` 與
+migration report。schema 6 另保存 `auto_attack_card_id`、`learned_skill_ids` 與
 `active_skill_ids`；auto attack 缺失或無效時 fallback 到已解鎖的有效 attack，
 active skill 必須是 learned 的子集。`RunState.card_instances` 是 expedition
 期間的同一 identity projection，不另造 card-id 等級表。

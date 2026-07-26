@@ -371,7 +371,7 @@ func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
 func _editor_sample_cards() -> Array[Dictionary]:
 	return [
 		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal 12 damage and apply burn.", "cost": 1, "level": 1},
-		{"id": "quickstep", "name": "Quickstep", "type": "skill", "description": "Dash through danger.", "cost": 1, "level": 1},
+		{"id": "frost_bind", "name": "Frost Bind", "type": "status", "description": "Slow one enemy.", "cost": 1, "level": 1},
 		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain weak super armor for four seconds.", "cost": 1, "level": 1},
 		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Strike enemies in an arc.", "cost": 2, "level": 1},
 		{"id": "flame_infusion", "name": "Flame Infusion", "type": "power", "description": "Future attacks gain flame.", "cost": 2, "level": 1},

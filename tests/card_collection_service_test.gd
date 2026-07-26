@@ -38,7 +38,7 @@ func _run() -> void:
 		"schema_version": 2,
 		"selected_deck": [
 			"ember_bolt",
-			"quickstep",
+			"shockwave",
 			"guard",
 			"iron_skin",
 			"cleave",

@@ -1049,8 +1049,10 @@ positions or resize these cards from gameplay code.
 ### Ability hand and group-toggle contract
 
 Autumn hand 顯示 8 張普通卡，分成兩組各 4 張。Q/W/E/R 打出目前組；A、S、
-LT、RT 都呼叫同一個 toggle operation。`ember_bolt` 與 `quickstep` 沒有固定 slot、
-LOCK badge 或永久邊框，必須和其他普通卡一樣依牌堆與目前組顯示。
+LT、RT 都呼叫同一個 toggle operation。`ember_bolt` 沒有固定 slot、LOCK badge
+或永久邊框，必須和其他普通卡一樣依牌堆與目前組顯示。`quickstep` 已從正式
+卡表移除；玩家 Space Dash 是固有 action，不建立手牌 slot、不顯示 AP cost，
+也不透過 Q/W/E/R 操作。
 
 A, S, LT, and RT all call the same toggle operation. Pressing any one of them
 alternates between group 1 and group 2. With only one group, the operation is a

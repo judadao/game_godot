@@ -1,8 +1,9 @@
 class_name MetaState
 extends RefCounted
 
-const SCHEMA_VERSION := 5
+const SCHEMA_VERSION := 6
 const RESOURCE_IDS := ["gold", "autumn_wood", "stone", "magic_shard", "autumn_core"]
+const RETIRED_CARD_IDS := ["quickstep"]
 var resources := {
 	"gold": 0,
 	"autumn_wood": 0,
@@ -19,12 +20,12 @@ var building_levels := {
 	"shop": 1,
 }
 var unlocked_cards: Array[String] = [
-	"ember_bolt", "cleave", "guard", "iron_skin", "quickstep",
+	"ember_bolt", "cleave", "guard", "iron_skin",
 	"dash_strike", "healing_light", "frost_bind", "energy_surge",
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 ]
 var selected_deck: Array[String] = [
-	"ember_bolt", "quickstep", "cleave", "cleave",
+	"ember_bolt", "frost_bind", "cleave", "cleave",
 	"guard", "healing_light", "cleave", "dash_strike",
 	"healing_light", "frost_bind", "energy_surge", "iron_skin",
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
@@ -130,8 +131,11 @@ func apply_dict(data: Dictionary) -> void:
 			selected_deck = get_selected_card_ids()
 	else:
 		_migrate_legacy_selected_deck(legacy_selected_deck, legacy_levels)
+	_retire_removed_cards()
 	permanent_card_levels.clear()
 	auto_attack_card_id = String(data.get("auto_attack_card_id", auto_attack_card_id)).strip_edges()
+	if RETIRED_CARD_IDS.has(auto_attack_card_id):
+		auto_attack_card_id = "ember_bolt"
 	equipment = _safe_dictionary(data.get("equipment"), equipment)
 	equipment_levels = _safe_integer_dictionary(data.get("equipment_levels"), equipment_levels)
 	unlocked_combos = _safe_string_array(data.get("unlocked_combos"), unlocked_combos)
@@ -328,6 +332,30 @@ func _restore_card_instances(raw_instances: Array) -> Array[CardInstance]:
 	return result
 
 
+func _retire_removed_cards() -> void:
+	for retired_id in RETIRED_CARD_IDS:
+		while unlocked_cards.has(retired_id):
+			unlocked_cards.erase(retired_id)
+	var retained: Array[CardInstance] = []
+	for instance in selected_card_instances:
+		if RETIRED_CARD_IDS.has(instance.card_id):
+			_last_migration_report["retired_cards_removed"] = int(
+				_last_migration_report.get("retired_cards_removed", 0)
+			) + 1
+			continue
+		retained.append(instance)
+	selected_card_instances = retained
+	if selected_card_instances.is_empty():
+		selected_card_instances.append(CardInstance.new(
+			"ember_bolt",
+			CardInstance.MIN_LEVEL,
+			"migration-fallback-ember"
+		))
+		if not unlocked_cards.has("ember_bolt"):
+			unlocked_cards.append("ember_bolt")
+	selected_deck = get_selected_card_ids()
+
+
 func _synchronize_selected_card_instances() -> void:
 	if selected_deck != get_selected_card_ids():
 		_reconcile_selected_card_instances(selected_deck)
@@ -361,6 +389,7 @@ func _empty_migration_report(from_schema: int) -> Dictionary:
 		"duplicate_fixed_cards_removed": 0,
 		"fixed_levels_repaired": 0,
 		"discarded_invalid_instances": 0,
+		"retired_cards_removed": 0,
 	}
 
 

@@ -14,7 +14,7 @@ func _run() -> void:
 	_expect(manager.get_memory_capacity_for_library_level(4) == 30, "Maximum library capacity must be 30.")
 	_expect(manager.configure_loadout(["iron_momentum"], ["iron_momentum"], 10), "The initial learned skill must fit the base loadout.")
 
-	var utility := {"id": "quickstep", "type": "utility", "effect": {"dash": 180}}
+	var utility := {"id": "setup_step", "type": "utility", "effect": {"reposition": 180}}
 	var healing := {"id": "healing_light", "type": "healing", "effect": {"amount": 18}}
 	var zero_damage_attack := {"id": "setup_slash", "type": "attack", "effect": {"amount": 0}}
 	var multi_hit_attack := {"id": "cleave", "type": "attack", "effect": {"amount": 5, "hits": 4}}

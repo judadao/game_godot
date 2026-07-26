@@ -25,7 +25,7 @@ func _run() -> void:
 		"guard", "cleave", "cleave", "cleave",
 		"iron_skin", "healing_light", "frost_bind", "energy_surge",
 		"battle_focus", "dash_strike", "flame_imbue", "frostburst_imbue",
-		"stoneguard_combo", "battle_rhythm", "ember_bolt", "quickstep",
+		"stoneguard_combo", "battle_rhythm", "ember_bolt", "renewal",
 	]
 	var meta := MetaState.new()
 	meta.apply_dict({"selected_deck": migrated})
@@ -114,8 +114,8 @@ func _run() -> void:
 	var player := game.get("player") as Node2D
 	game.set_process(false)
 	_expect(
-		not bool(player.get("direct_dash_enabled")),
-		"Direct Shift/controller Dash must be disabled while Dash is owned by the random card hand."
+		player.has_signal("dash_performed"),
+		"Player must expose intrinsic Dash completion to the combat Combo authority."
 	)
 	_expect(
 		not InputMap.has_action("basic_attack"),
@@ -192,50 +192,67 @@ func _run() -> void:
 		and String(game.get("_run_auto_attack_card_id")) == "cleave",
 		"Active combat must reject loadout confirmation without mutating deck, map, or attack."
 	)
-	var ordered_instances: Array[CardInstance] = []
-	for instance in run.card_instances:
-		if instance.card_id == "quickstep":
-			ordered_instances.push_front(instance)
-		else:
-			ordered_instances.append(instance)
-	deck.start(ordered_instances, run.max_energy, false)
-	var quickstep_index := deck.hand.find("quickstep")
-	_expect(quickstep_index >= 0, "Deterministic ordinary hand must contain Quickstep.")
-	if quickstep_index >= 0:
-		var dash_origin := player.global_position
-		var dash_energy := deck.energy
-		game.call("_on_card_selected", quickstep_index)
-		_expect(
-			player.global_position != dash_origin
-			and is_equal_approx(deck.energy, dash_energy - 1.0),
-			"Quickstep must move the player and spend one AP through normal card play."
-		)
-		_expect(
-			deck.hand.size() == 8 and deck.discard_pile.has("quickstep"),
-			"Quickstep must enter ordinary discard routing and draw a replacement."
-		)
-
-	var quickstep := database.get_card("quickstep")
 	_expect(
-		String((quickstep.get("effect", {}) as Dictionary).get("kind", "")) == "dash",
-		"Quickstep must remain a normal Dash card available to the random hand."
+		not database.has_card("quickstep"),
+		"The production card database must not duplicate intrinsic Dash as Quickstep."
 	)
 	for combo_id in ["dash_strike", "gale_lunge"]:
 		var effect := database.get_card(combo_id).get("effect", {}) as Dictionary
 		_expect(
-			String(effect.get("target_card_id", "")) == "quickstep",
-			"%s must enhance the ordinary Quickstep card." % combo_id
+			String(effect.get("target_action", "")) == "dash",
+			"%s must enhance the intrinsic Dash action." % combo_id
 		)
 		_expect(
-			not effect.has("target_fixed_card"),
-			"%s must not retain the removed fixed-Dash contract." % combo_id
+			not effect.has("target_card_id") and not effect.has("target_fixed_card"),
+			"%s must not retain any removed Dash-card target." % combo_id
+		)
+
+	var dash_targets := game.call("_get_combat_targets") as Array
+	_expect(not dash_targets.is_empty(), "The live battle must provide a target for Dash combo regression.")
+	if not dash_targets.is_empty():
+		var dash_target := dash_targets[0] as Node2D
+		var dash_origin := player.global_position
+		var dash_distance := float(player.get("dash_distance"))
+		dash_target.global_position = dash_origin + Vector2(dash_distance, 0.0)
+		dash_target.set("health", 999)
+		var dash_health_before := int(dash_target.get("health"))
+		var dash_energy_before := deck.energy
+		var dash_hand_before := deck.hand.duplicate()
+		run.temporary_buffs["infusion_effects"] = [{
+			"infusion_id": "dash_edge",
+			"target_action": "dash",
+			"damage_bonus": 10,
+			"remaining_seconds": 6.0,
+		}]
+		player.call("_tick_dash_cooldown", 999.0)
+		_expect(bool(player.call("try_dash", 1)), "Intrinsic Space Dash must execute during combat.")
+		_expect(
+			is_equal_approx(player.global_position.x, dash_origin.x + dash_distance),
+			"One intrinsic Dash must move exactly once, without a second card-effect displacement."
+		)
+		_expect(
+			int(dash_target.get("health")) < dash_health_before,
+			"An active Dash Edge combo must make intrinsic Space Dash deal damage."
+		)
+		_expect(
+			is_equal_approx(deck.energy, dash_energy_before) and deck.hand == dash_hand_before,
+			"Intrinsic Dash and its combo impact must not spend AP or mutate the hand."
+		)
+		run.temporary_buffs["infusion_effects"] = []
+		player.call("_tick_dash_cooldown", 999.0)
+		dash_target.global_position = player.global_position + Vector2(dash_distance, 0.0)
+		var expired_health := int(dash_target.get("health"))
+		_expect(bool(player.call("try_dash", 1)), "Intrinsic Dash must remain usable after Dash Combo expires.")
+		_expect(
+			int(dash_target.get("health")) == expired_health,
+			"Intrinsic Dash must stop dealing combo damage after the Dash Combo expires."
 		)
 
 	game.queue_free()
 	Engine.time_scale = 1.0
 	await process_frame
 	if _failures == 0:
-		print("PASS: automatic attack loadout lock and ordinary eight-card combat hand")
+		print("PASS: automatic attack lock, intrinsic Dash Combo, and eight-card combat hand")
 	quit(1 if _failures > 0 else 0)
 
 

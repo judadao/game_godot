@@ -3,14 +3,13 @@ extends CharacterBody2D
 signal state_changed(state: StringName)
 signal resources_changed(health: int, max_health: int, mana: int, max_mana: int)
 signal defeated
+signal dash_performed(start_position: Vector2, end_position: Vector2)
 
 const ACTION_MOVE_LEFT: StringName = &"move_left"
 const ACTION_MOVE_RIGHT: StringName = &"move_right"
 const ACTION_JUMP: StringName = &"jump"
 const FALLBACK_MOVE_LEFT: StringName = &"ui_left"
 const FALLBACK_MOVE_RIGHT: StringName = &"ui_right"
-const FALLBACK_JUMP: StringName = &"ui_accept"
-const FALLBACK_JUMP_ALT: StringName = &"ui_up"
 const STATE_IDLE: StringName = &"idle"
 const STATE_WALK: StringName = &"walk"
 const STATE_JUMP: StringName = &"jump"
@@ -24,6 +23,7 @@ const JUMP_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/leg
 @export var jump_velocity: float = -420.0
 @export var dash_distance: float = 150.0
 @export var dash_cooldown: float = 0.65
+@export var dash_evasion_seconds: float = 0.18
 @export var level: int = 1
 @export var character_class: String = "Adventurer"
 @export var experience: int = 0
@@ -43,7 +43,6 @@ const JUMP_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/leg
 var facing_direction: int = 1
 var current_state: StringName = STATE_IDLE
 var _dash_cooldown_remaining: float = 0.0
-var direct_dash_enabled := true
 var _animation_name: StringName = &""
 var _animation_elapsed: float = 0.0
 var input_enabled: bool = true
@@ -66,10 +65,10 @@ func _physics_process(delta: float) -> void:
 
 	if not is_on_floor():
 		velocity.y += gravity * delta
-	elif _is_action_just_pressed(ACTION_JUMP, [FALLBACK_JUMP, FALLBACK_JUMP_ALT]):
+	elif _is_action_just_pressed(ACTION_JUMP):
 		velocity.y = jump_velocity
 
-	if direct_dash_enabled and _is_action_just_pressed(&"dash"):
+	if _is_action_just_pressed(&"dash"):
 		try_dash(signi(direction) if direction != 0.0 else facing_direction)
 
 	move_and_slide()
@@ -95,9 +94,6 @@ func set_input_enabled(is_enabled: bool) -> void:
 	velocity.x = 0.0
 	_update_state(0.0)
 
-
-func set_direct_dash_enabled(is_enabled: bool) -> void:
-	direct_dash_enabled = is_enabled
 
 func set_facing_direction(direction: int) -> void:
 	if direction == 0:
@@ -194,10 +190,15 @@ func try_dash(direction: int = 0) -> bool:
 		return false
 	var dash_direction := direction if direction != 0 else facing_direction
 	set_facing_direction(dash_direction)
+	var start_position := global_position
 	global_position.x += dash_distance * float(facing_direction)
 	_dash_cooldown_remaining = dash_cooldown
 	_invulnerable = true
-	get_tree().create_timer(0.18).timeout.connect(_clear_invulnerability, CONNECT_ONE_SHOT)
+	get_tree().create_timer(dash_evasion_seconds).timeout.connect(
+		_clear_invulnerability,
+		CONNECT_ONE_SHOT
+	)
+	dash_performed.emit(start_position, global_position)
 	return true
 
 

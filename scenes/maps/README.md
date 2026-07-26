@@ -72,13 +72,16 @@ scene: their responsive size and front/back overlap are renderer-owned.
 
 The expedition backpack contains 1–16 ordinary cards. At run start it is
 shuffled and eight cards are drawn into two groups of four; Q/W/E/R play the
-active group, while A/S/LT/RT toggle groups. `ember_bolt` and `quickstep`
-follow the same hand, pile, upgrade, fusion, and removal rules as other cards.
+active group, while A/S/LT/RT toggle groups. `ember_bolt` follows the same hand,
+pile, upgrade, fusion, and removal rules as other ordinary cards. `quickstep`
+is not part of the card catalog.
 
 Deck Builder selects auto attack independently from an unlocked attack card.
 It consumes no backpack or HUD slot, costs no AP, never enters a card pile,
 and is locked for the run. It fires only when a valid target is within its
-close-range contract and never feeds the skill sequence. `quickstep` is the
-ordinary direct-Dash card; Space direct dash is disabled during a run.
-Dash Edge and Gale Drive are infusions that target `quickstep` rather than
-moving the player directly.
+close-range contract and never feeds the skill sequence.
+
+Up only triggers Jump. Space triggers the player's intrinsic Dash. Dash has no
+backpack, hand, pile, or AP representation. Dash Edge and Gale Drive remain
+Combo cards whose infusions use `target_action = dash` to modify the intrinsic
+Dash temporarily rather than moving the player directly.

@@ -387,7 +387,7 @@ mouse_filter = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.67, 0.58, 1)
 theme_override_font_sizes/font_size = 10
-text = "Q  W  E  R"
+text = "Q W E R · SPACE DASH"
 horizontal_alignment = 1
 mouse_filter = 2
 

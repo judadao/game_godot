@@ -158,8 +158,8 @@ Crystal Caves 與 Forbidden Graveyard 目前只有可走動 layout、portal、�
 Player 根節點為 `CharacterBody2D`，已實作：
 
 - 水平移動；
-- 跳躍；
-- dash；
+- ↑ 跳躍；
+- Space 固有 Dash；
 - 朝向切換；
 - idle、walk、jump 視覺狀態；
 - Camera2D 跟隨；
@@ -310,9 +310,9 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 A/S（以及 controller LT/RT）切換組別。一般卡進 discard；標記 exhaust 的卡進
 exhaust；有 cooldown 的 combo/healing 卡暫入 cooldown，到期後回 discard。
 
-`ember_bolt` 與 `quickstep` 都是普通卡，可以在背包、手牌與牌堆中出現，
-也依一般規則升級、融合、移除與 routing。`quickstep` 是唯一直接 Dash 的普通卡；
-Run 進行中停用 Player 的 Space direct dash，必須抽到並打出 Quickstep 才能 Dash。
+`ember_bolt` 是普通卡，可以在背包、手牌與牌堆中出現，也依一般規則升級、
+融合、移除與 routing。`quickstep` 已從正式卡表移除。Dash 是玩家固有 action，
+不建立 `CardInstance`、不進背包/手牌/牌堆、不耗 AP，也不補抽 replacement card。
 
 ### 6.4 AP
 
@@ -382,8 +382,8 @@ Lv.1 結果，牌組淨減一：
 | Cleave | Flame Aura | Inferno Orb |
 
 舊「階段 2 自動注入 passive evolution、批次轉換所有同名卡」不再是 gameplay
-contract。Dash Edge 與 Gale Drive 是以 `target_card_id = quickstep` 指向
-Quickstep 的 infusion，自身不直接 Dash。
+contract。Dash Edge 與 Gale Drive 是 Combo cards；其 infusion 以
+`target_action = dash` 暫時強化玩家固有 Dash，不指向或建立 Dash 卡。
 
 ### 7.4 效果語意限制
 
@@ -624,12 +624,12 @@ user://saves/quick_save.json
 
 | Action | Input |
 |---|---|
-| Move | A/D 或方向鍵 |
-| Jump | Space／上 |
+| Move | A/D 或左右方向鍵 |
+| Jump | ↑ |
 | Interact | F |
 | Inventory | I |
 | Pause | Escape |
-| Dash | Shift／右肩鍵 |
+| Dash | Space／右肩鍵 |
 | Card focus | Tab／左肩鍵 |
 | Card slots | Q/W/E/R／手把 face buttons |
 | Card groups | A/S／triggers |
@@ -764,10 +764,11 @@ Deck Builder 在戰前從已解鎖 attack cards 選一個 auto attack，與 16 �
 - 可使用所選 attack card 的有效 level/equipment projection；
 - 無效選擇 fallback 到已解鎖的有效 attack。
 
-`quickstep` 是普通 1 AP Dash 卡：抽到後以 Q/W/E/R 打出，移動 120 pixels 並給
-0.2 秒 evasion。Run 期間 Space direct dash 停用；戰鬥外仍沿用 Player direct dash。
-Dash Edge/Gale Drive 以 `target_card_id = quickstep` 暫時強化 Quickstep，不直接
-移動玩家。
+Dash 是玩家固有 action：↑ 只觸發 Jump，Space 觸發 Dash。Dash 不建立
+`CardInstance`，不進 backpack/hand/draw/discard/exhaust/cooldown，也不花 AP 或
+觸發 `SkillRecipeManager` 的 card sequence。`quickstep` 已從正式卡表移除。
+Dash Edge/Gale Drive 是 Combo cards，以 `target_action = dash` 在各自 effect
+window 內暫時強化固有 Dash；Combo 本身不直接移動玩家。
 
 The eight-card hand remains two groups of four. Q/W/E/R play the active group,
 while A, S, LT, and RT each toggle to the other group.
@@ -903,8 +904,8 @@ economy information without covering gameplay.
 
 Q/W/E/R play the current four-card group. A/S and LT/RT switch between the two
 groups; the inactive group remains visible but dimmed and locked. Auto attack
-does not occupy a HUD card slot, and Quickstep appears only when drawn as an
-ordinary card.
+does not occupy a HUD card slot. Intrinsic Space Dash also has no card slot or
+AP presentation; `quickstep` is not part of the card catalog.
 
 Autumn interactions use a compact F prompt attached to the current world
 object. It follows the object and clamps above the HUD boundary so merchants,

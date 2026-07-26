@@ -1470,6 +1470,8 @@ Required semantic children:
   overlap the rows, and apply active/inactive group presentation
 - Input contract: Q/W/E/R play the current group；A/S/LT/RT toggle groups
 - Exclusion: auto attack is not a card button and has no hand/global index
+- Exclusion: intrinsic Space Dash is not a card button；`quickstep` is absent
+  from the catalog and hand
 - Isolation: Town continues to use `res://scripts/ui/card_hand_ui.gd`; Autumn
   visual changes must not be added to the shared renderer
 

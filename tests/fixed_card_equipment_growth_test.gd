@@ -53,10 +53,18 @@ func _run() -> void:
 	if game_inventory.has_method("set_progression_unlocks"):
 		game_inventory.call("set_progression_unlocks", {"dash_upgrade_unlocked": true})
 		(game.get("meta_state") as MetaState).dash_upgrade_unlocked = true
-		var quickstep := game.call("_apply_combo_infusions_to_card", game.call("_card_for_cast", "quickstep")) as Dictionary
-		var dash_effect := quickstep.get("effect", {}) as Dictionary
-		_expect(float(dash_effect.get("distance", 0.0)) > 120.0, "Quickstep must project equipment Dash distance.")
-		_expect(float(dash_effect.get("evasion_seconds", 0.0)) > 0.2, "Quickstep must project equipment evasion.")
+		var player := game.get("player") as Node
+		var base_distance := float(player.get("dash_distance"))
+		var base_evasion := float(player.get("dash_evasion_seconds"))
+		game.call("_apply_intrinsic_dash_upgrades")
+		_expect(
+			float(player.get("dash_distance")) > base_distance,
+			"Swift Ring must project equipment distance onto intrinsic Dash."
+		)
+		_expect(
+			float(player.get("dash_evasion_seconds")) > base_evasion,
+			"Swift Ring must project equipment evasion onto intrinsic Dash."
+		)
 	game.queue_free()
 	await process_frame
 

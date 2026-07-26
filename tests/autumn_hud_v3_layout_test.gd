@@ -175,7 +175,7 @@ func _check_projection_behavior() -> void:
 func _sample_cards() -> Array[Dictionary]:
 	return [
 		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal damage.", "cost": 1, "level": 1},
-		{"id": "quickstep", "name": "Quickstep", "type": "skill", "description": "Dash and evade.", "cost": 1, "level": 1},
+		{"id": "shockwave", "name": "Shockwave", "type": "status", "description": "Stun nearby enemies.", "cost": 2, "level": 1},
 		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain armor.", "cost": 1, "level": 1},
 		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Arc strike.", "cost": 2, "level": 1},
 		{"id": "flame_imbue", "name": "Flame Infusion", "type": "utility", "description": "Gain flame.", "cost": 2, "level": 1},

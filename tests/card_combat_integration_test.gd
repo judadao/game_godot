@@ -20,7 +20,7 @@ func _run() -> void:
 	var database := CardDatabase.new()
 	_expect(database.load_catalog(), "Card database must load for combat.")
 	var deck := DeckManager.new(database)
-	deck.start(["ember_bolt", "guard", "cleave", "quickstep", "healing_light"], 3)
+	deck.start(["ember_bolt", "guard", "cleave", "shockwave", "healing_light"], 3)
 	var player := (load("res://scenes/player/Player.tscn") as PackedScene).instantiate()
 	var enemy := (load("res://scenes/monsters/AutumnSlime.tscn") as PackedScene).instantiate()
 	var second_enemy := (load("res://scenes/monsters/AutumnEnemy.tscn") as PackedScene).instantiate()

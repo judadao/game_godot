@@ -122,24 +122,6 @@
       ]
     },
     {
-      "id": "quickstep",
-      "name": "Quickstep",
-      "type": "skill",
-      "rarity": "common",
-      "level": 1,
-      "max_level": 3,
-      "cost": 1,
-      "description": "Dash 120 pixels and gain brief evasion.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0006_Boots.png",
-      "tags": ["mobility", "dash"],
-      "combo_tags": ["mobility"],
-      "effect": {"kind": "dash", "distance": 120, "evasion_seconds": 0.2},
-      "upgrade_effects": [
-        {"level": 2, "description": "Dash distance increases.", "effect": {"distance": 160}},
-        {"level": 3, "description": "Leaves a visible decoy afterimage that draws attacks.", "mechanic_change": "decoy_afterimage", "effect": {"decoy_duration": 1.5}}
-      ]
-    },
-    {
       "id": "dash_strike",
       "name": "Dash Edge",
       "type": "combo",
@@ -147,14 +129,14 @@
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "description": "For six seconds, Quickstep cuts through enemies for 10 damage.",
+      "description": "For six seconds, Space Dash cuts through enemies for 10 damage.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0006_Boots.png",
       "tags": ["mobility", "dash", "attack"],
       "combo_tags": ["mobility", "strike"],
-      "effect": {"kind": "infusion", "infusion_id": "dash_edge", "target_card_id": "quickstep", "combo_duration": 6.0, "damage_bonus": 10},
+      "effect": {"kind": "infusion", "infusion_id": "dash_edge", "target_action": "dash", "combo_duration": 6.0, "damage_bonus": 10},
       "upgrade_effects": [
-        {"level": 2, "description": "Quickstep damage increases to 15.", "effect": {"damage_bonus": 15}},
-        {"level": 3, "description": "Quickstep creates a return slash.", "mechanic_change": "return_slash", "effect": {"return_damage": 10}}
+        {"level": 2, "description": "Space Dash damage increases to 15.", "effect": {"damage_bonus": 15}},
+        {"level": 3, "description": "Space Dash creates a return slash.", "mechanic_change": "return_slash", "effect": {"return_damage": 10}}
       ]
     },
     {
@@ -165,14 +147,32 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "description": "For six seconds, Quickstep deals 20 damage and leaves a wind trail.",
+      "description": "For six seconds, Space Dash deals 20 damage and leaves a wind trail.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png",
       "tags": ["mobility", "dash", "attack", "wind"],
       "combo_tags": ["mobility", "strike", "wind"],
-      "effect": {"kind": "infusion", "infusion_id": "gale_drive", "target_card_id": "quickstep", "combo_duration": 6.0, "damage_bonus": 20},
+      "effect": {"kind": "infusion", "infusion_id": "gale_drive", "target_action": "dash", "combo_duration": 6.0, "damage_bonus": 20},
       "upgrade_effects": [
         {"level": 2, "description": "The wind trail deals 6 damage.", "effect": {"trail_damage": 6}},
         {"level": 3, "description": "The visible wind trail pulls enemies inward.", "mechanic_change": "pulling_wind_trail", "effect": {"pull_strength": 180}}
+      ]
+    },
+    {
+      "id": "concussive_shout",
+      "name": "Concussive Shout",
+      "type": "skill",
+      "rarity": "uncommon",
+      "level": 1,
+      "max_level": 3,
+      "cost": 2,
+      "description": "Stun nearby enemies for one second.",
+      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0005_Gloves.png",
+      "tags": ["skill", "control", "stun"],
+      "combo_tags": ["control", "impact"],
+      "effect": {"kind": "stun", "radius": 170, "duration": 1.0},
+      "upgrade_effects": [
+        {"level": 2, "description": "Stun duration increases to 1.5 seconds.", "effect": {"duration": 1.5}},
+        {"level": 3, "description": "The shockwave visibly expands and reaches farther.", "mechanic_change": "expanding_shockwave", "effect": {"radius": 220, "duration": 1.5}}
       ]
     },
     {

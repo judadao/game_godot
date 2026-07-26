@@ -13,7 +13,7 @@ func _run() -> void:
 	var deck := DeckManager.new(database)
 	deck.set_protected_cards([])
 	deck.start([
-		"guard", "cleave", "quickstep", "healing_light", "frost_bind",
+		"guard", "cleave", "shockwave", "healing_light", "frost_bind",
 		"iron_skin", "dash_strike", "energy_surge", "battle_focus", "ember_bolt",
 	], 5.0, false)
 	_expect(deck.hand.size() == 8, "Opening hand must contain exactly eight ordinary cards.")

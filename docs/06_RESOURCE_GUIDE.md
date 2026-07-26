@@ -971,7 +971,7 @@ func read_dictionary(path: String) -> Dictionary:
 
 Card definitions remain static catalog records keyed by `card_id`. Every owned
 or runtime copy is a `CardInstance` with a unique string `instance_id`, its
-`card_id`, and an independent level from 1 through 3. `MetaState` schema 5
+`card_id`, and an independent level from 1 through 3. `MetaState` schema 6
 serializes these copies as `selected_card_instances`; `selected_deck` is kept
 only as a card-ID compatibility projection. `permanent_card_levels` is accepted
 only while migrating schema-2 saves and is never written as the new authority.
@@ -983,11 +983,11 @@ stable strings without dropping cards. `MetaState.get_last_migration_report()` /
 `SaveService.get_last_migration_report()` expose conversion and repair counts.
 Applying an already migrated payload must be idempotent.
 
-Schema 5 also serializes `auto_attack_card_id`, `learned_skill_ids`, and
+Schema 6 also serializes `auto_attack_card_id`, `learned_skill_ids`, and
 `active_skill_ids`. Both skill arrays
 are unique string IDs; active is normalized to a subset of learned. Legacy
 payloads receive the initial `iron_momentum` learned/active defaults, and an
-already migrated schema-5 payload round-trips without changing order or IDs.
+already migrated schema-6 payload round-trips without changing order or IDs.
 The auto-attack ID is a loadout choice, not a selected-deck instance.
 
 `DeckManager` keeps `CardInstance` objects authoritative in hand, draw,
@@ -996,7 +996,13 @@ for callers during integration and must not be mutated. Catalog fields
 `play_destination` (`discard`, `exhaust`, or `cooldown`) and
 `cooldown_seconds` control post-play routing. Cooldown completion returns the
 same instance to discard; paused cooldown clocks do not advance. `ember_bolt`
-and `quickstep` both follow the ordinary `CardInstance` lifecycle.
+follows the ordinary `CardInstance` lifecycle. `quickstep` is not a catalog
+card and must not be materialized as a `CardInstance`.
+
+Dash is a player-owned action, not card data. Dash Edge and Gale Drive remain
+Combo card records whose infusion effect declares `target_action = "dash"`.
+Runtime projection applies their temporary bonuses to the intrinsic Space Dash
+without inserting a Dash card into the selected deck, hand, or any pile.
 
 `CardCollectionService` is the cross-authority mutation boundary. New rewards
 use `add_persistent_card()`；fusion uses `fuse()`；merchant purge uses

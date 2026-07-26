@@ -4,7 +4,7 @@ extends Node
 signal effect_resolved(card_id: String, result: Dictionary)
 
 const SUPPORTED_EFFECTS := [
-	"damage", "area_damage", "block", "heal", "dash", "dash_damage",
+	"damage", "area_damage", "block", "heal", "dash_impact",
 	"slow", "area_slow", "stun", "attack_power", "damage_aura",
 	"gain_energy", "summon", "projectile_burst", "overdrive",
 	"infusion", "combat_status", "healing_pulses", "regeneration",
@@ -49,14 +49,15 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 			if caster.has_method("restore_health"):
 				result["total"] = int(caster.call("restore_health", int(effect.get("amount", 0))))
 				result["affected"] = 1 if int(result["total"]) > 0 else 0
-		"dash":
-			_dash(caster, float(effect.get("distance", 0.0)))
-			result["affected"] = 1
-		"dash_damage":
-			_dash(caster, float(effect.get("distance", 0.0)))
-			var selected := _targets_in_radius(caster, targets, 170.0)
+		"dash_impact":
+			var selected := _targets_in_radius(
+				caster,
+				targets,
+				float(effect.get("radius", 170.0))
+			)
 			_damage_targets(caster, selected, int(effect.get("amount", 0)), result)
 			_apply_infused_statuses(selected, effect)
+			_pull_targets(caster, selected, float(effect.get("pull_strength", 0.0)))
 		"slow":
 			_apply_status(_nearest_targets(caster, targets, 1), kind, effect, result)
 		"area_slow", "stun":
@@ -153,11 +154,17 @@ func _apply_infused_statuses(targets: Array, effect: Dictionary) -> void:
 			target.call("apply_status", "stun", {"duration": float(effect["combo_stun"])})
 
 
-func _dash(caster: Node, distance: float) -> void:
-	if not caster is Node2D:
+func _pull_targets(caster: Node, targets: Array, strength: float) -> void:
+	if not caster is Node2D or strength <= 0.0:
 		return
-	var direction := int(caster.get("facing_direction")) if caster.get("facing_direction") != null else 1
-	(caster as Node2D).global_position.x += distance * float(direction)
+	for target in targets:
+		if not target is CharacterBody2D or not is_instance_valid(target):
+			continue
+		var direction := (
+			(caster as Node2D).global_position
+			- (target as CharacterBody2D).global_position
+		).normalized()
+		(target as CharacterBody2D).velocity = direction * strength
 
 
 func _resolve_summon(caster: Node, effect: Dictionary, result: Dictionary) -> void:

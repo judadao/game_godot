@@ -2,7 +2,6 @@ extends SceneTree
 
 const EXPECTED_TYPES := [
 	"attack",
-	"skill",
 	"power",
 	"summon",
 	"healing",
@@ -32,7 +31,7 @@ func _run() -> void:
 	var database: RefCounted = database_script.new()
 	_expect(bool(database.call("load_catalog")), "Card catalog must load and validate.")
 	var cards: Array = database.call("get_all_cards")
-	_expect(cards.size() == 24, "Card catalog must contain exactly 24 practical cards.")
+	_expect(cards.size() == 24, "Card catalog must contain 24 practical cards without a direct Dash card.")
 
 	var seen_ids := {}
 	var seen_types := {}
@@ -40,11 +39,16 @@ func _run() -> void:
 		var card := raw_card as Dictionary
 		var card_id := String(card.get("id", ""))
 		var card_type := String(card.get("type", ""))
+		var effect := card.get("effect", {}) as Dictionary
 		_expect(not card_id.is_empty() and not seen_ids.has(card_id), "Every card ID must be non-empty and unique.")
 		seen_ids[card_id] = true
 		seen_types[card_type] = int(seen_types.get(card_type, 0)) + 1
 		_expect(int(card.get("cost", -1)) >= 0, "%s must have a non-negative energy cost." % card_id)
 		_expect(not (card.get("effect", {}) as Dictionary).is_empty(), "%s must define an effect." % card_id)
+		_expect(
+			card_id != "quickstep" and String(effect.get("kind", "")) not in ["dash", "dash_damage"],
+			"%s must not duplicate the intrinsic Dash action as a card." % card_id
+		)
 		_expect(not String(card.get("rarity", "")).is_empty(), "%s must define rarity metadata." % card_id)
 		_expect(int(card.get("level", 0)) >= 1, "%s must define a positive current level." % card_id)
 		_expect(int(card.get("max_level", 0)) >= int(card.get("level", 0)), "%s must define a valid max level." % card_id)
@@ -99,7 +103,7 @@ func _run() -> void:
 
 	var redraw_deck := DeckManager.new(database)
 	redraw_deck.start([
-		"ember_bolt", "guard", "cleave", "quickstep", "healing_light",
+		"ember_bolt", "guard", "cleave", "shockwave", "healing_light",
 		"frost_bind", "iron_skin", "dash_strike", "energy_surge", "battle_focus",
 	], 5.0)
 	var original_hand := redraw_deck.hand.duplicate()

@@ -9,6 +9,9 @@ func _init() -> void:
 
 func _run() -> void:
 	_expect(InputMap.has_action("dash"), "Project must define a dash input action.")
+	_expect(_has_physical_key("dash", KEY_SPACE), "Dash must be bound to Space.")
+	_expect(not _has_physical_key("jump", KEY_SPACE), "Space must not also trigger Jump.")
+	_expect(_has_physical_key("jump", KEY_UP), "Jump must be bound to the Up arrow.")
 	_expect(InputMap.has_action("card_focus"), "Project must define tactical card-focus input.")
 	var player := (load("res://scenes/player/Player.tscn") as PackedScene).instantiate()
 	root.add_child(player)
@@ -40,3 +43,10 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _has_physical_key(action: StringName, keycode: Key) -> bool:
+	for event in InputMap.action_get_events(action):
+		if event is InputEventKey and (event as InputEventKey).physical_keycode == keycode:
+			return true
+	return false

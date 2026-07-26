@@ -7,7 +7,7 @@ class RoutingCatalog extends RefCounted:
 	func has_card(card_id: String) -> bool:
 		return card_id in [
 			"ember_bolt",
-			"quickstep",
+			"frost_bind",
 			"guard",
 			"healing_light",
 			"blood_pact",
@@ -22,8 +22,8 @@ class RoutingCatalog extends RefCounted:
 				"play_destination": "exhaust",
 				"cooldown_seconds": 99.0,
 			},
-			"quickstep": {
-				"id": "quickstep",
+			"frost_bind": {
+				"id": "frost_bind",
 				"cost": 0,
 				"play_destination": "cooldown",
 				"cooldown_seconds": 99.0,
@@ -74,19 +74,19 @@ func _run() -> void:
 	var deck: DeckManager = deck_script.new(RoutingCatalog.new())
 	deck.hand_size = 6
 	deck.start([
-		CardInstance.new("ember_bolt", 3, "fixed-ember"),
-		CardInstance.new("quickstep", 2, "fixed-dash"),
+		CardInstance.new("ember_bolt", 3, "ember-high"),
+		CardInstance.new("frost_bind", 2, "frost-mid"),
 		low,
 		high,
 		CardInstance.new("healing_light", 2, "heal-once"),
 		CardInstance.new("blood_pact", 2, "blood-reuse"),
 	], 9.0)
 	_expect(
-		deck.hand_instances[0].instance_id == "fixed-ember"
+		deck.hand_instances[0].instance_id == "ember-high"
 		and deck.hand_instances[0].level == 3
-		and deck.hand_instances[1].instance_id == "fixed-dash"
+		and deck.hand_instances[1].instance_id == "frost-mid"
 		and deck.hand_instances[1].level == 2,
-		"Former fixed cards must preserve their ordinary per-instance levels."
+		"Ordinary cards must preserve their independent per-instance levels."
 	)
 	var pile_instances: Array = (
 		deck.hand_instances
@@ -140,7 +140,7 @@ func _run() -> void:
 		"Discard routing must keep reusable cards in the draw cycle."
 	)
 
-	var ember_id := "fixed-ember"
+	var ember_id := "ember-high"
 	deck.play_from_hand(deck.find_hand_index(ember_id))
 	_expect(
 		deck.find_hand_index(ember_id) < 0
@@ -149,17 +149,17 @@ func _run() -> void:
 		),
 		"Attack cards in the backpack must obey ordinary exhaust routing."
 	)
-	var dash_id := "fixed-dash"
-	deck.play_from_hand(deck.find_hand_index(dash_id))
-	var dash_on_cooldown := false
+	var frost_id := "frost-mid"
+	deck.play_from_hand(deck.find_hand_index(frost_id))
+	var frost_on_cooldown := false
 	for entry in deck.cooldown_pile:
 		var cooldown_instance := entry.get("instance") as CardInstance
-		if cooldown_instance != null and cooldown_instance.instance_id == dash_id:
-			dash_on_cooldown = true
+		if cooldown_instance != null and cooldown_instance.instance_id == frost_id:
+			frost_on_cooldown = true
 	_expect(
-		deck.find_hand_index(dash_id) < 0
-		and dash_on_cooldown,
-		"Quickstep must obey ordinary cooldown routing."
+		deck.find_hand_index(frost_id) < 0
+		and frost_on_cooldown,
+		"Frost Bind must obey ordinary cooldown routing."
 	)
 
 	var run: RunState = run_script.new()
@@ -168,7 +168,7 @@ func _run() -> void:
 		not run.upgrade_card_instance(ember_id),
 		"A level-three automatic-attack candidate must reject further upgrades."
 	)
-	_expect(run.upgrade_card_instance(dash_id), "Quickstep must support ordinary per-instance upgrades.")
+	_expect(run.upgrade_card_instance(frost_id), "Frost Bind must support ordinary per-instance upgrades.")
 	_expect(run.upgrade_card_instance("guard-low"), "A non-fixed instance below level three must upgrade.")
 	_expect(
 		run.get_card_instance("guard-low").level == 2
@@ -187,7 +187,7 @@ func _run() -> void:
 	)
 	_expect(
 		run.remove_card_instances([ember_id]),
-		"Former fixed cards must support ordinary instance removal."
+		"Ordinary attack cards must support exact instance removal."
 	)
 
 	var atomic_deck: DeckManager = deck_script.new(RoutingCatalog.new())

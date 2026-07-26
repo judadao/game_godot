@@ -10,26 +10,27 @@ func _initialize() -> void:
 func _run() -> void:
 	var database := CardDatabase.new()
 	_expect(database.load_catalog(), "Card catalog must load.")
-	var quickstep := database.get_card("quickstep")
-	var quickstep_effect := quickstep.get("effect", {}) as Dictionary
 	_expect(
-		int(quickstep.get("cost", -1)) == 1
-		and String(quickstep_effect.get("kind", "")) == "dash"
-		and int(quickstep_effect.get("distance", 0)) == 120
-		and is_equal_approx(float(quickstep_effect.get("evasion_seconds", 0.0)), 0.2),
-		"Quickstep must remain an ordinary one-AP Dash card."
+		not database.has_card("quickstep"),
+		"Intrinsic Dash must not be duplicated as a Quickstep card in the production catalog."
 	)
+	for card in database.get_all_cards():
+		var effect := card.get("effect", {}) as Dictionary
+		_expect(
+			String(effect.get("kind", "")) not in ["dash", "dash_damage"],
+			"Production cards must not provide a direct Dash effect: %s." % card.get("id", "")
+		)
 
 	var deck := DeckManager.new(database)
 	deck.set_protected_cards([])
 	deck.hand_size = 8
 	deck.start([
-		"ember_bolt", "quickstep", "guard", "cleave",
+		"ember_bolt", "shockwave", "guard", "cleave",
 		"healing_light", "frost_bind", "iron_skin", "dash_strike",
 		"energy_surge", "battle_focus",
 	], 5.0, false)
 	_expect(deck.hand.size() == 8, "Combat must draw two complete groups of four.")
-	_expect(deck.protected_card_ids.is_empty(), "Attack and Dash cards must not be pinned.")
+	_expect(deck.protected_card_ids.is_empty(), "Combat cards must not be pinned.")
 
 	var basic := deck.play_from_hand(deck.hand.find("ember_bolt"))
 	_expect(
@@ -37,13 +38,7 @@ func _run() -> void:
 		and deck.discard_pile.has("ember_bolt"),
 		"Manual Attack cards must follow ordinary discard routing."
 	)
-	var dash := deck.play_from_hand(deck.hand.find("quickstep"))
-	_expect(
-		String(dash.get("id", "")) == "quickstep"
-		and deck.discard_pile.has("quickstep"),
-		"Quickstep must follow ordinary discard routing after use."
-	)
-	deck.draw_cards(2)
+	deck.draw_cards(1)
 	_expect(deck.hand.size() == 8, "Played cards must be replaced to restore the eight-card hand.")
 
 	var previous := deck.hand.duplicate()
@@ -55,7 +50,7 @@ func _run() -> void:
 	)
 
 	if _failures == 0:
-		print("PASS: ordinary Attack and Dash eight-card lifecycle")
+		print("PASS: intrinsic Dash remains outside the ordinary eight-card lifecycle")
 	quit(1 if _failures > 0 else 0)
 
 

@@ -65,7 +65,7 @@
       "upgrade_requirement": "dash_upgrade_unlocked",
       "special_ability": {
         "id": "afterimage",
-        "description": "After the forest story unlocks it, Quickstep gains +30 distance and +0.1 sec evasion.",
+        "description": "After the forest story unlocks it, Space Dash gains +30 distance and +0.1 sec evasion.",
         "dash_distance_bonus": 30,
         "dash_evasion_bonus": 0.1
       }

@@ -16,6 +16,8 @@ func _run() -> void:
 		quit(1)
 		return
 
+	# Schema 2 predates intrinsic Dash and may contain Quickstep. Keep this one
+	# fixture to verify deterministic decoding of historical saves.
 	var legacy_payload := {
 		"schema_version": 2,
 		"selected_deck": ["ember_bolt", "guard", "guard", "quickstep"],
@@ -26,7 +28,7 @@ func _run() -> void:
 	meta.apply_dict(legacy_payload)
 	var migrated := meta.to_dict()
 	var instances := migrated.get("selected_card_instances", []) as Array
-	_expect(int(migrated.get("schema_version", 0)) == 5, "Automatic-attack loadout saves must use schema version five.")
+	_expect(int(migrated.get("schema_version", 0)) == 6, "Intrinsic-Dash loadout saves must use schema version six.")
 	_expect(
 		migrated.get("learned_skill_ids", []) == ["iron_momentum"]
 		and migrated.get("active_skill_ids", []) == ["iron_momentum"],
@@ -37,9 +39,8 @@ func _run() -> void:
 			{"instance_id": "legacy-000001", "card_id": "ember_bolt", "level": 3},
 			{"instance_id": "legacy-000002", "card_id": "guard", "level": 3},
 			{"instance_id": "legacy-000003", "card_id": "guard", "level": 3},
-			{"instance_id": "legacy-000004", "card_id": "quickstep", "level": 2},
 		],
-		"Legacy card arrays and shared levels must migrate deterministically without losing duplicates."
+		"Legacy migration must preserve valid duplicates while retiring the removed Quickstep card."
 	)
 	_expect(
 		not migrated.has("permanent_card_levels"),
@@ -48,8 +49,9 @@ func _run() -> void:
 	var report := meta.get_last_migration_report()
 	_expect(
 		int(report.get("migrated_instances", 0)) == 4
-		and int(report.get("fixed_levels_repaired", 0)) == 0,
-		"Migration must preserve ordinary per-instance levels without fixed-card repairs."
+		and int(report.get("fixed_levels_repaired", 0)) == 0
+		and int(report.get("retired_cards_removed", 0)) == 1,
+		"Migration must report the retired Quickstep while preserving ordinary per-instance levels."
 	)
 
 	var reapplied: MetaState = meta_script.new()
@@ -66,7 +68,7 @@ func _run() -> void:
 		"selected_card_instances": [
 			{"instance_id": "same", "card_id": "ember_bolt", "level": 3},
 			{"instance_id": "same", "card_id": "guard", "level": 2},
-			{"instance_id": "dash", "card_id": "quickstep", "level": 2},
+			{"instance_id": "frost", "card_id": "frost_bind", "level": 2},
 		],
 	})
 	var repaired_payload := repaired.to_dict()
@@ -74,7 +76,7 @@ func _run() -> void:
 		repaired_payload.get("selected_card_instances", []) == [
 			{"instance_id": "same", "card_id": "ember_bolt", "level": 3},
 			{"instance_id": "repair-000002", "card_id": "guard", "level": 2},
-			{"instance_id": "dash", "card_id": "quickstep", "level": 2},
+			{"instance_id": "frost", "card_id": "frost_bind", "level": 2},
 		],
 		"Duplicate modern IDs must repair deterministically while ordinary levels remain intact."
 	)
@@ -90,15 +92,15 @@ func _run() -> void:
 		"schema_version": 3,
 		"selected_card_instances": [
 			{"instance_id": 1, "card_id": "ember_bolt", "level": 1},
-			{"instance_id": 2, "card_id": "quickstep", "level": 1},
+			{"instance_id": 2, "card_id": "frost_bind", "level": 1},
 			{"instance_id": 3, "card_id": "guard", "level": 1},
 		],
-		"selected_deck": ["ember_bolt", "quickstep", "guard"],
+		"selected_deck": ["ember_bolt", "frost_bind", "guard"],
 	})
 	_expect(
 		numeric_id_save.to_dict().get("selected_card_instances", []) == [
 			{"instance_id": "1", "card_id": "ember_bolt", "level": 1},
-			{"instance_id": "2", "card_id": "quickstep", "level": 1},
+			{"instance_id": "2", "card_id": "frost_bind", "level": 1},
 			{"instance_id": "3", "card_id": "guard", "level": 1},
 		],
 		"Schema-three numeric instance IDs must load as stable strings without losing cards."

@@ -2,7 +2,6 @@ extends SceneTree
 
 const CARD_HAND_SCENE := preload("res://scenes/ui/CardHandUI.tscn")
 const BASIC_ATTACK_ID := "ember_bolt"
-const DASH_CARD_ID := "quickstep"
 
 var _failures := 0
 
@@ -17,6 +16,14 @@ func _run() -> void:
 
 	_expect(samples.size() == 8, "Direct-map editor preview must provide two groups of four cards.")
 	if not samples.is_empty():
+		_expect(
+			not samples.any(func(card: Dictionary) -> bool: return String(card.get("id", "")) == "quickstep"),
+			"Editor samples must not present intrinsic Dash as a Quickstep card."
+		)
+		_expect(
+			not _has_direct_dash_sample(samples),
+			"Editor samples must not contain a direct Dash card effect."
+		)
 		var first_card := samples[0] as Dictionary
 		_expect(
 			String(first_card.get("id", "")) == BASIC_ATTACK_ID,
@@ -26,17 +33,15 @@ func _run() -> void:
 			String(first_card.get("type", "")) == "attack",
 			"The editor attack preview must retain its type."
 		)
-		var second_card := samples[1] as Dictionary
-		_expect(String(second_card.get("id", "")) == DASH_CARD_ID, "Editor group one slot two must preview Quickstep.")
-		_expect(not bool(first_card.get("fixed", false)) and not bool(second_card.get("fixed", false)), "Attack and Dash previews must not show removed lock treatment.")
-		var iron_will := samples[2] as Dictionary
+		_expect(not bool(first_card.get("fixed", false)), "Attack previews must not show removed lock treatment.")
+		var iron_will := _find_sample(samples, "guard")
 		_expect(
 			String(iron_will.get("id", "")) == "guard"
 			and String(iron_will.get("name", "")) == "Iron Will"
 			and String(iron_will.get("type", "")) == "combo",
 			"The shared editor preview must use the redesigned Iron Will Combo card."
 		)
-		var healing_light := samples[6] as Dictionary
+		var healing_light := _find_sample(samples, "healing_light")
 		_expect(
 			String(healing_light.get("id", "")) == "healing_light"
 			and String(healing_light.get("type", "")) == "healing"
@@ -59,6 +64,21 @@ func _run() -> void:
 
 	card_hand.free()
 	quit(0 if _failures == 0 else 1)
+
+
+func _find_sample(samples: Array, card_id: String) -> Dictionary:
+	for sample in samples:
+		if String((sample as Dictionary).get("id", "")) == card_id:
+			return sample as Dictionary
+	return {}
+
+
+func _has_direct_dash_sample(samples: Array) -> bool:
+	for sample in samples:
+		var effect := (sample as Dictionary).get("effect", {}) as Dictionary
+		if String(effect.get("kind", "")) in ["dash", "dash_damage"]:
+			return true
+	return false
 
 
 func _expect(condition: bool, message: String) -> void:

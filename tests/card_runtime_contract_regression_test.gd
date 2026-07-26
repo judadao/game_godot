@@ -14,8 +14,8 @@ func _run() -> void:
 	var deck := DeckManager.new(database)
 	deck.hand_size = 5
 	deck.start([
-		CardInstance.new("ember_bolt", 1, "fixed-ember"),
-		CardInstance.new("quickstep", 1, "fixed-dash"),
+		CardInstance.new("ember_bolt", 1, "ember-one"),
+		CardInstance.new("cleave", 1, "cleave-one"),
 		CardInstance.new("flame_imbue", 2, "flame-two"),
 		CardInstance.new("guard", 1, "guard-one"),
 		CardInstance.new("healing_light", 1, "heal-one"),
@@ -82,7 +82,7 @@ func _run() -> void:
 			not bool(deck.call("add_existing_instance", reward_instance))
 			and bool(deck.call(
 				"add_existing_instance",
-				CardInstance.new("ember_bolt", 1, "illegal-fixed")
+				CardInstance.new("ember_bolt", 1, "second-ember")
 			)),
 			"Existing-instance insertion must reject duplicate IDs but accept ordinary attacks."
 		)
@@ -108,11 +108,13 @@ func _run() -> void:
 			not bool(run.call("add_existing_card_instance", reward_instance))
 			and bool(run.call(
 				"add_existing_card_instance",
-				CardInstance.new("quickstep", 1, "illegal-run-fixed")
+				CardInstance.new("inferno_orb", 1, "run-inferno")
 			)),
-			"RunState existing-instance insertion must reject duplicate IDs but accept ordinary Dash cards."
+			"RunState existing-instance insertion must reject duplicate IDs but accept ordinary attack cards."
 		)
 
+	# Schema 3 may contain the removed Quickstep card. This fixture intentionally
+	# verifies lossless legacy decoding; it is not a production-card contract.
 	var meta := MetaState.new()
 	meta.apply_dict({
 		"schema_version": 3,
@@ -127,8 +129,8 @@ func _run() -> void:
 	var payloads := meta.get_selected_card_payloads()
 	_expect(
 		_count_card(payloads, "ember_bolt") == 2
-		and _count_card(payloads, "quickstep") == 2,
-		"Modern saves must retain duplicate ordinary Attack and Dash instances."
+		and _count_card(payloads, "quickstep") == 0,
+		"Legacy schema-3 decoding must remove obsolete Quickstep payloads during migration."
 	)
 	_expect(
 		payloads.any(

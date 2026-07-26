@@ -67,7 +67,8 @@ Roadmap item 的建立與關閉依序使用：
 - auto attack 在 Run 開始時鎖定、免費且不進手牌/牌堆；
 - Autumn 有四個 timed survival phase 與 Guardian phase；
 - 卡牌使用 real-time AP，8 張手牌分兩組各 4 張，QWER 出牌並用 A/S 切換；
-- Quickstep 是普通 Dash 卡，Run 中停用 Space direct dash；
+- ↑ 只觸發 Jump；Space 是玩家固有 Dash，不進牌庫/手牌且不耗 AP；
+- Quickstep 已從正式卡表移除；Dash Combo 以 `target_action=dash` 暫時強化固有 Dash；
 - timed combo status cards、attack-only passive skills 與兩張 Lv.3 fusion 已存在；
 - ExperienceGem、跨級 XP queue、GrowthChoiceQueue 與 CardGrowthUI 已存在；
 - Campfire accessible UI 為 Rest／Leave；
@@ -310,7 +311,7 @@ Town manager 產生的 visual flag 多於 `Game` 實際套用的四個 scene nod
 - [ ] 舊 schema fixture 可 migration 到唯一 current representation。
 - [ ] 每個 persistent field 都有 producer、consumer 與 test。
 - [ ] 無 consumer 的 field 經 migration 後安全移除或明確保留理由。
-- [ ] Meta schema 5 round-trip 不遺失 inventory/town/card instances/skill/auto-attack loadout。
+- [ ] Meta schema 6 round-trip 不遺失 inventory/town/card instances/skill/auto-attack loadout，並移除 retired Quickstep。
 
 ### 5.6 Input 與 global time-scale safety
 

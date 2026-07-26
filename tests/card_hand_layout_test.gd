@@ -20,7 +20,7 @@ func _run() -> void:
 	var database := CardDatabase.new()
 	_expect(database.load_catalog(), "Card catalog must load for hand layout.")
 	var cards: Array[Dictionary] = []
-	for card_id in ["ember_bolt", "guard", "cleave", "quickstep", "healing_light"]:
+	for card_id in ["ember_bolt", "guard", "cleave", "shockwave", "healing_light"]:
 		cards.append(database.get_card(card_id))
 	ui.call("set_cards", cards, 3)
 	await process_frame

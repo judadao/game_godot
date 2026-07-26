@@ -267,9 +267,9 @@ instance.queue_free()
 
 | Area | Minimum contract evidence |
 |---|---|
-| CardInstance | 五牌堆 identity 不變；個別 level；Ember/Quickstep 遵循普通卡 lifecycle |
+| CardInstance | 五牌堆 identity 不變；個別 level；Ember 遵循普通卡 lifecycle；Quickstep 不存在於 catalog/runtime instances |
 | CardCollectionService | add／fusion／exact removal 同步 Meta／Run／Deck 且共享同一 object；partial failure restore pile order、cooldown timing、level 與 unlocked fields |
-| Migration | schema v5 舊 payload deterministic、idempotent；card/skill/auto-attack 修復可驗證 |
+| Migration | schema v6 會移除 retired Quickstep，且舊 payload deterministic、idempotent；card/skill/auto-attack 修復可驗證 |
 | Cooldown/exhaust | cooldown 到期回 discard；exhaust 不回收；pause 時 timer 不動 |
 | Status | source refresh、最高 armor tier、reduction cap 60%、unblockable bypass、regen/lifesteal |
 | Skill recipe | attack-only、multi-hit 一次 event、8 秒 window、count/exact sequence reset、獨立 cooldown |
@@ -278,7 +278,7 @@ instance.queue_free()
 | Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一 |
 | Deck/hand | 1–16 ordinary cards；shuffle draw 8；兩組各 4；QWER 出牌、A/S toggle |
 | Auto attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；近距離目標；不餵 skill sequence |
-| Dash | Quickstep 是普通 Dash 卡；Run 中 Space direct dash 停用；Dash infusions target quickstep |
+| Dash | ↑ 只觸發 Jump；Space 觸發玩家固有 Dash；不進牌庫/手牌、不耗 AP；Dash Combo infusions 使用 `target_action=dash` |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |
 | HUD authority | Autumn 只有一個 HUD root；hand 在 `CardStage`；Town HUD identity 不變 |
 | HUD projection | status/objective 左上、boss/toast 上中、bottom stage 完整；toast max 3/1.5 秒/duplicate refresh |

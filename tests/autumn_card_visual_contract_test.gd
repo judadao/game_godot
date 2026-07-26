@@ -190,7 +190,7 @@ func _inside_lower_hud(card: Control, viewport_size: Vector2i) -> bool:
 func _sample_cards() -> Array:
 	return [
 		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal damage and burn.", "cost": 1, "level": 1},
-		{"id": "quickstep", "name": "Quickstep", "type": "skill", "description": "Dash and evade.", "cost": 1, "level": 1},
+		{"id": "shockwave", "name": "Shockwave", "type": "status", "description": "Stun nearby enemies.", "cost": 2, "level": 1},
 		{"id": "frost_burst", "name": "Frost Burst", "type": "status", "description": "Add frost.", "cost": 1, "level": 1},
 		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Arc strike.", "cost": 2, "level": 1},
 		{"id": "blade_dance", "name": "Blade Dance", "type": "combo", "description": "Gain a timed effect.", "cost": 2, "level": 3},

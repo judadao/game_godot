@@ -481,6 +481,7 @@ func _register_player(spawn_name: StringName) -> void:
 		(player as Node2D).global_position = (spawn as Node2D).global_position
 
 	_configure_player_camera()
+	_apply_intrinsic_dash_upgrades()
 	_update_player_input_state()
 	if player.has_signal("resources_changed") and not player.is_connected(
 		"resources_changed",
@@ -489,6 +490,11 @@ func _register_player(spawn_name: StringName) -> void:
 		player.connect("resources_changed", _update_hud_resources)
 	if player.has_signal("defeated") and not player.is_connected("defeated", _on_player_defeated):
 		player.connect("defeated", _on_player_defeated)
+	if player.has_signal("dash_performed") and not player.is_connected(
+		"dash_performed",
+		_on_player_dash_performed
+	):
+		player.connect("dash_performed", _on_player_dash_performed)
 	var status_controller := player.get_node_or_null("CombatStatusController")
 	if (
 		status_controller != null
@@ -496,9 +502,36 @@ func _register_player(spawn_name: StringName) -> void:
 		and not status_controller.is_connected("statuses_changed", _on_player_statuses_changed)
 	):
 		status_controller.connect("statuses_changed", _on_player_statuses_changed)
+	if player.has_method("get_combat_status_projection"):
 		_on_player_statuses_changed(player.call("get_combat_status_projection") as Array)
 	_update_hud_resources()
 	player_registered.emit(player)
+
+
+func _apply_intrinsic_dash_upgrades() -> void:
+	if player == null:
+		return
+	var equipment_specials := {}
+	if meta_state.dash_upgrade_unlocked:
+		equipment_specials = inventory_manager.call("get_special_ability_totals") as Dictionary
+	var distance_value: Variant = player.get("dash_distance")
+	if distance_value != null:
+		if not player.has_meta("base_dash_distance"):
+			player.set_meta("base_dash_distance", float(distance_value))
+		player.set(
+			"dash_distance",
+			float(player.get_meta("base_dash_distance"))
+			+ float(equipment_specials.get("dash_distance_bonus", 0.0))
+		)
+	var evasion_value: Variant = player.get("dash_evasion_seconds")
+	if evasion_value != null:
+		if not player.has_meta("base_dash_evasion_seconds"):
+			player.set_meta("base_dash_evasion_seconds", float(evasion_value))
+		player.set(
+			"dash_evasion_seconds",
+			float(player.get_meta("base_dash_evasion_seconds"))
+			+ float(equipment_specials.get("dash_evasion_bonus", 0.0))
+		)
 
 
 func _configure_player_camera() -> void:
@@ -904,7 +937,7 @@ func _begin_autumn_run(deck_override: Array = []) -> void:
 	if run_state.active:
 		return
 	var fallback_deck := [
-		"ember_bolt", "quickstep", "cleave", "cleave",
+		"ember_bolt", "frost_bind", "cleave", "cleave",
 		"guard", "healing_light", "cleave", "dash_strike",
 		"healing_light", "frost_bind", "energy_surge", "iron_skin",
 		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
@@ -1331,9 +1364,6 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 		"skill":
 			if String(effect.get("kind", "")) == "heal":
 				effect["amount"] = int(effect.get("amount", 0)) + int(equipment_specials.get("card_heal_bonus", 0))
-	if String(infused.get("id", "")) == "quickstep" and meta_state.dash_upgrade_unlocked:
-		effect["distance"] = float(effect.get("distance", 0.0)) + float(equipment_specials.get("dash_distance_bonus", 0.0))
-		effect["evasion_seconds"] = float(effect.get("evasion_seconds", 0.0)) + float(equipment_specials.get("dash_evasion_bonus", 0.0))
 	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
 	if not effects_variant is Array:
 		return infused
@@ -1345,15 +1375,11 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			continue
 		var infusion := infusion_variant as Dictionary
 		var infusion_id := String(infusion.get("infusion_id", ""))
+		if String(infusion.get("target_action", "")).strip_edges() == "dash":
+			continue
 		var target_card_id := String(infusion.get("target_card_id", ""))
 		if not target_card_id.is_empty() and String(infused.get("id", "")) != target_card_id:
 			continue
-		if String(infused.get("id", "")) == "quickstep" and target_card_id == "quickstep":
-			effect["kind"] = "dash_damage"
-			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("damage_bonus", 0))
-			for field in ["trail_damage", "pull_strength", "return_damage"]:
-				if infusion.has(field):
-					effect[field] = infusion[field]
 		if String(infused.get("type", "")) == "attack":
 			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("damage_bonus", 0))
 			if float(infusion.get("lifesteal_ratio", 0.0)) > 0.0:
@@ -1381,6 +1407,57 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 		effect["combo_stun"] = 0.25
 	infused["effect"] = effect
 	return infused
+
+
+func _on_player_dash_performed(_start_position: Vector2, _end_position: Vector2) -> void:
+	if not run_state.active or player == null or current_map == null:
+		return
+	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
+	if not effects_variant is Array:
+		return
+	var amount := 0
+	var pull_strength := 0.0
+	var infusion_ids: Array[String] = []
+	for infusion_variant in effects_variant:
+		if not infusion_variant is Dictionary:
+			continue
+		var infusion := infusion_variant as Dictionary
+		if String(infusion.get("target_action", "")).strip_edges() != "dash":
+			continue
+		amount += int(infusion.get("damage_bonus", 0))
+		amount += int(infusion.get("trail_damage", 0))
+		amount += int(infusion.get("return_damage", 0))
+		pull_strength = maxf(pull_strength, float(infusion.get("pull_strength", 0.0)))
+		var infusion_id := String(infusion.get("infusion_id", "")).strip_edges()
+		if not infusion_id.is_empty():
+			infusion_ids.append(infusion_id)
+	if amount <= 0 and pull_strength <= 0.0:
+		return
+	var targets := _get_combat_targets().filter(func(target: Variant) -> bool:
+		if not target is Node2D or not is_instance_valid(target):
+			return false
+		var closest := Geometry2D.get_closest_point_to_segment(
+			(target as Node2D).global_position,
+			_start_position,
+			_end_position
+		)
+		return (target as Node2D).global_position.distance_to(closest) <= 80.0
+	)
+	if targets.is_empty():
+		return
+	card_effect_runner.cast({
+		"id": "intrinsic_dash_combo",
+		"name": "Dash Combo",
+		"type": "combo",
+		"cost": 0,
+		"effect": {
+			"kind": "dash_impact",
+			"amount": amount,
+			"radius": _start_position.distance_to(_end_position) + 80.0,
+			"pull_strength": pull_strength,
+			"infusion_ids": infusion_ids,
+		},
+	}, player, targets)
 
 
 func _redraw_current_hand() -> bool:
@@ -1819,8 +1896,6 @@ func _update_player_input_state() -> void:
 	if player == null or not player.has_method("set_input_enabled"):
 		return
 	player.call("set_input_enabled", ui_stack.is_empty())
-	if player.has_method("set_direct_dash_enabled"):
-		player.call("set_direct_dash_enabled", not run_state.active)
 
 
 func _close_existing_primary_ui(next_ui_name: String) -> void:
@@ -1939,6 +2014,7 @@ func _apply_equipment_stats() -> void:
 	player.max_health = maxi(player.max_health, equipment_health) if run_state.active else equipment_health
 	player.max_mana = maxi(player.max_mana, equipment_mana) if run_state.active else equipment_mana
 	player.speed = 260.0 * (1.0 + float(effects.get("move_speed_multiplier", 0.0)))
+	_apply_intrinsic_dash_upgrades()
 	player.health = mini(player.health, player.max_health)
 	player.mana = mini(player.mana, player.max_mana)
 	_update_hud_resources()

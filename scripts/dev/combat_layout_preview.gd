@@ -48,7 +48,7 @@ func _preview_zoom_for_size(viewport_size: Vector2) -> Vector2:
 func _sample_cards() -> Array[Dictionary]:
 	return [
 		_card("Ember Bolt", "attack", "Deal 12 damage and apply burn.", 1, "ember_bolt", true),
-		_card("Quickstep", "utility", "Dash through danger.", 1, "quickstep", true),
+		_card("Frost Bind", "status", "Slow one enemy.", 1, "frost_bind", true),
 		_card("Iron Will", "combo", "Gain weak super armor for four seconds.", 1),
 		_card("Cleave", "attack", "Strike enemies in an arc.", 2),
 		_card("Flame Infusion", "power", "Future attacks gain flame.", 2),
