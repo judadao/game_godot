@@ -73,6 +73,11 @@ func _run() -> void:
 	}), "Fallback gold bundle must resolve.")
 	_expect(int(meta.resources.get("gold", 0)) == meta_gold_before + 75, "Fallback gold must enter permanent Meta resources.")
 	_expect(int(inventory.call("get_resource_amount", &"gold")) == inventory_gold_before + 75, "Fallback gold must update live inventory.")
+	_expect(
+		int((meta.inventory_state.get("resources", {}) as Dictionary).get("gold", 0))
+		== inventory_gold_before + 75,
+		"Immediate fallback persistence must synchronize the authoritative inventory payload."
+	)
 
 	game.queue_free()
 	await process_frame

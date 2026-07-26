@@ -752,6 +752,8 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 func _apply_growth_resolution(choice: Dictionary) -> bool:
 	var snapshot := _capture_growth_transaction()
 	var applied := _apply_growth_resolution_uncommitted(choice)
+	if applied:
+		_sync_progression_to_meta()
 	if not applied or not save_service.save_meta(META_SAVE_PATH, meta_state.to_dict()):
 		_restore_growth_transaction(snapshot)
 		return false
