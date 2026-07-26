@@ -22,7 +22,10 @@ func _run() -> void:
 	manager.connect("skill_triggered", _on_skill_triggered)
 	manager.connect("skill_discovered", _on_skill_discovered)
 
-	_expect(bool(manager.call("learn_skill", &"iron_momentum")), "Iron Momentum must be learnable.")
+	_expect(
+		bool(manager.call("is_learned", &"iron_momentum")),
+		"A new profile must begin with Iron Momentum learned."
+	)
 	_expect(
 		bool(manager.call("set_active_loadout", [&"iron_momentum"], true)),
 		"A learned skill must be equipable in a safe area."
@@ -31,6 +34,29 @@ func _run() -> void:
 		not bool(manager.call("set_active_loadout", [], false)),
 		"Skill loadouts must not be editable outside a safe area."
 	)
+	var empty_restore: RefCounted = manager_script.new()
+	empty_restore.call("apply_dict", {})
+	_expect(
+		bool(empty_restore.call("is_learned", &"iron_momentum")),
+		"Restoring a profile without saved skill state must seed Iron Momentum."
+	)
+	_expect(bool(manager.call("learn_skill", &"ember_crescendo")), "The exact recipe fixture must be learnable.")
+	_expect(
+		bool(manager.call("set_active_loadout", [&"iron_momentum", &"ember_crescendo"], true)),
+		"Two learned skills must be equipable before serialization."
+	)
+	var round_trip: RefCounted = manager_script.new()
+	round_trip.call("apply_dict", manager.call("to_dict"))
+	_expect(
+		bool(round_trip.call("is_learned", &"iron_momentum"))
+		and bool(round_trip.call("is_learned", &"ember_crescendo")),
+		"Learned skills must survive manager serialization."
+	)
+	_expect(
+		round_trip.call("get_active_skill_ids") == [&"iron_momentum", &"ember_crescendo"],
+		"The active skill loadout must survive manager serialization."
+	)
+	manager.call("set_active_loadout", [&"iron_momentum"], true)
 
 	for index in 5:
 		manager.call("record_successful_attack", &"ember_bolt", float(index))
@@ -58,7 +84,6 @@ func _run() -> void:
 		"A count recipe must refresh its window after every successful attack."
 	)
 
-	_expect(bool(manager.call("learn_skill", &"ember_crescendo")), "The exact recipe fixture must be learnable.")
 	_expect(
 		bool(manager.call("set_active_loadout", [&"ember_crescendo"], true)),
 		"An exact recipe must be equipable when learned."

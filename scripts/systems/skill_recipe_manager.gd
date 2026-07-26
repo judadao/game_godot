@@ -6,6 +6,7 @@ signal skill_discovered(skill_id: StringName)
 
 const DEFAULT_CATALOG_PATH := "res://data/skills.json"
 const STARTING_MEMORY_CAPACITY := 10
+const INITIAL_LEARNED_SKILL_IDS: Array[StringName] = [&"iron_momentum"]
 
 var _loaded := false
 var _skills_by_id: Dictionary = {}
@@ -147,6 +148,7 @@ func apply_dict(data: Dictionary, is_safe_area: bool = true) -> void:
 			var key := String(raw_skill_id)
 			if _skills_by_id.has(key):
 				_learned_skills[key] = true
+	_seed_initial_skills()
 	var saved_active: Variant = data.get("active_skill_ids", [])
 	if saved_active is Array:
 		set_active_loadout(saved_active, is_safe_area)
@@ -222,6 +224,7 @@ func _load_catalog(data_path: String) -> void:
 			return
 		_skills_by_id[String(skill["id"])] = skill
 	_loaded = true
+	_seed_initial_skills()
 
 
 func _read_attack_card_ids() -> Dictionary:
@@ -269,6 +272,13 @@ func _has_only_attack_ids(card_ids: Array) -> bool:
 		if card_id.is_empty() or not _attack_card_ids.has(card_id):
 			return false
 	return true
+
+
+func _seed_initial_skills() -> void:
+	for skill_id in INITIAL_LEARNED_SKILL_IDS:
+		var key := String(skill_id)
+		if _skills_by_id.has(key):
+			_learned_skills[key] = true
 
 
 func _clear() -> void:
