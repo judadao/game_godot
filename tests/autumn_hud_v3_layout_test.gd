@@ -96,6 +96,11 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 
 	var cooldown := hud.get_node("BottomStage/CardStage/CooldownStrip") as Control
 	var hand := hud.get_node("BottomStage/CardStage/AutumnCardHandUI") as CardHandUI
+	var redraw := hud.get_node("BottomStage/ActionPoints/RedrawHand") as Button
+	_expect(
+		redraw.mouse_filter == Control.MOUSE_FILTER_STOP,
+		"Redraw must remain mouse-interactive at %s." % viewport_size
+	)
 	_expect(
 		_canvas_rect(cooldown).end.y <= _canvas_rect(hand).position.y + 1.5,
 		"Cooldown strip must remain above the embedded hand at %s." % viewport_size

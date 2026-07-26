@@ -17,12 +17,12 @@ const REQUIRED_CARD_NODES := [
 	"LockBadge",
 ]
 const VIEWPORTS := [
+	Vector2i(1152, 720),
 	Vector2i(1280, 720),
 	Vector2i(1600, 900),
 	Vector2i(1920, 1080),
-	Vector2i(2560, 1440),
 	Vector2i(2560, 1080),
-	Vector2i(1280, 1024),
+	Vector2i(2560, 1440),
 ]
 
 var _failures := 0
@@ -115,6 +115,19 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 				viewport_size,
 				aspect,
 			]
+		)
+		_expect(
+			card.size.y >= 112.0,
+			"Card %d must remain tall enough for readable 720p text at %s; got %.1fpx." % [
+				index,
+				viewport_size,
+				card.size.y,
+			]
+		)
+		var card_name := card.get_node("CardContent/CardName") as Label
+		_expect(
+			card_name.get_theme_font_size("font_size") >= 10,
+			"Card %d name must use at least 10px text at %s." % [index, viewport_size]
 		)
 		_expect(_inside_lower_hud(card, viewport_size), "Card %d must remain inside the lower HUD at %s." % [index, viewport_size])
 		if index == 6:

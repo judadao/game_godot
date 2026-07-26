@@ -343,6 +343,9 @@ func _set_bar(fill: ColorRect, value_label: Label, current: int, maximum: int) -
 
 
 func _make_display_only(node: Node) -> void:
+	if node == _redraw_button:
+		_redraw_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		return
 	if node is Control and node != interaction_panel:
 		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for child in node.get_children():

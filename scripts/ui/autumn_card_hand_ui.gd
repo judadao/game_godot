@@ -178,15 +178,15 @@ func _apply_responsive_geometry() -> void:
 	_back_row.custom_minimum_size.y = card_size.y
 	_front_row.custom_minimum_size.y = card_size.y
 	var card_rows := _back_row.get_parent() as VBoxContainer
-	card_rows.add_theme_constant_override("separation", -roundi(card_size.y * 0.74))
+	card_rows.add_theme_constant_override("separation", -roundi(card_size.y * 0.86))
 
 
 func _responsive_card_size() -> Vector2:
 	var viewport_size := get_viewport_rect().size
 	var safe_height := maxf(100.0, viewport_size.y * 0.25 - 45.0)
 	var hand_width := maxf(360.0, viewport_size.x * 0.40 - 30.0)
-	var height_from_hud := safe_height * 0.75
+	var height_from_hud := safe_height * 0.86
 	var width_limit := (hand_width - 18.0) / float(CARDS_PER_GROUP)
 	var height_from_width := width_limit / AUTUMN_CARD_ASPECT
-	var card_height := maxf(100.0, minf(height_from_hud, height_from_width))
+	var card_height := clampf(minf(height_from_hud, height_from_width), 112.0, 132.0)
 	return Vector2(roundf(card_height * AUTUMN_CARD_ASPECT), roundf(card_height))
