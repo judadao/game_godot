@@ -66,7 +66,7 @@ Roadmap item 的建立與關閉依序使用：
 - 進入 Autumn 前選擇 1–16 張普通背包卡與一個獨立 auto attack；
 - auto attack 在 Run 開始時鎖定、免費且不進手牌/牌堆；
 - Autumn 有四個 timed survival phase 與 Guardian phase；
-- 卡牌使用 real-time AP，單組 4 張 Combo 手牌用 QWER 出牌，T 可直接棄牌補四張；
+- 卡牌使用 real-time AP，單組 4 張 Combo／Healing 手牌用 QWER 出牌，出牌後固定補回四張，T 可直接棄牌補四張；
 - ↑ 只觸發 Jump；Space 是玩家固有 Dash，不進牌庫/手牌且不耗 AP；
 - Quickstep 已從正式卡表移除；Dash Combo 以 `target_action=dash` 暫時強化固有 Dash；
 - timed combo status cards、attack-only passive skills 與兩張 Lv.3 fusion 已存在；

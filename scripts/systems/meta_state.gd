@@ -22,10 +22,12 @@ var building_levels := {
 var unlocked_cards: Array[String] = [
 	"ember_bolt", "cleave", "guard", "iron_skin",
 	"dash_strike", "healing_light", "frost_bind", "energy_surge",
+	"renewal", "blood_pact_combo", "verdant_renewal",
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 ]
 var selected_deck: Array[String] = [
-	"guard", "guard", "iron_skin", "dash_strike",
+	"guard", "guard", "iron_skin", "healing_light", "renewal",
+	"blood_pact_combo", "verdant_renewal",
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 ]
 var auto_attack_card_id := "ember_bolt"

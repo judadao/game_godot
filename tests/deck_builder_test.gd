@@ -26,13 +26,13 @@ func _run() -> void:
 	var restored := ui.call("get_selected_deck") as Array
 	_expect(restored.count("guard") == 2, "Same-name Combo cards must retain independent backpack copies.")
 	ui.call("configure", discovered, [
-		"dash_strike", "dash_strike",
+		"guard", "guard",
 		"cleave", "cleave", "cleave", "cleave",
 	], "cleave")
 	var clamped := ui.call("get_selected_deck") as Array
 	_expect(
-		clamped == ["dash_strike", "dash_strike"],
-		"Restored loadouts must keep Combo copies and exclude ordinary attack cards."
+		clamped == ["guard", "guard"],
+		"Restored loadouts must keep Combo copies and exclude attacks and Dash-only cards."
 	)
 	_expect(
 		String(ui.call("get_auto_attack_card_id")) == "cleave",

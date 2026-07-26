@@ -82,7 +82,7 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 		String(hand.get_script().resource_path) == AUTUMN_RENDERER_PATH,
 		"Autumn hand must use its Autumn-only renderer at %s." % viewport_size
 	)
-	_expect(hand.get_card_button_count() == 4, "Autumn hand must show the four-card Combo hand at %s." % viewport_size)
+	_expect(hand.get_card_button_count() == 4, "Autumn hand must show the four-card Combo/Healing hand at %s." % viewport_size)
 	if hand.get_card_button_count() != 4:
 		hand.queue_free()
 		await process_frame
@@ -169,9 +169,9 @@ func _inside_lower_hud(card: Control, viewport_size: Vector2i) -> bool:
 func _sample_cards() -> Array:
 	return [
 		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain super armor.", "cost": 1, "level": 1},
-		{"id": "dash_strike", "name": "Dash Edge", "type": "combo", "description": "Empower Space Dash.", "cost": 1, "level": 1},
+		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Restore health.", "cost": 1, "level": 1},
 		{"id": "flame_imbue", "name": "Flame Imbue", "type": "combo", "description": "Add flame.", "cost": 3, "level": 1},
-		{"id": "battle_rhythm", "name": "Battle Rhythm", "type": "combo", "description": "Add damage.", "cost": 1, "level": 1},
+		{"id": "verdant_renewal", "name": "Verdant Renewal", "type": "healing", "description": "Gain regeneration.", "cost": 2, "level": 1},
 	]
 
 

@@ -6,7 +6,7 @@ signal loadout_confirmed(deck_ids: Array[String], auto_attack_card_id: String)
 signal canceled
 
 const MAX_CONFIGURABLE_CARDS := 16
-const MAX_COPIES_PER_COMBO := 3
+const MAX_COPIES_PER_HAND_CARD := 3
 
 var _catalog: Array[Dictionary] = []
 var _counts: Dictionary = {}
@@ -44,9 +44,9 @@ func configure(
 				func(candidate: Dictionary) -> bool:
 					return String(candidate.get("id", "")) == card_id
 			).front() as Dictionary
-			if String(card.get("type", "")) != "combo":
+			if not _is_combat_hand_card(card):
 				continue
-			var max_copies := MAX_COPIES_PER_COMBO
+			var max_copies := MAX_COPIES_PER_HAND_CARD
 			if get_selected_count() < MAX_CONFIGURABLE_CARDS:
 				_counts[card_id] = mini(int(_counts[card_id]) + 1, max_copies)
 	_auto_attack_card_id = auto_attack_card_id
@@ -104,7 +104,7 @@ func _build_layout() -> void:
 	title.add_theme_font_size_override("font_size", 24)
 	column.add_child(title)
 	var hint := Label.new()
-	hint.text = "Choose one automatic attack, then pack up to 16 Combo cards. Combat draws four."
+	hint.text = "Choose one automatic attack, then pack up to 16 Combo / Healing cards."
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(hint)
 	_auto_attack_selector = OptionButton.new()
@@ -152,7 +152,7 @@ func _rebuild_cards() -> void:
 		child.queue_free()
 	_rows.clear()
 	for card in _catalog:
-		if String(card.get("type", "")) != "combo":
+		if not _is_combat_hand_card(card):
 			continue
 		var card_id := String(card.get("id", ""))
 		var row := HBoxContainer.new()
@@ -193,7 +193,7 @@ func _change_count(card_id: String, amount: int) -> void:
 	if not _rows.has(card_id):
 		return
 	var card := (_rows[card_id] as Dictionary)["card"] as Dictionary
-	var max_copies := MAX_COPIES_PER_COMBO
+	var max_copies := MAX_COPIES_PER_HAND_CARD
 	var min_copies := 0
 	var current := int(_counts.get(card_id, 0))
 	if amount > 0 and get_configurable_count() >= MAX_CONFIGURABLE_CARDS:
@@ -209,7 +209,7 @@ func _update_controls() -> void:
 		var row := _rows[card_id] as Dictionary
 		var card := row["card"] as Dictionary
 		var current := int(_counts.get(card_id, 0))
-		var max_copies := MAX_COPIES_PER_COMBO
+		var max_copies := MAX_COPIES_PER_HAND_CARD
 		var min_copies := 0
 		(row["count"] as Label).text = "%d/%d" % [current, max_copies]
 		(row["minus"] as Button).disabled = current <= min_copies
@@ -255,3 +255,10 @@ func _on_auto_attack_selected(index: int) -> void:
 	if _auto_attack_selector == null or index < 0 or index >= _auto_attack_selector.item_count:
 		return
 	_auto_attack_card_id = String(_auto_attack_selector.get_item_metadata(index))
+
+
+func _is_combat_hand_card(card: Dictionary) -> bool:
+	return (
+		String(card.get("type", "")) in ["combo", "healing"]
+		and bool(card.get("combat_hand", true))
+	)

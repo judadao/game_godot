@@ -97,7 +97,11 @@ func draw_card_instances(count: int) -> Array[CardInstance]:
 	return drawn
 
 
-func play_from_hand(index: int, cost_override: int = -1) -> Dictionary:
+func play_from_hand(
+		index: int,
+		cost_override: int = -1,
+		destination_override: String = ""
+	) -> Dictionary:
 	last_play_retained = false
 	if index < 0 or index >= hand_instances.size() or _card_database == null:
 		return {}
@@ -113,7 +117,9 @@ func play_from_hand(index: int, cost_override: int = -1) -> Dictionary:
 		last_play_retained = true
 		return _project_played_card(card, instance)
 	hand_instances.remove_at(index)
-	var destination := String(card.get("play_destination", "")).strip_edges()
+	var destination := destination_override.strip_edges()
+	if destination.is_empty():
+		destination = String(card.get("play_destination", "")).strip_edges()
 	if destination.is_empty():
 		if bool(card.get("exhaust_on_play", false)):
 			destination = "exhaust"

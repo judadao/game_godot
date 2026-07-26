@@ -13,7 +13,7 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	game.call("_begin_autumn_run", [
-		"guard", "guard", "iron_skin", "dash_strike",
+		"guard", "guard", "iron_skin", "healing_light",
 		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 	])
 	var run := game.get("run_state") as RunState
@@ -62,11 +62,11 @@ func _run() -> void:
 	var before_reward_count := run.card_instances.size()
 	_expect(game.call("_apply_growth_resolution", {
 		"action": "new_card",
-		"card_id": "gale_lunge",
-	}), "Wave blessing must add a Combo card instance.")
+		"card_id": "renewal",
+	}), "Wave blessing must add a Healing card instance.")
 	_expect(run.card_instances.size() == before_reward_count + 1, "New card reward must add exactly one instance.")
-	var gale := _first_instance(run.card_instances, "gale_lunge")
-	_expect(gale != null and deck.find_instance(gale.instance_id) == gale, "New reward must share identity with Deck.")
+	var renewal := _first_instance(run.card_instances, "renewal")
+	_expect(renewal != null and deck.find_instance(renewal.instance_id) == renewal, "New reward must share identity with Deck.")
 
 	var meta_gold_before := int(meta.resources.get("gold", 0))
 	var inventory := game.get("inventory_manager") as RefCounted

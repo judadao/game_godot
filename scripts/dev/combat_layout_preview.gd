@@ -35,6 +35,11 @@ func _ready() -> void:
 		{"card_id": "guard", "name": "Iron Will", "remaining_seconds": 6.2},
 	])
 	hud.show_skill_toast("iron_momentum", "IRON MOMENTUM")
+	hud.show_skill_toast(
+		"combo_chain",
+		"COMBO ×7  FLAME IMBUE  LIFESTEAL",
+		Color(0.78, 0.48, 1.0, 1.0)
+	)
 
 	card_hand.set_cards(_sample_cards(), 3.7)
 	card_hand.set_action_points(3.7, 5.0)
@@ -69,9 +74,9 @@ func _preview_zoom_for_size(viewport_size: Vector2) -> Vector2:
 func _sample_cards() -> Array[Dictionary]:
 	return [
 		_card("Iron Will", "combo", "Gain weak super armor for four seconds.", 1),
-		_card("Dash Edge", "combo", "Empower Space Dash.", 1, "dash_strike"),
+		_card("Healing Light", "healing", "Restore health.", 1, "healing_light"),
 		_card("Flame Imbue", "combo", "Attacks gain flame.", 3, "flame_imbue"),
-		_card("Battle Rhythm", "combo", "Attacks gain damage.", 1, "battle_rhythm"),
+		_card("Verdant Renewal", "healing", "Gain regeneration.", 2, "verdant_renewal"),
 	]
 
 

@@ -308,7 +308,7 @@ Anchor 是相對 parent rect 的比例：
 
 Current examples：
 
-- `CardSafeArea`：`anchor_top = 0.75`，固定使用 viewport 底部 25%，容納單組四張 Combo 卡牌。
+- `CardSafeArea`：`anchor_top = 0.75`，固定使用 viewport 底部 25%，容納單組四張 Combo／Healing 卡牌。
 - HUD status/quest/progress：bottom corners。
 - DialoguePanel：使用 viewport 比例 anchors。
 
@@ -504,7 +504,7 @@ HUDLayer
 - 每組最多 4 張 visible cards。
 - compact card minimum 為 `82×78`。
 - bottom safe area 為 viewport 高度的 25%。
-- 四張 Combo 手牌固定放在 `FrontRow` 並接收 Q/W/E/R；`BackRow` 保持空白。
+- 四張 Combo／Healing 手牌固定放在 `FrontRow` 並接收 Q/W/E/R；`BackRow` 保持空白。
 - hover 仍在 viewport 內。
 - cards 不遮 HUD status/quest/progress。
 - viewport size change 重新 layout。
@@ -1040,7 +1040,7 @@ interactive `Button`; its shortcut, name, type, icon stage, level, and AP
 labels use `MOUSE_FILTER_IGNORE`.
 
 `res://scripts/ui/autumn_card_hand_ui.gd` owns Autumn hand presentation within
-`CardStage`。Scene 只建立單組四張 Combo card buttons，不再存在 inactive group
+`CardStage`。Scene 只建立單組四張 Combo／Healing card buttons，不再存在 inactive group
 或 A/S、LT/RT 切組流程。
 
 Card height is derived from the lower-HUD height and hand-column width. The
@@ -1048,9 +1048,9 @@ renderer preserves a `0.72` width-to-height ratio and updates the negative
 card dimensions on viewport resize. Do not add per-resolution card
 positions or resize these cards from gameplay code.
 
-### Combo hand input contract
+### Combo／Healing hand input contract
 
-Autumn hand 顯示單組 4 張 Combo 卡。Q/W/E/R 直接打出對應卡；A、S 僅負責
+Autumn hand 顯示單組 4 張 Combo／Healing 卡。Healing 保持綠色；Q/W/E/R 直接打出對應卡；A、S 僅負責
 移動，不再有 LT、RT 或任何 group toggle operation。`ember_bolt` 沒有手牌 slot、
 LOCK badge 或永久邊框，僅作為戰前選定的自動普攻。`quickstep` 已從正式
 卡表移除；玩家 Space Dash 是固有 action，不建立手牌 slot、不顯示 AP cost，

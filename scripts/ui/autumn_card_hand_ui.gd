@@ -80,7 +80,7 @@ func _refresh() -> void:
 		var button := _build_card_button(card, local_index, global_index)
 		_front_row.add_child(button)
 		_buttons.append(button)
-	_group_label.text = "COMBO HAND"
+	_group_label.text = "COMBO + HEALING"
 	_capture_after_container_sort()
 
 

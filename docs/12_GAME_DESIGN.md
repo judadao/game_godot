@@ -92,7 +92,7 @@ Town
 3. 從已解鎖 attack cards 選一個獨立 auto attack；
 4. 建立新的 `RunState`；
 5. auto attack ID 鎖定為本 Run 的選擇，戰鬥中不可切換；
-6. 普通背包洗牌後抽 8 張，建立 draw/hand/discard/exhaust/cooldown piles；
+6. 普通背包洗牌後抽 4 張 Combo／Healing 卡，建立 draw/hand/discard/exhaust/cooldown piles；
 7. 載入 `scenes/maps/autumn_battle/AutumnBattleMapV2.tscn`。
 
 ### 2.3 Run 的結束
@@ -288,7 +288,7 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 
 目前規則：
 
-- expedition backpack 最少 4 張、最多 16 張 Combo 卡；同名 Combo 最多 3 份且各自保存等級；
+- expedition backpack 最少 4 張、最多 16 張 Combo／Healing 卡；同名卡最多 3 份且各自保存等級；
 - auto attack 在背包之外獨立選擇，必須是已解鎖的 `attack` card；
 - combo card 最多一張；
 - 其他一般卡最多三張；
@@ -306,9 +306,10 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 - `cooldown_pile`。
 
 五個牌區都保存 `CardInstance(instance_id, card_id, level)` identity。戰鬥背包
-只收 Combo 卡，最多 16 張；洗牌後抽成單組 4 張手牌，Q/W/E/R 直接打出。
-不再有 A/S 或 controller LT/RT 切換組別。一般卡進 discard；標記 exhaust 的卡進
-exhaust；有 cooldown 的 combo/healing 卡暫入 cooldown，到期後回 discard。
+只收 `combat_hand != false` 的 Combo／Healing 卡，最多 16 張；洗牌後抽成單組
+4 張手牌，Q/W/E/R 直接打出。不再有 A/S 或 controller LT/RT 切換組別。
+戰鬥手牌打出後統一進 discard 並立即補回四張；catalog 的 exhaust／cooldown
+destination 仍供非戰鬥手牌流程使用，不得再讓 HUD 手牌越打越少。
 
 `ember_bolt` 是普通卡，可以在背包、手牌與牌堆中出現，也依一般規則升級、
 融合、移除與 routing。`quickstep` 已從正式卡表移除。Dash 是玩家固有 action，
@@ -334,9 +335,9 @@ auto attack 永遠免費，不使用這條 AP/hand 流程。
 
 - hand 非空時可用 T／D-pad down 棄掉目前四張並補抽四張；
 - 棄牌不要求滿 AP，也不消耗 AP；
-- 手牌進入 discard（依 card destination 例外處理）；
-- 在可抽牌範圍內把 hand 補至最多 8 張；
-- 抽牌造成 hand overflow 時開啟 modal discard；
+- 戰鬥手牌統一進入 discard；
+- 每次出牌後立即循環牌堆，將 hand 補回 4 張；
+- 額外抽牌造成 hand overflow 時開啟 modal discard；
 - auto attack 不在 hand，因此不參與 redraw 或 overflow。
 
 ### 6.6 Card focus
@@ -348,7 +349,9 @@ Card focus 會把 `Engine.time_scale` 設為 0.22，hit stop 也會短暫改變�
 ### 7.1 Combo cards
 
 `combo` 是卡牌類型，不是另一套非攻擊牌序 manager。原防禦牌以 timed status
-combo 形式提供霸體、減傷或反擊；打出後依 card catalog 進 cooldown，倒數完成
+combo 形式提供霸體、減傷、反擊或攻擊 infusion；打出後進 discard 並立即補牌。
+每次 Combo 疊加全域 Combo Chain 並刷新 8 秒窗口：3 層提高攻擊、6 層追加
+5% 吸血、9 層追加短暫硬直。相同 infusion 另可疊至 12 層，讓效果持續增強。
 才回 discard。舊 `ComboManager` 與非攻擊 sequence rules 已移除。
 
 ### 7.2 Passive attack Skill
@@ -382,7 +385,8 @@ Lv.1 結果，牌組淨減一：
 | Cleave | Flame Aura | Inferno Orb |
 
 舊「階段 2 自動注入 passive evolution、批次轉換所有同名卡」不再是 gameplay
-contract。Dash Edge 與 Gale Drive 是 Combo cards；其 infusion 以
+contract。Dash Edge 與 Gale Drive 標記為 `combat_hand = false`，不再由牌組與
+獎勵特別提供；其 legacy infusion 仍以
 `target_action = dash` 暫時強化玩家固有 Dash，不指向或建立 Dash 卡。
 
 ### 7.4 效果語意限制
@@ -645,7 +649,7 @@ A/S 僅供移動；`card_group_1` 與 `card_group_2` InputMap actions 已移除�
 - 區域、目標與 survival phase；
 - enemy alive/cap；
 - AP；
-- 單組四張 Combo 手牌；
+- 單組四張 Combo／Healing 手牌；
 - combo 提示；
 - Guardian health；
 - interaction prompt；
@@ -767,15 +771,15 @@ Deck Builder 在戰前從已解鎖 attack cards 選一個 auto attack，與 16 �
 Dash 是玩家固有 action：↑ 只觸發 Jump，Space 觸發 Dash。Dash 不建立
 `CardInstance`，不進 backpack/hand/draw/discard/exhaust/cooldown，也不花 AP 或
 觸發 `SkillRecipeManager` 的 card sequence。`quickstep` 已從正式卡表移除。
-Dash Edge/Gale Drive 是 Combo cards，以 `target_action = dash` 在各自 effect
+Dash Edge/Gale Drive 是 `combat_hand = false` 的 legacy Combo cards，以 `target_action = dash` 在各自 effect
 window 內暫時強化固有 Dash；Combo 本身不直接移動玩家。
 
-The combat hand is one four-card Combo row. Q/W/E/R play those four cards.
+The combat hand is one four-card Combo/Healing row. Q/W/E/R play those four cards.
 A/S remain movement-only and there is no group-toggle input.
 
 ### Timed Combo windows
 
-Combo effect cards exhaust after play and add one independently timed effect
+Combo cards recycle through discard after play and add one independently timed effect
 stack. The base window is six real-time seconds. Fast play can therefore keep
 several stacks active at once; when an older stack expires, only that stack is
 removed and the displayed level falls accordingly. Four distinct Combo types
@@ -901,10 +905,10 @@ Autumn Battle V2 reserves the upper 66% of the viewport for world play. The
 remaining space contains the combat dock and footer rail. The camera extends its
 bottom limit by 90 pixels so the authored world composition moves upward instead
 of being pinned by the original 720-pixel limit. The dock presents character
-status, decimal regenerating AP, the single four-card Combo hand, discard
+status, decimal regenerating AP, the single four-card Combo/Healing hand, discard
 guidance, and a three-entry fading Skill/Combo activity feed.
 
-Q/W/E/R play the single four-card Combo hand. T discards and refills the hand
+Q/W/E/R play the single four-card Combo/Healing hand. Played cards refill immediately. T discards and refills the hand
 without an AP requirement. A/S and LT/RT do not switch groups. Auto attack
 does not occupy a HUD card slot. Intrinsic Space Dash also has no card slot or
 AP presentation; `quickstep` is not part of the card catalog.

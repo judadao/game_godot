@@ -12,11 +12,33 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	await process_frame
-	game.call("_begin_autumn_run")
+	game.call("_begin_autumn_run", [
+		"guard", "iron_skin", "healing_light", "renewal",
+		"blood_pact_combo", "verdant_renewal",
+		"flame_imbue", "frostburst_imbue", "battle_rhythm",
+	])
 	var deck := game.get("deck_manager") as DeckManager
 	var complete_deck: Array = deck.hand + deck.draw_pile + deck.discard_pile
 	_expect(complete_deck.has("flame_imbue") and complete_deck.has("frostburst_imbue"), "Combo cards must be shuffled into the ordinary combat deck.")
-	_expect(deck.hand.size() == 4, "Combat must draw one four-card Combo hand.")
+	_expect(
+		complete_deck.has("healing_light")
+			and complete_deck.has("verdant_renewal")
+			and not complete_deck.has("dash_strike")
+			and not complete_deck.has("gale_lunge"),
+		"Combat hand pool must include Healing cards without prioritizing Dash Combo cards."
+	)
+	_expect(deck.hand.size() == 4, "Combat must draw one four-card Combo/Healing hand.")
+
+	for _play_index in 12:
+		deck.energy = deck.max_energy
+		game.call("_on_card_selected", 0)
+		_expect(deck.hand.size() == 4, "Playing cards repeatedly must always refill the hand to four.")
+	var run := game.get("run_state") as RunState
+	run.temporary_buffs["active_infusions"] = []
+	run.temporary_buffs["combo_levels"] = {}
+	run.temporary_buffs["infusion_effects"] = []
+	run.temporary_buffs["combo_chain_count"] = 0
+	run.temporary_buffs["combo_chain_remaining"] = 0.0
 
 	deck.start(["flame_imbue", "flame_imbue", "frostburst_imbue", "battle_rhythm"], 5.0)
 	var flame := deck.play_from_hand(0)
@@ -26,6 +48,26 @@ func _run() -> void:
 	deck.energy = 5.0
 	var second_flame := deck.play_from_hand(0)
 	_expect(bool(game.call("_resolve_combo_card", second_flame)), "A duplicate Combo card must add another stack.")
+	_expect(
+		int(run.temporary_buffs.get("combo_chain_count", 0)) >= 2,
+		"Repeated Combo cards must build a visible global Combo Chain."
+	)
+	for _stack_index in 7:
+		_expect(
+			bool(game.call("_resolve_combo_card", database_card(game, "flame_imbue"))),
+			"Combo effects must continue stacking toward the chain milestones."
+		)
+	var milestone_attack := game.call(
+		"_apply_combo_infusions_to_card",
+		database_card(game, "ember_bolt")
+	) as Dictionary
+	var milestone_effect := milestone_attack.get("effect", {}) as Dictionary
+	_expect(
+		int(run.temporary_buffs.get("combo_chain_count", 0)) >= 9
+			and float(milestone_effect.get("lifesteal_ratio", 0.0)) >= 0.05
+			and float(milestone_effect.get("combo_stun", 0.0)) >= 0.15,
+		"Nine Combo stacks must unlock Power, Lifesteal, and Stun milestones."
+	)
 	var frost := deck.play_from_hand(0)
 	_expect(frost.is_empty(), "An unaffordable Combo card must remain in hand.")
 	deck.energy = 5.0

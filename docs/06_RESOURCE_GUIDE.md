@@ -1000,9 +1000,10 @@ follows the ordinary `CardInstance` lifecycle. `quickstep` is not a catalog
 card and must not be materialized as a `CardInstance`.
 
 Dash is a player-owned action, not card data. Dash Edge and Gale Drive remain
-Combo card records whose infusion effect declares `target_action = "dash"`.
-Runtime projection applies their temporary bonuses to the intrinsic Space Dash
-without inserting a Dash card into the selected deck, hand, or any pile.
+legacy Combo card records with `combat_hand = false`; deck building and rewards
+must not prioritize or insert them. If legacy data resolves either card, its
+`target_action = "dash"` infusion may temporarily enhance the intrinsic Space
+Dash without creating a Dash card in the selected deck, hand, or any pile.
 
 `CardCollectionService` is the cross-authority mutation boundary. New rewards
 use `add_persistent_card()`；fusion uses `fuse()`；merchant purge uses

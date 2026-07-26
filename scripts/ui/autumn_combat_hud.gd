@@ -152,7 +152,7 @@ func _on_redraw_pressed() -> void:
 
 
 func _on_card_group_changed(group_index: int) -> void:
-	_group_label.text = "Q / W / E / R   COMBO HAND"
+	_group_label.text = "Q / W / E / R   COMBO + HEALING"
 	group_changed.emit(group_index)
 
 

@@ -291,7 +291,7 @@ instance.queue_free()
 | Memory Library | capacity 10/14/18/24/30；learned 與 active loadout 分離 |
 | Growth queue | wave new-card only；EXP upgrade/fusion；無候選才 fallback；FIFO 不漏頁 |
 | Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一 |
-| Deck/hand | 4–16 Combo cards；shuffle draw 4；單組；QWER 出牌；T 棄四張補四張且不耗 AP |
+| Deck/hand | 4–16 Combo／Healing cards；shuffle draw 4；連續出牌固定補回 4；QWER 出牌；T 棄四張補四張且不耗 AP |
 | Auto attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；近距離目標；不餵 skill sequence |
 | Dash | ↑ 只觸發 Jump；Space 觸發玩家固有 Dash；不進牌庫/手牌、不耗 AP；Dash Combo infusions 使用 `target_action=dash` |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |

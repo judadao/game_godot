@@ -12,7 +12,7 @@ func _run() -> void:
 	var card_hand := CARD_HAND_SCENE.instantiate()
 	var samples: Array = card_hand.call("_editor_sample_cards")
 
-	_expect(samples.size() == 4, "Direct-map editor preview must provide one four-card Combo hand.")
+	_expect(samples.size() == 4, "Direct-map editor preview must provide one four-card Combo/Healing hand.")
 	if not samples.is_empty():
 		_expect(
 			not samples.any(func(card: Dictionary) -> bool: return String(card.get("id", "")) == "quickstep"),
@@ -27,10 +27,10 @@ func _run() -> void:
 			String(first_card.get("id", "")) == "guard",
 			"Editor slot one should preview Iron Will."
 		)
-		_expect(
-			samples.all(func(card: Dictionary) -> bool: return String(card.get("type", "")) == "combo"),
-			"Every editor hand sample must be a Combo card."
+		var samples_are_hand_cards := samples.all(func(card: Dictionary) -> bool:
+			return String(card.get("type", "")) in ["combo", "healing"]
 		)
+		_expect(samples_are_hand_cards, "Every editor hand sample must be Combo or Healing.")
 		_expect(not bool(first_card.get("fixed", false)), "Combo previews must not show removed lock treatment.")
 		var iron_will := _find_sample(samples, "guard")
 		_expect(
@@ -38,6 +38,10 @@ func _run() -> void:
 			and String(iron_will.get("name", "")) == "Iron Will"
 			and String(iron_will.get("type", "")) == "combo",
 			"The shared editor preview must use the redesigned Iron Will Combo card."
+		)
+		_expect(
+			String(_find_sample(samples, "healing_light").get("type", "")) == "healing",
+			"The editor preview must include a green Healing card."
 		)
 
 	var healing_style := card_hand.call("_make_card_style", "HEALING", false) as StyleBoxFlat

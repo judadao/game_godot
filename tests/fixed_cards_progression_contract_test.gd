@@ -41,12 +41,16 @@ func _run() -> void:
 	await process_frame
 	builder.call("configure", database.get_all_cards(), migrated, "cleave")
 	var restored := builder.call("get_selected_deck") as Array
-	var restored_are_combos := restored.all(func(card_id: String) -> bool:
-		return String(database.get_card(card_id).get("type", "")) == "combo"
+	var restored_are_hand_cards := restored.all(func(card_id: String) -> bool:
+		var card := database.get_card(card_id)
+		return (
+			String(card.get("type", "")) in ["combo", "healing"]
+			and bool(card.get("combat_hand", true))
+		)
 	)
 	_expect(
-		restored.size() == 7 and restored_are_combos,
-		"Deck builder must restore only Combo cards from a legacy mixed backpack."
+		restored.size() == 8 and restored_are_hand_cards,
+		"Deck builder must restore Combo and Healing cards from a legacy mixed backpack."
 	)
 	_expect(
 		String(builder.call("get_auto_attack_card_id")) == "cleave",
@@ -78,13 +82,13 @@ func _run() -> void:
 	)
 	game.set("save_service", SaveService.new())
 	var illegal_deck: Array[String] = [
-		"dash_strike", "dash_strike",
+		"guard", "guard", "healing_light", "dash_strike",
 		"cleave", "cleave", "cleave", "cleave",
 	]
 	var clamped := game.call("_normalize_expedition_deck", illegal_deck) as Array
 	_expect(
-		clamped == ["dash_strike", "dash_strike"],
-		"Game normalization must retain independent Combo copies and exclude ordinary cards."
+		clamped == ["guard", "guard", "healing_light"],
+		"Game normalization must retain Combo/Healing copies and exclude attacks and Dash-only cards."
 	)
 	game_meta.selected_deck = migrated.duplicate()
 	game_meta.auto_attack_card_id = "cleave"
@@ -99,7 +103,15 @@ func _run() -> void:
 	var run := game.get("run_state") as RunState
 	var deck := game.get("deck_manager") as DeckManager
 	_expect(run.active, "Autumn run must start before the loadout becomes locked.")
-	_expect(deck.hand.size() == 4, "Combat must randomly draw exactly four Combo cards.")
+	_expect(deck.hand.size() == 4, "Combat must randomly draw exactly four Combo/Healing cards.")
+	var run_healing_cards := deck.get_all_instances().filter(
+		func(instance: CardInstance) -> bool:
+			return String(database.get_card(instance.card_id).get("type", "")) == "healing"
+	)
+	_expect(
+		run_healing_cards.size() >= 2,
+		"Legacy loadouts must receive at least two Healing cards."
+	)
 	_expect(deck.protected_card_ids.is_empty(), "No combat card may remain globally fixed or pinned.")
 	_expect(
 		String(game.get("_run_auto_attack_card_id")) == "cleave",
@@ -125,7 +137,7 @@ func _run() -> void:
 	_expect(
 		int(hand_ui.call("get_card_button_count")) == 4
 			and int(hand_ui.call("get_group_count")) == 1,
-		"Combat HUD must project one four-card Combo hand."
+		"Combat HUD must project one four-card Combo/Healing hand."
 	)
 	var targets := game.call("_get_combat_targets") as Array
 	_expect(not targets.is_empty(), "The live battle must provide an automatic-attack target.")
@@ -140,7 +152,7 @@ func _run() -> void:
 		game.call("_process", 0.2)
 		_expect(int(target.get("health")) < health_before, "Automatic attack must damage an in-range enemy.")
 		_expect(is_equal_approx(deck.energy, energy_before), "Automatic attack must not spend AP.")
-		_expect(deck.hand == hand_before, "Automatic attack must not mutate the four-card Combo hand.")
+		_expect(deck.hand == hand_before, "Automatic attack must not mutate the four-card Combo/Healing hand.")
 		var first_hit_health := int(target.get("health"))
 		var cadence_before := float(game.get("_auto_attack_remaining"))
 		Engine.time_scale = 1.0
@@ -198,7 +210,9 @@ func _run() -> void:
 		"The production card database must not duplicate intrinsic Dash as Quickstep."
 	)
 	for combo_id in ["dash_strike", "gale_lunge"]:
-		var effect := database.get_card(combo_id).get("effect", {}) as Dictionary
+		var dash_card := database.get_card(combo_id)
+		var effect := dash_card.get("effect", {}) as Dictionary
+		_expect(not bool(dash_card.get("combat_hand", true)), "%s must stay out of the combat hand." % combo_id)
 		_expect(
 			String(effect.get("target_action", "")) == "dash",
 			"%s must enhance the intrinsic Dash action." % combo_id
@@ -253,7 +267,7 @@ func _run() -> void:
 	Engine.time_scale = 1.0
 	await process_frame
 	if _failures == 0:
-		print("PASS: automatic attack lock, intrinsic Dash Combo, and four-card Combo hand")
+		print("PASS: automatic attack lock, optional Dash legacy, and four-card Combo/Healing hand")
 	quit(1 if _failures > 0 else 0)
 
 

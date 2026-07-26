@@ -742,7 +742,8 @@ CardInstance
 
 `DeckManager` 的 hand、draw、discard、exhaust、cooldown 五個區域都必須保留同一
 instance identity。cooldown 到期回 discard；modal pause 時 cooldown 不前進。
-expedition backpack 最多 16 張 Combo `CardInstance`；洗牌後只抽一組 4 張。
+expedition backpack 最多 16 張 Combo／Healing `CardInstance`；洗牌後只抽一組 4 張。
+戰鬥手牌打出後統一進 discard 並立即補牌，避免 exhaust／cooldown 導致手牌縮減。
 `ember_bolt` 僅作為獨立自動普攻，不進入手牌、棄牌或 Combo 抽牌循環。`quickstep`
 已從正式卡表移除。玩家固有 Dash 由 `PlayerController` 的 Space action 擁有，
 不是 `CardInstance`，不進 deck/hand/piles、不花 AP，也不觸發出牌事件。
@@ -753,7 +754,8 @@ auto attack 不建立額外 CardInstance、不進 hand 或任一牌堆、不花 
 `SkillRecipeManager.record_card()`。只有有效敵人進入該 attack 的近距離 range 時
 才依 interval 自動施放。
 
-Dash Edge 與 Gale Drive 仍是 Combo cards；其 infusion 以
+Dash Edge 與 Gale Drive 保留為 legacy catalog cards，但標記 `combat_hand = false`，
+不進 Deck Builder、預設背包或戰鬥獎勵；其 infusion 仍以
 `target_action = "dash"` 暫時投影到玩家固有 Dash，不建立或尋找 Dash 卡。
 
 `MetaState` schema version 5 以 `selected_card_instances` 儲存 instance payload，

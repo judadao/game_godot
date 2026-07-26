@@ -31,6 +31,9 @@ const WISP_DURATION := 6.0
 const COMBAT_CAMERA_SAFE_OFFSET_Y := 90.0
 const MAX_COMBO_ABILITIES := 4
 const MAX_COMBO_LEVEL := 3
+const MAX_COMBO_EFFECT_STACKS := 12
+const MAX_COMBO_CHAIN := 99
+const COMBO_CHAIN_DURATION := 8.0
 const DEFAULT_COMBO_DURATION := 6.0
 const DEFAULT_AUTO_ATTACK_CARD_ID := "ember_bolt"
 const DEFAULT_AUTO_ATTACK_INTERVAL := 1.0
@@ -945,13 +948,15 @@ func _begin_autumn_run(deck_override: Array = []) -> void:
 	if run_state.active:
 		return
 	var fallback_deck := [
-		"guard", "iron_skin", "dash_strike", "gale_lunge",
+		"guard", "guard", "iron_skin", "healing_light", "renewal",
+		"blood_pact_combo", "verdant_renewal",
 		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 	]
 	var selected: Array = deck_override if deck_override.size() > 0 and deck_override.size() <= 16 else meta_state.selected_deck
 	var normalized := _normalize_expedition_deck(selected if selected.size() > 0 and selected.size() <= 16 else fallback_deck)
 	if normalized.size() < deck_manager.hand_size:
 		normalized = _normalize_expedition_deck(fallback_deck)
+	normalized = _ensure_healing_cards(normalized)
 	meta_state.set_selected_deck(normalized)
 	var valid_ids: Array[String] = []
 	for card in card_database.get_all_cards():
@@ -972,10 +977,10 @@ func _show_card_reward_choices(wave_number: int) -> void:
 	if not run_state.active:
 		return
 	var choices_by_wave := {
-		2: ["guard", "dash_strike", "flame_imbue"],
-		3: ["frostburst_imbue", "battle_rhythm", "stoneguard_combo"],
+		2: ["guard", "healing_light", "flame_imbue"],
+		3: ["verdant_renewal", "battle_rhythm", "stoneguard_combo"],
 	}
-	var card_ids: Array = choices_by_wave.get(wave_number, ["guard", "iron_skin", "gale_lunge"])
+	var card_ids: Array = choices_by_wave.get(wave_number, ["guard", "renewal", "frostburst_imbue"])
 	var choices: Array[Dictionary] = []
 	for card_id in card_ids:
 		var card := card_database.get_card(String(card_id))
@@ -988,7 +993,7 @@ func _show_card_reward_choices(wave_number: int) -> void:
 
 
 func _add_persistent_run_card(card_id: String) -> bool:
-	if String(card_database.get_card(card_id).get("type", "")) != "combo":
+	if not _is_combat_hand_card(card_database.get_card(card_id)):
 		return false
 	var instance: CardInstance = card_collection_service.call(
 		"add_persistent_card",
@@ -1041,7 +1046,11 @@ func _on_card_selected(index: int) -> void:
 		return
 	var instance := deck_manager.hand_instances[index]
 	var projected_card := _card_for_cast(instance)
-	var card := deck_manager.play_from_hand(index, int(projected_card.get("cost", 0)))
+	var card := deck_manager.play_from_hand(
+		index,
+		int(projected_card.get("cost", 0)),
+		"discard"
+	)
 	if card.is_empty():
 		_refresh_card_hand()
 		return
@@ -1062,10 +1071,12 @@ func _on_card_selected(index: int) -> void:
 			WISP_DURATION
 		)
 		run_state.temporary_buffs["ap_wisp_rate"] = WISP_AP_REGEN
-	var draw_count := maxi(0, int(effect.get("draw_cards", 0)))
-	if not deck_manager.last_play_retained:
-		draw_count += 1
-	deck_manager.draw_cards(draw_count)
+	var extra_draw_count := maxi(0, int(effect.get("draw_cards", 0)))
+	var replacement_count := maxi(
+		0,
+		deck_manager.hand_size - deck_manager.hand_instances.size()
+	)
+	deck_manager.draw_cards(replacement_count + extra_draw_count)
 	run_state.energy = deck_manager.energy
 	_set_tactical_slowdown(false)
 	_refresh_card_hand()
@@ -1217,6 +1228,7 @@ func _on_hand_overflow_confirmed(indices: Array[int], ui_control: Control) -> vo
 func _resolve_combo_card(card: Dictionary) -> bool:
 	if card.is_empty() or String(card.get("type", "")) != "combo":
 		return false
+	_record_combo_chain(card)
 	var effect := card.get("effect", {}) as Dictionary
 	if String(effect.get("kind", "")) != "infusion":
 		return false
@@ -1233,7 +1245,7 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 	var levels_variant: Variant = run_state.temporary_buffs.get("combo_levels", {})
 	var levels: Dictionary = levels_variant if levels_variant is Dictionary else {}
 	var current_level := int(levels.get(infusion_id, 0))
-	if current_level >= MAX_COMBO_LEVEL:
+	if current_level >= MAX_COMBO_EFFECT_STACKS:
 		return false
 	levels[infusion_id] = current_level + 1
 	run_state.temporary_buffs["combo_levels"] = levels
@@ -1250,6 +1262,32 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 	run_state.temporary_buffs["infusion_effects"] = effects
 	_try_evolve_combo_abilities()
 	return true
+
+
+func _record_combo_chain(card: Dictionary) -> void:
+	var current := int(run_state.temporary_buffs.get("combo_chain_count", 0))
+	var next := mini(MAX_COMBO_CHAIN, current + 1)
+	var equipment_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
+	run_state.temporary_buffs["combo_chain_count"] = next
+	run_state.temporary_buffs["combo_chain_remaining"] = (
+		COMBO_CHAIN_DURATION
+		+ float(equipment_specials.get("combo_duration_bonus", 0.0))
+	)
+	_last_combo_name = String(card.get("name", card.get("id", "Combo")))
+	if hud != null and hud.has_method("show_skill_toast"):
+		var milestone := ""
+		if next >= 9:
+			milestone = "  STUN"
+		elif next >= 6:
+			milestone = "  LIFESTEAL"
+		elif next >= 3:
+			milestone = "  POWER"
+		hud.call(
+			"show_skill_toast",
+			"combo_chain",
+			"COMBO ×%d  %s%s" % [next, _last_combo_name, milestone],
+			Color(0.78, 0.48, 1.0, 1.0)
+		)
 
 
 func _try_evolve_combo_abilities() -> bool:
@@ -1298,14 +1336,23 @@ func _try_evolve_combo_abilities() -> bool:
 func _tick_combo_effects(delta: float) -> bool:
 	if delta <= 0.0:
 		return false
+	var changed := false
+	var chain_remaining := maxf(
+		0.0,
+		float(run_state.temporary_buffs.get("combo_chain_remaining", 0.0)) - delta
+	)
+	if float(run_state.temporary_buffs.get("combo_chain_remaining", 0.0)) > 0.0:
+		changed = true
+		run_state.temporary_buffs["combo_chain_remaining"] = chain_remaining
+		if is_zero_approx(chain_remaining):
+			run_state.temporary_buffs["combo_chain_count"] = 0
 	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
 	if not effects_variant is Array:
-		return false
+		return changed
 	var effects := effects_variant as Array
 	if effects.is_empty():
-		return false
+		return changed
 	var retained: Array = []
-	var changed := false
 	for effect_variant in effects:
 		if not effect_variant is Dictionary:
 			changed = true
@@ -1323,7 +1370,10 @@ func _tick_combo_effects(delta: float) -> bool:
 		changed = true
 	run_state.temporary_buffs["infusion_effects"] = retained
 	_rebuild_combo_state_from_effects(retained)
-	if retained.is_empty():
+	if (
+		retained.is_empty()
+		and int(run_state.temporary_buffs.get("combo_chain_count", 0)) <= 0
+	):
 		_last_combo_name = "—"
 	return changed
 
@@ -1338,7 +1388,10 @@ func _rebuild_combo_state_from_effects(effects: Array) -> void:
 		var infusion_id := String((effect_variant as Dictionary).get("infusion_id", ""))
 		if infusion_id.is_empty():
 			continue
-		levels[infusion_id] = mini(MAX_COMBO_LEVEL, int(levels.get(infusion_id, 0)) + 1)
+		levels[infusion_id] = mini(
+			MAX_COMBO_EFFECT_STACKS,
+			int(levels.get(infusion_id, 0)) + 1
+		)
 	var active: Array = []
 	for infusion_id_variant in previous:
 		var infusion_id := String(infusion_id_variant)
@@ -1374,6 +1427,13 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 		"skill":
 			if String(effect.get("kind", "")) == "heal":
 				effect["amount"] = int(effect.get("amount", 0)) + int(equipment_specials.get("card_heal_bonus", 0))
+	var combo_chain := int(run_state.temporary_buffs.get("combo_chain_count", 0))
+	if String(infused.get("type", "")) == "attack":
+		effect["amount"] = int(effect.get("amount", 0)) + floori(float(combo_chain) / 3.0) * 2
+		if combo_chain >= 6:
+			effect["lifesteal_ratio"] = float(effect.get("lifesteal_ratio", 0.0)) + 0.05
+		if combo_chain >= 9:
+			effect["combo_stun"] = maxf(float(effect.get("combo_stun", 0.0)), 0.15)
 	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
 	if not effects_variant is Array:
 		return infused
@@ -1601,13 +1661,12 @@ func _on_player_statuses_changed(statuses: Array) -> void:
 func _refresh_combo_display() -> void:
 	if card_hand_ui == null:
 		return
-	var combo_kinds_variant: Variant = run_state.temporary_buffs.get("active_infusions", [])
-	var combo_count := (combo_kinds_variant as Array).size() if combo_kinds_variant is Array else 0
-	var seconds := _get_combo_time_remaining()
+	var combo_count := int(run_state.temporary_buffs.get("combo_chain_count", 0))
+	var seconds := float(run_state.temporary_buffs.get("combo_chain_remaining", 0.0))
 	card_hand_ui.call(
 		"set_combo",
-		"%s  [%d/%d]  %.1fs" % [_last_combo_name, combo_count, MAX_COMBO_ABILITIES, seconds],
-		"Fast play stacks / equipment lowers AP and extends time"
+		"%s  ×%d  %.1fs" % [_last_combo_name, combo_count, seconds],
+		"3 Power / 6 Lifesteal / 9 Stun"
 	)
 
 
@@ -2095,9 +2154,9 @@ func _build_wandering_stock() -> Array[Dictionary]:
 		var card := card_database.get_card(card_id)
 		if card.is_empty():
 			continue
-		if ordinary_id.is_empty() and String(card.get("rarity", "")) in ["common", "uncommon"] and String(card.get("type", "")) == "combo":
+		if ordinary_id.is_empty() and String(card.get("rarity", "")) in ["common", "uncommon"] and _is_combat_hand_card(card):
 			ordinary_id = card_id
-		if rare_id.is_empty() and String(card.get("type", "")) == "combo" and String(card.get("rarity", "")) in ["rare", "legendary"]:
+		if rare_id.is_empty() and _is_combat_hand_card(card) and String(card.get("rarity", "")) in ["rare", "legendary"]:
 			rare_id = card_id
 	if ordinary_id.is_empty():
 		ordinary_id = "guard"
@@ -2273,7 +2332,7 @@ func _normalize_expedition_deck(deck_ids: Array) -> Array[String]:
 		if not card_database.has_card(card_id):
 			continue
 		var card := card_database.get_card(card_id)
-		if String(card.get("type", "")) != "combo":
+		if not _is_combat_hand_card(card):
 			continue
 		var max_copies := 3
 		if int(counts.get(card_id, 0)) >= max_copies:
@@ -2281,6 +2340,27 @@ func _normalize_expedition_deck(deck_ids: Array) -> Array[String]:
 		counts[card_id] = int(counts.get(card_id, 0)) + 1
 		normalized.append(card_id)
 	return normalized
+
+
+func _is_combat_hand_card(card: Dictionary) -> bool:
+	return (
+		String(card.get("type", "")) in ["combo", "healing"]
+		and bool(card.get("combat_hand", true))
+	)
+
+
+func _ensure_healing_cards(deck_ids: Array[String]) -> Array[String]:
+	var result := deck_ids.duplicate()
+	var healing_count := 0
+	for card_id in result:
+		if String(card_database.get_card(card_id).get("type", "")) == "healing":
+			healing_count += 1
+	while healing_count < 2:
+		if result.size() >= 16:
+			result.pop_back()
+		result.append("healing_light")
+		healing_count += 1
+	return result
 
 
 func _on_chest_opened(_chest: Node, loot_table_id: StringName, interactor: Node) -> void:

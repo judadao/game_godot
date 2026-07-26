@@ -70,8 +70,9 @@ zones in the component scene. Edit row spacing and the six-column reservation
 in `AutumnCardHandUI.tscn`. Do not move individual runtime cards in the map
 scene: their responsive size and front/back overlap are renderer-owned.
 
-The expedition backpack contains 4–16 Combo cards. At run start it is shuffled
-and four cards are drawn into one Q/W/E/R hand. There is no group toggle.
+The expedition backpack contains 4–16 Combo or Healing cards. At run start it
+is shuffled and four cards are drawn into one Q/W/E/R hand. Played cards recycle
+through discard and are immediately replaced, so the hand remains at four.
 T discards the current four and draws four replacements without consuming AP.
 `ember_bolt` is an independently selected automatic attack and never enters
 the hand or card piles. `quickstep` is not part of the card catalog.
@@ -83,5 +84,6 @@ close-range contract and never feeds the skill sequence.
 
 Up only triggers Jump. Space triggers the player's intrinsic Dash. Dash has no
 backpack, hand, pile, or AP representation. Dash Edge and Gale Drive remain
-Combo cards whose infusions use `target_action = dash` to modify the intrinsic
+legacy catalog cards with `combat_hand = false`; they are not offered by the
+deck builder or run rewards. Their infusions use `target_action = dash` to modify the intrinsic
 Dash temporarily rather than moving the player directly.
