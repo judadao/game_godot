@@ -63,10 +63,11 @@ Roadmap item 的建立與關閉依序使用：
 ### 2.1 已驗證功能
 
 - Town 為起始 Hub；
-- 進入 Autumn 前有 1–16 張 Deck Builder；
-- fixed `ember_bolt` 與 `quickstep` 會各一張進入起始手牌；
+- 進入 Autumn 前選擇 1–16 張普通背包卡與一個獨立 auto attack；
+- auto attack 在 Run 開始時鎖定、免費且不進手牌/牌堆；
 - Autumn 有四個 timed survival phase 與 Guardian phase；
-- 卡牌使用 real-time AP，hand capacity 為 8；AutumnHUD 內嵌雙排手牌並用 A/S 切換；
+- 卡牌使用 real-time AP，8 張手牌分兩組各 4 張，QWER 出牌並用 A/S 切換；
+- Quickstep 是普通 Dash 卡，Run 中停用 Space direct dash；
 - timed combo status cards、attack-only passive skills 與兩張 Lv.3 fusion 已存在；
 - ExperienceGem、跨級 XP queue、GrowthChoiceQueue 與 CardGrowthUI 已存在；
 - Campfire accessible UI 為 Rest／Leave；
@@ -82,7 +83,8 @@ Roadmap item 的建立與關閉依序使用：
 
 | Check | Baseline |
 |---|---|
-| Total standalone test scripts | 69/69 passed |
+| Total standalone test scripts | 69/69 passed（68 個 `*_test.gd` + `test_ui_keyboard.gd`） |
+| Six-resolution geometry suite | 6/6 passed |
 | Godot error markers | 0 |
 | Editor parse | exit 0，0 markers |
 | Main-scene smoke | exit 0，0 markers |
@@ -308,7 +310,7 @@ Town manager 產生的 visual flag 多於 `Game` 實際套用的四個 scene nod
 - [ ] 舊 schema fixture 可 migration 到唯一 current representation。
 - [ ] 每個 persistent field 都有 producer、consumer 與 test。
 - [ ] 無 consumer 的 field 經 migration 後安全移除或明確保留理由。
-- [ ] Meta schema 4 round-trip 不遺失 inventory/town/card instances/skill loadout。
+- [ ] Meta schema 5 round-trip 不遺失 inventory/town/card instances/skill/auto-attack loadout。
 
 ### 5.6 Input 與 global time-scale safety
 

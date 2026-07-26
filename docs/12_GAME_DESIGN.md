@@ -73,7 +73,7 @@
 Town
   → 與 NPC、商店、裝備／城鎮進度互動
   → 進入 Autumn portal
-  → Deck Builder 選擇 1–16 張遠征牌
+  → Deck Builder 選擇 1–16 張普通遠征牌與一個獨立 auto attack
   → 開始 Autumn Run
   → 四個限時生存階段
   → Guardian 階段
@@ -88,11 +88,11 @@ Town
 進入 Town 的 Autumn portal 時：
 
 1. 先開啟 Deck Builder；
-2. 選擇結果被正規化為 1–16 張；
-3. `ember_bolt` 必須存在且只允許一張；
+2. 普通背包結果被正規化為 1–16 張；
+3. 從已解鎖 attack cards 選一個獨立 auto attack；
 4. 建立新的 `RunState`；
-5. 建立抽牌堆、手牌、棄牌堆與消耗牌堆；
-6. 洗牌後確保 `ember_bolt` 在起始手牌；
+5. auto attack ID 鎖定為本 Run 的選擇，戰鬥中不可切換；
+6. 普通背包洗牌後抽 8 張，建立 draw/hand/discard/exhaust/cooldown piles；
 7. 載入 `scenes/maps/autumn_battle/AutumnBattleMapV2.tscn`。
 
 ### 2.3 Run 的結束
@@ -288,12 +288,12 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 
 目前規則：
 
-- expedition deck 最少 1 張、最多 16 張；
-- `ember_bolt` 必須存在且只允許一張；
+- expedition backpack 最少 1 張、最多 16 張普通卡；
+- auto attack 在背包之外獨立選擇，必須是已解鎖的 `attack` card；
 - combo card 最多一張；
 - 其他一般卡最多三張；
 - Meta 預設解鎖 13 張卡；
-- 預設 selected deck 有 16 張。
+- `MetaState` 分別保存 selected deck 與 `auto_attack_card_id`。
 
 ### 6.3 牌堆與手牌
 
@@ -305,18 +305,14 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 - `exhaust_pile`；
 - `cooldown_pile`。
 
-五個牌區都保存 `CardInstance(instance_id, card_id, level)` identity。手牌容量為 8，
-不足 8 張的 deck 不會憑空補牌。戰鬥 UI 同時顯示兩組、每組最多 4 張：
-目前組位於 `FrontRow` 並由 Q/W/E/R 使用，另一組位於 `BackRow`；A/S 可快速
-切換目前組。一般卡進 discard；標記 exhaust 的卡進 exhaust；有 cooldown 的
-combo/healing 卡暫入 cooldown，到期後回 discard。
+五個牌區都保存 `CardInstance(instance_id, card_id, level)` identity。普通手牌容量
+為 8，從 16 張背包洗牌抽取；戰鬥 UI 分成兩組各 4 張。Q/W/E/R 打出目前組，
+A/S（以及 controller LT/RT）切換組別。一般卡進 discard；標記 exhaust 的卡進
+exhaust；有 cooldown 的 combo/healing 卡暫入 cooldown，到期後回 discard。
 
-`ember_bolt` 與 `quickstep` 是 fixed cards：
-
-- 各恰好一張、起始時優先放入 hand；
-- 永久 Lv.1，打出後不移出 hand；
-- redraw 與 end-turn cleanup 會保留；
-- 不可 overflow discard、升級、fusion、purge、exhaust 或進 cooldown。
+`ember_bolt` 與 `quickstep` 都是普通卡，可以在背包、手牌與牌堆中出現，
+也依一般規則升級、融合、移除與 routing。`quickstep` 是唯一直接 Dash 的普通卡；
+Run 進行中停用 Player 的 Space direct dash，必須抽到並打出 Quickstep 才能 Dash。
 
 ### 6.4 AP
 
@@ -330,18 +326,18 @@ combo/healing 卡暫入 cooldown，到期後回 discard。
 | Energy Wisp bonus | +0.35／秒 |
 | Energy Wisp duration | 6 秒 |
 
-卡片 cost 大於目前 AP 時不能打出。成功打出後扣除 cost 並執行 effect；非
-protected card 離開手牌後補抽一張 replacement，再加上卡片 effect 指定的額外
-抽牌。Protected `ember_bolt` 保留在手中，因此沒有普通 replacement draw。
+卡片 cost 大於目前 AP 時不能打出。成功打出後扣除 cost、執行 effect、依
+destination 離開手牌，補抽一張 replacement，再加上 effect 指定的額外抽牌。
+auto attack 永遠免費，不使用這條 AP/hand 流程。
 
 ### 6.5 Redraw 與 overflow
 
 - 只有 AP 已滿且 hand 非空時可 full-AP redraw；
 - redraw 將 AP 設為 0；
-- protected card 保留，其餘進入 discard；
+- 手牌進入 discard（依 card destination 例外處理）；
 - 在可抽牌範圍內把 hand 補至最多 8 張；
 - 抽牌造成 hand overflow 時開啟 modal discard；
-- protected card 不能被 overflow discard。
+- auto attack 不在 hand，因此不參與 redraw 或 overflow。
 
 ### 6.6 Card focus
 
@@ -379,14 +375,15 @@ Lv.1 結果，牌組淨減一：
 | Lv.3 material A | Lv.3 material B | Lv.1 result |
 |---|---|---|
 | Iron Will (`guard`) | Stone Form (`iron_skin`) | Unbreakable Stance (`fortress_stance`) |
-| Dash Strike | Cleave | Gale Lunge |
+| Dash Edge (`dash_strike`) | Cleave | Gale Drive (`gale_lunge`) |
 | Frost Bind | Energy Surge | Time Snare |
 | Healing Light | Blood Pact | Renewal |
 | Battle Focus | Flame Aura | Overdrive |
 | Cleave | Flame Aura | Inferno Orb |
 
-fixed cards 不可升級或作材料。舊「階段 2 自動注入 passive evolution、批次轉換
-所有同名卡」不再是 gameplay contract。
+舊「階段 2 自動注入 passive evolution、批次轉換所有同名卡」不再是 gameplay
+contract。Dash Edge 與 Gale Drive 是以 `target_card_id = quickstep` 指向
+Quickstep 的 infusion，自身不直接 Dash。
 
 ### 7.4 效果語意限制
 
@@ -422,7 +419,7 @@ next_required = ceil(previous_required * 1.32 + 12)
 
 每一個 pending level-up enqueue 一頁 EXP growth choice：
 
-- 選一張低於 Lv.3 的非 fixed `CardInstance` 個別升級；
+- 選一張低於 Lv.3 的 `CardInstance` 個別升級；
 - 或選兩張不同的合法 Lv.3 instances 進行 fusion；
 - 只有兩者都沒有候選時，改選 75 gold、12 autumn wood + 8 stone、
   或 4 magic shards。
@@ -573,13 +570,14 @@ Stock 存在 `RunState.temporary_buffs` 中，只對本次 Run 有效。
 
 ### 11.2 MetaState
 
-`MetaState` schema version 為 4，保存：
+`MetaState` schema version 為 5，保存：
 
 - persistent resources；
 - village／building progression；
 - unlocked cards 與相容 progression fields；
 - `selected_card_instances`（instance ID、card ID、level）；
 - legacy `selected_deck` compatibility projection；
+- `auto_attack_card_id`；
 - `learned_skill_ids` 與 `active_skill_ids`；
 - equipment 與 equipment level；
 - settings；
@@ -587,9 +585,9 @@ Stock 存在 `RunState.temporary_buffs` 中，只對本次 Run 有效。
 - inventory/town nested state；
 - boss state。
 
-舊 payload 在載入時 deterministic、idempotent migration；fixed cards 重複、非法
-level、重複/缺失 instance ID 必須修復並留下 report。Skill arrays 去重，active
-只保留 learned IDs，舊檔補入初始 `iron_momentum`。
+舊 payload 在載入時 deterministic、idempotent migration；非法 level、重複/缺失
+instance ID 必須修復並留下 report。Skill arrays 去重，active 只保留 learned IDs；
+auto attack 缺失或無效時在組裝 Run 時 fallback 到有效已解鎖 attack。
 
 ### 11.3 Meta save
 
@@ -755,24 +753,21 @@ func _on_survival_phase_time_changed(
 
 這是 Godot 4 signal 語法示例；實際專案由 `Game` 的既有 wiring method 管理連接。
 
-### Fixed basic attack and Dash progression
+### Auto attack and Dash
 
-Every normalized expedition deck begins with exactly one `ember_bolt` and one
-`quickstep`. They occupy Q and W, count inside the maximum of 16 cards, remain
-in hand after use, and survive redraw/end-turn cycling. Neither card can be
-added as a reward, discarded, exhausted, purged, fused, or upgraded
-by experience.
+Deck Builder 在戰前從已解鎖 attack cards 選一個 auto attack，與 16 張普通背包
+分開保存。Run 開始時鎖定選擇；戰鬥中不可切換。auto attack：
 
-Their progression is equipment-only:
+- cost 固定為 0，不進 hand/draw/discard/exhaust/cooldown；
+- 只有玩家附近存在有效敵人時才依 catalog range/interval 自動施放；
+- 不建立出牌事件，因此不推進 `SkillRecipeManager` 的 count/sequence；
+- 可使用所選 attack card 的有效 level/equipment projection；
+- 無效選擇 fallback 到已解鎖的有效 attack。
 
-- weapon card-damage bonuses improve `ember_bolt`;
-- `quickstep` costs 1 AP, moves 120 pixels, grants 0.2 seconds of evasion, and
-  does not draw cards;
-- defeating the Heartwood Guardian permanently sets
-  `dash_upgrade_unlocked`;
-- before that flag, Dash-special equipment cannot upgrade or apply its Dash
-  bonuses;
-- after unlock, Swift Ring adds Dash distance and evasion time.
+`quickstep` 是普通 1 AP Dash 卡：抽到後以 Q/W/E/R 打出，移動 120 pixels 並給
+0.2 秒 evasion。Run 期間 Space direct dash 停用；戰鬥外仍沿用 Player direct dash。
+Dash Edge/Gale Drive 以 `target_card_id = quickstep` 暫時強化 Quickstep，不直接
+移動玩家。
 
 The eight-card hand remains two groups of four. Q/W/E/R play the active group,
 while A, S, LT, and RT each toggle to the other group.
@@ -843,7 +838,7 @@ Reviewer 必須確認：
 - [ ] 沒有新增未核准玩法。
 - [ ] 所有不確定內容都標記 TODO。
 - [ ] Town → Autumn → Guardian → Result 流程未被破壞。
-- [ ] Deck 維持 1–16 張，`ember_bolt`/`quickstep` fixed identity 正確。
+- [ ] Backpack 維持 1–16 張普通卡，auto attack 獨立且 Run 內鎖定。
 - [ ] Hand、draw、discard、exhaust、cooldown、overflow 的 instance identity 一致。
 - [ ] AP cost、regen 與 redraw 行為有測試。
 - [ ] XP 跨級 queue 與 CardGrowth upgrade/fusion/fallback 有測試。
@@ -907,9 +902,9 @@ two groups of four cards, group-switch guidance, objective and Combo state, and
 economy information without covering gameplay.
 
 Q/W/E/R play the current four-card group. A/S and LT/RT switch between the two
-groups; the inactive group remains visible but dimmed and locked. The first
-slot of the first group remains the protected basic attack defined by the deck
-rules.
+groups; the inactive group remains visible but dimmed and locked. Auto attack
+does not occupy a HUD card slot, and Quickstep appears only when drawn as an
+ordinary card.
 
 Autumn interactions use a compact F prompt attached to the current world
 object. It follows the object and clamps above the HUD boundary so merchants,

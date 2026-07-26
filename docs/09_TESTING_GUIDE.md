@@ -29,8 +29,8 @@
 
 目前測試是直接繼承 `SceneTree` 的 Godot 原生腳本，存放於 `tests/`，多數以 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT、統一測試執行器與 CI；新增這些能力前不得在交付報告中宣稱已具備。
 
-現有 58 個測試腳本涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
-流程、HUD 與多解析度排版；其中 57 個符合 `*_test.gd`。
+現有 69 個測試腳本涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+流程、HUD 與多解析度排版；其中 68 個符合 `*_test.gd`。
 `tests/test_ui_keyboard.gd` 不符合目前主要的檔名慣例，建立統一 runner 時必須
 一併納入或改名，避免漏跑。
 
@@ -267,15 +267,18 @@ instance.queue_free()
 
 | Area | Minimum contract evidence |
 |---|---|
-| CardInstance | 五牌堆 identity 不變；個別 level；fixed cards 唯一且永久 Lv.1 |
-| CardCollectionService | add／fusion／exact removal 同步 Meta／Run／Deck 且共享同一 object；fixed 拒絕；partial failure restore pile order、cooldown timing、level 與 unlocked fields |
-| Migration | schema v4 舊 payload deterministic、idempotent；card/skill 修復 report 可驗證 |
+| CardInstance | 五牌堆 identity 不變；個別 level；Ember/Quickstep 遵循普通卡 lifecycle |
+| CardCollectionService | add／fusion／exact removal 同步 Meta／Run／Deck 且共享同一 object；partial failure restore pile order、cooldown timing、level 與 unlocked fields |
+| Migration | schema v5 舊 payload deterministic、idempotent；card/skill/auto-attack 修復可驗證 |
 | Cooldown/exhaust | cooldown 到期回 discard；exhaust 不回收；pause 時 timer 不動 |
 | Status | source refresh、最高 armor tier、reduction cap 60%、unblockable bypass、regen/lifesteal |
 | Skill recipe | attack-only、multi-hit 一次 event、8 秒 window、count/exact sequence reset、獨立 cooldown |
 | Memory Library | capacity 10/14/18/24/30；learned 與 active loadout 分離 |
 | Growth queue | wave new-card only；EXP upgrade/fusion；無候選才 fallback；FIFO 不漏頁 |
-| Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一；fixed 不可作材料 |
+| Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一 |
+| Deck/hand | 1–16 ordinary cards；shuffle draw 8；兩組各 4；QWER 出牌、A/S toggle |
+| Auto attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；近距離目標；不餵 skill sequence |
+| Dash | Quickstep 是普通 Dash 卡；Run 中 Space direct dash 停用；Dash infusions target quickstep |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |
 | HUD authority | Autumn 只有一個 HUD root；hand 在 `CardStage`；Town HUD identity 不變 |
 | HUD projection | status/objective 左上、boss/toast 上中、bottom stage 完整；toast max 3/1.5 秒/duplicate refresh |

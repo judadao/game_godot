@@ -327,7 +327,8 @@ Scene group、base signals與固定 child contract缺一不可。
 ```text
 data/cards.json
 → CardDatabase
-→ MetaState selected deck
+→ DeckBuilderUI selects 16-card deck + one auto-attack card
+→ MetaState selected deck / auto_attack_card_id
 → RunState + DeckManager
 → CardHandUI.set_cards()
 → card_selected(index)
@@ -399,7 +400,7 @@ Validated static JSON
 Permanent meta：
 
 - path：`user://saves/meta_progress.json`
-- schema：`MetaState.SCHEMA_VERSION == 4`
+- schema：`MetaState.SCHEMA_VERSION == 5`
 - service：`SaveService`
 - behavior：`.tmp` write → parse validation → backup → rename
 
@@ -741,16 +742,22 @@ CardInstance
 
 `DeckManager` 的 hand、draw、discard、exhaust、cooldown 五個區域都必須保留同一
 instance identity。cooldown 到期回 discard；modal pause 時 cooldown 不前進。
-`ember_bolt` 與 `quickstep` 是各一張、永久 Lv.1 的 fixed instances，不得升級、
-合成、移除、exhaust 或進 cooldown。
+expedition deck 是 16 張普通 `CardInstance`；洗牌後抽 8 張，UI 分成兩組各 4 張。
+`ember_bolt` 與 `quickstep` 都是普通卡，遵循一般抽牌、棄牌、升級、融合與移除規則。
 
-`MetaState` schema version 4 以 `selected_card_instances` 儲存 instance payload，
+戰前另由 `DeckBuilderUI` 從已解鎖 attack cards 選一個 auto attack。選擇保存於
+`MetaState.auto_attack_card_id`，Run 開始時複製到 run-local lock；戰鬥中不可切換。
+auto attack 不建立額外 CardInstance、不進 hand 或任一牌堆、不花 AP，也不送入
+`SkillRecipeManager.record_card()`。只有有效敵人進入該 attack 的近距離 range 時
+才依 interval 自動施放。
+
+`MetaState` schema version 5 以 `selected_card_instances` 儲存 instance payload，
 同時保留必要的舊 `selected_deck` projection 作 compatibility。舊 card-id 陣列 migration
-必須 deterministic、idempotent，修復重複 fixed card、非法 level 與重複/缺失
-instance ID，並提供 migration report。schema 4 另保存 `learned_skill_ids` 與
-`active_skill_ids`；active 必須是 learned 的子集，缺少時 migration 補入初始
-`iron_momentum`。`RunState.card_instances` 是 expedition 期間的同一 identity
-projection，不另造 card-id 等級表。
+必須 deterministic、idempotent，修復非法 level 與重複/缺失 instance ID，並提供
+migration report。schema 5 另保存 `auto_attack_card_id`、`learned_skill_ids` 與
+`active_skill_ids`；auto attack 缺失或無效時 fallback 到已解鎖的有效 attack，
+active skill 必須是 learned 的子集。`RunState.card_instances` 是 expedition
+期間的同一 identity projection，不另造 card-id 等級表。
 
 ### 21.2 Combat 與 skill services
 

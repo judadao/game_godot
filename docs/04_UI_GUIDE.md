@@ -1046,12 +1046,11 @@ renderer preserves a `0.72` width-to-height ratio and updates the negative
 vertical row separation on viewport resize. Do not add per-resolution card
 positions or resize these cards from gameplay code.
 
-### Fixed-card and group-toggle contract
+### Ability hand and group-toggle contract
 
-Autumn slot Q is the fixed `ember_bolt` basic attack and slot W is the fixed
-`quickstep` Dash. The renderer receives `fixed = true` from `Game` and shows a
-LOCK badge plus a persistent gold border/shadow. This treatment is state, not
-an index-only decoration; editor samples must also mark both cards as fixed.
+Autumn hand 顯示 8 張普通卡，分成兩組各 4 張。Q/W/E/R 打出目前組；A、S、
+LT、RT 都呼叫同一個 toggle operation。`ember_bolt` 與 `quickstep` 沒有固定 slot、
+LOCK badge 或永久邊框，必須和其他普通卡一樣依牌堆與目前組顯示。
 
 A, S, LT, and RT all call the same toggle operation. Pressing any one of them
 alternates between group 1 and group 2. With only one group, the operation is a
@@ -1060,6 +1059,10 @@ behavior.
 
 equipment-modified AP cost 必須在 affordability 與 input check 前 projection 到 card。
 Card cooldown 另投影至 `CooldownStrip`；cooldown timer 在 growth modal pause 時停止。
+
+Deck Builder 另有 auto-attack selector。它不是手牌 slot：UI 必須明示所選 attack
+會在 Run 開始後鎖定、免費自動施放，且只有近距離內存在有效目標時才攻擊。
+戰鬥 HUD 不提供切換 auto attack 的 control。
 
 ### Responsive contract
 

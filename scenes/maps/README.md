@@ -48,7 +48,7 @@ HUD or card-hand instances.
 `EditorHelpers` and the `EditorHUDReference` overlay are hidden during normal
 runtime map play. Use the Scene tree and Inspector to adjust map content and
 the editable UI children, then run the map or main game to verify the adopted
-HUD at 1280x720, 1600x900, 1920x1080, and 2560x1440.
+HUD at 1152x720, 1280x720, 1600x900, 1920x1080, 2560x1080, and 2560x1440.
 
 ## Autumn Battle V2 UI contract
 
@@ -70,7 +70,15 @@ zones in the component scene. Edit row spacing and the six-column reservation
 in `AutumnCardHandUI.tscn`. Do not move individual runtime cards in the map
 scene: their responsive size and front/back overlap are renderer-owned.
 
-The expedition deck always reserves slot Q for `ember_bolt` and slot W for
-`quickstep`. These two cards are part of the 16-card limit, are marked with a
-LOCK badge and persistent gold frame, and cannot enter discard, exhaust,
-overflow purge, rewards, card-level upgrades, merges, or evolutions.
+The expedition backpack contains 1–16 ordinary cards. At run start it is
+shuffled and eight cards are drawn into two groups of four; Q/W/E/R play the
+active group, while A/S/LT/RT toggle groups. `ember_bolt` and `quickstep`
+follow the same hand, pile, upgrade, fusion, and removal rules as other cards.
+
+Deck Builder selects auto attack independently from an unlocked attack card.
+It consumes no backpack or HUD slot, costs no AP, never enters a card pile,
+and is locked for the run. It fires only when a valid target is within its
+close-range contract and never feeds the skill sequence. `quickstep` is the
+ordinary direct-Dash card; Space direct dash is disabled during a run.
+Dash Edge and Gale Drive are infusions that target `quickstep` rather than
+moving the player directly.

@@ -1466,10 +1466,24 @@ Required semantic children:
 - Script: `res://scripts/ui/autumn_card_hand_ui.gd`
 - Owner: `AutumnHUD/BottomStage/CardStage`
 - Responsibility: create AutumnBattleCard instances, keep card groups in
-  stable scene-authored rows, calculate responsive card dimensions, overlap
-  the rows, and apply active/inactive group presentation
+  two stable scene-authored rows of four, calculate responsive card dimensions,
+  overlap the rows, and apply active/inactive group presentation
+- Input contract: Q/W/E/R play the current group；A/S/LT/RT toggle groups
+- Exclusion: auto attack is not a card button and has no hand/global index
 - Isolation: Town continues to use `res://scripts/ui/card_hand_ui.gd`; Autumn
   visual changes must not be added to the shared renderer
+
+### DeckBuilderUI loadout
+
+- Scene: `res://scenes/ui/DeckBuilderUI.tscn`
+- Script: `res://scripts/ui/deck_builder_ui.gd`
+- Signals:
+  - `loadout_confirmed(deck_ids: Array[String], auto_attack_card_id: String)`
+  - legacy `deck_confirmed` remains compatibility-only
+- Responsibility: select 1–16 ordinary backpack cards and one independent
+  unlocked attack card for auto attack
+- Rule: auto attack does not consume a deck slot；the selector is unavailable
+  during an active Run
 
 ### CombatStatusController
 

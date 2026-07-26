@@ -278,7 +278,7 @@ Validation：
 建立 EXP fusion choice；`Game` 驗證 Growth choice、管理 pause 與 save transaction。
 `CardCollectionService.fuse()` 再驗證 recipe 與三個 authority 的共享 identity，
 原子移除兩張不同 Lv.3 材料並加入一張 Lv.1 result；任一步失敗都 restore
-collection snapshot。fixed cards 不可成為材料。這個 ownership 不可移入 UI。
+collection snapshot。這個 ownership 不可移入 UI。
 
 ## 6. Equipment Data 與 Inventory Runtime State
 
@@ -484,7 +484,7 @@ extends Resource
 
 ### 9.1 MetaState
 
-`MetaState.SCHEMA_VERSION = 4`。
+`MetaState.SCHEMA_VERSION = 5`。
 
 主要fields：
 
@@ -492,6 +492,7 @@ extends Resource
 resources
 village_level / building_levels
 unlocked_cards / selected_card_instances / selected_deck compatibility projection
+auto_attack_card_id
 learned_skill_ids / active_skill_ids
 equipment / equipment_levels
 boss_defeated / shortcuts
@@ -499,8 +500,10 @@ settings
 inventory_state / town_state
 ```
 
-`active_skill_ids` 必須是 `learned_skill_ids` 的子集。migration 會去重、移除未知
-active entry，並確保初始 `iron_momentum` 已學會且至少有一個 active skill。
+`auto_attack_card_id` 是戰前 loadout 選擇，必須解析為已解鎖的 attack card；
+無效時由 composition root 選擇有效 fallback。`active_skill_ids` 必須是
+`learned_skill_ids` 的子集。migration 會去重、移除未知 active entry，並確保初始
+`iron_momentum` 已學會且至少有一個 active skill。
 `inventory_state`與`town_state`是current manager DTO；其他equipment/building fields
 同時保留legacy compatibility。
 
@@ -529,11 +532,14 @@ defeated_enemies / elite_defeated / boss_defeated
 - hand
 - discard pile
 - exhaust pile
+- cooldown pile
 - energy/max energy
-- protected card與retain flag
+- hand size（8）
 
-這些不是static card data，也不是MetaState selected deck。selected deck是ID清單；
-piles是runtime sequence。
+這些不是 static card data，也不是 MetaState selected deck。selected deck 是最多
+16 張普通卡的 ID/instance projection；piles 是 runtime sequence。auto attack 只以
+`MetaState.auto_attack_card_id` 與 run-local lock 表示，不建立 CardInstance、
+不加入 DeckManager piles。
 
 跨 authority 的 add／fuse／exact removal 不再由 `Game` 分別呼叫
 `MetaState`、`RunState` 與 `DeckManager` mutation API，而統一經
@@ -965,7 +971,7 @@ func read_dictionary(path: String) -> Dictionary:
 
 Card definitions remain static catalog records keyed by `card_id`. Every owned
 or runtime copy is a `CardInstance` with a unique string `instance_id`, its
-`card_id`, and an independent level from 1 through 3. `MetaState` schema 4
+`card_id`, and an independent level from 1 through 3. `MetaState` schema 5
 serializes these copies as `selected_card_instances`; `selected_deck` is kept
 only as a card-ID compatibility projection. `permanent_card_levels` is accepted
 only while migrating schema-2 saves and is never written as the new authority.
@@ -973,24 +979,24 @@ only while migrating schema-2 saves and is never written as the new authority.
 Schema-2 card-ID arrays migrate in source order to deterministic IDs
 `legacy-000001`, `legacy-000002`, and so on. Duplicate IDs in schema-3 payloads
 are repaired deterministically；schema-3 numeric instance IDs are normalized to
-stable strings without dropping cards. Fixed `ember_bolt` and `quickstep` copies are
-forced to level 1, duplicate fixed copies are removed while retaining the first
-stable identity, and `MetaState.get_last_migration_report()` /
+stable strings without dropping cards. `MetaState.get_last_migration_report()` /
 `SaveService.get_last_migration_report()` expose conversion and repair counts.
 Applying an already migrated payload must be idempotent.
 
-Schema 4 also serializes `learned_skill_ids` and `active_skill_ids`. Both arrays
+Schema 5 also serializes `auto_attack_card_id`, `learned_skill_ids`, and
+`active_skill_ids`. Both skill arrays
 are unique string IDs; active is normalized to a subset of learned. Legacy
 payloads receive the initial `iron_momentum` learned/active defaults, and an
-already migrated schema-4 payload round-trips without changing order or IDs.
+already migrated schema-5 payload round-trips without changing order or IDs.
+The auto-attack ID is a loadout choice, not a selected-deck instance.
 
 `DeckManager` keeps `CardInstance` objects authoritative in hand, draw,
 discard, exhaust, and cooldown piles. The legacy string arrays are projections
 for callers during integration and must not be mutated. Catalog fields
 `play_destination` (`discard`, `exhaust`, or `cooldown`) and
 `cooldown_seconds` control post-play routing. Cooldown completion returns the
-same instance to discard; paused cooldown clocks do not advance. Fixed card
-instances ignore exhaust and cooldown destinations and stay reusable.
+same instance to discard; paused cooldown clocks do not advance. `ember_bolt`
+and `quickstep` both follow the ordinary `CardInstance` lifecycle.
 
 `CardCollectionService` is the cross-authority mutation boundary. New rewards
 use `add_persistent_card()`；fusion uses `fuse()`；merchant purge uses
