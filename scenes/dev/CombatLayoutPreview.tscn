@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://c0kqkskf8c18n" path="res://scripts/dev/combat_layout_preview.gd" id="1_preview"]
 [ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn" id="2_map"]
-[ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnCardHandUI.tscn" id="3_hand"]
 [ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnHUD.tscn" id="4_hud"]
 
 [node name="CombatLayoutPreview" type="Node2D" unique_id=1539186567]
@@ -26,5 +25,3 @@ editor_draw_limits = true
 layer = 10
 
 [node name="HUD" parent="HUDLayer" unique_id=1059586021 instance=ExtResource("4_hud")]
-
-[node name="CardHandUI" parent="HUDLayer" unique_id=587760162 instance=ExtResource("3_hand")]

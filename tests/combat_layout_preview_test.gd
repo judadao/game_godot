@@ -25,7 +25,9 @@ func _run() -> void:
 	var map := preview.get_node_or_null("AutumnBattleMapV2")
 	var camera := preview.get_node_or_null("PreviewCamera") as Camera2D
 	var hud := preview.get_node_or_null("HUDLayer/HUD") as Control
-	var hand := preview.get_node_or_null("HUDLayer/CardHandUI") as Control
+	var hand := preview.get_node_or_null(
+		"HUDLayer/HUD/BottomStage/CardStage/AutumnCardHandUI"
+	) as Control
 	_expect(map != null, "Preview must instance the real autumn forest map.")
 	_expect(
 		map != null and map.scene_file_path == AUTUMN_MAIN_SCENE_PATH,
@@ -41,10 +43,9 @@ func _run() -> void:
 			"Preview camera must preserve the same world framing from 720p through 1440p."
 		)
 	_expect(hud != null and hud.visible, "Preview must show the real HUD.")
-	_expect(hand != null and hand.visible, "Preview must show the real card hand.")
 	_expect(
-		hud != null and hand != null and hud.get_index() < hand.get_index(),
-		"Preview must draw HUD before CardHandUI so cards stay above the safe-area background."
+		hand != null and hand.visible,
+		"Preview must show the real embedded card hand."
 	)
 	_expect(
 		hand != null and int(hand.call("get_card_button_count")) == 8,
@@ -54,18 +55,18 @@ func _run() -> void:
 		_expect(
 			(
 				hud.get_node(
-					"BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy/HUDQuestTracker/QuestRows/QuestText"
+					"TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows/ObjectiveText"
 				) as Label
 			).text
 			== "SURVIVAL PHASE 1",
 			"Preview must populate stable sample objective text."
 		)
 	if hud != null and hand != null:
-		var safe_rect := _canvas_rect(hand.get_node("CardSafeArea") as Control)
+		var safe_rect := _canvas_rect(hud.get_node("BottomStage") as Control)
 		var hud_paths := {
-			"HUDStatus": "BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus",
-			"HUDQuestTracker": "BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy/HUDQuestTracker",
-			"HUDProgressPanel": "BottomHUD/HUDGrid/ProgressColumn/ProgressCenter/ProgressProxy/HUDProgressPanel",
+			"PlayerVitals": "BottomStage/PlayerVitals",
+			"CardStage": "BottomStage/CardStage",
+			"PersonalResources": "BottomStage/PersonalResources",
 		}
 		for node_name in hud_paths:
 			var hud_rect := _canvas_rect(hud.get_node(hud_paths[node_name]) as Control)

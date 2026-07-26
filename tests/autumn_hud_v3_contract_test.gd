@@ -35,14 +35,52 @@ func _run() -> void:
 
 	var town_hud := town.get_node_or_null("EditorHUDReference/HUD") as Control
 	var autumn_hud := autumn.get_node_or_null("EditorHUDReference/HUD") as Control
-	var autumn_card := autumn.get_node_or_null("EditorHUDReference/CardHandUI") as Control
+	var autumn_card := autumn.get_node_or_null(
+		"EditorHUDReference/HUD/BottomStage/CardStage/AutumnCardHandUI"
+	) as Control
 	_expect(town_hud != null, "Town must retain its shared HUD.")
 	_expect(autumn_hud != null, "Autumn must expose its dedicated HUD.")
-	_expect(autumn_card != null, "Autumn must expose its dedicated card hand.")
+	_expect(autumn_card != null, "Autumn HUD must embed its dedicated card hand renderer.")
+	_expect(
+		autumn.get_node_or_null("EditorHUDReference/CardHandUI") == null,
+		"Autumn map must not retain a second card-hand HUD authority."
+	)
 	if town_hud != null:
 		_expect(town_hud.scene_file_path == SHARED_HUD_PATH, "Town must keep using the shared HUD scene.")
 	if autumn_hud != null:
 		_expect(autumn_hud.scene_file_path == AUTUMN_HUD_PATH, "Autumn must use AutumnHUD.")
+		_expect(autumn_hud.name == "HUD", "Autumn map must retain the exact HUD adoption path.")
+		for node_path in [
+			"TopLeftStack/ActiveStatusList",
+			"TopLeftStack/ObjectivePanel",
+			"TopCenterStack/BossHealth",
+			"TopCenterStack/SkillToastStack",
+			"BottomStage/PlayerVitals",
+			"BottomStage/ActionPoints",
+			"BottomStage/CardStage/CooldownStrip",
+			"BottomStage/CardStage/AutumnCardHandUI",
+			"BottomStage/InputGlyphHints",
+			"BottomStage/PersonalResources",
+		]:
+			_expect(
+				autumn_hud.has_node(node_path),
+				"AutumnHUD must author the approved semantic region %s." % node_path
+			)
+		for method_name in [
+			"set_active_statuses",
+			"set_boss_health",
+			"hide_boss_health",
+			"show_skill_toast",
+			"set_cooldown_cards",
+		]:
+			_expect(
+				autumn_hud.has_method(method_name),
+				"AutumnHUD must expose the %s projection API." % method_name
+			)
+		_expect(
+			autumn_hud.find_child("ComboHint", true, false) == null,
+			"AutumnHUD must not expose persistent combo or Skill recipe progress."
+		)
 		_expect(autumn_hud.has_node("InteractionPanel"), "AutumnHUD must contain its interaction prompt.")
 		var prompt := autumn_hud.get_node_or_null("InteractionPanel")
 		_expect(

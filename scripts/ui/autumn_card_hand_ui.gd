@@ -14,6 +14,9 @@ const AUTUMN_HOVER_SCALE := Vector2(1.055, 1.055)
 
 func set_action_points(current: float, maximum: float) -> void:
 	super.set_action_points(current, maximum)
+	var hud := get_parent().get_parent().get_parent()
+	if hud != null and hud.has_method("_set_action_points_projection"):
+		hud.call("_set_action_points_projection", current, maximum)
 	if not is_node_ready():
 		return
 	for index in _buttons.size():
@@ -26,6 +29,26 @@ func set_action_points(current: float, maximum: float) -> void:
 			and float(_cards[global_index].get("cost", 0)) <= _energy
 		)
 		card.call("set_row_active", global_index / CARDS_PER_GROUP == _active_group, affordable)
+
+
+func has_compact_combo_display() -> bool:
+	return false
+
+
+func set_combo(_current: String, _next_hint: String) -> void:
+	pass
+
+
+func set_boss_health(name_text: String, current: int, maximum: int) -> void:
+	var hud := get_parent().get_parent().get_parent()
+	if hud != null and hud.has_method("set_boss_health"):
+		hud.call("set_boss_health", name_text, current, maximum)
+
+
+func hide_boss_health() -> void:
+	var hud := get_parent().get_parent().get_parent()
+	if hud != null and hud.has_method("hide_boss_health"):
+		hud.call("hide_boss_health")
 
 
 func _refresh() -> void:
@@ -160,10 +183,10 @@ func _apply_responsive_geometry() -> void:
 
 func _responsive_card_size() -> Vector2:
 	var viewport_size := get_viewport_rect().size
-	var safe_height := maxf(120.0, viewport_size.y * 0.25 - 12.0)
+	var safe_height := maxf(100.0, viewport_size.y * 0.25 - 45.0)
 	var hand_width := maxf(360.0, viewport_size.x * 0.40 - 30.0)
-	var height_from_hud := safe_height * 0.79
+	var height_from_hud := safe_height * 0.73
 	var width_limit := (hand_width - 18.0) / float(CARDS_PER_GROUP)
 	var height_from_width := width_limit / AUTUMN_CARD_ASPECT
-	var card_height := maxf(104.0, minf(height_from_hud, height_from_width))
+	var card_height := maxf(94.0, minf(height_from_hud, height_from_width))
 	return Vector2(roundf(card_height * AUTUMN_CARD_ASPECT), roundf(card_height))

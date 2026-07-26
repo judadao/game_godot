@@ -1,7 +1,6 @@
 extends SceneTree
 
 const HUD_PATH := "res://scenes/ui/autumn/AutumnHUD.tscn"
-const CARD_PATH := "res://scenes/ui/autumn/AutumnCardHandUI.tscn"
 const VIEWPORT_SIZES := [
 	Vector2i(1152, 720),
 	Vector2i(1280, 720),
@@ -10,8 +9,13 @@ const VIEWPORT_SIZES := [
 	Vector2i(2560, 1080),
 	Vector2i(2560, 1440),
 ]
-const HUD_COLUMNS := ["StatusColumn", "APReserve", "HandReserve", "HintReserve", "InfoColumn", "ProgressColumn"]
-const CARD_COLUMNS := ["StatusReserve", "APSlot", "HandSlot", "HintSlot", "InfoSlot", "ProgressReserve"]
+const BOTTOM_REGIONS := [
+	"PlayerVitals",
+	"ActionPoints",
+	"CardStage",
+	"InputGlyphHints",
+	"PersonalResources",
+]
 
 var _failures := 0
 
@@ -22,12 +26,12 @@ func _initialize() -> void:
 
 func _run() -> void:
 	_expect(ResourceLoader.exists(HUD_PATH), "AutumnHUD must exist for layout verification.")
-	_expect(ResourceLoader.exists(CARD_PATH), "AutumnCardHandUI must exist for layout verification.")
 	if _failures > 0:
 		quit(1)
 		return
 	for viewport_size in VIEWPORT_SIZES:
 		await _check_viewport(viewport_size)
+	await _check_projection_behavior()
 	quit(0 if _failures == 0 else 1)
 
 
@@ -37,46 +41,114 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 	root.add_child(viewport)
 	var hud := (load(HUD_PATH) as PackedScene).instantiate() as Control
-	var cards := (load(CARD_PATH) as PackedScene).instantiate() as Control
 	viewport.add_child(hud)
-	viewport.add_child(cards)
+	hud.call("set_boss_health", "HEARTWOOD GUARDIAN", 72, 100)
+	hud.call("set_active_statuses", [
+		{"id": "armor", "name": "Iron Momentum", "icon": "◆", "remaining_seconds": 2.8},
+		{"id": "regen", "name": "Verdant Renewal", "icon": "+", "remaining_seconds": 4.2},
+	])
+	hud.call("set_cards", _sample_cards(), 5.0)
+	hud.call("set_action_points", 5.0, 5.0)
+	hud.call("set_cooldown_cards", [
+		{"card_id": "guard", "name": "Iron Will", "remaining_seconds": 6.2},
+	])
 	await process_frame
 	await process_frame
 
-	var hud_grid := hud.get_node("BottomHUD/HUDGrid") as HBoxContainer
-	var card_grid := cards.get_node("CardSafeArea/BottomMargin/BottomRow") as HBoxContainer
-	var safe_area := cards.get_node("CardSafeArea") as Control
-	_expect(is_equal_approx(safe_area.anchor_top, 0.75), "Autumn card safe area must begin at 75%% for %s." % viewport_size)
-	_expect(is_equal_approx(safe_area.anchor_bottom, 1.0), "Autumn card safe area must end at 100%% for %s." % viewport_size)
+	var screen := Rect2(Vector2.ZERO, Vector2(viewport_size))
+	var bottom_stage := hud.get_node("BottomStage") as HBoxContainer
+	var bottom_rect := _canvas_rect(bottom_stage)
 	_expect(
-		is_equal_approx(_canvas_rect(safe_area).position.y, float(viewport_size.y) * 0.75),
-		"Autumn card safe-area pixels must align to 75%% for %s." % viewport_size
+		absf(bottom_rect.position.y - float(viewport_size.y) * 0.75 - 6.0) <= 1.5,
+		"Autumn bottom stage must begin inside the authored lower quarter at %s." % viewport_size
 	)
-	for index in HUD_COLUMNS.size():
-		var hud_column := hud_grid.get_node(HUD_COLUMNS[index]) as Control
-		var card_column := card_grid.get_node(CARD_COLUMNS[index]) as Control
-		var hud_rect := _canvas_rect(hud_column)
-		var card_rect := _canvas_rect(card_column)
+	_expect(screen.encloses(bottom_rect), "Autumn bottom stage must remain on-screen at %s." % viewport_size)
+
+	var previous_end := bottom_rect.position.x
+	for node_name in BOTTOM_REGIONS:
+		var region := bottom_stage.get_node(node_name) as Control
+		var region_rect := _canvas_rect(region)
+		_expect(bottom_rect.encloses(region_rect), "%s must stay inside BottomStage at %s." % [node_name, viewport_size])
 		_expect(
-			absf(hud_rect.position.x - card_rect.position.x) <= 1.5
-			and absf(hud_rect.end.x - card_rect.end.x) <= 1.5,
-			"Autumn HUD/card column %d must align at %s." % [index, viewport_size]
+			region_rect.position.x >= previous_end - 1.5,
+			"BottomStage region %s must not overlap its previous sibling at %s." % [node_name, viewport_size]
+		)
+		previous_end = region_rect.end.x
+
+	var top_left := hud.get_node("TopLeftStack") as Control
+	var top_center := hud.get_node("TopCenterStack") as Control
+	var top_left_rect := _canvas_rect(top_left)
+	var top_center_rect := _canvas_rect(top_center)
+	_expect(screen.encloses(top_left_rect), "Top-left status/objective stack must remain on-screen at %s." % viewport_size)
+	_expect(screen.encloses(top_center_rect), "Top-center Boss/toast stack must remain on-screen at %s." % viewport_size)
+	_expect(
+		not top_left_rect.intersects(top_center_rect),
+		"Top-left status/objective must not overlap Boss/toast space at %s." % viewport_size
+	)
+	_expect(
+		top_left_rect.end.y <= bottom_rect.position.y,
+		"Top-left projections must not cover the lower card stage at %s." % viewport_size
+	)
+	_expect(
+		top_center_rect.end.y <= bottom_rect.position.y,
+		"Boss/toast projections must not cover the lower card stage at %s." % viewport_size
+	)
+
+	var cooldown := hud.get_node("BottomStage/CardStage/CooldownStrip") as Control
+	var hand := hud.get_node("BottomStage/CardStage/AutumnCardHandUI") as CardHandUI
+	_expect(
+		_canvas_rect(cooldown).end.y <= _canvas_rect(hand).position.y + 1.5,
+		"Cooldown strip must remain above the embedded hand at %s." % viewport_size
+	)
+	_expect(hand.get_card_button_count() == 8, "Embedded Autumn hand must render eight cards at %s." % viewport_size)
+	for index in hand.get_card_button_count():
+		var card := hand.get_card_button(index)
+		var card_rect := _canvas_rect(card)
+		_expect(
+			screen.encloses(card_rect)
+			and card_rect.position.y >= float(viewport_size.y) * 0.75 - 1.5,
+			"Every Autumn card must remain inside the lower HUD safe region at %s." % viewport_size
 		)
 
-	cards.call("set_cards", _sample_cards(), 5.0)
-	cards.call("set_action_points", 5.0, 5.0)
+	viewport.queue_free()
 	await process_frame
+
+
+func _check_projection_behavior() -> void:
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1280, 720)
+	viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	root.add_child(viewport)
+	var hud := (load(HUD_PATH) as PackedScene).instantiate() as Control
+	viewport.add_child(hud)
 	await process_frame
-	var back_row := cards.get_node("CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows/BackRow") as HBoxContainer
-	var front_row := cards.get_node("CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows/FrontRow") as HBoxContainer
-	_expect(back_row.get_child_count() == 4, "Autumn back row must contain four cards at %s." % viewport_size)
-	_expect(front_row.get_child_count() == 4, "Autumn front row must contain four cards at %s." % viewport_size)
-	var safe_rect := _canvas_rect(safe_area)
-	for button in back_row.get_children() + front_row.get_children():
-		_expect(
-			button is Control and safe_rect.encloses(_canvas_rect(button as Control)),
-			"Every Autumn card must remain inside the bottom safe area at %s." % viewport_size
-		)
+
+	var boss := hud.get_node("TopCenterStack/BossHealth") as Control
+	_expect(not boss.visible, "Boss panel must not occupy space before a Boss is projected.")
+	hud.call("set_boss_health", "HEARTWOOD GUARDIAN", 80, 100)
+	_expect(boss.visible, "Boss panel must become visible when a Boss is projected.")
+	hud.call("hide_boss_health")
+	_expect(not boss.visible, "Boss panel must release its space when the Boss is gone.")
+
+	for skill_id in ["one", "two", "three", "four"]:
+		hud.call("show_skill_toast", skill_id, skill_id.to_upper())
+	var toast_stack := hud.get_node("TopCenterStack/SkillToastStack") as VBoxContainer
+	_expect(toast_stack.get_child_count() == 3, "Skill toast stack must cap visible notifications at three.")
+	hud.call("show_skill_toast", "four", "FOUR REFRESHED")
+	_expect(toast_stack.get_child_count() == 3, "Repeated Skill toast must refresh instead of duplicating.")
+	await create_timer(1.9).timeout
+	_expect(toast_stack.get_child_count() == 0, "Skill toasts must fade and disappear after 1.5 seconds.")
+	hud.call("show_skill_toast", "refresh", "REFRESH")
+	await create_timer(1.3).timeout
+	hud.call("show_skill_toast", "refresh", "REFRESH")
+	await create_timer(0.4).timeout
+	_expect(
+		toast_stack.get_child_count() == 1
+		and (toast_stack.get_child(0) as Label).modulate.a > 0.9,
+		"Refreshing a fading Skill toast must restart its full visible lifetime."
+	)
+	await create_timer(1.3).timeout
+	_expect(toast_stack.get_child_count() == 0, "Refreshed Skill toast must still expire after its restarted lifetime.")
 
 	viewport.queue_free()
 	await process_frame
@@ -85,12 +157,12 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 func _sample_cards() -> Array[Dictionary]:
 	return [
 		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal damage.", "cost": 1, "level": 1, "fixed": true},
-		{"id": "quickstep", "name": "Quickstep", "type": "skill", "description": "Dash and evade.", "cost": 1, "level": 1, "fixed": true},
-		{"id": "guard", "name": "Guard", "type": "defense", "description": "Gain block.", "cost": 1, "level": 1},
+		{"id": "quickstep", "name": "Quickstep", "type": "utility", "description": "Dash and evade.", "cost": 1, "level": 1, "fixed": true},
+		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain armor.", "cost": 1, "level": 1},
 		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Arc strike.", "cost": 2, "level": 1},
-		{"id": "flame_imbue", "name": "Flame Infusion", "type": "power", "description": "Gain flame.", "cost": 2, "level": 1},
-		{"id": "gale_lunge", "name": "Gale Lunge", "type": "skill", "description": "Dash.", "cost": 2, "level": 3},
-		{"id": "healing_light", "name": "Healing Light", "type": "skill", "description": "Recover.", "cost": 2, "level": 1},
+		{"id": "flame_imbue", "name": "Flame Infusion", "type": "utility", "description": "Gain flame.", "cost": 2, "level": 1},
+		{"id": "gale_lunge", "name": "Gale Lunge", "type": "attack", "description": "Dash.", "cost": 2, "level": 3},
+		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Recover.", "cost": 2, "level": 1},
 		{"id": "meteor", "name": "Meteor", "type": "ultimate", "description": "Heavy damage.", "cost": 5, "level": 1},
 	]
 

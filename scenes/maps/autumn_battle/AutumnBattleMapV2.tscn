@@ -145,5 +145,4 @@ locked_reason = "Defeat the Heartwood Guardian"
 [editable path="WorldCollision"]
 [editable path="EditorHUDReference"]
 [editable path="EditorHUDReference/HUD"]
-[editable path="EditorHUDReference/CardHandUI"]
 [editable path="EditorHelpers"]

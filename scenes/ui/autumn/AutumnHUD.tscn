@@ -1,82 +1,128 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=15 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://scripts/ui/autumn_combat_hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDStatus.tscn" id="2_status"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDQuestTracker.tscn" id="3_quest"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDProgressPanel.tscn" id="4_progress"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDHotbar.tscn" id="5_hotbar"]
-[ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnInteractionPrompt.tscn" id="6_prompt"]
+[ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnInteractionPrompt.tscn" id="3_prompt"]
+[ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnCardHandUI.tscn" id="4_hand"]
 
-[sub_resource type="StyleBoxFlat" id="BottomFrame"]
-bg_color = Color(0.014, 0.013, 0.012, 1)
-border_width_top = 2
-border_color = Color(0.32, 0.27, 0.2, 1)
-
-[sub_resource type="StyleBoxFlat" id="GoldPanel"]
-content_margin_left = 5.0
-content_margin_top = 5.0
-content_margin_right = 5.0
-content_margin_bottom = 5.0
-bg_color = Color(0.045, 0.039, 0.032, 0.96)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.49, 0.37, 0.2, 0.92)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="ObjectivePanel"]
-content_margin_left = 5.0
-content_margin_top = 5.0
-content_margin_right = 5.0
-content_margin_bottom = 5.0
-bg_color = Color(0.055, 0.045, 0.034, 0.94)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.68, 0.47, 0.18, 0.96)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="EconomyPanel"]
-content_margin_left = 4.0
-content_margin_top = 4.0
-content_margin_right = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(0.035, 0.034, 0.031, 0.96)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.55, 0.39, 0.18, 0.94)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="AreaStyle"]
+[sub_resource type="StyleBoxFlat" id="StatusPanel"]
 content_margin_left = 10.0
-content_margin_top = 6.0
+content_margin_top = 8.0
 content_margin_right = 10.0
-content_margin_bottom = 6.0
-bg_color = Color(0.04, 0.035, 0.03, 0.92)
+content_margin_bottom = 8.0
+bg_color = Color(0.035, 0.04, 0.035, 0.88)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.58, 0.42, 0.2, 0.82)
+border_color = Color(0.35, 0.55, 0.36, 0.86)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="ObjectivePanel"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.045, 0.04, 0.032, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.58, 0.42, 0.2, 0.88)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="BossPanel"]
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 7.0
+bg_color = Color(0.055, 0.025, 0.02, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.66, 0.3, 0.15, 0.94)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
-[node name="HUD" type="Control"]
+[sub_resource type="StyleBoxFlat" id="BossBarBackground"]
+bg_color = Color(0.025, 0.018, 0.016, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.36, 0.2, 0.14, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="BossBarFill"]
+bg_color = Color(0.82, 0.18, 0.08, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="BottomPanel"]
+bg_color = Color(0.012, 0.012, 0.011, 0.96)
+border_width_top = 2
+border_color = Color(0.34, 0.28, 0.2, 0.9)
+
+[sub_resource type="StyleBoxFlat" id="VitalsPanel"]
+bg_color = Color(0.035, 0.032, 0.028, 0.82)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.42, 0.34, 0.23, 0.88)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="CooldownPanel"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0.04, 0.035, 0.03, 0.84)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.38, 0.31, 0.22, 0.8)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="ResourcePanel"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.035, 0.032, 0.028, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.39, 0.18, 0.9)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[node name="AutumnCombatHUD" type="Control"]
+process_mode = 3
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -86,7 +132,134 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_hud")
 
-[node name="BottomHUD" type="Control" parent="."]
+[node name="TopLeftStack" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 336.0
+offset_bottom = 238.0
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="ActiveStatusList" type="PanelContainer" parent="TopLeftStack"]
+custom_minimum_size = Vector2(320, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StatusPanel")
+mouse_filter = 2
+
+[node name="StatusMargin" type="MarginContainer" parent="TopLeftStack/ActiveStatusList"]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 2
+mouse_filter = 2
+
+[node name="StatusRows" type="VBoxContainer" parent="TopLeftStack/ActiveStatusList/StatusMargin"]
+layout_mode = 2
+theme_override_constants/separation = 3
+mouse_filter = 2
+
+[node name="EmptyState" type="Label" parent="TopLeftStack/ActiveStatusList/StatusMargin/StatusRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.54, 0.56, 0.52, 1)
+theme_override_font_sizes/font_size = 12
+text = "NO ACTIVE EFFECTS"
+
+[node name="ObjectivePanel" type="PanelContainer" parent="TopLeftStack"]
+custom_minimum_size = Vector2(320, 76)
+layout_mode = 2
+theme_override_styles/panel = SubResource("ObjectivePanel")
+mouse_filter = 2
+
+[node name="ObjectiveMargin" type="MarginContainer" parent="TopLeftStack/ObjectivePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 1
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 1
+mouse_filter = 2
+
+[node name="ObjectiveRows" type="VBoxContainer" parent="TopLeftStack/ObjectivePanel/ObjectiveMargin"]
+layout_mode = 2
+theme_override_constants/separation = 2
+mouse_filter = 2
+
+[node name="AreaName" type="Label" parent="TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.57, 0.32, 1)
+theme_override_font_sizes/font_size = 10
+text = "AUTUMN FOREST"
+text_overrun_behavior = 3
+
+[node name="ObjectiveText" type="Label" parent="TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.9, 0.75, 1)
+theme_override_font_sizes/font_size = 14
+text = "Explore the forest"
+text_overrun_behavior = 3
+
+[node name="ObjectiveProgress" type="Label" parent="TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.74, 0.7, 0.61, 1)
+theme_override_font_sizes/font_size = 11
+text = "Enemies remaining: 0 / 0"
+text_overrun_behavior = 3
+
+[node name="TopCenterStack" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 352.0
+offset_top = 14.0
+offset_right = -352.0
+offset_bottom = 184.0
+grow_horizontal = 2
+theme_override_constants/separation = 7
+alignment = 1
+mouse_filter = 2
+
+[node name="BossHealth" type="PanelContainer" parent="TopCenterStack"]
+custom_minimum_size = Vector2(440, 54)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("BossPanel")
+mouse_filter = 2
+
+[node name="BossMargin" type="MarginContainer" parent="TopCenterStack/BossHealth"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BossRows" type="VBoxContainer" parent="TopCenterStack/BossHealth/BossMargin"]
+layout_mode = 2
+theme_override_constants/separation = 3
+mouse_filter = 2
+
+[node name="BossName" type="Label" parent="TopCenterStack/BossHealth/BossMargin/BossRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.62, 0.32, 1)
+theme_override_font_sizes/font_size = 15
+text = "HEARTWOOD GUARDIAN"
+horizontal_alignment = 1
+
+[node name="BossBar" type="ProgressBar" parent="TopCenterStack/BossHealth/BossMargin/BossRows"]
+custom_minimum_size = Vector2(416, 15)
+layout_mode = 2
+theme_override_styles/background = SubResource("BossBarBackground")
+theme_override_styles/fill = SubResource("BossBarFill")
+value = 100.0
+show_percentage = false
+
+[node name="SkillToastStack" type="VBoxContainer" parent="TopCenterStack"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 4
+mouse_filter = 2
+
+[node name="BottomBackdrop" type="Panel" parent="."]
+z_index = -30
 layout_mode = 1
 anchors_preset = 9
 anchor_top = 0.75
@@ -94,21 +267,13 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("BottomPanel")
 mouse_filter = 2
 
-[node name="Backdrop" type="Panel" parent="BottomHUD"]
+[node name="BottomStage" type="HBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("BottomFrame")
-
-[node name="HUDGrid" type="HBoxContainer" parent="BottomHUD"]
-layout_mode = 1
-anchors_preset = 15
+anchors_preset = 9
+anchor_top = 0.75
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 6.0
@@ -120,166 +285,170 @@ grow_vertical = 2
 theme_override_constants/separation = 0
 mouse_filter = 2
 
-[node name="StatusColumn" type="Control" parent="BottomHUD/HUDGrid"]
+[node name="PlayerVitals" type="PanelContainer" parent="BottomStage"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 23.0
+theme_override_styles/panel = SubResource("VitalsPanel")
 mouse_filter = 2
 
-[node name="StatusFrame" type="PanelContainer" parent="BottomHUD/HUDGrid/StatusColumn"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 5.0
-offset_top = 5.0
-offset_right = -5.0
-offset_bottom = -5.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("GoldPanel")
-
-[node name="StatusCenter" type="CenterContainer" parent="BottomHUD/HUDGrid/StatusColumn"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="StatusProxy" type="Control" parent="BottomHUD/HUDGrid/StatusColumn/StatusCenter"]
-custom_minimum_size = Vector2(280, 92)
+[node name="VitalsCenter" type="CenterContainer" parent="BottomStage/PlayerVitals"]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="HUDStatus" parent="BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy" instance=ExtResource("2_status")]
-layout_mode = 0
-scale = Vector2(0.63, 0.63)
-
-[node name="APReserve" type="Control" parent="BottomHUD/HUDGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 8.0
-mouse_filter = 2
-
-[node name="HandReserve" type="Control" parent="BottomHUD/HUDGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 40.0
-mouse_filter = 2
-
-[node name="HintReserve" type="Control" parent="BottomHUD/HUDGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 10.0
-mouse_filter = 2
-
-[node name="InfoColumn" type="Control" parent="BottomHUD/HUDGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 11.0
-mouse_filter = 2
-
-[node name="ObjectiveFrame" type="PanelContainer" parent="BottomHUD/HUDGrid/InfoColumn"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 70.0
-offset_right = -3.0
-offset_bottom = -8.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("ObjectivePanel")
-
-[node name="QuestCenter" type="CenterContainer" parent="BottomHUD/HUDGrid/InfoColumn"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 66.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="QuestProxy" type="Control" parent="BottomHUD/HUDGrid/InfoColumn/QuestCenter"]
-custom_minimum_size = Vector2(135, 76)
+[node name="VitalsProxy" type="Control" parent="BottomStage/PlayerVitals/VitalsCenter"]
+custom_minimum_size = Vector2(244, 76)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="HUDQuestTracker" parent="BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy" instance=ExtResource("3_quest")]
-layout_mode = 0
-scale = Vector2(0.48, 0.48)
-
-[node name="ProgressColumn" type="Control" parent="BottomHUD/HUDGrid"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 8.0
-mouse_filter = 2
-
-[node name="EconomyFrame" type="PanelContainer" parent="BottomHUD/HUDGrid/ProgressColumn"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 12.0
-offset_right = -3.0
-offset_bottom = -12.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("EconomyPanel")
-
-[node name="ProgressCenter" type="CenterContainer" parent="BottomHUD/HUDGrid/ProgressColumn"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="ProgressProxy" type="Control" parent="BottomHUD/HUDGrid/ProgressColumn/ProgressCenter"]
-custom_minimum_size = Vector2(96, 48)
-layout_mode = 2
-mouse_filter = 2
-
-[node name="HUDProgressPanel" parent="BottomHUD/HUDGrid/ProgressColumn/ProgressCenter/ProgressProxy" instance=ExtResource("4_progress")]
+[node name="HUDStatus" parent="BottomStage/PlayerVitals/VitalsCenter/VitalsProxy" instance=ExtResource("2_status")]
 layout_mode = 0
 scale = Vector2(0.55, 0.55)
 
-[node name="AreaPanel" type="PanelContainer" parent="."]
-visible = false
-layout_mode = 0
-offset_left = 18.0
-offset_top = 18.0
-offset_right = 238.0
-offset_bottom = 70.0
+[node name="ActionPoints" type="VBoxContainer" parent="BottomStage"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 8.0
+alignment = 1
+theme_override_constants/separation = 5
 mouse_filter = 2
-theme_override_styles/panel = SubResource("AreaStyle")
 
-[node name="AreaRows" type="VBoxContainer" parent="AreaPanel"]
+[node name="EnergyBadge" type="Label" parent="BottomStage/ActionPoints"]
+custom_minimum_size = Vector2(70, 68)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.83, 0.32, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.02, 0.01, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 17
+text = "5.0 / 5\nAP"
+horizontal_alignment = 1
+vertical_alignment = 1
+mouse_filter = 2
+
+[node name="RedrawHand" type="Button" parent="BottomStage/ActionPoints"]
+custom_minimum_size = Vector2(70, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.84, 0.72, 1)
+theme_override_font_sizes/font_size = 10
+tooltip_text = "Requires full AP. Discard both groups and draw eight random cards."
+text = "T  REDRAW"
+clip_text = true
+
+[node name="CardStage" type="VBoxContainer" parent="BottomStage"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 40.0
+theme_override_constants/separation = 3
+mouse_filter = 2
+
+[node name="CooldownStrip" type="PanelContainer" parent="BottomStage/CardStage"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+theme_override_styles/panel = SubResource("CooldownPanel")
+mouse_filter = 2
+
+[node name="CooldownMargin" type="MarginContainer" parent="BottomStage/CardStage/CooldownStrip"]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="AreaHeading" type="Label" parent="AreaPanel/AreaRows"]
+[node name="CooldownRows" type="HBoxContainer" parent="BottomStage/CardStage/CooldownStrip/CooldownMargin"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.6, 0.32, 1)
+theme_override_constants/separation = 12
+mouse_filter = 2
+
+[node name="EmptyState" type="Label" parent="BottomStage/CardStage/CooldownStrip/CooldownMargin/CooldownRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.54, 0.51, 0.46, 1)
+theme_override_font_sizes/font_size = 10
+text = "COOLDOWN  —"
+
+[node name="AutumnCardHandUI" parent="BottomStage/CardStage" instance=ExtResource("4_hand")]
+size_flags_vertical = 3
+
+[node name="InputGlyphHints" type="VBoxContainer" parent="BottomStage"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 10.0
+alignment = 1
+theme_override_constants/separation = 5
+mouse_filter = 2
+
+[node name="GroupBadge" type="Label" parent="BottomStage/InputGlyphHints"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
+theme_override_font_sizes/font_size = 10
+text = "A / S · LT / RT\nGROUP 1 / 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+mouse_filter = 2
+
+[node name="SlotHints" type="Label" parent="BottomStage/InputGlyphHints"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.67, 0.58, 1)
+theme_override_font_sizes/font_size = 10
+text = "Q  W  E  R"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="PersonalResources" type="PanelContainer" parent="BottomStage"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 19.0
+theme_override_styles/panel = SubResource("ResourcePanel")
+mouse_filter = 2
+
+[node name="ResourceMargin" type="MarginContainer" parent="BottomStage/PersonalResources"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ResourceRows" type="VBoxContainer" parent="BottomStage/PersonalResources/ResourceMargin"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 6
+mouse_filter = 2
+
+[node name="Heading" type="Label" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.62, 0.45, 1)
+theme_override_font_sizes/font_size = 10
+text = "PERSONAL"
+horizontal_alignment = 1
+
+[node name="GoldRow" type="HBoxContainer" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows/GoldRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.72, 0.67, 0.56, 1)
 theme_override_font_sizes/font_size = 11
-text = "CURRENT AREA"
+text = "GOLD"
 
-[node name="AreaName" type="Label" parent="AreaPanel/AreaRows"]
+[node name="CurrencyValue" type="Label" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows/GoldRow"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.88, 0.7, 1)
-theme_override_font_sizes/font_size = 14
-text = "Autumn Forest"
+theme_override_colors/font_color = Color(1, 0.82, 0.31, 1)
+theme_override_font_sizes/font_size = 13
+text = "0"
+horizontal_alignment = 2
 
-[node name="HUDHotbar" parent="." instance=ExtResource("5_hotbar")]
-visible = false
+[node name="ExperienceRow" type="HBoxContainer" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows"]
+layout_mode = 2
+mouse_filter = 2
 
-[node name="InteractionPanel" parent="." instance=ExtResource("6_prompt")]
+[node name="Label" type="Label" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows/ExperienceRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.72, 0.67, 0.56, 1)
+theme_override_font_sizes/font_size = 11
+text = "EXP"
+
+[node name="ExperienceValue" type="Label" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows/ExperienceRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.86, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "0 / 100"
+horizontal_alignment = 2
+
+[node name="InteractionPanel" parent="." instance=ExtResource("3_prompt")]

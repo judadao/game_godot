@@ -122,8 +122,10 @@ func _assert_world_stays_above_hud(map: Node) -> void:
 func _assert_bottom_ui_owns_last_quarter(map: Node) -> void:
 	var stage_guide := map.get_node_or_null("EditorHUDReference/CardStageGuide") as Control
 	var viewport_guide := map.get_node_or_null("EditorHUDReference/ViewportBoundary") as Control
-	var hud_bottom := map.get_node_or_null("EditorHUDReference/HUD/BottomHUD") as Control
-	var card_safe_area := map.get_node_or_null("EditorHUDReference/CardHandUI/CardSafeArea") as Control
+	var hud_bottom := map.get_node_or_null("EditorHUDReference/HUD/BottomStage") as Control
+	var card_safe_area := map.get_node_or_null(
+		"EditorHUDReference/HUD/BottomStage/CardStage/AutumnCardHandUI/CardSafeArea"
+	) as Control
 	_expect(stage_guide != null, "Editor HUD reference must expose the bottom-stage guide.")
 	_expect(viewport_guide != null, "Editor HUD reference must expose the 1280x720 viewport guide.")
 	_expect(hud_bottom != null, "HUD must expose its bottom-quarter container.")
@@ -140,7 +142,7 @@ func _assert_bottom_ui_owns_last_quarter(map: Node) -> void:
 		_expect(is_equal_approx(hud_bottom.anchor_top, 0.75), "HUD content must begin at 75% viewport height.")
 		_expect(is_equal_approx(hud_bottom.anchor_bottom, 1.0), "HUD content must end at the viewport bottom.")
 	if card_safe_area != null:
-		_expect(is_equal_approx(card_safe_area.anchor_top, 0.75), "Card safe area must begin at 75% viewport height.")
+		_expect(is_equal_approx(card_safe_area.anchor_top, 0.0), "Embedded card renderer must fill its authored CardStage slot.")
 		_expect(is_equal_approx(card_safe_area.anchor_bottom, 1.0), "Card safe area must end at the viewport bottom.")
 
 

@@ -62,9 +62,18 @@ func _run() -> void:
 		_expect(helpers != null, "%s must contain EditorHelpers." % scene_path)
 		_expect(helpers != null and not helpers.visible, "EditorHelpers must hide outside the editor.")
 		_expect(map.has_node("EditorHUDReference/HUD"), "%s must preview the real HUD." % scene_path)
-		_expect(map.has_node("EditorHUDReference/CardHandUI"), "%s must preview the real card hand." % scene_path)
+		var card_hand_path := (
+			"EditorHUDReference/HUD/BottomStage/CardStage/AutumnCardHandUI"
+			if scene_path.ends_with("AutumnBattleMapV2.tscn")
+			else "EditorHUDReference/CardHandUI"
+		)
+		_expect(map.has_node(card_hand_path), "%s must preview the real card hand." % scene_path)
 		_expect(map.find_children("HUD", "Control", true, false).size() == 1, "%s must contain one HUD preview." % scene_path)
-		_expect(map.find_children("CardHandUI", "Control", true, false).size() == 1, "%s must contain one card hand preview." % scene_path)
+		var card_hands: Array[Node] = []
+		for control in map.find_children("*", "Control", true, false):
+			if control is CardHandUI:
+				card_hands.append(control)
+		_expect(card_hands.size() == 1, "%s must contain one card hand preview." % scene_path)
 		map.queue_free()
 		await process_frame
 

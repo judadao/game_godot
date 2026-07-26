@@ -1,6 +1,7 @@
 extends SceneTree
 
 const AUTUMN_HAND_PATH := "res://scenes/ui/autumn/AutumnCardHandUI.tscn"
+const AUTUMN_HUD_PATH := "res://scenes/ui/autumn/AutumnHUD.tscn"
 const AUTUMN_CARD_PATH := "res://scenes/ui/autumn/AutumnBattleCard.tscn"
 const AUTUMN_RENDERER_PATH := "res://scripts/ui/autumn_card_hand_ui.gd"
 const TOWN_HAND_PATH := "res://scenes/ui/CardHandUI.tscn"
@@ -58,19 +59,21 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 	viewport.size = viewport_size
 	viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 	root.add_child(viewport)
-	var packed_hand := load(AUTUMN_HAND_PATH) as PackedScene
-	_expect(packed_hand != null, "Autumn hand scene must load at %s." % viewport_size)
-	if packed_hand == null:
+	var packed_hud := load(AUTUMN_HUD_PATH) as PackedScene
+	_expect(packed_hud != null, "Autumn HUD scene must load at %s." % viewport_size)
+	if packed_hud == null:
 		viewport.queue_free()
 		return
-	var instance := packed_hand.instantiate()
-	var hand := instance as CardHandUI
+	var hud := packed_hud.instantiate() as Control
+	viewport.add_child(hud)
+	var hand := hud.get_node(
+		"BottomStage/CardStage/AutumnCardHandUI"
+	) as CardHandUI
 	_expect(hand != null, "Autumn hand renderer must parse and inherit CardHandUI at %s." % viewport_size)
 	if hand == null:
-		instance.free()
+		hud.free()
 		viewport.queue_free()
 		return
-	viewport.add_child(hand)
 	hand.set_cards(_sample_cards(), 3.0)
 	await process_frame
 	await process_frame
@@ -114,6 +117,19 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 			]
 		)
 		_expect(_inside_lower_hud(card, viewport_size), "Card %d must remain inside the lower HUD at %s." % [index, viewport_size])
+		if index == 6:
+			var healing_style := card.get_theme_stylebox("normal") as StyleBoxFlat
+			var healing_highlight := card.get_theme_stylebox("hover") as StyleBoxFlat
+			_expect(
+				healing_style != null
+				and healing_style.bg_color.g > healing_style.bg_color.r
+				and healing_style.bg_color.g > healing_style.bg_color.b,
+				"Healing cards must use the approved green card body at %s." % viewport_size
+			)
+			_expect(
+				healing_highlight != null and healing_highlight.border_color.g > 0.8,
+				"Healing cards must use a brighter green border at %s." % viewport_size
+			)
 
 	_verify_group_states(hand, 0, viewport_size)
 	hand.set_active_group(1)
@@ -126,7 +142,7 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 			"Group switching must preserve card %d's global index at %s." % [index, viewport_size]
 		)
 
-	hand.queue_free()
+	hud.queue_free()
 	viewport.queue_free()
 	await process_frame
 
@@ -161,12 +177,12 @@ func _inside_lower_hud(card: Control, viewport_size: Vector2i) -> bool:
 func _sample_cards() -> Array:
 	return [
 		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal damage and burn.", "cost": 1, "level": 1, "fixed": true},
-		{"id": "quickstep", "name": "Quickstep", "type": "skill", "description": "Dash and evade.", "cost": 1, "level": 1, "fixed": true},
+		{"id": "quickstep", "name": "Quickstep", "type": "utility", "description": "Dash and evade.", "cost": 1, "level": 1, "fixed": true},
 		{"id": "frost_burst", "name": "Frost Burst", "type": "status", "description": "Add frost.", "cost": 1, "level": 1},
 		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Arc strike.", "cost": 2, "level": 1},
-		{"id": "blade_dance", "name": "Blade Dance", "type": "power", "description": "Stack a combo.", "cost": 2, "level": 3},
-		{"id": "gale_lunge", "name": "Gale Lunge", "type": "skill", "description": "Dash and strike.", "cost": 2, "level": 3},
-		{"id": "forest_call", "name": "Forest Call", "type": "summon", "description": "Call an ally.", "cost": 3, "level": 2},
+		{"id": "blade_dance", "name": "Blade Dance", "type": "combo", "description": "Gain a timed effect.", "cost": 2, "level": 3},
+		{"id": "gale_lunge", "name": "Gale Lunge", "type": "attack", "description": "Dash and strike.", "cost": 2, "level": 3},
+		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Restore health immediately.", "cost": 2, "level": 1},
 		{"id": "meteor", "name": "Meteor", "type": "ultimate", "description": "Devastating impact.", "cost": 5, "level": 1},
 	]
 

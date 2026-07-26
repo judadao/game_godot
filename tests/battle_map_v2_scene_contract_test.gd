@@ -28,7 +28,7 @@ const REQUIRED_NODE_PATHS: Array[String] = [
 	"ForwardPortal",
 	"EditorHUDReference",
 	"EditorHUDReference/HUD",
-	"EditorHUDReference/CardHandUI",
+	"EditorHUDReference/HUD/BottomStage/CardStage/AutumnCardHandUI",
 	"EditorHelpers",
 ]
 
@@ -76,11 +76,18 @@ func _run() -> void:
 	var players := map.find_children("Player", "CharacterBody2D", true, false)
 	var cameras := map.find_children("*", "Camera2D", true, false)
 	var hud_roots := map.find_children("HUD", "Control", true, false)
-	var card_hand_roots := map.find_children("CardHandUI", "Control", true, false)
+	var card_hand_roots: Array[Node] = []
+	for control in map.find_children("*", "Control", true, false):
+		if control is CardHandUI:
+			card_hand_roots.append(control)
 	_expect(players.size() == 1, "V2 must own exactly one Player.")
 	_expect(cameras.size() == 1, "V2 must own exactly one Camera2D.")
 	_expect(hud_roots.size() == 1, "V2 must reference exactly one HUD.")
 	_expect(card_hand_roots.size() == 1, "V2 must reference exactly one CardHandUI.")
+	_expect(
+		map.get_node_or_null("EditorHUDReference/CardHandUI") == null,
+		"V2 must not retain a second card-hand HUD root."
+	)
 
 	var director := map.get_node_or_null("AutumnRunDirector")
 	_expect(director is SurvivalWaveDirector, "AutumnRunDirector must reuse SurvivalWaveDirector.")
@@ -105,7 +112,6 @@ func _assert_scene_is_standalone(packed: PackedScene) -> void:
 		var node_path := String(state.get_node_path(index))
 		var is_nested_hud_override := (
 			node_path.begins_with("EditorHUDReference/HUD/")
-			or node_path.begins_with("EditorHUDReference/CardHandUI/")
 		)
 		_expect(
 			not is_nested_hud_override,

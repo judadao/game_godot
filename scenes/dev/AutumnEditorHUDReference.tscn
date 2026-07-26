@@ -1,8 +1,7 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/dev/editor_hud_reference.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnHUD.tscn" id="2_hud"]
-[ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnCardHandUI.tscn" id="3_card_hand"]
 
 [sub_resource type="StyleBoxFlat" id="ViewportBorder"]
 bg_color = Color(0, 0, 0, 0)
@@ -50,5 +49,3 @@ text = "AUTUMN HUD 3.0 — STATUS 23 / AP 8 / HAND 40 / GUIDE 10 / OBJECTIVE 11 
 horizontal_alignment = 1
 
 [node name="HUD" parent="." instance=ExtResource("2_hud")]
-
-[node name="CardHandUI" parent="." instance=ExtResource("3_card_hand")]
