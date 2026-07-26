@@ -68,9 +68,13 @@ func _run() -> void:
 	await process_frame
 	var player_status := player.call("get_combat_status_controller") as Node
 	player_status.call("apply_retaliation", &"stoneguard_combo", 12, 0.0, 4.0)
+	player_status.call("apply_armor", &"iron_will", 1, 4.0)
 	var enemy_health := int(enemy.get("health"))
 	player.call("take_hit", 10, enemy.global_position, 0.0)
-	_expect(int(enemy.get("health")) < enemy_health, "Retaliation must damage the real attacker without an enemy-group dependency.")
+	_expect(
+		int(enemy.get("health")) < enemy_health,
+		"Retaliation must damage the real attacker while armor prevents knockback."
+	)
 	var effect_runner := CardEffectRunner.new()
 	_expect(effect_runner.supports_effect("super_armor"), "Card runner must support the catalog super-armor effect kind.")
 	_expect(effect_runner.supports_effect("damage_reduction"), "Card runner must support the catalog damage-reduction effect kind.")

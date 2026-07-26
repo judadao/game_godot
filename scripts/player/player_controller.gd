@@ -121,9 +121,9 @@ func take_hit(raw_damage: int, source_position: Vector2, knockback: float = 180.
 	if applied <= 0:
 		return 0
 	take_damage(applied)
+	_apply_retaliation(source_position, int(outcome.get("retaliation_damage", 0)))
 	if not bool(outcome.get("prevents_knockback", false)):
 		velocity.x = signf(global_position.x - source_position.x) * knockback
-	_apply_retaliation(source_position, int(outcome.get("retaliation_damage", 0)))
 	_invulnerable = true
 	get_tree().create_timer(0.55).timeout.connect(_clear_invulnerability, CONNECT_ONE_SHOT)
 	return applied
