@@ -349,17 +349,11 @@ Card focus 會把 `Engine.time_scale` 設為 0.22，hit stop 也會短暫改變�
 
 ## 7. Combo、Skill 與 Fusion
 
-### 7.1 Sequence Combo
+### 7.1 Combo cards
 
-`ComboManager` 保留最近三次出牌歷史並比對五條規則：
-
-- Ember Chain；
-- Blade Dance；
-- Bulwark；
-- Storm Step；
-- Arcane Cycle。
-
-每條 sequence combo 每個 Run 最多觸發一次，觸發後更新 combo count 與 HUD 顯示。
+`combo` 是卡牌類型，不是另一套非攻擊牌序 manager。原防禦牌以 timed status
+combo 形式提供霸體、減傷或反擊；打出後依 card catalog 進 cooldown，倒數完成
+才回 discard。舊 `ComboManager` 與非攻擊 sequence rules 已移除。
 
 ### 7.2 Passive attack Skill
 
@@ -532,8 +526,8 @@ Town 商品包含 bread、map、sword、boots 等 prototype item。交易後會�
 - Leave。
 
 Rest 每個 Run 只能成功使用一次，會把 health 與 mana 恢復到上限。UI 不提供合卡或升卡。
-
-`Game` 仍保留 private merge／upgrade method，舊測試也會直接呼叫它們；這些屬於「已存在但不可到達」的 dead logic，不是目前玩法。
+舊營火 merge/upgrade private method 與直接呼叫它們的測試已移除；所有卡牌成長
+只經由 `GrowthChoiceQueue` 與 `CardGrowthUI`。
 
 ### 10.2 Wandering merchant
 
@@ -579,13 +573,14 @@ Stock 存在 `RunState.temporary_buffs` 中，只對本次 Run 有效。
 
 ### 11.2 MetaState
 
-`MetaState` schema version 為 3，保存：
+`MetaState` schema version 為 4，保存：
 
 - persistent resources；
 - village／building progression；
 - unlocked cards 與相容 progression fields；
 - `selected_card_instances`（instance ID、card ID、level）；
 - legacy `selected_deck` compatibility projection；
+- `learned_skill_ids` 與 `active_skill_ids`；
 - equipment 與 equipment level；
 - settings；
 - shortcut flags；
@@ -593,7 +588,8 @@ Stock 存在 `RunState.temporary_buffs` 中，只對本次 Run 有效。
 - boss state。
 
 舊 payload 在載入時 deterministic、idempotent migration；fixed cards 重複、非法
-level、重複/缺失 instance ID 必須修復並留下 report。
+level、重複/缺失 instance ID 必須修復並留下 report。Skill arrays 去重，active
+只保留 learned IDs，舊檔補入初始 `iron_momentum`。
 
 ### 11.3 Meta save
 
@@ -764,7 +760,7 @@ func _on_survival_phase_time_changed(
 Every normalized expedition deck begins with exactly one `ember_bolt` and one
 `quickstep`. They occupy Q and W, count inside the maximum of 16 cards, remain
 in hand after use, and survive redraw/end-turn cycling. Neither card can be
-added as a reward, discarded, exhausted, purged, merged, evolved, or upgraded
+added as a reward, discarded, exhausted, purged, fused, or upgraded
 by experience.
 
 Their progression is equipment-only:
@@ -851,7 +847,7 @@ Reviewer 必須確認：
 - [ ] Hand、draw、discard、exhaust、cooldown、overflow 的 instance identity 一致。
 - [ ] AP cost、regen 與 redraw 行為有測試。
 - [ ] XP 跨級 queue 與 CardGrowth upgrade/fusion/fallback 有測試。
-- [ ] Sequence combo、passive attack skill、fusion 各自有明確 contract。
+- [ ] Combo status cards、passive attack skill、fusion 各自有明確 contract。
 - [ ] Equipment 實際 consumer 與文件一致。
 - [ ] Campfire／Merchant 的 UI 可到達行為與文件一致。
 - [ ] Run result、Meta save、quick save 的能力沒有誇大。
@@ -864,9 +860,6 @@ Reviewer 必須確認：
 - [ ] Guardian victory 後處理剩餘 gem 與 support enemy。
 - [ ] 決定並驗證 `autumn_route_cleared` 重入行為。
 - [ ] 讓 Boss 獎勵在定義的持久化時點可靠落盤。
-- [ ] 完成 `Game` 對 SkillRecipeManager、GrowthChoiceQueue、CardGrowthUI 與 pause
-  token 的 composition-root 組裝。
-- [ ] 移除或正式保留不可到達的 Campfire card-growth logic。
 - [ ] 處理 dormant equipment effect consumer。
 - [ ] 定義 expedition 中 quick save 的支援邊界。
 - [ ] 解決 A 鍵 movement/card-group 衝突。

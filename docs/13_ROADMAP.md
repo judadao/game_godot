@@ -64,11 +64,11 @@ Roadmap item 的建立與關閉依序使用：
 
 - Town 為起始 Hub；
 - 進入 Autumn 前有 1–16 張 Deck Builder；
-- protected `ember_bolt` 會進入起始手牌；
+- fixed `ember_bolt` 與 `quickstep` 會各一張進入起始手牌；
 - Autumn 有四個 timed survival phase 與 Guardian phase；
-- 卡牌使用 real-time AP，hand capacity 為 8；UI 在底部 25% 以 Container 雙排完整顯示兩組各最多 4 張，並用 A/S 切換；
-- sequence combo、combo-type infusion 與 card evolution 已存在；
-- ExperienceGem、跨級 XP queue 與 level-up modal 已存在；
+- 卡牌使用 real-time AP，hand capacity 為 8；AutumnHUD 內嵌雙排手牌並用 A/S 切換；
+- timed combo status cards、attack-only passive skills 與兩張 Lv.3 fusion 已存在；
+- ExperienceGem、跨級 XP queue、GrowthChoiceQueue 與 CardGrowthUI 已存在；
 - Campfire accessible UI 為 Rest／Leave；
 - Wandering merchant 使用 run gold；
 - Guardian 後可透過 portal 完成 Run Result；
@@ -77,23 +77,21 @@ Roadmap item 的建立與關閉依序使用：
 
 ### 2.2 驗證基線
 
-2026-07-25 MapRegistry integration 完成後，以每個測試各自全新的隔離
+2026-07-26 card/skill/growth/HUD integration 完成後，以每個測試各自全新的隔離
 `APPDATA` 重新執行並記錄目前基線：
 
 | Check | Baseline |
 |---|---|
-| `*_test.gd` | 47/47 passed |
-| `tests/test_ui_keyboard.gd` | passed |
-| Total standalone test scripts | 48/48 passed |
-| Second pass Godot error markers | 0 |
+| Total standalone test scripts | 68/68 passed |
+| Godot error markers | 0 |
 | Editor parse | exit 0，0 markers |
-| Main-scene smoke | 300 frames，exit 0，0 markers |
+| Main-scene smoke | exit 0，0 markers |
 
 此基線不包含 F6 視覺檢查、完整互動 walkthrough、profiler、memory monitor 或長時間 soak。
 
 ### 2.3 Current constraints
 
-- `scripts/managers/game.gd` 為 2,108 行 central coordinator；map path registry
+- `scripts/managers/game.gd` 為 2,364 行 central coordinator；map path registry
   已抽成獨立純邏輯 system；
 - 無 central test runner；
 - 無 CI；
@@ -227,22 +225,22 @@ Quick save 不保存 deck piles、AP、active effects、wave、living enemy、Gu
 
 ## 5. Next：系統一致性與可維護性
 
-### 5.1 Campfire dead logic
+### 5.1 Campfire restoration-only cleanup
 
-**Status:** Open
+**Status:** Completed
 
 **Evidence**
 
 - 玩家可到達 UI 只有 Rest／Leave。
-- `_merge_card_at_campfire()`、`_upgrade_card_at_campfire()` 與 choice renderer 仍存在。
-- 舊測試直接呼叫 private method，造成假性 gameplay coverage。
+- 舊 merge/upgrade private method、LevelUpUI 與直接呼叫 dead logic 的測試已移除。
+- 卡牌成長唯一入口是 `GrowthChoiceQueue`／`CardGrowthUI`。
 
 **Acceptance Criteria**
 
-- [ ] Current design 明確維持 restoration-only。
-- [ ] 不可到達的 card-growth code/test 被移除；或有明確 current caller 與 contract。
-- [ ] Scene-level test 只從 Campfire 玩家入口操作。
-- [ ] Campfire 不會在未宣告下改變 deck 或 card level。
+- [x] Current design 明確維持 restoration-only。
+- [x] 不可到達的 card-growth code/test 已移除。
+- [x] Scene-level contract 只允許 Rest／Leave。
+- [x] Campfire 不會在未宣告下改變 deck 或 card level。
 
 ### 5.2 Dormant equipment consumers
 
@@ -310,7 +308,7 @@ Town manager 產生的 visual flag 多於 `Game` 實際套用的四個 scene nod
 - [ ] 舊 schema fixture 可 migration 到唯一 current representation。
 - [ ] 每個 persistent field 都有 producer、consumer 與 test。
 - [ ] 無 consumer 的 field 經 migration 後安全移除或明確保留理由。
-- [ ] Meta save round-trip 不遺失 inventory/town/evolution state。
+- [ ] Meta schema 4 round-trip 不遺失 inventory/town/card instances/skill loadout。
 
 ### 5.6 Input 與 global time-scale safety
 
@@ -474,7 +472,6 @@ Expedition save scope
   └── Save diagnostics
       └── CI round-trip coverage
 
-Campfire dead logic
 Equipment consumer audit
 Input/time-scale safety
   └── Game manager ownership map
@@ -655,7 +652,7 @@ Reviewer 必須確認：
 - [ ] Later item 沒有被寫成日期承諾。
 - [ ] 每項都有獨立 Acceptance Criteria。
 - [ ] Guardian gem、combo choice、clear reload 均有追蹤。
-- [ ] Campfire dead logic 與 equipment consumer 均有追蹤。
+- [ ] Card growth integration 與 equipment consumer 均有追蹤。
 - [ ] Expedition save scope 與 failure handling 均有追蹤。
 - [ ] Performance item 包含量測，不只是重構。
 - [ ] `Game` split 保留 composition root 且分階段驗證。

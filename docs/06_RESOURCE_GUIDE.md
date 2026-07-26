@@ -11,7 +11,7 @@ pipeline描述成Current。
 2. [資料分層與 Ownership](#2-資料分層與-ownership)
 3. [現有四個 JSON Catalog](#3-現有四個-json-catalog)
 4. [Card Data 與 CardDatabase](#4-card-data-與-carddatabase)
-5. [Evolution Data 與 EvolutionManager](#5-evolution-data-與-evolutionmanager)
+5. [Fusion Recipe 與 EvolutionManager](#5-fusion-recipe-與-evolutionmanager)
 6. [Equipment Data 與 Inventory Runtime State](#6-equipment-data-與-inventory-runtime-state)
 7. [Town Upgrade Data 與 Town Runtime State](#7-town-upgrade-data-與-town-runtime-state)
 8. [Godot Resource 現況](#8-godot-resource-現況)
@@ -121,12 +121,13 @@ UI setter/configure API
 如果getter回傳catalog內部reference，consumer可能污染所有後續讀取。Current
 `CardDatabase.get_card()`與`get_all_cards()`已回傳deep copies。
 
-## 3. 現有四個 JSON Catalog
+## 3. 現有五個 JSON Catalog
 
 | JSON | Loader | Root field | Current validated content |
 |---|---|---|---|
 | `cards.json` | `CardDatabase` | `cards` | 24 cards |
-| `evolutions.json` | `EvolutionManager` | `evolutions` | 6 recipes |
+| `evolutions.json` | `EvolutionManager` | `fusion_recipes` | 6 recipes |
+| `skills.json` | `SkillRecipeManager` | `skills` | attack-only passive skill recipes |
 | `equipment.json` | `inventory_manager.gd` | `resource_order`, `starting_resources`, `equipment` | 5 resources, 10 equipment |
 | `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 4 buildings × 3 levels, 3 stages |
 
@@ -146,7 +147,8 @@ UI setter/configure API
 ### 3.2 Schema version現況
 
 - `cards.json`：`schema_version = 3`
-- `evolutions.json`：`schema_version = 1`
+- `evolutions.json`：`schema_version = 2`
+- `skills.json`：目前沒有 schema_version field
 - `equipment.json`：目前沒有schema_version field
 - `town_upgrades.json`：目前沒有schema_version field
 
@@ -224,7 +226,6 @@ Current loader檢查：
 - `effect`是非空Dictionary。
 - `upgrade_effects`是Array。
 - 至少有level 3 upgrade帶visible `mechanic_change`。
-- evolution condition是Dictionary，result是String。
 - icon path非空且`ResourceLoader.exists()`。
 - card ID不可重複。
 
@@ -242,7 +243,7 @@ validator目前沒有直接檢查kind是否被runner支援，這是Known Risk。
 4. integration test
 5. UI description
 
-## 5. Evolution Data 與 EvolutionManager
+## 5. Fusion Recipe 與 EvolutionManager
 
 ### 5.1 Authoritative path與loader
 
@@ -250,36 +251,32 @@ validator目前沒有直接檢查kind是否被runner支援，這是Known Risk。
 - Loader：`scripts/systems/evolution_manager.gd`
 - Class：`EvolutionManager`
 
+`EvolutionManager` 是既有 class/file 名稱的 compatibility 命名；它目前只驗證與
+查詢 fusion recipe，不再代表被動 evolution。
+
 ### 5.2 Required recipe fields
 
 ```text
 id
 name
-base_card_id
-required_level
-required_passives
+left_card_id
+right_card_id
 result_card_id
 ```
 
 Validation：
 
 - recipe ID非空且唯一。
-- required level至少1。
-- required passives是非空Array。
-- CardDatabase存在時，base/result card都必須存在。
+- left/right/result ID 非空。
+- left 與 right 必須是不同材料 ID。
+- CardDatabase存在時，兩張材料與 result card 都必須存在。
 
 ### 5.3 Runtime application
 
-`EvolutionManager.find_available(levels, passives)`只查詢可用recipe，不直接mutation
-deck。`Game._try_evolve_card()`負責：
-
-- 找matching base card。
-- 替換DeckManager piles中的card ID。
-- 更新RunState card levels。
-- 更新MetaState unlocked evolution。
-- 更新HUD projection。
-
-這個ownership不可移入UI。
+`EvolutionManager` 只查詢 recipe，不直接 mutation deck。`GrowthChoiceQueue`
+建立 EXP fusion choice；`Game` resolve 時必須驗證玩家精確選了兩張不同的 Lv.3
+`CardInstance`，再透過 instance API 移除材料、加入 Lv.1 result，最後同步
+RunState、MetaState 與 HUD。fixed cards 不可成為材料。這個 ownership 不可移入 UI。
 
 ## 6. Equipment Data 與 Inventory Runtime State
 
@@ -485,21 +482,23 @@ extends Resource
 
 ### 9.1 MetaState
 
-`MetaState.SCHEMA_VERSION = 2`。
+`MetaState.SCHEMA_VERSION = 4`。
 
 主要fields：
 
 ```text
 resources
 village_level / building_levels
-unlocked_cards / selected_deck / permanent_card_levels
+unlocked_cards / selected_card_instances / selected_deck compatibility projection
+learned_skill_ids / active_skill_ids
 equipment / equipment_levels
-unlocked_combos / unlocked_evolutions
 boss_defeated / shortcuts
 settings
 inventory_state / town_state
 ```
 
+`active_skill_ids` 必須是 `learned_skill_ids` 的子集。migration 會去重、移除未知
+active entry，並確保初始 `iron_momentum` 已學會且至少有一個 active skill。
 `inventory_state`與`town_state`是current manager DTO；其他equipment/building fields
 同時保留legacy compatibility。
 
@@ -954,18 +953,24 @@ func read_dictionary(path: String) -> Dictionary:
 
 Card definitions remain static catalog records keyed by `card_id`. Every owned
 or runtime copy is a `CardInstance` with a unique string `instance_id`, its
-`card_id`, and an independent level from 1 through 3. `MetaState` schema 3
+`card_id`, and an independent level from 1 through 3. `MetaState` schema 4
 serializes these copies as `selected_card_instances`; `selected_deck` is kept
 only as a card-ID compatibility projection. `permanent_card_levels` is accepted
 only while migrating schema-2 saves and is never written as the new authority.
 
 Schema-2 card-ID arrays migrate in source order to deterministic IDs
 `legacy-000001`, `legacy-000002`, and so on. Duplicate IDs in schema-3 payloads
-are repaired deterministically, fixed `ember_bolt` and `quickstep` copies are
+are repaired deterministically；schema-3 numeric instance IDs are normalized to
+stable strings without dropping cards. Fixed `ember_bolt` and `quickstep` copies are
 forced to level 1, duplicate fixed copies are removed while retaining the first
 stable identity, and `MetaState.get_last_migration_report()` /
 `SaveService.get_last_migration_report()` expose conversion and repair counts.
 Applying an already migrated payload must be idempotent.
+
+Schema 4 also serializes `learned_skill_ids` and `active_skill_ids`. Both arrays
+are unique string IDs; active is normalized to a subset of learned. Legacy
+payloads receive the initial `iron_momentum` learned/active defaults, and an
+already migrated schema-4 payload round-trips without changing order or IDs.
 
 `DeckManager` keeps `CardInstance` objects authoritative in hand, draw,
 discard, exhaust, and cooldown piles. The legacy string arrays are projections

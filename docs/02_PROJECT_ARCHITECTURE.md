@@ -132,7 +132,6 @@ Game
     ├── SaveService
     ├── CardDatabase
     ├── DeckManager
-    ├── ComboManager
     ├── SkillRecipeManager
     ├── GrowthChoiceQueue
     ├── inventory_manager.gd instance
@@ -161,7 +160,6 @@ State/system instances由 `Game` 建立並持有，不加入 SceneTree：
 | `save_service` | `SaveService` | meta JSON 安全寫入與載入 |
 | `card_database` | `CardDatabase` | validated card catalog |
 | `deck_manager` | `DeckManager` | CardInstance 的 draw/hand/discard/exhaust/cooldown 與 AP |
-| `combo_manager` | `ComboManager` | 牌序 combo 判定 |
 | `skill_recipe_manager` | `SkillRecipeManager` | 已裝備的攻擊 recipe、視窗、進度與 cooldown |
 | `growth_choice_queue` | `GrowthChoiceQueue` | wave/EXP 成長事件的單一 FIFO queue |
 | `inventory_manager` | unnamed `RefCounted` script | resources/equipment runtime model |
@@ -255,7 +253,6 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `RunState` | `scripts/systems/run_state.gd` | `begin_run`, `finish_run`, `add_reward`, `add_experience`, `consume_pending_level` |
 | `CardDatabase` | `scripts/systems/card_database.gd` | `load_catalog`, `get_card`, `has_card`, `get_all_cards` |
 | `DeckManager` | `scripts/systems/deck_manager.gd` | `start`, `draw_cards`, `play_from_hand`, `regenerate_energy`, `redraw_hand_for_all_energy`, `end_turn` |
-| `ComboManager` | `scripts/systems/combo_manager.gd` | `record_card`, `get_rules`, `reset` |
 | `CardInstance` | `scripts/systems/card_instance.gd` | `instance_id`, `card_id`, `level`, `is_fixed`, `to_dict`, `from_dict` |
 | `SkillRecipeManager` | `scripts/systems/skill_recipe_manager.gd` | `load_catalog`, `configure_loadout`, `record_card`, `tick`, `reset_runtime` |
 | `GrowthChoiceQueue` | `scripts/systems/growth_choice_queue.gd` | `enqueue_wave_blessing`, `enqueue_experience_growth`, `peek`, `resolve` |
@@ -399,7 +396,7 @@ Validated static JSON
 Permanent meta：
 
 - path：`user://saves/meta_progress.json`
-- schema：`MetaState.SCHEMA_VERSION == 2`
+- schema：`MetaState.SCHEMA_VERSION == 4`
 - service：`SaveService`
 - behavior：`.tmp` write → parse validation → backup → rename
 
@@ -743,11 +740,13 @@ instance identity。cooldown 到期回 discard；modal pause 時 cooldown 不前
 `ember_bolt` 與 `quickstep` 是各一張、永久 Lv.1 的 fixed instances，不得升級、
 合成、移除、exhaust 或進 cooldown。
 
-`MetaState` schema version 3 以 `selected_card_instances` 儲存 instance payload，
+`MetaState` schema version 4 以 `selected_card_instances` 儲存 instance payload，
 同時保留必要的舊 `selected_deck` projection 作 compatibility。舊 card-id 陣列 migration
 必須 deterministic、idempotent，修復重複 fixed card、非法 level 與重複/缺失
-instance ID，並提供 migration report。`RunState.card_instances` 是 expedition 期間
-的同一 identity projection，不另造 card-id 等級表。
+instance ID，並提供 migration report。schema 4 另保存 `learned_skill_ids` 與
+`active_skill_ids`；active 必須是 learned 的子集，缺少時 migration 補入初始
+`iron_momentum`。`RunState.card_instances` 是 expedition 期間的同一 identity
+projection，不另造 card-id 等級表。
 
 ### 21.2 Combat 與 skill services
 

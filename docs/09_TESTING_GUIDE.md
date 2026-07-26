@@ -268,7 +268,7 @@ instance.queue_free()
 | Area | Minimum contract evidence |
 |---|---|
 | CardInstance | 五牌堆 identity 不變；個別 level；fixed cards 唯一且永久 Lv.1 |
-| Migration | schema v3 舊 payload deterministic、idempotent；修復 report 可驗證 |
+| Migration | schema v4 舊 payload deterministic、idempotent；card/skill 修復 report 可驗證 |
 | Cooldown/exhaust | cooldown 到期回 discard；exhaust 不回收；pause 時 timer 不動 |
 | Status | source refresh、最高 armor tier、reduction cap 60%、unblockable bypass、regen/lifesteal |
 | Skill recipe | attack-only、multi-hit 一次 event、8 秒 window、count/exact sequence reset、獨立 cooldown |

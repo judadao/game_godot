@@ -72,6 +72,7 @@
 | CardInstance／五牌堆／fixed card | 02、05、06、09、12 |
 | Skill recipe／Memory Library | 02、05、06、09、12、13 |
 | Card growth／upgrade／fusion | 02、03、04、06、08、09、12 |
+| Meta schema 4／Skill loadout migration | 02、06、09、12 |
 | Autumn combat HUD／六解析度 | 02、03、04、07、08、09、`rule_1.md` |
 | JSON／存檔／進度 | 02、05、06、09 |
 | NPC／商店／對話 | 02、03、06、08、12 |
