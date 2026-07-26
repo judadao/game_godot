@@ -11,10 +11,8 @@ const VIEWPORT_SIZES := [
 ]
 const BOTTOM_REGIONS := [
 	"PlayerVitals",
-	"ActionPoints",
 	"CardStage",
-	"InputGlyphHints",
-	"PersonalResources",
+	"ActivityFeed",
 ]
 
 var _failures := 0
@@ -59,8 +57,11 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	var bottom_stage := hud.get_node("BottomStage") as HBoxContainer
 	var bottom_rect := _canvas_rect(bottom_stage)
 	_expect(
-		absf(bottom_rect.position.y - float(viewport_size.y) * 0.75 - 6.0) <= 1.5,
-		"Autumn bottom stage must begin inside the authored lower quarter at %s." % viewport_size
+		absf(bottom_rect.position.y - float(viewport_size.y) * 0.66 - 6.0) <= 5.0,
+		"Autumn bottom stage must begin at the approved 66%% gameplay boundary at %s; got %.1f." % [
+			viewport_size,
+			bottom_rect.position.y,
+		]
 	)
 	_expect(screen.encloses(bottom_rect), "Autumn bottom stage must remain on-screen at %s." % viewport_size)
 
@@ -77,10 +78,12 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 
 	var top_left := hud.get_node("TopLeftStack") as Control
 	var top_center := hud.get_node("TopCenterStack") as Control
+	var top_right := hud.get_node("TopRightMeta") as Control
 	var top_left_rect := _canvas_rect(top_left)
 	var top_center_rect := _canvas_rect(top_center)
 	_expect(screen.encloses(top_left_rect), "Top-left status/objective stack must remain on-screen at %s." % viewport_size)
 	_expect(screen.encloses(top_center_rect), "Top-center Boss/toast stack must remain on-screen at %s." % viewport_size)
+	_expect(screen.encloses(_canvas_rect(top_right)), "Top-right economy strip must remain on-screen at %s." % viewport_size)
 	_expect(
 		not top_left_rect.intersects(top_center_rect),
 		"Top-left status/objective must not overlap Boss/toast space at %s." % viewport_size
@@ -94,9 +97,9 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 		"Boss/toast projections must not cover the lower card stage at %s." % viewport_size
 	)
 
-	var cooldown := hud.get_node("BottomStage/CardStage/CooldownStrip") as Control
+	var cooldown := hud.get_node("BottomStage/CardStage/ActionStrip/CooldownStrip") as Control
 	var hand := hud.get_node("BottomStage/CardStage/AutumnCardHandUI") as CardHandUI
-	var redraw := hud.get_node("BottomStage/ActionPoints/RedrawHand") as Button
+	var redraw := hud.get_node("BottomStage/CardStage/ActionStrip/RedrawHand") as Button
 	_expect(
 		redraw.mouse_filter == Control.MOUSE_FILTER_STOP,
 		"Redraw must remain mouse-interactive at %s." % viewport_size
@@ -105,7 +108,7 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 		_canvas_rect(cooldown).end.y <= _canvas_rect(hand).position.y + 1.5,
 		"Cooldown strip must remain above the embedded hand at %s." % viewport_size
 	)
-	_expect(hand.get_card_button_count() == 8, "Embedded Autumn hand must render eight cards at %s." % viewport_size)
+	_expect(hand.get_card_button_count() == 4, "Embedded Autumn hand must render only the active four-card group at %s." % viewport_size)
 	for index in hand.get_card_button_count():
 		var card := hand.get_card_button(index)
 		var card_rect := _canvas_rect(card)
@@ -150,7 +153,9 @@ func _check_projection_behavior() -> void:
 
 	for skill_id in ["one", "two", "three", "four"]:
 		hud.call("show_skill_toast", skill_id, skill_id.to_upper())
-	var toast_stack := hud.get_node("TopCenterStack/SkillToastStack") as VBoxContainer
+	var toast_stack := hud.get_node(
+		"BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack"
+	) as VBoxContainer
 	_expect(toast_stack.get_child_count() == 3, "Skill toast stack must cap visible notifications at three.")
 	hud.call("show_skill_toast", "four", "FOUR REFRESHED")
 	_expect(toast_stack.get_child_count() == 3, "Repeated Skill toast must refresh instead of duplicating.")
@@ -167,6 +172,21 @@ func _check_projection_behavior() -> void:
 	)
 	await create_timer(1.3).timeout
 	_expect(toast_stack.get_child_count() == 0, "Refreshed Skill toast must still expire after its restarted lifetime.")
+
+	hud.call("set_action_points", 3.7, 5.0)
+	hud.call("set_material_count", 98)
+	var ap_value := hud.get_node(
+		"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader/APValue"
+	) as Label
+	var ap_progress := hud.get_node(
+		"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APProgress"
+	) as ProgressBar
+	_expect(ap_value.text == "3.7 / 5.0", "AP must use the approved decimal real-time projection.")
+	_expect(is_equal_approx(ap_progress.value, 3.7), "AP progress must track the decimal value.")
+	_expect(
+		(hud.get_node("TopRightMeta/MetaRow/MaterialValue") as Label).text == "98",
+		"Top-right economy strip must project upgrade material."
+	)
 
 	viewport.queue_free()
 	await process_frame

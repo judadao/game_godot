@@ -27,7 +27,7 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("ViewportBorder")
 
 [node name="CardStageGuide" type="Panel" parent="."]
-offset_top = 540.0
+offset_top = 475.2
 offset_right = 1280.0
 offset_bottom = 720.0
 mouse_filter = 2
@@ -45,7 +45,7 @@ theme_override_colors/font_color = Color(0.86, 0.67, 0.31, 0.92)
 theme_override_colors/font_outline_color = Color(0.02, 0.015, 0.01, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 11
-text = "AUTUMN HUD 3.0 — STATUS 23 / AP 8 / HAND 40 / GUIDE 10 / OBJECTIVE 11 / ECONOMY 8"
+text = "AUTUMN HUD 4.0 — WORLD 66% / VITALS 22 / ACTIVE HAND 53 / SKILL FEED 25"
 horizontal_alignment = 1
 
 [node name="HUD" parent="." instance=ExtResource("2_hud")]

@@ -123,8 +123,9 @@ func _run() -> void:
 	)
 	var hand_ui := game.get("card_hand_ui") as Control
 	_expect(
-		int(hand_ui.call("get_card_button_count")) == 8,
-		"Combat HUD must project all eight random cards as two switchable groups."
+		int(hand_ui.call("get_card_button_count")) == 4
+			and int(hand_ui.call("get_group_count")) == 2,
+		"Combat HUD must keep eight random cards in two groups while projecting only the active four."
 	)
 	var targets := game.call("_get_combat_targets") as Array
 	_expect(not targets.is_empty(), "The live battle must provide an automatic-attack target.")

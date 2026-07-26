@@ -70,7 +70,9 @@ func _run() -> void:
 		func(status: Dictionary) -> bool:
 			return String(status.get("source_id", "")) == "iron_momentum"
 	), "Five attacks must apply Iron Momentum weak super armor.")
-	var toast_stack := (game.get("hud") as Control).get_node("TopCenterStack/SkillToastStack")
+	var toast_stack := (game.get("hud") as Control).get_node(
+		"BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack"
+	)
 	_expect(toast_stack.get_child_count() == 1, "Triggered skill must show one temporary HUD toast.")
 
 	deck.start(run.card_instances, run.max_energy, false)
@@ -83,7 +85,9 @@ func _run() -> void:
 	if guard_index >= 0:
 		deck.play_from_hand(guard_index)
 		game.call("_refresh_cooldown_display")
-		var cooldown_rows := (game.get("hud") as Control).get_node("BottomStage/CardStage/CooldownStrip/CooldownMargin/CooldownRows")
+		var cooldown_rows := (game.get("hud") as Control).get_node(
+			"BottomStage/CardStage/ActionStrip/CooldownStrip/CooldownMargin/CooldownRows"
+		)
 		_expect(cooldown_rows.get_child_count() == 1 and "Iron Will" in String(cooldown_rows.get_child(0).text), "Played cooldown card must appear in the HUD cooldown strip.")
 	run.add_experience(run.experience_required)
 	game.call("_enqueue_experience_growth")

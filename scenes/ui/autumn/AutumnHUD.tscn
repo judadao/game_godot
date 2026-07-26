@@ -1,125 +1,157 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/autumn_combat_hud.gd" id="1_hud"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUDStatus.tscn" id="2_status"]
-[ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnInteractionPrompt.tscn" id="3_prompt"]
-[ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnCardHandUI.tscn" id="4_hand"]
+[ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnInteractionPrompt.tscn" id="2_prompt"]
+[ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnCardHandUI.tscn" id="3_hand"]
 
-[sub_resource type="StyleBoxFlat" id="StatusPanel"]
+[sub_resource type="StyleBoxFlat" id="BronzePanel"]
 content_margin_left = 10.0
 content_margin_top = 8.0
 content_margin_right = 10.0
 content_margin_bottom = 8.0
-bg_color = Color(0.035, 0.04, 0.035, 0.88)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.35, 0.55, 0.36, 0.86)
-corner_radius_top_left = 7
-corner_radius_top_right = 7
-corner_radius_bottom_right = 7
-corner_radius_bottom_left = 7
-
-[sub_resource type="StyleBoxFlat" id="ObjectivePanel"]
-content_margin_left = 10.0
-content_margin_top = 8.0
-content_margin_right = 10.0
-content_margin_bottom = 8.0
-bg_color = Color(0.045, 0.04, 0.032, 0.9)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.58, 0.42, 0.2, 0.88)
-corner_radius_top_left = 7
-corner_radius_top_right = 7
-corner_radius_bottom_right = 7
-corner_radius_bottom_left = 7
-
-[sub_resource type="StyleBoxFlat" id="BossPanel"]
-content_margin_left = 12.0
-content_margin_top = 6.0
-content_margin_right = 12.0
-content_margin_bottom = 7.0
-bg_color = Color(0.055, 0.025, 0.02, 0.9)
+bg_color = Color(0.035, 0.055, 0.065, 0.96)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.66, 0.3, 0.15, 0.94)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+border_color = Color(0.66, 0.48, 0.24, 0.96)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
 
-[sub_resource type="StyleBoxFlat" id="BossBarBackground"]
-bg_color = Color(0.025, 0.018, 0.016, 0.96)
+[sub_resource type="StyleBoxFlat" id="InnerPanel"]
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+bg_color = Color(0.055, 0.085, 0.095, 0.94)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.36, 0.2, 0.14, 0.9)
+border_color = Color(0.19, 0.35, 0.39, 0.9)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="DockPanel"]
+bg_color = Color(0.015, 0.025, 0.03, 0.985)
+border_width_top = 3
+border_color = Color(0.66, 0.48, 0.24, 0.98)
+
+[sub_resource type="StyleBoxFlat" id="HPBackground"]
+bg_color = Color(0.09, 0.055, 0.045, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.32, 0.22, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="HPFill"]
+bg_color = Color(0.78, 0.24, 0.17, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="APBackground"]
+bg_color = Color(0.05, 0.12, 0.055, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.28, 0.48, 0.25, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="APFill"]
+bg_color = Color(0.38, 0.72, 0.29, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="BossPanel"]
+content_margin_left = 12.0
+content_margin_top = 7.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.06, 0.025, 0.02, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.31, 0.17, 0.98)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="BossBarBackground"]
+bg_color = Color(0.025, 0.018, 0.016, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="BossBarFill"]
-bg_color = Color(0.82, 0.18, 0.08, 1)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
+bg_color = Color(0.84, 0.2, 0.08, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
-[sub_resource type="StyleBoxFlat" id="BottomPanel"]
-bg_color = Color(0.012, 0.012, 0.011, 0.96)
+[sub_resource type="StyleBoxFlat" id="ButtonNormal"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
+bg_color = Color(0.08, 0.07, 0.055, 1)
+border_width_left = 2
 border_width_top = 2
-border_color = Color(0.34, 0.28, 0.2, 0.9)
-
-[sub_resource type="StyleBoxFlat" id="VitalsPanel"]
-bg_color = Color(0.035, 0.032, 0.028, 0.82)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.42, 0.34, 0.23, 0.88)
-corner_radius_top_left = 7
-corner_radius_top_right = 7
-corner_radius_bottom_right = 7
-corner_radius_bottom_left = 7
-
-[sub_resource type="StyleBoxFlat" id="CooldownPanel"]
-content_margin_left = 8.0
-content_margin_top = 4.0
-content_margin_right = 8.0
-content_margin_bottom = 4.0
-bg_color = Color(0.04, 0.035, 0.03, 0.84)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.38, 0.31, 0.22, 0.8)
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.66, 0.48, 0.24, 1)
 corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="ResourcePanel"]
-content_margin_left = 8.0
-content_margin_top = 8.0
-content_margin_right = 8.0
-content_margin_bottom = 8.0
-bg_color = Color(0.035, 0.032, 0.028, 0.9)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.55, 0.39, 0.18, 0.9)
-corner_radius_top_left = 7
-corner_radius_top_right = 7
-corner_radius_bottom_right = 7
-corner_radius_bottom_left = 7
+[sub_resource type="StyleBoxFlat" id="ButtonHover"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
+bg_color = Color(0.16, 0.12, 0.07, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.96, 0.72, 0.31, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="FooterPanel"]
+bg_color = Color(0.02, 0.03, 0.035, 0.99)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.66, 0.48, 0.24, 0.98)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 [node name="AutumnCombatHUD" type="Control"]
 process_mode = 3
@@ -134,94 +166,122 @@ script = ExtResource("1_hud")
 
 [node name="TopLeftStack" type="VBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 0
-offset_left = 16.0
-offset_top = 16.0
-offset_right = 336.0
-offset_bottom = 238.0
-theme_override_constants/separation = 8
+offset_left = 12.0
+offset_top = 126.0
+offset_right = 302.0
+offset_bottom = 258.0
 mouse_filter = 2
-
-[node name="ActiveStatusList" type="PanelContainer" parent="TopLeftStack"]
-custom_minimum_size = Vector2(320, 80)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StatusPanel")
-mouse_filter = 2
-
-[node name="StatusMargin" type="MarginContainer" parent="TopLeftStack/ActiveStatusList"]
-layout_mode = 2
-theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 2
-theme_override_constants/margin_right = 4
-theme_override_constants/margin_bottom = 2
-mouse_filter = 2
-
-[node name="StatusRows" type="VBoxContainer" parent="TopLeftStack/ActiveStatusList/StatusMargin"]
-layout_mode = 2
-theme_override_constants/separation = 3
-mouse_filter = 2
-
-[node name="EmptyState" type="Label" parent="TopLeftStack/ActiveStatusList/StatusMargin/StatusRows"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.54, 0.56, 0.52, 1)
-theme_override_font_sizes/font_size = 12
-text = "NO ACTIVE EFFECTS"
 
 [node name="ObjectivePanel" type="PanelContainer" parent="TopLeftStack"]
-custom_minimum_size = Vector2(320, 76)
+custom_minimum_size = Vector2(290, 132)
 layout_mode = 2
-theme_override_styles/panel = SubResource("ObjectivePanel")
+theme_override_styles/panel = SubResource("BronzePanel")
 mouse_filter = 2
 
 [node name="ObjectiveMargin" type="MarginContainer" parent="TopLeftStack/ObjectivePanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 3
-theme_override_constants/margin_top = 1
-theme_override_constants/margin_right = 3
-theme_override_constants/margin_bottom = 1
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 3
 mouse_filter = 2
 
 [node name="ObjectiveRows" type="VBoxContainer" parent="TopLeftStack/ObjectivePanel/ObjectiveMargin"]
 layout_mode = 2
-theme_override_constants/separation = 2
+theme_override_constants/separation = 7
 mouse_filter = 2
 
 [node name="AreaName" type="Label" parent="TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.57, 0.32, 1)
-theme_override_font_sizes/font_size = 10
-text = "AUTUMN FOREST"
+theme_override_colors/font_color = Color(0.97, 0.89, 0.71, 1)
+theme_override_font_sizes/font_size = 15
+text = "MISSIONS"
 text_overrun_behavior = 3
+
+[node name="Divider" type="HSeparator" parent="TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows"]
+layout_mode = 2
 
 [node name="ObjectiveText" type="Label" parent="TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.9, 0.75, 1)
-theme_override_font_sizes/font_size = 14
-text = "Explore the forest"
+theme_override_colors/font_color = Color(0.92, 0.87, 0.74, 1)
+theme_override_font_sizes/font_size = 13
+text = "Defeat all enemies"
 text_overrun_behavior = 3
 
 [node name="ObjectiveProgress" type="Label" parent="TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows"]
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.74, 0.7, 0.61, 1)
-theme_override_font_sizes/font_size = 11
-text = "Enemies remaining: 0 / 0"
+theme_override_colors/font_color = Color(0.45, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "Enemies 0 / 0"
+autowrap_mode = 2
 text_overrun_behavior = 3
+
+[node name="TopRightMeta" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -362.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = 66.0
+grow_horizontal = 0
+theme_override_styles/panel = SubResource("BronzePanel")
+mouse_filter = 2
+
+[node name="MetaRow" type="HBoxContainer" parent="TopRightMeta"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 2
+mouse_filter = 2
+
+[node name="GoldLabel" type="Label" parent="TopRightMeta/MetaRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.76, 0.22, 1)
+theme_override_font_sizes/font_size = 15
+text = "GOLD"
+
+[node name="CurrencyValue" type="Label" parent="TopRightMeta/MetaRow"]
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "0"
+
+[node name="MaterialLabel" type="Label" parent="TopRightMeta/MetaRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.74, 0.98, 1)
+theme_override_font_sizes/font_size = 15
+text = "SHARD"
+
+[node name="MaterialValue" type="Label" parent="TopRightMeta/MetaRow"]
+custom_minimum_size = Vector2(78, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.47, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+
+[node name="MenuHints" type="Label" parent="TopRightMeta/MetaRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.72, 0.56, 1)
+theme_override_font_sizes/font_size = 12
+text = "I   SETTINGS   ESC"
 
 [node name="TopCenterStack" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_left = 352.0
+offset_left = 420.0
 offset_top = 14.0
-offset_right = -352.0
-offset_bottom = 184.0
+offset_right = -420.0
+offset_bottom = 86.0
 grow_horizontal = 2
-theme_override_constants/separation = 7
 alignment = 1
 mouse_filter = 2
 
 [node name="BossHealth" type="PanelContainer" parent="TopCenterStack"]
-custom_minimum_size = Vector2(440, 54)
+custom_minimum_size = Vector2(380, 56)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("BossPanel")
@@ -233,7 +293,7 @@ mouse_filter = 2
 
 [node name="BossRows" type="VBoxContainer" parent="TopCenterStack/BossHealth/BossMargin"]
 layout_mode = 2
-theme_override_constants/separation = 3
+theme_override_constants/separation = 4
 mouse_filter = 2
 
 [node name="BossName" type="Label" parent="TopCenterStack/BossHealth/BossMargin/BossRows"]
@@ -251,204 +311,327 @@ theme_override_styles/fill = SubResource("BossBarFill")
 value = 100.0
 show_percentage = false
 
-[node name="SkillToastStack" type="VBoxContainer" parent="TopCenterStack"]
-custom_minimum_size = Vector2(320, 0)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_constants/separation = 4
-mouse_filter = 2
-
 [node name="BottomBackdrop" type="Panel" parent="."]
 z_index = -30
 layout_mode = 1
 anchors_preset = 9
-anchor_top = 0.75
+anchor_top = 0.66
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("BottomPanel")
+theme_override_styles/panel = SubResource("DockPanel")
 mouse_filter = 2
 
 [node name="BottomStage" type="HBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 9
-anchor_top = 0.75
+anchor_top = 0.66
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 6.0
+anchor_bottom = 0.94
+offset_left = 8.0
 offset_top = 6.0
-offset_right = -6.0
+offset_right = -8.0
 offset_bottom = -6.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 0
+theme_override_constants/separation = 8
 mouse_filter = 2
 
 [node name="PlayerVitals" type="PanelContainer" parent="BottomStage"]
+custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 23.0
-theme_override_styles/panel = SubResource("VitalsPanel")
+size_flags_stretch_ratio = 22.0
+theme_override_styles/panel = SubResource("BronzePanel")
 mouse_filter = 2
 
-[node name="VitalsCenter" type="CenterContainer" parent="BottomStage/PlayerVitals"]
+[node name="VitalsMargin" type="MarginContainer" parent="BottomStage/PlayerVitals"]
 layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 2
 mouse_filter = 2
 
-[node name="VitalsProxy" type="Control" parent="BottomStage/PlayerVitals/VitalsCenter"]
-custom_minimum_size = Vector2(244, 76)
+[node name="VitalsRows" type="VBoxContainer" parent="BottomStage/PlayerVitals/VitalsMargin"]
 layout_mode = 2
-mouse_filter = 2
-
-[node name="HUDStatus" parent="BottomStage/PlayerVitals/VitalsCenter/VitalsProxy" instance=ExtResource("2_status")]
-layout_mode = 0
-scale = Vector2(0.55, 0.55)
-
-[node name="ActionPoints" type="VBoxContainer" parent="BottomStage"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 8.0
-alignment = 1
 theme_override_constants/separation = 5
 mouse_filter = 2
 
-[node name="EnergyBadge" type="Label" parent="BottomStage/ActionPoints"]
-custom_minimum_size = Vector2(70, 68)
+[node name="IdentityRow" type="HBoxContainer" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.83, 0.32, 1)
-theme_override_colors/font_outline_color = Color(0.04, 0.02, 0.01, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 17
-text = "5.0 / 5\nAP"
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="Portrait" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.87, 0.91, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0.12, 0.18, 0.2, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 36
+text = "A"
 horizontal_alignment = 1
 vertical_alignment = 1
-mouse_filter = 2
 
-[node name="RedrawHand" type="Button" parent="BottomStage/ActionPoints"]
-custom_minimum_size = Vector2(70, 38)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.84, 0.72, 1)
-theme_override_font_sizes/font_size = 10
-tooltip_text = "Requires full AP. Discard both groups and draw eight random cards."
-text = "T  REDRAW"
-clip_text = true
-
-[node name="CardStage" type="VBoxContainer" parent="BottomStage"]
+[node name="Identity" type="VBoxContainer" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 40.0
-theme_override_constants/separation = 3
-mouse_filter = 2
-
-[node name="CooldownStrip" type="PanelContainer" parent="BottomStage/CardStage"]
-custom_minimum_size = Vector2(0, 26)
-layout_mode = 2
-theme_override_styles/panel = SubResource("CooldownPanel")
-mouse_filter = 2
-
-[node name="CooldownMargin" type="MarginContainer" parent="BottomStage/CardStage/CooldownStrip"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="CooldownRows" type="HBoxContainer" parent="BottomStage/CardStage/CooldownStrip/CooldownMargin"]
-layout_mode = 2
-theme_override_constants/separation = 12
-mouse_filter = 2
-
-[node name="EmptyState" type="Label" parent="BottomStage/CardStage/CooldownStrip/CooldownMargin/CooldownRows"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.54, 0.51, 0.46, 1)
-theme_override_font_sizes/font_size = 10
-text = "COOLDOWN  —"
-
-[node name="AutumnCardHandUI" parent="BottomStage/CardStage" instance=ExtResource("4_hand")]
-size_flags_vertical = 3
-
-[node name="InputGlyphHints" type="VBoxContainer" parent="BottomStage"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 10.0
 alignment = 1
-theme_override_constants/separation = 5
 mouse_filter = 2
 
-[node name="GroupBadge" type="Label" parent="BottomStage/InputGlyphHints"]
+[node name="LevelLabel" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
-theme_override_font_sizes/font_size = 10
-text = "A / S · LT / RT\nGROUP 1 / 2"
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.79, 0.34, 1)
+theme_override_font_sizes/font_size = 13
+text = "Lv. 1"
 
-[node name="SlotHints" type="Label" parent="BottomStage/InputGlyphHints"]
+[node name="ClassLabel" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.67, 0.58, 1)
-theme_override_font_sizes/font_size = 10
-text = "Q W E R · SPACE DASH"
-horizontal_alignment = 1
-mouse_filter = 2
+theme_override_colors/font_color = Color(0.88, 0.82, 0.68, 1)
+theme_override_font_sizes/font_size = 12
+text = "ADVENTURER"
+text_overrun_behavior = 3
 
-[node name="PersonalResources" type="PanelContainer" parent="BottomStage"]
+[node name="HPRow" type="HBoxContainer" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows"]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 19.0
-theme_override_styles/panel = SubResource("ResourcePanel")
-mouse_filter = 2
-
-[node name="ResourceMargin" type="MarginContainer" parent="BottomStage/PersonalResources"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="ResourceRows" type="VBoxContainer" parent="BottomStage/PersonalResources/ResourceMargin"]
-layout_mode = 2
-alignment = 1
 theme_override_constants/separation = 6
 mouse_filter = 2
 
-[node name="Heading" type="Label" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows"]
+[node name="Label" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.62, 0.45, 1)
+theme_override_colors/font_color = Color(0.96, 0.82, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+text = "HP"
+
+[node name="HPBar" type="ProgressBar" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow"]
+custom_minimum_size = Vector2(100, 22)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/background = SubResource("HPBackground")
+theme_override_styles/fill = SubResource("HPFill")
+value = 78.0
+show_percentage = false
+
+[node name="HPValue" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow/HPBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.93, 0.82, 1)
+theme_override_colors/font_outline_color = Color(0.12, 0.035, 0.02, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 12
+text = "78 / 100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="APPanel" type="PanelContainer" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("InnerPanel")
+mouse_filter = 2
+
+[node name="APRows" type="VBoxContainer" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel"]
+layout_mode = 2
+theme_override_constants/separation = 3
+mouse_filter = 2
+
+[node name="APHeader" type="HBoxContainer" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="APRate" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.66, 0.78, 0.52, 1)
 theme_override_font_sizes/font_size = 10
-text = "PERSONAL"
+text = "AP  +0.7 / sec"
+
+[node name="APValue" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.57, 0.91, 0.45, 1)
+theme_override_font_sizes/font_size = 18
+text = "5.0 / 5.0"
+horizontal_alignment = 2
+
+[node name="APProgress" type="ProgressBar" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/background = SubResource("APBackground")
+theme_override_styles/fill = SubResource("APFill")
+max_value = 5.0
+value = 5.0
+show_percentage = false
+
+[node name="AutoAttackRow" type="HBoxContainer" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="AutoAttackCount" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/AutoAttackRow"]
+custom_minimum_size = Vector2(42, 30)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.31, 1)
+theme_override_font_sizes/font_size = 14
+text = "11"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AutoAttackName" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/AutoAttackRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.77, 0.7, 0.56, 1)
+theme_override_font_sizes/font_size = 10
+text = "AUTO ATTACK\nEmber Bolt"
+vertical_alignment = 1
+
+[node name="CardStage" type="VBoxContainer" parent="BottomStage"]
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 53.0
+theme_override_constants/separation = 5
+mouse_filter = 2
+
+[node name="ActionStrip" type="HBoxContainer" parent="BottomStage/CardStage"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_constants/separation = 7
+mouse_filter = 2
+
+[node name="CooldownStrip" type="PanelContainer" parent="BottomStage/CardStage/ActionStrip"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("InnerPanel")
+mouse_filter = 2
+
+[node name="CooldownMargin" type="MarginContainer" parent="BottomStage/CardStage/ActionStrip/CooldownStrip"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CooldownRows" type="HBoxContainer" parent="BottomStage/CardStage/ActionStrip/CooldownStrip/CooldownMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+mouse_filter = 2
+
+[node name="EmptyState" type="Label" parent="BottomStage/CardStage/ActionStrip/CooldownStrip/CooldownMargin/CooldownRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.65, 0.55, 1)
+theme_override_font_sizes/font_size = 10
+text = "READY"
+
+[node name="RedrawHand" type="Button" parent="BottomStage/CardStage/ActionStrip"]
+custom_minimum_size = Vector2(116, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.85, 0.66, 1)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+theme_override_styles/pressed = SubResource("ButtonHover")
+tooltip_text = "Requires full AP. Discard both groups and draw eight random cards."
+text = "T  REDRAW"
+
+[node name="DashHint" type="Label" parent="BottomStage/CardStage/ActionStrip"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.73, 0.62, 1)
+theme_override_font_sizes/font_size = 10
+text = "SPACE  DASH"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="AutumnCardHandUI" parent="BottomStage/CardStage" instance=ExtResource("3_hand")]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ActivityFeed" type="PanelContainer" parent="BottomStage"]
+custom_minimum_size = Vector2(270, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 25.0
+theme_override_styles/panel = SubResource("BronzePanel")
+mouse_filter = 2
+
+[node name="FeedMargin" type="MarginContainer" parent="BottomStage/ActivityFeed"]
+layout_mode = 2
+theme_override_constants/margin_left = 2
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 2
+theme_override_constants/margin_bottom = 2
+mouse_filter = 2
+
+[node name="FeedRows" type="VBoxContainer" parent="BottomStage/ActivityFeed/FeedMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+mouse_filter = 2
+
+[node name="InputStrip" type="HBoxContainer" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="GroupBadge" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows/InputStrip"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.94, 0.83, 0.61, 1)
+theme_override_font_sizes/font_size = 11
+text = "A / S   SWITCH GROUP  1 / 2"
+
+[node name="DashBadge" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows/InputStrip"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.74, 0.75, 1)
+theme_override_font_sizes/font_size = 10
+text = "SPACE"
+
+[node name="Divider" type="HSeparator" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+layout_mode = 2
+
+[node name="SkillToastStack" type="VBoxContainer" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+mouse_filter = 2
+
+[node name="FeedEmptyState" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.34, 0.44, 0.46, 1)
+theme_override_font_sizes/font_size = 10
+text = "SKILL ACTIVITY"
 horizontal_alignment = 1
 
-[node name="GoldRow" type="HBoxContainer" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows"]
-layout_mode = 2
+[node name="FooterRail" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_top = 0.94
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 1.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("FooterPanel")
 mouse_filter = 2
 
-[node name="Label" type="Label" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows/GoldRow"]
+[node name="FooterRow" type="HBoxContainer" parent="FooterRail"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.72, 0.67, 0.56, 1)
-theme_override_font_sizes/font_size = 11
-text = "GOLD"
-
-[node name="CurrencyValue" type="Label" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows/GoldRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.82, 0.31, 1)
-theme_override_font_sizes/font_size = 13
-text = "0"
-horizontal_alignment = 2
-
-[node name="ExperienceRow" type="HBoxContainer" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows"]
-layout_mode = 2
+theme_override_constants/separation = 14
 mouse_filter = 2
 
-[node name="Label" type="Label" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows/ExperienceRow"]
+[node name="PhaseLabel" type="Label" parent="FooterRail/FooterRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.72, 0.67, 0.56, 1)
-theme_override_font_sizes/font_size = 11
-text = "EXP"
+theme_override_colors/font_color = Color(0.96, 0.87, 0.68, 1)
+theme_override_font_sizes/font_size = 14
+text = "PHASE 1 / 3"
+vertical_alignment = 1
 
-[node name="ExperienceValue" type="Label" parent="BottomStage/PersonalResources/ResourceMargin/ResourceRows/ExperienceRow"]
+[node name="NavigationHints" type="Label" parent="FooterRail/FooterRow"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.86, 1, 1)
-theme_override_font_sizes/font_size = 12
-text = "0 / 100"
+theme_override_colors/font_color = Color(0.72, 0.66, 0.54, 1)
+theme_override_font_sizes/font_size = 11
+text = "M  MAP     I  INVENTORY     J  JOURNAL     P  PAUSE"
 horizontal_alignment = 2
+vertical_alignment = 1
 
-[node name="InteractionPanel" parent="." instance=ExtResource("3_prompt")]
+[node name="InteractionPanel" parent="." instance=ExtResource("2_prompt")]

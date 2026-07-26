@@ -2,6 +2,7 @@ extends SceneTree
 
 const BATTLE_MAP_PATH := "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn"
 const WORLD_BOTTOM := 540.0
+const HUD_TOP := 475.2
 const VIEWPORT_BOTTOM := 720.0
 
 const ROUTE_ZONES: Array[Dictionary] = [
@@ -131,7 +132,7 @@ func _assert_bottom_ui_owns_last_quarter(map: Node) -> void:
 	_expect(hud_bottom != null, "HUD must expose its bottom-quarter container.")
 	_expect(card_safe_area != null, "Card hand must expose its bottom-quarter safe area.")
 	if stage_guide != null:
-		_expect(is_equal_approx(stage_guide.position.y, WORLD_BOTTOM), "HUD stage must start at y=540.")
+		_expect(is_equal_approx(stage_guide.position.y, HUD_TOP), "HUD stage must start at y=475.2.")
 		_expect(
 			is_equal_approx(stage_guide.position.y + stage_guide.size.y, VIEWPORT_BOTTOM),
 			"HUD stage must end at y=720."
@@ -139,8 +140,8 @@ func _assert_bottom_ui_owns_last_quarter(map: Node) -> void:
 	if viewport_guide != null:
 		_expect(is_equal_approx(viewport_guide.size.y, VIEWPORT_BOTTOM), "Editor viewport guide must be 720 pixels tall.")
 	if hud_bottom != null:
-		_expect(is_equal_approx(hud_bottom.anchor_top, 0.75), "HUD content must begin at 75% viewport height.")
-		_expect(is_equal_approx(hud_bottom.anchor_bottom, 1.0), "HUD content must end at the viewport bottom.")
+		_expect(is_equal_approx(hud_bottom.anchor_top, 0.66), "HUD content must begin at 66% viewport height.")
+		_expect(is_equal_approx(hud_bottom.anchor_bottom, 0.94), "HUD content must leave room for the footer rail.")
 	if card_safe_area != null:
 		_expect(is_equal_approx(card_safe_area.anchor_top, 0.0), "Embedded card renderer must fill its authored CardStage slot.")
 		_expect(is_equal_approx(card_safe_area.anchor_bottom, 1.0), "Card safe area must end at the viewport bottom.")

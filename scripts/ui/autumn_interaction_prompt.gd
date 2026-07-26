@@ -2,7 +2,7 @@
 class_name AutumnInteractionPrompt
 extends Control
 
-const WORLD_BOTTOM_RATIO := 0.75
+const WORLD_BOTTOM_RATIO := 0.66
 const VIEWPORT_MARGIN := 16.0
 const TARGET_RISE := 72.0
 

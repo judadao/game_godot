@@ -9,34 +9,33 @@ signal group_changed(group_index: int)
 const MAX_SKILL_TOASTS := 3
 const SKILL_TOAST_LIFETIME := 1.5
 
-@onready var hp_fill: ColorRect = $BottomStage/PlayerVitals/VitalsCenter/VitalsProxy/HUDStatus/HPBar/Fill
-@onready var hp_value: Label = $BottomStage/PlayerVitals/VitalsCenter/VitalsProxy/HUDStatus/HPBar/Value
-@onready var mp_fill: ColorRect = $BottomStage/PlayerVitals/VitalsCenter/VitalsProxy/HUDStatus/MPBar/Fill
-@onready var mp_value: Label = $BottomStage/PlayerVitals/VitalsCenter/VitalsProxy/HUDStatus/MPBar/Value
-@onready var stamina_fill: ColorRect = $BottomStage/PlayerVitals/VitalsCenter/VitalsProxy/HUDStatus/StaminaBar/Fill
-@onready var stamina_value: Label = $BottomStage/PlayerVitals/VitalsCenter/VitalsProxy/HUDStatus/StaminaBar/Value
-@onready var level_label: Label = $BottomStage/PlayerVitals/VitalsCenter/VitalsProxy/HUDStatus/LevelLabel
-@onready var class_label: Label = $BottomStage/PlayerVitals/VitalsCenter/VitalsProxy/HUDStatus/ClassLabel
-@onready var currency_value: Label = $BottomStage/PersonalResources/ResourceMargin/ResourceRows/GoldRow/CurrencyValue
-@onready var experience_value: Label = $BottomStage/PersonalResources/ResourceMargin/ResourceRows/ExperienceRow/ExperienceValue
+@onready var hp_bar: ProgressBar = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow/HPBar
+@onready var hp_value: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow/HPBar/HPValue
+@onready var level_label: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/LevelLabel
+@onready var class_label: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/ClassLabel
+@onready var currency_value: Label = $TopRightMeta/MetaRow/CurrencyValue
+@onready var material_value: Label = $TopRightMeta/MetaRow/MaterialValue
 @onready var area_name: Label = $TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows/AreaName
 @onready var quest_text: Label = $TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows/ObjectiveText
 @onready var quest_progress: Label = $TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows/ObjectiveProgress
 @onready var interaction_panel: Control = $InteractionPanel
 @onready var key_label: Label = $InteractionPanel/PromptRow/Keycap/KeyLabel
 @onready var prompt_text: Label = $InteractionPanel/PromptRow/PromptText
-@onready var _status_rows: VBoxContainer = $TopLeftStack/ActiveStatusList/StatusMargin/StatusRows
 @onready var _boss_panel: PanelContainer = $TopCenterStack/BossHealth
 @onready var _boss_name: Label = $TopCenterStack/BossHealth/BossMargin/BossRows/BossName
 @onready var _boss_bar: ProgressBar = $TopCenterStack/BossHealth/BossMargin/BossRows/BossBar
-@onready var _toast_stack: VBoxContainer = $TopCenterStack/SkillToastStack
-@onready var _cooldown_rows: HBoxContainer = $BottomStage/CardStage/CooldownStrip/CooldownMargin/CooldownRows
+@onready var _toast_stack: VBoxContainer = $BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack
+@onready var _feed_empty_state: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/FeedEmptyState
+@onready var _cooldown_rows: HBoxContainer = $BottomStage/CardStage/ActionStrip/CooldownStrip/CooldownMargin/CooldownRows
 @onready var _card_hand: AutumnCardHandUI = $BottomStage/CardStage/AutumnCardHandUI
-@onready var _action_points_label: Label = $BottomStage/ActionPoints/EnergyBadge
-@onready var _redraw_button: Button = $BottomStage/ActionPoints/RedrawHand
-@onready var _group_label: Label = $BottomStage/InputGlyphHints/GroupBadge
+@onready var _action_points_label: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader/APValue
+@onready var _action_points_rate: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader/APRate
+@onready var _action_points_progress: ProgressBar = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APProgress
+@onready var _auto_attack_name: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/AutoAttackRow/AutoAttackName
+@onready var _redraw_button: Button = $BottomStage/CardStage/ActionStrip/RedrawHand
+@onready var _group_label: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/InputStrip/GroupBadge
+@onready var _phase_label: Label = $FooterRail/FooterRow/PhaseLabel
 
-var _status_empty_label: Label
 var _toast_by_key: Dictionary = {}
 var _toast_order: Array[String] = []
 var _toast_generation: Dictionary = {}
@@ -49,7 +48,6 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_make_display_only(self)
 	prompt_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status_empty_label = _status_rows.get_node("EmptyState") as Label
 	hide_boss_health()
 	_card_hand.card_selected.connect(card_selected.emit)
 	_card_hand.redraw_requested.connect(redraw_requested.emit)
@@ -71,15 +69,15 @@ func toggle() -> void:
 
 
 func set_health(current: int, maximum: int) -> void:
-	_set_bar(hp_fill, hp_value, current, maximum)
+	_set_bar(hp_bar, hp_value, current, maximum)
 
 
-func set_mana(current: int, maximum: int) -> void:
-	_set_bar(mp_fill, mp_value, current, maximum)
+func set_mana(_current: int, _maximum: int) -> void:
+	pass
 
 
-func set_stamina(current: int, maximum: int) -> void:
-	_set_bar(stamina_fill, stamina_value, current, maximum)
+func set_stamina(_current: int, _maximum: int) -> void:
+	pass
 
 
 func set_player_level(level: int) -> void:
@@ -95,12 +93,12 @@ func set_currency(amount: int) -> void:
 	currency_value.text = _format_number(maxi(0, amount))
 
 
-func set_experience(current: int, required: int) -> void:
-	var safe_required := maxi(1, required)
-	experience_value.text = "%s / %s" % [
-		_format_number(maxi(0, current)),
-		_format_number(safe_required),
-	]
+func set_experience(_current: int, _required: int) -> void:
+	pass
+
+
+func set_material_count(amount: int) -> void:
+	material_value.text = _format_number(maxi(0, amount))
 
 
 func set_cards(cards: Array, energy: float) -> void:
@@ -132,8 +130,21 @@ func get_group_count() -> int:
 func _set_action_points_projection(current: float, maximum: float) -> void:
 	var safe_maximum := maxf(0.0, maximum)
 	var safe_current := clampf(current, 0.0, safe_maximum)
-	_action_points_label.text = "%.1f / %.0f\nAP" % [safe_current, safe_maximum]
-	_redraw_button.disabled = safe_current < safe_maximum
+	_action_points_label.text = "%.1f / %.1f" % [safe_current, safe_maximum]
+	_action_points_progress.max_value = maxf(0.1, safe_maximum)
+	_action_points_progress.value = safe_current
+	_redraw_button.disabled = safe_maximum <= 0.0 or safe_current < safe_maximum
+
+
+func set_action_point_regen(rate: float) -> void:
+	_action_points_rate.text = "AP  +%.1f / sec" % maxf(0.0, rate)
+
+
+func set_auto_attack(display_name: String) -> void:
+	var normalized := display_name.strip_edges()
+	_auto_attack_name.text = "AUTO ATTACK\n%s" % (
+		normalized if not normalized.is_empty() else "NONE"
+	)
 
 
 func _on_redraw_pressed() -> void:
@@ -141,7 +152,7 @@ func _on_redraw_pressed() -> void:
 
 
 func _on_card_group_changed(group_index: int) -> void:
-	_group_label.text = "A / S · LT / RT\nGROUP %d / %d" % [
+	_group_label.text = "A / S   SWITCH GROUP  %d / %d" % [
 		group_index + 1,
 		_card_hand.get_group_count(),
 	]
@@ -163,48 +174,23 @@ func show_potion_feedback(message: String, successful: bool = true) -> void:
 
 func set_area_name(value: String) -> void:
 	var normalized := value.strip_edges()
-	area_name.text = normalized.to_upper() if not normalized.is_empty() else "UNKNOWN AREA"
+	area_name.text = "%s / MISSIONS" % (
+		normalized.to_upper() if not normalized.is_empty() else "MISSIONS"
+	)
 
 
 func set_objective(text: String, progress: String = "") -> void:
 	quest_text.text = text
 	quest_progress.text = progress
 	quest_progress.visible = not progress.is_empty()
+	var normalized := text.strip_edges().to_upper()
+	if normalized.begins_with("SURVIVAL PHASE"):
+		_phase_label.text = normalized.replace("SURVIVAL ", "") + " / 3"
 
 
-func set_active_statuses(statuses: Array) -> void:
-	for child in _status_rows.get_children():
-		if child != _status_empty_label:
-			_status_rows.remove_child(child)
-			child.queue_free()
-	_status_empty_label.visible = statuses.is_empty()
-	for status_variant in statuses:
-		if not status_variant is Dictionary:
-			continue
-		var status := status_variant as Dictionary
-		var row := HBoxContainer.new()
-		row.name = "Status_%s" % _safe_node_name(String(status.get("id", status.get("name", "effect"))))
-		row.add_theme_constant_override("separation", 8)
-		var icon := Label.new()
-		icon.custom_minimum_size.x = 20.0
-		icon.text = String(status.get("icon", "◆"))
-		icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		icon.add_theme_color_override("font_color", Color(0.65, 0.9, 0.72, 1.0))
-		var label := Label.new()
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		label.text = String(status.get("name", "Effect"))
-		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-		var remaining := Label.new()
-		remaining.custom_minimum_size.x = 48.0
-		remaining.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		remaining.text = "%.1fs" % maxf(
-			0.0,
-			float(status.get("remaining_seconds", status.get("remaining", 0.0)))
-		)
-		row.add_child(icon)
-		row.add_child(label)
-		row.add_child(remaining)
-		_status_rows.add_child(row)
+func set_active_statuses(_statuses: Array) -> void:
+	# Persistent effect lists were intentionally removed from this HUD.
+	pass
 
 
 func set_boss_health(name_text: String, current: int, maximum: int) -> void:
@@ -233,10 +219,10 @@ func show_skill_toast(
 			_remove_toast(_toast_order[0])
 		label = Label.new()
 		label.name = "SkillToast_%s" % _safe_node_name(key)
-		label.custom_minimum_size = Vector2(300.0, 30.0)
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.custom_minimum_size = Vector2(0.0, 34.0)
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 16)
+		label.add_theme_font_size_override("font_size", 13)
 		_toast_stack.add_child(label)
 		_toast_by_key[key] = label
 		_toast_order.append(key)
@@ -249,6 +235,7 @@ func show_skill_toast(
 	_toast_tween_by_key.erase(key)
 	label.text = display_name if not display_name.strip_edges().is_empty() else skill_id
 	label.modulate = accent
+	_feed_empty_state.visible = false
 	_toast_generation[key] = int(_toast_generation.get(key, 0)) + 1
 	var generation := int(_toast_generation[key])
 	_expire_toast(key, generation)
@@ -332,13 +319,14 @@ func _remove_toast(key: String) -> void:
 	_toast_order.erase(key)
 	_toast_generation.erase(key)
 	_toast_tween_by_key.erase(key)
+	_feed_empty_state.visible = _toast_order.is_empty()
 
 
-func _set_bar(fill: ColorRect, value_label: Label, current: int, maximum: int) -> void:
+func _set_bar(bar: ProgressBar, value_label: Label, current: int, maximum: int) -> void:
 	var safe_maximum := maxi(1, maximum)
 	var safe_current := clampi(current, 0, safe_maximum)
-	fill.position = Vector2(14.0, 5.0)
-	fill.size = Vector2(231.0 * float(safe_current) / float(safe_maximum), 12.0)
+	bar.max_value = safe_maximum
+	bar.value = safe_current
 	value_label.text = "%d / %d" % [safe_current, safe_maximum]
 
 

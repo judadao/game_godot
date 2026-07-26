@@ -186,6 +186,14 @@ func _process(delta: float) -> void:
 	if wisp_seconds > 0.0:
 		regen_rate += float(run_state.temporary_buffs.get("ap_wisp_rate", WISP_AP_REGEN))
 		run_state.temporary_buffs["ap_wisp_seconds"] = maxf(0.0, wisp_seconds - delta)
+	if hud != null and hud.has_method("set_action_point_regen"):
+		hud.call("set_action_point_regen", regen_rate)
+	if hud != null and hud.has_method("set_material_count"):
+		hud.call(
+			"set_material_count",
+			int(inventory_manager.call("get_resource_amount", &"magic_shard"))
+			+ int(run_state.materials_earned.get("magic_shard", 0))
+		)
 	var regenerated := deck_manager.regenerate_energy(delta, regen_rate)
 	if regenerated > 0.0:
 		run_state.energy = deck_manager.energy
@@ -1560,6 +1568,9 @@ func _refresh_card_hand() -> void:
 		cards.append(card)
 	card_hand_ui.call("set_cards", cards, deck_manager.energy)
 	card_hand_ui.call("set_action_points", deck_manager.energy, deck_manager.max_energy)
+	if hud != null and hud.has_method("set_auto_attack"):
+		var auto_attack := _get_auto_attack_card()
+		hud.call("set_auto_attack", String(auto_attack.get("name", "Auto Attack")))
 	_refresh_cooldown_display()
 
 

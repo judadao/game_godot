@@ -51,16 +51,15 @@ func _run() -> void:
 		_expect(autumn_hud.scene_file_path == AUTUMN_HUD_PATH, "Autumn must use AutumnHUD.")
 		_expect(autumn_hud.name == "HUD", "Autumn map must retain the exact HUD adoption path.")
 		for node_path in [
-			"TopLeftStack/ActiveStatusList",
 			"TopLeftStack/ObjectivePanel",
+			"TopRightMeta",
 			"TopCenterStack/BossHealth",
-			"TopCenterStack/SkillToastStack",
 			"BottomStage/PlayerVitals",
-			"BottomStage/ActionPoints",
-			"BottomStage/CardStage/CooldownStrip",
+			"BottomStage/CardStage/ActionStrip/CooldownStrip",
+			"BottomStage/CardStage/ActionStrip/RedrawHand",
 			"BottomStage/CardStage/AutumnCardHandUI",
-			"BottomStage/InputGlyphHints",
-			"BottomStage/PersonalResources",
+			"BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack",
+			"FooterRail",
 		]:
 			_expect(
 				autumn_hud.has_node(node_path),
@@ -72,6 +71,7 @@ func _run() -> void:
 			"hide_boss_health",
 			"show_skill_toast",
 			"set_cooldown_cards",
+			"set_material_count",
 		]:
 			_expect(
 				autumn_hud.has_method(method_name),

@@ -1011,24 +1011,27 @@ editor preview 只採用一個 authority：
 ```text
 AutumnHUD
 ├── TopLeftStack
-│   ├── ActiveStatusList
 │   └── ObjectivePanel
+├── TopRightMeta
 ├── TopCenterStack
-│   ├── BossHealth
-│   └── SkillToastStack
-└── BottomStage
+│   └── BossHealth
+├── BottomStage
     ├── PlayerVitals
-    ├── ActionPoints
     ├── CardStage
-    │   ├── CooldownStrip
+    │   ├── ActionStrip
+    │   │   ├── CooldownStrip
+    │   │   └── RedrawHand
     │   └── AutumnCardHandUI
-    ├── InputGlyphHints
-    └── PersonalResources
+    └── ActivityFeed
+        └── SkillToastStack
+└── FooterRail
 ```
 
-狀態與目前目標固定在左上；Boss health 與 skill toast 在上方中央；底部只放玩家
-狀態、AP、牌、按鍵提示與個人資源。不可恢復常駐 combo/recipe progress panel。
-skill toast 最多三筆、約 1.5 秒淡出；相同技能重複觸發刷新既有 toast。
+目前目標固定在左上，金錢與 magic shard 位於右上，Boss health 使用上方中央的暫時空間。
+底部從 viewport 的 66% 開始，依序放玩家狀態與即時小數 AP、目前四張牌及右側
+activity feed，最下方保留 phase/navigation rail。不可恢復常駐 combo/recipe 或
+status progress panel。skill toast 最多三筆、約 1.5 秒淡出；相同技能重複觸發
+刷新既有 toast。
 
 ### Autumn structured cards
 
@@ -1038,12 +1041,12 @@ interactive `Button`; its shortcut, name, type, icon stage, level, and AP
 labels use `MOUSE_FILTER_IGNORE`.
 
 `res://scripts/ui/autumn_card_hand_ui.gd` owns Autumn hand presentation within
-`CardStage`。Group one 保持 `FrontRow`，group two 保持 `BackRow`；active row
-focusable 且在上層，inactive row 保留可辨識 header 但不搶 input。
+`CardStage`。八張手牌仍分成兩組四張，但 scene 只建立目前 active group 的四張
+card buttons；A/S 或 LT/RT 切組時重建目前投影，inactive group 不佔畫面。
 
 Card height is derived from the lower-HUD height and hand-column width. The
 renderer preserves a `0.72` width-to-height ratio and updates the negative
-vertical row separation on viewport resize. Do not add per-resolution card
+card dimensions on viewport resize. Do not add per-resolution card
 positions or resize these cards from gameplay code.
 
 ### Ability hand and group-toggle contract

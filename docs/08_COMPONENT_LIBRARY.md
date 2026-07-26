@@ -1413,20 +1413,20 @@ func _emit_selection() -> void:
 - Script contract: `res://scripts/ui/autumn_combat_hud.gd`
 - Owner: Autumn Battle V2 only
 - Responsibility: the sole Autumn combat HUD authority. It owns
-  `TopLeftStack`, `TopCenterStack`, `BottomStage`, and the embedded hand.
+  `TopLeftStack`, `TopRightMeta`, `TopCenterStack`, `BottomStage`, `FooterRail`,
+  and the embedded hand.
 
 Required semantic children:
 
-- `TopLeftStack/ActiveStatusList`
 - `TopLeftStack/ObjectivePanel`
+- `TopRightMeta`
 - `TopCenterStack/BossHealth`
-- `TopCenterStack/SkillToastStack`
 - `BottomStage/PlayerVitals`
-- `BottomStage/ActionPoints`
-- `BottomStage/CardStage/CooldownStrip`
+- `BottomStage/CardStage/ActionStrip/CooldownStrip`
+- `BottomStage/CardStage/ActionStrip/RedrawHand`
 - `BottomStage/CardStage/AutumnCardHandUI`
-- `BottomStage/InputGlyphHints`
-- `BottomStage/PersonalResources`
+- `BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack`
+- `FooterRail`
 
 `AutumnCardHandUI` 是 HUD 內的 presentation subtree，不是可被 map 或 `Game`
 另外 adopt 的 sibling authority。

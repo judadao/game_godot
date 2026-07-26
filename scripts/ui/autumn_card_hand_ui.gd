@@ -12,6 +12,12 @@ const AUTUMN_HOVER_RISE := 9.0
 const AUTUMN_HOVER_SCALE := Vector2(1.055, 1.055)
 
 
+func set_cards(cards: Array, energy: float) -> void:
+	super.set_cards(cards, energy)
+	if is_node_ready():
+		group_changed.emit(_active_group)
+
+
 func set_action_points(current: float, maximum: float) -> void:
 	super.set_action_points(current, maximum)
 	var hud := get_parent().get_parent().get_parent()
@@ -67,14 +73,15 @@ func _refresh() -> void:
 	_update_ap_display()
 	_apply_responsive_geometry()
 
-	for global_index in mini(_cards.size(), CARDS_PER_GROUP * 2):
+	var group_start := _active_group * CARDS_PER_GROUP
+	var group_end := mini(_cards.size(), group_start + CARDS_PER_GROUP)
+	for global_index in range(group_start, group_end):
 		var card := _cards[global_index]
 		var local_index := global_index % CARDS_PER_GROUP
 		var button := _build_card_button(card, local_index, global_index)
-		var row := _front_row if global_index < CARDS_PER_GROUP else _back_row
-		row.add_child(button)
+		_front_row.add_child(button)
 		_buttons.append(button)
-	_group_label.text = "A / S / LT / RT  TOGGLE  %d / %d" % [_active_group + 1, get_group_count()]
+	_group_label.text = "GROUP %d / %d" % [_active_group + 1, get_group_count()]
 	_capture_after_container_sort()
 
 
@@ -172,18 +179,18 @@ func _on_viewport_size_changed() -> void:
 
 func _apply_responsive_geometry() -> void:
 	var card_size := _responsive_card_size()
-	_back_row.custom_minimum_size.y = card_size.y
+	_back_row.custom_minimum_size.y = 0.0
 	_front_row.custom_minimum_size.y = card_size.y
 	var card_rows := _back_row.get_parent() as VBoxContainer
-	card_rows.add_theme_constant_override("separation", -roundi(card_size.y * 0.86))
+	card_rows.add_theme_constant_override("separation", 0)
 
 
 func _responsive_card_size() -> Vector2:
 	var viewport_size := get_viewport_rect().size
-	var safe_height := maxf(100.0, viewport_size.y * 0.25 - 45.0)
-	var hand_width := maxf(360.0, viewport_size.x * 0.40 - 30.0)
+	var safe_height := maxf(112.0, viewport_size.y * 0.28 - 45.0)
+	var hand_width := maxf(360.0, viewport_size.x * 0.50 - 30.0)
 	var height_from_hud := safe_height * 0.86
 	var width_limit := (hand_width - 18.0) / float(CARDS_PER_GROUP)
 	var height_from_width := width_limit / AUTUMN_CARD_ASPECT
-	var card_height := clampf(minf(height_from_hud, height_from_width), 112.0, 132.0)
+	var card_height := clampf(minf(height_from_hud, height_from_width), 112.0, 170.0)
 	return Vector2(roundf(card_height * AUTUMN_CARD_ASPECT), roundf(card_height))

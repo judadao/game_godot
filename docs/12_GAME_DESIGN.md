@@ -770,8 +770,9 @@ Dash 是玩家固有 action：↑ 只觸發 Jump，Space 觸發 Dash。Dash 不�
 Dash Edge/Gale Drive 是 Combo cards，以 `target_action = dash` 在各自 effect
 window 內暫時強化固有 Dash；Combo 本身不直接移動玩家。
 
-The eight-card hand remains two groups of four. Q/W/E/R play the active group,
-while A, S, LT, and RT each toggle to the other group.
+The eight-card hand remains two groups of four. Only the current four-card group
+is visible. Q/W/E/R play that group, while A, S, LT, and RT toggle to the other
+group.
 
 ### Timed Combo windows
 
@@ -897,13 +898,15 @@ Future Extension 不等於承諾，不代表已排期，也不可用來填補現
 
 ## 23. Autumn Battle V2 Presentation Contract
 
-Autumn Battle V2 reserves the upper 75% of the viewport for world play and the
-lower 25% for combat information. The lower HUD presents character status, AP,
-two groups of four cards, group-switch guidance, objective and Combo state, and
-economy information without covering gameplay.
+Autumn Battle V2 reserves the upper 66% of the viewport for world play. The
+remaining space contains the combat dock and footer rail. The camera extends its
+bottom limit by 90 pixels so the authored world composition moves upward instead
+of being pinned by the original 720-pixel limit. The dock presents character
+status, decimal regenerating AP, the current four-card group, group-switch
+guidance, and a three-entry fading Skill/Combo activity feed.
 
 Q/W/E/R play the current four-card group. A/S and LT/RT switch between the two
-groups; the inactive group remains visible but dimmed and locked. Auto attack
+groups; the inactive group is not rendered. Auto attack
 does not occupy a HUD card slot. Intrinsic Space Dash also has no card slot or
 AP presentation; `quickstep` is not part of the card catalog.
 

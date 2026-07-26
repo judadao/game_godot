@@ -82,13 +82,13 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 		String(hand.get_script().resource_path) == AUTUMN_RENDERER_PATH,
 		"Autumn hand must use its Autumn-only renderer at %s." % viewport_size
 	)
-	_expect(hand.get_card_button_count() == 8, "Autumn hand must show eight cards at %s." % viewport_size)
-	if hand.get_card_button_count() != 8:
+	_expect(hand.get_card_button_count() == 4, "Autumn hand must show the active four-card group at %s." % viewport_size)
+	if hand.get_card_button_count() != 4:
 		hand.queue_free()
 		await process_frame
 		return
 
-	for index in 8:
+	for index in 4:
 		var card := hand.get_card_button(index)
 		_expect(
 			String(card.get_script().resource_path).ends_with("autumn_battle_card.gd"),
@@ -130,30 +130,29 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 			"Card %d name must use at least 10px text at %s." % [index, viewport_size]
 		)
 		_expect(_inside_lower_hud(card, viewport_size), "Card %d must remain inside the lower HUD at %s." % [index, viewport_size])
-		if index == 6:
-			var healing_style := card.get_theme_stylebox("normal") as StyleBoxFlat
-			var healing_highlight := card.get_theme_stylebox("hover") as StyleBoxFlat
-			_expect(
-				healing_style != null
-				and healing_style.bg_color.g > healing_style.bg_color.r
-				and healing_style.bg_color.g > healing_style.bg_color.b,
-				"Healing cards must use the approved green card body at %s." % viewport_size
-			)
-			_expect(
-				healing_highlight != null and healing_highlight.border_color.g > 0.8,
-				"Healing cards must use a brighter green border at %s." % viewport_size
-			)
-
 	_verify_group_states(hand, 0, viewport_size)
 	hand.set_active_group(1)
 	await process_frame
 	await process_frame
 	_verify_group_states(hand, 1, viewport_size)
-	for index in 8:
+	for index in 4:
 		_expect(
-			int(hand.get_card_button(index).get_meta("global_card_index", -1)) == index,
-			"Group switching must preserve card %d's global index at %s." % [index, viewport_size]
+			int(hand.get_card_button(index).get_meta("global_card_index", -1)) == index + 4,
+			"Group switching must project card %d from the second group at %s." % [index, viewport_size]
 		)
+	var healing_card := hand.get_card_button(2)
+	var healing_style := healing_card.get_theme_stylebox("normal") as StyleBoxFlat
+	var healing_highlight := healing_card.get_theme_stylebox("hover") as StyleBoxFlat
+	_expect(
+		healing_style != null
+			and healing_style.bg_color.g > healing_style.bg_color.r
+			and healing_style.bg_color.g > healing_style.bg_color.b,
+		"Healing cards must use the approved green card body at %s." % viewport_size
+	)
+	_expect(
+		healing_highlight != null and healing_highlight.border_color.g > 0.8,
+		"Healing cards must use a brighter green border at %s." % viewport_size
+	)
 
 	hud.queue_free()
 	viewport.queue_free()
@@ -161,24 +160,21 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 
 
 func _verify_group_states(hand: CardHandUI, active_group: int, viewport_size: Vector2i) -> void:
-	for index in 8:
+	for index in 4:
 		var card := hand.get_card_button(index)
-		var is_active := index / 4 == active_group
-		if is_active:
-			_expect(card.mouse_filter == Control.MOUSE_FILTER_STOP, "Active card %d must accept mouse input at %s." % [index, viewport_size])
-			_expect(card.focus_mode == Control.FOCUS_ALL, "Active card %d must accept focus at %s." % [index, viewport_size])
-			_expect(card.modulate.get_luminance() > 0.85, "Active card %d must remain bright at %s." % [index, viewport_size])
-			_expect(card.z_index >= 100, "Active card %d must render above the inactive row at %s." % [index, viewport_size])
-		else:
-			_expect(card.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Inactive card %d must ignore mouse input at %s." % [index, viewport_size])
-			_expect(card.focus_mode == Control.FOCUS_NONE, "Inactive card %d must not accept focus at %s." % [index, viewport_size])
-			_expect(card.modulate.get_luminance() < 0.7, "Inactive card %d must be visibly recessed at %s." % [index, viewport_size])
-			_expect(card.z_index < 100, "Inactive card %d must render behind the active row at %s." % [index, viewport_size])
+		_expect(card.mouse_filter == Control.MOUSE_FILTER_STOP, "Visible card %d must accept mouse input at %s." % [index, viewport_size])
+		_expect(card.focus_mode == Control.FOCUS_ALL, "Visible card %d must accept focus at %s." % [index, viewport_size])
+		_expect(card.modulate.get_luminance() > 0.85, "Visible card %d must remain bright at %s." % [index, viewport_size])
+		_expect(card.z_index >= 100, "Visible card %d must render in the active layer at %s." % [index, viewport_size])
+		_expect(
+			int(card.get_meta("global_card_index", -1)) / 4 == active_group,
+			"Visible card %d must belong to active group %d at %s." % [index, active_group, viewport_size]
+		)
 
 
 func _inside_lower_hud(card: Control, viewport_size: Vector2i) -> bool:
 	var rect := card.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, card.size)
-	var hud_top := float(viewport_size.y) * 0.75
+	var hud_top := float(viewport_size.y) * 0.66
 	return (
 		rect.position.x >= -0.5
 		and rect.end.x <= float(viewport_size.x) + 0.5

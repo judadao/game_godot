@@ -68,7 +68,10 @@ func _run() -> void:
 	_expect(int(map.get_meta("camera_limit_left", -1)) == 0, "V2 camera left limit must be 0.")
 	_expect(int(map.get_meta("camera_limit_top", -1)) == 0, "V2 camera top limit must be 0.")
 	_expect(int(map.get_meta("camera_limit_right", 0)) == 2600, "V2 camera right limit must be 2600.")
-	_expect(int(map.get_meta("camera_limit_bottom", 0)) == 720, "V2 camera bottom limit must be 720.")
+	_expect(
+		int(map.get_meta("camera_limit_bottom", 0)) == 810,
+		"V2 camera bottom limit must reserve the 90px combat HUD composition offset."
+	)
 
 	for node_path in REQUIRED_NODE_PATHS:
 		_expect(map.has_node(node_path), "Autumn Battle Map V2 must contain %s." % node_path)

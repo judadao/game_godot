@@ -48,8 +48,10 @@ func _run() -> void:
 		"Preview must show the real embedded card hand."
 	)
 	_expect(
-		hand != null and int(hand.call("get_card_button_count")) == 8,
-		"Preview must populate two visible four-card groups."
+		hand != null
+			and int(hand.call("get_card_button_count")) == 4
+			and int(hand.call("get_group_count")) == 2,
+		"Preview must populate two groups while showing only the active four cards."
 	)
 	if hud != null:
 		_expect(
@@ -66,7 +68,7 @@ func _run() -> void:
 		var hud_paths := {
 			"PlayerVitals": "BottomStage/PlayerVitals",
 			"CardStage": "BottomStage/CardStage",
-			"PersonalResources": "BottomStage/PersonalResources",
+			"ActivityFeed": "BottomStage/ActivityFeed",
 		}
 		for node_name in hud_paths:
 			var hud_rect := _canvas_rect(hud.get_node(hud_paths[node_name]) as Control)

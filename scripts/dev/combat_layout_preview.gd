@@ -1,5 +1,7 @@
 extends Node2D
 
+const CAPTURE_PATH_ENV := "AUTUMN_HUD_CAPTURE_PATH"
+
 @onready var preview_camera: Camera2D = $PreviewCamera
 @onready var hud: AutumnCombatHUD = $HUDLayer/HUD
 @onready var card_hand: CardHandUI = $HUDLayer/HUD/BottomStage/CardStage/AutumnCardHandUI
@@ -21,6 +23,8 @@ func _ready() -> void:
 	hud.set_player_class("Adventurer")
 	hud.set_currency(45)
 	hud.set_experience(0, 40)
+	hud.set_material_count(98)
+	hud.set_action_point_regen(0.8)
 	hud.set_objective("SURVIVAL PHASE 1", "36s   Enemies 7 / 8")
 	hud.set_active_statuses([
 		{"id": "iron_momentum", "name": "Iron Momentum", "icon": "◆", "remaining_seconds": 2.8},
@@ -32,8 +36,25 @@ func _ready() -> void:
 	])
 	hud.show_skill_toast("iron_momentum", "IRON MOMENTUM")
 
-	card_hand.set_cards(_sample_cards(), 5.0)
-	card_hand.set_action_points(5.0, 5.0)
+	card_hand.set_cards(_sample_cards(), 3.7)
+	card_hand.set_action_points(3.7, 5.0)
+	if OS.has_environment(CAPTURE_PATH_ENV):
+		call_deferred("_capture_preview")
+
+
+func _capture_preview() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	var capture_path := OS.get_environment(CAPTURE_PATH_ENV).strip_edges()
+	if capture_path.is_empty():
+		get_tree().quit(1)
+		return
+	var image := get_viewport().get_texture().get_image()
+	var error := image.save_png(capture_path)
+	if error != OK:
+		push_error("Failed to save Autumn HUD preview to %s." % capture_path)
+	get_tree().quit(0 if error == OK else 1)
 
 
 func _apply_preview_camera_scale() -> void:
@@ -47,8 +68,8 @@ func _preview_zoom_for_size(viewport_size: Vector2) -> Vector2:
 
 func _sample_cards() -> Array[Dictionary]:
 	return [
-		_card("Ember Bolt", "attack", "Deal 12 damage and apply burn.", 1, "ember_bolt", true),
-		_card("Frost Bind", "status", "Slow one enemy.", 1, "frost_bind", true),
+		_card("Ember Bolt", "attack", "Deal 12 damage and apply burn.", 1, "ember_bolt"),
+		_card("Frost Bind", "status", "Slow one enemy.", 1, "frost_bind"),
 		_card("Iron Will", "combo", "Gain weak super armor for four seconds.", 1),
 		_card("Cleave", "attack", "Strike enemies in an arc.", 2),
 		_card("Flame Infusion", "power", "Future attacks gain flame.", 2),
