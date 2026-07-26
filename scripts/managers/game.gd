@@ -717,7 +717,6 @@ func _apply_level_up_choice(choice: Dictionary) -> bool:
 			if deck_manager.is_card_protected(card_id) or not run_state.card_levels.has(card_id) or int(run_state.card_levels[card_id]) >= 3:
 				return false
 			run_state.card_levels[card_id] = int(run_state.card_levels[card_id]) + 1
-			_try_evolve_card(card_id)
 		"add_card":
 			return _apply_card_reward(String(choice.get("card_id", "")))
 		"max_health":
@@ -908,7 +907,6 @@ func _merge_card_at_campfire(card_id: String) -> bool:
 	if not merged:
 		return false
 	run_state.temporary_buffs["campfire_used"] = true
-	_try_evolve_card(card_id)
 	_refresh_card_hand()
 	return true
 
@@ -920,7 +918,6 @@ func _upgrade_card_at_campfire(card_id: String) -> bool:
 		return false
 	run_state.card_levels[card_id] = int(run_state.card_levels.get(card_id, 1)) + 1
 	run_state.temporary_buffs["campfire_used"] = true
-	_try_evolve_card(card_id)
 	_refresh_card_hand()
 	return true
 
@@ -935,30 +932,6 @@ func _remove_one_card_copy(card_id: String) -> bool:
 		if index >= 0:
 			pile.remove_at(index)
 			return true
-	return false
-
-
-func _try_evolve_card(base_card_id: String) -> bool:
-	if deck_manager.is_card_protected(base_card_id):
-		return false
-	var passives_variant: Variant = run_state.temporary_buffs.get("passives", [])
-	var passives: Array = passives_variant if passives_variant is Array else []
-	for recipe in evolution_manager.find_available(run_state.card_levels, passives):
-		if String(recipe.get("base_card_id", "")) != base_card_id:
-			continue
-		var result_id := String(recipe.get("result_card_id", ""))
-		for pile in [deck_manager.hand, deck_manager.draw_pile, deck_manager.discard_pile]:
-			for index in pile.size():
-				if pile[index] == base_card_id:
-					pile[index] = result_id
-		run_state.card_levels.erase(base_card_id)
-		run_state.card_levels[result_id] = 3
-		var recipe_id := String(recipe.get("id", ""))
-		if not meta_state.unlocked_evolutions.has(recipe_id):
-			meta_state.unlocked_evolutions.append(recipe_id)
-		if hud != null and hud.has_method("set_objective"):
-			hud.call("set_objective", "EVOLUTION — %s" % String(recipe.get("name", result_id)), "Build power has reached its peak!")
-		return true
 	return false
 
 

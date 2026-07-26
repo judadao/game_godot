@@ -45,6 +45,16 @@ func _run() -> void:
 			tags.any(func(tag: Variant) -> bool: return ["restore", "regeneration", "lifesteal", "healing_summon"].has(String(tag))),
 			"%s must declare a recovery behavior tag." % healing_id
 		)
+	_expect(
+		bool(database.get_card("healing_light").get("exhaust_on_play", false)),
+		"Healing Light must heal immediately, then exhaust on play."
+	)
+
+	var game_source := FileAccess.get_file_as_string("res://scripts/managers/game.gd")
+	_expect(
+		not game_source.contains("evolution_manager.find_available(run_state.card_levels, passives)"),
+		"Game must not query instance fusion recipes with shared card levels or passive state."
+	)
 
 	var fusion := EvolutionManager.new(database)
 	_expect(fusion.load_recipes(), "The fusion catalog must validate.")

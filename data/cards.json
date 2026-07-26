@@ -231,6 +231,7 @@
       "description": "Restore 14 health.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_06.png",
       "tags": ["healing", "restore"],
+      "exhaust_on_play": true,
       "combo_tags": ["support", "light"],
       "effect": {"kind": "heal", "amount": 14},
       "upgrade_effects": [
