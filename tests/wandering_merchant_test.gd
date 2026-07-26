@@ -28,6 +28,30 @@ func _run() -> void:
 		var protected_count := int(game.call("_get_card_copy_count", fixed_id))
 		_expect(not bool(game.call("_purchase_wandering_offer", {"kind": "purge", "price": 45, "card_id": fixed_id})), "Merchant must never purge %s." % fixed_id)
 		_expect(int(game.call("_get_card_copy_count", fixed_id)) == protected_count, "Rejected purge must not change %s." % fixed_id)
+	var deck := game.get("deck_manager") as DeckManager
+	var meta := game.get("meta_state") as MetaState
+	var removable: CardInstance
+	for instance in run.card_instances:
+		if not instance.is_fixed():
+			removable = instance
+			break
+	_expect(removable != null, "The expedition must contain a removable CardInstance.")
+	if removable != null:
+		var removable_id := removable.instance_id
+		var count_before := deck.get_all_instances().size()
+		_expect(bool(game.call("_purchase_wandering_offer", {
+			"kind": "purge",
+			"price": 45,
+			"card_id": removable.card_id,
+			"instance_id": removable_id,
+		})), "Merchant purge must accept one exact non-fixed CardInstance.")
+		_expect(
+			deck.get_all_instances().size() == count_before - 1
+			and deck.find_instance(removable_id) == null
+			and run.get_card_instance(removable_id) == null
+			and meta.get_card_instance(removable_id) == null,
+			"Merchant purge must remove the same identity from Deck, Run, and Meta."
+		)
 	game.queue_free()
 	await process_frame
 	quit(0 if _failures == 0 else 1)

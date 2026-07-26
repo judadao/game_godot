@@ -57,7 +57,13 @@ func _run() -> void:
 				break
 		_expect(fixed_instance != null and fixed_instance.level == 1, "%s must remain one stable Lv1 instance." % fixed_id)
 		var copies_before := int(game.call("_get_card_copy_count", fixed_id))
-		_expect(not bool(game.call("_apply_card_reward", fixed_id)), "%s must reject duplicate card rewards." % fixed_id)
+		_expect(
+			not bool(game.call("_apply_growth_resolution", {
+				"action": "new_card",
+				"card_id": fixed_id,
+			})),
+			"%s must reject duplicate card rewards." % fixed_id
+		)
 		_expect(int(game.call("_get_card_copy_count", fixed_id)) == copies_before, "%s reward rejection must not mutate the deck." % fixed_id)
 		_expect(
 			not bool(game.call("_apply_growth_resolution", {

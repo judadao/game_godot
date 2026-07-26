@@ -632,11 +632,6 @@ func _on_run_wave_started(wave_number: int, total_waves: int, enemy_count: int) 
 			"Autumn Tree — Wave %d / %d" % [wave_number, total_waves],
 			"Enemies: %d" % enemy_count
 		)
-	if run_state.active and wave_number == 2:
-		run_state.temporary_buffs["passives"] = [
-			"ember_core", "iron_heart", "wind_feather",
-			"hourglass_shard", "life_seed", "warrior_emblem",
-		]
 	if run_state.active and wave_number > 1 and wave_number < total_waves:
 		call_deferred("_show_card_reward_choices", wave_number)
 	if run_state.active and wave_number == 3:
@@ -689,7 +684,7 @@ func _on_experience_collected(value: int) -> void:
 
 
 func _enqueue_experience_growth() -> void:
-	if run_state.pending_level_ups <= 0:
+	if run_state.pending_level_ups <= 0 or not growth_choice_queue.is_empty():
 		return
 	var upgrades: Array[Dictionary] = []
 	for instance in run_state.card_instances:
@@ -711,80 +706,6 @@ func _enqueue_experience_growth() -> void:
 	call_deferred("_open_next_growth_choice")
 
 
-func _build_level_up_choices() -> Array[Dictionary]:
-	var choices: Array[Dictionary] = []
-	var card_ids := run_state.card_levels.keys()
-	card_ids.sort()
-	for card_id_variant in card_ids:
-		var card_id := String(card_id_variant)
-		if deck_manager.is_card_protected(card_id):
-			continue
-		var level := int(run_state.card_levels.get(card_id, 1))
-		if level >= 3:
-			continue
-		choices.append({
-			"kind": "upgrade_card",
-			"card_id": card_id,
-			"text": "Upgrade %s  Lv.%d → Lv.%d" % [_card_name(card_id), level, level + 1],
-		})
-		if choices.size() >= 3:
-			return choices
-	if _get_run_deck_size() < 16:
-		for card_id in meta_state.unlocked_cards:
-			if choices.size() >= 3:
-				break
-			if card_database.has_card(card_id):
-				choices.append({"kind": "add_card", "card_id": card_id, "text": "Add %s" % _card_name(card_id)})
-	var fallback := [
-		{"kind": "max_health", "text": "Vital Growth  +10 Max HP"},
-		{"kind": "ap_regen", "text": "Quick Mind  +0.10 AP/sec"},
-		{"kind": "remove_card", "text": "Refine Deck  Remove one card"},
-	]
-	for choice in fallback:
-		if choices.size() >= 3:
-			break
-		choices.append(choice)
-	return choices
-
-
-func _on_level_up_choice(choice: Dictionary, ui_control: Control) -> void:
-	if not _apply_level_up_choice(choice):
-		return
-	run_state.consume_pending_level()
-	close_ui(ui_control)
-	_refresh_card_hand()
-	_update_hud_player_identity()
-	if run_state.pending_level_ups > 0:
-		call_deferred("_open_next_level_up")
-
-
-func _apply_level_up_choice(choice: Dictionary) -> bool:
-	match String(choice.get("kind", "")):
-		"upgrade_card":
-			var card_id := String(choice.get("card_id", ""))
-			if deck_manager.is_card_protected(card_id) or not run_state.card_levels.has(card_id) or int(run_state.card_levels[card_id]) >= 3:
-				return false
-			run_state.card_levels[card_id] = int(run_state.card_levels[card_id]) + 1
-			_try_evolve_card(card_id)
-		"add_card":
-			return _apply_card_reward(String(choice.get("card_id", "")))
-		"max_health":
-			if player == null:
-				return false
-			player.max_health += 10
-			player.health += 10
-		"ap_regen":
-			run_state.temporary_buffs["level_ap_regen"] = float(run_state.temporary_buffs.get("level_ap_regen", 0.0)) + 0.10
-		"remove_card":
-			for card_id in deck_manager.hand + deck_manager.draw_pile + deck_manager.discard_pile:
-				if not deck_manager.is_card_protected(card_id):
-					return _remove_one_card_copy(card_id)
-			return false
-		_:
-			return false
-	return true
-
-
 func _get_run_deck_size() -> int:
 	return deck_manager.get_all_instances().size()
 
@@ -798,8 +719,7 @@ func _open_next_growth_choice() -> void:
 	ui_control.call("present_page", growth_choice_queue.peek())
 	ui_control.connect(
 		"choice_confirmed",
-		_on_growth_choice_confirmed.bind(ui_control),
-		CONNECT_ONE_SHOT
+		_on_growth_choice_confirmed.bind(ui_control)
 	)
 
 
@@ -811,7 +731,10 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 		if String(choice.get("choice_id", "")) == choice_id:
 			selected = choice
 			break
-	if selected.is_empty() or not _apply_growth_resolution(selected):
+	if selected.is_empty():
+		return
+	if not _apply_growth_resolution(selected):
+		ui_control.call("present_page", page)
 		return
 	if growth_choice_queue.resolve(choice_id).is_empty():
 		return
@@ -820,7 +743,6 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 	close_ui(ui_control)
 	_refresh_card_hand()
 	_update_hud_player_identity()
-	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
 	if run_state.pending_level_ups > 0 and growth_choice_queue.is_empty():
 		_enqueue_experience_growth()
 	elif not growth_choice_queue.is_empty():
@@ -828,6 +750,15 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 
 
 func _apply_growth_resolution(choice: Dictionary) -> bool:
+	var snapshot := _capture_growth_transaction()
+	var applied := _apply_growth_resolution_uncommitted(choice)
+	if not applied or not save_service.save_meta(META_SAVE_PATH, meta_state.to_dict()):
+		_restore_growth_transaction(snapshot)
+		return false
+	return true
+
+
+func _apply_growth_resolution_uncommitted(choice: Dictionary) -> bool:
 	match String(choice.get("action", "")):
 		"new_card":
 			return _add_persistent_run_card(String(choice.get("card_id", "")))
@@ -849,6 +780,60 @@ func _apply_growth_resolution(choice: Dictionary) -> bool:
 				hud.call("set_currency", wallet_gold)
 			return true
 	return false
+
+
+func _capture_growth_transaction() -> Dictionary:
+	var instance_levels: Dictionary = {}
+	for instance in meta_state.selected_card_instances + run_state.card_instances + deck_manager.get_all_instances():
+		instance_levels[instance.instance_id] = instance.level
+	var cooldown_snapshot: Array[Dictionary] = []
+	for entry in deck_manager.cooldown_pile:
+		cooldown_snapshot.append(entry.duplicate())
+	return {
+		"meta": meta_state.to_dict(),
+		"meta_instances": meta_state.selected_card_instances.duplicate(),
+		"run_instances": run_state.card_instances.duplicate(),
+		"run_card_levels": run_state.card_levels.duplicate(true),
+		"run_temporary_cards": run_state.temporary_cards.duplicate(),
+		"deck_hand": deck_manager.hand_instances.duplicate(),
+		"deck_draw": deck_manager.draw_instances.duplicate(),
+		"deck_discard": deck_manager.discard_instances.duplicate(),
+		"deck_exhaust": deck_manager.exhaust_instances.duplicate(),
+		"deck_cooldown": cooldown_snapshot,
+		"instance_levels": instance_levels,
+		"inventory": inventory_manager.call("to_dict"),
+		"wallet_gold": wallet_gold,
+	}
+
+
+func _restore_growth_transaction(snapshot: Dictionary) -> void:
+	var instance_levels := snapshot.get("instance_levels", {}) as Dictionary
+	for instance in (
+		(snapshot.get("meta_instances", []) as Array)
+		+ (snapshot.get("run_instances", []) as Array)
+		+ (snapshot.get("deck_hand", []) as Array)
+		+ (snapshot.get("deck_draw", []) as Array)
+		+ (snapshot.get("deck_discard", []) as Array)
+		+ (snapshot.get("deck_exhaust", []) as Array)
+	):
+		if instance is CardInstance and instance_levels.has(instance.instance_id):
+			instance.level = int(instance_levels[instance.instance_id])
+	meta_state.apply_dict(snapshot.get("meta", {}) as Dictionary)
+	meta_state.selected_card_instances.assign(snapshot.get("meta_instances", []) as Array)
+	meta_state.selected_deck = meta_state.get_selected_card_ids()
+	run_state.card_instances.assign(snapshot.get("run_instances", []) as Array)
+	run_state.card_levels = (snapshot.get("run_card_levels", {}) as Dictionary).duplicate(true)
+	run_state.temporary_cards.assign(snapshot.get("run_temporary_cards", []) as Array)
+	deck_manager.hand_instances.assign(snapshot.get("deck_hand", []) as Array)
+	deck_manager.draw_instances.assign(snapshot.get("deck_draw", []) as Array)
+	deck_manager.discard_instances.assign(snapshot.get("deck_discard", []) as Array)
+	deck_manager.exhaust_instances.assign(snapshot.get("deck_exhaust", []) as Array)
+	deck_manager.cooldown_pile.assign(snapshot.get("deck_cooldown", []) as Array)
+	deck_manager.call("_sync_id_views")
+	inventory_manager.call("apply_dict", snapshot.get("inventory", {}) as Dictionary)
+	wallet_gold = int(snapshot.get("wallet_gold", 0))
+	_refresh_card_hand()
+	_update_hud_resources()
 
 
 func _on_combat_engaged() -> void:
@@ -973,15 +958,6 @@ func _show_card_reward_choices(wave_number: int) -> void:
 		call_deferred("_open_next_growth_choice")
 
 
-func _on_card_reward_selected(_index: int, _text: String, metadata: Dictionary, ui_control: Control) -> void:
-	_apply_card_reward(String(metadata.get("card_id", "")))
-	close_ui(ui_control)
-
-
-func _apply_card_reward(card_id: String) -> bool:
-	return _add_persistent_run_card(card_id)
-
-
 func _add_persistent_run_card(card_id: String) -> bool:
 	if (
 		not run_state.active
@@ -1052,74 +1028,6 @@ func _get_card_copy_count(card_id: String) -> int:
 		if instance.card_id == card_id:
 			count += 1
 	return count
-
-
-func _merge_card_at_campfire(card_id: String) -> bool:
-	if not run_state.active or deck_manager.is_card_protected(card_id) or bool(run_state.temporary_buffs.get("campfire_used", false)):
-		return false
-	if _get_card_copy_count(card_id) < 2 or int(run_state.card_levels.get(card_id, 0)) >= 3:
-		return false
-	var merged := false
-	while _get_card_copy_count(card_id) > 1 and int(run_state.card_levels.get(card_id, 1)) < 3:
-		if not _remove_one_card_copy(card_id):
-			break
-		run_state.card_levels[card_id] = int(run_state.card_levels.get(card_id, 1)) + 1
-		merged = true
-	if not merged:
-		return false
-	run_state.temporary_buffs["campfire_used"] = true
-	_try_evolve_card(card_id)
-	_refresh_card_hand()
-	return true
-
-
-func _upgrade_card_at_campfire(card_id: String) -> bool:
-	if not run_state.active or deck_manager.is_card_protected(card_id) or bool(run_state.temporary_buffs.get("campfire_used", false)):
-		return false
-	if _get_card_copy_count(card_id) <= 0 or int(run_state.card_levels.get(card_id, 0)) >= 3:
-		return false
-	run_state.card_levels[card_id] = int(run_state.card_levels.get(card_id, 1)) + 1
-	run_state.temporary_buffs["campfire_used"] = true
-	_try_evolve_card(card_id)
-	_refresh_card_hand()
-	return true
-
-
-func _remove_one_card_copy(card_id: String) -> bool:
-	if deck_manager.is_card_protected(card_id):
-		return false
-	var piles: Array = [deck_manager.discard_pile, deck_manager.draw_pile, deck_manager.hand]
-	for pile_variant in piles:
-		var pile := pile_variant as Array
-		var index: int = pile.find(card_id)
-		if index >= 0:
-			pile.remove_at(index)
-			return true
-	return false
-
-
-func _try_evolve_card(base_card_id: String) -> bool:
-	if deck_manager.is_card_protected(base_card_id):
-		return false
-	var passives_variant: Variant = run_state.temporary_buffs.get("passives", [])
-	var passives: Array = passives_variant if passives_variant is Array else []
-	for recipe in evolution_manager.find_available(run_state.card_levels, passives):
-		if String(recipe.get("base_card_id", "")) != base_card_id:
-			continue
-		var result_id := String(recipe.get("result_card_id", ""))
-		for pile in [deck_manager.hand, deck_manager.draw_pile, deck_manager.discard_pile]:
-			for index in pile.size():
-				if pile[index] == base_card_id:
-					pile[index] = result_id
-		run_state.card_levels.erase(base_card_id)
-		run_state.card_levels[result_id] = 3
-		var recipe_id := String(recipe.get("id", ""))
-		if not meta_state.unlocked_evolutions.has(recipe_id):
-			meta_state.unlocked_evolutions.append(recipe_id)
-		if hud != null and hud.has_method("set_objective"):
-			hud.call("set_objective", "EVOLUTION — %s" % String(recipe.get("name", result_id)), "Build power has reached its peak!")
-		return true
-	return false
 
 
 func _finish_run(victory: bool) -> Dictionary:
@@ -2087,17 +1995,23 @@ func _build_wandering_stock() -> Array[Dictionary]:
 		ordinary_id = "guard"
 	if rare_id.is_empty():
 		rare_id = "flame_imbue"
-	var removable_id := ""
-	for card_id in deck_manager.hand + deck_manager.draw_pile + deck_manager.discard_pile:
-		if not deck_manager.is_card_protected(card_id):
-			removable_id = card_id
+	var removable: CardInstance
+	for instance in deck_manager.get_all_instances():
+		if not instance.is_fixed():
+			removable = instance
 			break
 	var stock: Array[Dictionary] = [
 		{"kind": "health_potion", "name": "Health Potion (+40 HP)", "price": 25},
 		{"kind": "mana_potion", "name": "Mana Potion (+30 MP)", "price": 20},
 		{"kind": "card", "name": _card_name(ordinary_id), "price": 35, "card_id": ordinary_id},
 		{"kind": "card", "name": _card_name(rare_id), "price": 70, "card_id": rare_id},
-		{"kind": "purge", "name": "Purge %s" % _card_name(removable_id), "price": 45, "card_id": removable_id},
+		{
+			"kind": "purge",
+			"name": "Purge %s" % _card_name(removable.card_id if removable != null else ""),
+			"price": 45,
+			"card_id": removable.card_id if removable != null else "",
+			"instance_id": removable.instance_id if removable != null else "",
+		},
 	]
 	run_state.temporary_buffs["wandering_stock"] = stock.duplicate(true)
 	return stock
@@ -2126,14 +2040,35 @@ func _purchase_wandering_offer(offer: Dictionary) -> bool:
 			var card_id := String(offer.get("card_id", ""))
 			if not card_database.has_card(card_id) or _get_run_deck_size() >= 16:
 				return false
-			run_state.temporary_cards.append(card_id)
-			deck_manager.discard_pile.append(card_id)
+			if not _add_persistent_run_card(card_id):
+				return false
 		"purge":
-			var card_id := String(offer.get("card_id", ""))
-			if card_id.is_empty() or deck_manager.is_card_protected(card_id) or not _remove_one_card_copy(card_id):
+			var instance_id := String(offer.get("instance_id", ""))
+			if not _remove_card_instance(instance_id):
 				return false
 	run_state.gold_earned -= price
 	return true
+
+
+func _remove_card_instance(instance_id: String) -> bool:
+	var deck_instance := deck_manager.find_instance(instance_id)
+	var run_instance := run_state.get_card_instance(instance_id)
+	var meta_instance := meta_state.get_card_instance(instance_id)
+	if (
+		deck_instance == null
+		or run_instance == null
+		or meta_instance == null
+		or deck_instance != run_instance
+		or run_instance != meta_instance
+		or deck_instance.is_fixed()
+	):
+		return false
+	var instance_ids: Array[String] = [instance_id]
+	return (
+		deck_manager.remove_instances(instance_ids)
+		and run_state.remove_card_instances(instance_ids)
+		and meta_state.remove_card_instances(instance_ids)
+	)
 
 
 func _discover_equipment_reward() -> String:
@@ -2283,30 +2218,6 @@ func _rest_at_campfire() -> bool:
 	player.call("restore_mana", int(player.get("max_mana")))
 	run_state.temporary_buffs["campfire_used"] = true
 	return true
-
-
-func _show_campfire_card_choices(ui_control: Control, merge: bool) -> void:
-	var choices: Array[Dictionary] = []
-	for card_id_variant in run_state.card_levels.keys():
-		var card_id := String(card_id_variant)
-		if deck_manager.is_card_protected(card_id):
-			continue
-		var level := int(run_state.card_levels.get(card_id, 1))
-		if level >= 3:
-			continue
-		if merge and _get_card_copy_count(card_id) < 2:
-			continue
-		choices.append({
-			"text": "%s  Lv.%d  Copies %d" % [_card_name(card_id), level, _get_card_copy_count(card_id)],
-			"campfire_action": "merge_card" if merge else "upgrade_card",
-			"card_id": card_id,
-		})
-	if choices.is_empty():
-		choices.append({"text": "No eligible cards — go back", "campfire_action": "back"})
-	else:
-		choices.append({"text": "Back", "campfire_action": "back"})
-	ui_control.call("set_dialogue_text", "Choose duplicate cards to merge." if merge else "Choose one card to upgrade.")
-	ui_control.call("set_choices", choices)
 
 
 func _show_campfire_result(ui_control: Control, message: String) -> void:
