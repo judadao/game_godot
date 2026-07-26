@@ -1,0 +1,295 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/card_growth_ui.gd" id="1_card_growth"]
+
+[sub_resource type="StyleBoxFlat" id="StyleModal"]
+bg_color = Color(0.075, 0.09, 0.14, 0.98)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.95, 0.72, 0.3, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.55)
+shadow_size = 16
+
+[sub_resource type="StyleBoxFlat" id="StylePanel"]
+bg_color = Color(0.035, 0.05, 0.09, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.48, 0.65, 0.7)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleTab"]
+bg_color = Color(0.13, 0.18, 0.28, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.52, 0.68, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleTabActive"]
+bg_color = Color(0.37, 0.24, 0.1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.8, 0.36, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleOption"]
+bg_color = Color(0.11, 0.15, 0.23, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.33, 0.45, 0.62, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleOptionHover"]
+bg_color = Color(0.2, 0.28, 0.4, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.98, 0.75, 0.3, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleConfirm"]
+bg_color = Color(0.48, 0.31, 0.12, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.82, 0.38, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="CardGrowthUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_card_growth")
+
+[node name="DimBackground" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.005, 0.012, 0.025, 0.78)
+mouse_filter = 0
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GrowthModal" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(1040, 620)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleModal")
+
+[node name="ModalMargin" type="MarginContainer" parent="CenterContainer/GrowthModal"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 18
+
+[node name="ModalLayout" type="VBoxContainer" parent="CenterContainer/GrowthModal/ModalMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SourceTitle" type="Label" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.4, 1)
+theme_override_font_sizes/font_size = 30
+text = "CARD GROWTH"
+horizontal_alignment = 1
+
+[node name="Instruction" type="Label" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.87, 0.98, 1)
+theme_override_font_sizes/font_size = 16
+text = "Choose one option, review the result, then confirm. This choice cannot be dismissed."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="PageTabs" type="HBoxContainer" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="NewCardTab" type="Button" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/PageTabs"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("StyleTab")
+theme_override_styles/disabled = SubResource("StyleTabActive")
+text = "New Card"
+
+[node name="UpgradeTab" type="Button" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/PageTabs"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("StyleTab")
+theme_override_styles/disabled = SubResource("StyleTabActive")
+text = "Upgrade"
+
+[node name="FusionTab" type="Button" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/PageTabs"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("StyleTab")
+theme_override_styles/disabled = SubResource("StyleTabActive")
+text = "Full Fusion"
+
+[node name="RewardTab" type="Button" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/PageTabs"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("StyleTab")
+theme_override_styles/disabled = SubResource("StyleTabActive")
+text = "Reward"
+
+[node name="Content" type="HBoxContainer" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="OptionPanel" type="PanelContainer" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/Content"]
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="OptionLayout" type="VBoxContainer" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/Content/OptionPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="OptionHeader" type="Label" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/Content/OptionPanel/OptionLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 19
+text = "Available Options"
+horizontal_alignment = 1
+
+[node name="OptionScroll" type="ScrollContainer" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/Content/OptionPanel/OptionLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+vertical_scroll_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="OptionGrid" type="GridContainer" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/Content/OptionPanel/OptionLayout/OptionScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 1
+
+[node name="EmptyReason" type="Label" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/Content/OptionPanel/OptionLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.68, 0.45, 1)
+theme_override_font_sizes/font_size = 16
+text = "No valid choices are available."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="DetailPanel" type="PanelContainer" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/Content"]
+custom_minimum_size = Vector2(390, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="DetailLayout" type="VBoxContainer" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/Content/DetailPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DetailHeader" type="Label" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/Content/DetailPanel/DetailLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Growth Preview"
+horizontal_alignment = 1
+
+[node name="DetailTitle" type="Label" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/Content/DetailPanel/DetailLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0.48, 1)
+theme_override_font_sizes/font_size = 24
+text = "Choose a Growth Path"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="DetailText" type="RichTextLabel" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/Content/DetailPanel/DetailLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.9, 0.93, 0.98, 1)
+theme_override_font_sizes/normal_font_size = 17
+bbcode_enabled = false
+fit_content = false
+scroll_active = true
+autowrap_mode = 2
+text = "Select an option to preview its result."
+
+[node name="ActionBar" type="HBoxContainer" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 2
+
+[node name="StatusHint" type="Label" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/ActionBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.7, 0.8, 0.93, 1)
+theme_override_font_sizes/font_size = 15
+text = "Navigate with keyboard or controller."
+vertical_alignment = 1
+
+[node name="ConfirmButton" type="Button" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/ActionBar"]
+custom_minimum_size = Vector2(150, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleConfirm")
+theme_override_styles/hover = SubResource("StyleTabActive")
+text = "Confirm"
+
+[node name="CancelButton" type="Button" parent="CenterContainer/GrowthModal/ModalMargin/ModalLayout/ActionBar"]
+custom_minimum_size = Vector2(150, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleTab")
+theme_override_styles/hover = SubResource("StyleOptionHover")
+text = "Cannot Close"

@@ -90,12 +90,55 @@ func _run() -> void:
 	_expect(not dialogue.visible, "Goodbye closes the dialogue")
 	dialogue.queue_free()
 
+	var growth: CardGrowthUI = load("res://scenes/ui/CardGrowthUI.tscn").instantiate() as CardGrowthUI
+	root.add_child(growth)
+	await process_frame
+	growth.set_growth_entry({
+		"source": "exp_level",
+		"allowed_pages": ["upgrade", "reward"],
+		"payload": {
+			"upgrade_options": [{"instance_id": 77, "card_id": "guard", "name": "Guard", "level": 2}],
+			"fallback_rewards": [{"resource_id": "gold", "amount": 75}],
+		},
+	})
+	await process_frame
+	await process_frame
+	_expect(growth.get_viewport().gui_get_focus_owner() == growth.upgrade_tab, "Growth modal opens with keyboard/controller focus on its active page")
+	_send_action(&"ui_down")
+	await process_frame
+	_expect(growth.get_viewport().gui_get_focus_owner() == growth._option_buttons[0], "Growth Down enters the selectable option grid")
+	_send_action(&"ui_accept")
+	_send_action_release(&"ui_accept")
+	await process_frame
+	_expect(not growth.confirm_button.disabled, "Growth accept selects the focused option before confirmation")
+	_send_action(&"ui_right")
+	await process_frame
+	_expect(growth.get_viewport().gui_get_focus_owner() == growth.confirm_button, "Growth Right enters the confirmation control")
+	var growth_actions: Array[Dictionary] = []
+	var growth_cancels: Array[bool] = []
+	growth.choice_confirmed.connect(func(action: Dictionary) -> void: growth_actions.append(action.duplicate(true)))
+	growth.close_requested.connect(func() -> void: growth_cancels.append(true))
+	_send_action(&"ui_accept")
+	_send_action_release(&"ui_accept")
+	await process_frame
+	_expect(growth_actions.size() == 1 and int(growth_actions[0].get("instance_id", 0)) == 77, "Growth keyboard/controller confirmation emits the selected typed intent")
+	_send_action(&"ui_cancel")
+	await process_frame
+	_expect(growth_cancels.size() == 1 and growth.visible, "Growth cancel reports a non-consuming close request without hiding the modal")
+	growth.queue_free()
+
 	quit(1 if failed else 0)
 
 func _send_action(action: StringName) -> void:
 	var event := InputEventAction.new()
 	event.action = action
 	event.pressed = true
+	Input.parse_input_event(event)
+
+func _send_action_release(action: StringName) -> void:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = false
 	Input.parse_input_event(event)
 
 func _expect(condition: bool, message: String) -> void:
