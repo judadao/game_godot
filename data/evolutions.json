@@ -1,53 +1,47 @@
 {
-  "schema_version": 1,
-  "evolutions": [
+  "schema_version": 2,
+  "fusions": [
     {
-      "id": "evolve_ember_bolt",
-      "name": "Ember Bolt to Inferno Orb",
-      "base_card_id": "ember_bolt",
+      "id": "fuse_unbreakable_stance",
+      "name": "Iron Will + Stone Form",
+      "material_card_ids": ["guard", "iron_skin"],
       "required_level": 3,
-      "required_passives": ["ember_core"],
-      "result_card_id": "inferno_orb"
-    },
-    {
-      "id": "evolve_guard",
-      "name": "Guard to Fortress Stance",
-      "base_card_id": "guard",
-      "required_level": 3,
-      "required_passives": ["iron_heart"],
       "result_card_id": "fortress_stance"
     },
     {
-      "id": "evolve_dash_strike",
-      "name": "Dash Strike to Gale Lunge",
-      "base_card_id": "dash_strike",
+      "id": "fuse_gale_lunge",
+      "name": "Dash Strike + Cleave",
+      "material_card_ids": ["dash_strike", "cleave"],
       "required_level": 3,
-      "required_passives": ["wind_feather"],
       "result_card_id": "gale_lunge"
     },
     {
-      "id": "evolve_frost_bind",
-      "name": "Frost Bind to Time Snare",
-      "base_card_id": "frost_bind",
+      "id": "fuse_time_snare",
+      "name": "Frost Bind + Energy Wisp",
+      "material_card_ids": ["frost_bind", "energy_surge"],
       "required_level": 3,
-      "required_passives": ["hourglass_shard"],
       "result_card_id": "time_snare"
     },
     {
-      "id": "evolve_healing_light",
-      "name": "Healing Light to Renewal",
-      "base_card_id": "healing_light",
+      "id": "fuse_renewal",
+      "name": "Healing Light + Blood Pact",
+      "material_card_ids": ["healing_light", "blood_pact_combo"],
       "required_level": 3,
-      "required_passives": ["life_seed"],
       "result_card_id": "renewal"
     },
     {
-      "id": "evolve_battle_focus",
-      "name": "Battle Focus to Overdrive",
-      "base_card_id": "battle_focus",
+      "id": "fuse_overdrive",
+      "name": "Battle Focus + Flame Aura",
+      "material_card_ids": ["battle_focus", "flame_aura"],
       "required_level": 3,
-      "required_passives": ["warrior_emblem"],
       "result_card_id": "overdrive"
+    },
+    {
+      "id": "fuse_inferno_orb",
+      "name": "Cleave + Flame Aura",
+      "material_card_ids": ["cleave", "flame_aura"],
+      "required_level": 3,
+      "result_card_id": "inferno_orb"
     }
   ]
 }

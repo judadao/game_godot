@@ -4,8 +4,9 @@ extends Button
 
 const TYPE_COLORS := {
 	"ATTACK": Color(0.31, 0.075, 0.035, 0.98),
-	"DEFENSE": Color(0.035, 0.10, 0.23, 0.98),
-	"SKILL": Color(0.12, 0.07, 0.23, 0.98),
+	"COMBO": Color(0.035, 0.10, 0.23, 0.98),
+	"UTILITY": Color(0.12, 0.07, 0.23, 0.98),
+	"HEALING": Color(0.015, 0.145, 0.075, 0.99),
 	"POWER": Color(0.27, 0.13, 0.025, 0.98),
 	"SUMMON": Color(0.025, 0.17, 0.13, 0.98),
 	"STATUS": Color(0.035, 0.15, 0.19, 0.98),
@@ -14,8 +15,9 @@ const TYPE_COLORS := {
 }
 const TYPE_GLYPHS := {
 	"ATTACK": "⚔",
-	"DEFENSE": "◆",
-	"SKILL": "✦",
+	"COMBO": "◆",
+	"UTILITY": "✦",
+	"HEALING": "✚",
 	"POWER": "♜",
 	"SUMMON": "♣",
 	"STATUS": "❖",
@@ -106,8 +108,13 @@ func is_fixed() -> bool:
 
 func _apply_visual_state() -> void:
 	var base_color := TYPE_COLORS.get(_card_type, TYPE_COLORS["CARD"]) as Color
-	var normal_border := Color(1.0, 0.76, 0.24, 1.0) if _fixed else Color(0.72, 0.48, 0.18, 0.98)
-	var bright_border := Color(1.0, 0.77, 0.25, 1.0)
+	var healing := _card_type == "HEALING"
+	var normal_border := (
+		Color(1.0, 0.76, 0.24, 1.0)
+		if _fixed
+		else Color(0.30, 0.86, 0.46, 1.0) if healing else Color(0.72, 0.48, 0.18, 0.98)
+	)
+	var bright_border := Color(0.62, 1.0, 0.67, 1.0) if healing else Color(1.0, 0.77, 0.25, 1.0)
 	var inactive_border := Color(0.32, 0.27, 0.22, 0.82)
 	var normal := _make_style(
 		base_color if _row_active else base_color.darkened(0.48),

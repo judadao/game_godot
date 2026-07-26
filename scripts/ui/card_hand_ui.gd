@@ -345,8 +345,9 @@ func _update_ap_display() -> void:
 func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
 	var color_by_type := {
 		"ATTACK": Color(0.26, 0.075, 0.045, 0.96),
-		"DEFENSE": Color(0.055, 0.12, 0.24, 0.96),
-		"SKILL": Color(0.15, 0.09, 0.24, 0.96),
+		"COMBO": Color(0.055, 0.12, 0.24, 0.96),
+		"UTILITY": Color(0.15, 0.09, 0.24, 0.96),
+		"HEALING": Color(0.025, 0.16, 0.09, 0.98),
 		"POWER": Color(0.25, 0.15, 0.035, 0.96),
 		"SUMMON": Color(0.055, 0.20, 0.17, 0.96),
 		"STATUS": Color(0.10, 0.18, 0.22, 0.96),
@@ -355,7 +356,10 @@ func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
 	}
 	var style := StyleBoxFlat.new()
 	style.bg_color = color_by_type.get(card_type, Color(0.12, 0.075, 0.045, 0.96))
-	style.border_color = Color(1.0, 0.76, 0.30, 1.0) if hovered else Color(0.69, 0.43, 0.18, 0.95)
+	if card_type == "HEALING":
+		style.border_color = Color(0.55, 1.0, 0.55, 1.0) if hovered else Color(0.28, 0.82, 0.42, 0.98)
+	else:
+		style.border_color = Color(1.0, 0.76, 0.30, 1.0) if hovered else Color(0.69, 0.43, 0.18, 0.95)
 	style.set_border_width_all(3 if hovered else 2)
 	style.set_corner_radius_all(8)
 	style.content_margin_left = 4.0
@@ -370,11 +374,11 @@ func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
 func _editor_sample_cards() -> Array[Dictionary]:
 	return [
 		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal 12 damage and apply burn.", "cost": 1, "level": 1, "fixed": true},
-		{"id": "quickstep", "name": "Quickstep", "type": "skill", "description": "Dash through danger.", "cost": 1, "level": 1, "fixed": true},
-		{"id": "guard", "name": "Guard", "type": "defense", "description": "Gain 12 block.", "cost": 1, "level": 1},
+		{"id": "quickstep", "name": "Quickstep", "type": "utility", "description": "Dash through danger.", "cost": 1, "level": 1, "fixed": true},
+		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain brief super armor.", "cost": 1, "level": 1},
 		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Strike enemies in an arc.", "cost": 2, "level": 1},
 		{"id": "flame_infusion", "name": "Flame Infusion", "type": "power", "description": "Future attacks gain flame.", "cost": 2, "level": 1},
 		{"id": "frost_burst", "name": "Frost Burst", "type": "power", "description": "Future attacks gain frost.", "cost": 2, "level": 1},
-		{"id": "healing_light", "name": "Healing Light", "type": "skill", "description": "Restore health over time.", "cost": 2, "level": 1},
+		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Restore health.", "cost": 1, "level": 1},
 		{"id": "meteor", "name": "Meteor", "type": "ultimate", "description": "Call down a devastating meteor.", "cost": 5, "level": 1},
 	]
