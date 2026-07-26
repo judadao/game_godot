@@ -120,25 +120,18 @@ func _assert_world_stays_above_hud(map: Node) -> void:
 
 
 func _assert_bottom_ui_owns_last_quarter(map: Node) -> void:
-	var stage_guide := map.get_node_or_null("EditorHUDReference/CardStageGuide") as Control
-	var viewport_guide := map.get_node_or_null("EditorHUDReference/ViewportBoundary") as Control
-	var hud_bottom := map.get_node_or_null("EditorHUDReference/HUD/BottomHUD") as Control
-	var card_safe_area := map.get_node_or_null("EditorHUDReference/CardHandUI/CardSafeArea") as Control
-	_expect(stage_guide != null, "Editor HUD reference must expose the bottom-stage guide.")
-	_expect(viewport_guide != null, "Editor HUD reference must expose the 1280x720 viewport guide.")
-	_expect(hud_bottom != null, "HUD must expose its bottom-quarter container.")
-	_expect(card_safe_area != null, "Card hand must expose its bottom-quarter safe area.")
-	if stage_guide != null:
-		_expect(is_equal_approx(stage_guide.position.y, WORLD_BOTTOM), "HUD stage must start at y=540.")
-		_expect(
-			is_equal_approx(stage_guide.position.y + stage_guide.size.y, VIEWPORT_BOTTOM),
-			"HUD stage must end at y=720."
-		)
-	if viewport_guide != null:
-		_expect(is_equal_approx(viewport_guide.size.y, VIEWPORT_BOTTOM), "Editor viewport guide must be 720 pixels tall.")
-	if hud_bottom != null:
-		_expect(is_equal_approx(hud_bottom.anchor_top, 0.75), "HUD content must begin at 75% viewport height.")
-		_expect(is_equal_approx(hud_bottom.anchor_bottom, 1.0), "HUD content must end at the viewport bottom.")
+	var bottom_stage := map.get_node_or_null("EditorHUDReference/HUD/BottomStage") as Control
+	var stage_backdrop := map.get_node_or_null("EditorHUDReference/HUD/BottomStage/Backdrop") as Control
+	var card_safe_area := map.get_node_or_null("EditorHUDReference/HUD/BottomStage/CardHandUI/CardSafeArea") as Control
+	_expect(bottom_stage != null, "Autumn combat HUD must author a BottomStage.")
+	_expect(stage_backdrop != null, "BottomStage must own its translucent lower-stage backdrop.")
+	_expect(card_safe_area != null, "Embedded card hand must expose its bottom-quarter safe area.")
+	if bottom_stage != null:
+		_expect(is_equal_approx(bottom_stage.anchor_top, 0.0), "BottomStage must span the HUD root for embedded-hand layout.")
+		_expect(is_equal_approx(bottom_stage.anchor_bottom, 1.0), "BottomStage must span the HUD root for embedded-hand layout.")
+	if stage_backdrop != null:
+		_expect(is_equal_approx(stage_backdrop.anchor_top, 0.72), "Lower-stage backdrop must start below the world-safe region.")
+		_expect(is_equal_approx(stage_backdrop.anchor_bottom, 1.0), "Lower-stage backdrop must reach the viewport bottom.")
 	if card_safe_area != null:
 		_expect(is_equal_approx(card_safe_area.anchor_top, 0.75), "Card safe area must begin at 75% viewport height.")
 		_expect(is_equal_approx(card_safe_area.anchor_bottom, 1.0), "Card safe area must end at the viewport bottom.")

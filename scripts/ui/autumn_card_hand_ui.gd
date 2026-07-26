@@ -12,6 +12,22 @@ const AUTUMN_HOVER_RISE := 9.0
 const AUTUMN_HOVER_SCALE := Vector2(1.055, 1.055)
 
 
+func set_boss_health(name_text: String, current: int, maximum: int) -> void:
+	var combat_hud := _find_combat_hud()
+	if combat_hud != null:
+		combat_hud.call("set_boss_health", name_text, current, maximum)
+		return
+	super.set_boss_health(name_text, current, maximum)
+
+
+func hide_boss_health() -> void:
+	var combat_hud := _find_combat_hud()
+	if combat_hud != null:
+		combat_hud.call("hide_boss_health")
+		return
+	super.hide_boss_health()
+
+
 func set_action_points(current: float, maximum: float) -> void:
 	super.set_action_points(current, maximum)
 	if not is_node_ready():
@@ -167,3 +183,12 @@ func _responsive_card_size() -> Vector2:
 	var height_from_width := width_limit / AUTUMN_CARD_ASPECT
 	var card_height := maxf(104.0, minf(height_from_hud, height_from_width))
 	return Vector2(roundf(card_height * AUTUMN_CARD_ASPECT), roundf(card_height))
+
+
+func _find_combat_hud() -> Control:
+	var candidate := get_parent()
+	while candidate != null:
+		if candidate != self and candidate.has_method("set_boss_health") and candidate.has_method("show_skill_toast"):
+			return candidate as Control
+		candidate = candidate.get_parent()
+	return null

@@ -3,10 +3,8 @@ extends SceneTree
 const AUTUMN_MAP_PATH := "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn"
 const TOWN_MAP_PATH := "res://scenes/maps/town/TownMap.tscn"
 const SHARED_HUD_PATH := "res://scenes/ui/HUD.tscn"
-const AUTUMN_HUD_PATH := "res://scenes/ui/autumn/AutumnHUD.tscn"
-const AUTUMN_CARD_PATH := "res://scenes/ui/autumn/AutumnCardHandUI.tscn"
-const AUTUMN_PROMPT_PATH := "res://scenes/ui/autumn/AutumnInteractionPrompt.tscn"
-const AUTUMN_REFERENCE_PATH := "res://scenes/dev/AutumnEditorHUDReference.tscn"
+const AUTUMN_COMBAT_HUD_PATH := "res://scenes/ui/autumn/AutumnCombatHUD.tscn"
+const RETIRED_AUTUMN_HUD_PATH := "res://scenes/ui/autumn/AutumnHUD.tscn"
 
 var _failures := 0
 
@@ -16,42 +14,22 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	for required_path in [
-		AUTUMN_HUD_PATH,
-		AUTUMN_CARD_PATH,
-		AUTUMN_PROMPT_PATH,
-		AUTUMN_REFERENCE_PATH,
-	]:
-		_expect(ResourceLoader.exists(required_path), "%s must exist." % required_path)
-	if _failures > 0:
-		quit(1)
-		return
-
 	var town := (load(TOWN_MAP_PATH) as PackedScene).instantiate()
 	var autumn := (load(AUTUMN_MAP_PATH) as PackedScene).instantiate()
 	root.add_child(town)
 	root.add_child(autumn)
 	await process_frame
-
 	var town_hud := town.get_node_or_null("EditorHUDReference/HUD") as Control
 	var autumn_hud := autumn.get_node_or_null("EditorHUDReference/HUD") as Control
-	var autumn_card := autumn.get_node_or_null("EditorHUDReference/CardHandUI") as Control
-	_expect(town_hud != null, "Town must retain its shared HUD.")
-	_expect(autumn_hud != null, "Autumn must expose its dedicated HUD.")
-	_expect(autumn_card != null, "Autumn must expose its dedicated card hand.")
-	if town_hud != null:
-		_expect(town_hud.scene_file_path == SHARED_HUD_PATH, "Town must keep using the shared HUD scene.")
+	_expect(town_hud != null and town_hud.scene_file_path == SHARED_HUD_PATH, "Town must retain its shared HUD authority.")
+	_expect(autumn_hud != null, "Autumn must expose its map-authored combat HUD.")
 	if autumn_hud != null:
-		_expect(autumn_hud.scene_file_path == AUTUMN_HUD_PATH, "Autumn must use AutumnHUD.")
-		_expect(autumn_hud.has_node("InteractionPanel"), "AutumnHUD must contain its interaction prompt.")
-		var prompt := autumn_hud.get_node_or_null("InteractionPanel")
+		_expect(autumn_hud.scene_file_path == AUTUMN_COMBAT_HUD_PATH, "Autumn must use AutumnCombatHUD.")
+		_expect(autumn_hud.scene_file_path != RETIRED_AUTUMN_HUD_PATH, "Autumn may not retain the retired AutumnHUD authority.")
 		_expect(
-			prompt != null and prompt.scene_file_path == AUTUMN_PROMPT_PATH,
-			"AutumnHUD must instance AutumnInteractionPrompt."
+			autumn.get_node_or_null("EditorHUDReference/CardHandUI") == null,
+			"Autumn map may not expose a second standalone card-hand authority."
 		)
-	if autumn_card != null:
-		_expect(autumn_card.scene_file_path == AUTUMN_CARD_PATH, "Autumn must use AutumnCardHandUI.")
-
 	town.queue_free()
 	autumn.queue_free()
 	await process_frame

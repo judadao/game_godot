@@ -62,7 +62,8 @@ func _run() -> void:
 		_expect(helpers != null, "%s must contain EditorHelpers." % scene_path)
 		_expect(helpers != null and not helpers.visible, "EditorHelpers must hide outside the editor.")
 		_expect(map.has_node("EditorHUDReference/HUD"), "%s must preview the real HUD." % scene_path)
-		_expect(map.has_node("EditorHUDReference/CardHandUI"), "%s must preview the real card hand." % scene_path)
+		var hand_path := "EditorHUDReference/HUD/BottomStage/CardHandUI" if map.has_node("EditorHUDReference/HUD/BottomStage") else "EditorHUDReference/CardHandUI"
+		_expect(map.has_node(hand_path), "%s must preview the real card hand." % scene_path)
 		_expect(map.find_children("HUD", "Control", true, false).size() == 1, "%s must contain one HUD preview." % scene_path)
 		_expect(map.find_children("CardHandUI", "Control", true, false).size() == 1, "%s must contain one card hand preview." % scene_path)
 		map.queue_free()
