@@ -79,7 +79,13 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	var choice_buttons := ui.call("get_choice_buttons") as Array
 	_expect(choice_buttons.size() == 12, "Dense test page must retain every choice at %s." % viewport_size)
 	_expect(scroll.clip_contents, "Choice overflow must be clipped by the authored scroll region at %s." % viewport_size)
-	_expect(panel_rect.encloses(_canvas_rect(choice_buttons[0] as Button)), "The first visible choice row must remain inside the modal at %s." % viewport_size)
+	var first_choice := choice_buttons[0] as Button
+	_expect(panel_rect.encloses(_canvas_rect(first_choice)), "The first visible choice row must remain inside the modal at %s." % viewport_size)
+	_expect(
+		first_choice.text_overrun_behavior == TextServer.OVERRUN_TRIM_ELLIPSIS
+		and first_choice.tooltip_text == first_choice.text,
+		"Long localized choice text must trim safely while retaining its full tooltip at %s." % viewport_size
+	)
 	_expect(scroll.get_v_scroll_bar().max_value > scroll.size.y, "Dense choices must become vertically scrollable at %s." % viewport_size)
 	_expect(ui.get_viewport().gui_get_focus_owner() is Button, "A presented page must establish keyboard/gamepad focus at %s." % viewport_size)
 
@@ -95,7 +101,7 @@ func _dense_experience_page() -> Dictionary:
 			"action": "upgrade",
 			"instance_id": "instance-%d" % index,
 			"card_id": "card-%d" % index,
-			"name": "Upgrade Card %d" % (index + 1),
+			"name": "Upgrade Card With An Intentionally Long Localized Display Name %d" % (index + 1),
 			"level": 1 + index % 2,
 		})
 	for index in 4:

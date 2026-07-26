@@ -16,6 +16,7 @@ signal choice_confirmed(choice_id: String)
 
 var _page: Dictionary = {}
 var _choice_buttons: Array[Button] = []
+var _choice_ids: Dictionary = {}
 var _selected_choice_id := ""
 var _confirmed := false
 
@@ -136,8 +137,9 @@ func _page_has_action(action: String) -> bool:
 
 func _add_choice_button(parent: GridContainer, choice: Dictionary, display_text: String) -> void:
 	var choice_id := String(choice.get("choice_id", ""))
-	if choice_id.is_empty():
+	if choice_id.is_empty() or _choice_ids.has(choice_id):
 		return
+	_choice_ids[choice_id] = true
 	var button := Button.new()
 	button.name = "Choice%d" % (_choice_buttons.size() + 1)
 	button.custom_minimum_size = Vector2(280.0, 108.0)
@@ -172,6 +174,7 @@ func _clear_choice_buttons() -> void:
 		if is_instance_valid(button):
 			button.free()
 	_choice_buttons.clear()
+	_choice_ids.clear()
 
 
 func _wire_focus_navigation() -> void:

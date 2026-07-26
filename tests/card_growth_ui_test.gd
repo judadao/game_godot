@@ -23,6 +23,7 @@ func _run() -> void:
 		"source": "wave",
 		"choices": [
 			{"choice_id": "wave:11:0:cleave", "action": "new_card", "card_id": "cleave", "name": "Cleave"},
+			{"choice_id": "wave:11:0:cleave", "action": "new_card", "card_id": "cleave", "name": "Duplicate Cleave"},
 			{"choice_id": "wave:11:1:frost_bind", "action": "new_card", "card_id": "frost_bind", "name": "Frost Bind"},
 		],
 	}
@@ -30,7 +31,7 @@ func _run() -> void:
 	await process_frame
 	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "CHOOSE A NEW CARD", "Wave pages must explain that the player is choosing a new card.")
 	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Source") as Label).text.contains("WAVE"), "Wave source must remain visible.")
-	_expect(ui.call("get_choice_button_count") == 2, "Wave pages must render every new-card choice.")
+	_expect(ui.call("get_choice_button_count") == 2, "Duplicate choice IDs must not create ambiguous buttons.")
 	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/ConfirmButton") as Button).disabled, "The first presented choice must be selected and confirmable.")
 	var wave_buttons := ui.call("get_choice_buttons") as Array
 	_expect(

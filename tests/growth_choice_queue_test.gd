@@ -17,14 +17,20 @@ func _run() -> void:
 	]
 	_expect(queue.enqueue_wave_blessing(wave_cards), "Wave blessings must enqueue new-card choices.")
 	var upgrades: Array[Dictionary] = [
-		{"instance_id": "card-a", "card_id": "cleave", "level": 1},
+		{"instance_id": "card-a", "card_id": "cleave", "name": "Crescent Cleave", "level": 1},
+		{"instance_id": "card-a", "card_id": "cleave", "name": "Duplicate Cleave", "level": 1},
 	]
 	var fusions: Array[Dictionary] = [
 		{
 			"recipe_id": "gale_lunge",
 			"left_instance_id": "card-b",
 			"right_instance_id": "card-c",
+			"left_card_id": "dash_strike",
+			"right_card_id": "cleave",
+			"left_name": "Dash Strike",
+			"right_name": "Crescent Cleave",
 			"result_card_id": "gale_lunge",
+			"result_name": "Gale Lunge",
 		},
 	]
 	_expect(queue.enqueue_experience_growth(upgrades, fusions), "EXP growth must enqueue upgrade and fusion choices together.")
@@ -43,6 +49,20 @@ func _run() -> void:
 		second_actions.append(String((choice as Dictionary).get("action", "")))
 	_expect(second_actions.has("upgrade") and second_actions.has("fusion"), "EXP page must combine individual upgrades and full-level fusion.")
 	_expect(not second_actions.has("fallback"), "Fallback resources must not appear while growth is possible.")
+	_expect(second_actions.count("upgrade") == 1, "Duplicate instance candidates must not create ambiguous choice IDs.")
+	var upgrade_choice := (second.get("choices", []) as Array).filter(
+		func(choice: Dictionary) -> bool: return String(choice.get("action", "")) == "upgrade"
+	)[0] as Dictionary
+	_expect(String(upgrade_choice.get("name", "")) == "Crescent Cleave", "Upgrade choices must preserve display names for the modal.")
+	var fusion_choice := (second.get("choices", []) as Array).filter(
+		func(choice: Dictionary) -> bool: return String(choice.get("action", "")) == "fusion"
+	)[0] as Dictionary
+	_expect(
+		String(fusion_choice.get("left_card_id", "")) == "dash_strike"
+		and String(fusion_choice.get("right_card_id", "")) == "cleave"
+		and String(fusion_choice.get("result_name", "")) == "Gale Lunge",
+		"Fusion choices must preserve material and result display identity."
+	)
 
 	queue.clear()
 	_expect(queue.enqueue_experience_growth([], []), "An EXP event with no growth must enqueue fallback rewards.")

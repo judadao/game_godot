@@ -40,15 +40,17 @@ func enqueue_wave_blessing(cards: Array[Dictionary]) -> bool:
 func enqueue_experience_growth(upgrades: Array[Dictionary], fusions: Array[Dictionary]) -> bool:
 	var event_id := _claim_event_id()
 	var choices: Array[Dictionary] = []
+	var seen_choice_ids: Dictionary = {}
 	for upgrade in upgrades:
 		var instance_id := String(upgrade.get("instance_id", ""))
 		if instance_id.is_empty() or int(upgrade.get("level", 0)) >= 3:
 			continue
-		choices.append({
+		_append_unique_choice(choices, seen_choice_ids, {
 			"choice_id": "exp:%d:upgrade:%s" % [event_id, instance_id],
 			"action": "upgrade",
 			"instance_id": instance_id,
 			"card_id": String(upgrade.get("card_id", "")),
+			"name": String(upgrade.get("name", "")),
 			"level": int(upgrade.get("level", 1)),
 		})
 	for fusion in fusions:
@@ -57,13 +59,18 @@ func enqueue_experience_growth(upgrades: Array[Dictionary], fusions: Array[Dicti
 		var result_id := String(fusion.get("result_card_id", ""))
 		if left_id.is_empty() or right_id.is_empty() or left_id == right_id or result_id.is_empty():
 			continue
-		choices.append({
+		_append_unique_choice(choices, seen_choice_ids, {
 			"choice_id": "exp:%d:fusion:%s:%s" % [event_id, left_id, right_id],
 			"action": "fusion",
 			"recipe_id": String(fusion.get("recipe_id", result_id)),
 			"left_instance_id": left_id,
 			"right_instance_id": right_id,
+			"left_card_id": String(fusion.get("left_card_id", "")),
+			"right_card_id": String(fusion.get("right_card_id", "")),
+			"left_name": String(fusion.get("left_name", "")),
+			"right_name": String(fusion.get("right_name", "")),
 			"result_card_id": result_id,
+			"result_name": String(fusion.get("result_name", fusion.get("name", ""))),
 		})
 	if choices.is_empty():
 		for index in FALLBACK_REWARDS.size():
@@ -128,3 +135,15 @@ func _make_entry(event_id: int, source: String, choices: Array[Dictionary]) -> D
 		"source": source,
 		"choices": choices,
 	}
+
+
+func _append_unique_choice(
+	choices: Array[Dictionary],
+	seen_choice_ids: Dictionary,
+	choice: Dictionary
+) -> void:
+	var choice_id := String(choice.get("choice_id", ""))
+	if choice_id.is_empty() or seen_choice_ids.has(choice_id):
+		return
+	seen_choice_ids[choice_id] = true
+	choices.append(choice)
