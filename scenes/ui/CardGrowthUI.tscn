@@ -1,0 +1,183 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/card_growth_ui.gd" id="1_script"]
+[ext_resource type="Theme" path="res://scenes/ui/themes/CardGrowthTheme.tres" id="2_theme"]
+
+[node name="CardGrowthUI" type="Control"]
+process_mode = 3
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.012, 0.015, 0.024, 0.88)
+
+[node name="SafeMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 36
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 36
+
+[node name="ModalCenter" type="CenterContainer" parent="SafeMargin"]
+layout_mode = 2
+
+[node name="ModalPanel" type="PanelContainer" parent="SafeMargin/ModalCenter"]
+custom_minimum_size = Vector2(1040, 620)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="ModalMargin" type="MarginContainer" parent="SafeMargin/ModalCenter/ModalPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="Content" type="VBoxContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="VBoxContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="Title" type="Label" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.37, 1)
+theme_override_font_sizes/font_size = 31
+text = "CARD GROWTH"
+horizontal_alignment = 1
+
+[node name="Source" type="Label" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.62, 0.44, 1)
+theme_override_font_sizes/font_size = 15
+text = "PENDING CHOICE"
+horizontal_alignment = 1
+
+[node name="Instruction" type="Label" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.86, 0.76, 1)
+theme_override_font_sizes/font_size = 18
+text = "Choose one reward to continue."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Body" type="VBoxContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ChoiceScroll" type="ScrollContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
+
+[node name="ChoiceSections" type="VBoxContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+[node name="UpgradeSection" type="VBoxContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SectionTitle" type="Label" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.68, 0.37, 1)
+theme_override_font_sizes/font_size = 18
+text = "INDIVIDUAL UPGRADES"
+
+[node name="UpgradeGrid" type="GridContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 3
+
+[node name="FusionSection" type="VBoxContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SectionTitle" type="Label" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.68, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "FULL-LEVEL FUSION"
+
+[node name="FusionHint" type="Label" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.72, 0.82, 1)
+theme_override_font_sizes/font_size = 15
+text = "Consumes two distinct LV.3 instances and creates one LV.1 result."
+autowrap_mode = 2
+
+[node name="FusionGrid" type="GridContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 3
+
+[node name="FallbackSection" type="VBoxContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SectionTitle" type="Label" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.9, 0.62, 1)
+theme_override_font_sizes/font_size = 18
+text = "PERMANENT RESOURCES"
+
+[node name="FallbackHint" type="Label" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.71, 0.81, 0.7, 1)
+theme_override_font_sizes/font_size = 15
+text = "Use these resources to improve town buildings and equipment."
+autowrap_mode = 2
+
+[node name="FallbackGrid" type="GridContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 3
+
+[node name="Footer" type="HBoxContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="RequiredHint" type="Label" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.68, 0.63, 0.57, 1)
+theme_override_font_sizes/font_size = 15
+text = "A choice is required. This screen cannot be skipped."
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="ConfirmButton" type="Button" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer"]
+custom_minimum_size = Vector2(230, 54)
+layout_mode = 2
+focus_neighbor_left = NodePath(".")
+focus_neighbor_right = NodePath(".")
+theme_type_variation = &"ConfirmButton"
+text = "CONFIRM CHOICE"
