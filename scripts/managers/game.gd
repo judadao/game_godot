@@ -48,6 +48,7 @@ const EXP_FALLBACK_REWARDS: Array[Dictionary] = [
 @export var run_result_scene: PackedScene = preload("res://scenes/ui/RunResultUI.tscn")
 @export var deck_builder_scene: PackedScene = preload("res://scenes/ui/DeckBuilderUI.tscn")
 @export var card_discard_scene: PackedScene = preload("res://scenes/ui/CardDiscardUI.tscn")
+@export var card_growth_scene: PackedScene = preload("res://scenes/ui/CardGrowthUI.tscn")
 
 @onready var map_root: Node = $MapRoot
 @onready var hud_root: CanvasLayer = $HUDLayer
@@ -62,6 +63,7 @@ var ui_stack: Array[Control] = []
 var current_interactive: Node
 var _ui_names: Dictionary = {}
 var _ui_pause_flags: Dictionary = {}
+var _modal_pause_owners: Dictionary = {}
 var _closing_ui: Dictionary = {}
 var _interaction_candidates: Array[Node] = []
 var meta_state := MetaState.new()
@@ -87,6 +89,7 @@ var _merchant_catalogs: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	map_root.process_mode = Node.PROCESS_MODE_PAUSABLE
 	hud_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	meta_state.apply_dict(save_service.load_meta(META_SAVE_PATH))
@@ -114,6 +117,7 @@ func _ready() -> void:
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	card_database.load_catalog()
 	evolution_manager.load_recipes()
+	growth_choice_queue.current_changed.connect(_on_growth_choice_current_changed)
 	growth_choice_queue.action_confirmed.connect(_on_growth_action_confirmed)
 	card_effect_runner.effect_resolved.connect(_on_card_effect_resolved)
 	load_current_map(starting_map)
@@ -147,6 +151,11 @@ func _input(event: InputEvent) -> void:
 		var top_ui := ui_stack[ui_stack.size() - 1]
 		var top_name := String(_ui_names.get(top_ui, top_ui.name))
 		if top_name == "CardDiscardUI":
+			return
+		if top_name == "CardGrowthUI":
+			if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
+				_on_growth_close_requested()
+				get_viewport().set_input_as_handled()
 			return
 		if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
 			close_top_ui()
@@ -369,6 +378,9 @@ func close_ui(ui: Variant) -> void:
 		return
 
 	var ui_name := String(_ui_names.get(ui_control, ui_control.name))
+	if ui_name == "CardGrowthUI" and not growth_choice_queue.is_empty():
+		ui_control.call("set_growth_entry", growth_choice_queue.peek())
+		return
 	if ui_name == "TownProgressUI":
 		_sync_progression_to_meta()
 		save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
@@ -700,6 +712,43 @@ func _confirm_growth_action(action: Dictionary) -> bool:
 		applied_action["_growth_domain_applied"] = true
 		return growth_choice_queue.confirm(applied_action)
 	return growth_choice_queue.confirm(action)
+
+
+func _on_growth_choice_current_changed(entry: Dictionary) -> void:
+	if entry.is_empty():
+		var completed_modal := get_open_ui("CardGrowthUI")
+		if completed_modal != null:
+			close_ui(completed_modal)
+		release_modal_pause(&"growth_choice_queue")
+		return
+
+	if not _modal_pause_owners.has(&"growth_choice_queue"):
+		acquire_modal_pause(&"growth_choice_queue")
+	var modal := get_open_ui("CardGrowthUI")
+	if modal == null:
+		modal = open_ui("CardGrowthUI", card_growth_scene)
+		if modal == null:
+			return
+		if modal.has_signal("choice_confirmed"):
+			modal.connect("choice_confirmed", _on_growth_choice_confirmed)
+		if modal.has_signal("close_requested"):
+			modal.connect("close_requested", _on_growth_close_requested)
+	modal.call("set_growth_entry", entry)
+
+
+func _on_growth_choice_confirmed(action: Dictionary) -> void:
+	_confirm_growth_action(action)
+
+
+func _on_growth_close_requested() -> void:
+	if growth_choice_queue.is_empty():
+		close_ui("CardGrowthUI")
+		return
+	var modal := get_open_ui("CardGrowthUI")
+	if modal == null:
+		_on_growth_choice_current_changed(growth_choice_queue.peek())
+		return
+	modal.call("set_growth_entry", growth_choice_queue.peek())
 
 
 func _on_growth_action_confirmed(_entry: Dictionary, action: Dictionary) -> void:
@@ -1738,7 +1787,7 @@ func _resolve_open_ui(ui: Variant) -> Control:
 
 
 func _update_pause_state() -> void:
-	var should_pause := false
+	var should_pause := not _modal_pause_owners.is_empty()
 	for ui_control in ui_stack:
 		if bool(_ui_pause_flags.get(ui_control, false)):
 			should_pause = true
@@ -1748,13 +1797,31 @@ func _update_pause_state() -> void:
 	_update_player_input_state()
 
 
+func acquire_modal_pause(owner_key: StringName) -> void:
+	if owner_key.is_empty():
+		return
+	_modal_pause_owners[owner_key] = int(_modal_pause_owners.get(owner_key, 0)) + 1
+	_update_pause_state()
+
+
+func release_modal_pause(owner_key: StringName) -> void:
+	var remaining := int(_modal_pause_owners.get(owner_key, 0)) - 1
+	if remaining > 0:
+		_modal_pause_owners[owner_key] = remaining
+	else:
+		_modal_pause_owners.erase(owner_key)
+	_update_pause_state()
+
+
 func _update_player_input_state() -> void:
 	if player == null or not player.has_method("set_input_enabled"):
 		return
-	player.call("set_input_enabled", ui_stack.is_empty())
+	player.call("set_input_enabled", ui_stack.is_empty() and _modal_pause_owners.is_empty())
 
 
 func _close_existing_primary_ui(next_ui_name: String) -> void:
+	if next_ui_name == "CardGrowthUI":
+		return
 	for ui_control in ui_stack.duplicate():
 		var ui_name := String(_ui_names.get(ui_control, ui_control.name))
 		if ui_name != next_ui_name:

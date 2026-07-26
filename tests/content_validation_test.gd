@@ -72,10 +72,15 @@ func _run() -> void:
 		"res://scenes/ui/RunResultUI.tscn",
 		"res://scenes/ui/DeckBuilderUI.tscn",
 		"res://scenes/ui/CardDiscardUI.tscn",
-		"res://scenes/ui/LevelUpUI.tscn",
+		"res://scenes/ui/CardGrowthUI.tscn",
 		"res://scenes/combat/ExperienceGem.tscn",
 	]:
 		_expect(ResourceLoader.exists(scene_path), "Required scene must exist: %s" % scene_path)
+	for obsolete_growth_path in [
+		"res://scenes/ui/LevelUpUI.tscn",
+		"res://scripts/ui/level_up_ui.gd",
+	]:
+		_expect(not ResourceLoader.exists(obsolete_growth_path), "Obsolete growth content must be removed: %s" % obsolete_growth_path)
 	var forest := (load("res://scenes/maps/autumn_forest.tscn") as PackedScene).instantiate()
 	root.add_child(forest)
 	await process_frame
