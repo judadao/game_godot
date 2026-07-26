@@ -10,8 +10,9 @@
       "window_seconds": 8.0,
       "cooldown_seconds": 10.0,
       "effect": {
-        "kind": "super_armor",
-        "tier": "weak",
+        "kind": "combat_status",
+        "status_id": "super_armor",
+        "tier": 1,
         "duration": 3.0
       }
     },
@@ -51,7 +52,8 @@
       "window_seconds": 8.0,
       "cooldown_seconds": 20.0,
       "effect": {
-        "kind": "damage_reduction",
+        "kind": "combat_status",
+        "status_id": "damage_reduction",
         "ratio": 0.35,
         "duration": 5.0
       }

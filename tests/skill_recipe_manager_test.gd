@@ -25,6 +25,14 @@ func _run() -> void:
 	var count_triggers := manager.record_card(multi_hit_attack)
 	_expect(count_triggers.size() == 1, "Five damaging attack cards must trigger Iron Momentum exactly once.")
 	_expect(String(count_triggers[0].get("id", "")) == "iron_momentum", "The initial trigger must identify Iron Momentum.")
+	var iron_effect := count_triggers[0].get("effect", {}) as Dictionary
+	_expect(
+		String(iron_effect.get("kind", "")) == "combat_status"
+		and String(iron_effect.get("status_id", "")) == "super_armor"
+		and int(iron_effect.get("tier", 0)) == 1
+		and is_equal_approx(float(iron_effect.get("duration", 0.0)), 3.0),
+		"Iron Momentum must grant weak super armor for three seconds."
+	)
 	_expect(manager.record_card(multi_hit_attack).is_empty(), "A skill on cooldown must not retrigger.")
 	manager.tick(10.0)
 
