@@ -68,14 +68,10 @@ func _preview_zoom_for_size(viewport_size: Vector2) -> Vector2:
 
 func _sample_cards() -> Array[Dictionary]:
 	return [
-		_card("Ember Bolt", "attack", "Deal 12 damage and apply burn.", 1, "ember_bolt"),
-		_card("Frost Bind", "status", "Slow one enemy.", 1, "frost_bind"),
 		_card("Iron Will", "combo", "Gain weak super armor for four seconds.", 1),
-		_card("Cleave", "attack", "Strike enemies in an arc.", 2),
-		_card("Flame Infusion", "power", "Future attacks gain flame.", 2),
-		_card("Frost Burst", "power", "Future attacks gain frost.", 2),
-		_card("Healing Light", "healing", "Restore health immediately.", 2),
-		_card("Meteor", "ultimate", "Call down a devastating meteor.", 5),
+		_card("Dash Edge", "combo", "Empower Space Dash.", 1, "dash_strike"),
+		_card("Flame Imbue", "combo", "Attacks gain flame.", 3, "flame_imbue"),
+		_card("Battle Rhythm", "combo", "Attacks gain damage.", 1, "battle_rhythm"),
 	]
 
 

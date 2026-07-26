@@ -25,9 +25,7 @@ var unlocked_cards: Array[String] = [
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 ]
 var selected_deck: Array[String] = [
-	"ember_bolt", "frost_bind", "cleave", "cleave",
-	"guard", "healing_light", "cleave", "dash_strike",
-	"healing_light", "frost_bind", "energy_surge", "iron_skin",
+	"guard", "guard", "iron_skin", "dash_strike",
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 ]
 var auto_attack_card_id := "ember_bolt"

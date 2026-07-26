@@ -1,7 +1,7 @@
 class_name DeckManager
 extends RefCounted
 
-var hand_size: int = 8
+var hand_size: int = 4
 var max_energy: float = 5.0
 var energy: float = 5.0
 var draw_pile: Array[String] = []
@@ -176,10 +176,9 @@ func regenerate_energy(delta: float, rate: float) -> float:
 	return energy - previous
 
 
-func redraw_hand_for_all_energy() -> bool:
-	if energy < max_energy or hand_instances.is_empty():
+func discard_and_redraw_hand() -> bool:
+	if hand_instances.is_empty():
 		return false
-	energy = 0.0
 	var retained := _extract_protected_hand()
 	hand_instances.clear()
 	hand_instances.append_array(retained)

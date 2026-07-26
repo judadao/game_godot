@@ -70,11 +70,11 @@ zones in the component scene. Edit row spacing and the six-column reservation
 in `AutumnCardHandUI.tscn`. Do not move individual runtime cards in the map
 scene: their responsive size and front/back overlap are renderer-owned.
 
-The expedition backpack contains 1–16 ordinary cards. At run start it is
-shuffled and eight cards are drawn into two groups of four; Q/W/E/R play the
-active group, while A/S/LT/RT toggle groups. `ember_bolt` follows the same hand,
-pile, upgrade, fusion, and removal rules as other ordinary cards. `quickstep`
-is not part of the card catalog.
+The expedition backpack contains 4–16 Combo cards. At run start it is shuffled
+and four cards are drawn into one Q/W/E/R hand. There is no group toggle.
+T discards the current four and draws four replacements without consuming AP.
+`ember_bolt` is an independently selected automatic attack and never enters
+the hand or card piles. `quickstep` is not part of the card catalog.
 
 Deck Builder selects auto attack independently from an unlocked attack card.
 It consumes no backpack or HUD slot, costs no AP, never enters a card pile,

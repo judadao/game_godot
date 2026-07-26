@@ -40,7 +40,7 @@ func _run() -> void:
 		inventory.call("get_resource_ids") == [&"gold", &"autumn_wood", &"stone", &"magic_shard", &"autumn_core"],
 		"Economy must expose the five specified permanent resources."
 	)
-	for action in ["move_left", "move_right", "jump", "dash", "interact", "card_focus", "pause", "redraw_hand", "card_group_1", "card_group_2"]:
+	for action in ["move_left", "move_right", "jump", "dash", "interact", "card_focus", "pause", "redraw_hand"]:
 		_expect(InputMap.has_action(action), "Required input action '%s' must exist." % action)
 	for removed_action in ["attack", "skill", "use_hp_potion", "use_mp_potion"]:
 		_expect(not InputMap.has_action(removed_action), "Legacy combat action '%s' must be removed." % removed_action)

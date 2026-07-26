@@ -82,7 +82,7 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 		String(hand.get_script().resource_path) == AUTUMN_RENDERER_PATH,
 		"Autumn hand must use its Autumn-only renderer at %s." % viewport_size
 	)
-	_expect(hand.get_card_button_count() == 4, "Autumn hand must show the active four-card group at %s." % viewport_size)
+	_expect(hand.get_card_button_count() == 4, "Autumn hand must show the four-card Combo hand at %s." % viewport_size)
 	if hand.get_card_button_count() != 4:
 		hand.queue_free()
 		await process_frame
@@ -131,28 +131,11 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 		)
 		_expect(_inside_lower_hud(card, viewport_size), "Card %d must remain inside the lower HUD at %s." % [index, viewport_size])
 	_verify_group_states(hand, 0, viewport_size)
-	hand.set_active_group(1)
-	await process_frame
-	await process_frame
-	_verify_group_states(hand, 1, viewport_size)
 	for index in 4:
 		_expect(
-			int(hand.get_card_button(index).get_meta("global_card_index", -1)) == index + 4,
-			"Group switching must project card %d from the second group at %s." % [index, viewport_size]
+			int(hand.get_card_button(index).get_meta("global_card_index", -1)) == index,
+			"Single-hand card %d must retain its direct index at %s." % [index, viewport_size]
 		)
-	var healing_card := hand.get_card_button(2)
-	var healing_style := healing_card.get_theme_stylebox("normal") as StyleBoxFlat
-	var healing_highlight := healing_card.get_theme_stylebox("hover") as StyleBoxFlat
-	_expect(
-		healing_style != null
-			and healing_style.bg_color.g > healing_style.bg_color.r
-			and healing_style.bg_color.g > healing_style.bg_color.b,
-		"Healing cards must use the approved green card body at %s." % viewport_size
-	)
-	_expect(
-		healing_highlight != null and healing_highlight.border_color.g > 0.8,
-		"Healing cards must use a brighter green border at %s." % viewport_size
-	)
 
 	hud.queue_free()
 	viewport.queue_free()
@@ -185,14 +168,10 @@ func _inside_lower_hud(card: Control, viewport_size: Vector2i) -> bool:
 
 func _sample_cards() -> Array:
 	return [
-		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal damage and burn.", "cost": 1, "level": 1},
-		{"id": "shockwave", "name": "Shockwave", "type": "status", "description": "Stun nearby enemies.", "cost": 2, "level": 1},
-		{"id": "frost_burst", "name": "Frost Burst", "type": "status", "description": "Add frost.", "cost": 1, "level": 1},
-		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Arc strike.", "cost": 2, "level": 1},
-		{"id": "blade_dance", "name": "Blade Dance", "type": "combo", "description": "Gain a timed effect.", "cost": 2, "level": 3},
-		{"id": "gale_lunge", "name": "Gale Lunge", "type": "attack", "description": "Dash and strike.", "cost": 2, "level": 3},
-		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Restore health immediately.", "cost": 2, "level": 1},
-		{"id": "meteor", "name": "Meteor", "type": "ultimate", "description": "Devastating impact.", "cost": 5, "level": 1},
+		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain super armor.", "cost": 1, "level": 1},
+		{"id": "dash_strike", "name": "Dash Edge", "type": "combo", "description": "Empower Space Dash.", "cost": 1, "level": 1},
+		{"id": "flame_imbue", "name": "Flame Imbue", "type": "combo", "description": "Add flame.", "cost": 3, "level": 1},
+		{"id": "battle_rhythm", "name": "Battle Rhythm", "type": "combo", "description": "Add damage.", "cost": 1, "level": 1},
 	]
 
 

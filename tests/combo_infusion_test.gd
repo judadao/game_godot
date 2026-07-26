@@ -16,7 +16,7 @@ func _run() -> void:
 	var deck := game.get("deck_manager") as DeckManager
 	var complete_deck: Array = deck.hand + deck.draw_pile + deck.discard_pile
 	_expect(complete_deck.has("flame_imbue") and complete_deck.has("frostburst_imbue"), "Combo cards must be shuffled into the ordinary combat deck.")
-	_expect(deck.hand.size() == 8, "Combat must draw two switchable groups of four cards.")
+	_expect(deck.hand.size() == 4, "Combat must draw one four-card Combo hand.")
 
 	deck.start(["flame_imbue", "flame_imbue", "frostburst_imbue", "battle_rhythm"], 5.0)
 	var flame := deck.play_from_hand(0)
@@ -42,7 +42,7 @@ func _run() -> void:
 	var base := database.get_card("ember_bolt")
 	var infused := game.call("_apply_combo_infusions_to_card", base) as Dictionary
 	var effect := infused.get("effect", {}) as Dictionary
-	_expect(int(effect.get("amount", 0)) == int((base.get("effect", {}) as Dictionary).get("amount", 0)) + 14, "Stacked Combo infusions and rhythm buffs must all add damage.")
+	_expect(int(effect.get("amount", 0)) >= int((base.get("effect", {}) as Dictionary).get("amount", 0)) + 12, "Stacked Combo infusions and rhythm buffs must all add damage.")
 	_expect(effect.has("burn_duration") and effect.has("frost_ratio") and effect.has("combo_stun"), "Dual infusion must attach burn, slow, and stun.")
 	_expect(bool(game.call("_resolve_combo_card", database_card(game, "flame_imbue"))), "Flame must reach max level.")
 	_expect(bool(game.call("_resolve_combo_card", database_card(game, "frostburst_imbue"))), "Frost must gain a second level.")

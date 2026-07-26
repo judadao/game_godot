@@ -254,7 +254,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `MetaState` | `scripts/systems/meta_state.gd` | `add_resource`, `can_afford`, `spend`, `apply_run_summary`, `to_dict`, `apply_dict`, `normalize_selected_deck` |
 | `RunState` | `scripts/systems/run_state.gd` | `begin_run`, `finish_run`, `add_reward`, `add_experience`, `consume_pending_level` |
 | `CardDatabase` | `scripts/systems/card_database.gd` | `load_catalog`, `get_card`, `has_card`, `get_all_cards` |
-| `DeckManager` | `scripts/systems/deck_manager.gd` | `start`, `draw_cards`, `play_from_hand`, `regenerate_energy`, `redraw_hand_for_all_energy`, `end_turn` |
+| `DeckManager` | `scripts/systems/deck_manager.gd` | `start`, `draw_cards`, `play_from_hand`, `regenerate_energy`, `discard_and_redraw_hand`, `end_turn` |
 | `CardCollectionService` | `scripts/systems/card_collection_service.gd` | `is_configured`, `get_deck_size`, `get_copy_count`, `add_persistent_card`, `fuse`, `remove_instance`, `capture_state`, `restore_state` |
 | `CardInstance` | `scripts/systems/card_instance.gd` | `instance_id`, `card_id`, `level`, `is_fixed`, `to_dict`, `from_dict` |
 | `SkillRecipeManager` | `scripts/systems/skill_recipe_manager.gd` | `load_catalog`, `configure_loadout`, `record_card`, `tick`, `reset_runtime` |
@@ -444,7 +444,7 @@ Quick save：
 | card group/slot | `card_hand_ui.gd` |
 | UI navigation | individual UI scripts |
 
-Known Risk：A 同時出現在 `move_left` 與 `card_group_1`。專案沒有正式 Input Context
+`card_group_1` / `card_group_2` 已移除；A/S 僅保留移動用途。專案沒有正式 Input Context
 service；修改 mappings或處理順序時須用實際 run驗證。
 
 ## 9. Combat、NPC、Dialogue、Quest、Audio、Animation
@@ -742,8 +742,8 @@ CardInstance
 
 `DeckManager` 的 hand、draw、discard、exhaust、cooldown 五個區域都必須保留同一
 instance identity。cooldown 到期回 discard；modal pause 時 cooldown 不前進。
-expedition deck 是 16 張普通 `CardInstance`；洗牌後抽 8 張，UI 分成兩組各 4 張。
-`ember_bolt` 是普通卡，遵循一般抽牌、棄牌、升級、融合與移除規則。`quickstep`
+expedition backpack 最多 16 張 Combo `CardInstance`；洗牌後只抽一組 4 張。
+`ember_bolt` 僅作為獨立自動普攻，不進入手牌、棄牌或 Combo 抽牌循環。`quickstep`
 已從正式卡表移除。玩家固有 Dash 由 `PlayerController` 的 Space action 擁有，
 不是 `CardInstance`，不進 deck/hand/piles、不花 AP，也不觸發出牌事件。
 

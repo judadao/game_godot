@@ -110,8 +110,8 @@ mouse_filter = 2
 [node name="RedrawHand" type="Button" parent="CardSafeArea/BottomMargin/BottomRow/APSlot/APControls"]
 custom_minimum_size = Vector2(72, 48)
 layout_mode = 2
-tooltip_text = "Requires full AP. Discard both groups and draw eight random cards."
-text = "T  REDRAW\nALL AP"
+tooltip_text = "Discard the current four Combo cards and draw four replacements."
+text = "T  DISCARD\nDRAW 4"
 clip_text = true
 
 [node name="EnergyBadge" type="Label" parent="CardSafeArea/BottomMargin/BottomRow/APSlot/APControls"]

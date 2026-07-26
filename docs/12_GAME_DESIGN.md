@@ -288,7 +288,7 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 
 目前規則：
 
-- expedition backpack 最少 1 張、最多 16 張普通卡；
+- expedition backpack 最少 4 張、最多 16 張 Combo 卡；同名 Combo 最多 3 份且各自保存等級；
 - auto attack 在背包之外獨立選擇，必須是已解鎖的 `attack` card；
 - combo card 最多一張；
 - 其他一般卡最多三張；
@@ -305,9 +305,9 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 - `exhaust_pile`；
 - `cooldown_pile`。
 
-五個牌區都保存 `CardInstance(instance_id, card_id, level)` identity。普通手牌容量
-為 8，從 16 張背包洗牌抽取；戰鬥 UI 分成兩組各 4 張。Q/W/E/R 打出目前組，
-A/S（以及 controller LT/RT）切換組別。一般卡進 discard；標記 exhaust 的卡進
+五個牌區都保存 `CardInstance(instance_id, card_id, level)` identity。戰鬥背包
+只收 Combo 卡，最多 16 張；洗牌後抽成單組 4 張手牌，Q/W/E/R 直接打出。
+不再有 A/S 或 controller LT/RT 切換組別。一般卡進 discard；標記 exhaust 的卡進
 exhaust；有 cooldown 的 combo/healing 卡暫入 cooldown，到期後回 discard。
 
 `ember_bolt` 是普通卡，可以在背包、手牌與牌堆中出現，也依一般規則升級、
@@ -332,8 +332,8 @@ auto attack 永遠免費，不使用這條 AP/hand 流程。
 
 ### 6.5 Redraw 與 overflow
 
-- 只有 AP 已滿且 hand 非空時可 full-AP redraw；
-- redraw 將 AP 設為 0；
+- hand 非空時可用 T／D-pad down 棄掉目前四張並補抽四張；
+- 棄牌不要求滿 AP，也不消耗 AP；
 - 手牌進入 discard（依 card destination 例外處理）；
 - 在可抽牌範圍內把 hand 補至最多 8 張；
 - 抽牌造成 hand overflow 時開啟 modal discard；
@@ -632,10 +632,10 @@ user://saves/quick_save.json
 | Dash | Space／右肩鍵 |
 | Card focus | Tab／左肩鍵 |
 | Card slots | Q/W/E/R／手把 face buttons |
-| Card groups | A/S／triggers |
-| Redraw | T／D-pad down |
+| Combo hand | Q/W/E/R／手把 face buttons |
+| Discard and draw 4 | T／D-pad down |
 
-實體 A 鍵同時屬於 move-left 與 card-group-1，可能在移動時切換 card group。此衝突尚未有 gameplay regression test，列為 TODO。
+A/S 僅供移動；`card_group_1` 與 `card_group_2` InputMap actions 已移除。
 
 ### 12.2 HUD
 
@@ -645,7 +645,7 @@ user://saves/quick_save.json
 - 區域、目標與 survival phase；
 - enemy alive/cap；
 - AP；
-- 兩組卡片的目前 group；
+- 單組四張 Combo 手牌；
 - combo 提示；
 - Guardian health；
 - interaction prompt；
@@ -770,9 +770,8 @@ Dash 是玩家固有 action：↑ 只觸發 Jump，Space 觸發 Dash。Dash 不�
 Dash Edge/Gale Drive 是 Combo cards，以 `target_action = dash` 在各自 effect
 window 內暫時強化固有 Dash；Combo 本身不直接移動玩家。
 
-The eight-card hand remains two groups of four. Only the current four-card group
-is visible. Q/W/E/R play that group, while A, S, LT, and RT toggle to the other
-group.
+The combat hand is one four-card Combo row. Q/W/E/R play those four cards.
+A/S remain movement-only and there is no group-toggle input.
 
 ### Timed Combo windows
 
@@ -902,11 +901,11 @@ Autumn Battle V2 reserves the upper 66% of the viewport for world play. The
 remaining space contains the combat dock and footer rail. The camera extends its
 bottom limit by 90 pixels so the authored world composition moves upward instead
 of being pinned by the original 720-pixel limit. The dock presents character
-status, decimal regenerating AP, the current four-card group, group-switch
+status, decimal regenerating AP, the single four-card Combo hand, discard
 guidance, and a three-entry fading Skill/Combo activity feed.
 
-Q/W/E/R play the current four-card group. A/S and LT/RT switch between the two
-groups; the inactive group is not rendered. Auto attack
+Q/W/E/R play the single four-card Combo hand. T discards and refills the hand
+without an AP requirement. A/S and LT/RT do not switch groups. Auto attack
 does not occupy a HUD card slot. Intrinsic Space Dash also has no card slot or
 AP presentation; `quickstep` is not part of the card catalog.
 

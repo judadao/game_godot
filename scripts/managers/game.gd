@@ -945,13 +945,13 @@ func _begin_autumn_run(deck_override: Array = []) -> void:
 	if run_state.active:
 		return
 	var fallback_deck := [
-		"ember_bolt", "frost_bind", "cleave", "cleave",
-		"guard", "healing_light", "cleave", "dash_strike",
-		"healing_light", "frost_bind", "energy_surge", "iron_skin",
+		"guard", "iron_skin", "dash_strike", "gale_lunge",
 		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 	]
 	var selected: Array = deck_override if deck_override.size() > 0 and deck_override.size() <= 16 else meta_state.selected_deck
 	var normalized := _normalize_expedition_deck(selected if selected.size() > 0 and selected.size() <= 16 else fallback_deck)
+	if normalized.size() < deck_manager.hand_size:
+		normalized = _normalize_expedition_deck(fallback_deck)
 	meta_state.set_selected_deck(normalized)
 	var valid_ids: Array[String] = []
 	for card in card_database.get_all_cards():
@@ -972,10 +972,10 @@ func _show_card_reward_choices(wave_number: int) -> void:
 	if not run_state.active:
 		return
 	var choices_by_wave := {
-		2: ["guard", "dash_strike", "cleave"],
-		3: ["frost_bind", "healing_light", "battle_focus"],
+		2: ["guard", "dash_strike", "flame_imbue"],
+		3: ["frostburst_imbue", "battle_rhythm", "stoneguard_combo"],
 	}
-	var card_ids: Array = choices_by_wave.get(wave_number, ["cleave", "iron_skin", "energy_surge"])
+	var card_ids: Array = choices_by_wave.get(wave_number, ["guard", "iron_skin", "gale_lunge"])
 	var choices: Array[Dictionary] = []
 	for card_id in card_ids:
 		var card := card_database.get_card(String(card_id))
@@ -988,6 +988,8 @@ func _show_card_reward_choices(wave_number: int) -> void:
 
 
 func _add_persistent_run_card(card_id: String) -> bool:
+	if String(card_database.get_card(card_id).get("type", "")) != "combo":
+		return false
 	var instance: CardInstance = card_collection_service.call(
 		"add_persistent_card",
 		card_id
@@ -1471,7 +1473,7 @@ func _on_player_dash_performed(_start_position: Vector2, _end_position: Vector2)
 func _redraw_current_hand() -> bool:
 	if not run_state.active or not ui_stack.is_empty():
 		return false
-	if not deck_manager.redraw_hand_for_all_energy():
+	if not deck_manager.discard_and_redraw_hand():
 		return false
 	run_state.energy = deck_manager.energy
 	_refresh_card_hand()
@@ -2093,9 +2095,9 @@ func _build_wandering_stock() -> Array[Dictionary]:
 		var card := card_database.get_card(card_id)
 		if card.is_empty():
 			continue
-		if ordinary_id.is_empty() and String(card.get("rarity", "")) in ["common", "uncommon"] and String(card.get("type", "")) != "combo":
+		if ordinary_id.is_empty() and String(card.get("rarity", "")) in ["common", "uncommon"] and String(card.get("type", "")) == "combo":
 			ordinary_id = card_id
-		if rare_id.is_empty() and (String(card.get("rarity", "")) in ["rare", "legendary"] or String(card.get("type", "")) == "combo"):
+		if rare_id.is_empty() and String(card.get("type", "")) == "combo" and String(card.get("rarity", "")) in ["rare", "legendary"]:
 			rare_id = card_id
 	if ordinary_id.is_empty():
 		ordinary_id = "guard"
@@ -2271,7 +2273,9 @@ func _normalize_expedition_deck(deck_ids: Array) -> Array[String]:
 		if not card_database.has_card(card_id):
 			continue
 		var card := card_database.get_card(card_id)
-		var max_copies := 1 if String(card.get("type", "")) == "combo" else 3
+		if String(card.get("type", "")) != "combo":
+			continue
+		var max_copies := 3
 		if int(counts.get(card_id, 0)) >= max_copies:
 			continue
 		counts[card_id] = int(counts.get(card_id, 0)) + 1

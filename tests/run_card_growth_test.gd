@@ -12,15 +12,20 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	await process_frame
-	game.call("_begin_autumn_run")
+	game.call("_begin_autumn_run", [
+		"guard", "guard", "iron_skin", "dash_strike",
+		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
+	])
 	var run := game.get("run_state") as RunState
 	var meta := game.get("meta_state") as MetaState
 	var deck := game.get("deck_manager") as DeckManager
+	for instance in run.card_instances:
+		instance.level = 1
 
-	var cleaves := _instances_for_card(run.card_instances, "cleave")
-	_expect(cleaves.size() >= 2, "Default run must contain distinct Cleave instances.")
-	var upgraded := cleaves[0] as CardInstance
-	var untouched := cleaves[1] as CardInstance
+	var guards := _instances_for_card(run.card_instances, "guard")
+	_expect(guards.size() >= 2, "Default run must contain distinct Iron Will instances.")
+	var upgraded := guards[0] as CardInstance
+	var untouched := guards[1] as CardInstance
 	_expect(game.call("_apply_growth_resolution", {
 		"action": "upgrade",
 		"instance_id": upgraded.instance_id,
@@ -32,14 +37,12 @@ func _run() -> void:
 		and meta.get_card_instance(upgraded.instance_id) == upgraded,
 		"Upgrade must remain visible through shared Meta, Run, and Deck identity."
 	)
-	var attack := _first_instance(run.card_instances, "ember_bolt")
-	_expect(game.call("_apply_growth_resolution", {
-		"action": "upgrade",
-		"instance_id": attack.instance_id,
-	}), "Automatic-attack candidates must support ordinary individual upgrades.")
-	_expect(attack.level == 2, "The selected attack instance must gain one level.")
+	_expect(
+		_first_instance(run.card_instances, "ember_bolt") == null,
+		"Automatic attacks must remain outside the Combo backpack."
+	)
 
-	var guard := _first_instance(run.card_instances, "guard")
+	var guard := upgraded
 	var stone := _first_instance(run.card_instances, "iron_skin")
 	guard.level = 3
 	stone.level = 3
@@ -59,11 +62,11 @@ func _run() -> void:
 	var before_reward_count := run.card_instances.size()
 	_expect(game.call("_apply_growth_resolution", {
 		"action": "new_card",
-		"card_id": "verdant_renewal",
-	}), "Wave blessing must add a non-fixed card instance.")
+		"card_id": "gale_lunge",
+	}), "Wave blessing must add a Combo card instance.")
 	_expect(run.card_instances.size() == before_reward_count + 1, "New card reward must add exactly one instance.")
-	var verdant := _first_instance(run.card_instances, "verdant_renewal")
-	_expect(verdant != null and deck.find_instance(verdant.instance_id) == verdant, "New reward must share identity with Deck.")
+	var gale := _first_instance(run.card_instances, "gale_lunge")
+	_expect(gale != null and deck.find_instance(gale.instance_id) == gale, "New reward must share identity with Deck.")
 
 	var meta_gold_before := int(meta.resources.get("gold", 0))
 	var inventory := game.get("inventory_manager") as RefCounted

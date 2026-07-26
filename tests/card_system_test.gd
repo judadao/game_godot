@@ -107,11 +107,11 @@ func _run() -> void:
 		"frost_bind", "iron_skin", "dash_strike", "energy_surge", "battle_focus",
 	], 5.0)
 	var original_hand := redraw_deck.hand.duplicate()
-	_expect(redraw_deck.redraw_hand_for_all_energy(), "Full AP must allow a complete hand redraw.")
-	_expect(is_zero_approx(redraw_deck.energy), "Hand redraw must spend all AP.")
-	_expect(redraw_deck.hand.size() == 8, "Hand redraw must draw two groups of four cards.")
-	_expect(redraw_deck.hand != original_hand, "Hand redraw must replace the current cards.")
-	_expect(not redraw_deck.redraw_hand_for_all_energy(), "Hand redraw must fail until AP is full again.")
+	redraw_deck.energy = 1.5
+	_expect(redraw_deck.discard_and_redraw_hand(), "T discard must work without full AP.")
+	_expect(is_equal_approx(redraw_deck.energy, 1.5), "Discarding the hand must not spend AP.")
+	_expect(redraw_deck.hand.size() == 4, "Hand discard must refill one four-card hand.")
+	_expect(redraw_deck.hand != original_hand, "Hand discard must replace the current cards.")
 	_expect((cycle_deck.get("discard_pile") as Array).is_empty(), "Reshuffled cards must leave discard.")
 
 	var evolution: RefCounted = evolution_script.new(database)

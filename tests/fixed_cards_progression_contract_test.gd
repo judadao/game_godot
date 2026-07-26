@@ -41,12 +41,12 @@ func _run() -> void:
 	await process_frame
 	builder.call("configure", database.get_all_cards(), migrated, "cleave")
 	var restored := builder.call("get_selected_deck") as Array
-	var restored_all := restored.size() == migrated.size()
-	for card_id in migrated:
-		restored_all = restored_all and restored.count(card_id) == migrated.count(card_id)
+	var restored_are_combos := restored.all(func(card_id: String) -> bool:
+		return String(database.get_card(card_id).get("type", "")) == "combo"
+	)
 	_expect(
-		restored_all,
-		"Deck builder must restore every ordinary backpack copy."
+		restored.size() == 7 and restored_are_combos,
+		"Deck builder must restore only Combo cards from a legacy mixed backpack."
 	)
 	_expect(
 		String(builder.call("get_auto_attack_card_id")) == "cleave",
@@ -83,8 +83,8 @@ func _run() -> void:
 	]
 	var clamped := game.call("_normalize_expedition_deck", illegal_deck) as Array
 	_expect(
-		clamped.count("dash_strike") == 1 and clamped.count("cleave") == 3,
-		"Game normalization must enforce Combo and ordinary copy limits."
+		clamped == ["dash_strike", "dash_strike"],
+		"Game normalization must retain independent Combo copies and exclude ordinary cards."
 	)
 	game_meta.selected_deck = migrated.duplicate()
 	game_meta.auto_attack_card_id = "cleave"
@@ -99,7 +99,7 @@ func _run() -> void:
 	var run := game.get("run_state") as RunState
 	var deck := game.get("deck_manager") as DeckManager
 	_expect(run.active, "Autumn run must start before the loadout becomes locked.")
-	_expect(deck.hand.size() == 8, "Combat must randomly draw exactly eight ordinary cards.")
+	_expect(deck.hand.size() == 4, "Combat must randomly draw exactly four Combo cards.")
 	_expect(deck.protected_card_ids.is_empty(), "No combat card may remain globally fixed or pinned.")
 	_expect(
 		String(game.get("_run_auto_attack_card_id")) == "cleave",
@@ -124,8 +124,8 @@ func _run() -> void:
 	var hand_ui := game.get("card_hand_ui") as Control
 	_expect(
 		int(hand_ui.call("get_card_button_count")) == 4
-			and int(hand_ui.call("get_group_count")) == 2,
-		"Combat HUD must keep eight random cards in two groups while projecting only the active four."
+			and int(hand_ui.call("get_group_count")) == 1,
+		"Combat HUD must project one four-card Combo hand."
 	)
 	var targets := game.call("_get_combat_targets") as Array
 	_expect(not targets.is_empty(), "The live battle must provide an automatic-attack target.")
@@ -140,7 +140,7 @@ func _run() -> void:
 		game.call("_process", 0.2)
 		_expect(int(target.get("health")) < health_before, "Automatic attack must damage an in-range enemy.")
 		_expect(is_equal_approx(deck.energy, energy_before), "Automatic attack must not spend AP.")
-		_expect(deck.hand == hand_before, "Automatic attack must not mutate the eight-card hand.")
+		_expect(deck.hand == hand_before, "Automatic attack must not mutate the four-card Combo hand.")
 		var first_hit_health := int(target.get("health"))
 		var cadence_before := float(game.get("_auto_attack_remaining"))
 		Engine.time_scale = 1.0
@@ -253,7 +253,7 @@ func _run() -> void:
 	Engine.time_scale = 1.0
 	await process_frame
 	if _failures == 0:
-		print("PASS: automatic attack lock, intrinsic Dash Combo, and eight-card combat hand")
+		print("PASS: automatic attack lock, intrinsic Dash Combo, and four-card Combo hand")
 	quit(1 if _failures > 0 else 0)
 
 

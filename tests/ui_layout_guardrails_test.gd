@@ -106,8 +106,8 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	buttons.append_array(front_row.get_children())
 	buttons.append_array(back_row.get_children())
 	_expect(front_row.get_child_count() == 4, "FrontRow must contain the active four-card group at %s." % viewport_size)
-	_expect(back_row.get_child_count() == 4, "BackRow must contain the inactive four-card group at %s." % viewport_size)
-	_expect(buttons.size() == 8, "The two authored rows must contain all eight cards at %s." % viewport_size)
+	_expect(back_row.get_child_count() == 0, "BackRow must remain empty for the single hand at %s." % viewport_size)
+	_expect(buttons.size() == 4, "The authored front row must contain all four cards at %s." % viewport_size)
 	var union_rect := Rect2()
 	var active_union_rect := Rect2()
 	for index in buttons.size():
@@ -219,14 +219,10 @@ func _check_root_override_survives_initialization() -> void:
 
 func _sample_cards() -> Array[Dictionary]:
 	return [
-		{"name": "Ember Bolt", "type": "attack", "description": "Deal 12 damage.", "cost": 1, "level": 1},
-		{"name": "Guard", "type": "defense", "description": "Gain 12 block.", "cost": 1, "level": 1},
-		{"name": "Shockwave", "type": "status", "description": "Stun nearby enemies.", "cost": 2, "level": 1},
-		{"name": "Cleave", "type": "attack", "description": "Strike enemies in an arc.", "cost": 2, "level": 1},
-		{"name": "Flame Infusion", "type": "power", "description": "Future attacks gain flame.", "cost": 2, "level": 1},
-		{"name": "Frost Burst", "type": "power", "description": "Future attacks gain frost.", "cost": 2, "level": 1},
-		{"name": "Healing Light", "type": "skill", "description": "Restore health over time.", "cost": 2, "level": 1},
-		{"name": "Meteor", "type": "ultimate", "description": "Call down a devastating meteor.", "cost": 5, "level": 1},
+		{"name": "Iron Will", "type": "combo", "description": "Gain super armor.", "cost": 1, "level": 1},
+		{"name": "Dash Edge", "type": "combo", "description": "Empower Space Dash.", "cost": 1, "level": 1},
+		{"name": "Flame Imbue", "type": "combo", "description": "Future attacks gain flame.", "cost": 3, "level": 1},
+		{"name": "Battle Rhythm", "type": "combo", "description": "Future attacks gain damage.", "cost": 1, "level": 1},
 	]
 
 

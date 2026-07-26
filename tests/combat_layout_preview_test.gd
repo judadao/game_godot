@@ -50,8 +50,8 @@ func _run() -> void:
 	_expect(
 		hand != null
 			and int(hand.call("get_card_button_count")) == 4
-			and int(hand.call("get_group_count")) == 2,
-		"Preview must populate two groups while showing only the active four cards."
+			and int(hand.call("get_group_count")) == 1,
+		"Preview must populate the single four-card Combo hand."
 	)
 	if hud != null:
 		_expect(

@@ -20,7 +20,7 @@ func _run() -> void:
 	var database := CardDatabase.new()
 	_expect(database.load_catalog(), "Card catalog must load for hand layout.")
 	var cards: Array[Dictionary] = []
-	for card_id in ["ember_bolt", "guard", "cleave", "shockwave", "healing_light"]:
+	for card_id in ["guard", "iron_skin", "dash_strike", "flame_imbue"]:
 		cards.append(database.get_card(card_id))
 	ui.call("set_cards", cards, 3)
 	await process_frame
@@ -46,7 +46,7 @@ func _run() -> void:
 	var viewport_height: float = ui.get_viewport_rect().size.y
 	_expect(
 		is_equal_approx(safe_area.position.y, viewport_height * 0.75),
-		"Two-row card stage must reserve exactly the bottom 25 percent of the viewport."
+		"Card stage must reserve exactly the bottom 25 percent of the viewport."
 	)
 	_expect(
 		is_equal_approx(safe_area.size.y, viewport_height - safe_area.position.y),
@@ -58,7 +58,7 @@ func _run() -> void:
 	)
 	_expect(
 		float(ui.call("get_resting_visible_height")) <= 82.0,
-		"Compact resting cards must fit two complete rows inside the bottom HUD."
+		"Compact resting cards must fit the single row inside the bottom HUD."
 	)
 	var card_rows := ui.get_node_or_null(CARD_ROWS_PATH) as VBoxContainer
 	var back_row := ui.get_node_or_null(BACK_ROW_PATH) as HBoxContainer
@@ -72,7 +72,7 @@ func _run() -> void:
 	var buttons: Array[Node] = []
 	buttons.append_array(front_row.get_children())
 	buttons.append_array(back_row.get_children())
-	_expect(buttons.size() == cards.size(), "The two rows must create every held card across both groups.")
+	_expect(buttons.size() == cards.size(), "The front row must create every held Combo card.")
 	if buttons.size() != cards.size():
 		ui.queue_free()
 		await process_frame
@@ -92,8 +92,8 @@ func _run() -> void:
 		"Cards in a row must be laid out by HBoxContainer without overlap."
 	)
 	_expect(
-		front_row.get_child_count() == 4 and back_row.get_child_count() == 1,
-		"Group one must occupy FrontRow and the partial second group must occupy BackRow."
+		front_row.get_child_count() == 4 and back_row.get_child_count() == 0,
+		"The single four-card hand must occupy FrontRow only."
 	)
 	var safe_rect := _canvas_rect(safe_area)
 	for index in buttons.size():
@@ -128,7 +128,7 @@ func _run() -> void:
 	_expect(bool(ui.call("has_compact_energy_display")), "Compact hand must retain an energy display.")
 	_expect(bool(ui.call("has_compact_combo_display")), "Compact hand must retain a combo display.")
 	var deck := DeckManager.new(database)
-	_expect(deck.hand_size == 8, "Combat must hold two groups of four cards.")
+	_expect(deck.hand_size == 4, "Combat must hold one group of four cards.")
 	_expect(ui.has_method("get_shortcut_label"), "Card hand must expose slot shortcut labels.")
 	if ui.has_method("get_shortcut_label"):
 		for index in 4:

@@ -529,8 +529,8 @@ theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/hover = SubResource("ButtonHover")
 theme_override_styles/pressed = SubResource("ButtonHover")
-tooltip_text = "Requires full AP. Discard both groups and draw eight random cards."
-text = "T  REDRAW"
+tooltip_text = "Discard the current four Combo cards and draw four replacements."
+text = "T  DISCARD"
 
 [node name="DashHint" type="Label" parent="BottomStage/CardStage/ActionStrip"]
 custom_minimum_size = Vector2(110, 0)
@@ -575,7 +575,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.94, 0.83, 0.61, 1)
 theme_override_font_sizes/font_size = 11
-text = "A / S   SWITCH GROUP  1 / 2"
+text = "Q / W / E / R   COMBO HAND"
 
 [node name="DashBadge" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows/InputStrip"]
 layout_mode = 2

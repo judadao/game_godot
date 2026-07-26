@@ -52,7 +52,7 @@ func _run() -> void:
 	game.set("_auto_attack_remaining", 0.0)
 	game.call("_process", 0.2)
 	_expect(is_equal_approx(deck.energy, energy_before), "Automatic attacks must not spend AP.")
-	_expect(deck.hand == hand_before, "Automatic attacks must not mutate the random eight-card hand.")
+	_expect(deck.hand == hand_before, "Automatic attacks must not mutate the four-card Combo hand.")
 	var total_health_after := 0
 	for enemy in director.get_active_enemies():
 		total_health_after += int(enemy.get("health"))

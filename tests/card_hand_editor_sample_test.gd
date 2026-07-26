@@ -1,8 +1,6 @@
 extends SceneTree
 
 const CARD_HAND_SCENE := preload("res://scenes/ui/CardHandUI.tscn")
-const BASIC_ATTACK_ID := "ember_bolt"
-
 var _failures := 0
 
 
@@ -14,7 +12,7 @@ func _run() -> void:
 	var card_hand := CARD_HAND_SCENE.instantiate()
 	var samples: Array = card_hand.call("_editor_sample_cards")
 
-	_expect(samples.size() == 8, "Direct-map editor preview must provide two groups of four cards.")
+	_expect(samples.size() == 4, "Direct-map editor preview must provide one four-card Combo hand.")
 	if not samples.is_empty():
 		_expect(
 			not samples.any(func(card: Dictionary) -> bool: return String(card.get("id", "")) == "quickstep"),
@@ -26,27 +24,20 @@ func _run() -> void:
 		)
 		var first_card := samples[0] as Dictionary
 		_expect(
-			String(first_card.get("id", "")) == BASIC_ATTACK_ID,
-			"Editor group one slot one should preview an ordinary attack card."
+			String(first_card.get("id", "")) == "guard",
+			"Editor slot one should preview Iron Will."
 		)
 		_expect(
-			String(first_card.get("type", "")) == "attack",
-			"The editor attack preview must retain its type."
+			samples.all(func(card: Dictionary) -> bool: return String(card.get("type", "")) == "combo"),
+			"Every editor hand sample must be a Combo card."
 		)
-		_expect(not bool(first_card.get("fixed", false)), "Attack previews must not show removed lock treatment.")
+		_expect(not bool(first_card.get("fixed", false)), "Combo previews must not show removed lock treatment.")
 		var iron_will := _find_sample(samples, "guard")
 		_expect(
 			String(iron_will.get("id", "")) == "guard"
 			and String(iron_will.get("name", "")) == "Iron Will"
 			and String(iron_will.get("type", "")) == "combo",
 			"The shared editor preview must use the redesigned Iron Will Combo card."
-		)
-		var healing_light := _find_sample(samples, "healing_light")
-		_expect(
-			String(healing_light.get("id", "")) == "healing_light"
-			and String(healing_light.get("type", "")) == "healing"
-			and String(healing_light.get("description", "")).contains("immediately"),
-			"The shared editor preview must identify Healing Light as immediate green healing."
 		)
 
 	var healing_style := card_hand.call("_make_card_style", "HEALING", false) as StyleBoxFlat

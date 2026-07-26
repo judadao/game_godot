@@ -6,6 +6,7 @@ signal loadout_confirmed(deck_ids: Array[String], auto_attack_card_id: String)
 signal canceled
 
 const MAX_CONFIGURABLE_CARDS := 16
+const MAX_COPIES_PER_COMBO := 3
 
 var _catalog: Array[Dictionary] = []
 var _counts: Dictionary = {}
@@ -43,7 +44,9 @@ func configure(
 				func(candidate: Dictionary) -> bool:
 					return String(candidate.get("id", "")) == card_id
 			).front() as Dictionary
-			var max_copies := 1 if String(card.get("type", "")) == "combo" else 3
+			if String(card.get("type", "")) != "combo":
+				continue
+			var max_copies := MAX_COPIES_PER_COMBO
 			if get_selected_count() < MAX_CONFIGURABLE_CARDS:
 				_counts[card_id] = mini(int(_counts[card_id]) + 1, max_copies)
 	_auto_attack_card_id = auto_attack_card_id
@@ -96,12 +99,12 @@ func _build_layout() -> void:
 	margin.add_child(column)
 
 	var title := Label.new()
-	title.text = "AUTUMN EXPEDITION — BUILD A 16-CARD BACKPACK"
+	title.text = "AUTUMN EXPEDITION — BUILD A COMBO BACKPACK"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 24)
 	column.add_child(title)
 	var hint := Label.new()
-	hint.text = "Choose one automatic attack, then pack Attack / Dash / Combo / Skill cards."
+	hint.text = "Choose one automatic attack, then pack up to 16 Combo cards. Combat draws four."
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(hint)
 	_auto_attack_selector = OptionButton.new()
@@ -149,6 +152,8 @@ func _rebuild_cards() -> void:
 		child.queue_free()
 	_rows.clear()
 	for card in _catalog:
+		if String(card.get("type", "")) != "combo":
+			continue
 		var card_id := String(card.get("id", ""))
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
@@ -188,7 +193,7 @@ func _change_count(card_id: String, amount: int) -> void:
 	if not _rows.has(card_id):
 		return
 	var card := (_rows[card_id] as Dictionary)["card"] as Dictionary
-	var max_copies := 1 if String(card.get("type", "")) == "combo" else 3
+	var max_copies := MAX_COPIES_PER_COMBO
 	var min_copies := 0
 	var current := int(_counts.get(card_id, 0))
 	if amount > 0 and get_configurable_count() >= MAX_CONFIGURABLE_CARDS:
@@ -204,7 +209,7 @@ func _update_controls() -> void:
 		var row := _rows[card_id] as Dictionary
 		var card := row["card"] as Dictionary
 		var current := int(_counts.get(card_id, 0))
-		var max_copies := 1 if String(card.get("type", "")) == "combo" else 3
+		var max_copies := MAX_COPIES_PER_COMBO
 		var min_copies := 0
 		(row["count"] as Label).text = "%d/%d" % [current, max_copies]
 		(row["minus"] as Button).disabled = current <= min_copies
@@ -216,7 +221,7 @@ func _update_controls() -> void:
 		_count_label.text = "BACKPACK  %d / %d" % [configurable, MAX_CONFIGURABLE_CARDS]
 		_count_label.modulate = Color(0.55, 1.0, 0.65)
 	if _confirm_button != null:
-		_confirm_button.disabled = configurable <= 0 or configurable > MAX_CONFIGURABLE_CARDS
+		_confirm_button.disabled = configurable < 4 or configurable > MAX_CONFIGURABLE_CARDS
 
 
 func _rebuild_auto_attack_selector() -> void:

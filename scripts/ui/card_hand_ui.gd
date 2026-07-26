@@ -46,15 +46,10 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible or not event.is_pressed() or event.is_echo():
 		return
-	if event.is_action_pressed("card_group_1") or event.is_action_pressed("card_group_2"):
-		toggle_active_group()
-		get_viewport().set_input_as_handled()
-		return
-	var group_start := _active_group * CARDS_PER_GROUP
-	var visible_count := mini(CARDS_PER_GROUP, maxi(0, _cards.size() - group_start))
+	var visible_count := mini(CARDS_PER_GROUP, _cards.size())
 	for index in visible_count:
 		if event.is_action_pressed("card_slot_%d" % (index + 1)):
-			select_card(get_visible_card_global_index(index))
+			select_card(index)
 			get_viewport().set_input_as_handled()
 			return
 
@@ -65,7 +60,7 @@ func set_cards(cards: Array, energy: float) -> void:
 		if card is Dictionary:
 			_cards.append((card as Dictionary).duplicate(true))
 	_energy = energy
-	_active_group = mini(_active_group, maxi(0, get_group_count() - 1))
+	_active_group = 0
 	if is_node_ready():
 		_refresh()
 
@@ -88,19 +83,11 @@ func select_card(index: int) -> void:
 
 
 func set_active_group(group_index: int) -> void:
-	var next_group := clampi(group_index, 0, maxi(0, get_group_count() - 1))
-	if next_group == _active_group:
-		return
-	_active_group = next_group
-	if is_node_ready():
-		_refresh()
-	group_changed.emit(_active_group)
+	_active_group = 0
 
 
 func toggle_active_group() -> void:
-	if get_group_count() <= 1:
-		return
-	set_active_group((_active_group + 1) % get_group_count())
+	pass
 
 
 func get_active_group() -> int:
@@ -108,11 +95,11 @@ func get_active_group() -> int:
 
 
 func get_group_count() -> int:
-	return maxi(1, ceili(float(_cards.size()) / float(CARDS_PER_GROUP)))
+	return 1
 
 
 func get_visible_card_global_index(local_index: int) -> int:
-	return _active_group * CARDS_PER_GROUP + local_index
+	return local_index
 
 
 func get_card_button_count() -> int:
@@ -205,16 +192,14 @@ func _refresh() -> void:
 	_resting_layouts.clear()
 	_update_ap_display()
 
-	var visible_card_count := mini(_cards.size(), CARDS_PER_GROUP * 2)
+	var visible_card_count := mini(_cards.size(), CARDS_PER_GROUP)
 	for global_index in visible_card_count:
 		var card := _cards[global_index]
 		var local_index := global_index % CARDS_PER_GROUP
 		var button := _build_card_button(card, local_index, global_index)
-		var group_index := global_index / CARDS_PER_GROUP
-		var target_row := _front_row if group_index == _active_group else _back_row
-		target_row.add_child(button)
+		_front_row.add_child(button)
 		_buttons.append(button)
-	_group_label.text = "A / S / LT / RT  TOGGLE  %d / %d" % [_active_group + 1, get_group_count()]
+	_group_label.text = "Q / W / E / R  COMBO HAND"
 	_capture_after_container_sort()
 
 
@@ -339,7 +324,7 @@ func _on_viewport_size_changed() -> void:
 
 func _update_ap_display() -> void:
 	_energy_label.text = "%.1f / %.0f\nAP" % [_energy, _max_energy]
-	_redraw_button.disabled = _energy < _max_energy
+	_redraw_button.disabled = _cards.is_empty()
 
 
 func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
@@ -370,12 +355,8 @@ func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
 
 func _editor_sample_cards() -> Array[Dictionary]:
 	return [
-		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal 12 damage and apply burn.", "cost": 1, "level": 1},
-		{"id": "frost_bind", "name": "Frost Bind", "type": "status", "description": "Slow one enemy.", "cost": 1, "level": 1},
 		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain weak super armor for four seconds.", "cost": 1, "level": 1},
-		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Strike enemies in an arc.", "cost": 2, "level": 1},
-		{"id": "flame_infusion", "name": "Flame Infusion", "type": "power", "description": "Future attacks gain flame.", "cost": 2, "level": 1},
-		{"id": "frost_burst", "name": "Frost Burst", "type": "power", "description": "Future attacks gain frost.", "cost": 2, "level": 1},
-		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Restore health immediately.", "cost": 1, "level": 1},
-		{"id": "meteor", "name": "Meteor", "type": "ultimate", "description": "Call down a devastating meteor.", "cost": 5, "level": 1},
+		{"id": "dash_strike", "name": "Dash Edge", "type": "combo", "description": "Empower Space Dash.", "cost": 1, "level": 1},
+		{"id": "flame_imbue", "name": "Flame Imbue", "type": "combo", "description": "Attacks gain flame.", "cost": 3, "level": 1},
+		{"id": "battle_rhythm", "name": "Battle Rhythm", "type": "combo", "description": "Attacks gain damage.", "cost": 1, "level": 1},
 	]

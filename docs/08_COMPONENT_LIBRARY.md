@@ -1468,7 +1468,7 @@ Required semantic children:
 - Responsibility: create AutumnBattleCard instances, keep card groups in
   two stable scene-authored rows of four, calculate responsive card dimensions,
   overlap the rows, and apply active/inactive group presentation
-- Input contract: Q/W/E/R play the current group；A/S/LT/RT toggle groups
+- Input contract: Q/W/E/R play the single four-card Combo hand；no group-toggle input
 - Exclusion: auto attack is not a card button and has no hand/global index
 - Exclusion: intrinsic Space Dash is not a card button；`quickstep` is absent
   from the catalog and hand

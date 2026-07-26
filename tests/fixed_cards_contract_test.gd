@@ -23,34 +23,31 @@ func _run() -> void:
 
 	var deck := DeckManager.new(database)
 	deck.set_protected_cards([])
-	deck.hand_size = 8
+	deck.hand_size = 4
 	deck.start([
-		"ember_bolt", "shockwave", "guard", "cleave",
-		"healing_light", "frost_bind", "iron_skin", "dash_strike",
-		"energy_surge", "battle_focus",
+		"guard", "iron_skin", "dash_strike", "gale_lunge",
+		"flame_imbue", "frostburst_imbue",
 	], 5.0, false)
-	_expect(deck.hand.size() == 8, "Combat must draw two complete groups of four.")
+	_expect(deck.hand.size() == 4, "Combat must draw one complete group of four.")
 	_expect(deck.protected_card_ids.is_empty(), "Combat cards must not be pinned.")
-
-	var basic := deck.play_from_hand(deck.hand.find("ember_bolt"))
+	var basic := deck.play_from_hand(deck.hand.find("guard"))
 	_expect(
-		String(basic.get("id", "")) == "ember_bolt"
-		and deck.discard_pile.has("ember_bolt"),
-		"Manual Attack cards must follow ordinary discard routing."
+		String(basic.get("type", "")) == "combo",
+		"Manual hand cards must be Combo cards."
 	)
 	deck.draw_cards(1)
-	_expect(deck.hand.size() == 8, "Played cards must be replaced to restore the eight-card hand.")
+	_expect(deck.hand.size() == 4, "Played cards must be replaced to restore the four-card hand.")
 
 	var previous := deck.hand.duplicate()
-	deck.energy = deck.max_energy
-	_expect(deck.redraw_hand_for_all_energy(), "Full AP redraw must remain available.")
+	deck.energy = 0.5
+	_expect(deck.discard_and_redraw_hand(), "T discard must remain available below full AP.")
 	_expect(
-		deck.hand.size() == 8 and deck.hand != previous,
+		deck.hand.size() == 4 and deck.hand != previous,
 		"Redraw must replace the complete unpinned hand."
 	)
 
 	if _failures == 0:
-		print("PASS: intrinsic Dash remains outside the ordinary eight-card lifecycle")
+		print("PASS: intrinsic Dash remains outside the four-card Combo lifecycle")
 	quit(1 if _failures > 0 else 0)
 
 

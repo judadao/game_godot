@@ -28,10 +28,10 @@ func _run() -> void:
 	var meta := game.get("meta_state") as MetaState
 	var removable: CardInstance
 	for instance in run.card_instances:
-		if instance.card_id == "ember_bolt":
+		if instance.card_id == "guard":
 			removable = instance
 			break
-	_expect(removable != null, "The expedition must contain a removable Attack CardInstance.")
+	_expect(removable != null, "The expedition must contain a removable Combo CardInstance.")
 	if removable != null:
 		var removable_id := removable.instance_id
 		var count_before := deck.get_all_instances().size()
@@ -40,7 +40,7 @@ func _run() -> void:
 			"price": 45,
 			"card_id": removable.card_id,
 			"instance_id": removable_id,
-		})), "Merchant purge must accept the former fixed attack by exact identity.")
+		})), "Merchant purge must accept a Combo card by exact identity.")
 		_expect(
 			deck.get_all_instances().size() == count_before - 1
 			and deck.find_instance(removable_id) == null

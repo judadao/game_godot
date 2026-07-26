@@ -133,7 +133,7 @@ func _set_action_points_projection(current: float, maximum: float) -> void:
 	_action_points_label.text = "%.1f / %.1f" % [safe_current, safe_maximum]
 	_action_points_progress.max_value = maxf(0.1, safe_maximum)
 	_action_points_progress.value = safe_current
-	_redraw_button.disabled = safe_maximum <= 0.0 or safe_current < safe_maximum
+	_redraw_button.disabled = false
 
 
 func set_action_point_regen(rate: float) -> void:
@@ -152,10 +152,7 @@ func _on_redraw_pressed() -> void:
 
 
 func _on_card_group_changed(group_index: int) -> void:
-	_group_label.text = "A / S   SWITCH GROUP  %d / %d" % [
-		group_index + 1,
-		_card_hand.get_group_count(),
-	]
+	_group_label.text = "Q / W / E / R   COMBO HAND"
 	group_changed.emit(group_index)
 
 

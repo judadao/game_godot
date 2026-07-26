@@ -16,9 +16,9 @@ func _run() -> void:
 		"guard", "cleave", "shockwave", "healing_light", "frost_bind",
 		"iron_skin", "dash_strike", "energy_surge", "battle_focus", "ember_bolt",
 	], 5.0, false)
-	_expect(deck.hand.size() == 8, "Opening hand must contain exactly eight ordinary cards.")
+	_expect(deck.hand.size() == 4, "Opening hand must contain exactly four cards.")
 	deck.draw_cards(2)
-	_expect(deck.hand.size() == 10, "Multi-draw may temporarily overflow the eight-card hand.")
+	_expect(deck.hand.size() == 6, "Multi-draw may temporarily overflow the four-card hand.")
 
 	var cards: Array[Dictionary] = []
 	for card_id in deck.hand:

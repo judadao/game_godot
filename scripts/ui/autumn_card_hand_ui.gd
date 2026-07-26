@@ -34,7 +34,7 @@ func set_action_points(current: float, maximum: float) -> void:
 			global_index < _cards.size()
 			and float(_cards[global_index].get("cost", 0)) <= _energy
 		)
-		card.call("set_row_active", global_index / CARDS_PER_GROUP == _active_group, affordable)
+		card.call("set_row_active", true, affordable)
 
 
 func has_compact_combo_display() -> bool:
@@ -73,15 +73,14 @@ func _refresh() -> void:
 	_update_ap_display()
 	_apply_responsive_geometry()
 
-	var group_start := _active_group * CARDS_PER_GROUP
-	var group_end := mini(_cards.size(), group_start + CARDS_PER_GROUP)
-	for global_index in range(group_start, group_end):
+	var group_end := mini(_cards.size(), CARDS_PER_GROUP)
+	for global_index in range(0, group_end):
 		var card := _cards[global_index]
 		var local_index := global_index % CARDS_PER_GROUP
 		var button := _build_card_button(card, local_index, global_index)
 		_front_row.add_child(button)
 		_buttons.append(button)
-	_group_label.text = "GROUP %d / %d" % [_active_group + 1, get_group_count()]
+	_group_label.text = "COMBO HAND"
 	_capture_after_container_sort()
 
 
@@ -115,7 +114,6 @@ func _capture_resting_layouts() -> void:
 		var button := _buttons[index]
 		var global_index := int(button.get_meta("global_card_index", index))
 		var local_index := global_index % CARDS_PER_GROUP
-		var is_active := global_index / CARDS_PER_GROUP == _active_group
 		var affordable := (
 			global_index < _cards.size()
 			and float(_cards[global_index].get("cost", 0)) <= _energy
@@ -123,15 +121,15 @@ func _capture_resting_layouts() -> void:
 		var resting := {
 			"position": button.position,
 			"rotation": 0.0,
-			"scale": ACTIVE_SCALE if is_active else INACTIVE_SCALE,
-			"z_index": (180 if is_active else 20) + local_index,
+			"scale": ACTIVE_SCALE,
+			"z_index": 180 + local_index,
 		}
 		_resting_layouts.append(resting)
-		button.mouse_filter = Control.MOUSE_FILTER_STOP if is_active else Control.MOUSE_FILTER_IGNORE
-		button.focus_mode = Control.FOCUS_ALL if is_active else Control.FOCUS_NONE
-		button.modulate = ACTIVE_MODULATE if is_active else INACTIVE_MODULATE
+		button.mouse_filter = Control.MOUSE_FILTER_STOP
+		button.focus_mode = Control.FOCUS_ALL
+		button.modulate = ACTIVE_MODULATE
 		if button.has_method("set_row_active"):
-			button.call("set_row_active", is_active, affordable)
+			button.call("set_row_active", true, affordable)
 		_apply_card_layout(button, resting)
 
 
@@ -140,8 +138,6 @@ func _set_card_hover(index: int, hovered: bool, animate: bool = true) -> void:
 		return
 	var button := _buttons[index]
 	var global_index := int(button.get_meta("global_card_index", index))
-	if global_index / CARDS_PER_GROUP != _active_group:
-		return
 	if button.has_method("set_hovered"):
 		button.call("set_hovered", hovered)
 	var resting := _resting_layouts[index]
