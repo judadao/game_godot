@@ -106,9 +106,22 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 		var card_rect := _canvas_rect(card)
 		_expect(
 			screen.encloses(card_rect)
-			and card_rect.position.y >= float(viewport_size.y) * 0.75 - 1.5,
-			"Every Autumn card must remain inside the lower HUD safe region at %s." % viewport_size
+			and bottom_rect.encloses(card_rect),
+			"Every Autumn card body must remain fully inside BottomStage at %s." % viewport_size
 		)
+		for descendant in card.find_children("*", "Control", true, false):
+			if not (descendant as Control).is_visible_in_tree():
+				continue
+			var descendant_rect := _canvas_rect(descendant as Control)
+			_expect(
+				descendant_rect.end.y <= float(viewport_size.y) + 0.5
+				and descendant_rect.end.y <= bottom_rect.end.y + 0.5,
+				"Card %d content %s must not be clipped by the viewport or BottomStage at %s." % [
+					index,
+					descendant.get_path(),
+					viewport_size,
+				]
+			)
 
 	viewport.queue_free()
 	await process_frame
