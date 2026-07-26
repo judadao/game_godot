@@ -85,6 +85,7 @@ Static JSON / Scene sub_resource
 | MetaState | Game-owned `MetaState` | 是 | `meta_progress.json` |
 | RunState | Game-owned `RunState` | 是 | finish summary only；非完整save |
 | DeckManager piles/AP | Game-owned `DeckManager` | 是 | quick save不完整保存 |
+| Card collection coordination | Game-owned `CardCollectionService` | 是（協調 mutation，不新增 authority） | 由 MetaState／RunState／DeckManager 各自邊界保存或投影 |
 | Prototype inventory/shop | Game dictionaries | 是 | quick save部分保存 |
 | UI projection | UI instance | 顯示狀態 | 不直接保存 |
 
@@ -274,9 +275,10 @@ Validation：
 ### 5.3 Runtime application
 
 `EvolutionManager` 只查詢 recipe，不直接 mutation deck。`GrowthChoiceQueue`
-建立 EXP fusion choice；`Game` resolve 時必須驗證玩家精確選了兩張不同的 Lv.3
-`CardInstance`，再透過 instance API 移除材料、加入 Lv.1 result，最後同步
-RunState、MetaState 與 HUD。fixed cards 不可成為材料。這個 ownership 不可移入 UI。
+建立 EXP fusion choice；`Game` 驗證 Growth choice、管理 pause 與 save transaction。
+`CardCollectionService.fuse()` 再驗證 recipe 與三個 authority 的共享 identity，
+原子移除兩張不同 Lv.3 材料並加入一張 Lv.1 result；任一步失敗都 restore
+collection snapshot。fixed cards 不可成為材料。這個 ownership 不可移入 UI。
 
 ## 6. Equipment Data 與 Inventory Runtime State
 
@@ -533,6 +535,11 @@ defeated_enemies / elite_defeated / boss_defeated
 這些不是static card data，也不是MetaState selected deck。selected deck是ID清單；
 piles是runtime sequence。
 
+跨 authority 的 add／fuse／exact removal 不再由 `Game` 分別呼叫
+`MetaState`、`RunState` 與 `DeckManager` mutation API，而統一經
+`CardCollectionService`。三者仍保有各自的資料責任；service 只協調同一
+`CardInstance` object identity 與失敗 rollback。
+
 ### 9.4 Static、runtime、UI例
 
 ```text
@@ -578,6 +585,11 @@ open target
 → return normalized MetaState.to_dict()
 → apply manager DTO / legacy fallback
 ```
+
+Growth choice 的永久 save transaction 由 `Game` 擁有。snapshot 包含完整 Meta
+DTO、`CardCollectionService.capture_state()`、Inventory DTO 與 wallet；mutation
+或 `SaveService.save_meta()` 失敗時，`Game` 依序 restore Meta、collection 與
+inventory，保留原本 pile 順序、cooldown 時間與 instance identity。
 
 ### 10.2 Quick save
 
@@ -979,6 +991,11 @@ for callers during integration and must not be mutated. Catalog fields
 `cooldown_seconds` control post-play routing. Cooldown completion returns the
 same instance to discard; paused cooldown clocks do not advance. Fixed card
 instances ignore exhaust and cooldown destinations and stay reusable.
-New rewards use `RunState.add_existing_card_instance()` and
-`DeckManager.add_existing_instance()` so MetaState, RunState, and every runtime
-pile can share the same validated non-fixed `CardInstance` object.
+
+`CardCollectionService` is the cross-authority mutation boundary. New rewards
+use `add_persistent_card()`；fusion uses `fuse()`；merchant purge uses
+`remove_instance()`. These methods keep the exact `CardInstance` object shared
+by MetaState, RunState, and every runtime pile. `capture_state()` /
+`restore_state()` include instance levels, unlocked fields, hand/draw/discard/
+exhaust/cooldown piles and cooldown timing so partial mutation or save failure
+cannot leave only one authority changed.

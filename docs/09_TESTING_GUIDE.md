@@ -268,6 +268,7 @@ instance.queue_free()
 | Area | Minimum contract evidence |
 |---|---|
 | CardInstance | 五牌堆 identity 不變；個別 level；fixed cards 唯一且永久 Lv.1 |
+| CardCollectionService | add／fusion／exact removal 同步 Meta／Run／Deck 且共享同一 object；fixed 拒絕；partial failure restore pile order、cooldown timing、level 與 unlocked fields |
 | Migration | schema v4 舊 payload deterministic、idempotent；card/skill 修復 report 可驗證 |
 | Cooldown/exhaust | cooldown 到期回 discard；exhaust 不回收；pause 時 timer 不動 |
 | Status | source refresh、最高 armor tier、reduction cap 60%、unblockable bypass、regen/lifesteal |
@@ -289,7 +290,7 @@ instance.queue_free()
 - modal choice grid、繁中/英文長字、focus navigation 與 confirm button 可用。
 
 建議 focused entrypoints 應以 repository 實際存在檔名為準，至少涵蓋
-`card_instance_*`、`combat_status_controller_test.gd`、
+`card_instance_*`、`card_collection_service_test.gd`、`combat_status_controller_test.gd`、
 `skill_recipe_manager_test.gd`、`growth_choice_queue_test.gd`、
 `card_growth_ui_*` 與 `autumn_hud_v3_*`。最後仍需執行全量 SceneTree tests、
 editor smoke、main smoke 與人工六尺寸截圖/操作檢查。

@@ -82,7 +82,7 @@ Roadmap item 的建立與關閉依序使用：
 
 | Check | Baseline |
 |---|---|
-| Total standalone test scripts | 68/68 passed |
+| Total standalone test scripts | 69/69 passed |
 | Godot error markers | 0 |
 | Editor parse | exit 0，0 markers |
 | Main-scene smoke | exit 0，0 markers |
@@ -91,8 +91,8 @@ Roadmap item 的建立與關閉依序使用：
 
 ### 2.3 Current constraints
 
-- `scripts/managers/game.gd` 為 2,364 行 central coordinator；map path registry
-  已抽成獨立純邏輯 system；
+- `scripts/managers/game.gd` 仍是 central coordinator；map path registry 與跨
+  Meta／Run／Deck 的 card collection mutation 已抽成獨立純邏輯 services；
 - 無 central test runner；
 - 無 CI；
 - 無 performance/memory budget；
@@ -333,15 +333,20 @@ Town manager 產生的 visual flag 多於 `Game` 實際套用的四個 scene nod
 
 **Evidence**
 
-`scripts/managers/game.gd` 2,108 行，仍同時負責 map lifecycle、UI、combat、cards、
-shops、save、inventory、town 與 result。純 path mapping 已完成第一步抽離至
-`scripts/systems/map_registry.gd`，但本項整體仍為 Open。
+`scripts/managers/game.gd` 仍同時負責 map lifecycle、UI、combat、cards、shops、
+save、inventory、town 與 result。純 path mapping 已抽離至
+`scripts/systems/map_registry.gd`；CardInstance 的 add／fusion／exact removal 與
+collection snapshot／rollback 已抽離至
+`scripts/systems/card_collection_service.gd`。`Game` 保留 choice、pause、save 與
+UI orchestration，本項其餘責任仍為 Open。
 
 **Boundary candidates from current ownership**
 
 ```text
 Game composition root
-├── MapFlowCoordinator
+├── MapRegistry（Current）
+├── CardCollectionService（Current；collection mutation boundary）
+├── MapFlowCoordinator（Proposed）
 ├── UIFlowCoordinator
 ├── ExpeditionCoordinator
 ├── TownCommerceCoordinator
@@ -352,12 +357,13 @@ Game composition root
 
 **Acceptance Criteria**
 
-- [ ] 先建立 caller/signal/ownership map，避免循環依賴。
-- [ ] 每次只移動一個可獨立測試的責任。
-- [ ] `Game` 保留 composition root，不以 autoload 取代依賴設計。
-- [ ] Existing 48-test baseline 與 affected scene tests 全數通過。
-- [ ] Map/HUD adoption、Run result、save 與 Town transaction 行為不變。
-- [ ] 新檔責任與架構文件同步。
+- [x] 已抽離責任先建立 caller／ownership map，未形成循環依賴。
+- [x] 每次只移動一個可獨立測試的責任。
+- [x] `Game` 保留 composition root，不以 autoload 取代依賴設計。
+- [x] Current standalone baseline 與 affected scene tests 全數通過。
+- [x] 本次抽離未改變 Map／HUD adoption、Run result、save 與 Town transaction。
+- [x] 已完成新檔責任、架構、resource 與 testing 文件同步。
+- [ ] 其餘 UI、combat、commerce 與 save orchestration 依相同邊界分階段抽離。
 
 ## 6. Later：交付、效能與長期治理
 
@@ -367,12 +373,12 @@ Game composition root
 
 **Evidence**
 
-47 個 `*_test.gd` 加上一個命名例外 `test_ui_keyboard.gd` 必須逐一執行；標準
-glob 會漏測。
+所有 `*_test.gd` 加上命名例外 `test_ui_keyboard.gd` 必須逐一執行；標準 glob
+會漏測命名例外。
 
 **Acceptance Criteria**
 
-- [ ] 一個 documented command 發現全部 48 個現有 test。
+- [ ] 一個 documented command 發現全部 current standalone tests。
 - [ ] 任一 test 非零 exit 時 runner 非零 exit。
 - [ ] Summary 顯示 total、passed、failed 與 failing path。
 - [ ] 新 test 依命名規則自動被發現。

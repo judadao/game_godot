@@ -21,6 +21,10 @@ func _run() -> void:
 	await process_frame
 	_expect(_has_property(game, "skill_recipe_manager"), "Game must own the passive SkillRecipeManager.")
 	_expect(_has_property(game, "growth_choice_queue"), "Game must own the sole GrowthChoiceQueue.")
+	_expect(
+		_has_property(game, "card_collection_service"),
+		"Game must compose the sole cross-authority CardCollectionService."
+	)
 	_expect(game.has_method("_open_next_growth_choice"), "Game must project queued growth through CardGrowthUI.")
 	_expect(game.has_method("_apply_growth_resolution"), "Game must resolve growth choices by instance id.")
 	for legacy_method in [

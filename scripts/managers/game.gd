@@ -10,6 +10,9 @@ const QUICK_SAVE_TEMP_PATH := "user://saves/quick_save.tmp"
 const QUICK_SAVE_BACKUP_PATH := "user://saves/quick_save.json.bak"
 const META_SAVE_PATH := "user://saves/meta_progress.json"
 const MAP_REGISTRY_SCRIPT := preload("res://scripts/systems/map_registry.gd")
+const CARD_COLLECTION_SERVICE_SCRIPT := preload(
+	"res://scripts/systems/card_collection_service.gd"
+)
 const TOWN_SCENE_PATH := MAP_REGISTRY_SCRIPT.TOWN_SCENE_PATH
 const AUTUMN_FOREST_SCENE_PATH := MAP_REGISTRY_SCRIPT.AUTUMN_FOREST_SCENE_PATH
 const CRYSTAL_CAVES_SCENE_PATH := MAP_REGISTRY_SCRIPT.CRYSTAL_CAVES_SCENE_PATH
@@ -87,6 +90,13 @@ var map_registry := MAP_REGISTRY_SCRIPT.new()
 var card_database := CardDatabase.new()
 var deck_manager := DeckManager.new(card_database)
 var evolution_manager := EvolutionManager.new(card_database)
+var card_collection_service: RefCounted = CARD_COLLECTION_SERVICE_SCRIPT.new(
+	meta_state,
+	run_state,
+	deck_manager,
+	card_database,
+	evolution_manager
+)
 var skill_recipe_manager := SkillRecipeManager.new()
 var growth_choice_queue := GrowthChoiceQueue.new()
 var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
@@ -707,7 +717,7 @@ func _enqueue_experience_growth() -> void:
 
 
 func _get_run_deck_size() -> int:
-	return deck_manager.get_all_instances().size()
+	return int(card_collection_service.call("get_deck_size"))
 
 
 func _open_next_growth_choice() -> void:
@@ -785,53 +795,20 @@ func _apply_growth_resolution_uncommitted(choice: Dictionary) -> bool:
 
 
 func _capture_growth_transaction() -> Dictionary:
-	var instance_levels: Dictionary = {}
-	for instance in meta_state.selected_card_instances + run_state.card_instances + deck_manager.get_all_instances():
-		instance_levels[instance.instance_id] = instance.level
-	var cooldown_snapshot: Array[Dictionary] = []
-	for entry in deck_manager.cooldown_pile:
-		cooldown_snapshot.append(entry.duplicate())
 	return {
 		"meta": meta_state.to_dict(),
-		"meta_instances": meta_state.selected_card_instances.duplicate(),
-		"run_instances": run_state.card_instances.duplicate(),
-		"run_card_levels": run_state.card_levels.duplicate(true),
-		"run_temporary_cards": run_state.temporary_cards.duplicate(),
-		"deck_hand": deck_manager.hand_instances.duplicate(),
-		"deck_draw": deck_manager.draw_instances.duplicate(),
-		"deck_discard": deck_manager.discard_instances.duplicate(),
-		"deck_exhaust": deck_manager.exhaust_instances.duplicate(),
-		"deck_cooldown": cooldown_snapshot,
-		"instance_levels": instance_levels,
+		"collection": card_collection_service.call("capture_state"),
 		"inventory": inventory_manager.call("to_dict"),
 		"wallet_gold": wallet_gold,
 	}
 
 
 func _restore_growth_transaction(snapshot: Dictionary) -> void:
-	var instance_levels := snapshot.get("instance_levels", {}) as Dictionary
-	for instance in (
-		(snapshot.get("meta_instances", []) as Array)
-		+ (snapshot.get("run_instances", []) as Array)
-		+ (snapshot.get("deck_hand", []) as Array)
-		+ (snapshot.get("deck_draw", []) as Array)
-		+ (snapshot.get("deck_discard", []) as Array)
-		+ (snapshot.get("deck_exhaust", []) as Array)
-	):
-		if instance is CardInstance and instance_levels.has(instance.instance_id):
-			instance.level = int(instance_levels[instance.instance_id])
 	meta_state.apply_dict(snapshot.get("meta", {}) as Dictionary)
-	meta_state.selected_card_instances.assign(snapshot.get("meta_instances", []) as Array)
-	meta_state.selected_deck = meta_state.get_selected_card_ids()
-	run_state.card_instances.assign(snapshot.get("run_instances", []) as Array)
-	run_state.card_levels = (snapshot.get("run_card_levels", {}) as Dictionary).duplicate(true)
-	run_state.temporary_cards.assign(snapshot.get("run_temporary_cards", []) as Array)
-	deck_manager.hand_instances.assign(snapshot.get("deck_hand", []) as Array)
-	deck_manager.draw_instances.assign(snapshot.get("deck_draw", []) as Array)
-	deck_manager.discard_instances.assign(snapshot.get("deck_discard", []) as Array)
-	deck_manager.exhaust_instances.assign(snapshot.get("deck_exhaust", []) as Array)
-	deck_manager.cooldown_pile.assign(snapshot.get("deck_cooldown", []) as Array)
-	deck_manager.call("_sync_id_views")
+	card_collection_service.call(
+		"restore_state",
+		snapshot.get("collection", {}) as Dictionary
+	)
 	inventory_manager.call("apply_dict", snapshot.get("inventory", {}) as Dictionary)
 	wallet_gold = int(snapshot.get("wallet_gold", 0))
 	_refresh_card_hand()
@@ -961,75 +938,22 @@ func _show_card_reward_choices(wave_number: int) -> void:
 
 
 func _add_persistent_run_card(card_id: String) -> bool:
-	if (
-		not run_state.active
-		or deck_manager.is_card_protected(card_id)
-		or not card_database.has_card(card_id)
-	):
-		return false
-	var instance := meta_state.add_card_instance(card_id, CardInstance.MIN_LEVEL)
+	var instance: CardInstance = card_collection_service.call(
+		"add_persistent_card",
+		card_id
+	)
 	if instance == null:
 		return false
-	if not run_state.add_existing_card_instance(instance):
-		meta_state.remove_card_instances([instance.instance_id])
-		return false
-	if not deck_manager.add_existing_instance(instance):
-		run_state.remove_card_instances([instance.instance_id])
-		meta_state.remove_card_instances([instance.instance_id])
-		return false
-	if not meta_state.unlocked_cards.has(card_id):
-		meta_state.unlocked_cards.append(card_id)
-	run_state.temporary_cards.append(card_id)
 	_refresh_card_hand()
 	return true
 
 
 func _apply_card_fusion(choice: Dictionary) -> bool:
-	var left_id := String(choice.get("left_instance_id", ""))
-	var right_id := String(choice.get("right_instance_id", ""))
-	var result_id := String(choice.get("result_card_id", ""))
-	if left_id.is_empty() or right_id.is_empty() or left_id == right_id:
-		return false
-	var selected_recipe: Dictionary = {}
-	for fusion in evolution_manager.find_available_fusions(run_state.card_instances):
-		if (
-			String(fusion.get("left_instance_id", "")) == left_id
-			and String(fusion.get("right_instance_id", "")) == right_id
-			and String(fusion.get("result_card_id", "")) == result_id
-		):
-			selected_recipe = fusion
-			break
-	if selected_recipe.is_empty() or not card_database.has_card(result_id):
-		return false
-	var consumed_ids: Array[String] = [left_id, right_id]
-	if (
-		not deck_manager.remove_instances(consumed_ids)
-		or not run_state.remove_card_instances(consumed_ids)
-		or not meta_state.remove_card_instances(consumed_ids)
-	):
-		return false
-	var result := meta_state.add_card_instance(result_id, CardInstance.MIN_LEVEL)
-	if result == null:
-		return false
-	if (
-		not run_state.add_existing_card_instance(result)
-		or not deck_manager.add_existing_instance(result)
-	):
-		return false
-	var recipe_id := String(selected_recipe.get("id", selected_recipe.get("recipe_id", "")))
-	if not recipe_id.is_empty() and not meta_state.unlocked_evolutions.has(recipe_id):
-		meta_state.unlocked_evolutions.append(recipe_id)
-	if not meta_state.unlocked_cards.has(result_id):
-		meta_state.unlocked_cards.append(result_id)
-	return true
+	return card_collection_service.call("fuse", choice) != null
 
 
 func _get_card_copy_count(card_id: String) -> int:
-	var count := 0
-	for instance in deck_manager.get_all_instances():
-		if instance.card_id == card_id:
-			count += 1
-	return count
+	return int(card_collection_service.call("get_copy_count", card_id))
 
 
 func _finish_run(victory: bool) -> Dictionary:
@@ -2053,24 +1977,7 @@ func _purchase_wandering_offer(offer: Dictionary) -> bool:
 
 
 func _remove_card_instance(instance_id: String) -> bool:
-	var deck_instance := deck_manager.find_instance(instance_id)
-	var run_instance := run_state.get_card_instance(instance_id)
-	var meta_instance := meta_state.get_card_instance(instance_id)
-	if (
-		deck_instance == null
-		or run_instance == null
-		or meta_instance == null
-		or deck_instance != run_instance
-		or run_instance != meta_instance
-		or deck_instance.is_fixed()
-	):
-		return false
-	var instance_ids: Array[String] = [instance_id]
-	return (
-		deck_manager.remove_instances(instance_ids)
-		and run_state.remove_card_instances(instance_ids)
-		and meta_state.remove_card_instances(instance_ids)
-	)
+	return bool(card_collection_service.call("remove_instance", instance_id))
 
 
 func _discover_equipment_reward() -> String:
