@@ -345,7 +345,8 @@ func _update_ap_display() -> void:
 func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
 	var color_by_type := {
 		"ATTACK": Color(0.26, 0.075, 0.045, 0.96),
-		"DEFENSE": Color(0.055, 0.12, 0.24, 0.96),
+		"COMBO": Color(0.15, 0.09, 0.24, 0.96),
+		"HEALING": Color(0.055, 0.20, 0.10, 0.96),
 		"SKILL": Color(0.15, 0.09, 0.24, 0.96),
 		"POWER": Color(0.25, 0.15, 0.035, 0.96),
 		"SUMMON": Color(0.055, 0.20, 0.17, 0.96),
@@ -371,10 +372,10 @@ func _editor_sample_cards() -> Array[Dictionary]:
 	return [
 		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal 12 damage and apply burn.", "cost": 1, "level": 1, "fixed": true},
 		{"id": "quickstep", "name": "Quickstep", "type": "skill", "description": "Dash through danger.", "cost": 1, "level": 1, "fixed": true},
-		{"id": "guard", "name": "Guard", "type": "defense", "description": "Gain 12 block.", "cost": 1, "level": 1},
+		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain weak super armor for four seconds.", "cost": 1, "level": 1},
 		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Strike enemies in an arc.", "cost": 2, "level": 1},
 		{"id": "flame_infusion", "name": "Flame Infusion", "type": "power", "description": "Future attacks gain flame.", "cost": 2, "level": 1},
 		{"id": "frost_burst", "name": "Frost Burst", "type": "power", "description": "Future attacks gain frost.", "cost": 2, "level": 1},
-		{"id": "healing_light", "name": "Healing Light", "type": "skill", "description": "Restore health over time.", "cost": 2, "level": 1},
+		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Restore health immediately.", "cost": 1, "level": 1},
 		{"id": "meteor", "name": "Meteor", "type": "ultimate", "description": "Call down a devastating meteor.", "cost": 5, "level": 1},
 	]
