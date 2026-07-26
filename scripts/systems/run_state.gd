@@ -10,7 +10,10 @@ var energy := 5.0
 var max_energy := 5.0
 var starting_deck: Array[String] = []
 var temporary_cards: Array[String] = []
+# Legacy card_levels are read only during migration. Runtime progression owns
+# each card instance independently in card_instances.
 var card_levels: Dictionary = {}
+var card_instances: Array[Dictionary] = []
 var combo_count := 0
 var temporary_buffs: Dictionary = {}
 var gold_earned := 0
@@ -23,8 +26,12 @@ var boss_defeated := false
 func begin_run(deck_ids: Array = []) -> void:
 	_reset_transient()
 	active = true
-	for card_id in deck_ids:
-		starting_deck.append(String(card_id))
+	for raw_card in deck_ids:
+		var instance := _coerce_card_instance(raw_card)
+		if instance.is_empty():
+			continue
+		card_instances.append(instance)
+		starting_deck.append(String(instance.get("card_id", "")))
 
 
 func finish_run(victory: bool) -> Dictionary:
@@ -80,6 +87,7 @@ func _reset_transient() -> void:
 	starting_deck.clear()
 	temporary_cards.clear()
 	card_levels.clear()
+	card_instances.clear()
 	combo_count = 0
 	temporary_buffs.clear()
 	gold_earned = 0
@@ -87,3 +95,14 @@ func _reset_transient() -> void:
 	defeated_enemies = 0
 	elite_defeated = false
 	boss_defeated = false
+
+
+func _coerce_card_instance(raw_card: Variant) -> Dictionary:
+	if raw_card is Dictionary:
+		var restored: Variant = CardInstance.from_dict(raw_card as Dictionary)
+		if restored != null:
+			return restored.call("to_dict") as Dictionary
+	var card_id: String = String(raw_card).strip_edges()
+	if card_id.is_empty():
+		return {}
+	return CardInstance.new(card_id).to_dict()

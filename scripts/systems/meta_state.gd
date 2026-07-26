@@ -1,7 +1,7 @@
 class_name MetaState
 extends RefCounted
 
-const SCHEMA_VERSION := 2
+const SCHEMA_VERSION := 3
 const RESOURCE_IDS := ["gold", "autumn_wood", "stone", "magic_shard", "autumn_core"]
 const FIXED_CARD_IDS: Array[String] = ["ember_bolt", "quickstep"]
 
@@ -32,6 +32,9 @@ var selected_deck: Array[String] = [
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 ]
 var permanent_card_levels: Dictionary = {}
+var selected_card_instances: Array[Dictionary] = []
+var learned_skills: Array[String] = []
+var skill_loadout: Array[String] = []
 var equipment := {"weapon": "", "armor": "", "accessory": ""}
 var equipment_levels: Dictionary = {}
 var unlocked_combos: Array[String] = []
@@ -42,6 +45,10 @@ var shortcuts: Dictionary = {}
 var settings := {"master_volume": 1.0, "camera_shake": 0.65}
 var inventory_state: Dictionary = {}
 var town_state: Dictionary = {}
+
+
+func _init() -> void:
+	_migrate_legacy_selected_deck(selected_deck, permanent_card_levels)
 
 
 func add_resource(resource_id: String, amount: int) -> bool:
@@ -77,6 +84,7 @@ func apply_run_summary(summary: Dictionary) -> void:
 
 
 func to_dict() -> Dictionary:
+	_synchronize_selected_card_instances()
 	return {
 		"schema_version": SCHEMA_VERSION,
 		"resources": resources.duplicate(true),
@@ -84,7 +92,9 @@ func to_dict() -> Dictionary:
 		"building_levels": building_levels.duplicate(true),
 		"unlocked_cards": unlocked_cards.duplicate(),
 		"selected_deck": selected_deck.duplicate(),
-		"permanent_card_levels": permanent_card_levels.duplicate(true),
+		"selected_card_instances": selected_card_instances.duplicate(true),
+		"learned_skills": learned_skills.duplicate(),
+		"skill_loadout": skill_loadout.duplicate(),
 		"equipment": equipment.duplicate(true),
 		"equipment_levels": equipment_levels.duplicate(true),
 		"unlocked_combos": unlocked_combos.duplicate(),
@@ -104,10 +114,19 @@ func apply_dict(data: Dictionary) -> void:
 		for resource_id in RESOURCE_IDS:
 			resources[resource_id] = maxi(0, int(incoming_resources.get(resource_id, resources[resource_id])))
 	village_level = clampi(int(data.get("village_level", village_level)), 1, 3)
-	building_levels = _safe_dictionary(data.get("building_levels"), building_levels)
+	building_levels = _safe_integer_dictionary(data.get("building_levels"), building_levels)
 	unlocked_cards = _safe_string_array(data.get("unlocked_cards"), unlocked_cards)
-	selected_deck = _safe_string_array(data.get("selected_deck"), selected_deck)
-	permanent_card_levels = _safe_dictionary(data.get("permanent_card_levels"), permanent_card_levels)
+	var legacy_selected_deck := _safe_string_array(data.get("selected_deck"), selected_deck)
+	var legacy_levels := _safe_dictionary(data.get("permanent_card_levels"), {})
+	var incoming_instances := _safe_card_instance_array(data.get("selected_card_instances"))
+	if incoming_instances.is_empty():
+		_migrate_legacy_selected_deck(legacy_selected_deck, legacy_levels)
+	else:
+		selected_card_instances = incoming_instances
+		selected_deck = _card_ids_from_instances(selected_card_instances)
+	permanent_card_levels.clear()
+	learned_skills = _safe_string_array(data.get("learned_skills"), learned_skills)
+	skill_loadout = _safe_string_array(data.get("skill_loadout"), skill_loadout)
 	equipment = _safe_dictionary(data.get("equipment"), equipment)
 	equipment_levels = _safe_dictionary(data.get("equipment_levels"), equipment_levels)
 	unlocked_combos = _safe_string_array(data.get("unlocked_combos"), unlocked_combos)
@@ -134,11 +153,21 @@ func normalize_selected_deck(valid_ids: Array[String]) -> Array[String]:
 		if valid_lookup.has(card_id) and not FIXED_CARD_IDS.has(card_id):
 			normalized.append(card_id)
 	selected_deck = normalized
+	_migrate_legacy_selected_deck(selected_deck, {})
 	return selected_deck.duplicate()
 
 
 func _safe_dictionary(value: Variant, fallback: Dictionary) -> Dictionary:
 	return (value as Dictionary).duplicate(true) if value is Dictionary else fallback.duplicate(true)
+
+
+func _safe_integer_dictionary(value: Variant, fallback: Dictionary) -> Dictionary:
+	if not value is Dictionary:
+		return fallback.duplicate(true)
+	var result: Dictionary = {}
+	for key in (value as Dictionary).keys():
+		result[key] = int((value as Dictionary)[key])
+	return result
 
 
 func _safe_string_array(value: Variant, fallback: Array[String]) -> Array[String]:
@@ -148,3 +177,41 @@ func _safe_string_array(value: Variant, fallback: Array[String]) -> Array[String
 			result.append(String(item))
 		return result
 	return fallback.duplicate()
+
+
+func _safe_card_instance_array(value: Variant) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if not value is Array:
+		return result
+	for raw_instance in value:
+		if not raw_instance is Dictionary:
+			return []
+		var parsed: Variant = CardInstance.from_dict(raw_instance as Dictionary)
+		if parsed == null:
+			return []
+		result.append(parsed.call("to_dict") as Dictionary)
+	return result
+
+
+func _migrate_legacy_selected_deck(legacy_deck: Array[String], legacy_levels: Dictionary) -> void:
+	selected_card_instances.clear()
+	var instance_id := 1
+	for card_id in legacy_deck:
+		var level := 1 if FIXED_CARD_IDS.has(card_id) else clampi(int(legacy_levels.get(card_id, 1)), 1, 3)
+		selected_card_instances.append(
+			CardInstance.new(card_id, level, instance_id).to_dict()
+		)
+		instance_id += 1
+	selected_deck = _card_ids_from_instances(selected_card_instances)
+
+
+func _synchronize_selected_card_instances() -> void:
+	if selected_deck != _card_ids_from_instances(selected_card_instances):
+		_migrate_legacy_selected_deck(selected_deck, {})
+
+
+func _card_ids_from_instances(instances: Array[Dictionary]) -> Array[String]:
+	var card_ids: Array[String] = []
+	for instance in instances:
+		card_ids.append(String(instance.get("card_id", "")))
+	return card_ids
