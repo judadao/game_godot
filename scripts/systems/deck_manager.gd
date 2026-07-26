@@ -1,6 +1,8 @@
 class_name DeckManager
 extends RefCounted
 
+const FIXED_CARD_IDS: Array[String] = ["ember_bolt", "quickstep"]
+
 var hand_size: int = 8
 var max_energy: float = 5.0
 var energy: float = 5.0
@@ -16,8 +18,8 @@ var hand_instances: Array[Dictionary] = []
 var discard_instances: Array[Dictionary] = []
 var exhaust_instances: Array[Dictionary] = []
 var cooldown_pile: Array[Dictionary] = []
-var protected_card_id := ""
-var protected_card_ids: Array[String] = []
+var protected_card_id := "ember_bolt"
+var protected_card_ids: Array[String] = FIXED_CARD_IDS.duplicate()
 var last_play_retained := false
 
 var _card_database: RefCounted
@@ -28,14 +30,9 @@ func _init(card_database: RefCounted = null) -> void:
 	_card_database = card_database
 
 
-func set_protected_cards(card_ids: Array) -> void:
-	protected_card_ids.clear()
-	for card_id_variant in card_ids:
-		var card_id: String = String(card_id_variant)
-		if card_id.is_empty() or protected_card_ids.has(card_id):
-			continue
-		protected_card_ids.append(card_id)
-	protected_card_id = protected_card_ids[0] if not protected_card_ids.is_empty() else ""
+func set_protected_cards(_card_ids: Array) -> void:
+	protected_card_ids = FIXED_CARD_IDS.duplicate()
+	protected_card_id = FIXED_CARD_IDS[0]
 
 
 func is_card_protected(card_or_instance: Variant) -> bool:
@@ -60,9 +57,13 @@ func start(deck_ids: Array, starting_energy: float = 5.0, shuffle_deck: bool = f
 		var card_id: String = String(instance.get("card_id", ""))
 		if _effective_protected_ids().has(card_id):
 			if not protected_instances.has(card_id):
+				instance["level"] = 1
 				protected_instances[card_id] = instance
 			continue
 		draw_instances.append(instance)
+	for fixed_id in FIXED_CARD_IDS:
+		if not protected_instances.has(fixed_id) and _has_card(fixed_id):
+			protected_instances[fixed_id] = CardInstance.new(fixed_id, 1).to_dict()
 	max_energy = maxf(0.0, starting_energy)
 	energy = max_energy
 	if shuffle_deck:
@@ -112,10 +113,10 @@ func play_from_hand(index: int, cost_override: int = -1) -> Dictionary:
 		return card
 	hand_instances.remove_at(index)
 	var cooldown_seconds: float = maxf(0.0, float(card.get("cooldown", 0.0)))
-	if cooldown_seconds > 0.0:
-		cooldown_pile.append({"instance": instance, "remaining_seconds": cooldown_seconds})
-	elif String(card.get("type", "")) == "combo":
+	if bool(card.get("exhaust_on_play", false)) or String(card.get("type", "")) == "combo":
 		exhaust_instances.append(instance)
+	elif cooldown_seconds > 0.0:
+		cooldown_pile.append({"instance": instance, "remaining_seconds": cooldown_seconds})
 	else:
 		discard_instances.append(instance)
 	_sync_legacy_piles()
@@ -191,12 +192,7 @@ func _extract_protected_hand() -> Array[Dictionary]:
 
 
 func _effective_protected_ids() -> Array[String]:
-	if not protected_card_ids.is_empty():
-		return protected_card_ids
-	var legacy: Array[String] = []
-	if not protected_card_id.is_empty():
-		legacy.append(protected_card_id)
-	return legacy
+	return FIXED_CARD_IDS
 
 
 func _has_card(card_id: String) -> bool:
@@ -253,6 +249,8 @@ func _coerce_card_instance(raw_card: Variant) -> Dictionary:
 		if legacy_card_id.is_empty():
 			return {}
 		var legacy_level: int = clampi(int(dictionary_card.get("level", 1)), 1, 3)
+		if FIXED_CARD_IDS.has(legacy_card_id):
+			legacy_level = 1
 		return CardInstance.new(legacy_card_id, legacy_level).to_dict()
 	var card_id: String = String(raw_card).strip_edges()
 	if card_id.is_empty():

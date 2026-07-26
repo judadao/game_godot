@@ -44,6 +44,64 @@ func _run() -> void:
 	remigrated.call("apply_dict", first)
 	_expect(remigrated.call("to_dict") == first, "Applying an already migrated payload must be idempotent.")
 
+	var duplicate_ids: RefCounted = meta_script.new()
+	duplicate_ids.call("apply_dict", {
+		"schema_version": 3,
+		"selected_card_instances": [
+			{"instance_id": 1007, "card_id": "ember_bolt", "level": 3},
+			{"instance_id": 1007, "card_id": "guard", "level": 2},
+			{"instance_id": 1009, "card_id": "quickstep", "level": 2},
+		],
+	})
+	var repaired := duplicate_ids.call("to_dict") as Dictionary
+	_expect(
+		repaired.get("selected_card_instances", []) == [
+			{"instance_id": 1007, "card_id": "ember_bolt", "level": 1},
+			{"instance_id": 1010, "card_id": "guard", "level": 2},
+			{"instance_id": 1009, "card_id": "quickstep", "level": 1},
+		],
+		"Modern saves must deterministically repair duplicate instance IDs and fixed-card levels."
+	)
+	var instance_script := load("res://scripts/systems/card_instance.gd") as GDScript
+	var allocated_after_repair: Variant = instance_script.new("guard")
+	_expect(
+		int(allocated_after_repair.get("instance_id")) > 1010,
+		"Repaired IDs must advance the monotonic allocator beyond the collection repair."
+	)
+	var repaired_again: RefCounted = meta_script.new()
+	repaired_again.call("apply_dict", repaired)
+	_expect(repaired_again.call("to_dict") == repaired, "Duplicate-ID repair must be idempotent.")
+
+	var reconciled: RefCounted = meta_script.new()
+	reconciled.call("apply_dict", {
+		"schema_version": 3,
+		"selected_card_instances": [
+			{"instance_id": 11, "card_id": "ember_bolt", "level": 1},
+			{"instance_id": 12, "card_id": "guard", "level": 3},
+			{"instance_id": 13, "card_id": "guard", "level": 2},
+			{"instance_id": 14, "card_id": "quickstep", "level": 1},
+		],
+	})
+	var reordered_ids: Array[String] = ["ember_bolt", "quickstep", "guard", "healing_light", "guard"]
+	reconciled.set("selected_deck", reordered_ids)
+	var synchronized := reconciled.call("to_dict") as Dictionary
+	_expect(
+		synchronized.get("selected_card_instances", []) == [
+			{"instance_id": 11, "card_id": "ember_bolt", "level": 1},
+			{"instance_id": 14, "card_id": "quickstep", "level": 1},
+			{"instance_id": 12, "card_id": "guard", "level": 3},
+			{"instance_id": 15, "card_id": "healing_light", "level": 1},
+			{"instance_id": 13, "card_id": "guard", "level": 2},
+		],
+		"Deck synchronization must retain matching instances by card ID/order and allocate only added cards."
+	)
+	var valid_ids: Array[String] = ["ember_bolt", "quickstep", "guard", "healing_light"]
+	reconciled.call("normalize_selected_deck", valid_ids)
+	_expect(
+		(reconciled.call("to_dict") as Dictionary).get("selected_card_instances", []) == synchronized.get("selected_card_instances", []),
+		"Normalizing an already valid deck must preserve all retained instance IDs and levels."
+	)
+
 	var path := "user://saves/card_instance_save_migration_test.json"
 	var save: RefCounted = save_script.new()
 	_expect(bool(save.call("save_meta", path, first)), "Migrated instance saves must persist successfully.")

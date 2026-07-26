@@ -152,8 +152,7 @@ func normalize_selected_deck(valid_ids: Array[String]) -> Array[String]:
 			break
 		if valid_lookup.has(card_id) and not FIXED_CARD_IDS.has(card_id):
 			normalized.append(card_id)
-	selected_deck = normalized
-	_migrate_legacy_selected_deck(selected_deck, {})
+	_reconcile_selected_card_instances(normalized)
 	return selected_deck.duplicate()
 
 
@@ -183,13 +182,32 @@ func _safe_card_instance_array(value: Variant) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	if not value is Array:
 		return result
+	var max_instance_id := 0
+	for raw_instance in value:
+		if raw_instance is Dictionary:
+			max_instance_id = maxi(max_instance_id, int((raw_instance as Dictionary).get("instance_id", 0)))
+	var next_instance_id := max_instance_id + 1
+	var seen_instance_ids: Dictionary = {}
 	for raw_instance in value:
 		if not raw_instance is Dictionary:
 			return []
 		var parsed: Variant = CardInstance.from_dict(raw_instance as Dictionary)
 		if parsed == null:
 			return []
-		result.append(parsed.call("to_dict") as Dictionary)
+		var instance := parsed.call("to_dict") as Dictionary
+		var instance_id := int(instance.get("instance_id", 0))
+		if seen_instance_ids.has(instance_id):
+			instance_id = next_instance_id
+			next_instance_id += 1
+			instance["instance_id"] = instance_id
+		seen_instance_ids[instance_id] = true
+		if FIXED_CARD_IDS.has(String(instance.get("card_id", ""))):
+			instance["level"] = 1
+		result.append(CardInstance.new(
+			String(instance.get("card_id", "")),
+			int(instance.get("level", 1)),
+			instance_id
+		).to_dict())
 	return result
 
 
@@ -207,7 +225,32 @@ func _migrate_legacy_selected_deck(legacy_deck: Array[String], legacy_levels: Di
 
 func _synchronize_selected_card_instances() -> void:
 	if selected_deck != _card_ids_from_instances(selected_card_instances):
-		_migrate_legacy_selected_deck(selected_deck, {})
+		_reconcile_selected_card_instances(selected_deck)
+
+
+func _reconcile_selected_card_instances(target_ids: Array[String]) -> void:
+	var remaining := selected_card_instances.duplicate(true)
+	var next_instance_id := 1
+	for instance in remaining:
+		next_instance_id = maxi(next_instance_id, int(instance.get("instance_id", 0)) + 1)
+	var reconciled: Array[Dictionary] = []
+	for card_id in target_ids:
+		var matched_index := -1
+		for index in remaining.size():
+			if String(remaining[index].get("card_id", "")) == card_id:
+				matched_index = index
+				break
+		if matched_index >= 0:
+			var retained := remaining[matched_index] as Dictionary
+			remaining.remove_at(matched_index)
+			if FIXED_CARD_IDS.has(card_id):
+				retained["level"] = 1
+			reconciled.append(retained)
+		else:
+			reconciled.append(CardInstance.new(card_id, 1, next_instance_id).to_dict())
+			next_instance_id += 1
+	selected_card_instances = reconciled
+	selected_deck = target_ids.duplicate()
 
 
 func _card_ids_from_instances(instances: Array[Dictionary]) -> Array[String]:
