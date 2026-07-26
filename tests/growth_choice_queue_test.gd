@@ -38,6 +38,23 @@ func _run() -> void:
 		not bool(queue.call("enqueue", {"source": "exp_level", "allowed_pages": ["upgrade"]})),
 		"Growth entries must include a dictionary payload."
 	)
+	var validation_queue: RefCounted = queue_script.new()
+	_expect(
+		not bool(validation_queue.call("enqueue", {
+			"source": "exp_level",
+			"allowed_pages": ["upgrade", "reward"],
+			"payload": {},
+		})),
+		"EXP fallback rewards must not be mixed with upgrade or fusion pages."
+	)
+	_expect(
+		bool(validation_queue.call("enqueue", {
+			"source": "exp_level",
+			"allowed_pages": ["upgrade", "fusion"],
+			"payload": {},
+		})),
+		"An EXP entry may declare upgrade and fusion together."
+	)
 
 	var wave_entry := {
 		"source": "wave_blessing",

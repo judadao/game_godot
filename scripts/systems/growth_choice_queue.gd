@@ -81,6 +81,8 @@ func _normalize_entry(raw_entry: Dictionary) -> Dictionary:
 		for page in allowed_pages:
 			if not EXP_LEVEL_PAGES.has(page):
 				return {}
+		if allowed_pages.has("reward") and allowed_pages.size() != 1:
+			return {}
 	else:
 		return {}
 	return {
