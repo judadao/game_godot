@@ -79,11 +79,14 @@ $test_files = @(Get-ChildItem tests -Filter *_test.gd | Sort-Object FullName)
 $test_files += Get-Item tests/test_ui_keyboard.gd
 $test_failures = @()
 $suite_run_id = [guid]::NewGuid().ToString("N")
+$suite_user_data_root = Join-Path $env:TEMP (
+	"game_godot_tests\{0}" -f $suite_run_id
+)
 $original_app_data = $env:APPDATA
 try {
 	foreach ($test_file in $test_files) {
-		$env:APPDATA = Join-Path (Get-Location) (
-			".test_userdata\{0}\{1}" -f $suite_run_id, $test_file.BaseName
+		$env:APPDATA = Join-Path $suite_user_data_root (
+			$test_file.BaseName
 		)
 		$test_output = @(& $godot --headless --path . --script $test_file.FullName 2>&1)
 		$test_output | Write-Output
@@ -94,11 +97,23 @@ try {
 	}
 } finally {
 	$env:APPDATA = $original_app_data
+	if (Test-Path -LiteralPath $suite_user_data_root) {
+		Remove-Item -LiteralPath $suite_user_data_root -Recurse -Force
+	}
 }
 if ($test_failures.Count -gt 0) {
 	throw "Godot tests failed: $($test_failures -join ', ')"
 }
 ```
+
+若舊版 runner 曾在 repository root 留下 `.tmp*`、`.final_*`、
+`.test_userdata` 或根目錄 `*.log`，執行：
+
+```powershell
+& .\tools\clean_local_test_artifacts.ps1
+```
+
+此腳本只處理列名的本機測試／review artifacts，明確保留 `.git` 與 `.godot`。
 
 ```text
 SCRIPT ERROR

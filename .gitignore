@@ -3,6 +3,16 @@
 /.test_userdata/
 *.import
 
+# Repository-local test and review artifacts
+/.codex_test_*/
+/.debug*/
+/.final_*/
+/.review*/
+/.smoke*/
+/.tmp*/
+/.verify*/
+/.superpowers/
+
 # Generated platform and export output
 /android/
 /build/
