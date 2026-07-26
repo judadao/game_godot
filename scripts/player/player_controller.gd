@@ -38,6 +38,7 @@ const JUMP_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/leg
 @onready var visual: Node2D = get_node_or_null("Visual") as Node2D
 @onready var character_sprite: Sprite2D = get_node_or_null("Visual/CharacterSprite") as Sprite2D
 @onready var interaction_detector: Area2D = get_node_or_null("InteractionDetector") as Area2D
+@onready var combat_status_controller: Node = get_node_or_null("CombatStatusController")
 
 var facing_direction: int = 1
 var current_state: StringName = STATE_IDLE
@@ -46,7 +47,6 @@ var _animation_name: StringName = &""
 var _animation_elapsed: float = 0.0
 var input_enabled: bool = true
 var _invulnerable := false
-var _block := 0
 
 func _ready() -> void:
 	health = clampi(health, 0, maxi(1, max_health))
@@ -55,6 +55,8 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_tick_dash_cooldown(delta)
+	if combat_status_controller != null:
+		combat_status_controller.call("tick", delta, get_tree().paused)
 
 	var direction := get_move_direction()
 	if direction != 0.0:
@@ -103,17 +105,25 @@ func set_facing_direction(direction: int) -> void:
 	if interaction_detector != null:
 		interaction_detector.position.x = absf(interaction_detector.position.x) * float(facing_direction)
 
-func take_hit(raw_damage: int, source_position: Vector2, knockback: float = 180.0) -> int:
+func take_hit(raw_damage: int, source_position: Vector2, knockback: float = 180.0, unblockable: bool = false) -> int:
 	if _invulnerable or health <= 0:
 		return 0
-	var applied := maxi(1, raw_damage - defense)
-	var absorbed := mini(_block, applied)
-	_block -= absorbed
-	applied -= absorbed
+	var incoming := maxi(1, raw_damage - defense)
+	var outcome := {
+		"damage": incoming,
+		"armor_tier": 0,
+		"prevents_knockback": false,
+		"retaliation_damage": 0,
+	}
+	if combat_status_controller != null:
+		outcome = combat_status_controller.call("resolve_incoming_damage", incoming, unblockable) as Dictionary
+	var applied := int(outcome.get("damage", 0))
 	if applied <= 0:
 		return 0
 	take_damage(applied)
-	velocity.x = signf(global_position.x - source_position.x) * knockback
+	if not bool(outcome.get("prevents_knockback", false)):
+		velocity.x = signf(global_position.x - source_position.x) * knockback
+	_apply_retaliation(source_position, int(outcome.get("retaliation_damage", 0)))
 	_invulnerable = true
 	get_tree().create_timer(0.55).timeout.connect(_clear_invulnerability, CONNECT_ONE_SHOT)
 	return applied
@@ -176,13 +186,31 @@ func try_dash(direction: int = 0) -> bool:
 
 
 func add_block(amount: int) -> int:
-	var granted := maxi(0, amount)
-	_block += granted
-	return granted
+	return 0
 
 
 func get_block() -> int:
-	return _block
+	return 0
+
+
+func get_combat_status_controller() -> Node:
+	return combat_status_controller
+
+
+func _apply_retaliation(source_position: Vector2, damage: int) -> void:
+	if damage <= 0:
+		return
+	var closest_enemy: Node2D
+	var closest_distance := INF
+	for candidate in get_tree().get_nodes_in_group("Enemies"):
+		if not candidate is Node2D or not is_instance_valid(candidate) or not candidate.has_method("take_hit"):
+			continue
+		var distance := (candidate as Node2D).global_position.distance_squared_to(source_position)
+		if distance < closest_distance:
+			closest_enemy = candidate as Node2D
+			closest_distance = distance
+	if closest_enemy != null:
+		closest_enemy.call("take_hit", damage, global_position, 0.0)
 
 func _tick_dash_cooldown(delta: float) -> void:
 	_dash_cooldown_remaining = maxf(_dash_cooldown_remaining - delta, 0.0)

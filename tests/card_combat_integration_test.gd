@@ -24,6 +24,8 @@ func _run() -> void:
 	var player := (load("res://scenes/player/Player.tscn") as PackedScene).instantiate()
 	var enemy := (load("res://scenes/monsters/AutumnSlime.tscn") as PackedScene).instantiate()
 	var second_enemy := (load("res://scenes/monsters/AutumnEnemy.tscn") as PackedScene).instantiate()
+	enemy.global_position = Vector2(180.0, 0.0)
+	second_enemy.global_position = Vector2(360.0, 0.0)
 	var runner: Node = runner_script.new()
 	root.add_child(player)
 	root.add_child(enemy)
@@ -49,13 +51,50 @@ func _run() -> void:
 	_expect(deck.energy == 2, "Playing a one-cost card must spend one energy.")
 	_expect(deck.discard_pile.has("ember_bolt"), "Played cards must enter discard.")
 
-	var guard_index := deck.hand.find("guard")
-	var guard_card := deck.play_from_hand(guard_index)
-	runner.call("cast", guard_card, player, [])
-	_expect(int(player.call("get_block")) >= 12, "Defense card must grant real player block.")
+	_expect(player.has_method("get_combat_status_controller"), "Player must expose its editor-authored combat status controller.")
+	var status_controller := player.call("get_combat_status_controller") as Node
+	_expect(status_controller != null, "Player must own one combat status controller child.")
+	var armor_result := runner.call("cast", {
+		"id": "iron_will",
+		"effect": {"kind": "armor", "tier": 1, "duration": 4.0},
+	}, player, []) as Dictionary
+	_expect(int(armor_result.get("affected", 0)) == 1, "Armor cards must install a timed player status.")
+	_expect(
+		status_controller != null and int(status_controller.call("get_strongest_armor_tier")) == 1,
+		"Armor card effects must route to the player's status authority."
+	)
+	var reduction_result := runner.call("cast", {
+		"id": "stone_form",
+		"effect": {"kind": "reduction", "ratio": 0.30, "duration": 5.0},
+	}, player, []) as Dictionary
+	_expect(int(reduction_result.get("affected", 0)) == 1, "Reduction cards must install a timed player status.")
 	var health_before := int(player.get("health"))
 	player.call("take_hit", 10, enemy.global_position, 0.0)
-	_expect(int(player.get("health")) == health_before, "Block must absorb incoming damage before health.")
+	_expect(int(player.get("health")) < health_before, "Armor must not replace health damage with ordinary Block.")
+	_expect(int(player.call("get_block")) == 0, "Compatibility Block accessors must not create ordinary player Block.")
+
+	player.set("health", 40)
+	var regeneration_result := runner.call("cast", {
+		"id": "verdant_renewal",
+		"effect": {"kind": "regeneration", "amount": 5, "interval": 1.0, "duration": 2.0},
+	}, player, []) as Dictionary
+	_expect(int(regeneration_result.get("affected", 0)) == 1, "Regeneration cards must install a timed player status.")
+	if status_controller != null:
+		status_controller.call("tick", 1.0, false)
+	_expect(int(player.get("health")) == 45, "Regeneration status must restore the player through the controller.")
+
+	var lifesteal_result := runner.call("cast", {
+		"id": "blood_pact",
+		"effect": {"kind": "lifesteal", "ratio": 0.25, "duration": 4.0},
+	}, player, []) as Dictionary
+	_expect(int(lifesteal_result.get("affected", 0)) == 1, "Lifesteal cards must install a timed player status.")
+	var lifesteal_health := int(player.get("health"))
+	var multi_hit_result := runner.call("cast", {
+		"id": "multi_hit_test",
+		"effect": {"kind": "damage", "amount": 8, "projectiles": 2},
+	}, player, [enemy]) as Dictionary
+	_expect(bool(multi_hit_result.get("positive_damage", false)), "A multi-hit attack must expose one positive-damage outcome.")
+	_expect(int(player.get("health")) > lifesteal_health, "Positive card damage must consume active timed lifesteal once per card cast.")
 
 	var frost_card := database.get_card("frost_bind")
 	runner.call("cast", frost_card, player, [second_enemy])
