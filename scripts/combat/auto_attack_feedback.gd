@@ -17,6 +17,9 @@ var _attack_size_multiplier := 1.0
 var _visual_colors: Array[Color] = []
 var _stack_count := 0
 var _lifesteal := false
+var _homing_strength := 0.0
+var _volley_index := 0
+var _volley_count := 1
 
 
 func play(
@@ -34,6 +37,9 @@ func play(
 	_target_offset = target_position - origin
 	_stack_count = maxi(0, int(visual_profile.get("stack_count", 0)))
 	_lifesteal = bool(visual_profile.get("lifesteal", false))
+	_homing_strength = clampf(float(visual_profile.get("homing_strength", 0.0)), 0.0, 1.0)
+	_volley_count = maxi(1, int(visual_profile.get("volley_count", 1)))
+	_volley_index = clampi(int(visual_profile.get("volley_index", 0)), 0, _volley_count - 1)
 	_visual_colors = _colors_for_elements(visual_profile.get("elements", []) as Array)
 	_accent = _blended_accent(_visual_colors, _accent_for_combo(combo_count))
 	_attack_size_multiplier = clampf(
@@ -85,10 +91,14 @@ func get_attack_scale() -> float:
 	return _attack_size_multiplier
 
 
+func get_homing_strength() -> float:
+	return _homing_strength
+
+
 func _draw() -> void:
 	if _travel_progress < 1.0:
-		var tip := Vector2.ZERO.lerp(_target_offset, _travel_progress)
-		var tail := Vector2.ZERO.lerp(_target_offset, maxf(0.0, _travel_progress - 0.24))
+		var tip := _travel_point(_travel_progress)
+		var tail := _travel_point(maxf(0.0, _travel_progress - 0.24))
 		draw_line(tail, tip, Color(_accent, 0.46), 8.0 * _attack_size_multiplier, true)
 		draw_line(tail, tip, _accent, 3.0 * _attack_size_multiplier, true)
 		var normal := _target_offset.normalized().orthogonal()
@@ -151,6 +161,26 @@ func _draw() -> void:
 				3.0,
 				true
 			)
+
+
+func _travel_point(progress: float) -> Vector2:
+	if _target_offset.is_zero_approx():
+		return Vector2.ZERO.lerp(_target_offset, progress)
+	var normal := _target_offset.normalized().orthogonal()
+	var volley_center := float(_volley_count - 1) * 0.5
+	var volley_bend := (float(_volley_index) - volley_center) * 28.0
+	var bend := (
+		minf(110.0, _target_offset.length() * 0.28) * _homing_strength
+		+ volley_bend
+	)
+	if is_zero_approx(bend):
+		return Vector2.ZERO.lerp(_target_offset, progress)
+	var control := _target_offset * 0.45 + normal * bend
+	var remaining := 1.0 - progress
+	return (
+		2.0 * remaining * progress * control
+		+ progress * progress * _target_offset
+	)
 
 
 func _set_travel_progress(value: float) -> void:

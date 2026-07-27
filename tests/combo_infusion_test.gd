@@ -78,6 +78,8 @@ func _run() -> void:
 		"keen_focus_combo",
 		"storm_charge",
 		"venom_edge",
+		"seeking_arc",
+		"echo_volley",
 	]:
 		var expanded_card := database_card(game, card_id)
 		_expect(
@@ -104,19 +106,21 @@ func _run() -> void:
 	_expect(
 		float(expanded_attack.get("projectile_speed_multiplier", 1.0)) > 1.0
 			and float(expanded_attack.get("attack_size_multiplier", 1.0)) > 1.0
-			and float(expanded_attack_effect.get("poison_duration", 0.0)) > 0.0,
-		"Offense and element Combo families must project travel speed, attack size, and poison."
+			and float(expanded_attack_effect.get("poison_duration", 0.0)) > 0.0
+			and float(expanded_attack.get("homing_strength", 0.0)) > 0.0
+			and int(expanded_attack_effect.get("projectile_count", 1)) >= 2,
+		"Offense and element Combo families must project travel speed, size, poison, tracking, and projectile amount."
 	)
 	var expanded_visual := expanded_attack.get("combo_visual_profile", {}) as Dictionary
 	var expanded_elements := expanded_visual.get("elements", []) as Array
 	_expect(
-		int(expanded_visual.get("stack_count", 0)) >= 8
+		int(expanded_visual.get("stack_count", 0)) >= 10
 			and expanded_elements.has("storm")
 			and expanded_elements.has("venom"),
 		"Every active Combo stack and element must reach the automatic-attack visual profile."
 	)
 	var family_requirements := {
-		"offense": ["quickened_cadence", "kinetic_acceleration", "giant_arc", "keen_focus_combo"],
+		"offense": ["quickened_cadence", "kinetic_acceleration", "giant_arc", "keen_focus_combo", "seeking_arc", "echo_volley"],
 		"body": ["iron_bone", "fleet_footwork", "arcane_breath", "deep_reservoir"],
 		"element": ["flame_imbue", "frostburst_imbue", "storm_charge", "venom_edge"],
 		"healing": ["healing_light", "blood_pact_combo", "verdant_renewal"],

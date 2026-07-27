@@ -349,15 +349,18 @@ Card focus 會把 `Engine.time_scale` 設為 0.22，hit stop 也會短暫改變�
 
 `combo` 是卡牌類型，不是另一套非攻擊牌序 manager。原防禦牌以 timed status
 combo 形式提供霸體、減傷、反擊或攻擊 infusion；打出後進 discard 並立即補牌。
-每次 Combo 疊加全域 Combo Chain 並刷新 8 秒窗口：3 層提高攻擊、6 層追加
+每次 Combo 疊加全域 Combo Chain 並刷新 2.5 秒窗口：3 層提高攻擊、6 層追加
 5% 吸血、9 層追加短暫硬直。相同 infusion 另可疊至 12 層，讓效果持續增強。
 右側 HUD 持續列出本次 chain 使用過的技能與各自層數。舊 `ComboManager` 與非攻擊
 sequence rules 已移除。
 
 通用 Combo infusion 包含攻擊範圍（Sweeping Reach）、攻擊速度
 （Quickened Cadence）、攻擊力（Crushing Momentum）、爆擊率／倍率
-（Keen Focus）與雷屬性硬直（Storm Charge）；Flame／Frost infusion
+（Keen Focus）、追蹤彈道（Seeking Arc）、額外彈體（Echo Volley）與雷屬性硬直
+（Storm Charge）；Flame／Frost infusion
 則繼續提供火焰與冰霜附加屬性。這些卡都只消耗 AP，不使用 card cooldown。
+沒有 Seeking Arc 與 Echo Volley 時，自動攻擊固定為不追蹤的單發、單目標基本型態；
+Combo Chain 本身只提高傷害、射程與攻擊尺寸，不免費增加追蹤、目標數或彈體數。
 
 ### 7.2 Passive attack Skill
 
@@ -790,7 +793,7 @@ A/S remain movement-only and there is no group-toggle input.
 ### Timed Combo windows
 
 Combo cards recycle through discard after play and add one independently timed effect
-stack. The base window is four real-time seconds. Fast play can therefore keep
+stack. The base window is 2.5 real-time seconds. Fast play can therefore keep
 several stacks active at once; when an older stack expires, only that stack is
 removed and the displayed level falls accordingly. Eight distinct Combo types
 and twelve stacks per type are supported. Evolved Combo effects inherit the
@@ -802,8 +805,8 @@ modify this loop through:
 - `combo_cost_reduction`, applied to Combo cards with a minimum cost of 1 AP;
 - `combo_duration_bonus`, added when each new timed stack is created.
 
-Focus Amulet currently provides `-1 Combo AP` and `+1 second`. Combo effects and
-the global Combo Chain are capped at five seconds. Countdown uses real time even
+Focus Amulet currently provides `-1 Combo AP` and `+0.5 seconds`. Combo effects and
+the global Combo Chain are capped at three seconds. Countdown uses real time even
 during tactical slowdown, so slowdown cannot extend the window.
 
 ### Card tempo and AP flow

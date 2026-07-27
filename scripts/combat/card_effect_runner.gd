@@ -47,12 +47,22 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 
 	match kind:
 		"damage":
+			var projectile_count := maxi(
+				1,
+				int(effect.get("projectile_count", effect.get("projectiles", 1)))
+			)
 			var selected := _nearest_targets(
 				caster,
 				targets,
-				maxi(1, int(effect.get("target_count", 1)))
+				maxi(1, int(effect.get("target_count", projectile_count)))
 			)
-			_damage_targets(caster, selected, int(effect.get("amount", 0)), result, maxi(1, int(effect.get("projectiles", 1))))
+			_damage_projectile_volley(
+				caster,
+				selected,
+				int(effect.get("amount", 0)),
+				result,
+				projectile_count
+			)
 			_apply_infused_statuses(selected, effect)
 		"area_damage":
 			var selected := _targets_in_radius(caster, targets, float(effect.get("radius", 150.0)))
@@ -142,6 +152,36 @@ func _damage_targets(caster: Node, targets: Array, raw_damage: int, result: Dict
 		if target_total > 0:
 			result["affected"] = int(result["affected"]) + 1
 			result["total"] = int(result["total"]) + target_total
+
+
+func _damage_projectile_volley(
+	caster: Node,
+	targets: Array,
+	raw_damage: int,
+	result: Dictionary,
+	projectile_count: int
+) -> void:
+	if targets.is_empty():
+		return
+	var damaged_target_ids := {}
+	for projectile_index in projectile_count:
+		var target_variant: Variant = targets[projectile_index % targets.size()]
+		if not target_variant is Node:
+			continue
+		var target := target_variant as Node
+		if not is_instance_valid(target):
+			continue
+		var dealt := 0
+		if target.has_method("take_hit"):
+			var source := (caster as Node2D).global_position if caster is Node2D else Vector2.ZERO
+			dealt = int(target.call("take_hit", raw_damage, source, 80.0))
+		elif target.has_method("take_damage"):
+			dealt = int(target.call("take_damage", raw_damage))
+		if dealt <= 0:
+			continue
+		damaged_target_ids[target.get_instance_id()] = true
+		result["total"] = int(result["total"]) + dealt
+	result["affected"] = int(result["affected"]) + damaged_target_ids.size()
 
 
 func _apply_status(targets: Array, status_id: String, effect: Dictionary, result: Dictionary) -> void:

@@ -355,7 +355,7 @@ func _make_card_style(card_type: String, hovered: bool) -> StyleBoxFlat:
 
 func _editor_sample_cards() -> Array[Dictionary]:
 	return [
-		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain weak super armor for four seconds.", "cost": 1, "level": 1},
+		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain weak super armor for 2.5 seconds.", "cost": 1, "level": 1},
 		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Restore health.", "cost": 1, "level": 1},
 		{"id": "flame_imbue", "name": "Flame Imbue", "type": "combo", "description": "Attacks gain flame.", "cost": 3, "level": 1},
 		{"id": "verdant_renewal", "name": "Verdant Renewal", "type": "healing", "description": "Gain regeneration.", "cost": 2, "level": 1},

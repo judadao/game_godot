@@ -70,7 +70,7 @@ func _preview_zoom_for_size(viewport_size: Vector2) -> Vector2:
 
 func _sample_cards() -> Array[Dictionary]:
 	return [
-		_card("Iron Will", "combo", "Gain weak super armor for four seconds.", 1),
+		_card("Iron Will", "combo", "Gain weak super armor for 2.5 seconds.", 1),
 		_card("Healing Light", "healing", "Restore health.", 1, "healing_light"),
 		_card("Flame Imbue", "combo", "Attacks gain flame.", 3, "flame_imbue"),
 		_card("Verdant Renewal", "healing", "Gain regeneration.", 2, "verdant_renewal"),

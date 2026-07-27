@@ -40,9 +40,9 @@ const MAX_COMBO_ABILITIES := 8
 const MAX_COMBO_LEVEL := 3
 const MAX_COMBO_EFFECT_STACKS := 12
 const MAX_COMBO_CHAIN := 99
-const COMBO_CHAIN_DURATION := 4.0
-const DEFAULT_COMBO_DURATION := 4.0
-const MAX_COMBO_DURATION := 5.0
+const COMBO_CHAIN_DURATION := 2.5
+const DEFAULT_COMBO_DURATION := 2.5
+const MAX_COMBO_DURATION := 3.0
 const DEFAULT_AUTO_ATTACK_CARD_ID := "ember_bolt"
 const DEFAULT_AUTO_ATTACK_INTERVAL := 1.0
 const AUTO_ATTACK_RETRY_INTERVAL := 0.15
@@ -1124,8 +1124,8 @@ func _show_card_reward_choices(wave_number: int) -> void:
 	if not run_state.active:
 		return
 	var choices_by_wave := {
-		2: ["energy_surge", "sweeping_reach", "kinetic_acceleration", "healing_light"],
-		3: ["guard", "quickened_cadence", "deep_reservoir", "storm_charge"],
+		2: ["seeking_arc", "echo_volley", "energy_surge", "healing_light"],
+		3: ["sweeping_reach", "quickened_cadence", "deep_reservoir", "storm_charge"],
 	}
 	var card_ids: Array = choices_by_wave.get(wave_number, ["guard", "renewal", "frostburst_imbue"])
 	var choices: Array[Dictionary] = []
@@ -1337,7 +1337,9 @@ func _tick_auto_attack(delta: float) -> void:
 	card["cost"] = 0
 	var result := card_effect_runner.cast(card, player, targets)
 	if int(result.get("affected", 0)) > 0:
-		for feedback_target in feedback_targets:
+		var projectile_count := maxi(1, int(effect.get("projectile_count", 1)))
+		for projectile_index in projectile_count:
+			var feedback_target := feedback_targets[projectile_index % feedback_targets.size()]
 			var damage := maxi(
 				0,
 				int(health_before.get(feedback_target.get_instance_id(), 0))
@@ -1345,11 +1347,22 @@ func _tick_auto_attack(delta: float) -> void:
 			)
 			if damage <= 0:
 				continue
+			var target_index := projectile_index % feedback_targets.size()
+			var assigned_projectiles := ceili(
+				float(projectile_count - target_index) / float(feedback_targets.size())
+			)
+			var feedback_card := card.duplicate(true)
+			var visual_profile := (
+				feedback_card.get("combo_visual_profile", {}) as Dictionary
+			).duplicate(true)
+			visual_profile["volley_index"] = projectile_index
+			visual_profile["volley_count"] = projectile_count
+			feedback_card["combo_visual_profile"] = visual_profile
 			_spawn_auto_attack_feedback(
-				card,
+				feedback_card,
 				base_card,
 				feedback_target,
-				damage,
+				maxi(1, roundi(float(damage) / float(maxi(1, assigned_projectiles)))),
 				result
 			)
 	_auto_attack_remaining = maxf(
@@ -1795,11 +1808,6 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			+ combo_power_tiers * combo_power_per_tier
 		)
 		if combo_power_tiers > 0:
-			effect["target_count"] = mini(8, 1 + combo_power_tiers)
-			effect["projectiles"] = mini(
-				4,
-				1 + floori(float(combo_power_tiers) / 2.0)
-			)
 			infused["auto_attack_range"] = (
 				float(infused.get("auto_attack_range", 220.0))
 				+ 45.0 * float(combo_power_tiers)
@@ -1866,6 +1874,23 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			)
 			if float(infusion.get("lifesteal_ratio", 0.0)) > 0.0:
 				effect["lifesteal_ratio"] = float(effect.get("lifesteal_ratio", 0.0)) + float(infusion["lifesteal_ratio"])
+			if float(infusion.get("homing_strength", 0.0)) > 0.0:
+				infused["homing_strength"] = clampf(
+					float(infused.get("homing_strength", 0.0))
+					+ float(infusion.get("homing_strength", 0.0)),
+					0.0,
+					1.0
+				)
+			var projectile_bonus := maxi(0, int(infusion.get("projectile_bonus", 0)))
+			if projectile_bonus > 0:
+				effect["projectile_count"] = mini(
+					8,
+					maxi(1, int(effect.get("projectile_count", 1))) + projectile_bonus
+				)
+				effect["target_count"] = maxi(
+					int(effect.get("target_count", 1)),
+					int(effect["projectile_count"])
+				)
 		elif String(infused.get("type", "")) == "defense":
 			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("block_bonus", 0))
 		if infusion_id == "flame":
@@ -1931,6 +1956,7 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 		"stack_count": visual_stack_count,
 		"elements": visual_elements,
 		"lifesteal": visual_lifesteal or float(effect.get("lifesteal_ratio", 0.0)) > 0.0,
+		"homing_strength": float(infused.get("homing_strength", 0.0)),
 	}
 	infused["effect"] = effect
 	return infused

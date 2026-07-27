@@ -86,10 +86,10 @@
       "effects": {"critical_chance": 0.05, "max_mana": 5},
       "special_ability": {
         "id": "steady_focus",
-        "description": "Attack cards deal +1 damage; Combo cards cost 1 less AP and last 1 second longer.",
+        "description": "Attack cards deal +1 damage; Combo cards cost 1 less AP and last 0.5 seconds longer.",
         "card_damage_bonus": 1,
         "combo_cost_reduction": 1,
-        "combo_duration_bonus": 1.0
+        "combo_duration_bonus": 0.5
       }
     },
     {

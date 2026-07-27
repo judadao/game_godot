@@ -107,10 +107,10 @@ func _run() -> void:
 	) as Dictionary
 	var catastrophic_effect := catastrophic_attack.get("effect", {}) as Dictionary
 	_expect(
-		int(catastrophic_effect.get("target_count", 1)) >= 5
-			and int(catastrophic_effect.get("projectiles", 1)) >= 3
+		int(catastrophic_effect.get("target_count", 1)) == 1
+			and int(catastrophic_effect.get("projectile_count", 1)) == 1
 			and float(catastrophic_attack.get("attack_size_multiplier", 1.0)) >= 2.0,
-		"High Combo Chain must become a huge multi-target, multi-hit automatic attack."
+		"High Combo Chain must amplify spectacle without granting free tracking or projectiles."
 	)
 
 	run.temporary_buffs["combo_chain_count"] = 0
@@ -118,11 +118,11 @@ func _run() -> void:
 	var flame := database.get_card("flame_imbue")
 	_expect(bool(game.call("_resolve_combo_card", flame)), "Flame Combo must activate for duration testing.")
 	_expect(
-		float(game.call("_get_combo_time_remaining")) <= 5.0
-			and float(run.temporary_buffs.get("combo_chain_remaining", 0.0)) <= 5.0,
+		float(game.call("_get_combo_time_remaining")) <= 3.0
+			and float(run.temporary_buffs.get("combo_chain_remaining", 0.0)) <= 3.0,
 		"Combo effects and Combo Chain must use short action windows."
 	)
-	game.call("_tick_combo_effects", 5.1)
+	game.call("_tick_combo_effects", 3.1)
 	_expect(
 		is_zero_approx(float(game.call("_get_combo_time_remaining")))
 			and int(run.temporary_buffs.get("combo_chain_count", 0)) == 0,
