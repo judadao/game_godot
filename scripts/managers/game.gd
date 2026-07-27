@@ -25,7 +25,16 @@ const FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH := MAP_REGISTRY_SCRIPT.FORBIDDEN_GRA
 const MAP_MAIN_SCENE_PATHS := MAP_REGISTRY_SCRIPT.CANONICAL_TO_AUTHORITATIVE
 const INVENTORY_MANAGER_SCRIPT := preload("res://scripts/systems/inventory_manager.gd")
 const TOWN_MANAGER_SCRIPT := preload("res://scripts/systems/town_manager.gd")
-const BASE_AP_REGEN := 0.65
+const BASE_AP_REGEN := 0.95
+const CARD_TEMPO_DURATION := 6.0
+const CARD_TEMPO_MAX_STACKS := 8
+const CARD_TEMPO_REGEN_PER_STACK := 0.12
+const CARD_TEMPO_ONE_AP_STACKS := 2
+const CARD_TEMPO_TWO_AP_STACKS := 1
+const CARD_TEMPO_ONE_AP_REFUND := 0.35
+const CARD_TEMPO_TWO_AP_REFUND := 0.15
+const CARD_TEMPO_POWER_CARD_COST := 3
+const CARD_TEMPO_POWER_CARD_DRAIN := 4
 const WISP_AP_REGEN := 0.35
 const WISP_DURATION := 6.0
 const COMBAT_CAMERA_SAFE_OFFSET_Y := 90.0
@@ -194,10 +203,12 @@ func _process(delta: float) -> void:
 	_tick_auto_attack(real_delta)
 	if _tick_combo_effects(real_delta):
 		_refresh_combo_display()
+	_tick_card_tempo(real_delta)
 	var regen_rate := BASE_AP_REGEN
 	regen_rate += float((inventory_manager.call("get_special_ability_totals") as Dictionary).get("ap_regen", 0.0))
 	regen_rate += float(run_state.temporary_buffs.get("level_ap_regen", 0.0))
 	regen_rate += float(_combo_runtime_totals.get("ap_regen_bonus", 0.0))
+	regen_rate += _get_card_tempo_regen_bonus()
 	var wisp_seconds := float(run_state.temporary_buffs.get("ap_wisp_seconds", 0.0))
 	if wisp_seconds > 0.0:
 		regen_rate += float(run_state.temporary_buffs.get("ap_wisp_rate", WISP_AP_REGEN))
@@ -1196,6 +1207,7 @@ func _on_card_selected(index: int) -> void:
 	for identity_key in ["instance_id", "card_level", "card_instance"]:
 		projected_card[identity_key] = card.get(identity_key)
 	card = projected_card
+	_apply_card_tempo(card)
 	if String(card.get("type", "")) == "combo":
 		_resolve_combo_card(card)
 	else:
@@ -1222,6 +1234,62 @@ func _on_card_selected(index: int) -> void:
 	var overflow := maxi(0, deck_manager.hand_instances.size() - deck_manager.hand_size)
 	if overflow > 0:
 		call_deferred("_open_hand_overflow_discard", overflow)
+
+
+func _apply_card_tempo(card: Dictionary) -> float:
+	var card_type := String(card.get("type", ""))
+	if card_type != "combo" and card_type != "healing":
+		return 0.0
+	var catalog_card := card_database.get_card(String(card.get("id", "")))
+	var catalog_cost := int(catalog_card.get("cost", card.get("cost", 0)))
+	var stacks := clampi(
+		int(run_state.temporary_buffs.get("card_tempo_stacks", 0)),
+		0,
+		CARD_TEMPO_MAX_STACKS
+	)
+	var refund := 0.0
+	if catalog_cost >= CARD_TEMPO_POWER_CARD_COST:
+		if catalog_cost == CARD_TEMPO_POWER_CARD_COST:
+			stacks = maxi(0, stacks - CARD_TEMPO_POWER_CARD_DRAIN)
+		else:
+			stacks = 0
+	elif catalog_cost == 2:
+		stacks = mini(CARD_TEMPO_MAX_STACKS, stacks + CARD_TEMPO_TWO_AP_STACKS)
+		refund = CARD_TEMPO_TWO_AP_REFUND
+	elif catalog_cost == 1:
+		stacks = mini(CARD_TEMPO_MAX_STACKS, stacks + CARD_TEMPO_ONE_AP_STACKS)
+		refund = CARD_TEMPO_ONE_AP_REFUND
+	else:
+		return 0.0
+	run_state.temporary_buffs["card_tempo_stacks"] = stacks
+	run_state.temporary_buffs["card_tempo_remaining"] = (
+		CARD_TEMPO_DURATION if stacks > 0 else 0.0
+	)
+	if refund > 0.0:
+		deck_manager.energy = minf(deck_manager.max_energy, deck_manager.energy + refund)
+		run_state.energy = deck_manager.energy
+	return refund
+
+
+func _tick_card_tempo(delta: float) -> bool:
+	if delta <= 0.0:
+		return false
+	var remaining := float(run_state.temporary_buffs.get("card_tempo_remaining", 0.0))
+	if remaining <= 0.0:
+		return false
+	remaining = maxf(0.0, remaining - delta)
+	run_state.temporary_buffs["card_tempo_remaining"] = remaining
+	if remaining > 0.0:
+		return false
+	run_state.temporary_buffs["card_tempo_stacks"] = 0
+	return true
+
+
+func _get_card_tempo_regen_bonus() -> float:
+	return (
+		float(run_state.temporary_buffs.get("card_tempo_stacks", 0))
+		* CARD_TEMPO_REGEN_PER_STACK
+	)
 
 
 func _tick_auto_attack(delta: float) -> void:

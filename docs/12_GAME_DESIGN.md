@@ -805,6 +805,23 @@ modify this loop through:
 Focus Amulet currently provides `-1 Combo AP` and `+2 seconds`. Countdown uses
 real time even during tactical slowdown, so slowdown cannot extend the window.
 
+### Card tempo and AP flow
+
+Base AP regeneration is `0.95 AP/second`. Low-cost Combo and Healing cards build
+a separate six-second card-tempo window so sustained play accelerates the hand
+without making high-impact cards self-sustaining:
+
+- a catalog-cost 1 card adds two tempo stacks and immediately refunds `0.35 AP`;
+- a catalog-cost 2 card adds one tempo stack and immediately refunds `0.15 AP`;
+- tempo is capped at eight stacks and each stack adds `0.12 AP/second`;
+- a catalog-cost 3 power card grants no refund and consumes four tempo stacks;
+- a catalog-cost 4 or higher power card grants no refund and clears all tempo.
+
+Catalog cost is authoritative for tempo classification. Equipment discounts
+still reduce the AP paid, but cannot turn a power card into a tempo-building
+card. Playing another low-cost card refreshes the six-second window; letting the
+window expire clears every tempo stack.
+
 ## 16. Best Practice
 
 - 先從 runtime 與測試確認規則，再更新本文件。
