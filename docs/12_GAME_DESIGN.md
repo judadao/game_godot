@@ -939,6 +939,25 @@ Any UI registered with `pause_game = true` pauses the SceneTree before its
 new-card rewards, full-deck replacement, discard, and other combat modals.
 Closing the final pausing modal resumes world processing.
 
+### Post-upgrade synthesis and combat readability
+
+When an individual upgrade creates or leaves at least two distinct non-fixed
+Lv.3 card instances, growth immediately queues an optional fusion follow-up.
+Authored recipes keep their unique results. Any otherwise unmatched Lv.3 pair
+can synthesize `Ascendant Combo`, a Lv.1 legendary Combo that combines attack,
+body, AP, lifesteal, and elemental bonuses. Skipping preserves both materials.
+
+Every enemy damage event must match a visible warning. Standard enemies and
+legacy Autumn Slimes show their attack reach throughout wind-up and a separate
+impact flash. Leaving the displayed side or hazard area avoids the hit.
+Guardian root, falling-acorn, and radial patterns use directional, targeted, or
+radial warning geometry respectively.
+
+Automatic-attack feedback receives a visual profile from all active Combo
+infusions. Flame, Frost, Storm, Venom, and lifesteal add distinct colored
+layers. Repeated Combo stacks add orbiting particles and scale the projectile
+and impact rings, so visual intensity grows with the actual stacked effects.
+
 ## 24. Autumn Battle V2 Presentation Contract
 
 Autumn Battle V2 reserves the upper 66% of the viewport for world play. The

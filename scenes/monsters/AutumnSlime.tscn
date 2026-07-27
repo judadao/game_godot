@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/monsters/autumn_slime.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/monsters/generated/autumn_slime_sheet.png" id="2"]
 [ext_resource type="Script" path="res://scripts/combat/hurtbox.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/combat/enemy_attack_feedback.gd" id="4_feedback"]
 
 [sub_resource type="CapsuleShape2D" id="1"]
 radius = 27.0
@@ -31,6 +32,11 @@ script = ExtResource("3")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
 position = Vector2(0, -28)
 shape = SubResource("1")
+
+[node name="AttackFeedback" type="Node2D" parent="."]
+position = Vector2(0, -30)
+z_index = 4
+script = ExtResource("4_feedback")
 
 [node name="HealthBar" type="Node2D" parent="."]
 position = Vector2(-36, -84)

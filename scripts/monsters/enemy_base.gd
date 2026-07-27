@@ -14,6 +14,7 @@ const ARCHETYPE_DATA := preload("res://scripts/monsters/enemy_archetype.gd")
 @onready var visual: CanvasItem = get_node_or_null("Visual") as CanvasItem
 @onready var health_fill: ColorRect = get_node_or_null("HealthBar/Fill") as ColorRect
 @onready var hurtbox: Area2D = get_node_or_null("Hurtbox") as Area2D
+@onready var attack_feedback: EnemyAttackFeedback = get_node_or_null("AttackFeedback") as EnemyAttackFeedback
 
 var archetype: Resource
 var health: int = 1
@@ -33,6 +34,7 @@ var _poison_remaining := 0.0
 var _poison_damage := 0
 var _poison_tick_remaining := 0.75
 var _attack_generation := 0
+var _telegraphed_target_position := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -124,31 +126,74 @@ func _begin_attack() -> void:
 	velocity.x = 0.0
 	_cooldown = float(archetype.get("attack_cooldown"))
 	var pattern := perform_next_attack()
+	var direction := signf(target.global_position.x - global_position.x) if target != null else 1.0
+	if is_zero_approx(direction):
+		direction = 1.0
+	_telegraphed_target_position = target.global_position if target != null else global_position
+	if attack_feedback != null:
+		attack_feedback.show_telegraph(
+			pattern,
+			_get_attack_telegraph_time(),
+			_attack_reach(pattern),
+			direction,
+			_telegraphed_target_position - global_position
+		)
 	await get_tree().create_timer(_get_attack_telegraph_time()).timeout
 	if _dying or generation != _attack_generation:
 		return
-	_apply_attack_pattern(pattern)
+	if attack_feedback != null:
+		attack_feedback.show_impact(pattern, _attack_reach(pattern), direction)
+	_apply_attack_pattern(pattern, direction)
 	attack_performed.emit(pattern)
 	_attacking = false
 
 
-func _apply_attack_pattern(pattern: StringName) -> void:
+func _apply_attack_pattern(pattern: StringName, telegraphed_direction: float = 0.0) -> void:
 	if target == null or not is_instance_valid(target):
 		return
-	var reach := float(archetype.get("attack_range"))
+	var reach := _attack_reach(pattern)
 	var damage := int(archetype.get("attack_damage"))
 	match pattern:
-		&"thorn_volley":
-			reach *= 1.25
 		&"rush":
-			velocity.x = signf(target.global_position.x - global_position.x) * float(archetype.get("speed")) * 2.4
+			velocity.x = telegraphed_direction * float(archetype.get("speed")) * 2.4
 		&"shockwave":
-			reach *= 1.65
 			damage = int(round(damage * 0.8))
 		&"cleave":
 			damage = int(round(damage * 1.2))
-	if global_position.distance_to(target.global_position) <= reach and target.has_method("take_hit"):
+	var target_offset := target.global_position - global_position
+	var inside_telegraphed_side := (
+		is_zero_approx(telegraphed_direction)
+		or target_offset.x * telegraphed_direction >= -8.0
+	)
+	if (
+		inside_telegraphed_side
+		and target_offset.length() <= reach
+		and absf(target_offset.y) <= _attack_half_height(pattern) + 12.0
+		and target.has_method("take_hit")
+	):
 		target.call("take_hit", damage, global_position, 220.0)
+
+
+func _attack_reach(pattern: StringName) -> float:
+	var reach := float(archetype.get("attack_range")) if archetype != null else 60.0
+	match pattern:
+		&"thorn_volley":
+			reach *= 1.25
+		&"shockwave":
+			reach *= 1.65
+	return reach
+
+
+func _attack_half_height(pattern: StringName) -> float:
+	match pattern:
+		&"thorn_volley":
+			return 13.0
+		&"shockwave":
+			return 34.0
+		&"cleave":
+			return 42.0
+		_:
+			return 24.0
 
 
 func take_hit(raw_damage: int, source_position: Vector2, knockback: float = 180.0) -> int:
@@ -202,6 +247,8 @@ func reset_encounter(spawn_position: Vector2) -> void:
 		return
 	_attack_generation += 1
 	_attacking = false
+	if attack_feedback != null:
+		attack_feedback.cancel()
 	_cooldown = 0.0
 	_slow_ratio = 0.0
 	_slow_remaining = 0.0
@@ -257,6 +304,8 @@ func _die() -> void:
 	if _dying:
 		return
 	_dying = true
+	if attack_feedback != null:
+		attack_feedback.cancel()
 	collision_layer = 0
 	collision_mask = 0
 	if hurtbox != null:

@@ -107,6 +107,14 @@ func _run() -> void:
 			and float(expanded_attack_effect.get("poison_duration", 0.0)) > 0.0,
 		"Offense and element Combo families must project travel speed, attack size, and poison."
 	)
+	var expanded_visual := expanded_attack.get("combo_visual_profile", {}) as Dictionary
+	var expanded_elements := expanded_visual.get("elements", []) as Array
+	_expect(
+		int(expanded_visual.get("stack_count", 0)) >= 8
+			and expanded_elements.has("storm")
+			and expanded_elements.has("venom"),
+		"Every active Combo stack and element must reach the automatic-attack visual profile."
+	)
 	var family_requirements := {
 		"offense": ["quickened_cadence", "kinetic_acceleration", "giant_arc", "keen_focus_combo"],
 		"body": ["iron_bone", "fleet_footwork", "arcane_breath", "deep_reservoir"],
@@ -194,6 +202,13 @@ func _run() -> void:
 	var effect := infused.get("effect", {}) as Dictionary
 	_expect(int(effect.get("amount", 0)) >= int((base.get("effect", {}) as Dictionary).get("amount", 0)) + 12, "Stacked Combo infusions and rhythm buffs must all add damage.")
 	_expect(effect.has("burn_duration") and effect.has("frost_ratio") and effect.has("combo_stun"), "Dual infusion must attach burn, slow, and stun.")
+	var infused_elements := (
+		(infused.get("combo_visual_profile", {}) as Dictionary).get("elements", []) as Array
+	)
+	_expect(
+		infused_elements.has("flame") and infused_elements.has("frost"),
+		"Flame and Frost Combo stacks must visibly recolor the automatic attack."
+	)
 	_expect(bool(game.call("_resolve_combo_card", database_card(game, "flame_imbue"))), "Flame must reach max level.")
 	_expect(bool(game.call("_resolve_combo_card", database_card(game, "frostburst_imbue"))), "Frost must gain a second level.")
 	_expect(bool(game.call("_resolve_combo_card", database_card(game, "frostburst_imbue"))), "Frost must reach max level.")
@@ -212,11 +227,13 @@ func _run() -> void:
 	root.add_child(enemy)
 	root.add_child(runner)
 	await process_frame
+	player.set("health", 50)
 	runner.cast(infused, player, [enemy])
 	var status := enemy.call("get_status_snapshot") as Dictionary
 	_expect(float(status.get("burn_remaining", 0.0)) > 0.0, "Flame infusion must apply burn.")
 	_expect(float(status.get("slow_remaining", 0.0)) > 0.0, "Frost infusion must apply slow.")
 	_expect(float(status.get("stun_remaining", 0.0)) > 0.0, "Dual infusion must briefly stun.")
+	_expect(int(player.get("health")) > 50, "Stacked Combo lifesteal must visibly restore health on hit.")
 	var venom := database_card(game, "venom_edge")
 	var venom_effect := (venom.get("effect", {}) as Dictionary).duplicate(true)
 	venom_effect["remaining_seconds"] = 8.0

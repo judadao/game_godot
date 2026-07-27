@@ -48,13 +48,30 @@ func perform_next_attack() -> StringName:
 	return pattern
 
 
-func _apply_attack_pattern(pattern: StringName) -> void:
+func _apply_attack_pattern(pattern: StringName, telegraphed_direction: float = 0.0) -> void:
 	if target == null or not is_instance_valid(target):
 		return
 	var profile := get_pattern_profile(pattern)
-	_spawn_pattern_visual(String(profile["kind"]), target.global_position)
-	if global_position.distance_to(target.global_position) <= float(profile["range"]) and target.has_method("take_hit"):
+	_spawn_pattern_visual(String(profile["kind"]), _telegraphed_target_position)
+	var target_offset := target.global_position - global_position
+	var inside_warning := false
+	match pattern:
+		&"falling_acorns":
+			inside_warning = target.global_position.distance_to(_telegraphed_target_position) <= 108.0
+		&"ember_burst":
+			inside_warning = target_offset.length() <= float(profile["range"])
+		_:
+			inside_warning = (
+				target_offset.length() <= float(profile["range"])
+				and target_offset.x * telegraphed_direction >= -8.0
+				and absf(target_offset.y) <= 72.0
+			)
+	if inside_warning and target.has_method("take_hit"):
 		target.call("take_hit", int(profile["damage"]), global_position, 280.0 if pattern == &"ember_burst" else 180.0)
+
+
+func _attack_reach(pattern: StringName) -> float:
+	return float(get_pattern_profile(pattern).get("range", 150.0))
 
 
 func _spawn_pattern_visual(kind: String, target_position: Vector2) -> void:

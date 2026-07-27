@@ -775,11 +775,7 @@ func _enqueue_experience_growth() -> void:
 			"name": _card_name(instance.card_id),
 			"level": instance.level,
 		})
-	var fusions := evolution_manager.find_available_fusions(run_state.card_instances)
-	for fusion in fusions:
-		fusion["left_name"] = _card_name(String(fusion.get("left_card_id", "")))
-		fusion["right_name"] = _card_name(String(fusion.get("right_card_id", "")))
-		fusion["result_name"] = _card_name(String(fusion.get("result_card_id", "")))
+	var fusions := _available_fusions_with_names()
 	if not growth_choice_queue.enqueue_experience_growth(upgrades, fusions):
 		return
 	call_deferred("_open_next_growth_choice")
@@ -816,6 +812,7 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 			break
 	if selected.is_empty():
 		return
+	var selected_action := String(selected.get("action", ""))
 	if (
 		String(selected.get("action", "")) == "new_card"
 		and _get_run_deck_size() >= CardCollectionService.MAX_EXPEDITION_CARDS
@@ -833,6 +830,8 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 		return
 	if String(page.get("source", "")) == "experience":
 		run_state.consume_pending_level()
+	if selected_action == "upgrade":
+		growth_choice_queue.enqueue_optional_fusions(_available_fusions_with_names())
 	close_ui(ui_control)
 	_refresh_card_hand()
 	_update_hud_player_identity()
@@ -843,11 +842,22 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 
 
 func _on_growth_reward_skipped(ui_control: Control) -> void:
-	if growth_choice_queue.skip_wave_reward().is_empty():
+	if growth_choice_queue.skip_optional_reward().is_empty():
 		return
 	close_ui(ui_control)
-	if not growth_choice_queue.is_empty():
+	if run_state.pending_level_ups > 0 and growth_choice_queue.is_empty():
+		_enqueue_experience_growth()
+	elif not growth_choice_queue.is_empty():
 		call_deferred("_open_next_growth_choice")
+
+
+func _available_fusions_with_names() -> Array[Dictionary]:
+	var fusions := evolution_manager.find_available_fusions(run_state.card_instances)
+	for fusion in fusions:
+		fusion["left_name"] = _card_name(String(fusion.get("left_card_id", "")))
+		fusion["right_name"] = _card_name(String(fusion.get("right_card_id", "")))
+		fusion["result_name"] = _card_name(String(fusion.get("result_card_id", "")))
+	return fusions
 
 
 func _open_reward_replacement(choice_id: String, card_id: String) -> void:
@@ -1320,7 +1330,8 @@ func _spawn_auto_attack_feedback(
 		power_bonus,
 		bool(result.get("critical", false)),
 		float(card.get("projectile_speed_multiplier", 1.0)),
-		float(card.get("attack_size_multiplier", 1.0))
+		float(card.get("attack_size_multiplier", 1.0)),
+		card.get("combo_visual_profile", {}) as Dictionary
 	)
 
 
@@ -1699,6 +1710,9 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 	var effects := effects_variant as Array
 	var has_flame := false
 	var has_frost := false
+	var visual_elements: Array[String] = []
+	var visual_stack_count := 0
+	var visual_lifesteal := false
 	for infusion_variant in effects:
 		if not infusion_variant is Dictionary:
 			continue
@@ -1706,6 +1720,7 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 		var infusion_id := String(infusion.get("infusion_id", ""))
 		if String(infusion.get("target_action", "")).strip_edges() == "dash":
 			continue
+		visual_stack_count += 1
 		var target_card_id := String(infusion.get("target_card_id", ""))
 		if not target_card_id.is_empty() and String(infused.get("id", "")) != target_card_id:
 			continue
@@ -1747,34 +1762,68 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("block_bonus", 0))
 		if infusion_id == "flame":
 			has_flame = true
+			if not visual_elements.has("flame"):
+				visual_elements.append("flame")
 			effect["burn_damage"] = int(infusion.get("burn_damage", 1))
 			effect["burn_duration"] = float(effect.get("burn_duration", 0.0)) + float(infusion.get("burn_duration", 0.0))
 		elif infusion_id == "frost":
 			has_frost = true
+			if not visual_elements.has("frost"):
+				visual_elements.append("frost")
 			effect["frost_ratio"] = float(infusion.get("frost_ratio", 0.25))
 			effect["frost_duration"] = float(effect.get("frost_duration", 0.0)) + float(infusion.get("frost_duration", 0.0))
 		elif infusion_id == "venom":
+			if not visual_elements.has("venom"):
+				visual_elements.append("venom")
 			effect["poison_damage"] = int(infusion.get("poison_damage", 1))
 			effect["poison_duration"] = (
 				float(effect.get("poison_duration", 0.0))
 				+ float(infusion.get("poison_duration", 0.0))
 			)
+		elif infusion_id == "ascendant":
+			has_flame = true
+			has_frost = true
+			for element_id in ["flame", "frost", "storm", "venom"]:
+				if not visual_elements.has(element_id):
+					visual_elements.append(element_id)
+			effect["burn_damage"] = int(infusion.get("burn_damage", 2))
+			effect["burn_duration"] = float(infusion.get("burn_duration", 3.0))
+			effect["frost_ratio"] = float(infusion.get("frost_ratio", 0.20))
+			effect["frost_duration"] = float(infusion.get("frost_duration", 2.0))
+			effect["poison_damage"] = int(infusion.get("poison_damage", 2))
+			effect["poison_duration"] = float(infusion.get("poison_duration", 3.0))
+			effect["combo_stun"] = maxf(
+				float(effect.get("combo_stun", 0.0)),
+				float(infusion.get("combo_stun", 0.10))
+			)
 		elif infusion_id == "thermal_shatter":
 			has_flame = true
 			has_frost = true
+			for element_id in ["flame", "frost"]:
+				if not visual_elements.has(element_id):
+					visual_elements.append(element_id)
 			effect["burn_damage"] = int(infusion.get("burn_damage", 1))
 			effect["burn_duration"] = float(infusion.get("burn_duration", 0.0))
 			effect["frost_ratio"] = float(infusion.get("frost_ratio", 0.25))
 			effect["frost_duration"] = float(infusion.get("frost_duration", 0.0))
 			effect["combo_stun"] = float(infusion.get("combo_stun", 0.5))
 		elif float(infusion.get("combo_stun", 0.0)) > 0.0:
+			if not visual_elements.has("storm"):
+				visual_elements.append("storm")
 			effect["combo_stun"] = maxf(
 				float(effect.get("combo_stun", 0.0)),
 				float(infusion.get("combo_stun", 0.0))
 			)
+		if float(infusion.get("lifesteal_ratio", 0.0)) > 0.0:
+			visual_lifesteal = true
 	if String(infused.get("type", "")) == "attack" and has_flame and has_frost:
 		effect["amount"] = int(effect.get("amount", 0)) + 2
 		effect["combo_stun"] = 0.25
+	infused["combo_visual_profile"] = {
+		"stack_count": visual_stack_count,
+		"elements": visual_elements,
+		"lifesteal": visual_lifesteal or float(effect.get("lifesteal_ratio", 0.0)) > 0.0,
+	}
 	infused["effect"] = effect
 	return infused
 

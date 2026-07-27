@@ -19,7 +19,14 @@ func _run() -> void:
 		24,
 		6,
 		8,
-		false
+		false,
+		1.5,
+		1.4,
+		{
+			"stack_count": 6,
+			"elements": ["flame", "frost", "storm", "venom"],
+			"lifesteal": true,
+		}
 	)
 	_expect(feedback.is_in_group("AutoAttackFeedback"), "Attack feedback must be discoverable for runtime verification.")
 	_expect(feedback.get_damage_text() == "-24", "Attack feedback must show actual applied damage.")
@@ -27,6 +34,11 @@ func _run() -> void:
 		feedback.get_combo_text().contains("COMBO ×6")
 			and feedback.get_combo_text().contains("POWER +8"),
 		"Attack feedback must make the active Combo power visible."
+	)
+	_expect(
+		int(feedback.call("get_visual_layer_count")) >= 4
+			and float(feedback.call("get_attack_scale")) > 1.4,
+		"Stacked elemental Combo effects must add visible projectile layers and scale."
 	)
 	await create_timer(0.2).timeout
 	_expect(

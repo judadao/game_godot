@@ -102,6 +102,15 @@ func _run() -> void:
 	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "CHOOSE A FUSION", "Full-level fusion must use a separate page.")
 	_expect(_all_text(ui).contains("LV.3  +  LV.3"), "Fusion choices must make both full-level materials explicit.")
 	_expect(_all_text(ui).contains("LV.1"), "Fusion choices must show that the result returns at level one.")
+	fusion_page["source"] = "fusion_followup"
+	ui.call("present_page", fusion_page)
+	await process_frame
+	_expect(
+		(ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text
+			== "EVOLVE COMBO?",
+		"A newly completed Lv.3 pair must explain the optional Combo evolution."
+	)
+	_expect(skip_button.visible and not skip_button.disabled, "Post-upgrade fusion must be skippable.")
 
 	var fallback_page := {
 		"event_id": 13,

@@ -108,13 +108,15 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 			result["affected"] = 1
 
 	if int(result.get("total", 0)) > 0:
+		var lifesteal_restored := 0
 		if caster.has_method("resolve_lifesteal"):
-			result["lifesteal_restored"] = int(caster.call("resolve_lifesteal", int(result["total"])))
-		elif float(effect.get("lifesteal_ratio", 0.0)) > 0.0 and caster.has_method("restore_health"):
-			result["lifesteal_restored"] = int(caster.call(
+			lifesteal_restored += int(caster.call("resolve_lifesteal", int(result["total"])))
+		if float(effect.get("lifesteal_ratio", 0.0)) > 0.0 and caster.has_method("restore_health"):
+			lifesteal_restored += int(caster.call(
 				"restore_health",
 				maxi(1, int(round(float(result["total"]) * float(effect["lifesteal_ratio"]))))
 			))
+		result["lifesteal_restored"] = lifesteal_restored
 
 	effect_resolved.emit(String(card.get("id", "")), result)
 	return result

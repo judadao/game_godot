@@ -78,7 +78,11 @@ func present_page(page: Dictionary) -> void:
 
 	confirm_button.disabled = _choice_buttons.is_empty()
 	confirm_button.text = "CONFIRM CHOICE"
-	var can_skip := String(_page.get("source", "")).to_lower() == "wave" and not new_cards.is_empty()
+	var source := String(_page.get("source", "")).to_lower()
+	var can_skip := (
+		(source == "wave" and not new_cards.is_empty())
+		or (source == "fusion_followup" and not fusions.is_empty())
+	)
 	skip_button.visible = can_skip
 	skip_button.disabled = not can_skip
 	required_hint.text = (
@@ -160,6 +164,10 @@ func _apply_header() -> void:
 					else "Fuse one pair of full-level cards."
 				)
 			)
+		"fusion_followup":
+			title_label.text = "EVOLVE COMBO?"
+			source_label.text = "NEW LV.3 PAIR"
+			instruction_label.text = "Fuse two full-level cards into one stronger Combo, or keep both."
 		_:
 			title_label.text = "CARD GROWTH"
 			source_label.text = "PENDING CHOICE"

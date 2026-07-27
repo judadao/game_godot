@@ -14,6 +14,9 @@ var _travel_progress := 0.0
 var _impact_progress := 0.0
 var _accent := Color(1.0, 0.56, 0.18, 1.0)
 var _attack_size_multiplier := 1.0
+var _visual_colors: Array[Color] = []
+var _stack_count := 0
+var _lifesteal := false
 
 
 func play(
@@ -24,12 +27,20 @@ func play(
 	combo_damage_bonus: int = 0,
 	critical: bool = false,
 	projectile_speed_multiplier: float = 1.0,
-	attack_size_multiplier: float = 1.0
+	attack_size_multiplier: float = 1.0,
+	visual_profile: Dictionary = {}
 ) -> void:
 	global_position = origin
 	_target_offset = target_position - origin
-	_accent = _accent_for_combo(combo_count)
-	_attack_size_multiplier = clampf(attack_size_multiplier, 1.0, 2.5)
+	_stack_count = maxi(0, int(visual_profile.get("stack_count", 0)))
+	_lifesteal = bool(visual_profile.get("lifesteal", false))
+	_visual_colors = _colors_for_elements(visual_profile.get("elements", []) as Array)
+	_accent = _blended_accent(_visual_colors, _accent_for_combo(combo_count))
+	_attack_size_multiplier = clampf(
+		attack_size_multiplier * (1.0 + minf(10.0, float(_stack_count)) * 0.035),
+		1.0,
+		3.0
+	)
 	damage_label.text = "%s%d" % ["CRIT  -" if critical else "-", maxi(0, damage)]
 	damage_label.add_theme_color_override("font_color", _accent)
 	combo_label.text = (
@@ -66,14 +77,40 @@ func get_damage_text() -> String:
 	return damage_label.text if damage_label != null else ""
 
 
+func get_visual_layer_count() -> int:
+	return _visual_colors.size() + (1 if _lifesteal else 0)
+
+
+func get_attack_scale() -> float:
+	return _attack_size_multiplier
+
+
 func _draw() -> void:
 	if _travel_progress < 1.0:
 		var tip := Vector2.ZERO.lerp(_target_offset, _travel_progress)
 		var tail := Vector2.ZERO.lerp(_target_offset, maxf(0.0, _travel_progress - 0.24))
 		draw_line(tail, tip, Color(_accent, 0.46), 8.0 * _attack_size_multiplier, true)
 		draw_line(tail, tip, _accent, 3.0 * _attack_size_multiplier, true)
+		var normal := _target_offset.normalized().orthogonal()
+		for layer_index in _visual_colors.size():
+			var layer_offset := (
+				float(layer_index) - float(_visual_colors.size() - 1) * 0.5
+			) * 4.0 * _attack_size_multiplier
+			var layer_color := _visual_colors[layer_index]
+			draw_line(
+				tail + normal * layer_offset,
+				tip + normal * layer_offset,
+				Color(layer_color, 0.82),
+				maxf(1.5, 2.4 * _attack_size_multiplier),
+				true
+			)
 		draw_circle(tip, 7.0 * _attack_size_multiplier, _accent)
 		draw_circle(tip, 3.0 * _attack_size_multiplier, Color.WHITE)
+		var mote_count := mini(10, _stack_count)
+		for mote_index in mote_count:
+			var angle := TAU * float(mote_index) / float(maxi(1, mote_count)) + _travel_progress * TAU
+			var mote_position := tip + Vector2.from_angle(angle) * (9.0 + 2.0 * _attack_size_multiplier)
+			draw_circle(mote_position, 1.5 + 0.25 * _attack_size_multiplier, _accent.lightened(0.2))
 	if _impact_progress > 0.0:
 		var alpha := 1.0 - _impact_progress
 		var radius := lerpf(8.0, 34.0, _impact_progress) * _attack_size_multiplier
@@ -92,6 +129,28 @@ func _draw() -> void:
 			lerpf(12.0, 3.0, _impact_progress),
 			Color(1.0, 1.0, 1.0, alpha * 0.78)
 		)
+		for layer_index in _visual_colors.size():
+			draw_arc(
+				_target_offset,
+				radius + float(layer_index + 1) * 5.0,
+				0.0,
+				TAU,
+				24,
+				Color(_visual_colors[layer_index], alpha * 0.78),
+				2.0,
+				true
+			)
+		if _lifesteal:
+			draw_arc(
+				_target_offset,
+				radius * 0.72,
+				0.0,
+				TAU,
+				20,
+				Color(0.95, 0.12, 0.32, alpha),
+				3.0,
+				true
+			)
 
 
 func _set_travel_progress(value: float) -> void:
@@ -127,3 +186,31 @@ func _accent_for_combo(combo_count: int) -> Color:
 	if combo_count >= 3:
 		return Color(1.0, 0.82, 0.20, 1.0)
 	return Color(1.0, 0.56, 0.18, 1.0)
+
+
+func _colors_for_elements(elements: Array) -> Array[Color]:
+	var colors: Array[Color] = []
+	for element_variant in elements:
+		var color := Color.WHITE
+		match String(element_variant):
+			"flame":
+				color = Color(1.0, 0.25, 0.06, 1.0)
+			"frost":
+				color = Color(0.20, 0.86, 1.0, 1.0)
+			"storm":
+				color = Color(0.82, 0.54, 1.0, 1.0)
+			"venom":
+				color = Color(0.34, 1.0, 0.24, 1.0)
+			_:
+				continue
+		colors.append(color)
+	return colors
+
+
+func _blended_accent(colors: Array[Color], fallback: Color) -> Color:
+	if colors.is_empty():
+		return fallback
+	var blended := colors[0]
+	for index in range(1, colors.size()):
+		blended = blended.lerp(colors[index], 0.38)
+	return blended.lightened(minf(0.22, float(_stack_count) * 0.012))

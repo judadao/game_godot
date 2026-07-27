@@ -2,6 +2,7 @@ class_name EvolutionManager
 extends RefCounted
 
 const DEFAULT_RECIPES_PATH := "res://data/evolutions.json"
+const GENERIC_FUSION_RESULT_ID := "ascendant_combo"
 
 var _card_database: RefCounted
 var _recipes: Array[Dictionary] = []
@@ -55,6 +56,7 @@ func find_available_fusions(card_instances: Array) -> Array[Dictionary]:
 			continue
 		eligible.append(instance)
 	var available: Array[Dictionary] = []
+	var claimed_pairs: Dictionary = {}
 	for recipe in _recipes:
 		for left in eligible:
 			if String(left.get("card_id", "")) != String(recipe["left_card_id"]):
@@ -70,7 +72,38 @@ func find_available_fusions(card_instances: Array) -> Array[Dictionary]:
 				fusion["left_instance_id"] = String(left["instance_id"])
 				fusion["right_instance_id"] = String(right["instance_id"])
 				available.append(fusion)
+				claimed_pairs[_pair_key(
+					String(left["instance_id"]),
+					String(right["instance_id"])
+				)] = true
+	for left_index in eligible.size():
+		for right_index in range(left_index + 1, eligible.size()):
+			var left := eligible[left_index]
+			var right := eligible[right_index]
+			var pair_key := _pair_key(
+				String(left["instance_id"]),
+				String(right["instance_id"])
+			)
+			if claimed_pairs.has(pair_key):
+				continue
+			available.append({
+				"id": "synthesize_%s" % pair_key,
+				"recipe_id": "synthesize_%s" % pair_key,
+				"name": "Ascendant Combo",
+				"left_card_id": String(left["card_id"]),
+				"right_card_id": String(right["card_id"]),
+				"result_card_id": GENERIC_FUSION_RESULT_ID,
+				"left_instance_id": String(left["instance_id"]),
+				"right_instance_id": String(right["instance_id"]),
+				"generic": true,
+			})
 	return available
+
+
+func _pair_key(left_id: String, right_id: String) -> String:
+	var ids := [left_id, right_id]
+	ids.sort()
+	return "%s_%s" % [ids[0], ids[1]]
 
 
 func _is_valid_recipe(recipe: Dictionary, seen_ids: Dictionary) -> bool:

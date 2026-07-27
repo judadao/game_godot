@@ -148,6 +148,7 @@ func take_hit(
 	if applied <= 0:
 		return 0
 	take_damage(applied)
+	_show_hit_feedback()
 	if combat_status_controller == null or combat_status_controller.get_super_armor_tier() <= 0:
 		velocity.x = signf(global_position.x - source_position.x) * knockback
 	if source != null and is_instance_valid(source) and combat_status_controller != null:
@@ -159,6 +160,14 @@ func take_hit(
 				source.call("take_damage", retaliation)
 	grant_invulnerability(0.55)
 	return applied
+
+
+func _show_hit_feedback() -> void:
+	if visual == null:
+		return
+	visual.modulate = Color(1.0, 0.22, 0.16, 1.0)
+	var tween := visual.create_tween()
+	tween.tween_property(visual, "modulate", Color.WHITE, 0.18)
 
 func grant_invulnerability(duration: float) -> void:
 	_invulnerability_remaining = maxf(_invulnerability_remaining, maxf(0.0, duration))

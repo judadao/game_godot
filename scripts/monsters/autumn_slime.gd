@@ -16,11 +16,13 @@ signal health_changed(current: int, maximum: int)
 
 @onready var sprite: Sprite2D = $Sprite
 @onready var health_fill: ColorRect = $HealthBar/Fill
+@onready var attack_feedback: EnemyAttackFeedback = $AttackFeedback
 var health: int
 var target: Node2D
 var _cooldown: float = 0.0
 var _dying := false
 var _anim_time := 0.0
+var _attacking := false
 
 
 func _ready() -> void:
@@ -43,7 +45,7 @@ func _physics_process(delta: float) -> void:
 		var distance := global_position.distance_to(target.global_position)
 		if distance <= attack_range:
 			velocity.x = 0.0
-			if _cooldown <= 0.0:
+			if _cooldown <= 0.0 and not _attacking:
 				_attack_target()
 		elif distance <= detection_range:
 			velocity.x = signf(target.global_position.x - global_position.x) * speed
@@ -71,9 +73,22 @@ func take_hit(raw_damage: int, source_position: Vector2, knockback: float = 180.
 
 func _attack_target() -> void:
 	_cooldown = attack_cooldown
+	_attacking = true
 	sprite.frame = 2
-	if target != null and target.has_method("take_hit"):
+	var direction := signf(target.global_position.x - global_position.x) if target != null else 1.0
+	attack_feedback.show_telegraph(&"jab", 0.30, attack_range, direction)
+	await get_tree().create_timer(0.30).timeout
+	if _dying:
+		return
+	attack_feedback.show_impact(&"jab", attack_range, direction)
+	if (
+		target != null
+		and is_instance_valid(target)
+		and global_position.distance_to(target.global_position) <= attack_range
+		and target.has_method("take_hit")
+	):
 		target.call("take_hit", attack_damage, global_position, 220.0)
+	_attacking = false
 
 
 func _update_health_bar() -> void:
@@ -83,6 +98,7 @@ func _update_health_bar() -> void:
 
 func _die() -> void:
 	_dying = true
+	attack_feedback.cancel()
 	collision_layer = 0
 	collision_mask = 0
 	$Hurtbox.monitorable = false

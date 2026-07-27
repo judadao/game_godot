@@ -77,6 +77,16 @@ func _run() -> void:
 		and String(fusion_choice.get("result_name", "")) == "Gale Lunge",
 		"Fusion choices must preserve material and result display identity."
 	)
+	queue.clear()
+	_expect(queue.enqueue_optional_fusions(fusions), "A new Lv3 pair must enqueue an optional fusion follow-up.")
+	_expect(
+		String(queue.peek().get("source", "")) == "fusion_followup",
+		"Post-upgrade fusion must use a distinct optional page."
+	)
+	_expect(
+		not queue.skip_optional_reward().is_empty() and queue.is_empty(),
+		"Players must be able to keep both Lv3 cards by skipping the fusion follow-up."
+	)
 
 	queue.clear()
 	var dense_upgrades: Array[Dictionary] = []

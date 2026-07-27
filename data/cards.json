@@ -713,6 +713,27 @@
       ]
     },
     {
+      "id": "ascendant_combo",
+      "name": "Ascendant Combo",
+      "type": "combo",
+      "combo_family": "offense",
+      "rarity": "legendary",
+      "level": 1,
+      "max_level": 3,
+      "cost": 3,
+      "description": "A synthesized Combo that strengthens attacks, body, AP, lifesteal, and all four elements.",
+      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
+      "tags": ["combo", "fusion", "ascendant", "infusion"],
+      "combo_tags": ["combo", "power", "element"],
+      "play_destination": "discard",
+      "cooldown_seconds": 0.0,
+      "effect": {"kind": "infusion", "infusion_id": "ascendant", "combo_duration": 10.0, "damage_bonus": 6, "attack_range_bonus": 50.0, "attack_interval_multiplier": 0.82, "attack_size_multiplier": 1.25, "projectile_speed_multiplier": 1.35, "critical_chance": 0.12, "critical_multiplier": 1.8, "defense_bonus": 2, "move_speed_multiplier": 0.10, "ap_regen_bonus": 0.30, "ap_max_bonus": 1.0, "lifesteal_ratio": 0.08, "burn_damage": 2, "burn_duration": 3.0, "frost_ratio": 0.20, "frost_duration": 2.0, "poison_damage": 2, "poison_duration": 3.0, "combo_stun": 0.10},
+      "upgrade_effects": [
+        {"level": 2, "description": "Every Ascendant bonus becomes stronger.", "effect": {"damage_bonus": 9, "attack_interval_multiplier": 0.74, "attack_size_multiplier": 1.40, "defense_bonus": 3, "ap_regen_bonus": 0.45}},
+        {"level": 3, "description": "Ascendant attacks become a large multi-element storm.", "mechanic_change": "ascendant_storm", "effect": {"damage_bonus": 13, "attack_range_bonus": 90.0, "attack_interval_multiplier": 0.66, "attack_size_multiplier": 1.60, "projectile_speed_multiplier": 1.70, "critical_chance": 0.22, "defense_bonus": 4, "move_speed_multiplier": 0.18, "ap_regen_bonus": 0.65, "ap_max_bonus": 2.0}}
+      ]
+    },
+    {
       "id": "overdrive",
       "name": "Overdrive",
       "type": "ultimate",

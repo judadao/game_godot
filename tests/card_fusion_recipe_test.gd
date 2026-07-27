@@ -28,6 +28,7 @@ func _run() -> void:
 	var available: Array[Dictionary] = manager.find_available_fusions(cards)
 	_expect(_has_result(available, "fortress_stance"), "Two distinct matching Lv3 instances must offer Unbreakable Stance.")
 	_expect(_has_result(available, "inferno_orb"), "Cleave plus Flame Aura must offer Inferno Orb.")
+	_expect(_has_result(available, "ascendant_combo"), "Any two distinct Lv3 cards must offer a stronger Ascendant Combo.")
 	_expect(not _has_result(available, "gale_lunge"), "A missing material must not offer its fusion.")
 	for fusion in available:
 		_expect(String(fusion.get("left_instance_id", "")) != String(fusion.get("right_instance_id", "")), "Fusion materials must be two distinct instances.")
@@ -35,7 +36,21 @@ func _run() -> void:
 	cards[1].level = 2
 	available = manager.find_available_fusions(cards)
 	_expect(not _has_result(available, "fortress_stance"), "Both fusion materials must be Lv3.")
-	_expect(not available.any(func(fusion: Dictionary) -> bool: return String(fusion.get("left_instance_id", "")) == "ember-unmatched" or String(fusion.get("right_instance_id", "")) == "ember-unmatched"), "Cards without a matching recipe must not become fusion materials.")
+	var unmatched_is_eligible := false
+	for fusion in available:
+		if (
+			String(fusion.get("result_card_id", "")) == "ascendant_combo"
+			and (
+				String(fusion.get("left_instance_id", "")) == "ember-unmatched"
+				or String(fusion.get("right_instance_id", "")) == "ember-unmatched"
+			)
+		):
+			unmatched_is_eligible = true
+			break
+	_expect(
+		unmatched_is_eligible,
+		"An unmatched Lv3 card must remain eligible for generic Combo synthesis."
+	)
 
 	if _failures == 0:
 		print("PASS: exact two-instance level-three card fusion recipes")

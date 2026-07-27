@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/monsters/enemy_base.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://scripts/combat/hurtbox.gd" id="2_hurtbox"]
+[ext_resource type="Script" path="res://scripts/combat/enemy_attack_feedback.gd" id="3_feedback"]
 
 [sub_resource type="CapsuleShape2D" id="BodyShape"]
 radius = 25.0
@@ -42,6 +43,11 @@ script = ExtResource("2_hurtbox")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
 position = Vector2(0, -28)
 shape = SubResource("BodyShape")
+
+[node name="AttackFeedback" type="Node2D" parent="."]
+position = Vector2(0, -30)
+z_index = 4
+script = ExtResource("3_feedback")
 
 [node name="HealthBar" type="Node2D" parent="."]
 position = Vector2(-36, -92)

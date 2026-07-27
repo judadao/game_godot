@@ -62,27 +62,7 @@ func enqueue_experience_growth(upgrades: Array[Dictionary], fusions: Array[Dicti
 	):
 		choices.append(choice)
 	if choices.is_empty():
-		for fusion in fusions:
-			if choices.size() >= MAX_EXPERIENCE_CHOICES:
-				break
-			var left_id := String(fusion.get("left_instance_id", ""))
-			var right_id := String(fusion.get("right_instance_id", ""))
-			var result_id := String(fusion.get("result_card_id", ""))
-			if left_id.is_empty() or right_id.is_empty() or left_id == right_id or result_id.is_empty():
-				continue
-			_append_unique_choice(choices, seen_choice_ids, {
-				"choice_id": "exp:%d:fusion:%s:%s" % [event_id, left_id, right_id],
-				"action": "fusion",
-				"recipe_id": String(fusion.get("recipe_id", result_id)),
-				"left_instance_id": left_id,
-				"right_instance_id": right_id,
-				"left_card_id": String(fusion.get("left_card_id", "")),
-				"right_card_id": String(fusion.get("right_card_id", "")),
-				"left_name": String(fusion.get("left_name", "")),
-				"right_name": String(fusion.get("right_name", "")),
-				"result_card_id": result_id,
-				"result_name": String(fusion.get("result_name", fusion.get("name", ""))),
-			})
+		choices = _fusion_choices(event_id, fusions)
 	if choices.is_empty():
 		for index in FALLBACK_REWARDS.size():
 			choices.append({
@@ -91,6 +71,16 @@ func enqueue_experience_growth(upgrades: Array[Dictionary], fusions: Array[Dicti
 				"reward": FALLBACK_REWARDS[index].duplicate(true),
 			})
 	_entries.append(_make_entry(event_id, "experience", choices))
+	queue_changed.emit(_entries.size())
+	return true
+
+
+func enqueue_optional_fusions(fusions: Array[Dictionary]) -> bool:
+	var event_id := _claim_event_id()
+	var choices := _fusion_choices(event_id, fusions)
+	if choices.is_empty():
+		return false
+	_entries.append(_make_entry(event_id, "fusion_followup", choices))
 	queue_changed.emit(_entries.size())
 	return true
 
@@ -129,6 +119,24 @@ func skip_wave_reward() -> Dictionary:
 		"action": "skip",
 		"event_id": int(entry.get("event_id", 0)),
 		"source": "wave",
+	}
+	_entries.pop_front()
+	choice_resolved.emit(resolution.duplicate(true))
+	queue_changed.emit(_entries.size())
+	return resolution
+
+
+func skip_optional_reward() -> Dictionary:
+	if _entries.is_empty():
+		return {}
+	var entry := _entries[0]
+	var source := String(entry.get("source", ""))
+	if source not in ["wave", "fusion_followup"]:
+		return {}
+	var resolution := {
+		"action": "skip",
+		"event_id": int(entry.get("event_id", 0)),
+		"source": source,
 	}
 	_entries.pop_front()
 	choice_resolved.emit(resolution.duplicate(true))
@@ -175,3 +183,30 @@ func _append_unique_choice(
 		return
 	seen_choice_ids[choice_id] = true
 	choices.append(choice)
+
+
+func _fusion_choices(event_id: int, fusions: Array[Dictionary]) -> Array[Dictionary]:
+	var choices: Array[Dictionary] = []
+	var seen_choice_ids: Dictionary = {}
+	for fusion in fusions:
+		if choices.size() >= MAX_EXPERIENCE_CHOICES:
+			break
+		var left_id := String(fusion.get("left_instance_id", ""))
+		var right_id := String(fusion.get("right_instance_id", ""))
+		var result_id := String(fusion.get("result_card_id", ""))
+		if left_id.is_empty() or right_id.is_empty() or left_id == right_id or result_id.is_empty():
+			continue
+		_append_unique_choice(choices, seen_choice_ids, {
+			"choice_id": "fusion:%d:%s:%s:%s" % [event_id, left_id, right_id, result_id],
+			"action": "fusion",
+			"recipe_id": String(fusion.get("recipe_id", result_id)),
+			"left_instance_id": left_id,
+			"right_instance_id": right_id,
+			"left_card_id": String(fusion.get("left_card_id", "")),
+			"right_card_id": String(fusion.get("right_card_id", "")),
+			"left_name": String(fusion.get("left_name", "")),
+			"right_name": String(fusion.get("right_name", "")),
+			"result_card_id": result_id,
+			"result_name": String(fusion.get("result_name", fusion.get("name", ""))),
+		})
+	return choices
