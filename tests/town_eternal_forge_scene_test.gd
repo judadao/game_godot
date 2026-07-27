@@ -2,7 +2,7 @@ extends SceneTree
 
 const TOWN_PATH := "res://scenes/maps/town.tscn"
 const CONCEPT_TEXTURE_PATH := "res://assets/town/eternal_forge/town_eternal_forge_v1.png"
-const IDENTITY_SCENE_PATH := "res://scenes/maps/components/TownEternalForgeIdentity.tscn"
+const IDENTITY_SCENE_PATH := "res://scenes/maps/town/components/TownEternalForgeIdentity.tscn"
 
 var _failures := 0
 

@@ -2,7 +2,7 @@ extends SceneTree
 
 const HUD_PATH := "res://scenes/ui/town/TownEternalForgeHUD.tscn"
 const HAND_PATH := "res://scenes/ui/town/TownCardHandUI.tscn"
-const REFERENCE_PATH := "res://scenes/dev/TownEternalForgeEditorHUDReference.tscn"
+const REFERENCE_PATH := "res://scenes/maps/town/editor/TownEternalForgeEditorHUDReference.tscn"
 const TOWN_MAP_PATH := "res://scenes/maps/town/TownMap.tscn"
 const VIEWPORTS := [
 	Vector2i(1152, 720),

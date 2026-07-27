@@ -21,6 +21,10 @@ const MAP_CASES: Array[Dictionary] = [
 	},
 ]
 const UNKNOWN_PATH := "res://scenes/maps/unknown_map.tscn"
+const LEGACY_AUTUMN_TREE_PATH := "res://scenes/maps/autumn_tree/AutumnTreeMap.tscn"
+const LEGACY_AUTUMN_TREE_HELPERS_PATH := "res://scenes/maps/autumn_tree/editor/AutumnTreeEditorHelpers.tscn"
+const AUTUMN_CANONICAL_PATH := "res://scenes/maps/autumn_forest.tscn"
+const AUTUMN_AUTHORITATIVE_PATH := "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn"
 
 var _failures := 0
 
@@ -96,6 +100,28 @@ func _run() -> void:
 		registry.call("canonical", ""),
 		"",
 		"Empty map paths must pass through canonicalization unchanged."
+	)
+	_expect_equal(
+		registry.call("canonical", LEGACY_AUTUMN_TREE_PATH),
+		AUTUMN_CANONICAL_PATH,
+		"Legacy Autumn Tree saves must migrate to the Autumn canonical identity."
+	)
+	_expect_equal(
+		registry.call("resolve", LEGACY_AUTUMN_TREE_PATH),
+		AUTUMN_AUTHORITATIVE_PATH,
+		"Legacy Autumn Tree saves must resolve to Autumn Battle V2."
+	)
+	_expect(
+		bool(registry.call("matches", LEGACY_AUTUMN_TREE_PATH, AUTUMN_CANONICAL_PATH)),
+		"Legacy Autumn Tree saves must match the Autumn canonical identity."
+	)
+	_expect(
+		not ResourceLoader.exists(LEGACY_AUTUMN_TREE_PATH),
+		"The legacy Autumn Tree scene must remain removed after its path is migrated."
+	)
+	_expect(
+		not ResourceLoader.exists(LEGACY_AUTUMN_TREE_HELPERS_PATH),
+		"The orphaned legacy Autumn Tree editor helpers must remain removed."
 	)
 	_expect(
 		not bool(registry.call(

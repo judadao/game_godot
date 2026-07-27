@@ -10,11 +10,15 @@ const AUTUMN_BATTLE_MAIN_SCENE_PATH := "res://scenes/maps/autumn_battle/AutumnBa
 const AUTUMN_TREE_MAIN_SCENE_PATH := AUTUMN_BATTLE_MAIN_SCENE_PATH
 const CRYSTAL_CAVES_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/CrystalCavesLayout.tscn"
 const FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH := "res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn"
+const LEGACY_AUTUMN_TREE_SCENE_PATH := "res://scenes/maps/autumn_tree/AutumnTreeMap.tscn"
 const CANONICAL_TO_AUTHORITATIVE := {
 	TOWN_SCENE_PATH: TOWN_MAIN_SCENE_PATH,
 	AUTUMN_FOREST_SCENE_PATH: AUTUMN_TREE_MAIN_SCENE_PATH,
 	CRYSTAL_CAVES_SCENE_PATH: CRYSTAL_CAVES_LAYOUT_SCENE_PATH,
 	FORBIDDEN_GRAVEYARD_SCENE_PATH: FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH,
+}
+const LEGACY_TO_CANONICAL := {
+	LEGACY_AUTUMN_TREE_SCENE_PATH: AUTUMN_FOREST_SCENE_PATH,
 }
 
 
@@ -23,6 +27,8 @@ func resolve(scene_path: String) -> String:
 
 
 func canonical(scene_path: String) -> String:
+	if LEGACY_TO_CANONICAL.has(scene_path):
+		return String(LEGACY_TO_CANONICAL[scene_path])
 	for canonical_path in CANONICAL_TO_AUTHORITATIVE:
 		if scene_path == String(CANONICAL_TO_AUTHORITATIVE[canonical_path]):
 			return String(canonical_path)

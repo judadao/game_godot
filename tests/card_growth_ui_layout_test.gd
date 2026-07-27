@@ -1,6 +1,6 @@
 extends SceneTree
 
-const CARD_GROWTH_UI_SCENE := preload("res://scenes/ui/CardGrowthUI.tscn")
+const CARD_GROWTH_UI_SCENE := preload("res://scenes/ui/cards/CardGrowthUI.tscn")
 const VIEWPORT_SIZES := [
 	Vector2i(1152, 720),
 	Vector2i(1280, 720),

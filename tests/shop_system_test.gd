@@ -10,7 +10,7 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 
-	var shop_scene := load("res://scenes/ui/ShopUI.tscn") as PackedScene
+	var shop_scene := load("res://scenes/ui/shop/ShopUI.tscn") as PackedScene
 	var shop := game.call("open_ui", "ShopUI", shop_scene) as Control
 	await process_frame
 	var catalog: Array = game.call("_catalog_for_shop", &"general_store")

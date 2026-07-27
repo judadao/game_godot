@@ -79,17 +79,17 @@ const COMBO_EVOLUTIONS := [
 ]
 
 @export var starting_map: PackedScene = preload("res://scenes/maps/town/TownMap.tscn")
-@export var hud_scene: PackedScene = preload("res://scenes/ui/HUD.tscn")
-@export var card_hand_scene: PackedScene = preload("res://scenes/ui/CardHandUI.tscn")
-@export var inventory_scene: PackedScene = preload("res://scenes/ui/InventoryUI.tscn")
-@export var pause_menu_scene: PackedScene = preload("res://scenes/ui/PauseMenu.tscn")
-@export var dialogue_scene: PackedScene = preload("res://scenes/ui/DialogueUI.tscn")
-@export var shop_scene: PackedScene = preload("res://scenes/ui/ShopUI.tscn")
-@export var town_progress_scene: PackedScene = preload("res://scenes/ui/TownProgressUI.tscn")
-@export var run_result_scene: PackedScene = preload("res://scenes/ui/RunResultUI.tscn")
-@export var deck_builder_scene: PackedScene = preload("res://scenes/ui/DeckBuilderUI.tscn")
-@export var card_discard_scene: PackedScene = preload("res://scenes/ui/CardDiscardUI.tscn")
-@export var card_growth_scene: PackedScene = preload("res://scenes/ui/CardGrowthUI.tscn")
+@export var hud_scene: PackedScene = preload("res://scenes/ui/hud/HUD.tscn")
+@export var card_hand_scene: PackedScene = preload("res://scenes/ui/cards/CardHandUI.tscn")
+@export var inventory_scene: PackedScene = preload("res://scenes/ui/inventory/InventoryUI.tscn")
+@export var pause_menu_scene: PackedScene = preload("res://scenes/ui/system/PauseMenu.tscn")
+@export var dialogue_scene: PackedScene = preload("res://scenes/ui/dialogue/DialogueUI.tscn")
+@export var shop_scene: PackedScene = preload("res://scenes/ui/shop/ShopUI.tscn")
+@export var town_progress_scene: PackedScene = preload("res://scenes/ui/town/TownProgressUI.tscn")
+@export var run_result_scene: PackedScene = preload("res://scenes/ui/results/RunResultUI.tscn")
+@export var deck_builder_scene: PackedScene = preload("res://scenes/ui/cards/DeckBuilderUI.tscn")
+@export var card_discard_scene: PackedScene = preload("res://scenes/ui/cards/CardDiscardUI.tscn")
+@export var card_growth_scene: PackedScene = preload("res://scenes/ui/cards/CardGrowthUI.tscn")
 @export var auto_attack_feedback_scene: PackedScene = preload(
 	"res://scenes/combat/AutoAttackFeedback.tscn"
 )
@@ -3036,10 +3036,11 @@ func _load_quick_slot(menu: Control) -> void:
 
 	var payload := parsed as Dictionary
 	var map_path := String(payload.get("map_path", ""))
-	if map_path.is_empty() or not ResourceLoader.exists(map_path):
+	var resolved_map_path := _resolve_main_scene_path(map_path)
+	if map_path.is_empty() or not ResourceLoader.exists(resolved_map_path):
 		_set_menu_footer(menu, "Load failed: saved map is unavailable.")
 		return
-	var map_scene := load(map_path) as PackedScene
+	var map_scene := load(resolved_map_path) as PackedScene
 	if map_scene == null:
 		_set_menu_footer(menu, "Load failed: saved map cannot be loaded.")
 		return
@@ -3066,7 +3067,11 @@ func _build_quick_save_payload() -> Dictionary:
 	return {
 		"schema_version": 1,
 		"saved_at": Time.get_datetime_string_from_system(true),
-		"map_path": current_map.scene_file_path if current_map != null else "",
+		"map_path": (
+			_canonical_map_scene_path(current_map.scene_file_path)
+			if current_map != null
+			else ""
+		),
 		"player": player_payload,
 		"wallet_gold": wallet_gold,
 		"inventory": player_inventory.duplicate(true),

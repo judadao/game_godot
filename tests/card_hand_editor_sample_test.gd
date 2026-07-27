@@ -1,6 +1,6 @@
 extends SceneTree
 
-const CARD_HAND_SCENE := preload("res://scenes/ui/CardHandUI.tscn")
+const CARD_HAND_SCENE := preload("res://scenes/ui/cards/CardHandUI.tscn")
 var _failures := 0
 
 

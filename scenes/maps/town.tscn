@@ -1,15 +1,15 @@
 [gd_scene format=3 uid="uid://dw3j7rocm1qmn"]
 
 [ext_resource type="Script" uid="uid://ddj80fyybrukd" path="res://scripts/maps/town_editor_preview.gd" id="1_preview"]
-[ext_resource type="PackedScene" uid="uid://br6i1uvyi4wv2" path="res://scenes/maps/components/TownBackdrop.tscn" id="2_backdrop"]
-[ext_resource type="PackedScene" uid="uid://c64506surh8h5" path="res://scenes/maps/components/TownStreetGround.tscn" id="3_ground"]
-[ext_resource type="PackedScene" uid="uid://clumnm3e6wkj5" path="res://scenes/maps/components/TownBuildings.tscn" id="4_buildings"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/TownStreetProps.tscn" id="5_props"]
-[ext_resource type="PackedScene" uid="uid://daq53oxwtoqn6" path="res://scenes/props/town/TownPortalSet.tscn" id="6_portals"]
-[ext_resource type="PackedScene" path="res://scenes/maps/components/TownNPCs.tscn" id="7_npcs"]
+[ext_resource type="PackedScene" uid="uid://br6i1uvyi4wv2" path="res://scenes/maps/town/components/TownBackdrop.tscn" id="2_backdrop"]
+[ext_resource type="PackedScene" uid="uid://c64506surh8h5" path="res://scenes/maps/town/legacy/props/TownStreetGround.tscn" id="3_ground"]
+[ext_resource type="PackedScene" uid="uid://clumnm3e6wkj5" path="res://scenes/maps/town/legacy/buildings/TownBuildings.tscn" id="4_buildings"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/props/TownStreetProps.tscn" id="5_props"]
+[ext_resource type="PackedScene" uid="uid://daq53oxwtoqn6" path="res://scenes/maps/town/portals/TownPortalSet.tscn" id="6_portals"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownNPCs.tscn" id="7_npcs"]
 [ext_resource type="PackedScene" uid="uid://ckbaviqhvukg5" path="res://scenes/player/Player.tscn" id="8_player"]
-[ext_resource type="PackedScene" path="res://scenes/maps/components/TownWorldCollision.tscn" id="9_collision"]
-[ext_resource type="PackedScene" path="res://scenes/maps/components/TownEternalForgeIdentity.tscn" id="10_identity"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownWorldCollision.tscn" id="9_collision"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownEternalForgeIdentity.tscn" id="10_identity"]
 
 [node name="Town" type="Node2D" unique_id=296374039]
 script = ExtResource("1_preview")

@@ -11,7 +11,7 @@ func _run() -> void:
 	_expect(game_scene.has_node("MenuLayer"), "Menus have their own canvas layer")
 	game_scene.free()
 
-	var hud: HUD = load("res://scenes/ui/HUD.tscn").instantiate() as HUD
+	var hud: HUD = load("res://scenes/ui/hud/HUD.tscn").instantiate() as HUD
 	root.add_child(hud)
 	await process_frame
 	_expect(hud.mouse_filter == Control.MOUSE_FILTER_IGNORE, "HUD ignores mouse input")
@@ -32,7 +32,7 @@ func _run() -> void:
 	)
 	hud.queue_free()
 
-	var shop: ShopUI = load("res://scenes/ui/ShopUI.tscn").instantiate() as ShopUI
+	var shop: ShopUI = load("res://scenes/ui/shop/ShopUI.tscn").instantiate() as ShopUI
 	root.add_child(shop)
 	await process_frame
 	shop.open()
@@ -76,7 +76,7 @@ func _run() -> void:
 	_expect(not player._is_action_just_pressed(&"jump"), "Open UI lock suppresses player actions")
 	player.queue_free()
 
-	var dialogue: DialogueUI = load("res://scenes/ui/DialogueUI.tscn").instantiate() as DialogueUI
+	var dialogue: DialogueUI = load("res://scenes/ui/dialogue/DialogueUI.tscn").instantiate() as DialogueUI
 	root.add_child(dialogue)
 	await process_frame
 	dialogue.open()

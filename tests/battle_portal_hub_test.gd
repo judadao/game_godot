@@ -1,7 +1,7 @@
 extends SceneTree
 
 const HUB_PATH := "res://scenes/maps/battle_portal_hub.tscn"
-const TOWN_PORTAL_SET_PATH := "res://scenes/props/town/TownPortalSet.tscn"
+const TOWN_PORTAL_SET_PATH := "res://scenes/maps/town/portals/TownPortalSet.tscn"
 
 var _failures := 0
 

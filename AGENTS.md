@@ -46,7 +46,9 @@ metadata, and the project icon. Runtime scenes are organized under `scenes/` by
 domain: `game/`, `maps/`, `player/`, `npc/`, `ui/`, `monsters/`, and `props/`.
 The game entry scene is `scenes/game/game.tscn`. Editable master map scenes live
 in map-specific folders, including `scenes/maps/town/TownMap.tscn` and
-`scenes/maps/autumn_tree/AutumnTreeMap.tscn`. Scripts follow the same domain
+`scenes/maps/autumn_battle/AutumnBattleMapV2.tscn`. Map-private components stay
+under their map folder; stable compatibility entries remain directly under
+`scenes/maps/`. Scripts follow the same domain
 split under `scripts/`, such as `scripts/player/player_controller.gd` and
 `scripts/managers/game.gd`.
 

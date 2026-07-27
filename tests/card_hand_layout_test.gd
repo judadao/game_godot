@@ -13,7 +13,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var scene := load("res://scenes/ui/CardHandUI.tscn") as PackedScene
+	var scene := load("res://scenes/ui/cards/CardHandUI.tscn") as PackedScene
 	var ui := scene.instantiate()
 	ui.position = Vector2(23.0, 11.0)
 	root.add_child(ui)

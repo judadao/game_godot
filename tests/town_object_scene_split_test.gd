@@ -44,21 +44,21 @@ func _init() -> void:
 			town,
 			scene_path,
 			"Buildings",
-			"res://scenes/maps/components/TownBuildings.tscn",
+			"res://scenes/maps/town/legacy/buildings/TownBuildings.tscn",
 			EXPECTED_BUILDINGS
 		) or failed
 		failed = _expect_linked_container(
 			town,
 			scene_path,
 			"Props",
-			"res://scenes/props/town/TownStreetProps.tscn",
+			"res://scenes/maps/town/legacy/props/TownStreetProps.tscn",
 			EXPECTED_PROPS
 		) or failed
 		failed = _expect_linked_container(
 			town,
 			scene_path,
 			"NPCs",
-			"res://scenes/maps/components/TownNPCs.tscn",
+			"res://scenes/maps/town/components/TownNPCs.tscn",
 			EXPECTED_VISUAL_NPCS
 		) or failed
 		town.free()

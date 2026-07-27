@@ -109,13 +109,13 @@ Component 不得直接找 `/root/Game`、修改 save、扣款、造成傷害或�
 | PrimaryButton | TODO | 無 reusable scene / variation |
 | SecondaryButton | TODO | 無 reusable scene / variation |
 | DangerButton | TODO | 無 reusable scene / variation |
-| Dialog | Partial | `scenes/ui/DialogueUI.tscn` 是 domain screen |
+| Dialog | Partial | `scenes/ui/dialogue/DialogueUI.tscn` 是 domain screen |
 | ItemCard | TODO | 無 |
 | SkillCard | Partial | CardHand runtime Button，非 scene component |
 | QuestRow | TODO | 無；只有 HUD quest tracker |
 | Tooltip | TODO | 只有 `tooltip_text` |
 | InventorySlot | Current — Visual Only | `scenes/ui/inventory/InventorySlot.tscn` |
-| HealthBar | Partial / Unused | `scenes/ui/hud/HUDStatusBar.tscn` 無引用；現役 HUD 有內嵌 HP bar |
+| HealthBar | TODO | 舊 `HUDStatusBar.tscn` prototype 已移除；現役 HUD 有內嵌 HP bar |
 | ManaBar | Partial subtree | `HUDStatus.tscn/MPBar`，無獨立 scene |
 | StatusRow | TODO | 無 |
 | PanelHeader | Partial domain | `InventoryHeader.tscn`，非 generic |
@@ -284,7 +284,7 @@ DangerButton (Button, variation = DangerButton)
 
 實際 path：
 
-- scene：`scenes/ui/DialogueUI.tscn`
+- scene：`scenes/ui/dialogue/DialogueUI.tscn`
 - script：`scripts/ui/dialogue_ui.gd`
 - class：`DialogueUI`
 
@@ -627,7 +627,7 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
 實際 path：
 
 - `scenes/ui/inventory/InventorySlot.tscn`
-- 引用者：`scenes/ui/InventoryUI.tscn`，共 20 instances
+- 引用者：`scenes/ui/inventory/InventoryUI.tscn`，共 20 instances
 
 ### 12.2 Scene Tree
 
@@ -689,10 +689,8 @@ InventorySlot
 
 **Partial — Unused candidate + active duplicated subtree。**
 
-候選 scene：
-
-- `scenes/ui/hud/HUDStatusBar.tscn`
-- production references：0
+舊 `HUDStatusBar.tscn` prototype 已於 scene cleanup 移除；目前沒有獨立
+HealthBar scene，production HUD 仍使用內嵌 subtree。
 
 現役 health bar：
 
@@ -710,7 +708,7 @@ HUDStatusBar (Control)
 
 ### 13.3 Script/API
 
-`HUDStatusBar.tscn` 無 script/API。現役 HUD 由父 script 直接改：
+現役 HUD 由父 script 直接改內嵌 bar：
 
 ```gdscript
 func set_health(current: int, maximum: int) -> void
@@ -743,7 +741,7 @@ func set_preview(delta: int) -> void
 
 ### 13.8 禁止事項
 
-- 不宣稱 `HUDStatusBar.tscn` 已 production-used。
+- 不重新引入未被 owner 使用的獨立 HealthBar prototype。
 - 不由bar修改Player health。
 - 不用raw width超出0..1 ratio。
 
@@ -1150,7 +1148,7 @@ signal back_requested
 ### 21.1 HUDStatus
 
 - path：`scenes/ui/hud/HUDStatus.tscn`
-- used by：`scenes/ui/HUD.tscn`
+- used by：`scenes/ui/hud/HUD.tscn`
 - script：無；由 `scripts/ui/hud.gd` 操作
 - content：portrait、level/class、HP/MP/Stamina bars
 - status：Current — Visual Only
@@ -1200,24 +1198,11 @@ signal back_requested
 本節同時記錄沒有 production reference 的 prototype，以及仍被 production
 scene 引用但 runtime 停用的 legacy 元件。每項必須以 status 明確區分。
 
-### 22.1 HUDNavigationGroup
+### 22.1 Retired HUD prototypes
 
-```text
-HUDNavigationGroup
-├── HUDCompass
-└── HUDMinimap
-```
-
-- path：`scenes/ui/hud/HUDNavigationGroup.tscn`
-- status：Unused — Prototype
-
-`HUDCompass.tscn` 與 `HUDMinimap.tscn` 只被此孤立 scene引用。
-
-### 22.2 HUDStatusBar
-
-- path：`scenes/ui/hud/HUDStatusBar.tscn`
-- status：Unused — Prototype / HealthBar candidate
-- 不得列為 production component。
+`HUDNavigationGroup`、`HUDCompass`、`HUDMinimap` 與 `HUDStatusBar` 因無
+production owner 已移除。需要 navigation 或獨立 status bar 時，先建立明確
+consumer/API 與測試，再新增 feature-owned component。
 
 ### 22.3 HUDHotbar
 
@@ -1387,7 +1372,7 @@ func _emit_selection() -> void:
 6. 建立通用Empty/Loading/Error states並在Inventory/Shop導入。
 7. 建立custom Tooltip，支援focus與viewport clamp。
 8. 若Card跨多screen真正需要共用，再抽SkillCard而保留CardHand fan layout ownership。
-9. 對unused HUDNavigationGroup/HUDStatusBar做「正式採用或移除」決策，不讓prototype永久漂移。
+9. 新 component 必須先有 production owner，不讓 prototype 永久漂移。
 
 ## 31. Related Documents
 
@@ -1445,7 +1430,7 @@ Required semantic children:
 
 ### AutumnEditorHUDReference
 
-- Scene: `res://scenes/dev/AutumnEditorHUDReference.tscn`
+- Scene: `res://scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn`
 - Owner: `AutumnBattleMapV2.tscn`
 - Responsibility: expose the exact runtime HUD instance in the map editor.
   Runtime adoption reparents this instance（連同內嵌 hand）；不得 recreate、
@@ -1480,7 +1465,7 @@ Required semantic children:
 
 ### DeckBuilderUI loadout
 
-- Scene: `res://scenes/ui/DeckBuilderUI.tscn`
+- Scene: `res://scenes/ui/cards/DeckBuilderUI.tscn`
 - Script: `res://scripts/ui/deck_builder_ui.gd`
 - Signals:
   - `loadout_confirmed(deck_ids: Array[String], auto_attack_card_id: String)`
@@ -1502,7 +1487,7 @@ Required semantic children:
 
 ### CardGrowthUI
 
-- Scene: `res://scenes/ui/CardGrowthUI.tscn`
+- Scene: `res://scenes/ui/cards/CardGrowthUI.tscn`
 - Script: `res://scripts/ui/card_growth_ui.gd`
 - Owner: `Game/MenuLayer` while the growth queue is non-empty
 - Signal: `choice_confirmed(choice_id: String)`
@@ -1540,7 +1525,7 @@ Required semantic children:
 ### TownCardHandUI
 
 - Scene: `res://scenes/ui/town/TownCardHandUI.tscn`
-- Base: `res://scenes/ui/CardHandUI.tscn`
+- Base: `res://scenes/ui/cards/CardHandUI.tscn`
 - Script contract: `res://scripts/ui/card_hand_ui.gd`
 - Owner: Town's sibling card-hand authority
 - Responsibility: preserve CardHandUI signals, methods, NodePaths, and fan
@@ -1548,7 +1533,7 @@ Required semantic children:
 
 ### TownEternalForgeEditorHUDReference
 
-- Scene: `res://scenes/dev/TownEternalForgeEditorHUDReference.tscn`
+- Scene: `res://scenes/maps/town/editor/TownEternalForgeEditorHUDReference.tscn`
 - Owner: `res://scenes/maps/town/TownMap.tscn`
 - Runtime contract: `Game.load_hud()` adopts its exact `HUD` and sibling
   `CardHandUI` instances into `HUDLayer`; other maps continue using their own

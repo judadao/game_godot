@@ -8,8 +8,8 @@ const VIEWPORT_SIZES := [
 	Vector2i(2560, 1080),
 	Vector2i(2560, 1440),
 ]
-const CARD_SCENE := preload("res://scenes/ui/CardHandUI.tscn")
-const HUD_SCENE := preload("res://scenes/ui/HUD.tscn")
+const CARD_SCENE := preload("res://scenes/ui/cards/CardHandUI.tscn")
+const HUD_SCENE := preload("res://scenes/ui/hud/HUD.tscn")
 const SAFE_AREA_RATIO := 0.25
 const REQUIRED_CARD_PATHS := [
 	"CardSafeArea",

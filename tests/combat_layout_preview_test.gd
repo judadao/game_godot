@@ -1,6 +1,6 @@
 extends SceneTree
 
-const PREVIEW_SCENE_PATH := "res://scenes/dev/CombatLayoutPreview.tscn"
+const PREVIEW_SCENE_PATH := "res://scenes/dev/previews/CombatLayoutPreview.tscn"
 const AUTUMN_MAIN_SCENE_PATH := "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn"
 
 var _failures := 0

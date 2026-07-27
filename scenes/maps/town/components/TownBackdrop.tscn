@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://br6i1uvyi4wv2"]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownSkyLayer.tscn" id="1_sky"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownCloudSet.tscn" id="2_clouds"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownMountainSet.tscn" id="3_mountains"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownDistantBuildings.tscn" id="4_buildings"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownTreeSet.tscn" id="5_trees"]
+[ext_resource type="Texture2D" path="res://assets/town/eternal_forge/town_eternal_forge_v1.png" id="6_eternal_forge"]
+
+[node name="TownBackdrop" type="Node2D" unique_id=2005808844]
+
+[node name="Sky" parent="." unique_id=420762307 instance=ExtResource("1_sky")]
+
+[node name="Clouds" parent="." unique_id=331045347 instance=ExtResource("2_clouds")]
+
+[node name="Mountains" parent="." unique_id=1144931803 instance=ExtResource("3_mountains")]
+
+[node name="DistantBuildings" parent="." unique_id=1788861348 instance=ExtResource("4_buildings")]
+position = Vector2(24, 3)
+
+[node name="Trees" parent="." unique_id=1098043427 instance=ExtResource("5_trees")]
+position = Vector2(7, -79)
+
+[node name="DistantBuildings2" parent="." unique_id=62685276 instance=ExtResource("4_buildings")]
+position = Vector2(-349, 85)
+
+[node name="Trees2" parent="." unique_id=1703298562 instance=ExtResource("5_trees")]
+position = Vector2(-119, -75)
+
+[node name="EternalForgeConcept" type="Sprite2D" parent="."]
+z_index = -100
+position = Vector2(971, 404.5)
+texture = ExtResource("6_eternal_forge")
+metadata/layer_role = "eternal_forge_concept"

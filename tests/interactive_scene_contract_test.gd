@@ -1,7 +1,7 @@
 extends SceneTree
 
 const SCENE_PATHS: Array[String] = [
-	"res://scenes/npc/NPC.tscn",
+	"res://tests/fixtures/scenes/NPC.tscn",
 	"res://scenes/npc/Merchant.tscn",
 	"res://scenes/props/Portal.tscn",
 	"res://scenes/props/Chest.tscn",

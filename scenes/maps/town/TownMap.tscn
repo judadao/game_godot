@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="PackedScene" uid="uid://dw3j7rocm1qmn" path="res://scenes/maps/town.tscn" id="1_map"]
-[ext_resource type="PackedScene" path="res://scenes/dev/TownEternalForgeEditorHUDReference.tscn" id="2_ui"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/editor/TownEternalForgeEditorHUDReference.tscn" id="2_ui"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/editor/TownEditorHelpers.tscn" id="3_helpers"]
 
 [node name="TownMap" instance=ExtResource("1_map")]

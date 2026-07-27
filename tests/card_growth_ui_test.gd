@@ -1,6 +1,6 @@
 extends SceneTree
 
-const CARD_GROWTH_UI_SCENE := preload("res://scenes/ui/CardGrowthUI.tscn")
+const CARD_GROWTH_UI_SCENE := preload("res://scenes/ui/cards/CardGrowthUI.tscn")
 
 var _failures := 0
 

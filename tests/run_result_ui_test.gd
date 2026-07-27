@@ -9,7 +9,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var scene := load("res://scenes/ui/RunResultUI.tscn") as PackedScene
+	var scene := load("res://scenes/ui/results/RunResultUI.tscn") as PackedScene
 	_expect(scene != null, "Run result UI scene must load.")
 	if scene == null:
 		quit(1)

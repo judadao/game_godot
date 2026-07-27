@@ -10,7 +10,7 @@ func _init() -> void:
 
 func _run() -> void:
 	var runner_script := load("res://scripts/combat/card_effect_runner.gd")
-	var hand_scene := load("res://scenes/ui/CardHandUI.tscn") as PackedScene
+	var hand_scene := load("res://scenes/ui/cards/CardHandUI.tscn") as PackedScene
 	_expect(runner_script != null, "Card effect runner must load.")
 	_expect(hand_scene != null, "Card hand UI scene must load.")
 	if runner_script == null or hand_scene == null:
@@ -22,7 +22,7 @@ func _run() -> void:
 	var deck := DeckManager.new(database)
 	deck.start(["ember_bolt", "guard", "cleave", "shockwave", "healing_light"], 3)
 	var player := (load("res://scenes/player/Player.tscn") as PackedScene).instantiate()
-	var enemy := (load("res://scenes/monsters/AutumnSlime.tscn") as PackedScene).instantiate()
+	var enemy := (load("res://tests/fixtures/scenes/AutumnSlime.tscn") as PackedScene).instantiate()
 	var second_enemy := (load("res://scenes/monsters/AutumnEnemy.tscn") as PackedScene).instantiate()
 	var runner: Node = runner_script.new()
 	root.add_child(player)

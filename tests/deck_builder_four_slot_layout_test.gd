@@ -35,7 +35,7 @@ func _run() -> void:
 		)
 		root.add_child(viewport)
 		var builder := (
-			load("res://scenes/ui/DeckBuilderUI.tscn") as PackedScene
+			load("res://scenes/ui/cards/DeckBuilderUI.tscn") as PackedScene
 		).instantiate()
 		viewport.add_child(builder)
 		await process_frame

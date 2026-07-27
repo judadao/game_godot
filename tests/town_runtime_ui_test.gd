@@ -10,7 +10,7 @@ func _init() -> void:
 func _run() -> void:
 	var inventory_script := load("res://scripts/systems/inventory_manager.gd")
 	var town_script := load("res://scripts/systems/town_manager.gd")
-	var ui_scene := load("res://scenes/ui/TownProgressUI.tscn") as PackedScene
+	var ui_scene := load("res://scenes/ui/town/TownProgressUI.tscn") as PackedScene
 	_expect(inventory_script != null and town_script != null, "Town runtime services must load.")
 	_expect(ui_scene != null, "Town progression UI must load.")
 	if inventory_script == null or town_script == null or ui_scene == null:

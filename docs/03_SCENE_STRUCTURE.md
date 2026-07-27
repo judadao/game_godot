@@ -98,8 +98,8 @@ rg --files scenes -g '*.tscn'
 | Application | `Node` | `scenes/game/game.tscn` |
 | World/map | `Node2D`或inherited map root | `scenes/maps/town.tscn` |
 | Player/enemy | `CharacterBody2D` | `Player.tscn`, `AutumnEnemy.tscn` |
-| Static interactive | `StaticBody2D` | `NPC.tscn`, `Portal.tscn`, `Chest.tscn` |
-| Trigger/pickup/projectile | `Area2D` | `ExperienceGem.tscn`, `SkillWave.tscn` |
+| Static interactive | `StaticBody2D` | `Merchant.tscn`, `Portal.tscn`, `Chest.tscn` |
+| Trigger/pickup/projectile | `Area2D` | `ExperienceGem.tscn` |
 | World collision component | `StaticBody2D` | `TownWorldCollision.tscn` |
 | Decorative component | `Node2D`或`Sprite2D` | Town background/building/prop scenes |
 | Screen UI | `Control` | HUD, Inventory, Dialogue, Shop |
@@ -277,15 +277,15 @@ Runtime：
 
 Current composition：
 
-- `scenes/maps/components/TownBackdrop.tscn`
-- `scenes/maps/components/TownStreetGround.tscn`
-- `scenes/maps/components/TownBuildings.tscn`
-- `scenes/maps/components/TownNPCs.tscn`
-- `scenes/maps/components/TownWorldCollision.tscn`
-- `scenes/props/town/TownStreetProps.tscn`
-- `scenes/props/town/TownPortalSet.tscn`
+- active：`scenes/maps/town/components/TownBackdrop.tscn`
+- active：`scenes/maps/town/components/TownEternalForgeIdentity.tscn`
+- active：`scenes/maps/town/components/TownNPCs.tscn`
+- active：`scenes/maps/town/components/TownWorldCollision.tscn`
+- portals：`scenes/maps/town/portals/TownPortalSet.tscn`
+- hidden compatibility visuals：`scenes/maps/town/legacy/**`
 
-Background再拆為Sky、Cloud、Mountain、DistantBuildings、Tree components。
+`legacy/` 內容仍由 progression 與 linked-scene contract 使用，但 runtime
+presentation 隱藏；不得在此新增新 Town 視覺。
 共享元件應instance而非copy Scene Tree。
 
 ### 6.2 Component responsibility
@@ -301,8 +301,10 @@ Background再拆為Sky、Cloud、Mountain、DistantBuildings、Tree components�
 Current helper scenes：
 
 - `scenes/maps/town/editor/TownEditorHelpers.tscn`
-- `scenes/maps/autumn_tree/editor/AutumnTreeEditorHelpers.tscn`
-- `scenes/dev/EditorHUDReference.tscn`
+- `scenes/maps/town/editor/TownEternalForgeEditorHUDReference.tscn`
+- `scenes/maps/autumn_battle/editor/AutumnBattleMapV2EditorHelpers.tscn`
+- `scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn`
+- `scenes/ui/hud/editor/SharedEditorHUDReference.tscn`
 
 Helper script必須：
 
@@ -384,7 +386,6 @@ Boss另有`Bosses` group、phase/drop signals。HealthBar是world-space display�
 ### 7.4 Area2D combat scenes
 
 - `scenes/combat/ExperienceGem.tscn`：pickup lifecycle。
-- `scenes/combat/SkillWave.tscn`：短生命週期hit area。
 - `Hurtbox`是adapter，不決定整場戰鬥。
 
 Dynamic node建立端必須定義終止條件、signal disconnect與`queue_free()`。
@@ -415,7 +416,7 @@ Required base signals：
 
 | Scene | Extra group | Script | Domain signal |
 |---|---|---|---|
-| `scenes/npc/NPC.tscn` | `NPCs` | `npc.gd` | `dialogue_requested` |
+| `scenes/npc/Merchant.tscn` | `NPCs` | `npc.gd` | `shop_requested` |
 | `scenes/npc/Merchant.tscn` | `NPCs`, `Merchants` | `merchant.gd` | `dialogue_requested`, `shop_requested` |
 | `scenes/props/Portal.tscn` | `Portals` | `portal.gd` | `portal_entered`, `locked_interaction` |
 | `scenes/props/Chest.tscn` | `Props` | `chest.gd` | `chest_opened` |
@@ -469,13 +470,13 @@ Town prop/building多為`Sprite2D` scene，groups如`TownProp`、`TownBuilding`�
 
 | Scene | Root | Responsibility |
 |---|---|---|
-| `scenes/ui/HUD.tscn` | `Control` | status/area/objective/prompt |
-| `scenes/ui/CardHandUI.tscn` | `Control` | card fan/AP/combo/boss |
-| `scenes/ui/InventoryUI.tscn` | `Control` | prototype inventory projection |
-| `scenes/ui/DialogueUI.tscn` | `Control` | speaker/text/choice interaction |
-| `scenes/ui/ShopUI.tscn` | `Control` | merchant catalog transaction intent |
-| `scenes/ui/PauseMenu.tscn` | `Control` | pause/settings/save/load intent |
-| `scenes/ui/TownProgressUI.tscn` | `Control` | current town/equipment service UI |
+| `scenes/ui/hud/HUD.tscn` | `Control` | status/area/objective/prompt |
+| `scenes/ui/cards/CardHandUI.tscn` | `Control` | card fan/AP/combo/boss |
+| `scenes/ui/inventory/InventoryUI.tscn` | `Control` | prototype inventory projection |
+| `scenes/ui/dialogue/DialogueUI.tscn` | `Control` | speaker/text/choice interaction |
+| `scenes/ui/shop/ShopUI.tscn` | `Control` | merchant catalog transaction intent |
+| `scenes/ui/system/PauseMenu.tscn` | `Control` | pause/settings/save/load intent |
+| `scenes/ui/town/TownProgressUI.tscn` | `Control` | current town/equipment service UI |
 
 ### 9.3 Reusable UI child scenes
 

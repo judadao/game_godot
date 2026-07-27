@@ -99,8 +99,8 @@ Current ownership：
 ### 2.2 HUD adoption
 
 Authoritative map 透過 map-specific editor reference author HUD。Town 使用
-`scenes/dev/TownEternalForgeEditorHUDReference.tscn`；其他非 Autumn map 仍可使用
-`scenes/dev/EditorHUDReference.tscn`：
+`scenes/maps/town/editor/TownEternalForgeEditorHUDReference.tscn`；其他非 Autumn map
+使用 `scenes/ui/hud/editor/SharedEditorHUDReference.tscn`：
 
 ```text
 EditorHUDReference (CanvasLayer, editor-visible authoring layer)
@@ -119,9 +119,9 @@ position 或 scale，否則會破壞 map-authored override。
 
 ### 2.3 現況數量
 
-- `scenes/ui/**`：27 個 `.tscn`
+- `scenes/ui/**`：30 個 `.tscn`
 - `scripts/ui/**`：11 個 `.gd`
-- top-level screen：11 個
+- `scenes/ui/` root scene：0 個；screen 全部位於 feature folders
 - authored UI `ScrollContainer`：0
 - runtime `ScrollContainer`：DeckBuilder 1 個、TownProgress 1 個
 
@@ -472,7 +472,7 @@ contract，並由 `scenes/ui/town/TownCardHandUI.tscn` 提供 Eternal Forge them
 兩者只取代 Town presentation，不修改 shared HUD，也不直接讀寫 town managers。
 
 Town 世界內的八個地點名稱由
-`scenes/maps/components/TownEternalForgeIdentity.tscn/LocationLabels` author。
+`scenes/maps/town/components/TownEternalForgeIdentity.tscn/LocationLabels` author。
 建築招牌採 compact floating plaque：高度不超過 `34px`、字級不超過 `16px`、
 左側 `4–5px` 色帶、其餘 `1px` 細框、`10px` 圓角與不超過 `5px` 的陰影。
 一般／市政使用鍛造金，主設施使用火焰橘，戰鬥傳送門使用魔力藍，劍魂相關
@@ -1018,7 +1018,7 @@ editor preview 只採用一個 authority：
 
 - `res://scenes/ui/autumn/AutumnHUD.tscn`
 - `res://scenes/ui/autumn/AutumnInteractionPrompt.tscn`
-- `res://scenes/dev/AutumnEditorHUDReference.tscn`
+- `res://scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn`
 
 `AutumnHUD.tscn` 內嵌 `AutumnCardHandUI`，不允許 sibling CardHand root。靜態 layout
 必須使用 scene-authored containers：
@@ -1113,7 +1113,7 @@ Combo Chain 清單、四格 Deck Builder、interaction prompt 與 world-safe are
 
 ## 34. Card Growth Modal
 
-`res://scenes/ui/CardGrowthUI.tscn` 是 wave blessing 與 EXP growth 的單一 modal。
+`res://scenes/ui/cards/CardGrowthUI.tscn` 是 wave blessing 與 EXP growth 的單一 modal。
 舊 `LevelUpUI` 與 Autumn Blessing popup 不再是這條流程的 authority。
 
 Growth choice card 必須以卡牌類型色、catalog icon、AP／level 關鍵資料協助掃讀。

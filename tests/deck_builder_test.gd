@@ -15,7 +15,7 @@ func _run() -> void:
 	for card_id in meta.selected_deck:
 		_expect(meta.unlocked_cards.has(card_id), "Every starter-deck card must already be discovered.")
 
-	var ui := (load("res://scenes/ui/DeckBuilderUI.tscn") as PackedScene).instantiate()
+	var ui := (load("res://scenes/ui/cards/DeckBuilderUI.tscn") as PackedScene).instantiate()
 	root.add_child(ui)
 	await process_frame
 	var discovered: Array[Dictionary] = []

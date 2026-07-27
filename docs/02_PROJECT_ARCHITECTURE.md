@@ -474,7 +474,7 @@ service；修改 mappings或處理順序時須用實際 run驗證。
 ### 9.2 NPC — Current
 
 - NPC/Merchant是 `StaticBody2D` + `Interactives` group。
-- Town NPC由 `scenes/maps/components/TownNPCs.tscn` 組合。
+- Town NPC由 `scenes/maps/town/components/TownNPCs.tscn` 組合。
 - 沒有 NPC navigation、schedule、AI movement或persistent NPC state。
 - Merchant只發 intent signal；stock/economy由 `Game` 管理。
 

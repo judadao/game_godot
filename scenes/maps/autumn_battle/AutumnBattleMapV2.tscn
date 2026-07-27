@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/props/Chest.tscn" id="7_chest"]
 [ext_resource type="PackedScene" path="res://scenes/npc/Merchant.tscn" id="8_merchant"]
 [ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="9_portal"]
-[ext_resource type="PackedScene" path="res://scenes/dev/AutumnEditorHUDReference.tscn" id="10_ui"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn" id="10_ui"]
 [ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnBattleMapV2EditorHelpers.tscn" id="11_helpers"]
 
 [node name="AutumnBattleMapV2" type="Node2D"]

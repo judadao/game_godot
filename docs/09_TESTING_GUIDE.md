@@ -167,6 +167,16 @@ Profiler/Monitor 數據，至少包含 process、physics、draw calls 與 node/o
 object、orphan node 與記憶體不持續成長。專案尚無自動 performance/memory
 門檻；在建立基線前，這些屬於必做的可重現量測而非 CI pass/fail。
 
+Scene directory changes must run these permanent contracts:
+
+- `tests/scene_cleanup_contract_test.gd`：retired zero-reference scenes stay absent.
+- `tests/scene_feature_directory_test.gd`：UI/dev/test fixtures remain in their owner folders.
+- `tests/town_scene_path_structure_test.gd`：Town active and legacy linked scenes keep their classified paths.
+- `tests/map_registry_test.gd` and `tests/quick_save_migration_test.gd`：stable and legacy map paths remain loadable.
+
+Any scene move must also run `scene_registry_test.gd`, `content_validation_test.gd`,
+headless editor scan, main-scene smoke, and the affected feature tests.
+
 ## 8. 測試隔離
 
 測試不得讀寫玩家真實存檔。CLI 測試使用專案內隔離的 user data 位置，例如 `.test_userdata/`，並避免與平行執行的測試共用可變檔案。對時間、亂數或輸入敏感的測試應注入可控制的值。

@@ -8,7 +8,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var hud := (load("res://scenes/ui/HUD.tscn") as PackedScene).instantiate()
+	var hud := (load("res://scenes/ui/hud/HUD.tscn") as PackedScene).instantiate()
 	root.add_child(hud)
 	await process_frame
 	var viewport_size: Vector2 = hud.get_viewport_rect().size

@@ -21,12 +21,15 @@ Scene tree to adjust their Inspector overrides.
 Every authoritative map instances a map-specific editor HUD reference. Its
 editable children are the source for that map's runtime UI:
 
-- Town uses `res://scenes/dev/EditorHUDReference.tscn` with the shared
-  `HUD.tscn` and `CardHandUI.tscn`.
+- Town uses
+  `res://scenes/maps/town/editor/TownEternalForgeEditorHUDReference.tscn`,
+  which owns the Town-only Eternal Forge HUD and card hand.
 - Autumn Battle V2 uses
-  `res://scenes/dev/AutumnEditorHUDReference.tscn`, which owns the Autumn-only
-  `AutumnHUD.tscn`, `AutumnCardHandUI.tscn`, and
+  `res://scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn`, which
+  owns the Autumn-only `AutumnHUD.tscn`, `AutumnCardHandUI.tscn`, and
   `AutumnInteractionPrompt.tscn`.
+- Crystal Caves and Forbidden Graveyard use
+  `res://scenes/ui/hud/editor/SharedEditorHUDReference.tscn`.
 
 Autumn Battle V2 is standalone and must not inherit or override the legacy
 `autumn_forest.tscn` scene:

@@ -1,11 +1,11 @@
 [gd_scene load_steps=12 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownFastTravelPortal.tscn" id="2_return"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownForestPortal.tscn" id="3_autumn"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownCavesPortal.tscn" id="4_crystal"]
-[ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownGraveyardPortal.tscn" id="5_graveyard"]
-[ext_resource type="PackedScene" path="res://scenes/dev/TownEternalForgeEditorHUDReference.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/portals/TownFastTravelPortal.tscn" id="2_return"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/portals/TownForestPortal.tscn" id="3_autumn"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/portals/TownCavesPortal.tscn" id="4_crystal"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/portals/TownGraveyardPortal.tscn" id="5_graveyard"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/editor/TownEternalForgeEditorHUDReference.tscn" id="6_hud"]
 
 [sub_resource type="RectangleShape2D" id="FloorShape"]
 size = Vector2(1650, 96)

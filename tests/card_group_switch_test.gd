@@ -8,7 +8,7 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var ui := (load("res://scenes/ui/CardHandUI.tscn") as PackedScene).instantiate()
+	var ui := (load("res://scenes/ui/cards/CardHandUI.tscn") as PackedScene).instantiate()
 	root.add_child(ui)
 	await process_frame
 	var cards: Array[Dictionary] = []

@@ -627,7 +627,7 @@ Schema 1 payload：
 |---|---|
 | `schema_version` | 1 |
 | `saved_at` | system datetime string |
-| `map_path` | current authoritative `scene_file_path` |
+| `map_path` | canonical map identity；legacy authoritative paths於 load 時經 `MapRegistry` migration |
 | `player` | position + selected player stats |
 | `wallet_gold` | prototype wallet |
 | `inventory` | prototype player inventory |
@@ -643,6 +643,11 @@ Not included：
 - encounter/director state
 
 所以quick save不是完整run resume。
+
+Quick-load 必須先以 `MapRegistry.resolve()` 正規化 `map_path`，再檢查
+`ResourceLoader.exists()`。Legacy
+`res://scenes/maps/autumn_tree/AutumnTreeMap.tscn` 會遷移至 Autumn Forest
+canonical identity，再載入 `AutumnBattleMapV2.tscn`；不得直接刪除 path alias。
 
 ### 10.3 Backup差異
 

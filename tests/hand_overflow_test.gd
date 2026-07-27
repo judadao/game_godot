@@ -23,7 +23,7 @@ func _run() -> void:
 	var cards: Array[Dictionary] = []
 	for card_id in deck.hand:
 		cards.append(database.get_card(card_id))
-	var ui := (load("res://scenes/ui/CardDiscardUI.tscn") as PackedScene).instantiate()
+	var ui := (load("res://scenes/ui/cards/CardDiscardUI.tscn") as PackedScene).instantiate()
 	root.add_child(ui)
 	await process_frame
 	ui.call("configure", cards, 2, [])

@@ -6,7 +6,7 @@ const TOWN_HUD_PATH := "res://scenes/ui/town/TownEternalForgeHUD.tscn"
 const AUTUMN_HUD_PATH := "res://scenes/ui/autumn/AutumnHUD.tscn"
 const AUTUMN_CARD_PATH := "res://scenes/ui/autumn/AutumnCardHandUI.tscn"
 const AUTUMN_PROMPT_PATH := "res://scenes/ui/autumn/AutumnInteractionPrompt.tscn"
-const AUTUMN_REFERENCE_PATH := "res://scenes/dev/AutumnEditorHUDReference.tscn"
+const AUTUMN_REFERENCE_PATH := "res://scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn"
 
 var _failures := 0
 

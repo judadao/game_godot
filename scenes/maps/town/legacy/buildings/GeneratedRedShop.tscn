@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_buildings_atlas_v2.png" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/props/GeneratedInnSign.tscn" id="2"]
+[sub_resource type="AtlasTexture" id="Building"]
+atlas = ExtResource("1")
+region = Rect2(494, 552, 400, 370)
+
+[node name="GeneratedRedShop" type="Sprite2D" groups=["TownBuilding"]]
+texture = SubResource("Building")
+offset = Vector2(0, -185)
+
+[node name="InnSign" parent="." instance=ExtResource("2")]
+position = Vector2(145, -170)

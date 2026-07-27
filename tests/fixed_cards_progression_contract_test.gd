@@ -36,7 +36,7 @@ func _run() -> void:
 		"Legacy saves must migrate to Ember Bolt as the default automatic attack."
 	)
 
-	var builder := (load("res://scenes/ui/DeckBuilderUI.tscn") as PackedScene).instantiate()
+	var builder := (load("res://scenes/ui/cards/DeckBuilderUI.tscn") as PackedScene).instantiate()
 	root.add_child(builder)
 	await process_frame
 	builder.call("configure", database.get_all_cards(), migrated, "cleave")

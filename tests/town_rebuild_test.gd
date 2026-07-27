@@ -100,23 +100,23 @@ func _run() -> void:
 	)
 	var background_modules := {
 		"Sky": {
-			"scene": "res://scenes/maps/components/background/TownSkyLayer.tscn",
+			"scene": "res://scenes/maps/town/legacy/background/TownSkyLayer.tscn",
 			"minimum_sprites": 1,
 		},
 		"Clouds": {
-			"scene": "res://scenes/maps/components/background/TownCloudSet.tscn",
+			"scene": "res://scenes/maps/town/legacy/background/TownCloudSet.tscn",
 			"minimum_sprites": 4,
 		},
 		"Mountains": {
-			"scene": "res://scenes/maps/components/background/TownMountainSet.tscn",
+			"scene": "res://scenes/maps/town/legacy/background/TownMountainSet.tscn",
 			"minimum_sprites": 3,
 		},
 		"DistantBuildings": {
-			"scene": "res://scenes/maps/components/background/TownDistantBuildings.tscn",
+			"scene": "res://scenes/maps/town/legacy/background/TownDistantBuildings.tscn",
 			"minimum_sprites": 4,
 		},
 		"Trees": {
-			"scene": "res://scenes/maps/components/background/TownTreeSet.tscn",
+			"scene": "res://scenes/maps/town/legacy/background/TownTreeSet.tscn",
 			"minimum_sprites": 6,
 		},
 	}
@@ -211,13 +211,13 @@ func _run() -> void:
 		_expect(prop.position.y == 618.0, "%s must share the town ground baseline." % prop_name)
 		_expect(prop.offset.y < 0.0, "%s must be bottom-aligned instead of center-aligned." % prop_name)
 	var linked_scenes := {
-		"ParallaxBackground": "res://scenes/maps/components/TownBackdrop.tscn",
-		"Ground": "res://scenes/maps/components/TownStreetGround.tscn",
-		"Buildings": "res://scenes/maps/components/TownBuildings.tscn",
-		"Props": "res://scenes/props/town/TownStreetProps.tscn",
-		"Portals": "res://scenes/props/town/TownPortalSet.tscn",
-		"NPCs": "res://scenes/maps/components/TownNPCs.tscn",
-		"WorldCollision": "res://scenes/maps/components/TownWorldCollision.tscn",
+		"ParallaxBackground": "res://scenes/maps/town/components/TownBackdrop.tscn",
+		"Ground": "res://scenes/maps/town/legacy/props/TownStreetGround.tscn",
+		"Buildings": "res://scenes/maps/town/legacy/buildings/TownBuildings.tscn",
+		"Props": "res://scenes/maps/town/legacy/props/TownStreetProps.tscn",
+		"Portals": "res://scenes/maps/town/portals/TownPortalSet.tscn",
+		"NPCs": "res://scenes/maps/town/components/TownNPCs.tscn",
+		"WorldCollision": "res://scenes/maps/town/components/TownWorldCollision.tscn",
 	}
 	for node_path in linked_scenes:
 		var linked_node := town.get_node(node_path)

@@ -11,7 +11,7 @@ func _run() -> void:
 	var database := CardDatabase.new()
 	_expect(database.load_catalog(), "Card catalog must load.")
 	var builder := (
-		load("res://scenes/ui/DeckBuilderUI.tscn") as PackedScene
+		load("res://scenes/ui/cards/DeckBuilderUI.tscn") as PackedScene
 	).instantiate()
 	root.add_child(builder)
 	await process_frame
