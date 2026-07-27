@@ -35,15 +35,14 @@ const CARD_TEMPO_ONE_AP_REFUND := 0.35
 const CARD_TEMPO_TWO_AP_REFUND := 0.15
 const CARD_TEMPO_POWER_CARD_COST := 3
 const CARD_TEMPO_POWER_CARD_DRAIN := 4
-const WISP_AP_REGEN := 0.35
-const WISP_DURATION := 6.0
 const COMBAT_CAMERA_SAFE_OFFSET_Y := 90.0
 const MAX_COMBO_ABILITIES := 8
 const MAX_COMBO_LEVEL := 3
 const MAX_COMBO_EFFECT_STACKS := 12
 const MAX_COMBO_CHAIN := 99
-const COMBO_CHAIN_DURATION := 8.0
-const DEFAULT_COMBO_DURATION := 6.0
+const COMBO_CHAIN_DURATION := 4.0
+const DEFAULT_COMBO_DURATION := 4.0
+const MAX_COMBO_DURATION := 5.0
 const DEFAULT_AUTO_ATTACK_CARD_ID := "ember_bolt"
 const DEFAULT_AUTO_ATTACK_INTERVAL := 1.0
 const AUTO_ATTACK_RETRY_INTERVAL := 0.15
@@ -209,10 +208,6 @@ func _process(delta: float) -> void:
 	regen_rate += float(run_state.temporary_buffs.get("level_ap_regen", 0.0))
 	regen_rate += float(_combo_runtime_totals.get("ap_regen_bonus", 0.0))
 	regen_rate += _get_card_tempo_regen_bonus()
-	var wisp_seconds := float(run_state.temporary_buffs.get("ap_wisp_seconds", 0.0))
-	if wisp_seconds > 0.0:
-		regen_rate += float(run_state.temporary_buffs.get("ap_wisp_rate", WISP_AP_REGEN))
-		run_state.temporary_buffs["ap_wisp_seconds"] = maxf(0.0, wisp_seconds - delta)
 	if hud != null and hud.has_method("set_action_point_regen"):
 		hud.call("set_action_point_regen", regen_rate)
 	if hud != null and hud.has_method("set_material_count"):
@@ -778,7 +773,11 @@ func _enqueue_experience_growth() -> void:
 		return
 	var upgrades: Array[Dictionary] = []
 	for instance in run_state.card_instances:
-		if instance.is_fixed() or instance.level >= CardInstance.MAX_LEVEL:
+		if (
+			instance.is_fixed()
+			or instance.is_growth_locked()
+			or instance.level >= CardInstance.MAX_LEVEL
+		):
 			continue
 		upgrades.append({
 			"instance_id": instance.instance_id,
@@ -1095,11 +1094,10 @@ func _begin_autumn_run(deck_override: Array = []) -> void:
 	if run_state.active:
 		return
 	var fallback_deck := [
-		"guard", "guard", "iron_skin", "healing_light", "renewal",
-		"blood_pact_combo", "verdant_renewal",
-		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
-		"sweeping_reach", "quickened_cadence", "crushing_momentum",
-		"keen_focus_combo", "storm_charge",
+		"guard", "iron_skin", "healing_light", "renewal",
+		"blood_pact_combo", "verdant_renewal", "energy_surge",
+		"flame_imbue", "frostburst_imbue", "battle_rhythm",
+		"sweeping_reach", "quickened_cadence",
 	]
 	var selected: Array = deck_override if deck_override.size() > 0 and deck_override.size() <= 16 else meta_state.selected_deck
 	var normalized := _normalize_expedition_deck(selected if selected.size() > 0 and selected.size() <= 16 else fallback_deck)
@@ -1126,8 +1124,8 @@ func _show_card_reward_choices(wave_number: int) -> void:
 	if not run_state.active:
 		return
 	var choices_by_wave := {
-		2: ["sweeping_reach", "kinetic_acceleration", "fleet_footwork", "healing_light"],
-		3: ["quickened_cadence", "deep_reservoir", "storm_charge", "venom_edge"],
+		2: ["energy_surge", "sweeping_reach", "kinetic_acceleration", "healing_light"],
+		3: ["guard", "quickened_cadence", "deep_reservoir", "storm_charge"],
 	}
 	var card_ids: Array = choices_by_wave.get(wave_number, ["guard", "renewal", "frostburst_imbue"])
 	var choices: Array[Dictionary] = []
@@ -1214,14 +1212,10 @@ func _on_card_selected(index: int) -> void:
 		card = _apply_combo_infusions_to_card(card)
 	var targets := _get_combat_targets()
 	card_effect_runner.cast(card, player, targets)
-	_resolve_skill_triggers(skill_recipe_manager.record_card(card))
 	var effect := card.get("effect", {}) as Dictionary
-	if String(effect.get("kind", "")) == "summon" and String(effect.get("unit_id", "")) == "energy_wisp":
-		run_state.temporary_buffs["ap_wisp_seconds"] = maxf(
-			float(run_state.temporary_buffs.get("ap_wisp_seconds", 0.0)),
-			WISP_DURATION
-		)
-		run_state.temporary_buffs["ap_wisp_rate"] = WISP_AP_REGEN
+	if String(effect.get("kind", "")) == "gain_energy":
+		_resolve_energy_cycle(card)
+	_resolve_skill_triggers(skill_recipe_manager.record_card(card))
 	var extra_draw_count := maxi(0, int(effect.get("draw_cards", 0)))
 	var replacement_count := maxi(
 		0,
@@ -1292,6 +1286,19 @@ func _get_card_tempo_regen_bonus() -> float:
 	)
 
 
+func _resolve_energy_cycle(card: Dictionary) -> float:
+	var effect := card.get("effect", {}) as Dictionary
+	if String(effect.get("kind", "")) != "gain_energy":
+		return 0.0
+	var previous := deck_manager.energy
+	deck_manager.energy = minf(
+		deck_manager.max_energy,
+		deck_manager.energy + maxf(0.0, float(effect.get("amount", 0.0)))
+	)
+	run_state.energy = deck_manager.energy
+	return deck_manager.energy - previous
+
+
 func _tick_auto_attack(delta: float) -> void:
 	if delta <= 0.0 or player == null or current_map == null or not ui_stack.is_empty():
 		return
@@ -1318,42 +1325,55 @@ func _tick_auto_attack(delta: float) -> void:
 	if targets.is_empty():
 		_auto_attack_remaining = AUTO_ATTACK_RETRY_INTERVAL
 		return
-	var visual_target := _nearest_combat_target(targets)
-	var target_health_before := _read_health(visual_target)
+	var effect := card.get("effect", {}) as Dictionary
+	var feedback_targets := _nearest_combat_targets(
+		targets,
+		maxi(1, int(effect.get("target_count", 1)))
+	)
+	var health_before: Dictionary = {}
+	for feedback_target in feedback_targets:
+		health_before[feedback_target.get_instance_id()] = _read_health(feedback_target)
 	var base_card := card_database.get_card(String(card.get("id", "")))
 	card["cost"] = 0
 	var result := card_effect_runner.cast(card, player, targets)
-	var dealt_to_visual_target := maxi(0, target_health_before - _read_health(visual_target))
-	if int(result.get("affected", 0)) > 0 and visual_target != null:
-		_spawn_auto_attack_feedback(
-			card,
-			base_card,
-			visual_target,
-			dealt_to_visual_target,
-			result
-		)
+	if int(result.get("affected", 0)) > 0:
+		for feedback_target in feedback_targets:
+			var damage := maxi(
+				0,
+				int(health_before.get(feedback_target.get_instance_id(), 0))
+				- _read_health(feedback_target)
+			)
+			if damage <= 0:
+				continue
+			_spawn_auto_attack_feedback(
+				card,
+				base_card,
+				feedback_target,
+				damage,
+				result
+			)
 	_auto_attack_remaining = maxf(
 		0.1,
 		float(card.get("auto_attack_interval", DEFAULT_AUTO_ATTACK_INTERVAL))
 	)
 
 
-func _nearest_combat_target(targets: Array) -> Node2D:
+func _nearest_combat_targets(targets: Array, count: int) -> Array[Node2D]:
 	if not player is Node2D:
-		return null
-	var nearest: Node2D
-	var nearest_distance := INF
+		return []
+	var candidates: Array[Node2D] = []
 	for target_variant in targets:
 		if not target_variant is Node2D or not is_instance_valid(target_variant):
 			continue
-		var target := target_variant as Node2D
-		var distance := (player as Node2D).global_position.distance_squared_to(
-			target.global_position
+		candidates.append(target_variant as Node2D)
+	candidates.sort_custom(func(left: Node2D, right: Node2D) -> bool:
+		return (player as Node2D).global_position.distance_squared_to(
+			left.global_position
+		) < (player as Node2D).global_position.distance_squared_to(
+			right.global_position
 		)
-		if distance < nearest_distance:
-			nearest = target
-			nearest_distance = distance
-	return nearest
+	)
+	return candidates.slice(0, mini(maxi(0, count), candidates.size()))
 
 
 func _read_health(target: Node) -> int:
@@ -1539,8 +1559,11 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 	var equipment_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
 	timed_effect["remaining_seconds"] = maxf(
 		0.1,
-		float(effect.get("combo_duration", DEFAULT_COMBO_DURATION))
-		+ float(equipment_specials.get("combo_duration_bonus", 0.0))
+		minf(
+			MAX_COMBO_DURATION,
+			float(effect.get("combo_duration", DEFAULT_COMBO_DURATION))
+			+ float(equipment_specials.get("combo_duration_bonus", 0.0))
+		)
 	)
 	effects.append(timed_effect)
 	run_state.temporary_buffs["infusion_effects"] = effects
@@ -1555,8 +1578,11 @@ func _record_combo_chain(card: Dictionary) -> void:
 	var equipment_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
 	run_state.temporary_buffs["combo_chain_count"] = next
 	run_state.temporary_buffs["combo_chain_remaining"] = (
-		COMBO_CHAIN_DURATION
-		+ float(equipment_specials.get("combo_duration_bonus", 0.0))
+		minf(
+			MAX_COMBO_DURATION,
+			COMBO_CHAIN_DURATION
+			+ float(equipment_specials.get("combo_duration_bonus", 0.0))
+		)
 	)
 	_last_combo_name = String(card.get("name", card.get("id", "Combo")))
 	var skills_variant: Variant = run_state.temporary_buffs.get("combo_chain_skills", {})
@@ -1761,13 +1787,27 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 	if String(infused.get("type", "")) == "attack":
 		var combo_power_tiers := floori(float(combo_chain) / 3.0)
 		var combo_power_per_tier := maxi(
-			3,
-			ceili(float(effect.get("amount", 0)) * 0.20)
+			4,
+			ceili(float(effect.get("amount", 0)) * 0.35)
 		)
 		effect["amount"] = (
 			int(effect.get("amount", 0))
 			+ combo_power_tiers * combo_power_per_tier
 		)
+		if combo_power_tiers > 0:
+			effect["target_count"] = mini(8, 1 + combo_power_tiers)
+			effect["projectiles"] = mini(
+				4,
+				1 + floori(float(combo_power_tiers) / 2.0)
+			)
+			infused["auto_attack_range"] = (
+				float(infused.get("auto_attack_range", 220.0))
+				+ 45.0 * float(combo_power_tiers)
+			)
+			infused["attack_size_multiplier"] = (
+				float(infused.get("attack_size_multiplier", 1.0))
+				* (1.0 + 0.25 * float(combo_power_tiers))
+			)
 		if combo_chain >= 6:
 			effect["lifesteal_ratio"] = float(effect.get("lifesteal_ratio", 0.0)) + 0.05
 		if combo_chain >= 9:
@@ -1989,9 +2029,13 @@ func _card_for_cast(card_or_instance: Variant) -> Dictionary:
 	var card := card_database.get_card(card_id)
 	if card.is_empty():
 		return {}
+	var growth_locked := (
+		bool(card.get("growth_locked", false))
+		or (instance != null and instance.is_growth_locked())
+	)
 	var current_level := (
 		CardInstance.MIN_LEVEL
-		if deck_manager.is_card_protected(instance if instance != null else card_id)
+		if growth_locked or deck_manager.is_card_protected(instance if instance != null else card_id)
 		else clampi(instance.level if instance != null else CardInstance.MIN_LEVEL, CardInstance.MIN_LEVEL, CardInstance.MAX_LEVEL)
 	)
 	var effect := (card.get("effect", {}) as Dictionary).duplicate(true)
@@ -2010,6 +2054,20 @@ func _card_for_cast(card_or_instance: Variant) -> Dictionary:
 	card["effect"] = effect
 	card["level"] = current_level
 	card["card_level"] = current_level
+	card["growth_locked"] = growth_locked
+	card["fixed"] = growth_locked
+	if card_id == "energy_surge":
+		var energy_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
+		effect["amount"] = (
+			int(effect.get("amount", 2))
+			+ int(town_manager.call("get_building_level", &"memory_library"))
+			+ int(energy_specials.get("energy_card_bonus", 0.0))
+		)
+		card["effect"] = effect
+		card["description"] = (
+			"Spend 1 AP to restore %d AP. STABLE: cannot upgrade or fuse."
+			% int(effect["amount"])
+		)
 	if instance != null:
 		card["instance_id"] = instance.instance_id
 		card["card_instance"] = instance
@@ -2031,10 +2089,6 @@ func _has_affordable_card() -> bool:
 
 func _advance_card_turn() -> void:
 	deck_manager.end_turn()
-	var wisp_turns := int(run_state.temporary_buffs.get("energy_wisp_turns", 0))
-	if wisp_turns > 0:
-		deck_manager.energy += maxi(1, int(run_state.temporary_buffs.get("energy_wisp_amount", 1)))
-		run_state.temporary_buffs["energy_wisp_turns"] = wisp_turns - 1
 
 
 func _refresh_card_hand() -> void:
@@ -2043,7 +2097,10 @@ func _refresh_card_hand() -> void:
 	var cards: Array[Dictionary] = []
 	for instance in deck_manager.hand_instances:
 		var card := _card_for_cast(instance)
-		card["fixed"] = deck_manager.is_card_protected(instance)
+		card["fixed"] = (
+			bool(card.get("growth_locked", false))
+			or deck_manager.is_card_protected(instance)
+		)
 		cards.append(card)
 	card_hand_ui.call("set_cards", cards, deck_manager.energy)
 	card_hand_ui.call("set_action_points", deck_manager.energy, deck_manager.max_energy)

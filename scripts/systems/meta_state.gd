@@ -232,7 +232,11 @@ func get_card_instance(instance_id: String) -> CardInstance:
 
 func upgrade_card_instance(instance_id: String) -> bool:
 	var instance := get_card_instance(instance_id)
-	if instance == null or instance.level >= CardInstance.MAX_LEVEL:
+	if (
+		instance == null
+		or instance.is_growth_locked()
+		or instance.level >= CardInstance.MAX_LEVEL
+	):
 		return false
 	instance.level += 1
 	return true

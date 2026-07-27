@@ -6,11 +6,11 @@ signal boss_stage_completed
 signal experience_gem_spawned(gem: Node, value: int)
 
 @export var survival_phases: Array[Dictionary] = [
-	{"duration": 45.0, "spawn_interval": 2.4, "alive_cap": 8, "pool": [&"sprout", &"hopper"]},
-	{"duration": 45.0, "spawn_interval": 1.8, "alive_cap": 12, "pool": [&"sprout", &"hopper", &"thornling"]},
-	{"duration": 50.0, "spawn_interval": 1.35, "alive_cap": 17, "pool": [&"hopper", &"thornling", &"charger"]},
-	{"duration": 55.0, "spawn_interval": 1.0, "alive_cap": 22, "pool": [&"sprout", &"thornling", &"charger", &"elite"]},
-	{"duration": -1.0, "spawn_interval": 3.0, "alive_cap": 16, "pool": [&"thornling", &"charger"]},
+	{"duration": 40.0, "spawn_interval": 1.15, "spawn_batch": 2, "alive_cap": 14, "pool": [&"sprout", &"hopper", &"moth_swarm"]},
+	{"duration": 42.0, "spawn_interval": 0.80, "spawn_batch": 3, "alive_cap": 22, "pool": [&"sprout", &"hopper", &"moth_swarm", &"thornling"]},
+	{"duration": 45.0, "spawn_interval": 0.58, "spawn_batch": 3, "alive_cap": 32, "pool": [&"hopper", &"moth_swarm", &"thornling", &"charger", &"grove_shaman"]},
+	{"duration": 48.0, "spawn_interval": 0.42, "spawn_batch": 4, "alive_cap": 44, "pool": [&"sprout", &"moth_swarm", &"thornling", &"charger", &"grove_shaman", &"elite"]},
+	{"duration": -1.0, "spawn_interval": 0.72, "spawn_batch": 3, "alive_cap": 30, "pool": [&"moth_swarm", &"thornling", &"charger", &"grove_shaman"]},
 ]
 @export var experience_gem_scene: PackedScene = preload("res://scenes/combat/ExperienceGem.tscn")
 
@@ -54,7 +54,7 @@ func advance_survival(delta: float) -> void:
 	_spawn_remaining -= maxf(0.0, delta)
 	if _spawn_remaining <= 0.0:
 		_spawn_remaining = maxf(0.05, float(phase.get("spawn_interval", 1.0)))
-		_spawn_until_cap(1)
+		_spawn_until_cap(maxi(1, int(phase.get("spawn_batch", 1))))
 	phase_time_changed.emit(get_wave_number(), _phase_remaining, get_active_enemies().size(), get_current_alive_cap())
 
 
@@ -84,7 +84,7 @@ func _begin_phase() -> void:
 	_disengage_remaining = -1.0
 	if _wave_index == survival_phases.size() - 1:
 		_spawn_guardian()
-	_spawn_until_cap(mini(3, get_current_alive_cap()))
+	_spawn_until_cap(mini(maxi(6, int(phase.get("spawn_batch", 1)) * 2), get_current_alive_cap()))
 	wave_started.emit(get_wave_number(), survival_phases.size(), get_active_enemies().size())
 	progress_changed.emit(get_active_enemies().size(), get_current_alive_cap())
 
@@ -112,8 +112,14 @@ func _spawn_survival_enemy(archetype_id: StringName, is_guardian: bool) -> void:
 	var enemy := packed.instantiate()
 	add_child(enemy)
 	if enemy is Node2D:
-		var side := -1.0 if (_active_enemies.size() % 2 == 0) else 1.0
-		(enemy as Node2D).position = Vector2(side * (180.0 + 42.0 * float(_active_enemies.size() % 6)), 0.0)
+		var slot := _active_enemies.size()
+		var side := -1.0 if (slot % 2 == 0) else 1.0
+		var rank := floori(float(slot) / 10.0) % 3
+		var lane := (slot % 5) - 2
+		(enemy as Node2D).position = Vector2(
+			side * (190.0 + 92.0 * float(rank)),
+			-18.0 * float(abs(lane))
+		)
 		_spawn_positions[enemy.get_instance_id()] = (enemy as Node2D).position
 	if not is_guardian and enemy.has_method("configure_archetype"):
 		enemy.call("configure_archetype", archetype_id)

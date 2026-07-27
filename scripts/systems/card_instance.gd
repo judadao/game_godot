@@ -3,6 +3,7 @@ extends RefCounted
 
 const MIN_LEVEL := 1
 const MAX_LEVEL := 3
+const GROWTH_LOCKED_CARD_IDS: Array[String] = ["energy_surge"]
 
 static var _allocation_counter := 0
 
@@ -34,6 +35,10 @@ func is_valid() -> bool:
 
 func is_fixed() -> bool:
 	return false
+
+
+func is_growth_locked() -> bool:
+	return GROWTH_LOCKED_CARD_IDS.has(card_id)
 
 
 func duplicate_instance() -> CardInstance:

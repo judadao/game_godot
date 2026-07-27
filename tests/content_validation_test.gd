@@ -17,7 +17,7 @@ func _run() -> void:
 		card_ids[String(card["id"])] = true
 		represented_types[String(card["type"]).to_lower()] = true
 		_expect(ResourceLoader.exists(String(card["icon_path"])), "Every card icon path must resolve.")
-	for required_type in ["attack", "skill", "power", "summon", "healing", "status", "ultimate", "combo"]:
+	for required_type in ["attack", "skill", "power", "healing", "status", "ultimate", "combo"]:
 		_expect(represented_types.has(required_type), "Card catalog must represent %s." % required_type)
 
 	var evolutions := EvolutionManager.new(cards)

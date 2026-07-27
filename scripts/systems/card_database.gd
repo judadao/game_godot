@@ -81,11 +81,20 @@ func _is_valid_card(card: Dictionary) -> bool:
 	var max_level := int(card["max_level"])
 	if level < 1 or max_level < level:
 		return false
+	var growth_locked := bool(card.get("growth_locked", false))
+	if growth_locked and max_level != 1:
+		return false
 	if not card["combo_tags"] is Array or (card["combo_tags"] as Array).is_empty():
 		return false
 	if not card["effect"] is Dictionary or (card["effect"] as Dictionary).is_empty():
 		return false
-	if not card["upgrade_effects"] is Array or not _has_visible_level_three_upgrade(card["upgrade_effects"] as Array):
+	if (
+		not card["upgrade_effects"] is Array
+		or (
+			not growth_locked
+			and not _has_visible_level_three_upgrade(card["upgrade_effects"] as Array)
+		)
+	):
 		return false
 	var icon_path := String(card["icon_path"])
 	return not icon_path.is_empty() and ResourceLoader.exists(icon_path)

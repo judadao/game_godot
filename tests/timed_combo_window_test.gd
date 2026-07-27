@@ -1,6 +1,6 @@
 extends SceneTree
 
-const BASE_COMBO_SECONDS := 6.0
+const BASE_COMBO_SECONDS := 4.0
 
 var _failures := 0
 
@@ -27,9 +27,9 @@ func _run() -> void:
 	_expect(bool(game.call("_resolve_combo_card", flame)), "A Combo effect card must open a timed window.")
 	_expect(
 		is_equal_approx(float(game.call("_get_combo_time_remaining")), BASE_COMBO_SECONDS),
-		"Base Combo window must last six seconds."
+		"Base Combo window must last four seconds."
 	)
-	game.call("_tick_combo_effects", 4.0)
+	game.call("_tick_combo_effects", 2.0)
 	_expect(
 		is_equal_approx(float(game.call("_get_combo_time_remaining")), 2.0),
 		"Combo time must count down in real time."
@@ -54,10 +54,10 @@ func _run() -> void:
 	var frost := (game.get("card_database") as CardDatabase).get_card("frostburst_imbue")
 	_expect(bool(game.call("_resolve_combo_card", frost)), "A second timed Combo type must activate.")
 	_expect(
-		float(game.call("_get_combo_time_remaining")) >= BASE_COMBO_SECONDS + 2.0,
+		is_equal_approx(float(game.call("_get_combo_time_remaining")), 5.0),
 		"Combo equipment must extend new Combo windows."
 	)
-	game.call("_tick_combo_effects", BASE_COMBO_SECONDS + 2.1)
+	game.call("_tick_combo_effects", 5.1)
 	_expect((run.temporary_buffs.get("active_infusions", []) as Array).is_empty(), "All Combo effects must disappear after their individual timers expire.")
 	_expect((run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(), "Expired effects must stop modifying attacks.")
 

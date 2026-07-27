@@ -322,9 +322,9 @@ Combo／Healing catalog 不再使用 exhaust／cooldown destination。
 |---|---:|
 | Base max AP | 5.0 |
 | Run start AP | 5.0 |
-| Base regeneration | 0.65／秒 |
-| Energy Wisp bonus | +0.35／秒 |
-| Energy Wisp duration | 6 秒 |
+| Base regeneration | 0.95／秒 |
+| Energy Cycle | 消耗 1 AP、基礎回復 2 AP |
+| Card Tempo | 最多 +0.96 AP／秒，6 秒未出牌後歸零 |
 
 卡片 cost 大於目前 AP 時不能打出。成功打出後扣除 cost、執行 effect、依
 destination 離開手牌，補抽一張 replacement，再加上 effect 指定的額外抽牌。
@@ -790,7 +790,7 @@ A/S remain movement-only and there is no group-toggle input.
 ### Timed Combo windows
 
 Combo cards recycle through discard after play and add one independently timed effect
-stack. The base window is six real-time seconds. Fast play can therefore keep
+stack. The base window is four real-time seconds. Fast play can therefore keep
 several stacks active at once; when an older stack expires, only that stack is
 removed and the displayed level falls accordingly. Eight distinct Combo types
 and twelve stacks per type are supported. Evolved Combo effects inherit the
@@ -802,8 +802,9 @@ modify this loop through:
 - `combo_cost_reduction`, applied to Combo cards with a minimum cost of 1 AP;
 - `combo_duration_bonus`, added when each new timed stack is created.
 
-Focus Amulet currently provides `-1 Combo AP` and `+2 seconds`. Countdown uses
-real time even during tactical slowdown, so slowdown cannot extend the window.
+Focus Amulet currently provides `-1 Combo AP` and `+1 second`. Combo effects and
+the global Combo Chain are capped at five seconds. Countdown uses real time even
+during tactical slowdown, so slowdown cannot extend the window.
 
 ### Card tempo and AP flow
 
@@ -821,6 +822,18 @@ Catalog cost is authoritative for tempo classification. Equipment discounts
 still reduce the AP paid, but cannot turn a power card into a tempo-building
 card. Playing another low-cost card refreshes the six-second window; letting the
 window expire clears every tempo stack.
+
+### Stable AP flow card
+
+`Energy Cycle` is a one-cost Combo card that restores two AP. It is marked
+`growth_locked`, always displays `STABLE`, and cannot be offered for an
+individual upgrade or any fusion. Its AP amount grows horizontally instead:
+each Memory Library level adds one AP and Apprentice Staff adds two AP.
+
+Deck drawing prevents a four-card brick hand when any one-cost or stable flow
+card remains in the draw/discard cycle. Wave rewards always include low-cost
+choices, and the default expedition deck is twelve cards instead of starting at
+the sixteen-card capacity.
 
 ## 16. Best Practice
 
@@ -992,6 +1005,16 @@ AP presentation; `quickstep` is not part of the card catalog.
 Autumn interactions use a compact F prompt attached to the current world
 object. It follows the object and clamps above the HUD boundary so merchants,
 caches, portals, and events do not create a second competing bottom overlay.
-Combo 的攻擊提高採每三層一階：每階增加當前基礎攻擊 amount 的 20%，最低 +3。
+Combo 的攻擊提高採每三層一階：每階增加當前基礎攻擊 amount 的 35%，最低 +4。
+每階同時增加 45 像素射程與 25% 視覺尺寸；目標數逐階增加，且每兩階增加
+一次命中，最高可同時攻擊 8 個目標、每個目標 4 hit。
+
+### Horde-first difficulty
+
+Autumn survival uses enemy density and mixed roles instead of weakening the
+player. Concurrent caps grow `14 → 22 → 32 → 44`, spawn batches grow from two
+to four, and the boss stage maintains up to thirty supporting enemies. Amber
+Moth Swarm adds fragile high-speed pressure while Grove Shaman adds long-range
+support, bringing the phase pools to seven archetypes.
 自動普攻命中時以世界空間短彈道、命中環、實際傷害數字與 `COMBO ×N / POWER +N`
 直接呈現本次強化，讓玩家不必只靠 HUD 判斷是否生效。

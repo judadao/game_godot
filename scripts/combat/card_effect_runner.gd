@@ -47,7 +47,11 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 
 	match kind:
 		"damage":
-			var selected := _nearest_targets(caster, targets, 1)
+			var selected := _nearest_targets(
+				caster,
+				targets,
+				maxi(1, int(effect.get("target_count", 1)))
+			)
 			_damage_targets(caster, selected, int(effect.get("amount", 0)), result, maxi(1, int(effect.get("projectiles", 1))))
 			_apply_infused_statuses(selected, effect)
 		"area_damage":

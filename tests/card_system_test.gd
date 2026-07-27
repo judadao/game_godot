@@ -3,7 +3,6 @@ extends SceneTree
 const EXPECTED_TYPES := [
 	"attack",
 	"power",
-	"summon",
 	"healing",
 	"status",
 	"ultimate",
@@ -58,11 +57,17 @@ func _run() -> void:
 			"%s must not retain the removed passive-evolution fields." % card_id
 		)
 		var level_three_upgrade := _find_upgrade(card.get("upgrade_effects", []) as Array, 3)
-		_expect(not level_three_upgrade.is_empty(), "%s must define a level-three upgrade." % card_id)
-		_expect(
-			not String(level_three_upgrade.get("mechanic_change", "")).is_empty(),
-			"%s level-three upgrade must describe a visible mechanism change." % card_id
-		)
+		if bool(card.get("growth_locked", false)):
+			_expect(
+				int(card.get("max_level", 0)) == 1 and level_three_upgrade.is_empty(),
+				"%s must remain a stable one-level card without upgrade data." % card_id
+			)
+		else:
+			_expect(not level_three_upgrade.is_empty(), "%s must define a level-three upgrade." % card_id)
+			_expect(
+				not String(level_three_upgrade.get("mechanic_change", "")).is_empty(),
+				"%s level-three upgrade must describe a visible mechanism change." % card_id
+			)
 		var icon_path := String(card.get("icon_path", ""))
 		_expect(not icon_path.is_empty() and ResourceLoader.exists(icon_path), "%s must reference a loadable icon." % card_id)
 	for card_type in EXPECTED_TYPES:

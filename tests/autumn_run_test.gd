@@ -27,8 +27,11 @@ func _test_archetype_catalog() -> void:
 		return
 
 	var catalog: Dictionary = script.call("autumn_catalog")
-	var expected_ids := [&"sprout", &"hopper", &"thornling", &"charger", &"elite"]
-	_expect(catalog.size() == 5, "Autumn catalog must contain exactly five archetypes.")
+	var expected_ids := [
+		&"sprout", &"hopper", &"moth_swarm", &"thornling",
+		&"charger", &"grove_shaman", &"elite",
+	]
+	_expect(catalog.size() == 7, "Autumn catalog must contain exactly seven archetypes.")
 	for archetype_id in expected_ids:
 		_expect(catalog.has(archetype_id), "Autumn catalog is missing '%s'." % archetype_id)
 		if not catalog.has(archetype_id):

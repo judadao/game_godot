@@ -52,6 +52,7 @@ func find_available_fusions(card_instances: Array) -> Array[Dictionary]:
 			instance.is_empty()
 			or int(instance.get("level", 0)) != 3
 			or bool(instance.get("fixed", false))
+			or bool(instance.get("growth_locked", false))
 		):
 			continue
 		eligible.append(instance)
@@ -131,16 +132,20 @@ func _is_valid_recipe(recipe: Dictionary, seen_ids: Dictionary) -> bool:
 func _instance_projection(value: Variant) -> Dictionary:
 	if value is Dictionary:
 		var data := (value as Dictionary).duplicate(true)
-		var card_id := String(data.get("card_id", ""))
 		data["fixed"] = bool(data.get("fixed", false))
+		data["growth_locked"] = bool(data.get("growth_locked", false))
 		return data
 	if value is Object:
 		var object := value as Object
-		var card_id := String(object.get("card_id"))
 		return {
 			"instance_id": String(object.get("instance_id")),
-			"card_id": card_id,
+			"card_id": String(object.get("card_id")),
 			"level": int(object.get("level")),
 			"fixed": bool(object.call("is_fixed")) if object.has_method("is_fixed") else false,
+			"growth_locked": (
+				bool(object.call("is_growth_locked"))
+				if object.has_method("is_growth_locked")
+				else false
+			),
 		}
 	return {}

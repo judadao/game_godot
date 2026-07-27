@@ -93,6 +93,14 @@ func draw_card_instances(count: int) -> Array[CardInstance]:
 		var instance := draw_instances.pop_front() as CardInstance
 		hand_instances.append(instance)
 		drawn.append(instance)
+	var flow_swap := _ensure_flow_card_in_hand()
+	if not flow_swap.is_empty():
+		var displaced := flow_swap.get("displaced") as CardInstance
+		var replacement := flow_swap.get("replacement") as CardInstance
+		for index in drawn.size():
+			if drawn[index] == displaced:
+				drawn[index] = replacement
+				break
 	_sync_id_views()
 	return drawn
 
@@ -219,6 +227,33 @@ func _extract_protected_hand() -> Array[CardInstance]:
 	return retained
 
 
+func _ensure_flow_card_in_hand() -> Dictionary:
+	if hand_instances.is_empty() or _card_database == null:
+		return {}
+	for instance in hand_instances:
+		if _is_flow_card(instance):
+			return {}
+	for pile in [draw_instances, discard_instances]:
+		for index in pile.size():
+			var candidate := pile[index] as CardInstance
+			if not _is_flow_card(candidate):
+				continue
+			var displaced := hand_instances[-1]
+			hand_instances[-1] = candidate
+			pile[index] = displaced
+			return {"displaced": displaced, "replacement": candidate}
+	return {}
+
+
+func _is_flow_card(instance: CardInstance) -> bool:
+	if instance == null:
+		return false
+	if instance.is_growth_locked():
+		return true
+	var card := _card_database.call("get_card", instance.card_id) as Dictionary
+	return not card.is_empty() and int(card.get("cost", 99)) <= 1
+
+
 func _effective_protected_ids() -> Array[String]:
 	return protected_card_ids.duplicate()
 
@@ -255,7 +290,12 @@ func get_all_instances() -> Array[CardInstance]:
 
 func upgrade_instance(instance_id: String) -> bool:
 	var instance := find_instance(instance_id)
-	if instance == null or instance.is_fixed() or instance.level >= CardInstance.MAX_LEVEL:
+	if (
+		instance == null
+		or instance.is_fixed()
+		or instance.is_growth_locked()
+		or instance.level >= CardInstance.MAX_LEVEL
+	):
 		return false
 	instance.level += 1
 	return true

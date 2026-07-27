@@ -133,11 +133,11 @@
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "description": "For six seconds, Space Dash cuts through enemies for 10 damage.",
+      "description": "For four seconds, Space Dash cuts through enemies for 10 damage.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0006_Boots.png",
       "tags": ["mobility", "dash", "attack"],
       "combo_tags": ["mobility", "strike"],
-      "effect": {"kind": "infusion", "infusion_id": "dash_edge", "target_action": "dash", "combo_duration": 6.0, "damage_bonus": 10},
+      "effect": {"kind": "infusion", "infusion_id": "dash_edge", "target_action": "dash", "combo_duration": 4.0, "damage_bonus": 10},
       "upgrade_effects": [
         {"level": 2, "description": "Space Dash damage increases to 15.", "effect": {"damage_bonus": 15}},
         {"level": 3, "description": "Space Dash creates a return slash.", "mechanic_change": "return_slash", "effect": {"return_damage": 10}}
@@ -152,11 +152,11 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "description": "For six seconds, Space Dash deals 20 damage and leaves a wind trail.",
+      "description": "For four seconds, Space Dash deals 20 damage and leaves a wind trail.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png",
       "tags": ["mobility", "dash", "attack", "wind"],
       "combo_tags": ["mobility", "strike", "wind"],
-      "effect": {"kind": "infusion", "infusion_id": "gale_drive", "target_action": "dash", "combo_duration": 6.0, "damage_bonus": 20},
+      "effect": {"kind": "infusion", "infusion_id": "gale_drive", "target_action": "dash", "combo_duration": 4.0, "damage_bonus": 20},
       "upgrade_effects": [
         {"level": 2, "description": "The wind trail deals 6 damage.", "effect": {"trail_damage": 6}},
         {"level": 3, "description": "The visible wind trail pulls enemies inward.", "mechanic_change": "pulling_wind_trail", "effect": {"pull_strength": 180}}
@@ -258,21 +258,20 @@
     },
     {
       "id": "energy_surge",
-      "name": "Energy Wisp",
-      "type": "summon",
-      "rarity": "uncommon",
+      "name": "Energy Cycle",
+      "type": "combo",
+      "combo_family": "body",
+      "rarity": "common",
       "level": 1,
-      "max_level": 3,
+      "max_level": 1,
+      "growth_locked": true,
       "cost": 1,
-      "description": "Summon a wisp that accelerates AP recovery for six seconds.",
+      "description": "Spend 1 AP to restore 2 AP. Stable cards cannot upgrade or fuse.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_02.png",
-      "tags": ["summon", "energy"],
-      "combo_tags": ["summon", "arcane"],
-      "effect": {"kind": "summon", "unit_id": "energy_wisp", "duration_turns": 2, "energy_per_turn": 1},
-      "upgrade_effects": [
-        {"level": 2, "description": "The wisp remains for three turns.", "effect": {"duration_turns": 3}},
-        {"level": 3, "description": "The wisp visibly duplicates after granting energy.", "mechanic_change": "wisp_duplication", "effect": {"duplicate_count": 1, "duplicate_duration_turns": 1}}
-      ]
+      "tags": ["combo", "energy", "stable"],
+      "combo_tags": ["combo", "body", "energy"],
+      "effect": {"kind": "gain_energy", "amount": 2},
+      "upgrade_effects": []
     },
     {
       "id": "renewal",
@@ -341,13 +340,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 3,
-      "description": "For 6 seconds, attacks gain fire damage and inflict Burn.",
+      "description": "For 4 seconds, attacks gain fire damage and inflict Burn.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
       "tags": ["combo", "fire", "infusion"],
       "combo_tags": ["combo", "fire"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "flame", "combo_duration": 6.0, "damage_bonus": 4, "burn_damage": 3, "burn_duration": 3.0},
+      "effect": {"kind": "infusion", "infusion_id": "flame", "combo_duration": 4.0, "damage_bonus": 4, "burn_damage": 3, "burn_duration": 3.0},
       "upgrade_effects": [
         {"level": 2, "description": "Fire bonus increases to six.", "effect": {"damage_bonus": 6}},
         {"level": 3, "description": "Burn lasts five seconds.", "mechanic_change": "wildfire_infusion", "effect": {"burn_duration": 5.0}}
@@ -362,13 +361,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 3,
-      "description": "For 6 seconds, attacks gain frost damage and Slow.",
+      "description": "For 4 seconds, attacks gain frost damage and Slow.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png",
       "tags": ["combo", "frost", "infusion"],
       "combo_tags": ["combo", "frost"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "frost", "combo_duration": 6.0, "damage_bonus": 2, "frost_ratio": 0.30, "frost_duration": 2.0},
+      "effect": {"kind": "infusion", "infusion_id": "frost", "combo_duration": 4.0, "damage_bonus": 2, "frost_ratio": 0.30, "frost_duration": 2.0},
       "upgrade_effects": [
         {"level": 2, "description": "Frost bonus increases to four.", "effect": {"damage_bonus": 4}},
         {"level": 3, "description": "Slow becomes stronger.", "mechanic_change": "deep_freeze_infusion", "effect": {"frost_ratio": 0.45}}
@@ -383,13 +382,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "description": "For 6 seconds, attacks deal two extra damage.",
+      "description": "For 4 seconds, attacks deal two extra damage.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0005_Gloves.png",
       "tags": ["combo", "buff", "power"],
       "combo_tags": ["combo", "power"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "rhythm", "combo_duration": 6.0, "damage_bonus": 2},
+      "effect": {"kind": "infusion", "infusion_id": "rhythm", "combo_duration": 4.0, "damage_bonus": 2},
       "upgrade_effects": [
         {"level": 2, "description": "Rhythm grants three extra damage.", "effect": {"damage_bonus": 3}},
         {"level": 3, "description": "Rhythm grants four extra damage.", "mechanic_change": "perfect_rhythm", "effect": {"damage_bonus": 4}}
@@ -404,13 +403,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "description": "For 8 seconds, automatic attacks reach 70 pixels farther.",
+      "description": "For 4 seconds, automatic attacks reach 70 pixels farther.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png",
       "tags": ["combo", "range", "infusion"],
       "combo_tags": ["combo", "range"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "reach", "combo_duration": 8.0, "attack_range_bonus": 70.0},
+      "effect": {"kind": "infusion", "infusion_id": "reach", "combo_duration": 4.0, "attack_range_bonus": 70.0},
       "upgrade_effects": [
         {"level": 2, "description": "Attack reach increases by 100 pixels.", "effect": {"attack_range_bonus": 100.0}},
         {"level": 3, "description": "Wide attack arcs reach 140 pixels farther.", "mechanic_change": "wide_attack_arc", "effect": {"attack_range_bonus": 140.0}}
@@ -425,13 +424,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "description": "For 8 seconds, automatic attacks occur 18 percent faster.",
+      "description": "For 4 seconds, automatic attacks occur 18 percent faster.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0005_Gloves.png",
       "tags": ["combo", "speed", "infusion"],
       "combo_tags": ["combo", "speed"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "cadence", "combo_duration": 8.0, "attack_interval_multiplier": 0.82},
+      "effect": {"kind": "infusion", "infusion_id": "cadence", "combo_duration": 4.0, "attack_interval_multiplier": 0.82},
       "upgrade_effects": [
         {"level": 2, "description": "Automatic attacks occur 28 percent faster.", "effect": {"attack_interval_multiplier": 0.72}},
         {"level": 3, "description": "A rapid cadence makes automatic attacks 38 percent faster.", "mechanic_change": "rapid_cadence", "effect": {"attack_interval_multiplier": 0.62}}
@@ -446,13 +445,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "description": "For 8 seconds, attack effects travel 35 percent faster.",
+      "description": "For 4 seconds, attack effects travel 35 percent faster.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png",
       "tags": ["combo", "projectile_speed", "infusion"],
       "combo_tags": ["combo", "speed"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "kinetic", "combo_duration": 8.0, "projectile_speed_multiplier": 1.35},
+      "effect": {"kind": "infusion", "infusion_id": "kinetic", "combo_duration": 4.0, "projectile_speed_multiplier": 1.35},
       "upgrade_effects": [
         {"level": 2, "description": "Attack effects travel 55 percent faster.", "effect": {"projectile_speed_multiplier": 1.55}},
         {"level": 3, "description": "Attack effects travel 80 percent faster.", "mechanic_change": "instant_impact", "effect": {"projectile_speed_multiplier": 1.80}}
@@ -467,13 +466,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "description": "For 8 seconds, attack size increases by 20 percent.",
+      "description": "For 4 seconds, attack size increases by 20 percent.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png",
       "tags": ["combo", "size", "infusion"],
       "combo_tags": ["combo", "range"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "giant_arc", "combo_duration": 8.0, "attack_size_multiplier": 1.20},
+      "effect": {"kind": "infusion", "infusion_id": "giant_arc", "combo_duration": 4.0, "attack_size_multiplier": 1.20},
       "upgrade_effects": [
         {"level": 2, "description": "Attack size increases by 35 percent.", "effect": {"attack_size_multiplier": 1.35}},
         {"level": 3, "description": "Attack size increases by 55 percent.", "mechanic_change": "colossal_arc", "effect": {"attack_size_multiplier": 1.55}}
@@ -488,13 +487,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "description": "For 8 seconds, gain 2 defense.",
+      "description": "For 4 seconds, gain 2 defense.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
       "tags": ["combo", "defense", "infusion"],
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "iron_bone", "combo_duration": 8.0, "defense_bonus": 2},
+      "effect": {"kind": "infusion", "infusion_id": "iron_bone", "combo_duration": 4.0, "defense_bonus": 2},
       "upgrade_effects": [
         {"level": 2, "description": "Defense bonus increases to 3.", "effect": {"defense_bonus": 3}},
         {"level": 3, "description": "Defense bonus increases to 5.", "mechanic_change": "tempered_body", "effect": {"defense_bonus": 5}}
@@ -509,13 +508,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "description": "For 8 seconds, movement speed increases by 10 percent.",
+      "description": "For 4 seconds, movement speed increases by 10 percent.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0006_Boots.png",
       "tags": ["combo", "movement", "infusion"],
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "fleet", "combo_duration": 8.0, "move_speed_multiplier": 0.10},
+      "effect": {"kind": "infusion", "infusion_id": "fleet", "combo_duration": 4.0, "move_speed_multiplier": 0.10},
       "upgrade_effects": [
         {"level": 2, "description": "Movement speed increases by 16 percent.", "effect": {"move_speed_multiplier": 0.16}},
         {"level": 3, "description": "Movement speed increases by 24 percent.", "mechanic_change": "wind_step", "effect": {"move_speed_multiplier": 0.24}}
@@ -530,13 +529,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "description": "For 8 seconds, restore 0.25 additional AP per second.",
+      "description": "For 4 seconds, restore 0.25 additional AP per second.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_06.png",
       "tags": ["combo", "ap_regen", "infusion"],
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "arcane_breath", "combo_duration": 8.0, "ap_regen_bonus": 0.25},
+      "effect": {"kind": "infusion", "infusion_id": "arcane_breath", "combo_duration": 4.0, "ap_regen_bonus": 0.25},
       "upgrade_effects": [
         {"level": 2, "description": "Additional AP regeneration increases to 0.4.", "effect": {"ap_regen_bonus": 0.40}},
         {"level": 3, "description": "Additional AP regeneration increases to 0.6.", "mechanic_change": "overflowing_breath", "effect": {"ap_regen_bonus": 0.60}}
@@ -551,13 +550,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "description": "For 8 seconds, maximum AP increases by 1.",
+      "description": "For 4 seconds, maximum AP increases by 1.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
       "tags": ["combo", "max_ap", "infusion"],
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "reservoir", "combo_duration": 8.0, "ap_max_bonus": 1.0},
+      "effect": {"kind": "infusion", "infusion_id": "reservoir", "combo_duration": 4.0, "ap_max_bonus": 1.0},
       "upgrade_effects": [
         {"level": 2, "description": "Maximum AP increases by 2.", "effect": {"ap_max_bonus": 2.0}},
         {"level": 3, "description": "Maximum AP increases by 3.", "mechanic_change": "limit_break", "effect": {"ap_max_bonus": 3.0}}
@@ -572,13 +571,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "description": "For 8 seconds, attacks poison enemies for 2 damage every 0.75 seconds.",
+      "description": "For 4 seconds, attacks poison enemies for 2 damage every 0.75 seconds.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_03.png",
       "tags": ["combo", "poison", "infusion"],
       "combo_tags": ["combo", "poison"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "venom", "combo_duration": 8.0, "poison_damage": 2, "poison_duration": 4.0},
+      "effect": {"kind": "infusion", "infusion_id": "venom", "combo_duration": 4.0, "poison_damage": 2, "poison_duration": 4.0},
       "upgrade_effects": [
         {"level": 2, "description": "Poison deals 3 damage for 5 seconds.", "effect": {"poison_damage": 3, "poison_duration": 5.0}},
         {"level": 3, "description": "Poison deals 4 damage for 6 seconds.", "mechanic_change": "virulent_edge", "effect": {"poison_damage": 4, "poison_duration": 6.0}}
@@ -593,13 +592,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "description": "For 8 seconds, automatic attacks deal 5 extra damage.",
+      "description": "For 4 seconds, automatic attacks deal 5 extra damage.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0000_Weapon.png",
       "tags": ["combo", "power", "infusion"],
       "combo_tags": ["combo", "power"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "momentum", "combo_duration": 8.0, "damage_bonus": 5},
+      "effect": {"kind": "infusion", "infusion_id": "momentum", "combo_duration": 4.0, "damage_bonus": 5},
       "upgrade_effects": [
         {"level": 2, "description": "Damage bonus increases to 7.", "effect": {"damage_bonus": 7}},
         {"level": 3, "description": "Heavy impact waves add 10 damage.", "mechanic_change": "impact_wave", "effect": {"damage_bonus": 10}}
@@ -614,13 +613,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "description": "For 8 seconds, gain 18 percent critical chance and 1.75x critical damage.",
+      "description": "For 4 seconds, gain 18 percent critical chance and 1.75x critical damage.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
       "tags": ["combo", "critical", "infusion"],
       "combo_tags": ["combo", "critical"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "precision", "combo_duration": 8.0, "critical_chance": 0.18, "critical_multiplier": 1.75},
+      "effect": {"kind": "infusion", "infusion_id": "precision", "combo_duration": 4.0, "critical_chance": 0.18, "critical_multiplier": 1.75},
       "upgrade_effects": [
         {"level": 2, "description": "Critical chance increases to 25 percent.", "effect": {"critical_chance": 0.25}},
         {"level": 3, "description": "Critical hits deal double damage.", "mechanic_change": "perfect_focus", "effect": {"critical_chance": 0.25, "critical_multiplier": 2.0}}
@@ -635,13 +634,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 3,
-      "description": "For 8 seconds, attacks gain 2 lightning damage and briefly stun.",
+      "description": "For 4 seconds, attacks gain 2 lightning damage and briefly stun.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png",
       "tags": ["combo", "lightning", "infusion"],
       "combo_tags": ["combo", "lightning"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "storm", "combo_duration": 8.0, "damage_bonus": 2, "combo_stun": 0.12},
+      "effect": {"kind": "infusion", "infusion_id": "storm", "combo_duration": 4.0, "damage_bonus": 2, "combo_stun": 0.12},
       "upgrade_effects": [
         {"level": 2, "description": "Lightning stun increases to 0.18 seconds.", "effect": {"damage_bonus": 3, "combo_stun": 0.18}},
         {"level": 3, "description": "Chain lightning briefly stuns every struck enemy.", "mechanic_change": "chain_lightning", "effect": {"damage_bonus": 4, "combo_stun": 0.25}}
@@ -656,16 +655,16 @@
       "level": 1,
       "max_level": 3,
       "cost": 3,
-      "description": "Gain 25 percent damage reduction and retaliation for 6 seconds.",
+      "description": "Gain 25 percent damage reduction and retaliation for 4 seconds.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
       "tags": ["combo", "damage_reduction", "retaliation"],
       "combo_tags": ["combo", "armor"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "combat_status", "statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 6.0}, {"status_id": "retaliation", "amount": 6, "duration": 6.0}]},
+      "effect": {"kind": "combat_status", "statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 4.0}, {"status_id": "retaliation", "amount": 6, "duration": 4.0}]},
       "upgrade_effects": [
-        {"level": 2, "description": "Retaliation increases to eight.", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 6.0}, {"status_id": "retaliation", "amount": 8, "duration": 6.0}]}},
-        {"level": 3, "description": "A visible stone burst answers every hit.", "mechanic_change": "living_counterguard", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 6.0}, {"status_id": "retaliation", "amount": 10, "duration": 6.0}]}}
+        {"level": 2, "description": "Retaliation increases to eight.", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 4.0}, {"status_id": "retaliation", "amount": 8, "duration": 4.0}]}},
+        {"level": 3, "description": "A visible stone burst answers every hit.", "mechanic_change": "living_counterguard", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 4.0}, {"status_id": "retaliation", "amount": 10, "duration": 4.0}]}}
       ]
     },
     {
@@ -677,14 +676,14 @@
       "level": 1,
       "max_level": 3,
       "cost": 3,
-      "description": "For 6 seconds, attacks heal for 15 percent of damage.",
+      "description": "For 4 seconds, attacks heal for 15 percent of damage.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0005_Gloves.png",
       "tags": ["healing", "lifesteal"],
       "combo_tags": ["combo", "support"],
       "card_color": "green",
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "combat_status", "status_id": "lifesteal", "duration": 6.0, "lifesteal_ratio": 0.15},
+      "effect": {"kind": "combat_status", "status_id": "lifesteal", "duration": 4.0, "lifesteal_ratio": 0.15},
       "upgrade_effects": [
         {"level": 2, "description": "Lifesteal increases to 20 percent.", "effect": {"lifesteal_ratio": 0.20}},
         {"level": 3, "description": "Lifesteal increases to 25 percent.", "mechanic_change": "crimson_feast", "effect": {"lifesteal_ratio": 0.25}}
@@ -727,7 +726,7 @@
       "combo_tags": ["combo", "power", "element"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "ascendant", "combo_duration": 10.0, "damage_bonus": 6, "attack_range_bonus": 50.0, "attack_interval_multiplier": 0.82, "attack_size_multiplier": 1.25, "projectile_speed_multiplier": 1.35, "critical_chance": 0.12, "critical_multiplier": 1.8, "defense_bonus": 2, "move_speed_multiplier": 0.10, "ap_regen_bonus": 0.30, "ap_max_bonus": 1.0, "lifesteal_ratio": 0.08, "burn_damage": 2, "burn_duration": 3.0, "frost_ratio": 0.20, "frost_duration": 2.0, "poison_damage": 2, "poison_duration": 3.0, "combo_stun": 0.10},
+      "effect": {"kind": "infusion", "infusion_id": "ascendant", "combo_duration": 5.0, "damage_bonus": 6, "attack_range_bonus": 50.0, "attack_interval_multiplier": 0.82, "attack_size_multiplier": 1.25, "projectile_speed_multiplier": 1.35, "critical_chance": 0.12, "critical_multiplier": 1.8, "defense_bonus": 2, "move_speed_multiplier": 0.10, "ap_regen_bonus": 0.30, "ap_max_bonus": 1.0, "lifesteal_ratio": 0.08, "burn_damage": 2, "burn_duration": 3.0, "frost_ratio": 0.20, "frost_duration": 2.0, "poison_damage": 2, "poison_duration": 3.0, "combo_stun": 0.10},
       "upgrade_effects": [
         {"level": 2, "description": "Every Ascendant bonus becomes stronger.", "effect": {"damage_bonus": 9, "attack_interval_multiplier": 0.74, "attack_size_multiplier": 1.40, "defense_bonus": 3, "ap_regen_bonus": 0.45}},
         {"level": 3, "description": "Ascendant attacks become a large multi-element storm.", "mechanic_change": "ascendant_storm", "effect": {"damage_bonus": 13, "attack_range_bonus": 90.0, "attack_interval_multiplier": 0.66, "attack_size_multiplier": 1.60, "projectile_speed_multiplier": 1.70, "critical_chance": 0.22, "defense_bonus": 4, "move_speed_multiplier": 0.18, "ap_regen_bonus": 0.65, "ap_max_bonus": 2.0}}

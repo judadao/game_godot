@@ -256,7 +256,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `CardDatabase` | `scripts/systems/card_database.gd` | `load_catalog`, `get_card`, `has_card`, `get_all_cards` |
 | `DeckManager` | `scripts/systems/deck_manager.gd` | `start`, `draw_cards`, `play_from_hand`, `regenerate_energy`, `discard_and_redraw_hand`, `end_turn` |
 | `CardCollectionService` | `scripts/systems/card_collection_service.gd` | `is_configured`, `get_deck_size`, `get_copy_count`, `add_persistent_card`, `fuse`, `remove_instance`, `capture_state`, `restore_state` |
-| `CardInstance` | `scripts/systems/card_instance.gd` | `instance_id`, `card_id`, `level`, `is_fixed`, `to_dict`, `from_dict` |
+| `CardInstance` | `scripts/systems/card_instance.gd` | `instance_id`, `card_id`, `level`, `is_fixed`, `is_growth_locked`, `to_dict`, `from_dict` |
 | `SkillRecipeManager` | `scripts/systems/skill_recipe_manager.gd` | `load_catalog`, `configure_loadout`, `record_card`, `tick`, `reset_runtime` |
 | `GrowthChoiceQueue` | `scripts/systems/growth_choice_queue.gd` | `enqueue_wave_blessing`, `enqueue_experience_growth`, `peek`, `resolve` |
 | `SaveService` | `scripts/systems/save_service.gd` | `save_meta`, `load_meta` |

@@ -52,7 +52,7 @@ func configure(card: Dictionary, shortcut: String, affordable: bool) -> void:
 	_shortcut.text = shortcut
 	_card_name.text = String(card.get("name", "Card"))
 	_type_label.text = _card_type
-	_level.text = "LV.%d" % maxi(1, int(card.get("level", 1)))
+	_level.text = "STABLE" if _fixed else "LV.%d" % maxi(1, int(card.get("level", 1)))
 	_cost_value.text = str(maxi(0, int(card.get("cost", 0))))
 	_lock_badge.visible = _fixed
 	var icon_path := String(card.get("icon_path", ""))

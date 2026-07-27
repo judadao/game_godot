@@ -49,7 +49,7 @@ func _run() -> void:
 		)
 	)
 	_expect(
-		restored.size() == 8 and restored_are_hand_cards,
+		restored.size() == 9 and restored_are_hand_cards,
 		"Deck builder must restore Combo and Healing cards from a legacy mixed backpack."
 	)
 	_expect(

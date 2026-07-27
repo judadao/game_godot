@@ -30,7 +30,7 @@
       "slot": "weapon",
       "purchase_cost": {"gold": 80, "magic_shard": 5},
       "effects": {"magic_power": 3, "max_mana": 10},
-      "special_ability": {"id": "mana_current", "description": "AP regenerates 0.10 faster per second.", "ap_regen": 0.10}
+      "special_ability": {"id": "mana_current", "description": "AP regenerates 0.10 faster per second and Energy Cycle restores +2 AP.", "ap_regen": 0.10, "energy_card_bonus": 2}
     },
     {
       "id": "leather_armor",
@@ -86,10 +86,10 @@
       "effects": {"critical_chance": 0.05, "max_mana": 5},
       "special_ability": {
         "id": "steady_focus",
-        "description": "Attack cards deal +1 damage; Combo cards cost 1 less AP and last 2 seconds longer.",
+        "description": "Attack cards deal +1 damage; Combo cards cost 1 less AP and last 1 second longer.",
         "card_damage_bonus": 1,
         "combo_cost_reduction": 1,
-        "combo_duration_bonus": 2.0
+        "combo_duration_bonus": 1.0
       }
     },
     {

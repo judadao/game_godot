@@ -49,7 +49,7 @@ func _run() -> void:
 	var baseline_damage := int(
 		(baseline_attack.get("effect", {}) as Dictionary).get("amount", 0)
 	)
-	var expected_power_step := maxi(3, ceili(float(baseline_damage) * 0.20))
+	var expected_power_step := maxi(4, ceili(float(baseline_damage) * 0.35))
 	run.temporary_buffs["combo_chain_count"] = 3
 	var three_stack_attack := game.call(
 		"_apply_combo_infusions_to_card",
@@ -65,7 +65,7 @@ func _run() -> void:
 			== baseline_damage + expected_power_step
 			and int((six_stack_attack.get("effect", {}) as Dictionary).get("amount", 0))
 			== baseline_damage + expected_power_step * 2,
-		"Combo Power milestones must visibly add one 20%% damage step every three stacks."
+		"Combo Power milestones must visibly add one 35%% damage step every three stacks."
 	)
 	run.temporary_buffs["combo_chain_count"] = 0
 	var expanded_effects: Array = []

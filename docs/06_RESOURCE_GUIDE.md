@@ -1014,4 +1014,6 @@ exhaust/cooldown piles and cooldown timing so partial mutation or save failure
 cannot leave only one authority changed.
 初期 auto attack balance baseline：Ember Bolt Lv.1 為 16 damage／0.75 秒，
 Sprout 與 Hopper 應在未加成時兩發內擊殺。Combo power 每三層提升一階，
-每階為當前基礎 attack amount 的 20%，最低 +3。
+每階為當前基礎 attack amount 的 35%，最低 +4，並同步增加射程、尺寸、
+目標數與多重命中。`growth_locked` 卡維持 Lv.1、不可升級或合成；其效果
+只能由場外建築與裝備加成。
