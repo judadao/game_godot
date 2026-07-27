@@ -505,6 +505,16 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 
+[node name="AutoUse" type="CheckButton" parent="BottomStage/CardStage/ActionStrip"]
+custom_minimum_size = Vector2(104, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.77, 0.91, 0.67, 1)
+theme_override_colors/font_hover_color = Color(0.9, 1, 0.78, 1)
+theme_override_colors/font_pressed_color = Color(0.9, 1, 0.78, 1)
+theme_override_font_sizes/font_size = 11
+tooltip_text = "Automatically play the most effective affordable card. The strategy may briefly save AP for a stronger combination."
+text = "AUTO USE"
+
 [node name="RedrawHand" type="Button" parent="BottomStage/CardStage/ActionStrip"]
 custom_minimum_size = Vector2(116, 34)
 layout_mode = 2

@@ -1089,6 +1089,10 @@ Combo Chain 清單、interaction prompt 與 world-safe area 不重疊、不裁�
 `res://scenes/ui/CardGrowthUI.tscn` 是 wave blessing 與 EXP growth 的單一 modal。
 舊 `LevelUpUI` 與 Autumn Blessing popup 不再是這條流程的 authority。
 
+Growth choice card 必須以卡牌類型色、catalog icon、AP／level 關鍵資料協助掃讀。
+效果與升級差異採短句項目符號；多個效果或條件不得壓成單段長文。完整原文保留於
+tooltip。Icon、顏色與 description 由 queue payload 投影，UI 不反查或修改 catalog。
+
 - wave page 只顯示 new card。
 - EXP upgrade page 只隨機顯示最多五張未滿級 instances；全部卡片滿級後才另開
   最多五組合法 Lv.3 fusion page；沒有合法 growth 時才顯示三種永久資源 fallback。

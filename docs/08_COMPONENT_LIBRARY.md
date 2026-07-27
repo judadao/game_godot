@@ -1510,6 +1510,8 @@ Required semantic children:
   selected choice; it does not mutate deck, fusion materials, Meta or resources
 - Layout: at most five growth choices, centered as three cards above two cards
 - Replaces: Autumn Blessing popup and `LevelUpUI` in the card-growth flow
+- Choice presentation: semantic card color、catalog icon、compact AP/level header，
+  current/next effects use bullet lines; tooltip retains the complete display text.
 
 ### SkillToastStack
 

@@ -23,7 +23,7 @@ func _run() -> void:
 		"event_id": 11,
 		"source": "wave",
 		"choices": [
-			{"choice_id": "wave:11:0:cleave", "action": "new_card", "card_id": "cleave", "name": "Cleave", "description": "Deal damage to nearby enemies.", "type": "attack", "cost": 2},
+			{"choice_id": "wave:11:0:cleave", "action": "new_card", "card_id": "cleave", "name": "Cleave", "description": "Deal damage to nearby enemies. Increase the attack arc.", "type": "attack", "cost": 2, "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png"},
 			{"choice_id": "wave:11:0:cleave", "action": "new_card", "card_id": "cleave", "name": "Duplicate Cleave", "description": "Duplicate.", "type": "attack", "cost": 2},
 			{"choice_id": "wave:11:1:frost_bind", "action": "new_card", "card_id": "frost_bind", "name": "Frost Bind", "description": "Slow enemies in a wide area.", "type": "status", "cost": 2},
 		],
@@ -41,6 +41,12 @@ func _run() -> void:
 		(wave_buttons[0] as Button).text.contains("Deal damage to nearby enemies.")
 			and (wave_buttons[0] as Button).text.contains("AP 2"),
 		"New-card choices must explain the card effect and AP cost without relying on a tooltip."
+	)
+	_expect(
+		(wave_buttons[0] as Button).icon != null
+			and (wave_buttons[0] as Button).has_meta("semantic_color")
+			and (wave_buttons[0] as Button).text.count("•") >= 2,
+		"Growth choices must use an icon, semantic color, and bullets for multiple effects."
 	)
 	_expect(
 		(wave_buttons[0] as Button).get_node_or_null((wave_buttons[0] as Button).focus_neighbor_right) == wave_buttons[1],
@@ -114,7 +120,7 @@ func _run() -> void:
 	ui.call("present_page", fusion_page)
 	await process_frame
 	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "CHOOSE A FUSION", "Full-level fusion must use a separate page.")
-	_expect(_all_text(ui).contains("LV.3  +  LV.3"), "Fusion choices must make both full-level materials explicit.")
+	_expect(_all_text(ui).contains("LV.3 + LV.3"), "Fusion choices must make both full-level materials explicit.")
 	_expect(_all_text(ui).contains("LV.1"), "Fusion choices must show that the result returns at level one.")
 	fusion_page["source"] = "fusion_followup"
 	ui.call("present_page", fusion_page)

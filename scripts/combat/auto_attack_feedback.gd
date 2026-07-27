@@ -20,6 +20,7 @@ var _lifesteal := false
 var _direction_index := 0
 var _direction_count := 1
 var _spread_degrees := 0.0
+var _did_hit := false
 
 
 func play(
@@ -44,7 +45,7 @@ func play(
 		_direction_count - 1
 	)
 	_spread_degrees = clampf(float(visual_profile.get("spread_degrees", 0.0)), 0.0, 360.0)
-	_target_offset = _target_offset.rotated(deg_to_rad(_direction_angle_degrees()))
+	_did_hit = damage > 0
 	_visual_colors = _colors_for_elements(visual_profile.get("elements", []) as Array)
 	_accent = _blended_accent(_visual_colors, _accent_for_combo(combo_count))
 	_attack_size_multiplier = clampf(
@@ -106,6 +107,10 @@ func get_spread_degrees() -> float:
 
 func get_direction_angle_degrees() -> float:
 	return _direction_angle_degrees()
+
+
+func get_travel_offset() -> Vector2:
+	return _target_offset
 
 
 func _draw() -> void:
@@ -203,8 +208,10 @@ func _set_impact_progress(value: float) -> void:
 
 
 func _show_impact() -> void:
-	damage_label.visible = true
-	combo_label.visible = true
+	damage_label.visible = _did_hit
+	combo_label.visible = _did_hit
+	if not _did_hit:
+		return
 	var label_tween := create_tween().set_parallel(true)
 	label_tween.tween_property(damage_label, "position:y", damage_label.position.y - 24.0, IMPACT_DURATION)
 	label_tween.tween_property(combo_label, "position:y", combo_label.position.y - 18.0, IMPACT_DURATION)

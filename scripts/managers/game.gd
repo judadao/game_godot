@@ -46,6 +46,9 @@ const MAX_COMBO_DURATION := 3.0
 const DEFAULT_AUTO_ATTACK_CARD_ID := "ember_bolt"
 const DEFAULT_AUTO_ATTACK_INTERVAL := 1.0
 const AUTO_ATTACK_RETRY_INTERVAL := 0.15
+const AUTO_USE_CARD_INTERVAL := 0.22
+const AUTO_USE_RETRY_INTERVAL := 0.08
+const AUTO_USE_SAVE_AP_SCORE_MARGIN := 18.0
 const COMBO_EVOLUTIONS := [
 	{
 		"requires": ["flame", "frost"],
@@ -131,6 +134,9 @@ var _pending_reward_instance_ids: Array[String] = []
 var _tactical_slowdown := false
 var _run_auto_attack_card_id := DEFAULT_AUTO_ATTACK_CARD_ID
 var _auto_attack_remaining := 0.0
+var _auto_use_cards := false
+var _auto_use_remaining := 0.0
+var _auto_use_hand_age: Dictionary = {}
 var wallet_gold: int = 250
 var player_inventory: Dictionary = {
 	"travel_bread": 3,
@@ -220,6 +226,7 @@ func _process(delta: float) -> void:
 	if regenerated > 0.0:
 		run_state.energy = deck_manager.energy
 		card_hand_ui.call("set_action_points", deck_manager.energy, deck_manager.max_energy)
+	_tick_auto_use(real_delta)
 
 
 func _input(event: InputEvent) -> void:
@@ -330,6 +337,10 @@ func load_hud() -> void:
 			hud_root.add_child(hud)
 		if hud.has_signal("interaction_prompt_accepted"):
 			hud.connect("interaction_prompt_accepted", _try_interact)
+		if hud.has_signal("auto_use_changed"):
+			hud.connect("auto_use_changed", _on_auto_use_changed)
+		if hud.has_method("set_auto_use_enabled"):
+			hud.call("set_auto_use_enabled", _auto_use_cards)
 		_update_hud_area_name()
 		_update_hud_player_identity()
 		_update_hud_resources()
@@ -785,6 +796,10 @@ func _enqueue_experience_growth() -> void:
 			"card_id": instance.card_id,
 			"name": _card_name(instance.card_id),
 			"level": instance.level,
+			"type": String(card.get("type", "")),
+			"cost": int(card.get("cost", 0)),
+			"icon_path": String(card.get("icon_path", "")),
+			"card_color": String(card.get("card_color", "")),
 			"description": _card_level_description(card, instance.level),
 			"upgrade_description": _card_upgrade_description(
 				card,
@@ -872,7 +887,16 @@ func _available_fusions_with_names() -> Array[Dictionary]:
 	for fusion in fusions:
 		fusion["left_name"] = _card_name(String(fusion.get("left_card_id", "")))
 		fusion["right_name"] = _card_name(String(fusion.get("right_card_id", "")))
-		fusion["result_name"] = _card_name(String(fusion.get("result_card_id", "")))
+		var result_card := card_database.get_card(String(fusion.get("result_card_id", "")))
+		fusion["result_name"] = String(result_card.get(
+			"name",
+			_card_name(String(fusion.get("result_card_id", "")))
+		))
+		fusion["type"] = String(result_card.get("type", "combo"))
+		fusion["cost"] = int(result_card.get("cost", 0))
+		fusion["icon_path"] = String(result_card.get("icon_path", ""))
+		fusion["card_color"] = String(result_card.get("card_color", ""))
+		fusion["description"] = String(result_card.get("description", ""))
 	return fusions
 
 
@@ -1144,6 +1168,8 @@ func _show_card_reward_choices(wave_number: int) -> void:
 			"description": String(card.get("description", "")),
 			"type": String(card.get("type", "")),
 			"cost": int(card.get("cost", 0)),
+			"icon_path": String(card.get("icon_path", "")),
+			"card_color": String(card.get("card_color", "")),
 		})
 	if growth_choice_queue.enqueue_wave_blessing(choices):
 		call_deferred("_open_next_growth_choice")
@@ -1336,35 +1362,63 @@ func _tick_auto_attack(delta: float) -> void:
 		_auto_attack_remaining = AUTO_ATTACK_RETRY_INTERVAL
 		return
 	var effect := card.get("effect", {}) as Dictionary
-	var feedback_targets := _nearest_combat_targets(
-		targets,
-		maxi(1, int(effect.get("target_count", 1)))
-	)
+	var direction_count := maxi(1, int(effect.get("direction_count", 1)))
+	var spread_degrees := clampf(float(effect.get("spread_degrees", 0.0)), 0.0, 360.0)
+	var directional_attack := String(effect.get("kind", "")) == "damage"
+	var direction_assignments: Array = []
+	var cast_targets := targets
+	if directional_attack:
+		direction_assignments = _match_targets_to_attack_directions(
+			targets,
+			direction_count,
+			spread_degrees,
+			attack_range
+		)
+		cast_targets = direction_assignments.filter(func(candidate: Variant) -> bool:
+			return candidate is Node2D and is_instance_valid(candidate)
+		)
+	else:
+		direction_assignments = _nearest_combat_targets(
+			targets,
+			maxi(1, int(effect.get("target_count", 1)))
+		)
 	var health_before: Dictionary = {}
-	for feedback_target in feedback_targets:
-		health_before[feedback_target.get_instance_id()] = _read_health(feedback_target)
+	for assigned_target in direction_assignments:
+		if assigned_target is Node2D and is_instance_valid(assigned_target):
+			health_before[assigned_target.get_instance_id()] = _read_health(assigned_target)
 	var base_card := card_database.get_card(String(card.get("id", "")))
 	card["cost"] = 0
-	var result := card_effect_runner.cast(card, player, targets)
-	if int(result.get("affected", 0)) > 0:
-		var direction_count := maxi(1, int(effect.get("direction_count", 1)))
-		var spread_degrees := clampf(float(effect.get("spread_degrees", 0.0)), 0.0, 360.0)
-		var visual_aim_position := (
-			feedback_targets[0].global_position + Vector2(0.0, -34.0)
-		)
+	var result := card_effect_runner.cast(card, player, cast_targets)
+	if directional_attack or int(result.get("affected", 0)) > 0:
 		for projectile_index in direction_count:
 			var direction_index := projectile_index
-			var feedback_target := feedback_targets[direction_index % feedback_targets.size()]
-			var damage := maxi(
-				0,
-				int(health_before.get(feedback_target.get_instance_id(), 0))
-				- _read_health(feedback_target)
-			)
-			if damage <= 0:
-				continue
-			var target_index := direction_index % feedback_targets.size()
-			var assigned_projectiles := ceili(
-				float(direction_count - target_index) / float(feedback_targets.size())
+			var feedback_target: Node2D = null
+			if not direction_assignments.is_empty():
+				var assigned_variant: Variant = direction_assignments[
+					direction_index % direction_assignments.size()
+				]
+				if assigned_variant is Node2D and is_instance_valid(assigned_variant):
+					feedback_target = assigned_variant as Node2D
+			var damage := 0
+			if feedback_target != null:
+				damage = maxi(
+					0,
+					int(health_before.get(feedback_target.get_instance_id(), 0))
+					- _read_health(feedback_target)
+				)
+			var visual_distance := attack_range
+			if feedback_target != null:
+				visual_distance = minf(
+					attack_range,
+					(player as Node2D).global_position.distance_to(
+						feedback_target.global_position
+					)
+				)
+			var visual_endpoint := _auto_attack_direction_endpoint(
+				direction_index,
+				direction_count,
+				spread_degrees,
+				visual_distance
 			)
 			var feedback_card := card.duplicate(true)
 			var visual_profile := (
@@ -1378,9 +1432,9 @@ func _tick_auto_attack(delta: float) -> void:
 				feedback_card,
 				base_card,
 				feedback_target,
-				maxi(1, roundi(float(damage) / float(maxi(1, assigned_projectiles)))),
+				damage,
 				result,
-				visual_aim_position
+				visual_endpoint
 			)
 	_auto_attack_remaining = maxf(
 		0.1,
@@ -1406,6 +1460,133 @@ func _nearest_combat_targets(targets: Array, count: int) -> Array[Node2D]:
 	return candidates.slice(0, mini(maxi(0, count), candidates.size()))
 
 
+func _match_targets_to_attack_directions(
+	targets: Array,
+	direction_count: int,
+	spread_degrees: float,
+	attack_range: float
+) -> Array:
+	var resolved_count := maxi(1, direction_count)
+	var assignments: Array = []
+	assignments.resize(resolved_count)
+	if not player is Node2D:
+		return assignments
+	var candidates: Array[Node2D] = []
+	for target_variant in targets:
+		if (
+			target_variant is Node2D
+			and is_instance_valid(target_variant)
+			and (player as Node2D).global_position.distance_to(
+				(target_variant as Node2D).global_position
+			) <= attack_range
+		):
+			candidates.append(target_variant as Node2D)
+	var angular_tolerance := deg_to_rad(_attack_direction_tolerance_degrees(
+		resolved_count,
+		spread_degrees
+	))
+	var possible_matches: Array[Dictionary] = []
+	for direction_index in resolved_count:
+		var direction := _auto_attack_direction_vector(
+			direction_index,
+			resolved_count,
+			spread_degrees
+		)
+		for candidate in candidates:
+			var offset := candidate.global_position - (player as Node2D).global_position
+			if offset.is_zero_approx():
+				continue
+			var angular_error := absf(wrapf(
+				offset.angle() - direction.angle(),
+				-PI,
+				PI
+			))
+			if angular_error > angular_tolerance:
+				continue
+			possible_matches.append({
+				"direction_index": direction_index,
+				"target": candidate,
+				"score": angular_error * attack_range + offset.length(),
+			})
+	possible_matches.sort_custom(func(left: Dictionary, right: Dictionary) -> bool:
+		return float(left["score"]) < float(right["score"])
+	)
+	var used_target_ids := {}
+	for match_data in possible_matches:
+		var direction_index := int(match_data["direction_index"])
+		var target := match_data["target"] as Node2D
+		if assignments[direction_index] != null or used_target_ids.has(target.get_instance_id()):
+			continue
+		assignments[direction_index] = target
+		used_target_ids[target.get_instance_id()] = true
+	return assignments
+
+
+func _auto_attack_direction_endpoint(
+	direction_index: int,
+	direction_count: int,
+	spread_degrees: float,
+	attack_range: float
+) -> Vector2:
+	if not player is Node2D:
+		return Vector2.ZERO
+	return (
+		(player as Node2D).global_position + Vector2(0.0, -42.0)
+		+ _auto_attack_direction_vector(
+			direction_index,
+			direction_count,
+			spread_degrees
+		) * maxf(0.0, attack_range)
+	)
+
+
+func _auto_attack_direction_vector(
+	direction_index: int,
+	direction_count: int,
+	spread_degrees: float
+) -> Vector2:
+	var facing := 1
+	if player != null:
+		facing = signi(int(player.get("facing_direction")))
+		if facing == 0:
+			facing = 1
+	var base_direction := Vector2(float(facing), 0.0)
+	return base_direction.rotated(deg_to_rad(_attack_direction_angle_degrees(
+		direction_index,
+		direction_count,
+		spread_degrees
+	)))
+
+
+func _attack_direction_angle_degrees(
+	direction_index: int,
+	direction_count: int,
+	spread_degrees: float
+) -> float:
+	var resolved_count := maxi(1, direction_count)
+	if resolved_count <= 1 or spread_degrees <= 0.0:
+		return 0.0
+	var clamped_index := clampi(direction_index, 0, resolved_count - 1)
+	if spread_degrees >= 359.5:
+		return -180.0 + 360.0 * float(clamped_index) / float(resolved_count)
+	return lerpf(
+		-spread_degrees * 0.5,
+		spread_degrees * 0.5,
+		float(clamped_index) / float(resolved_count - 1)
+	)
+
+
+func _attack_direction_tolerance_degrees(
+	direction_count: int,
+	spread_degrees: float
+) -> float:
+	if direction_count <= 1:
+		return 25.0
+	if spread_degrees >= 359.5:
+		return 180.0 / float(direction_count)
+	return maxf(12.0, spread_degrees * 0.5 / float(direction_count - 1))
+
+
 func _read_health(target: Node) -> int:
 	if target == null or not is_instance_valid(target):
 		return 0
@@ -1425,8 +1606,7 @@ func _spawn_auto_attack_feedback(
 		auto_attack_feedback_scene == null
 		or current_map == null
 		or not player is Node2D
-		or target == null
-		or not is_instance_valid(target)
+		or (target != null and not is_instance_valid(target))
 	):
 		return
 	var feedback := auto_attack_feedback_scene.instantiate()
@@ -2129,6 +2309,142 @@ func _has_affordable_card() -> bool:
 		if int(_card_for_cast(instance).get("cost", 0)) <= deck_manager.energy:
 			return true
 	return false
+
+
+func _on_auto_use_changed(enabled: bool) -> void:
+	_auto_use_cards = enabled
+	_auto_use_remaining = 0.0
+	if not enabled:
+		_auto_use_hand_age.clear()
+	if hud != null and hud.has_method("set_auto_use_enabled"):
+		hud.call("set_auto_use_enabled", enabled)
+
+
+func _tick_auto_use(delta: float) -> void:
+	if (
+		not _auto_use_cards
+		or delta <= 0.0
+		or not run_state.active
+		or player == null
+		or not ui_stack.is_empty()
+	):
+		return
+	var present_ids := {}
+	for instance in deck_manager.hand_instances:
+		present_ids[instance.instance_id] = true
+		_auto_use_hand_age[instance.instance_id] = minf(
+			4.0,
+			float(_auto_use_hand_age.get(instance.instance_id, 0.0)) + delta
+		)
+	for instance_id in _auto_use_hand_age.keys():
+		if not present_ids.has(instance_id):
+			_auto_use_hand_age.erase(instance_id)
+	_auto_use_remaining = maxf(0.0, _auto_use_remaining - delta)
+	if _auto_use_remaining > 0.0:
+		return
+	var selected_index := _choose_auto_use_card_index()
+	if selected_index < 0:
+		_auto_use_remaining = AUTO_USE_RETRY_INTERVAL
+		return
+	_on_card_selected(selected_index)
+	_auto_use_remaining = AUTO_USE_CARD_INTERVAL
+
+
+func _choose_auto_use_card_index() -> int:
+	var best_affordable_index := -1
+	var best_affordable_score := -INF
+	var best_wait_score := -INF
+	var best_wait_cost := 0.0
+	for index in deck_manager.hand_instances.size():
+		var instance := deck_manager.hand_instances[index]
+		var card := _card_for_cast(instance)
+		var score := _score_auto_use_card(card, instance)
+		if is_inf(score) and score < 0.0:
+			continue
+		var cost := float(card.get("cost", 0.0))
+		if cost <= deck_manager.energy:
+			if score > best_affordable_score:
+				best_affordable_score = score
+				best_affordable_index = index
+		elif cost <= deck_manager.max_energy and score > best_wait_score:
+			best_wait_score = score
+			best_wait_cost = cost
+	if best_affordable_index < 0:
+		return -1
+	if (
+		best_wait_cost - deck_manager.energy <= 1.5
+		and best_wait_score > best_affordable_score + AUTO_USE_SAVE_AP_SCORE_MARGIN
+	):
+		return -1
+	return best_affordable_index
+
+
+func _score_auto_use_card(card: Dictionary, instance: CardInstance) -> float:
+	if card.is_empty() or instance == null:
+		return -INF
+	var effect := card.get("effect", {}) as Dictionary
+	var kind := String(effect.get("kind", ""))
+	var card_type := String(card.get("type", ""))
+	var cost := float(card.get("cost", 0.0))
+	var score := 50.0 + float(card.get("card_level", 1)) * 5.0
+	score += minf(40.0, float(_auto_use_hand_age.get(instance.instance_id, 0.0)) * 10.0)
+	if cost <= 1.0:
+		score += 20.0
+	elif cost <= 2.0:
+		score += 11.0
+	else:
+		score += 5.0
+
+	if kind == "gain_energy":
+		var restored := maxf(0.0, float(effect.get("amount", 0.0)))
+		var resulting_energy := minf(
+			deck_manager.max_energy,
+			deck_manager.energy - cost + restored
+		)
+		var net_gain := resulting_energy - deck_manager.energy
+		return 190.0 + net_gain * 45.0 if net_gain > 0.01 else -INF
+
+	var maximum_health := maxf(1.0, float(player.get("max_health")))
+	var current_health := clampf(float(player.get("health")), 0.0, maximum_health)
+	var missing_ratio := 1.0 - current_health / maximum_health
+	if card_type == "healing":
+		if kind in ["heal", "healing_pulses", "regeneration"]:
+			if missing_ratio <= 0.001:
+				return -INF
+			score += 45.0 + missing_ratio * 180.0
+			if missing_ratio >= 0.45:
+				score += 90.0
+		else:
+			score += 25.0 + missing_ratio * 75.0
+
+	if card_type == "combo":
+		var chain_remaining := float(
+			run_state.temporary_buffs.get("combo_chain_remaining", 0.0)
+		)
+		if chain_remaining <= 0.8:
+			score += 38.0
+		var infusion_id := String(effect.get("infusion_id", ""))
+		if not infusion_id.is_empty():
+			var levels_variant: Variant = run_state.temporary_buffs.get(
+				"combo_levels",
+				{}
+			)
+			var levels: Dictionary = levels_variant if levels_variant is Dictionary else {}
+			var stack_level := int(levels.get(infusion_id, 0))
+			if stack_level >= MAX_COMBO_EFFECT_STACKS:
+				return -INF
+			var active_variant: Variant = run_state.temporary_buffs.get(
+				"active_infusions",
+				[]
+			)
+			var active: Array = active_variant if active_variant is Array else []
+			score += 30.0 if not active.has(infusion_id) else 8.0
+			score += float(stack_level) * 2.0
+
+	var energy_ratio := deck_manager.energy / maxf(0.1, deck_manager.max_energy)
+	if energy_ratio >= 0.75:
+		score += cost * 9.0
+	return score
 
 
 func _advance_card_turn() -> void:

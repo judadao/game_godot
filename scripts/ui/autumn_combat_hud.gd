@@ -5,6 +5,7 @@ signal interaction_prompt_accepted
 signal card_selected(index: int)
 signal redraw_requested
 signal group_changed(group_index: int)
+signal auto_use_changed(enabled: bool)
 
 const MAX_SKILL_TOASTS := 3
 const MAX_VISIBLE_COMBO_SKILLS := 3
@@ -36,6 +37,7 @@ const SKILL_TOAST_LIFETIME := 1.5
 @onready var _action_points_progress: ProgressBar = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APProgress
 @onready var _auto_attack_name: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/AutoAttackRow/AutoAttackName
 @onready var _redraw_button: Button = $BottomStage/CardStage/ActionStrip/RedrawHand
+@onready var _auto_use_toggle: CheckButton = $BottomStage/CardStage/ActionStrip/AutoUse
 @onready var _group_label: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/InputStrip/GroupBadge
 @onready var _phase_label: Label = $FooterRail/FooterRow/PhaseLabel
 
@@ -57,6 +59,7 @@ func _ready() -> void:
 	_card_hand.redraw_requested.connect(redraw_requested.emit)
 	_card_hand.group_changed.connect(_on_card_group_changed)
 	_redraw_button.pressed.connect(_on_redraw_pressed)
+	_auto_use_toggle.toggled.connect(auto_use_changed.emit)
 	_on_card_group_changed(_card_hand.get_active_group())
 
 
@@ -149,6 +152,10 @@ func set_auto_attack(display_name: String) -> void:
 	_auto_attack_name.text = "AUTO ATTACK\n%s" % (
 		normalized if not normalized.is_empty() else "NONE"
 	)
+
+
+func set_auto_use_enabled(enabled: bool) -> void:
+	_auto_use_toggle.set_pressed_no_signal(enabled)
 
 
 func _on_redraw_pressed() -> void:
@@ -374,8 +381,8 @@ func _set_bar(bar: ProgressBar, value_label: Label, current: int, maximum: int) 
 
 
 func _make_display_only(node: Node) -> void:
-	if node == _redraw_button:
-		_redraw_button.mouse_filter = Control.MOUSE_FILTER_STOP
+	if node == _redraw_button or node == _auto_use_toggle:
+		(node as Control).mouse_filter = Control.MOUSE_FILTER_STOP
 		return
 	if node is Control and node != interaction_panel:
 		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE

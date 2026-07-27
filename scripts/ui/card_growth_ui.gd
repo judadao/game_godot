@@ -68,11 +68,11 @@ func present_page(page: Dictionary) -> void:
 		else ("FULL-LEVEL FUSIONS" if upgrades.is_empty() and not fusions.is_empty() else "INDIVIDUAL UPGRADES")
 	)
 	for choice in new_cards:
-		_add_growth_choice_button(choice, _new_card_text(choice))
+		_add_growth_choice_button(choice, _compact_new_card_text(choice))
 	for choice in upgrades:
-		_add_growth_choice_button(choice, _upgrade_text(choice))
+		_add_growth_choice_button(choice, _compact_upgrade_text(choice))
 	for choice in fusions:
-		_add_growth_choice_button(choice, _fusion_text(choice))
+		_add_growth_choice_button(choice, _compact_fusion_text(choice))
 	for choice in fallbacks:
 		_add_choice_button(fallback_grid, choice, _fallback_text(choice))
 
@@ -205,9 +205,33 @@ func _add_choice_button(parent: Control, choice: Dictionary, display_text: Strin
 	button.toggle_mode = true
 	button.text = display_text
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	button.add_theme_font_size_override("font_size", 13)
+	button.add_theme_font_size_override("font_size", 12)
 	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	button.tooltip_text = display_text
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.expand_icon = true
+	var icon_path := String(choice.get("icon_path", "")).strip_edges()
+	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+		button.icon = load(icon_path) as Texture2D
+	var accent := _choice_accent(choice)
+	button.set_meta("semantic_color", accent)
+	var normal_style := StyleBoxFlat.new()
+	normal_style.bg_color = Color(accent.r * 0.16, accent.g * 0.16, accent.b * 0.16, 0.98)
+	normal_style.border_color = Color(accent, 0.9)
+	normal_style.set_border_width_all(2)
+	normal_style.set_corner_radius_all(7)
+	normal_style.content_margin_left = 10.0
+	normal_style.content_margin_right = 10.0
+	var selected_style := normal_style.duplicate() as StyleBoxFlat
+	selected_style.bg_color = Color(accent.r * 0.28, accent.g * 0.28, accent.b * 0.28, 1.0)
+	selected_style.border_color = accent.lightened(0.22)
+	selected_style.set_border_width_all(3)
+	button.add_theme_stylebox_override("normal", normal_style)
+	button.add_theme_stylebox_override("hover", selected_style)
+	button.add_theme_stylebox_override("pressed", selected_style)
+	button.add_theme_stylebox_override("focus", selected_style)
+	button.add_theme_color_override("font_color", accent.lightened(0.42))
 	button.set_meta("choice_id", choice_id)
 	button.pressed.connect(_select_choice.bind(choice_id))
 	parent.add_child(button)
@@ -314,3 +338,78 @@ func _choice_name(choice: Dictionary, name_key: String, id_key: String, fallback
 func _choice_description(choice: Dictionary, key: String, fallback: String) -> String:
 	var description := String(choice.get(key, "")).strip_edges()
 	return description if not description.is_empty() else fallback
+
+
+func _compact_new_card_text(choice: Dictionary) -> String:
+	return "%s\nNEW · %s · AP %d\n%s" % [
+		_choice_name(choice, "name", "card_id", "Unknown Card"),
+		String(choice.get("type", "card")).to_upper(),
+		maxi(0, int(choice.get("cost", 0))),
+		_bullet_description(_choice_description(
+			choice,
+			"description",
+			"No effect description available."
+		)),
+	]
+
+
+func _compact_upgrade_text(choice: Dictionary) -> String:
+	var level := clampi(int(choice.get("level", 1)), 1, 2)
+	return "%s\n%s · AP %d · LV.%d → LV.%d\nNOW  %s\nNEXT  %s" % [
+		_choice_name(choice, "name", "card_id", "Unknown Card"),
+		String(choice.get("type", "card")).to_upper(),
+		maxi(0, int(choice.get("cost", 0))),
+		level,
+		level + 1,
+		_bullet_description(_choice_description(
+			choice,
+			"description",
+			"No effect description available."
+		)),
+		_bullet_description(_choice_description(
+			choice,
+			"upgrade_description",
+			"No upgrade description available."
+		)),
+	]
+
+
+func _compact_fusion_text(choice: Dictionary) -> String:
+	var left_name := _choice_name(choice, "left_name", "left_card_id", "Material A")
+	var right_name := _choice_name(choice, "right_name", "right_card_id", "Material B")
+	var result_name := _choice_name(choice, "result_name", "result_card_id", "Fusion Result")
+	return "%s + %s\nLV.3 + LV.3 → %s · LV.1\n%s" % [
+		left_name,
+		right_name,
+		result_name,
+		_bullet_description(_choice_description(
+			choice,
+			"description",
+			"Creates a stronger Combo."
+		)),
+	]
+
+
+func _bullet_description(description: String) -> String:
+	var normalized := description.strip_edges().replace("; ", ". ")
+	var clauses := normalized.split(". ", false, 3)
+	var bullets: Array[String] = []
+	for clause_variant in clauses:
+		var clause := String(clause_variant).strip_edges()
+		if not clause.is_empty():
+			if not clause.ends_with("."):
+				clause += "."
+			bullets.append("• %s" % clause)
+	return "\n".join(bullets)
+
+
+func _choice_accent(choice: Dictionary) -> Color:
+	var semantic := String(choice.get("card_color", "")).to_lower()
+	var card_type := String(choice.get("type", "")).to_lower()
+	if semantic == "green" or card_type == "healing":
+		return Color(0.35, 0.9, 0.48, 1.0)
+	if card_type == "combo":
+		return Color(0.68, 0.48, 1.0, 1.0)
+	if card_type == "attack":
+		return Color(1.0, 0.46, 0.27, 1.0)
+	return Color(0.36, 0.78, 0.96, 1.0)

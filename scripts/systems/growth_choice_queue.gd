@@ -33,6 +33,8 @@ func enqueue_wave_blessing(cards: Array[Dictionary]) -> bool:
 			"description": String(card.get("description", "")),
 			"type": String(card.get("type", "")),
 			"cost": int(card.get("cost", 0)),
+			"icon_path": String(card.get("icon_path", "")),
+			"card_color": String(card.get("card_color", "")),
 		})
 	if choices.is_empty():
 		return false
@@ -57,6 +59,10 @@ func enqueue_experience_growth(upgrades: Array[Dictionary], fusions: Array[Dicti
 			"card_id": String(upgrade.get("card_id", "")),
 			"name": String(upgrade.get("name", "")),
 			"level": int(upgrade.get("level", 1)),
+			"type": String(upgrade.get("type", "")),
+			"cost": int(upgrade.get("cost", 0)),
+			"icon_path": String(upgrade.get("icon_path", "")),
+			"card_color": String(upgrade.get("card_color", "")),
 			"description": String(upgrade.get("description", "")),
 			"upgrade_description": String(upgrade.get("upgrade_description", "")),
 		})
@@ -213,5 +219,10 @@ func _fusion_choices(event_id: int, fusions: Array[Dictionary]) -> Array[Diction
 			"right_name": String(fusion.get("right_name", "")),
 			"result_card_id": result_id,
 			"result_name": String(fusion.get("result_name", fusion.get("name", ""))),
+			"type": String(fusion.get("type", "combo")),
+			"cost": int(fusion.get("cost", 0)),
+			"icon_path": String(fusion.get("icon_path", "")),
+			"card_color": String(fusion.get("card_color", "")),
+			"description": String(fusion.get("description", "")),
 		})
 	return choices

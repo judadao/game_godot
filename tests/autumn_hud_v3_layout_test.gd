@@ -122,9 +122,15 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 
 	var hand := hud.get_node("BottomStage/CardStage/AutumnCardHandUI") as CardHandUI
 	var redraw := hud.get_node("BottomStage/CardStage/ActionStrip/RedrawHand") as Button
+	var auto_use := hud.get_node("BottomStage/CardStage/ActionStrip/AutoUse") as CheckButton
 	_expect(
 		redraw.mouse_filter == Control.MOUSE_FILTER_STOP,
 		"Redraw must remain mouse-interactive at %s." % viewport_size
+	)
+	_expect(
+		auto_use.mouse_filter == Control.MOUSE_FILTER_STOP
+			and bottom_rect.encloses(_canvas_rect(auto_use)),
+		"Auto Use checkbox must remain interactive and inside BottomStage at %s." % viewport_size
 	)
 	_expect(
 		not hud.has_node("BottomStage/CardStage/ActionStrip/CooldownStrip"),

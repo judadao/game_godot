@@ -292,7 +292,9 @@ instance.queue_free()
 | Growth queue | wave new-card 可直接 skip；滿 16 張可 replace/skip；EXP upgrade 五選一、全滿後獨立 fusion；無候選才 fallback；FIFO 不漏頁 |
 | Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一 |
 | Deck/hand | 4–16 Combo／Healing cards；shuffle draw 4；連續出牌固定補回 4；QWER 出牌；T 棄四張補四張且不耗 AP |
-| Auto attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；近距離目標；不餵 skill sequence；成功命中會產生短彈道、傷害與 Combo power 回饋 |
+| Auto attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；以玩家朝向固定發射、不追蹤；不餵 skill sequence；成功命中會產生短彈道、傷害與 Combo power 回饋 |
+| Auto Use | checkbox 可即時開關；依 AP、低血量、Combo 延續、疊層與卡手評分；可保留 AP；UI modal 開啟時不出牌 |
+| Growth card readability | upgrade/new/fusion choice 顯示 icon、類型色、AP/level；多效果使用 bullets；六解析度不裁切 |
 | Dash | ↑ 只觸發 Jump；Space 觸發玩家固有 Dash；不進牌庫/手牌、不耗 AP；Dash Combo infusions 使用 `target_action=dash` |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |
 | HUD authority | Autumn 只有一個 HUD root；hand 在 `CardStage`；Town HUD identity 不變 |

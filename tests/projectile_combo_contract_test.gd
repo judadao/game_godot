@@ -58,6 +58,37 @@ func _run() -> void:
 		float(basic_attack.get("attack_size_multiplier", 1.0)) >= 2.0,
 		"Combo Chain may still amplify damage, range, and spectacle."
 	)
+	var player := game.get("player") as Node2D
+	var forward_target := DamageTarget.new()
+	forward_target.position = player.global_position + Vector2(100.0, 0.0)
+	root.add_child(forward_target)
+	var rear_target := DamageTarget.new()
+	rear_target.position = player.global_position + Vector2(-100.0, 0.0)
+	root.add_child(rear_target)
+	player.call("set_facing_direction", 1)
+	var forward_assignments := game.call(
+		"_match_targets_to_attack_directions",
+		[rear_target, forward_target],
+		1,
+		0.0,
+		260.0
+	) as Array
+	_expect(
+		forward_assignments.size() == 1
+			and forward_assignments[0] == forward_target,
+		"A single projectile must use player facing and must not auto-target an enemy behind."
+	)
+	var forward_aim := game.call("_auto_attack_direction_endpoint", 0, 1, 0.0, 260.0) as Vector2
+	player.call("set_facing_direction", -1)
+	var backward_aim := game.call("_auto_attack_direction_endpoint", 0, 1, 0.0, 260.0) as Vector2
+	_expect(
+		forward_aim.x > player.global_position.x
+			and backward_aim.x < player.global_position.x
+			and is_equal_approx(forward_aim.y, backward_aim.y),
+		"Projectile endpoints must be fixed by player facing rather than enemy positions."
+	)
+	forward_target.queue_free()
+	rear_target.queue_free()
 
 	run.temporary_buffs["combo_chain_count"] = 0
 	_expect(
@@ -166,8 +197,12 @@ func _run() -> void:
 				float(feedback.call("get_direction_angle_degrees")),
 				135.0
 			)
+			and feedback.has_method("get_travel_offset")
+			and (feedback.call("get_travel_offset") as Vector2).is_equal_approx(
+				Vector2(180.0, 40.0)
+			)
 			and not feedback.has_method("get_homing_strength"),
-		"Max-level amount Combo must reach the visible full-circle attack without homing."
+		"Feedback must preserve its fixed firing endpoint instead of rotating or tracking it."
 	)
 
 	feedback.queue_free()
