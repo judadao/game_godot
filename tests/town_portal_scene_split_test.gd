@@ -18,48 +18,19 @@ func _run() -> void:
 	root.add_child(portal_set)
 	await process_frame
 
-	var expected_scenes := {
-		"EntranceFastTravelPortal": "res://scenes/props/town/portals/TownFastTravelPortal.tscn",
-		"ForestPortal": "res://scenes/props/town/portals/TownForestPortal.tscn",
-		"CavesPortal": "res://scenes/props/town/portals/TownCavesPortal.tscn",
-		"GraveyardPortal": "res://scenes/props/town/portals/TownGraveyardPortal.tscn",
-		"EastRoadPortal": "res://scenes/props/town/portals/TownFastTravelPortal.tscn",
-	}
-	var expected_names := [
-		"EntranceFastTravelPortal",
-		"ForestPortal",
-		"CavesPortal",
-		"GraveyardPortal",
-		"EastRoadPortal",
-	]
-	_expect(portal_set.get_child_count() == 5, "PortalSet must contain exactly five instances.")
-	for index in expected_names.size():
-		var portal_name: String = expected_names[index]
-		var portal := portal_set.get_node(portal_name)
-		_expect(portal.scene_file_path == expected_scenes[portal_name], "%s has the wrong scene link." % portal_name)
-		_expect(portal_set.get_child(index) == portal, "%s is out of scene-tree order." % portal_name)
-		_expect(portal.collision_layer == 0, "%s must not block the street." % portal_name)
-
-	_expect(
-		portal_set.get_node("EntranceFastTravelPortal").target_spawn_name == &"TownTailArrival",
-		"Entrance fast travel must target TownTailArrival."
-	)
-	_expect(
-		portal_set.get_node("EastRoadPortal").target_spawn_name == &"TownEntranceArrival",
-		"East fast travel must target TownEntranceArrival."
-	)
-	_expect(
-		portal_set.get_node("ForestPortal").target_scene_path == "res://scenes/maps/autumn_forest.tscn",
-		"Forest portal target is wrong."
-	)
-	_expect(
-		portal_set.get_node("CavesPortal").target_scene_path == "res://scenes/maps/crystal_caves.tscn",
-		"Caves portal target is wrong."
-	)
-	_expect(
-		portal_set.get_node("GraveyardPortal").target_scene_path == "res://scenes/maps/forbidden_graveyard.tscn",
-		"Graveyard portal target is wrong."
-	)
+	_expect(portal_set.get_child_count() == 1, "Town PortalSet must contain one gateway instance.")
+	var gateway := portal_set.get_node_or_null("BattleGateway")
+	_expect(gateway != null, "Town PortalSet must contain BattleGateway.")
+	if gateway != null:
+		_expect(
+			gateway.scene_file_path == "res://scenes/props/town/portals/TownBattleGateway.tscn",
+			"BattleGateway must remain a linked dedicated scene."
+		)
+		_expect(gateway.collision_layer == 0, "BattleGateway must not block the street.")
+		_expect(
+			gateway.target_scene_path == "res://scenes/maps/battle_portal_hub.tscn",
+			"BattleGateway target is wrong."
+		)
 
 	portal_set.queue_free()
 	await process_frame

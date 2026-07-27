@@ -9,6 +9,7 @@ signal combat_engaged
 signal disengage_warning(seconds: int)
 signal disengage_cancelled
 signal combat_reset
+signal elite_defeated(world_position: Vector2)
 
 @export var enemy_scene: PackedScene = preload("res://scenes/monsters/AutumnEnemy.tscn")
 @export var guardian_scene: PackedScene = preload("res://scenes/monsters/AutumnGuardian.tscn")
@@ -143,6 +144,7 @@ func _spawn_next_wave() -> void:
 			continue
 		var enemy := packed.instantiate()
 		add_child(enemy)
+		enemy.set_meta("encounter_archetype_id", String(archetype_id))
 		if enemy is Node2D:
 			(enemy as Node2D).position = entry.get("position", Vector2.ZERO) as Vector2
 			_spawn_positions[enemy.get_instance_id()] = (enemy as Node2D).position
@@ -162,6 +164,13 @@ func _on_enemy_defeated(enemy: Node, experience: int, gold: int) -> void:
 	if not _active_enemies.has(enemy):
 		return
 	_active_enemies.erase(enemy)
+	if String(enemy.get_meta("encounter_archetype_id", "")) == "elite":
+		var reward_position := (
+			(enemy as Node2D).global_position
+			if enemy is Node2D
+			else global_position
+		)
+		elite_defeated.emit(reward_position)
 	_experience += maxi(0, experience)
 	_gold += maxi(0, gold)
 	progress_changed.emit(_active_enemies.size(), _wave_total)

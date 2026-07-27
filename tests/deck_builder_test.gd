@@ -11,7 +11,7 @@ func _run() -> void:
 	var database := CardDatabase.new()
 	_expect(database.load_catalog(), "Card catalog must load for deck building.")
 	var meta := MetaState.new()
-	_expect(meta.selected_deck.size() >= 4, "A new profile must provide at least four Combo cards.")
+	_expect(meta.selected_deck.size() == 4, "A new profile must provide exactly four fixed skills.")
 	for card_id in meta.selected_deck:
 		_expect(meta.unlocked_cards.has(card_id), "Every starter-deck card must already be discovered.")
 
@@ -22,17 +22,19 @@ func _run() -> void:
 	for card_id in meta.unlocked_cards:
 		discovered.append(database.get_card(card_id))
 	ui.call("configure", discovered, meta.selected_deck)
-	_expect(int(ui.call("get_selected_count")) == meta.selected_deck.size(), "Deck builder must restore the saved Combo backpack.")
+	_expect(int(ui.call("get_selected_count")) == 4, "Deck builder must restore the fixed four-skill loadout.")
 	var restored := ui.call("get_selected_deck") as Array
-	_expect(restored.count("guard") == 2, "Same-name Combo cards must retain independent backpack copies.")
+	_expect(restored.count("healing_light") == 1, "The fixed loadout must contain exactly one Healing skill.")
 	ui.call("configure", discovered, [
 		"guard", "guard",
 		"cleave", "cleave", "cleave", "cleave",
 	], "cleave")
 	var clamped := ui.call("get_selected_deck") as Array
 	_expect(
-		clamped == ["guard", "guard"],
-		"Restored loadouts must keep Combo copies and exclude attacks and Dash-only cards."
+		clamped.size() == 4
+			and clamped.count("guard") == 1
+			and clamped.count("healing_light") == 1,
+		"Legacy loadouts must become one Healing plus three unique Combo skills."
 	)
 	_expect(
 		String(ui.call("get_auto_attack_card_id")) == "cleave",

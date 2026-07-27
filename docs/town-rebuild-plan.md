@@ -4,7 +4,8 @@
 
 - Camera: side-view orthographic, no isometric or front-facing assets.
 - Native target: 1280x720, world height 724 px.
-- Ground baseline: y=632 px; every prop and character shares this baseline.
+- Active Eternal Forge road baseline: y=672 px; player, NPCs, and portals share
+  this baseline. Hidden legacy props retain their original authoring baseline.
 - Lighting: warm daylight from upper left; shadows fall down-right.
 - Pixel density: detailed 32-bit pixel art, approximately 2 px of outline at gameplay scale.
 - Palette: warm limestone, dark oak, blue slate roofs, restrained red shop awnings, brass accents.
@@ -13,16 +14,20 @@
 
 ## World layout
 
-The rebuilt town remains 2600x724 so existing camera and save data remain compatible.
+The Eternal Forge v1 town uses one 1942x720 side-scrolling image segment. Existing
+canonical map identity, portal targets, spawn transfer, HUD adoption, and save
+contracts remain compatible while camera and collision bounds match that segment.
 
 | Range | District | Purpose |
 | --- | --- | --- |
-| x=0-430 | West Gate | Player spawn, return fast-travel portal, guard post, visual town entrance |
-| x=430-900 | Residential Lane | Two homes, mayor route, notice board, flowers and benches |
-| x=900-1420 | Civic Square | Town hall, mayor, well, quest focus and open circulation space |
-| x=1420-1960 | Market Street | Item shop, inn, merchant stalls, potion merchant and innkeeper |
-| x=1960-2300 | Artisan Row | Blacksmith workshop, forge props, blacksmith and storage |
-| x=2300-2600 | Portal Plaza | Forest, cave and graveyard portals plus fast travel back to entrance |
+| x=0-240 | Material Yard | Player spawn, guard and material supply shop |
+| x=240-520 | Player Forge | Player home, blacksmith forge and blacksmith interaction |
+| x=520-760 | Eternal Flame | The single monument landmark and town progression focus |
+| x=760-980 | Battle Portal Plaza | One BattleGateway leading to the dedicated portal hub |
+| x=980-1220 | Civic Hall | Mayor and town progress interaction |
+| x=1220-1460 | Sword Soul Shop | Merchant interaction and purple soul-magic storefront |
+| x=1460-1700 | Blueprint Research | Research landmark and future presentation refinement |
+| x=1700-1942 | Soul Refinery | Innkeeper/refinery district |
 
 ## Asset batches
 
@@ -35,7 +40,7 @@ The rebuilt town remains 2600x724 so existing camera and save data remain compat
 4. `town_props_atlas_v2.png`
    - notice board, well, lamp, bench, fence, crates, barrels, flower bed, forge and market cart.
 5. `town_portals_atlas_v2.png`
-   - fast travel, autumn forest, crystal cave and graveyard portals sharing one stone-and-brass frame.
+   - Town BattleGateway plus the portal-hub region entrances.
 6. `town_npcs_atlas_v2.png`
    - player-scale mayor, merchant, innkeeper, blacksmith, guard, male villager and female villager.
 
@@ -56,7 +61,8 @@ The rebuilt town remains 2600x724 so existing camera and save data remain compat
 - Forest portal: `forest_portal`
 - Caves portal: `caves_portal`
 - Graveyard portal: `graveyard_portal`
-- Entrance/tail fast travel remains bidirectional.
+- Town contains one BattleGateway; internal fast travel is retired for the compact map.
+- The hub contains four region slots around a centered final-boss reservation.
 
 ## Acceptance checks
 
@@ -65,5 +71,5 @@ The rebuilt town remains 2600x724 so existing camera and save data remain compat
 - All seven NPC roles display exactly one visual.
 - Mayor interaction remains attached only to the bearded mayor.
 - Every shop, dialogue and portal can be reached by keyboard.
-- Town entrance and tail fast travel work in both directions.
+- Town BattleGateway enters the portal hub and the hub return interaction restores Town.
 - Background and ground cover the full camera width at every supported window size.

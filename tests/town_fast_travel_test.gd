@@ -12,18 +12,16 @@ func _run() -> void:
 	root.add_child(town)
 	await process_frame
 
-	var entrance := town.get_node("Portals/EntranceFastTravelPortal")
-	var tail := town.get_node("Portals/EastRoadPortal")
-	_expect(town.has_node("TownEntranceArrival"), "Town entrance arrival marker must exist.")
-	_expect(town.has_node("TownTailArrival"), "Town tail arrival marker must exist.")
-	_expect(entrance.target_spawn_name == &"TownTailArrival", "Entrance portal must target town tail.")
-	_expect(tail.target_spawn_name == &"TownEntranceArrival", "Tail portal must target town entrance.")
-	_expect(entrance.target_scene_path == "res://scenes/maps/town.tscn", "Fast travel must stay in town.")
-	_expect(tail.target_scene_path == "res://scenes/maps/town.tscn", "Return fast travel must stay in town.")
-	_expect(entrance.collision_layer == 0 and tail.collision_layer == 0, "Fast-travel portals must not block town roads.")
-	var map_width := float(town.get_meta("map_width"))
-	_expect(tail.global_position.x >= 0.0, "East road portal must not be left of the playable map.")
-	_expect(tail.global_position.x < map_width, "East road portal must remain inside the playable map.")
+	var gateway := town.get_node_or_null("Portals/BattleGateway")
+	_expect(gateway != null, "Town must expose one BattleGateway.")
+	_expect(town.get_node("Portals").get_child_count() == 1, "Town must not retain internal fast-travel portals.")
+	if gateway != null:
+		_expect(gateway.target_spawn_name == &"PlayerSpawn", "Battle gateway must use the hub spawn.")
+		_expect(
+			gateway.target_scene_path == "res://scenes/maps/battle_portal_hub.tscn",
+			"Battle gateway must target the portal hub."
+		)
+		_expect(gateway.collision_layer == 0, "Battle gateway must not block the town road.")
 
 	town.queue_free()
 	await process_frame

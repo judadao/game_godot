@@ -56,9 +56,13 @@ func play(
 	damage_label.text = "%s%d" % ["CRIT  -" if critical else "-", maxi(0, damage)]
 	damage_label.add_theme_color_override("font_color", _accent)
 	combo_label.text = (
-		"COMBO ×%d   POWER +%d" % [combo_count, maxi(0, combo_damage_bonus)]
-		if combo_count > 0
-		else "AUTO ATTACK"
+		String(visual_profile.get("finisher_name", "FINISHER"))
+		if bool(visual_profile.get("finisher", false))
+		else (
+			"COMBO ×%d   POWER +%d" % [combo_count, maxi(0, combo_damage_bonus)]
+			if combo_count > 0
+			else "AUTO ATTACK"
+		)
 	)
 	combo_label.add_theme_color_override("font_color", _accent.lightened(0.18))
 	damage_label.position = _target_offset + Vector2(-42.0, -82.0)

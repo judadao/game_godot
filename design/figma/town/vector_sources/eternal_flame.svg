@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="720" viewBox="0 0 640 720">
+  <title>Eternal Flame Guardian Monument</title>
+  <desc>Editable pixel-fantasy vector monument for the Town map. All major elements are separated into named groups.</desc>
+  <defs>
+    <linearGradient id="stoneFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#756957"/>
+      <stop offset="1" stop-color="#3d372f"/>
+    </linearGradient>
+    <linearGradient id="stoneTop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#aea087"/>
+      <stop offset="1" stop-color="#665d50"/>
+    </linearGradient>
+    <linearGradient id="bronze" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd06a"/>
+      <stop offset=".28" stop-color="#c97823"/>
+      <stop offset=".7" stop-color="#713614"/>
+      <stop offset="1" stop-color="#2c190f"/>
+    </linearGradient>
+    <linearGradient id="flameOuter" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#e33b0d"/>
+      <stop offset=".5" stop-color="#ff8d12"/>
+      <stop offset="1" stop-color="#ffcf43"/>
+    </linearGradient>
+    <linearGradient id="flameInner" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#ff6b09"/>
+      <stop offset=".58" stop-color="#ffe564"/>
+      <stop offset="1" stop-color="#fff5bd"/>
+    </linearGradient>
+    <radialGradient id="fireGlow">
+      <stop offset="0" stop-color="#ffbd36" stop-opacity=".72"/>
+      <stop offset=".52" stop-color="#ff6b13" stop-opacity=".24"/>
+      <stop offset="1" stop-color="#ff3c00" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+  </defs>
+
+  <g id="glow" inkscape:label="Glow" opacity=".9" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+    <ellipse cx="320" cy="225" rx="205" ry="196" fill="url(#fireGlow)" filter="url(#softGlow)"/>
+    <ellipse cx="320" cy="248" rx="126" ry="118" fill="#ff8a16" opacity=".14"/>
+  </g>
+
+  <g id="foundation" inkscape:label="Foundation" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+    <path d="M72 682h496v24H72z" fill="#211c19" stroke="#130f0d" stroke-width="8"/>
+    <path d="M88 654h464l16 28H72z" fill="url(#stoneFront)" stroke="#29231e" stroke-width="7"/>
+    <path d="M102 633h436l14 21H88z" fill="url(#stoneTop)" stroke="#2b251f" stroke-width="7"/>
+    <path d="M116 608h408l14 25H102z" fill="#5b5145" stroke="#29231e" stroke-width="7"/>
+    <path d="M118 608h404l-18 10H136z" fill="#a99a80" opacity=".7"/>
+    <path d="M104 674h44v14h-44zm82 0h58v14h-58zm104 0h54v14h-54zm100 0h58v14h-58zm102 0h34v14h-34z" fill="#171310" opacity=".7"/>
+    <path d="M142 634v20m76-20v20m90-20v20m89-20v20m83-20v20" stroke="#3c342c" stroke-width="5"/>
+  </g>
+
+  <g id="stairs" inkscape:label="Stairs" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+    <path d="M154 608h332l-22-28H176z" fill="#716655" stroke="#2e2822" stroke-width="7"/>
+    <path d="M176 580h288l-20-26H196z" fill="#827560" stroke="#332c25" stroke-width="7"/>
+    <path d="M196 554h248l-18-24H214z" fill="#92836b" stroke="#352e27" stroke-width="7"/>
+    <path d="M216 530h210l-16-22H232z" fill="#a08f75" stroke="#382f27" stroke-width="7"/>
+    <path d="M177 580h286m-266-26h246m-226-24h208" stroke="#c4b291" stroke-width="4" opacity=".55"/>
+    <path d="M232 508h178l-12-17H244z" fill="#c0ab88" stroke="#3b3127" stroke-width="7"/>
+  </g>
+
+  <g id="pillar" inkscape:label="Pillar" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+    <path d="M226 491h188l-12-32H238z" fill="#564a3d" stroke="#291f19" stroke-width="8"/>
+    <path d="M242 459h156l-11-190H253z" fill="url(#stoneFront)" stroke="#2b211b" stroke-width="8"/>
+    <path d="M253 269h134l16-28H237z" fill="#8f8069" stroke="#30261f" stroke-width="8"/>
+    <path d="M267 280h106l-8 167h-90z" fill="#4b4036" stroke="#332921" stroke-width="5"/>
+    <path d="M277 290h86l-4 147h-78z" fill="#6e5e4b"/>
+    <path d="M290 290h58v147h-58z" fill="#3a302a" opacity=".38"/>
+    <path d="M254 340h28m76 0h28M252 400h31m74 0h31" stroke="#2e261f" stroke-width="6"/>
+    <path d="M248 459h144l-10 15H258z" fill="#9d8e73" opacity=".7"/>
+    <path d="M244 491h152l-8 10H252z" fill="#201a16" opacity=".65"/>
+    <path d="M237 241h166l-15-17H252z" fill="url(#stoneTop)" stroke="#2b221c" stroke-width="7"/>
+    <path d="M267 224h106l-8-19h-90z" fill="#b19d7b" stroke="#30251c" stroke-width="7"/>
+  </g>
+
+  <g id="runes" inkscape:label="Runes" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+    <path d="M320 304v98m0-75-28 19m28-19 28 19m-28 17-22 25m22-25 22 25m-46 19h48" fill="none" stroke="#f7aa32" stroke-width="8" stroke-linecap="square" stroke-linejoin="miter"/>
+    <path d="M320 304v98m0-75-28 19m28-19 28 19m-28 17-22 25m22-25 22 25m-46 19h48" fill="none" stroke="#ffe27b" stroke-width="3" stroke-linecap="square"/>
+    <rect x="311" y="414" width="18" height="18" transform="rotate(45 320 423)" fill="#f58a20" stroke="#ffdf6d" stroke-width="3"/>
+    <path d="M271 316l-10 12 10 12 10-12zm98 0-10 12 10 12 10-12z" fill="#d86518" stroke="#ffbb3c" stroke-width="3"/>
+  </g>
+
+  <g id="banners" inkscape:label="Banners" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+    <path d="M212 287h34v131l-17 21-17-21z" fill="#79271e" stroke="#351713" stroke-width="6"/>
+    <path d="M394 287h34v131l-17 21-17-21z" fill="#79271e" stroke="#351713" stroke-width="6"/>
+    <path d="M218 296h22v111l-11 14-11-14zm182 0h22v111l-11 14-11-14z" fill="#a73c25"/>
+    <path d="M229 322v63m-9-31h18m173-32v63m-9-31h18" stroke="#e5a43b" stroke-width="5"/>
+    <path d="M199 275h60v16h-60zm182 0h60v16h-60z" fill="url(#bronze)" stroke="#2c190f" stroke-width="5"/>
+    <rect x="205" y="270" width="8" height="153" fill="#4a2b18"/>
+    <rect x="427" y="270" width="8" height="153" fill="#4a2b18"/>
+    <path d="M198 265h16v16h-16zm228 0h16v16h-16z" fill="#d59136" stroke="#382012" stroke-width="4"/>
+  </g>
+
+  <g id="brazier" inkscape:label="Brazier" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+    <path d="M212 213h216l-18 30H230z" fill="#2a1710" stroke="#160d09" stroke-width="8"/>
+    <path d="M228 196h184l21 18H207z" fill="url(#bronze)" stroke="#2c160d" stroke-width="8"/>
+    <path d="M242 211h156l-16 34H258z" fill="#a85318" stroke="#341b10" stroke-width="6"/>
+    <path d="M261 217h118l-10 18h-98z" fill="#ffb838"/>
+    <path d="M229 197l-21-21-18 8 12 34m209-21 21-21 18 8-12 34" fill="none" stroke="#5c2b14" stroke-width="11" stroke-linecap="square"/>
+    <path d="M208 176l-8-16m232 16 8-16" stroke="#d27a28" stroke-width="7"/>
+    <path d="M246 188v-26m36 26v-33m38 33v-37m38 37v-33m36 33v-26" stroke="#3b1d10" stroke-width="9"/>
+    <rect x="284" y="241" width="72" height="18" fill="url(#bronze)" stroke="#2e1a10" stroke-width="6"/>
+  </g>
+
+  <g id="flame" inkscape:label="Flame" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+    <path d="M320 191c-55-6-86-35-75-79 7-29 33-42 26-82 30 14 44 38 43 67 17-20 24-45 16-73 45 29 63 70 45 105 18-8 30-22 35-40 19 52-18 99-90 102z" fill="url(#flameOuter)" stroke="#8c260d" stroke-width="7" stroke-linejoin="miter"/>
+    <path d="M319 184c-34-3-53-24-45-51 5-18 20-28 16-52 20 10 28 25 28 43 12-14 17-30 12-48 29 20 38 46 26 68 12-5 20-14 24-25 9 33-14 62-61 65z" fill="url(#flameInner)"/>
+    <path d="M320 176c-18-2-29-14-24-30 3-11 13-17 11-32 14 9 18 19 16 31 8-8 12-17 11-27 15 14 17 31 7 44-7 9-13 13-21 14z" fill="#fff5b4"/>
+    <path d="M271 80h14v18h-14zm80-23h15v21h-15zm37 59h13v17h-13z" fill="#ffc33c"/>
+    <path d="M255 118h12v14h-12zm73-92h12v17h-12zm47 66h10v13h-10z" fill="#ff6e13"/>
+  </g>
+
+  <g id="particles" inkscape:label="Particles" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+    <rect x="238" y="72" width="9" height="13" fill="#ffb124"/>
+    <rect x="219" y="120" width="7" height="10" fill="#ff6a13"/>
+    <rect x="247" y="28" width="8" height="12" fill="#ffdc50"/>
+    <rect x="294" y="9" width="7" height="10" fill="#ff8b17"/>
+    <rect x="372" y="22" width="8" height="13" fill="#ffd148"/>
+    <rect x="401" y="61" width="7" height="10" fill="#ff7412"/>
+    <rect x="421" y="108" width="9" height="13" fill="#ffb52b"/>
+    <path d="M208 83l8-8 8 8-8 8zm220-2 7-7 7 7-7 7z" fill="#ff8c16"/>
+    <path d="M278 50l6-6 6 6-6 6zm115 3 5-5 5 5-5 5z" fill="#ffe06a"/>
+    <path d="M184 133h12v4h-12zm258 15h14v4h-14z" fill="#e64b10"/>
+  </g>
+</svg>

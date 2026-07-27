@@ -25,6 +25,12 @@ const FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH := MAP_REGISTRY_SCRIPT.FORBIDDEN_GRA
 const MAP_MAIN_SCENE_PATHS := MAP_REGISTRY_SCRIPT.CANONICAL_TO_AUTHORITATIVE
 const INVENTORY_MANAGER_SCRIPT := preload("res://scripts/systems/inventory_manager.gd")
 const TOWN_MANAGER_SCRIPT := preload("res://scripts/systems/town_manager.gd")
+const DIVINE_GIFT_MANAGER_SCRIPT := preload(
+	"res://scripts/systems/divine_gift_manager.gd"
+)
+const COMBO_FINISHER_CATALOG_SCRIPT := preload(
+	"res://scripts/systems/combo_finisher_catalog.gd"
+)
 const BASE_AP_REGEN := 0.95
 const CARD_TEMPO_DURATION := 6.0
 const CARD_TEMPO_MAX_STACKS := 8
@@ -45,10 +51,11 @@ const DEFAULT_COMBO_DURATION := 2.5
 const MAX_COMBO_DURATION := 3.0
 const DEFAULT_AUTO_ATTACK_CARD_ID := "ember_bolt"
 const DEFAULT_AUTO_ATTACK_INTERVAL := 1.0
+const AUTO_ATTACK_HIT_HALF_WIDTH := 44.0
+const COMBO_FINISHER_DAMAGE := 28
+const COMBO_FINISHER_RANGE := 420.0
+const COMBO_FORMULA_LENGTH := 3
 const AUTO_ATTACK_RETRY_INTERVAL := 0.15
-const AUTO_USE_CARD_INTERVAL := 0.22
-const AUTO_USE_RETRY_INTERVAL := 0.08
-const AUTO_USE_SAVE_AP_SCORE_MARGIN := 18.0
 const COMBO_EVOLUTIONS := [
 	{
 		"requires": ["flame", "frost"],
@@ -118,6 +125,8 @@ var card_collection_service: RefCounted = CARD_COLLECTION_SERVICE_SCRIPT.new(
 )
 var skill_recipe_manager := SkillRecipeManager.new()
 var growth_choice_queue := GrowthChoiceQueue.new()
+var divine_gift_manager: RefCounted = DIVINE_GIFT_MANAGER_SCRIPT.new()
+var combo_finisher_catalog: RefCounted = COMBO_FINISHER_CATALOG_SCRIPT.new()
 var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
 var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
 var _pending_player_state: Dictionary = {}
@@ -134,9 +143,6 @@ var _pending_reward_instance_ids: Array[String] = []
 var _tactical_slowdown := false
 var _run_auto_attack_card_id := DEFAULT_AUTO_ATTACK_CARD_ID
 var _auto_attack_remaining := 0.0
-var _auto_use_cards := false
-var _auto_use_remaining := 0.0
-var _auto_use_hand_age: Dictionary = {}
 var wallet_gold: int = 250
 var player_inventory: Dictionary = {
 	"travel_bread": 3,
@@ -150,6 +156,10 @@ func _ready() -> void:
 	hud_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	card_effect_runner.process_mode = Node.PROCESS_MODE_PAUSABLE
+	if not bool(divine_gift_manager.call("load_catalog")):
+		push_error("Divine Gift catalog failed to load.")
+	if not bool(combo_finisher_catalog.call("load_catalog")):
+		push_error("Combo Finisher catalog failed to load.")
 	meta_state.apply_dict(save_service.load_meta(META_SAVE_PATH))
 	inventory_manager.call("set_progression_unlocks", {
 		"dash_upgrade_unlocked": meta_state.dash_upgrade_unlocked,
@@ -226,7 +236,6 @@ func _process(delta: float) -> void:
 	if regenerated > 0.0:
 		run_state.energy = deck_manager.energy
 		card_hand_ui.call("set_action_points", deck_manager.energy, deck_manager.max_energy)
-	_tick_auto_use(real_delta)
 
 
 func _input(event: InputEvent) -> void:
@@ -337,10 +346,6 @@ func load_hud() -> void:
 			hud_root.add_child(hud)
 		if hud.has_signal("interaction_prompt_accepted"):
 			hud.connect("interaction_prompt_accepted", _try_interact)
-		if hud.has_signal("auto_use_changed"):
-			hud.connect("auto_use_changed", _on_auto_use_changed)
-		if hud.has_method("set_auto_use_enabled"):
-			hud.call("set_auto_use_enabled", _auto_use_cards)
 		_update_hud_area_name()
 		_update_hud_player_identity()
 		_update_hud_resources()
@@ -389,6 +394,7 @@ func _update_hud_area_name() -> void:
 		AUTUMN_FOREST_SCENE_PATH: "Autumn Forest",
 		CRYSTAL_CAVES_SCENE_PATH: "Crystal Caves",
 		FORBIDDEN_GRAVEYARD_SCENE_PATH: "Forbidden Graveyard",
+		"res://scenes/maps/battle_portal_hub.tscn": "戰鬥傳送大廳",
 	}
 	var map_path := _canonical_map_scene_path(current_map.scene_file_path)
 	hud.call("set_area_name", area_names.get(map_path, current_map.name))
@@ -687,6 +693,7 @@ func _wire_combat_zones() -> void:
 		_connect_if_present(director, &"experience_gem_spawned", &"_on_experience_gem_spawned")
 		_connect_if_present(director, &"phase_time_changed", &"_on_survival_phase_time_changed")
 		_connect_if_present(director, &"boss_stage_completed", &"_on_boss_stage_completed")
+		_connect_if_present(director, &"elite_defeated", &"_on_elite_defeated")
 		if director.has_method("start_encounter") and not bool(director.get("_running")):
 			director.call_deferred("start_encounter")
 
@@ -728,10 +735,6 @@ func _on_run_wave_started(wave_number: int, total_waves: int, enemy_count: int) 
 			"Autumn Tree — Wave %d / %d" % [wave_number, total_waves],
 			"Enemies: %d" % enemy_count
 		)
-	if run_state.active and wave_number > 1 and wave_number < total_waves:
-		call_deferred("_show_card_reward_choices", wave_number)
-	if run_state.active and wave_number == 3:
-		_discover_equipment_reward()
 	if wave_number == total_waves:
 		call_deferred("_wire_boss_hud")
 
@@ -774,9 +777,46 @@ func _on_experience_gem_spawned(gem: Node, _value: int) -> void:
 
 
 func _on_experience_collected(value: int) -> void:
-	if run_state.add_experience(value) > 0:
-		_enqueue_experience_growth()
+	run_state.add_experience(value)
 	_update_hud_player_identity()
+
+
+func _on_elite_defeated(_world_position: Vector2) -> void:
+	if not run_state.active:
+		return
+	var rewarded_variant: Variant = run_state.temporary_buffs.get(
+		"divine_rewarded_stages",
+		{}
+	)
+	var rewarded: Dictionary = (
+		rewarded_variant if rewarded_variant is Dictionary else {}
+	)
+	var stage_key := _current_divine_stage_key()
+	if rewarded.has(stage_key):
+		return
+	rewarded[stage_key] = true
+	run_state.temporary_buffs["divine_rewarded_stages"] = rewarded
+	run_state.elite_defeated = true
+	call_deferred("_show_divine_gift_choices")
+
+
+func _current_divine_stage_key() -> String:
+	var map_path := current_map.scene_file_path if current_map != null else "run"
+	var wave_number := 0
+	if current_map != null:
+		var director := current_map.get_node_or_null("AutumnRunDirector")
+		if director != null and director.has_method("get_wave_number"):
+			wave_number = int(director.call("get_wave_number"))
+	return "%s:%d" % [map_path, wave_number]
+
+
+func _show_divine_gift_choices() -> void:
+	if not run_state.active:
+		return
+	var rewards := divine_gift_manager.call("get_reward_choices", 3) as Array
+	var fusions := divine_gift_manager.call("get_fusion_choices") as Array
+	if growth_choice_queue.call("enqueue_divine_gifts", rewards, fusions):
+		call_deferred("_open_next_growth_choice")
 
 
 func _enqueue_experience_growth() -> void:
@@ -866,9 +906,7 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 	close_ui(ui_control)
 	_refresh_card_hand()
 	_update_hud_player_identity()
-	if run_state.pending_level_ups > 0 and growth_choice_queue.is_empty():
-		_enqueue_experience_growth()
-	elif not growth_choice_queue.is_empty():
+	if not growth_choice_queue.is_empty():
 		call_deferred("_open_next_growth_choice")
 
 
@@ -876,9 +914,7 @@ func _on_growth_reward_skipped(ui_control: Control) -> void:
 	if growth_choice_queue.skip_optional_reward().is_empty():
 		return
 	close_ui(ui_control)
-	if run_state.pending_level_ups > 0 and growth_choice_queue.is_empty():
-		_enqueue_experience_growth()
-	elif not growth_choice_queue.is_empty():
+	if not growth_choice_queue.is_empty():
 		call_deferred("_open_next_growth_choice")
 
 
@@ -986,6 +1022,8 @@ func _clear_pending_reward_replacement() -> void:
 
 
 func _apply_growth_resolution(choice: Dictionary) -> bool:
+	if String(choice.get("action", "")).begins_with("divine_"):
+		return _apply_growth_resolution_uncommitted(choice)
 	var snapshot := _capture_growth_transaction()
 	var applied := _apply_growth_resolution_uncommitted(choice)
 	if applied:
@@ -1004,6 +1042,23 @@ func _apply_growth_resolution_uncommitted(choice: Dictionary) -> bool:
 			return meta_state.upgrade_card_instance(String(choice.get("instance_id", "")))
 		"fusion":
 			return _apply_card_fusion(choice)
+		"divine_gift":
+			var applied := bool(divine_gift_manager.call(
+				"add_or_upgrade",
+				String(choice.get("gift_id", ""))
+			))
+			if applied:
+				_refresh_combo_display()
+			return applied
+		"divine_fusion":
+			var evolved := divine_gift_manager.call(
+				"fuse_max_level",
+				String(choice.get("left_gift_id", "")),
+				String(choice.get("right_gift_id", ""))
+			) as Dictionary
+			if not evolved.is_empty():
+				_refresh_combo_display()
+			return not evolved.is_empty()
 		"fallback":
 			var reward_variant: Variant = choice.get("reward", {})
 			if not reward_variant is Dictionary:
@@ -1123,29 +1178,37 @@ func _on_player_defeated() -> void:
 func _begin_autumn_run(deck_override: Array = []) -> void:
 	if run_state.active:
 		return
-	var fallback_deck := [
-		"guard", "iron_skin", "healing_light", "renewal",
-		"blood_pact_combo", "verdant_renewal", "energy_surge",
-		"flame_imbue", "frostburst_imbue", "battle_rhythm",
-		"sweeping_reach", "quickened_cadence",
+	var fallback_deck: Array[String] = [
+		"healing_light", "flame_imbue", "echo_volley", "storm_charge",
 	]
-	var selected: Array = deck_override if deck_override.size() > 0 and deck_override.size() <= 16 else meta_state.selected_deck
-	var normalized := _normalize_expedition_deck(selected if selected.size() > 0 and selected.size() <= 16 else fallback_deck)
-	if normalized.size() < deck_manager.hand_size:
-		normalized = _normalize_expedition_deck(fallback_deck)
-	normalized = _ensure_healing_cards(normalized)
+	var selected: Array = deck_override if not deck_override.is_empty() else meta_state.selected_deck
+	var normalized := _ensure_fixed_combo_loadout(
+		_normalize_expedition_deck(selected)
+	)
+	if normalized.size() != deck_manager.hand_size:
+		normalized = fallback_deck.duplicate()
 	meta_state.set_selected_deck(normalized)
 	var valid_ids: Array[String] = []
 	for card in card_database.get_all_cards():
 		valid_ids.append(String(card.get("id", "")))
 	meta_state.normalize_selected_deck(valid_ids)
 	run_state.begin_run(meta_state.selected_card_instances)
+	divine_gift_manager.call("reset_run")
 	deck_manager.set_protected_cards([])
-	deck_manager.start(run_state.card_instances, run_state.max_energy, true)
+	deck_manager.call(
+		"start_fixed_hand",
+		run_state.card_instances,
+		run_state.max_energy
+	)
 	_run_auto_attack_card_id = _resolve_auto_attack_card_id(meta_state.auto_attack_card_id)
 	_auto_attack_remaining = 0.0
 	_configure_skill_loadout()
 	_last_combo_name = "—"
+	run_state.temporary_buffs["persistent_combo_stacks"] = {}
+	run_state.temporary_buffs["combo_formula_history"] = []
+	run_state.temporary_buffs["finisher_queue"] = []
+	run_state.temporary_buffs["finisher_pending"] = false
+	run_state.temporary_buffs["divine_rewarded_stages"] = {}
 	_refresh_card_hand()
 	_update_player_input_state()
 
@@ -1242,28 +1305,25 @@ func _on_card_selected(index: int) -> void:
 		projected_card[identity_key] = card.get(identity_key)
 	card = projected_card
 	_apply_card_tempo(card)
+	_record_combo_formula(card)
 	if String(card.get("type", "")) == "combo":
 		_resolve_combo_card(card)
 	else:
 		card = _apply_combo_infusions_to_card(card)
 	var targets := _get_combat_targets()
 	card_effect_runner.cast(card, player, targets)
+	var gift_effects := divine_gift_manager.call("get_global_effects") as Dictionary
+	var ap_refund := maxf(0.0, float(gift_effects.get("combo_ap_refund", 0.0)))
+	if ap_refund > 0.0:
+		deck_manager.energy = minf(deck_manager.max_energy, deck_manager.energy + ap_refund)
 	var effect := card.get("effect", {}) as Dictionary
 	if String(effect.get("kind", "")) == "gain_energy":
 		_resolve_energy_cycle(card)
 	_resolve_skill_triggers(skill_recipe_manager.record_card(card))
-	var extra_draw_count := maxi(0, int(effect.get("draw_cards", 0)))
-	var replacement_count := maxi(
-		0,
-		deck_manager.hand_size - deck_manager.hand_instances.size()
-	)
-	deck_manager.draw_cards(replacement_count + extra_draw_count)
 	run_state.energy = deck_manager.energy
 	_set_tactical_slowdown(false)
 	_refresh_card_hand()
-	var overflow := maxi(0, deck_manager.hand_instances.size() - deck_manager.hand_size)
-	if overflow > 0:
-		call_deferred("_open_hand_overflow_discard", overflow)
+	_refresh_combo_display()
 
 
 func _apply_card_tempo(card: Dictionary) -> float:
@@ -1335,32 +1395,59 @@ func _resolve_energy_cycle(card: Dictionary) -> float:
 	return deck_manager.energy - previous
 
 
-func _tick_auto_attack(delta: float) -> void:
-	if delta <= 0.0 or player == null or current_map == null or not ui_stack.is_empty():
+func _tick_basic_attack_cooldown(delta: float) -> void:
+	if delta <= 0.0:
 		return
-	_auto_attack_remaining -= delta
+	_auto_attack_remaining = maxf(0.0, _auto_attack_remaining - delta)
+
+
+func _tick_auto_attack(delta: float) -> void:
+	_tick_basic_attack_cooldown(delta)
 	if _auto_attack_remaining > 0.0:
 		return
+	if not _try_basic_attack():
+		_auto_attack_remaining = AUTO_ATTACK_RETRY_INTERVAL
+
+
+func _try_basic_attack() -> bool:
+	if (
+		_auto_attack_remaining > 0.0
+		or player == null
+		or current_map == null
+		or not ui_stack.is_empty()
+		or get_tree().paused
+	):
+		return false
 	var card := _get_auto_attack_card()
 	if card.is_empty():
-		_auto_attack_remaining = AUTO_ATTACK_RETRY_INTERVAL
-		return
+		return false
+	var base_card := card_database.get_card(String(card.get("id", "")))
 	card = _apply_combo_infusions_to_card(card)
+	var finisher_queue := run_state.temporary_buffs.get(
+		"finisher_queue",
+		[]
+	) as Array
+	var is_finisher := not finisher_queue.is_empty()
+	if is_finisher:
+		card = _build_formula_finisher(
+			card,
+			finisher_queue[0] as Dictionary
+		)
 	var targets := _get_combat_targets()
 	var attack_range := maxf(1.0, float(card.get("auto_attack_range", 220.0)))
 	targets = targets.filter(func(target: Variant) -> bool:
 		return (
-			player is Node2D
-			and target is Node2D
+			target is Node2D
 			and is_instance_valid(target)
-			and (player as Node2D).global_position.distance_to(
-				(target as Node2D).global_position
-			) <= attack_range
+			and _is_target_in_forward_corridor(
+				target as Node2D,
+				attack_range,
+				AUTO_ATTACK_HIT_HALF_WIDTH
+			)
 		)
 	)
 	if targets.is_empty():
-		_auto_attack_remaining = AUTO_ATTACK_RETRY_INTERVAL
-		return
+		return false
 	var effect := card.get("effect", {}) as Dictionary
 	var direction_count := maxi(1, int(effect.get("direction_count", 1)))
 	var spread_degrees := clampf(float(effect.get("spread_degrees", 0.0)), 0.0, 360.0)
@@ -1386,9 +1473,33 @@ func _tick_auto_attack(delta: float) -> void:
 	for assigned_target in direction_assignments:
 		if assigned_target is Node2D and is_instance_valid(assigned_target):
 			health_before[assigned_target.get_instance_id()] = _read_health(assigned_target)
-	var base_card := card_database.get_card(String(card.get("id", "")))
 	card["cost"] = 0
 	var result := card_effect_runner.cast(card, player, cast_targets)
+	if is_finisher:
+		var finisher_effect := card.get("effect", {}) as Dictionary
+		var finisher_heal := maxi(0, int(finisher_effect.get("finisher_heal", 0)))
+		if finisher_heal > 0 and player.has_method("restore_health"):
+			player.call("restore_health", finisher_heal)
+		var finisher_guard := maxi(0, int(finisher_effect.get("finisher_guard", 0)))
+		if finisher_guard > 0 and player.has_method("add_block"):
+			player.call("add_block", finisher_guard)
+		var finisher_energy := maxf(
+			0.0,
+			float(finisher_effect.get("finisher_energy", 0.0))
+		)
+		if finisher_energy > 0.0:
+			deck_manager.energy = minf(
+				deck_manager.max_energy,
+				deck_manager.energy + finisher_energy
+			)
+		var echo_count := maxi(0, int(finisher_effect.get("finisher_echoes", 0)))
+		for _echo in echo_count:
+			var echo_result := card_effect_runner.cast(card, player, cast_targets)
+			result["total"] = int(result.get("total", 0)) + int(echo_result.get("total", 0))
+			result["affected"] = maxi(
+				int(result.get("affected", 0)),
+				int(echo_result.get("affected", 0))
+			)
 	if directional_attack or int(result.get("affected", 0)) > 0:
 		for projectile_index in direction_count:
 			var direction_index := projectile_index
@@ -1436,10 +1547,13 @@ func _tick_auto_attack(delta: float) -> void:
 				result,
 				visual_endpoint
 			)
+	if is_finisher:
+		_consume_finisher_formula()
 	_auto_attack_remaining = maxf(
 		0.1,
 		float(card.get("auto_attack_interval", DEFAULT_AUTO_ATTACK_INTERVAL))
 	)
+	return true
 
 
 func _nearest_combat_targets(targets: Array, count: int) -> Array[Node2D]:
@@ -1481,10 +1595,7 @@ func _match_targets_to_attack_directions(
 			) <= attack_range
 		):
 			candidates.append(target_variant as Node2D)
-	var angular_tolerance := deg_to_rad(_attack_direction_tolerance_degrees(
-		resolved_count,
-		spread_degrees
-	))
+	var attack_origin := _auto_attack_origin()
 	var possible_matches: Array[Dictionary] = []
 	for direction_index in resolved_count:
 		var direction := _auto_attack_direction_vector(
@@ -1493,20 +1604,19 @@ func _match_targets_to_attack_directions(
 			spread_degrees
 		)
 		for candidate in candidates:
-			var offset := candidate.global_position - (player as Node2D).global_position
+			var offset := _combat_target_aim_position(candidate) - attack_origin
 			if offset.is_zero_approx():
 				continue
-			var angular_error := absf(wrapf(
-				offset.angle() - direction.angle(),
-				-PI,
-				PI
-			))
-			if angular_error > angular_tolerance:
+			var travel_distance := offset.dot(direction)
+			if travel_distance < 0.0 or travel_distance > attack_range:
+				continue
+			var distance_from_ray := absf(offset.cross(direction))
+			if distance_from_ray > AUTO_ATTACK_HIT_HALF_WIDTH:
 				continue
 			possible_matches.append({
 				"direction_index": direction_index,
 				"target": candidate,
-				"score": angular_error * attack_range + offset.length(),
+				"score": distance_from_ray * attack_range + travel_distance,
 			})
 	possible_matches.sort_custom(func(left: Dictionary, right: Dictionary) -> bool:
 		return float(left["score"]) < float(right["score"])
@@ -1531,7 +1641,7 @@ func _auto_attack_direction_endpoint(
 	if not player is Node2D:
 		return Vector2.ZERO
 	return (
-		(player as Node2D).global_position + Vector2(0.0, -42.0)
+		_auto_attack_origin()
 		+ _auto_attack_direction_vector(
 			direction_index,
 			direction_count,
@@ -1541,21 +1651,16 @@ func _auto_attack_direction_endpoint(
 
 
 func _auto_attack_direction_vector(
-	direction_index: int,
-	direction_count: int,
-	spread_degrees: float
+	_direction_index: int,
+	_direction_count: int,
+	_spread_degrees: float
 ) -> Vector2:
 	var facing := 1
 	if player != null:
 		facing = signi(int(player.get("facing_direction")))
 		if facing == 0:
 			facing = 1
-	var base_direction := Vector2(float(facing), 0.0)
-	return base_direction.rotated(deg_to_rad(_attack_direction_angle_degrees(
-		direction_index,
-		direction_count,
-		spread_degrees
-	)))
+	return Vector2(float(facing), 0.0)
 
 
 func _attack_direction_angle_degrees(
@@ -1576,15 +1681,32 @@ func _attack_direction_angle_degrees(
 	)
 
 
-func _attack_direction_tolerance_degrees(
-	direction_count: int,
-	spread_degrees: float
-) -> float:
-	if direction_count <= 1:
-		return 25.0
-	if spread_degrees >= 359.5:
-		return 180.0 / float(direction_count)
-	return maxf(12.0, spread_degrees * 0.5 / float(direction_count - 1))
+func _auto_attack_origin() -> Vector2:
+	if not player is Node2D:
+		return Vector2.ZERO
+	return (player as Node2D).global_position + Vector2(0.0, -42.0)
+
+
+func _combat_target_aim_position(target: Node2D) -> Vector2:
+	var collision := target.get_node_or_null("Hurtbox/CollisionShape2D") as Node2D
+	return collision.global_position if collision != null else target.global_position
+
+
+func _is_target_in_forward_corridor(
+	target: Node2D,
+	attack_range: float,
+	half_height: float
+) -> bool:
+	if not player is Node2D or target == null or not is_instance_valid(target):
+		return false
+	var direction := _auto_attack_direction_vector(0, 1, 0.0)
+	var offset := _combat_target_aim_position(target) - _auto_attack_origin()
+	var travel_distance := offset.dot(direction)
+	return (
+		travel_distance >= 0.0
+		and travel_distance <= attack_range
+		and absf(offset.cross(direction)) <= half_height
+	)
 
 
 func _read_health(target: Node) -> int:
@@ -1622,7 +1744,7 @@ func _spawn_auto_attack_feedback(
 	)
 	feedback.call(
 		"play",
-		(player as Node2D).global_position + Vector2(0.0, -42.0),
+		_auto_attack_origin(),
 		visual_target_position,
 		damage,
 		int(run_state.temporary_buffs.get("combo_chain_count", 0)),
@@ -1776,11 +1898,307 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 			+ float(equipment_specials.get("combo_duration_bonus", 0.0))
 		)
 	)
+	timed_effect["persistent"] = true
 	effects.append(timed_effect)
 	run_state.temporary_buffs["infusion_effects"] = effects
 	_try_evolve_combo_abilities()
 	_refresh_combo_runtime_modifiers()
 	return true
+
+
+func _record_combo_formula(card: Dictionary) -> Dictionary:
+	if card.is_empty() or String(card.get("type", "")) != "combo":
+		return {}
+	var gift_effects := divine_gift_manager.call("get_global_effects") as Dictionary
+	var stack_gain := 1 + maxi(0, int(gift_effects.get("combo_stack_bonus", 0)))
+	var stacks_variant: Variant = run_state.temporary_buffs.get(
+		"persistent_combo_stacks",
+		{}
+	)
+	var stacks: Dictionary = stacks_variant if stacks_variant is Dictionary else {}
+	var tags_variant: Variant = card.get("combo_tags", card.get("tags", []))
+	var tags: Array = tags_variant if tags_variant is Array else []
+	var meaningful_tags: Array[String] = []
+	for tag_variant in tags:
+		var tag := String(tag_variant).strip_edges()
+		if tag.is_empty() or tag in ["combo", "support"]:
+			continue
+		if not meaningful_tags.has(tag):
+			meaningful_tags.append(tag)
+	if meaningful_tags.is_empty():
+		meaningful_tags.append(String(card.get("id", "combo")))
+	var stack_cap := MAX_COMBO_EFFECT_STACKS + maxi(
+		0,
+		int(gift_effects.get("combo_stack_cap_bonus", 0))
+	)
+	for tag in meaningful_tags:
+		stacks[tag] = mini(stack_cap, int(stacks.get(tag, 0)) + stack_gain)
+	run_state.temporary_buffs["persistent_combo_stacks"] = stacks
+
+	var history_variant: Variant = run_state.temporary_buffs.get(
+		"combo_formula_history",
+		[]
+	)
+	var history: Array = history_variant if history_variant is Array else []
+	history.append(card.duplicate(true))
+	while history.size() > COMBO_FORMULA_LENGTH:
+		history.pop_front()
+	run_state.temporary_buffs["combo_formula_history"] = history
+	var queued_recipe: Dictionary = {}
+	if history.size() == COMBO_FORMULA_LENGTH:
+		var sequence: Array[String] = []
+		for formula_card_variant in history:
+			sequence.append(String(
+				(formula_card_variant as Dictionary).get("id", "")
+			))
+		var recipe := combo_finisher_catalog.call(
+			"match_sequence",
+			sequence
+		) as Dictionary
+		if not recipe.is_empty() and _is_finisher_recipe_learned(recipe):
+			var queue_variant: Variant = run_state.temporary_buffs.get(
+				"finisher_queue",
+				[]
+			)
+			var finisher_queue: Array = (
+				queue_variant if queue_variant is Array else []
+			)
+			queued_recipe = recipe.duplicate(true)
+			queued_recipe["recipe_id"] = String(recipe.get("id", ""))
+			queued_recipe["formula_cards"] = history.duplicate(true)
+			finisher_queue.append(queued_recipe)
+			run_state.temporary_buffs["finisher_queue"] = finisher_queue
+			history.clear()
+		else:
+			history.pop_front()
+		run_state.temporary_buffs["combo_formula_history"] = history
+	var pending_queue := run_state.temporary_buffs.get(
+		"finisher_queue",
+		[]
+	) as Array
+	run_state.temporary_buffs["finisher_pending"] = not pending_queue.is_empty()
+	return {
+		"history": history.duplicate(true),
+		"stacks": stacks.duplicate(true),
+		"finisher_pending": not pending_queue.is_empty(),
+		"queued_recipe": queued_recipe,
+	}
+
+
+func _is_finisher_recipe_learned(recipe: Dictionary) -> bool:
+	var required_variant: Variant = recipe.get(
+		"required_skills",
+		recipe.get("sequence", [])
+	)
+	if not required_variant is Array:
+		return false
+	for skill_id_variant in required_variant as Array:
+		if not meta_state.unlocked_cards.has(String(skill_id_variant)):
+			return false
+	return true
+
+
+func _combo_stack_for_card(card: Dictionary) -> int:
+	var stacks := run_state.temporary_buffs.get(
+		"persistent_combo_stacks",
+		{}
+	) as Dictionary
+	var tags_variant: Variant = card.get("combo_tags", card.get("tags", []))
+	if not tags_variant is Array:
+		return 0
+	var maximum := 0
+	for tag_variant in tags_variant as Array:
+		var tag := String(tag_variant)
+		if tag in ["combo", "support"]:
+			continue
+		maximum = maxi(maximum, int(stacks.get(tag, 0)))
+	return maximum
+
+
+func _build_formula_finisher(
+	base_attack: Dictionary,
+	finisher_entry: Dictionary = {}
+) -> Dictionary:
+	var finisher := base_attack.duplicate(true)
+	var effect := (finisher.get("effect", {}) as Dictionary).duplicate(true)
+	var gift_effects := divine_gift_manager.call("get_global_effects") as Dictionary
+	var recipe := finisher_entry
+	if recipe.is_empty():
+		var pending_queue := run_state.temporary_buffs.get(
+			"finisher_queue",
+			[]
+		) as Array
+		if not pending_queue.is_empty():
+			recipe = pending_queue[0] as Dictionary
+	var formula_variant: Variant = recipe.get(
+		"formula_cards",
+		run_state.temporary_buffs.get("combo_formula_history", [])
+	)
+	var formula: Array = (
+		formula_variant if formula_variant is Array else []
+	)
+	var recipe_effect := recipe.get("base_effect", {}) as Dictionary
+	var combo_multiplier := maxf(
+		1.0,
+		float(gift_effects.get("combo_effect_multiplier", 1.0))
+	)
+	var bonus_damage := int(
+		recipe_effect.get("damage_bonus", COMBO_FINISHER_DAMAGE)
+	)
+	var projectile_bonus := maxi(
+		0,
+		int(recipe_effect.get("projectile_bonus", 0))
+	)
+	var finisher_heal := maxi(0, int(gift_effects.get("finisher_heal", 0)))
+	var finisher_guard := 0
+	var finisher_energy := 0.0
+	var elements: Array[String] = []
+	for status_key in [
+		"burn_damage", "burn_duration", "frost_ratio",
+		"frost_duration", "poison_damage", "poison_duration",
+		"combo_stun",
+	]:
+		if recipe_effect.has(status_key):
+			effect[status_key] = recipe_effect[status_key]
+	for formula_card_variant in formula:
+		if not formula_card_variant is Dictionary:
+			continue
+		var formula_card := formula_card_variant as Dictionary
+		var formula_effect := formula_card.get("effect", {}) as Dictionary
+		match String(formula_effect.get("kind", "")):
+			"infusion":
+				bonus_damage += roundi(
+					float(formula_effect.get("damage_bonus", 0)) * combo_multiplier
+				)
+				projectile_bonus += maxi(
+					0,
+					roundi(
+						float(formula_effect.get("projectile_bonus", 0))
+						* combo_multiplier
+					)
+				)
+				for key in [
+					"burn_damage", "burn_duration", "frost_ratio",
+					"frost_duration", "poison_damage", "poison_duration",
+					"combo_stun",
+				]:
+					if formula_effect.has(key):
+						effect[key] = maxf(
+							float(effect.get(key, 0.0)),
+							float(formula_effect[key]) * combo_multiplier
+						)
+				var infusion_id := String(formula_effect.get("infusion_id", ""))
+				if infusion_id in ["flame", "frost", "storm", "venom"]:
+					elements.append(infusion_id)
+			"heal", "regeneration", "healing_pulses":
+				finisher_heal += maxi(
+					1,
+					roundi(float(formula_effect.get("amount", 8)) * 0.35)
+				)
+			"combat_status":
+				finisher_guard += 4
+			"gain_energy":
+				finisher_energy += maxf(
+					0.0,
+					float(formula_effect.get("amount", 0.0)) * 0.25
+				)
+	var stacks := run_state.temporary_buffs.get(
+		"persistent_combo_stacks",
+		{}
+	) as Dictionary
+	var total_stacks := 0
+	for stack_value in stacks.values():
+		total_stacks += maxi(0, int(stack_value))
+	bonus_damage += floori(float(total_stacks) * 0.75 * combo_multiplier)
+	bonus_damage += maxi(0, int(gift_effects.get("finisher_element_damage", 0)))
+	effect["amount"] = roundi(
+		float(int(effect.get("amount", 0)) + bonus_damage)
+		* maxf(
+			1.0,
+			float(gift_effects.get("finisher_damage_multiplier", 1.0))
+		)
+	)
+	effect["projectile_count"] = maxi(
+		1,
+		int(effect.get("projectile_count", 1)) + projectile_bonus
+	)
+	effect["direction_count"] = int(effect["projectile_count"])
+	effect["target_count"] = int(effect["projectile_count"])
+	effect["spread_degrees"] = 0.0
+	effect["finisher_heal"] = finisher_heal
+	effect["finisher_guard"] = finisher_guard
+	effect["finisher_energy"] = finisher_energy
+	effect["finisher_echoes"] = maxi(
+		0,
+		int(gift_effects.get("finisher_echoes", 0))
+	)
+	var mutations := divine_gift_manager.call(
+		"get_finisher_mutations"
+	) as Dictionary
+	for mutation_key in [
+		"burn_damage", "burn_duration", "frost_ratio",
+		"frost_duration", "poison_damage", "poison_duration",
+		"combo_stun",
+	]:
+		if mutations.has(mutation_key):
+			effect[mutation_key] = maxf(
+				float(effect.get(mutation_key, 0.0)),
+				float(mutations[mutation_key])
+			)
+	for flag_key in [
+		"shatter", "final_burst", "death_spread",
+		"chain_lightning", "piercing",
+	]:
+		if bool(mutations.get(flag_key, false)):
+			effect[flag_key] = true
+	effect["finisher_echoes"] = maxi(
+		int(effect.get("finisher_echoes", 0)),
+		int(mutations.get("finisher_echoes", 0))
+	)
+	if bool(effect.get("piercing", false)):
+		effect["target_count"] = maxi(6, int(effect.get("target_count", 1)))
+	var primary_gift := divine_gift_manager.call("get_primary_gift") as Dictionary
+	var primary_element := String(primary_gift.get("element", ""))
+	if not primary_element.is_empty() and not elements.has(primary_element):
+		elements.append(primary_element)
+	var recipe_name := String(recipe.get("name", "Finisher"))
+	var epithet := String(divine_gift_manager.call("get_epithet_prefix"))
+	finisher["id"] = String(recipe.get("id", "divine_finale"))
+	finisher["name"] = "%s%s" % [epithet, recipe_name]
+	finisher["effect"] = effect
+	finisher["auto_attack_range"] = maxf(
+		COMBO_FINISHER_RANGE,
+		float(finisher.get("auto_attack_range", 0.0))
+	)
+	if bool(effect.get("piercing", false)):
+		finisher["auto_attack_range"] = float(finisher["auto_attack_range"]) * 1.25
+	finisher["attack_size_multiplier"] = (
+		float(finisher.get("attack_size_multiplier", 1.0))
+		* maxf(1.0, float(recipe_effect.get("size_multiplier", 2.0)))
+		* maxf(
+			1.0,
+			float(gift_effects.get("finisher_size_multiplier", 1.0))
+		)
+	)
+	finisher["combo_visual_profile"] = {
+		"finisher": true,
+		"finisher_name": String(finisher["name"]),
+		"stack_count": total_stacks,
+		"elements": elements,
+	}
+	return finisher
+
+
+func _consume_finisher_formula() -> void:
+	var queue := run_state.temporary_buffs.get(
+		"finisher_queue",
+		[]
+	) as Array
+	if not queue.is_empty():
+		queue.pop_front()
+	run_state.temporary_buffs["finisher_queue"] = queue
+	run_state.temporary_buffs["finisher_pending"] = not queue.is_empty()
+	_refresh_combo_display()
 
 
 func _record_combo_chain(card: Dictionary) -> void:
@@ -1841,6 +2259,7 @@ func _try_evolve_combo_abilities() -> bool:
 		levels[evolution_id] = 1
 		var evolved_effect := (recipe["effect"] as Dictionary).duplicate(true)
 		evolved_effect["remaining_seconds"] = maxf(0.1, evolved_remaining)
+		evolved_effect["persistent"] = true
 		effects.append(evolved_effect)
 		run_state.temporary_buffs["active_infusions"] = active
 		run_state.temporary_buffs["combo_levels"] = levels
@@ -1877,6 +2296,12 @@ func _tick_combo_effects(delta: float) -> bool:
 			changed = true
 			continue
 		var timed_effect := (effect_variant as Dictionary).duplicate(true)
+		if bool(timed_effect.get("persistent", false)):
+			retained.append(timed_effect)
+			continue
+		if int(timed_effect.get("remaining_attacks", 0)) > 0:
+			retained.append(timed_effect)
+			continue
 		var remaining := float(timed_effect.get(
 			"remaining_seconds",
 			timed_effect.get("combo_duration", DEFAULT_COMBO_DURATION)
@@ -1895,6 +2320,30 @@ func _tick_combo_effects(delta: float) -> bool:
 	):
 		_last_combo_name = "—"
 	return changed
+
+
+func _consume_combo_attack_charges() -> void:
+	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
+	if not effects_variant is Array:
+		return
+	var retained: Array = []
+	for effect_variant in effects_variant:
+		if not effect_variant is Dictionary:
+			continue
+		var effect := (effect_variant as Dictionary).duplicate(true)
+		if String(effect.get("target_action", "")).strip_edges() == "dash":
+			retained.append(effect)
+			continue
+		if not effect.has("remaining_attacks"):
+			retained.append(effect)
+			continue
+		var charges := maxi(0, int(effect.get("remaining_attacks", 0)) - 1)
+		if charges > 0:
+			effect["remaining_attacks"] = charges
+			retained.append(effect)
+	run_state.temporary_buffs["infusion_effects"] = retained
+	_rebuild_combo_state_from_effects(retained)
+	_refresh_combo_display()
 
 
 func _rebuild_combo_state_from_effects(effects: Array) -> void:
@@ -1986,6 +2435,11 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 	var infused := card.duplicate(true)
 	var effect := (infused.get("effect", {}) as Dictionary).duplicate(true)
 	var equipment_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
+	var gift_effects := divine_gift_manager.call("get_global_effects") as Dictionary
+	var gift_combo_multiplier := maxf(
+		1.0,
+		float(gift_effects.get("combo_effect_multiplier", 1.0))
+	)
 	match String(infused.get("type", "")):
 		"attack":
 			effect["amount"] = int(effect.get("amount", 0)) + int(equipment_specials.get("card_damage_bonus", 0))
@@ -2039,10 +2493,17 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 		if not target_card_id.is_empty() and String(infused.get("id", "")) != target_card_id:
 			continue
 		if String(infused.get("type", "")) == "attack":
-			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("damage_bonus", 0))
+			effect["amount"] = (
+				int(effect.get("amount", 0))
+				+ roundi(
+					float(infusion.get("damage_bonus", 0))
+					* gift_combo_multiplier
+				)
+			)
 			infused["auto_attack_range"] = (
 				float(infused.get("auto_attack_range", 220.0))
 				+ float(infusion.get("attack_range_bonus", 0.0))
+					* gift_combo_multiplier
 			)
 			infused["auto_attack_interval"] = maxf(
 				0.1,
@@ -2072,7 +2533,13 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			)
 			if float(infusion.get("lifesteal_ratio", 0.0)) > 0.0:
 				effect["lifesteal_ratio"] = float(effect.get("lifesteal_ratio", 0.0)) + float(infusion["lifesteal_ratio"])
-			var projectile_bonus := maxi(0, int(infusion.get("projectile_bonus", 0)))
+			var projectile_bonus := maxi(
+				0,
+				roundi(
+					float(infusion.get("projectile_bonus", 0))
+					* gift_combo_multiplier
+				)
+			)
 			if projectile_bonus > 0:
 				effect["projectile_count"] = mini(
 					8,
@@ -2145,6 +2612,19 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 		effect["amount"] = int(effect.get("amount", 0)) + 2
 		effect["combo_stun"] = 0.25
 	if String(infused.get("type", "")) == "attack":
+		effect["amount"] = (
+			int(effect.get("amount", 0))
+			+ maxi(0, int(gift_effects.get("combo_element_bonus", 0)))
+				* visual_stack_count
+		)
+		infused["auto_attack_interval"] = maxf(
+			0.1,
+			float(infused.get("auto_attack_interval", DEFAULT_AUTO_ATTACK_INTERVAL))
+				* maxf(
+					0.35,
+					1.0 - maxf(0.0, float(gift_effects.get("combo_speed_bonus", 0.0)))
+				)
+		)
 		effect["target_count"] = maxi(
 			int(effect.get("target_count", 1)),
 			int(effect.get("direction_count", 1))
@@ -2311,142 +2791,6 @@ func _has_affordable_card() -> bool:
 	return false
 
 
-func _on_auto_use_changed(enabled: bool) -> void:
-	_auto_use_cards = enabled
-	_auto_use_remaining = 0.0
-	if not enabled:
-		_auto_use_hand_age.clear()
-	if hud != null and hud.has_method("set_auto_use_enabled"):
-		hud.call("set_auto_use_enabled", enabled)
-
-
-func _tick_auto_use(delta: float) -> void:
-	if (
-		not _auto_use_cards
-		or delta <= 0.0
-		or not run_state.active
-		or player == null
-		or not ui_stack.is_empty()
-	):
-		return
-	var present_ids := {}
-	for instance in deck_manager.hand_instances:
-		present_ids[instance.instance_id] = true
-		_auto_use_hand_age[instance.instance_id] = minf(
-			4.0,
-			float(_auto_use_hand_age.get(instance.instance_id, 0.0)) + delta
-		)
-	for instance_id in _auto_use_hand_age.keys():
-		if not present_ids.has(instance_id):
-			_auto_use_hand_age.erase(instance_id)
-	_auto_use_remaining = maxf(0.0, _auto_use_remaining - delta)
-	if _auto_use_remaining > 0.0:
-		return
-	var selected_index := _choose_auto_use_card_index()
-	if selected_index < 0:
-		_auto_use_remaining = AUTO_USE_RETRY_INTERVAL
-		return
-	_on_card_selected(selected_index)
-	_auto_use_remaining = AUTO_USE_CARD_INTERVAL
-
-
-func _choose_auto_use_card_index() -> int:
-	var best_affordable_index := -1
-	var best_affordable_score := -INF
-	var best_wait_score := -INF
-	var best_wait_cost := 0.0
-	for index in deck_manager.hand_instances.size():
-		var instance := deck_manager.hand_instances[index]
-		var card := _card_for_cast(instance)
-		var score := _score_auto_use_card(card, instance)
-		if is_inf(score) and score < 0.0:
-			continue
-		var cost := float(card.get("cost", 0.0))
-		if cost <= deck_manager.energy:
-			if score > best_affordable_score:
-				best_affordable_score = score
-				best_affordable_index = index
-		elif cost <= deck_manager.max_energy and score > best_wait_score:
-			best_wait_score = score
-			best_wait_cost = cost
-	if best_affordable_index < 0:
-		return -1
-	if (
-		best_wait_cost - deck_manager.energy <= 1.5
-		and best_wait_score > best_affordable_score + AUTO_USE_SAVE_AP_SCORE_MARGIN
-	):
-		return -1
-	return best_affordable_index
-
-
-func _score_auto_use_card(card: Dictionary, instance: CardInstance) -> float:
-	if card.is_empty() or instance == null:
-		return -INF
-	var effect := card.get("effect", {}) as Dictionary
-	var kind := String(effect.get("kind", ""))
-	var card_type := String(card.get("type", ""))
-	var cost := float(card.get("cost", 0.0))
-	var score := 50.0 + float(card.get("card_level", 1)) * 5.0
-	score += minf(40.0, float(_auto_use_hand_age.get(instance.instance_id, 0.0)) * 10.0)
-	if cost <= 1.0:
-		score += 20.0
-	elif cost <= 2.0:
-		score += 11.0
-	else:
-		score += 5.0
-
-	if kind == "gain_energy":
-		var restored := maxf(0.0, float(effect.get("amount", 0.0)))
-		var resulting_energy := minf(
-			deck_manager.max_energy,
-			deck_manager.energy - cost + restored
-		)
-		var net_gain := resulting_energy - deck_manager.energy
-		return 190.0 + net_gain * 45.0 if net_gain > 0.01 else -INF
-
-	var maximum_health := maxf(1.0, float(player.get("max_health")))
-	var current_health := clampf(float(player.get("health")), 0.0, maximum_health)
-	var missing_ratio := 1.0 - current_health / maximum_health
-	if card_type == "healing":
-		if kind in ["heal", "healing_pulses", "regeneration"]:
-			if missing_ratio <= 0.001:
-				return -INF
-			score += 45.0 + missing_ratio * 180.0
-			if missing_ratio >= 0.45:
-				score += 90.0
-		else:
-			score += 25.0 + missing_ratio * 75.0
-
-	if card_type == "combo":
-		var chain_remaining := float(
-			run_state.temporary_buffs.get("combo_chain_remaining", 0.0)
-		)
-		if chain_remaining <= 0.8:
-			score += 38.0
-		var infusion_id := String(effect.get("infusion_id", ""))
-		if not infusion_id.is_empty():
-			var levels_variant: Variant = run_state.temporary_buffs.get(
-				"combo_levels",
-				{}
-			)
-			var levels: Dictionary = levels_variant if levels_variant is Dictionary else {}
-			var stack_level := int(levels.get(infusion_id, 0))
-			if stack_level >= MAX_COMBO_EFFECT_STACKS:
-				return -INF
-			var active_variant: Variant = run_state.temporary_buffs.get(
-				"active_infusions",
-				[]
-			)
-			var active: Array = active_variant if active_variant is Array else []
-			score += 30.0 if not active.has(infusion_id) else 8.0
-			score += float(stack_level) * 2.0
-
-	var energy_ratio := deck_manager.energy / maxf(0.1, deck_manager.max_energy)
-	if energy_ratio >= 0.75:
-		score += cost * 9.0
-	return score
-
-
 func _advance_card_turn() -> void:
 	deck_manager.end_turn()
 
@@ -2457,8 +2801,10 @@ func _refresh_card_hand() -> void:
 	var cards: Array[Dictionary] = []
 	for instance in deck_manager.hand_instances:
 		var card := _card_for_cast(instance)
+		card["combo_stack"] = _combo_stack_for_card(card)
 		card["fixed"] = (
-			bool(card.get("growth_locked", false))
+			deck_manager.fixed_hand_mode
+			or bool(card.get("growth_locked", false))
 			or deck_manager.is_card_protected(instance)
 		)
 		cards.append(card)
@@ -2475,24 +2821,54 @@ func _on_player_statuses_changed(statuses: Array) -> void:
 
 
 func _refresh_combo_display() -> void:
-	if hud == null or not hud.has_method("set_combo_chain"):
+	if hud == null or not hud.has_method("set_combo_formula"):
 		return
-	var combo_count := int(run_state.temporary_buffs.get("combo_chain_count", 0))
-	var seconds := float(run_state.temporary_buffs.get("combo_chain_remaining", 0.0))
-	var skills_variant: Variant = run_state.temporary_buffs.get("combo_chain_skills", {})
-	var skills: Dictionary = skills_variant if skills_variant is Dictionary else {}
-	var order_variant: Variant = run_state.temporary_buffs.get("combo_chain_order", [])
-	var order: Array = order_variant if order_variant is Array else []
-	var projection: Array[Dictionary] = []
-	for skill_name_variant in order:
-		var skill_name := String(skill_name_variant)
-		if not skills.has(skill_name):
+	var history := run_state.temporary_buffs.get("combo_formula_history", []) as Array
+	var formula: Array[Dictionary] = []
+	for card_variant in history.slice(
+		maxi(0, history.size() - COMBO_FORMULA_LENGTH)
+	):
+		if not card_variant is Dictionary:
 			continue
-		projection.append({
-			"name": skill_name,
-			"count": int(skills.get(skill_name, 0)),
+		var card := card_variant as Dictionary
+		formula.append({
+			"name": String(card.get("name", card.get("id", "Combo"))),
+			"type": String(card.get("type", "combo")),
 		})
-	hud.call("set_combo_chain", projection, combo_count, seconds)
+	var finisher_queue := run_state.temporary_buffs.get(
+		"finisher_queue",
+		[]
+	) as Array
+	var projected_finishers: Array[Dictionary] = []
+	var epithet := String(divine_gift_manager.call("get_epithet_prefix"))
+	for entry_variant in finisher_queue:
+		if not entry_variant is Dictionary:
+			continue
+		var entry := entry_variant as Dictionary
+		projected_finishers.append({
+			"recipe_id": String(entry.get("id", "")),
+			"display_name": "%s%s" % [
+				epithet,
+				String(entry.get("name", "Finisher")),
+			],
+		})
+	var gift_inventory := divine_gift_manager.call("get_inventory") as Array
+	var primary_gift := divine_gift_manager.call("get_primary_gift") as Dictionary
+	var primary_gift_id := String(primary_gift.get("id", ""))
+	for gift_variant in gift_inventory:
+		if gift_variant is Dictionary:
+			(gift_variant as Dictionary)["primary"] = (
+				String((gift_variant as Dictionary).get("id", ""))
+				== primary_gift_id
+			)
+	hud.call(
+		"set_combo_formula",
+		formula,
+		run_state.temporary_buffs.get("persistent_combo_stacks", {}) as Dictionary,
+		not finisher_queue.is_empty(),
+		gift_inventory,
+		projected_finishers
+	)
 
 
 func _update_card_hand_visibility() -> void:
@@ -2976,37 +3352,9 @@ func _build_wandering_stock() -> Array[Dictionary]:
 	var saved: Variant = run_state.temporary_buffs.get("wandering_stock", [])
 	if saved is Array and not (saved as Array).is_empty():
 		return (saved as Array).duplicate(true)
-	var ordinary_id := ""
-	var rare_id := ""
-	for card_id in meta_state.unlocked_cards:
-		var card := card_database.get_card(card_id)
-		if card.is_empty():
-			continue
-		if ordinary_id.is_empty() and String(card.get("rarity", "")) in ["common", "uncommon"] and _is_combat_hand_card(card):
-			ordinary_id = card_id
-		if rare_id.is_empty() and _is_combat_hand_card(card) and String(card.get("rarity", "")) in ["rare", "legendary"]:
-			rare_id = card_id
-	if ordinary_id.is_empty():
-		ordinary_id = "guard"
-	if rare_id.is_empty():
-		rare_id = "flame_imbue"
-	var removable: CardInstance
-	for instance in deck_manager.get_all_instances():
-		if not instance.is_fixed():
-			removable = instance
-			break
 	var stock: Array[Dictionary] = [
 		{"kind": "health_potion", "name": "Health Potion (+40 HP)", "price": 25},
 		{"kind": "mana_potion", "name": "Mana Potion (+30 MP)", "price": 20},
-		{"kind": "card", "name": _card_name(ordinary_id), "price": 35, "card_id": ordinary_id},
-		{"kind": "card", "name": _card_name(rare_id), "price": 70, "card_id": rare_id},
-		{
-			"kind": "purge",
-			"name": "Purge %s" % _card_name(removable.card_id if removable != null else ""),
-			"price": 45,
-			"card_id": removable.card_id if removable != null else "",
-			"instance_id": removable.instance_id if removable != null else "",
-		},
 	]
 	run_state.temporary_buffs["wandering_stock"] = stock.duplicate(true)
 	return stock
@@ -3016,7 +3364,7 @@ func _purchase_wandering_offer(offer: Dictionary) -> bool:
 	if not run_state.active or player == null:
 		return false
 	var kind := String(offer.get("kind", ""))
-	var prices := {"health_potion": 25, "mana_potion": 20, "card": int(offer.get("price", 35)), "purge": 45}
+	var prices := {"health_potion": 25, "mana_potion": 20}
 	if not prices.has(kind):
 		return false
 	var price := int(prices[kind])
@@ -3031,16 +3379,6 @@ func _purchase_wandering_offer(offer: Dictionary) -> bool:
 			if int(player.get("mana")) >= int(player.get("max_mana")):
 				return false
 			player.call("restore_mana", 30)
-		"card":
-			var card_id := String(offer.get("card_id", ""))
-			if not card_database.has_card(card_id) or _get_run_deck_size() >= 16:
-				return false
-			if not _add_persistent_run_card(card_id):
-				return false
-		"purge":
-			var instance_id := String(offer.get("instance_id", ""))
-			if not _remove_card_instance(instance_id):
-				return false
 	run_state.gold_earned -= price
 	return true
 
@@ -3152,9 +3490,8 @@ func _on_loadout_confirmed(
 
 func _normalize_expedition_deck(deck_ids: Array) -> Array[String]:
 	var normalized: Array[String] = []
-	var counts: Dictionary = {}
 	for card_id_variant in deck_ids:
-		if normalized.size() >= 16:
+		if normalized.size() >= deck_manager.hand_size:
 			break
 		var card_id := String(card_id_variant)
 		if not card_database.has_card(card_id):
@@ -3162,10 +3499,8 @@ func _normalize_expedition_deck(deck_ids: Array) -> Array[String]:
 		var card := card_database.get_card(card_id)
 		if not _is_combat_hand_card(card):
 			continue
-		var max_copies := 3
-		if int(counts.get(card_id, 0)) >= max_copies:
+		if normalized.has(card_id):
 			continue
-		counts[card_id] = int(counts.get(card_id, 0)) + 1
 		normalized.append(card_id)
 	return normalized
 
@@ -3177,18 +3512,34 @@ func _is_combat_hand_card(card: Dictionary) -> bool:
 	)
 
 
-func _ensure_healing_cards(deck_ids: Array[String]) -> Array[String]:
-	var result := deck_ids.duplicate()
-	var healing_count := 0
-	for card_id in result:
-		if String(card_database.get_card(card_id).get("type", "")) == "healing":
-			healing_count += 1
-	while healing_count < 2:
-		if result.size() >= 16:
-			result.pop_back()
-		result.append("healing_light")
-		healing_count += 1
-	return result
+func _ensure_fixed_combo_loadout(deck_ids: Array[String]) -> Array[String]:
+	var healing_id := ""
+	var other_ids: Array[String] = []
+	for card_id in deck_ids:
+		var card_type := String(card_database.get_card(card_id).get("type", ""))
+		if card_type == "healing":
+			if healing_id.is_empty():
+				healing_id = card_id
+			continue
+		if (
+			card_type == "combo"
+			and other_ids.size() < 3
+			and not other_ids.has(card_id)
+		):
+			other_ids.append(card_id)
+	if healing_id.is_empty():
+		healing_id = "healing_light"
+	for fallback_id in [
+		"flame_imbue", "echo_volley", "storm_charge",
+		"battle_rhythm", "guard",
+	]:
+		if other_ids.size() >= 3:
+			break
+		if fallback_id != healing_id and not other_ids.has(fallback_id):
+			other_ids.append(fallback_id)
+	var fixed_loadout: Array[String] = [healing_id]
+	fixed_loadout.append_array(other_ids.slice(0, 3))
+	return fixed_loadout
 
 
 func _on_chest_opened(_chest: Node, loot_table_id: StringName, interactor: Node) -> void:

@@ -87,6 +87,35 @@ func _run() -> void:
 			and is_equal_approx(forward_aim.y, backward_aim.y),
 		"Projectile endpoints must be fixed by player facing rather than enemy positions."
 	)
+	var off_ray_target := Node2D.new()
+	root.add_child(off_ray_target)
+	off_ray_target.global_position = player.global_position + Vector2(200.0, 80.0)
+	player.call("set_facing_direction", 1)
+	var off_ray_match := game.call(
+		"_match_targets_to_attack_directions",
+		[off_ray_target],
+		1,
+		0.0,
+		260.0
+	) as Array
+	_expect(
+		off_ray_match.size() == 1 and off_ray_match[0] == null,
+		"A straight projectile must not damage an enemy far outside its visible flight corridor."
+	)
+	var below_target := DamageTarget.new()
+	root.add_child(below_target)
+	below_target.global_position = player.global_position + Vector2(0.0, 180.0)
+	var downward_match := game.call(
+		"_match_targets_to_attack_directions",
+		[below_target],
+		1,
+		0.0,
+		260.0
+	) as Array
+	_expect(
+		downward_match.size() == 1 and downward_match[0] == null,
+		"Horizontal combat must not auto-hit enemies on a platform below."
+	)
 	forward_target.queue_free()
 	rear_target.queue_free()
 
@@ -160,15 +189,16 @@ func _run() -> void:
 		"Empty fan directions must miss instead of multiplying damage into one isolated target."
 	)
 	_expect(
-		float(game.call("_get_combo_time_remaining")) <= 3.0
-			and float(run.temporary_buffs.get("combo_chain_remaining", 0.0)) <= 3.0,
-		"Combo effects and Chain must demand renewal within three seconds."
+		bool(((run.temporary_buffs.get("infusion_effects", []) as Array)[0] as Dictionary).get(
+			"persistent",
+			false
+		)),
+		"Projectile Combo effects must persist across automatic attacks."
 	)
 	game.call("_tick_combo_effects", 3.1)
 	_expect(
-		is_zero_approx(float(game.call("_get_combo_time_remaining")))
-			and int(run.temporary_buffs.get("combo_chain_count", 0)) == 0,
-		"Projectile Combo effects and Chain must expire after the short action window."
+		not (run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(),
+		"Prepared projectile effects must survive idle time until attacks consume them."
 	)
 
 	var feedback := (
@@ -206,6 +236,8 @@ func _run() -> void:
 	)
 
 	feedback.queue_free()
+	off_ray_target.queue_free()
+	below_target.queue_free()
 	runner.queue_free()
 	for target in damage_targets:
 		(target as Node).queue_free()

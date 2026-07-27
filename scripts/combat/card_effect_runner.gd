@@ -70,6 +70,7 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 				resolved_projectile_count
 			)
 			_apply_infused_statuses(selected, effect)
+			_apply_finisher_mutations(caster, selected, effect, result)
 		"area_damage":
 			var selected := _targets_in_radius(caster, targets, float(effect.get("radius", 150.0)))
 			_damage_targets(caster, selected, int(effect.get("amount", 0)), result)
@@ -223,6 +224,35 @@ func _apply_infused_statuses(targets: Array, effect: Dictionary) -> void:
 			})
 		if float(effect.get("combo_stun", 0.0)) > 0.0:
 			target.call("apply_status", "stun", {"duration": float(effect["combo_stun"])})
+
+
+func _apply_finisher_mutations(
+	caster: Node,
+	targets: Array,
+	effect: Dictionary,
+	result: Dictionary
+) -> void:
+	var bonus_ratio := 0.0
+	var mutation_ids: Array[String] = []
+	if bool(effect.get("shatter", false)):
+		bonus_ratio += 0.35
+		mutation_ids.append("shatter")
+	if bool(effect.get("final_burst", false)):
+		bonus_ratio += 0.30
+		mutation_ids.append("final_burst")
+	if bool(effect.get("chain_lightning", false)):
+		bonus_ratio += 0.25
+		mutation_ids.append("chain_lightning")
+	if bonus_ratio <= 0.0:
+		return
+	var mutation_damage := maxi(
+		1,
+		roundi(float(effect.get("amount", 0)) * bonus_ratio)
+	)
+	var total_before := int(result.get("total", 0))
+	_damage_targets(caster, targets, mutation_damage, result)
+	result["mutation_damage"] = int(result.get("total", 0)) - total_before
+	result["mutations_triggered"] = mutation_ids
 
 
 func _pull_targets(caster: Node, targets: Array, strength: float) -> void:

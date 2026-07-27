@@ -96,6 +96,59 @@ func enqueue_optional_fusions(fusions: Array[Dictionary]) -> bool:
 	return true
 
 
+func enqueue_divine_gifts(
+	rewards: Array[Dictionary],
+	fusions: Array[Dictionary]
+) -> bool:
+	var event_id := _claim_event_id()
+	var choices: Array[Dictionary] = []
+	for index in rewards.size():
+		if choices.size() >= MAX_EXPERIENCE_CHOICES:
+			break
+		var reward := rewards[index]
+		var gift_id := String(reward.get("gift_id", ""))
+		if gift_id.is_empty():
+			continue
+		choices.append({
+			"choice_id": "divine:%d:gift:%s" % [event_id, gift_id],
+			"action": "divine_gift",
+			"gift_id": gift_id,
+			"name": String(reward.get("name", gift_id)),
+			"description": String(reward.get("description", "")),
+			"icon": String(reward.get("icon", "✦")),
+			"level": int(reward.get("level", 0)),
+			"next_level": int(reward.get("next_level", 1)),
+			"type": "divine",
+			"card_color": "gold",
+		})
+	for fusion in fusions:
+		if choices.size() >= MAX_EXPERIENCE_CHOICES:
+			break
+		var left_id := String(fusion.get("left_gift_id", ""))
+		var right_id := String(fusion.get("right_gift_id", ""))
+		if left_id.is_empty() or right_id.is_empty() or left_id == right_id:
+			continue
+		choices.append({
+			"choice_id": "divine:%d:fusion:%s:%s" % [
+				event_id,
+				left_id,
+				right_id,
+			],
+			"action": "divine_fusion",
+			"left_gift_id": left_id,
+			"right_gift_id": right_id,
+			"name": String(fusion.get("name", "Divine Evolution")),
+			"description": String(fusion.get("description", "")),
+			"type": "divine",
+			"card_color": "gold",
+		})
+	if choices.is_empty():
+		return false
+	_entries.append(_make_entry(event_id, "divine", choices))
+	queue_changed.emit(_entries.size())
+	return true
+
+
 func peek() -> Dictionary:
 	if _entries.is_empty():
 		return {}
@@ -142,7 +195,7 @@ func skip_optional_reward() -> Dictionary:
 		return {}
 	var entry := _entries[0]
 	var source := String(entry.get("source", ""))
-	if source not in ["wave", "fusion_followup"]:
+	if source not in ["wave", "fusion_followup", "divine"]:
 		return {}
 	var resolution := {
 		"action": "skip",

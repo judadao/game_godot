@@ -49,8 +49,10 @@ func _run() -> void:
 		)
 	)
 	_expect(
-		restored.size() == 9 and restored_are_hand_cards,
-		"Deck builder must restore Combo and Healing cards from a legacy mixed backpack."
+		restored.size() == 4
+			and restored.count("healing_light") == 1
+			and restored_are_hand_cards,
+		"Deck builder must migrate a legacy backpack to one Healing plus three unique Combo skills."
 	)
 	_expect(
 		String(builder.call("get_auto_attack_card_id")) == "cleave",
@@ -87,8 +89,8 @@ func _run() -> void:
 	]
 	var clamped := game.call("_normalize_expedition_deck", illegal_deck) as Array
 	_expect(
-		clamped == ["guard", "guard", "healing_light"],
-		"Game normalization must retain Combo/Healing copies and exclude attacks and Dash-only cards."
+		clamped == ["guard", "healing_light"],
+		"Game normalization must retain unique Combo/Healing skills and exclude attacks and Dash-only cards."
 	)
 	game_meta.selected_deck = migrated.duplicate()
 	game_meta.auto_attack_card_id = "cleave"
@@ -103,16 +105,21 @@ func _run() -> void:
 	var run := game.get("run_state") as RunState
 	var deck := game.get("deck_manager") as DeckManager
 	_expect(run.active, "Autumn run must start before the loadout becomes locked.")
-	_expect(deck.hand.size() == 4, "Combat must randomly draw exactly four Combo/Healing cards.")
+	_expect(deck.hand.size() == 4, "Combat must expose exactly four reusable Combo/Healing skills.")
 	var run_healing_cards := deck.get_all_instances().filter(
 		func(instance: CardInstance) -> bool:
 			return String(database.get_card(instance.card_id).get("type", "")) == "healing"
 	)
 	_expect(
-		run_healing_cards.size() >= 2,
-		"Legacy loadouts must receive at least two Healing cards."
+		run_healing_cards.size() == 1,
+		"Legacy loadouts must become exactly one Healing skill."
 	)
-	_expect(deck.protected_card_ids.is_empty(), "No combat card may remain globally fixed or pinned.")
+	_expect(
+		deck.fixed_hand_mode
+			and deck.draw_pile.is_empty()
+			and deck.discard_pile.is_empty(),
+		"The fixed hand must never use draw, discard, or rotation piles."
+	)
 	_expect(
 		String(game.get("_run_auto_attack_card_id")) == "cleave",
 		"Run start must snapshot the chosen automatic attack."
@@ -131,7 +138,7 @@ func _run() -> void:
 	)
 	_expect(
 		not InputMap.has_action("basic_attack"),
-		"Automatic attacks must not retain a manual Basic Attack input authority."
+		"Combat must keep Basic Attack automatic with no manual fire input."
 	)
 	var hand_ui := game.get("card_hand_ui") as Control
 	_expect(
@@ -140,7 +147,7 @@ func _run() -> void:
 		"Combat HUD must project one four-card Combo/Healing hand."
 	)
 	var targets := game.call("_get_combat_targets") as Array
-	_expect(not targets.is_empty(), "The live battle must provide an automatic-attack target.")
+	_expect(not targets.is_empty(), "The live battle must provide a Basic Attack target.")
 	if not targets.is_empty():
 		var target := targets[0] as Node2D
 		target.global_position = player.global_position + Vector2(24, 0)
@@ -151,16 +158,19 @@ func _run() -> void:
 		game.set("_auto_attack_remaining", 0.0)
 		run.temporary_buffs["combo_chain_count"] = 6
 		game.call("_process", 0.2)
-		_expect(int(target.get("health")) < health_before, "Automatic attack must damage an in-range enemy.")
+		_expect(
+			int(target.get("health")) < health_before,
+			"Idle combat processing must automatically attack an in-range horizontal enemy."
+		)
 		var feedback_nodes := get_nodes_in_group("AutoAttackFeedback")
-		_expect(not feedback_nodes.is_empty(), "A successful automatic attack must spawn visible world feedback.")
+		_expect(not feedback_nodes.is_empty(), "A successful Basic Attack must spawn visible world feedback.")
 		if not feedback_nodes.is_empty():
 			_expect(
 				String(feedback_nodes[0].call("get_combo_text")).contains("COMBO ×6"),
 				"The attack feedback must visibly confirm the active Combo chain."
 			)
-		_expect(is_equal_approx(deck.energy, energy_before), "Automatic attack must not spend AP.")
-		_expect(deck.hand == hand_before, "Automatic attack must not mutate the four-card Combo/Healing hand.")
+		_expect(is_equal_approx(deck.energy, energy_before), "Basic Attack must not spend AP.")
+		_expect(deck.hand == hand_before, "Basic Attack must not mutate the four-card Combo/Healing hand.")
 		var first_hit_health := int(target.get("health"))
 		var cadence_before := float(game.get("_auto_attack_remaining"))
 		Engine.time_scale = 1.0
@@ -170,29 +180,29 @@ func _run() -> void:
 				float(game.get("_auto_attack_remaining")),
 				cadence_before - 0.2
 			),
-			"Automatic attack must respect cadence (before %.3f, after %.3f)."
+			"Basic Attack must respect cadence (before %.3f, after %.3f)."
 			% [cadence_before, float(game.get("_auto_attack_remaining"))]
 		)
 		game.call("_process", 1.1)
 		_expect(
 			int(target.get("health")) < first_hit_health,
-			"Automatic attack must fire again after its cadence expires."
+			"Basic Attack must repeat automatically when its cooldown expires."
 		)
 		target.global_position = player.global_position + Vector2(1000, 0)
 		var out_of_range_health := int(target.get("health"))
 		game.set("_auto_attack_remaining", 0.0)
-		game.call("_process", 2.0)
+		game.call("_try_basic_attack")
 		_expect(
 			int(target.get("health")) == out_of_range_health,
-			"Automatic attack must not hit an out-of-range enemy."
+			"Basic Attack must not hit an out-of-range enemy."
 		)
 		target.global_position = player.global_position + Vector2(24, 0)
 		paused = true
 		game.set("_auto_attack_remaining", 0.0)
-		game.call("_process", 2.0)
+		game.call("_try_basic_attack")
 		_expect(
 			int(target.get("health")) == out_of_range_health,
-			"Automatic attack must stop while the scene tree is paused."
+			"Basic Attack must stop while the scene tree is paused."
 		)
 		paused = false
 
@@ -277,7 +287,7 @@ func _run() -> void:
 	Engine.time_scale = 1.0
 	await process_frame
 	if _failures == 0:
-		print("PASS: automatic attack lock, optional Dash legacy, and four-card Combo/Healing hand")
+		print("PASS: automatic Basic Attack lock, optional Dash legacy, and fixed Combo/Healing hand")
 	quit(1 if _failures > 0 else 0)
 
 

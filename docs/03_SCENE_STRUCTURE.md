@@ -165,6 +165,7 @@ TownMap
 ├── Props
 ├── Portals
 ├── NPCs
+├── EternalForgeIdentity
 ├── WorldCollision
 ├── PlayerSpawn
 ├── Player
@@ -176,8 +177,26 @@ Town canonical scene另有：
 
 - `TownEntranceArrival`
 - `TownTailArrival`
-- fast travel Portal instances
+- one `Portals/BattleGateway` instance
 - camera/map metadata
+
+Town v1 使用單一 `1942 × 720` 的 Eternal Forge 橫向世界。主背景由
+`TownBackdrop/EternalForgeConcept` 以 1:1 顯示一次，禁止重複中央火炬或以不同
+X/Y scale 拉寬圖中物件；`TownEternalForgeIdentity.tscn` 持有八個
+可編輯中文地點標籤、區域光暈與後續可替換的 landmark 向量層。舊
+`Buildings`、`Ground`、`Props` linked scenes 保留作為 gameplay／progression
+identity，但初版 runtime 不與烘焙背景重複顯示。角色、NPC、Portal 與地面碰撞
+統一使用新圖道路的 `y=672` baseline。
+
+`res://scenes/maps/battle_portal_hub.tscn` 是獨立可玩 map。Town 的唯一
+`BattleGateway` 先進入此大廳；大廳的 `RegionPortals` 固定有四個入口槽位：
+Autumn、Crystal、Graveyard 與鎖定的 Fourth Region。中央 `BossPortalAnchor`
+只保留位置，不得提前建立 `BossPortal`；尾王解鎖時再由正式 progression contract
+投影。Town return 使用無大型門體的左側互動出口。
+Town 入口沿用背景圖內建的大型藍色門作為唯一視覺，因此
+`Portals/BattleGateway/TownVisual` 必須保持隱藏，但互動碰撞與傳送行為仍保留；
+互動與兩塊地標標籤皆對齊背景貼圖主體的 `x=830` 中心線。火炬標籤使用上方塔身
+留白，傳送門標籤使用門頂階梯留白，且門前 `x=650..950` 應保持無 NPC 遮擋。
 
 ### 5.3 Autumn required contract
 

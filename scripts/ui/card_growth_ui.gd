@@ -24,6 +24,7 @@ var _choice_buttons: Array[Button] = []
 var _choice_ids: Dictionary = {}
 var _selected_choice_id := ""
 var _confirmed := false
+var _choice_icon_cache: Dictionary = {}
 
 
 func _ready() -> void:
@@ -44,6 +45,8 @@ func present_page(page: Dictionary) -> void:
 	var fusions: Array[Dictionary] = []
 	var fallbacks: Array[Dictionary] = []
 	var new_cards: Array[Dictionary] = []
+	var divine_gifts: Array[Dictionary] = []
+	var divine_fusions: Array[Dictionary] = []
 	for choice_variant in _page.get("choices", []) as Array:
 		if not choice_variant is Dictionary:
 			continue
@@ -57,15 +60,28 @@ func present_page(page: Dictionary) -> void:
 				fusions.append(choice)
 			"fallback":
 				fallbacks.append(choice)
+			"divine_gift":
+				divine_gifts.append(choice)
+			"divine_fusion":
+				divine_fusions.append(choice)
 
-	upgrade_section.visible = not upgrades.is_empty() or not new_cards.is_empty()
+	upgrade_section.visible = (
+		not upgrades.is_empty()
+		or not new_cards.is_empty()
+		or not divine_gifts.is_empty()
+		or not divine_fusions.is_empty()
+	)
 	upgrade_section.visible = upgrade_section.visible or not fusions.is_empty()
 	fusion_section.visible = false
 	fallback_section.visible = not fallbacks.is_empty()
 	($SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/SectionTitle as Label).text = (
-		"NEW CARDS"
-		if not new_cards.is_empty()
-		else ("FULL-LEVEL FUSIONS" if upgrades.is_empty() and not fusions.is_empty() else "INDIVIDUAL UPGRADES")
+		"DIVINE GIFTS"
+		if not divine_gifts.is_empty() or not divine_fusions.is_empty()
+		else (
+			"NEW CARDS"
+			if not new_cards.is_empty()
+			else ("FULL-LEVEL FUSIONS" if upgrades.is_empty() and not fusions.is_empty() else "INDIVIDUAL UPGRADES")
+		)
 	)
 	for choice in new_cards:
 		_add_growth_choice_button(choice, _compact_new_card_text(choice))
@@ -73,6 +89,10 @@ func present_page(page: Dictionary) -> void:
 		_add_growth_choice_button(choice, _compact_upgrade_text(choice))
 	for choice in fusions:
 		_add_growth_choice_button(choice, _compact_fusion_text(choice))
+	for choice in divine_gifts:
+		_add_growth_choice_button(choice, _compact_divine_gift_text(choice))
+	for choice in divine_fusions:
+		_add_growth_choice_button(choice, _compact_divine_fusion_text(choice))
 	for choice in fallbacks:
 		_add_choice_button(fallback_grid, choice, _fallback_text(choice))
 
@@ -82,11 +102,18 @@ func present_page(page: Dictionary) -> void:
 	var can_skip := (
 		(source == "wave" and not new_cards.is_empty())
 		or (source == "fusion_followup" and not fusions.is_empty())
+		or (
+			source == "divine"
+			and divine_gifts.is_empty()
+			and not divine_fusions.is_empty()
+		)
 	)
 	skip_button.visible = can_skip
 	skip_button.disabled = not can_skip
 	required_hint.text = (
-		"Choose a card, or skip to keep your expedition deck compact."
+		"Keep both maximum Gifts, or fuse them."
+		if source == "divine" and can_skip
+		else "Choose a card, or skip to keep your expedition deck compact."
 		if can_skip
 		else "A choice is required. This screen cannot be skipped."
 	)
@@ -168,6 +195,10 @@ func _apply_header() -> void:
 			title_label.text = "EVOLVE COMBO?"
 			source_label.text = "NEW LV.3 PAIR"
 			instruction_label.text = "Fuse two full-level cards into one stronger Combo, or keep both."
+		"divine":
+			title_label.text = "CHOOSE A DIVINE GIFT"
+			source_label.text = "ELITE BLESSING"
+			instruction_label.text = "Every Gift changes Combo skills and named Finishers."
 		_:
 			title_label.text = "CARD GROWTH"
 			source_label.text = "PENDING CHOICE"
@@ -207,13 +238,12 @@ func _add_choice_button(parent: Control, choice: Dictionary, display_text: Strin
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.add_theme_font_size_override("font_size", 12)
 	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	button.tooltip_text = display_text
+	button.tooltip_text = _choice_tooltip(choice, display_text)
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	button.expand_icon = true
 	var icon_path := String(choice.get("icon_path", "")).strip_edges()
 	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
-		button.icon = load(icon_path) as Texture2D
+		button.icon = _load_choice_icon(icon_path)
 	var accent := _choice_accent(choice)
 	button.set_meta("semantic_color", accent)
 	var normal_style := StyleBoxFlat.new()
@@ -236,6 +266,29 @@ func _add_choice_button(parent: Control, choice: Dictionary, display_text: Strin
 	button.pressed.connect(_select_choice.bind(choice_id))
 	parent.add_child(button)
 	_choice_buttons.append(button)
+
+
+func _load_choice_icon(icon_path: String) -> Texture2D:
+	if _choice_icon_cache.has(icon_path):
+		return _choice_icon_cache[icon_path] as Texture2D
+	var source := load(icon_path) as Texture2D
+	if source == null:
+		return null
+	var image := source.get_image()
+	if image == null or image.is_empty():
+		return source
+	var source_size := image.get_size()
+	var longest_edge := maxi(source_size.x, source_size.y)
+	if longest_edge > 48:
+		var scale := 48.0 / float(longest_edge)
+		var target_size := Vector2i(
+			maxi(1, roundi(source_size.x * scale)),
+			maxi(1, roundi(source_size.y * scale))
+		)
+		image.resize(target_size.x, target_size.y, Image.INTERPOLATE_NEAREST)
+	var icon := ImageTexture.create_from_image(image)
+	_choice_icon_cache[icon_path] = icon
+	return icon
 
 
 func _select_choice(choice_id: String) -> void:
@@ -355,18 +408,18 @@ func _compact_new_card_text(choice: Dictionary) -> String:
 
 func _compact_upgrade_text(choice: Dictionary) -> String:
 	var level := clampi(int(choice.get("level", 1)), 1, 2)
-	return "%s\n%s · AP %d · LV.%d → LV.%d\nNOW  %s\nNEXT  %s" % [
+	return "%s\n%s · AP %d · LV.%d → LV.%d\n• NOW  %s\n• NEXT  %s" % [
 		_choice_name(choice, "name", "card_id", "Unknown Card"),
 		String(choice.get("type", "card")).to_upper(),
 		maxi(0, int(choice.get("cost", 0))),
 		level,
 		level + 1,
-		_bullet_description(_choice_description(
+		_key_point(_choice_description(
 			choice,
 			"description",
 			"No effect description available."
 		)),
-		_bullet_description(_choice_description(
+		_key_point(_choice_description(
 			choice,
 			"upgrade_description",
 			"No upgrade description available."
@@ -390,17 +443,65 @@ func _compact_fusion_text(choice: Dictionary) -> String:
 	]
 
 
+func _compact_divine_gift_text(choice: Dictionary) -> String:
+	var current_level := maxi(0, int(choice.get("level", 0)))
+	return "%s  %s\nGIFT · LV.%d → LV.%d\n%s" % [
+		String(choice.get("icon", "✦")),
+		_choice_name(choice, "name", "gift_id", "Divine Gift"),
+		current_level,
+		int(choice.get("next_level", current_level + 1)),
+		_bullet_description(_choice_description(
+			choice,
+			"description",
+			"Changes Combo skills and named Finishers."
+		)),
+	]
+
+
+func _compact_divine_fusion_text(choice: Dictionary) -> String:
+	return "✺  %s\nMAX + MAX → EVOLVED\n%s" % [
+		_choice_name(choice, "name", "choice_id", "Divine Evolution"),
+		_bullet_description(_choice_description(
+			choice,
+			"description",
+			"Combines both global rules."
+		)),
+	]
+
+
 func _bullet_description(description: String) -> String:
 	var normalized := description.strip_edges().replace("; ", ". ")
 	var clauses := normalized.split(". ", false, 3)
 	var bullets: Array[String] = []
 	for clause_variant in clauses:
+		if bullets.size() >= 2:
+			break
 		var clause := String(clause_variant).strip_edges()
 		if not clause.is_empty():
-			if not clause.ends_with("."):
-				clause += "."
-			bullets.append("• %s" % clause)
+			bullets.append("• %s" % _key_point(clause))
 	return "\n".join(bullets)
+
+
+func _key_point(description: String) -> String:
+	var point := description.strip_edges()
+	var sentence_end := point.find(". ")
+	if sentence_end >= 0:
+		point = point.left(sentence_end + 1)
+	const MAX_KEY_POINT_LENGTH := 64
+	if point.length() > MAX_KEY_POINT_LENGTH:
+		point = point.left(MAX_KEY_POINT_LENGTH - 1).strip_edges() + "…"
+	if not point.ends_with(".") and not point.ends_with("…"):
+		point += "."
+	return point
+
+
+func _choice_tooltip(choice: Dictionary, display_text: String) -> String:
+	var details: Array[String] = [display_text]
+	for key in ["description", "upgrade_description"]:
+		var detail := String(choice.get(key, "")).strip_edges()
+		if not detail.is_empty() and not details.has(detail):
+			details.append(detail)
+	return "\n\n".join(details)
 
 
 func _choice_accent(choice: Dictionary) -> Color:
@@ -412,4 +513,6 @@ func _choice_accent(choice: Dictionary) -> Color:
 		return Color(0.68, 0.48, 1.0, 1.0)
 	if card_type == "attack":
 		return Color(1.0, 0.46, 0.27, 1.0)
+	if card_type == "divine" or semantic == "gold":
+		return Color(1.0, 0.78, 0.24, 1.0)
 	return Color(0.36, 0.78, 0.96, 1.0)

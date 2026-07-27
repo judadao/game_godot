@@ -1,0 +1,340 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="720" viewBox="0 0 2400 720" fill="none">
+  <title>Town Buildings — Editable Vector Source</title>
+  <desc>Six grouped pixel-fantasy town facades. All signs are intentionally blank and every building is an editable named SVG group.</desc>
+  <defs>
+    <linearGradient id="bg" x1="1200" y1="0" x2="1200" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#172131"/>
+      <stop offset="1" stop-color="#0D121B"/>
+    </linearGradient>
+    <linearGradient id="stone" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#59616B"/>
+      <stop offset="1" stop-color="#303640"/>
+    </linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#744927"/>
+      <stop offset="1" stop-color="#3B251B"/>
+    </linearGradient>
+    <linearGradient id="blueRoof" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#315E85"/>
+      <stop offset="1" stop-color="#18344E"/>
+    </linearGradient>
+    <linearGradient id="redRoof" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#954B3D"/>
+      <stop offset="1" stop-color="#54272A"/>
+    </linearGradient>
+    <linearGradient id="purpleRoof" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#75469A"/>
+      <stop offset="1" stop-color="#3B245B"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#FFE09A"/>
+      <stop offset=".45" stop-color="#D99631"/>
+      <stop offset="1" stop-color="#72421A"/>
+    </linearGradient>
+    <linearGradient id="fire" x1="0" y1="1" x2="0" y2="0">
+      <stop stop-color="#FF5A19"/>
+      <stop offset=".55" stop-color="#FFB020"/>
+      <stop offset="1" stop-color="#FFF4A8"/>
+    </linearGradient>
+    <linearGradient id="soul" x1="0" y1="1" x2="0" y2="0">
+      <stop stop-color="#6D2CDC"/>
+      <stop offset=".55" stop-color="#B34DFF"/>
+      <stop offset="1" stop-color="#F1C2FF"/>
+    </linearGradient>
+    <filter id="fireGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soulGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="brickPattern" width="48" height="24" patternUnits="userSpaceOnUse">
+      <rect width="48" height="24" fill="url(#stone)"/>
+      <path d="M0 0H48M0 24H48M24 0V12M0 12H48M12 12V24M36 12V24" stroke="#202631" stroke-width="3"/>
+      <path d="M2 3H22M26 3H46M2 15H10M14 15H34M38 15H46" stroke="#69717B" stroke-width="2" opacity=".55"/>
+    </pattern>
+    <pattern id="blueTiles" width="34" height="20" patternUnits="userSpaceOnUse">
+      <rect width="34" height="20" fill="url(#blueRoof)"/>
+      <path d="M0 1H34M0 19H34M17 1V19" stroke="#10263C" stroke-width="3"/>
+      <path d="M2 4H15M19 4H32" stroke="#4B7695" stroke-width="2"/>
+    </pattern>
+    <pattern id="redTiles" width="34" height="20" patternUnits="userSpaceOnUse">
+      <rect width="34" height="20" fill="url(#redRoof)"/>
+      <path d="M0 1H34M0 19H34M17 1V19" stroke="#402029" stroke-width="3"/>
+      <path d="M2 4H15M19 4H32" stroke="#B96550" stroke-width="2"/>
+    </pattern>
+    <pattern id="purpleTiles" width="34" height="20" patternUnits="userSpaceOnUse">
+      <rect width="34" height="20" fill="url(#purpleRoof)"/>
+      <path d="M0 1H34M0 19H34M17 1V19" stroke="#291B43" stroke-width="3"/>
+      <path d="M2 4H15M19 4H32" stroke="#9565B5" stroke-width="2"/>
+    </pattern>
+  </defs>
+
+  <g id="Backdrop">
+    <rect width="2400" height="720" fill="url(#bg)"/>
+    <path d="M0 638H2400V720H0Z" fill="#171C24"/>
+    <path d="M0 638H2400" stroke="#77808A" stroke-width="8"/>
+    <path d="M0 652H2400" stroke="#2B313A" stroke-width="12" stroke-dasharray="42 8"/>
+  </g>
+
+  <g id="Building_MaterialShop" transform="translate(28 0)">
+    <title>Material Shop</title>
+    <g id="MaterialShop_Foundation">
+      <path d="M12 630H370V654H12Z" fill="#292F38" stroke="#111720" stroke-width="6"/>
+      <path d="M28 610H350V634H28Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="6"/>
+    </g>
+    <g id="MaterialShop_MainBody">
+      <path d="M60 390H322V612H60Z" fill="#5B3B24" stroke="#1A1514" stroke-width="8"/>
+      <path d="M78 412H304V605H78Z" fill="#A17043" stroke="#3A241A" stroke-width="6"/>
+      <path d="M102 412V605M278 412V605M78 478H304" stroke="#4A2C1D" stroke-width="12"/>
+    </g>
+    <g id="MaterialShop_Roof">
+      <path d="M32 414L111 316H295L349 414Z" fill="url(#blueTiles)" stroke="#101822" stroke-width="10"/>
+      <path d="M87 326L180 236L295 326Z" fill="url(#blueTiles)" stroke="#101822" stroke-width="10"/>
+      <path d="M92 330L181 255L279 330" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M28 412H352" stroke="url(#gold)" stroke-width="8"/>
+    </g>
+    <g id="MaterialShop_Chimney">
+      <path d="M268 252H302V338H268Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="6"/>
+      <path d="M260 244H310V260H260Z" fill="#555E68" stroke="#151A22" stroke-width="6"/>
+      <path d="M281 234C266 216 291 210 279 194C310 208 292 220 300 232Z" fill="#69717C" opacity=".65"/>
+    </g>
+    <g id="MaterialShop_BlankSign">
+      <path d="M88 354H295V424H88Z" fill="#16130F" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M101 366H282V412H101Z" fill="#211B17" stroke="#744519" stroke-width="3"/>
+    </g>
+    <g id="MaterialShop_Stall">
+      <path d="M47 486H151V590H47Z" fill="#3C271B" stroke="#191513" stroke-width="6"/>
+      <path d="M35 482H163L146 532H48Z" fill="url(#blueTiles)" stroke="#122033" stroke-width="6"/>
+      <path d="M58 555L84 519L105 552L128 524L150 566V590H58Z" fill="#7B7D76"/>
+      <circle cx="76" cy="552" r="11" fill="#A5A399"/>
+      <circle cx="119" cy="558" r="15" fill="#565B60"/>
+    </g>
+    <g id="MaterialShop_DoorWindow">
+      <path d="M190 493H270V612H190Z" fill="#241B18" stroke="#151315" stroke-width="7"/>
+      <path d="M209 512H251V566H209Z" fill="#FFD66F" stroke="#6B3E1A" stroke-width="6"/>
+      <path d="M230 512V566M209 539H251" stroke="#8D5524" stroke-width="4"/>
+      <circle cx="255" cy="584" r="5" fill="#E7B754"/>
+    </g>
+    <g id="MaterialShop_Props">
+      <path d="M312 552H358V612H312Z" fill="#6C4426" stroke="#261A15" stroke-width="6"/>
+      <path d="M308 563H362M308 598H362" stroke="#C18442" stroke-width="5"/>
+      <path d="M15 570H52V612H15Z" fill="#75492B" stroke="#241815" stroke-width="5"/>
+    </g>
+  </g>
+
+  <g id="Building_Blacksmith" transform="translate(408 0)">
+    <title>Player Blacksmith</title>
+    <g id="Blacksmith_Foundation">
+      <path d="M8 624H392V654H8Z" fill="#292F38" stroke="#111720" stroke-width="6"/>
+      <path d="M26 602H376V628H26Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="6"/>
+    </g>
+    <g id="Blacksmith_MainBody">
+      <path d="M48 328H350V606H48Z" fill="#6D4427" stroke="#181416" stroke-width="9"/>
+      <path d="M66 350H332V603H66Z" fill="#A16D3E" stroke="#43281B" stroke-width="6"/>
+      <path d="M92 350V603M304 350V603M66 438H332" stroke="#41271A" stroke-width="13"/>
+    </g>
+    <g id="Blacksmith_Roof">
+      <path d="M24 360L112 240H304L380 360Z" fill="url(#blueTiles)" stroke="#101822" stroke-width="10"/>
+      <path d="M98 246L195 150L315 246Z" fill="url(#blueTiles)" stroke="#101822" stroke-width="10"/>
+      <path d="M108 251L195 170L298 251" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M18 359H386" stroke="url(#gold)" stroke-width="9"/>
+    </g>
+    <g id="Blacksmith_Chimneys">
+      <path d="M76 182H116V284H76Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="6"/>
+      <path d="M67 172H125V190H67Z" fill="#606873" stroke="#151A22" stroke-width="6"/>
+      <path d="M284 152H326V275H284Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="6"/>
+      <path d="M276 142H334V160H276Z" fill="#606873" stroke="#151A22" stroke-width="6"/>
+      <path d="M91 161C72 139 104 131 91 109C124 125 106 142 111 158Z" fill="#707985" opacity=".6"/>
+      <path d="M300 131C278 107 315 98 301 75C337 91 316 112 324 128Z" fill="#707985" opacity=".6"/>
+    </g>
+    <g id="Blacksmith_BlankSign">
+      <path d="M91 275H310V350H91Z" fill="#17130F" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M104 288H297V337H104Z" fill="#211B17" stroke="#744519" stroke-width="3"/>
+    </g>
+    <g id="Blacksmith_Forge">
+      <path d="M116 450H287V604H116Z" fill="#29242A" stroke="#131117" stroke-width="8"/>
+      <path d="M136 475Q201 402 267 475V604H136Z" fill="#181418" stroke="#66503B" stroke-width="8"/>
+      <path d="M157 511Q201 467 246 511V588H157Z" fill="#602316" stroke="#A35422" stroke-width="7"/>
+      <path d="M169 574C179 548 179 529 198 511C198 534 220 543 215 567C231 553 241 568 237 589H164Z" fill="url(#fire)" filter="url(#fireGlow)"/>
+    </g>
+    <g id="Blacksmith_AnvilAndTools">
+      <path d="M32 548H116L103 567H87V607H55V567H39Z" fill="#626A72" stroke="#171C22" stroke-width="6"/>
+      <path d="M311 452H326V600H311ZM338 474H350V600H338Z" fill="#4D5560"/>
+      <path d="M304 460L333 433M333 483L357 450" stroke="#D0D5D9" stroke-width="8"/>
+      <path d="M297 598H365" stroke="#262D35" stroke-width="12"/>
+    </g>
+  </g>
+
+  <g id="Building_TownHall" transform="translate(810 0)">
+    <title>Town Hall</title>
+    <g id="TownHall_Foundation">
+      <path d="M8 622H392V654H8Z" fill="#292F38" stroke="#111720" stroke-width="6"/>
+      <path d="M28 600H372V626H28Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="6"/>
+    </g>
+    <g id="TownHall_MainBody">
+      <path d="M48 340H352V606H48Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="9"/>
+      <path d="M68 384H332V604H68Z" fill="#65513B" stroke="#292019" stroke-width="6"/>
+      <path d="M95 384V604M305 384V604M68 470H332" stroke="#32251B" stroke-width="12"/>
+    </g>
+    <g id="TownHall_Roof">
+      <path d="M22 377L104 263H301L380 377Z" fill="url(#redTiles)" stroke="#24181B" stroke-width="10"/>
+      <path d="M101 272L200 166L309 272Z" fill="url(#redTiles)" stroke="#24181B" stroke-width="10"/>
+      <path d="M112 276L200 188L294 276" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M20 376H382" stroke="url(#gold)" stroke-width="9"/>
+    </g>
+    <g id="TownHall_ClockTower">
+      <path d="M154 142H247V283H154Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="8"/>
+      <path d="M143 150L201 77L258 150Z" fill="url(#redTiles)" stroke="#24181B" stroke-width="8"/>
+      <path d="M196 44H205V81H196Z" fill="url(#gold)"/>
+      <path d="M184 51H217L201 28Z" fill="#D99A2B"/>
+      <circle cx="201" cy="203" r="32" fill="#E7D9B9" stroke="url(#gold)" stroke-width="7"/>
+      <path d="M201 182V203L217 214" stroke="#432D22" stroke-width="6"/>
+    </g>
+    <g id="TownHall_BlankSign">
+      <path d="M89 307H312V380H89Z" fill="#17130F" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M102 320H299V367H102Z" fill="#211B17" stroke="#744519" stroke-width="3"/>
+    </g>
+    <g id="TownHall_DoorAndNoticeBoard">
+      <path d="M161 474Q201 429 241 474V606H161Z" fill="#3E261D" stroke="#171416" stroke-width="8"/>
+      <path d="M183 493H219V552H183Z" fill="#B27239" stroke="#5D3822" stroke-width="5"/>
+      <circle cx="225" cy="568" r="6" fill="#F0C261"/>
+      <path d="M266 476H342V568H266Z" fill="#67452E" stroke="url(#gold)" stroke-width="6"/>
+      <path d="M280 493H328V550H280Z" fill="#D7C29C"/>
+      <path d="M286 504H319M286 516H310M286 528H323" stroke="#8D7454" stroke-width="4"/>
+    </g>
+    <g id="TownHall_Banners">
+      <path d="M56 415H83V545L69 530L56 545Z" fill="#8A3028" stroke="#D29431" stroke-width="4"/>
+      <path d="M318 415H345V545L331 530L318 545Z" fill="#8A3028" stroke="#D29431" stroke-width="4"/>
+    </g>
+  </g>
+
+  <g id="Building_SwordSoulShop" transform="translate(1210 0)">
+    <title>Sword Soul Shop</title>
+    <g id="SwordSoulShop_Foundation">
+      <path d="M8 624H384V654H8Z" fill="#292F38" stroke="#111720" stroke-width="6"/>
+      <path d="M24 602H368V628H24Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="6"/>
+    </g>
+    <g id="SwordSoulShop_MainBody">
+      <path d="M44 356H350V606H44Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="9"/>
+      <path d="M67 398H327V605H67Z" fill="#443450" stroke="#241A2F" stroke-width="7"/>
+    </g>
+    <g id="SwordSoulShop_Roof">
+      <path d="M18 390L101 270H295L378 390Z" fill="url(#purpleTiles)" stroke="#21172F" stroke-width="10"/>
+      <path d="M96 278L196 164L305 278Z" fill="url(#purpleTiles)" stroke="#21172F" stroke-width="10"/>
+      <path d="M107 283L196 187L290 283" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M17 389H380" stroke="url(#gold)" stroke-width="9"/>
+    </g>
+    <g id="SwordSoulShop_BlankSign">
+      <path d="M89 311H305V384H89Z" fill="#15101B" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M102 324H292V371H102Z" fill="#241B2B" stroke="#744519" stroke-width="3"/>
+    </g>
+    <g id="SwordSoulShop_Display">
+      <path d="M108 436H287V591H108Z" fill="#1D1624" stroke="#6E4195" stroke-width="7"/>
+      <path d="M126 454H269V572H126Z" fill="#251B30"/>
+      <path d="M150 541V493M197 541V472M244 541V498" stroke="url(#soul)" stroke-width="9" filter="url(#soulGlow)"/>
+      <path d="M139 497L150 479L161 497ZM185 478L197 454L209 478ZM233 502L244 482L255 502Z" fill="#F1C2FF"/>
+      <path d="M128 548H267" stroke="#D99A2B" stroke-width="6"/>
+    </g>
+    <g id="SwordSoulShop_DoorAndBanners">
+      <path d="M48 457H96V606H48Z" fill="#2A1C2D" stroke="#17131C" stroke-width="7"/>
+      <path d="M57 481H87V543H57Z" fill="#8A46C4" opacity=".55"/>
+      <path d="M302 457H350V606H302Z" fill="#2A1C2D" stroke="#17131C" stroke-width="7"/>
+      <path d="M311 481H341V543H311Z" fill="#8A46C4" opacity=".55"/>
+      <path d="M53 386H83V467L68 452L53 467Z" fill="#6B2D8E" stroke="#D29431" stroke-width="4"/>
+      <path d="M313 386H343V467L328 452L313 467Z" fill="#6B2D8E" stroke="#D29431" stroke-width="4"/>
+    </g>
+    <g id="SwordSoulShop_SoulFX" filter="url(#soulGlow)">
+      <path d="M128 238V193M196 194V130M266 237V181" stroke="url(#soul)" stroke-width="8"/>
+      <path d="M117 197L128 178L139 197ZM184 134L196 111L208 134ZM255 185L266 165L277 185Z" fill="#EAC0FF"/>
+    </g>
+  </g>
+
+  <g id="Building_BlueprintResearch" transform="translate(1608 0)">
+    <title>Blueprint Research</title>
+    <g id="BlueprintResearch_Foundation">
+      <path d="M8 624H384V654H8Z" fill="#292F38" stroke="#111720" stroke-width="6"/>
+      <path d="M25 602H367V628H25Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="6"/>
+    </g>
+    <g id="BlueprintResearch_MainBody">
+      <path d="M44 363H348V606H44Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="9"/>
+      <path d="M68 404H324V605H68Z" fill="#66523C" stroke="#30251C" stroke-width="7"/>
+      <path d="M93 404V605M298 404V605" stroke="#39291D" stroke-width="12"/>
+    </g>
+    <g id="BlueprintResearch_Roof">
+      <path d="M19 396L105 279H294L376 396Z" fill="url(#blueTiles)" stroke="#121C28" stroke-width="10"/>
+      <path d="M100 286L197 188L302 286Z" fill="url(#blueTiles)" stroke="#121C28" stroke-width="10"/>
+      <path d="M110 291L197 209L289 291" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M18 395H378" stroke="url(#gold)" stroke-width="9"/>
+    </g>
+    <g id="BlueprintResearch_BlankSign">
+      <path d="M86 321H307V392H86Z" fill="#16130F" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M99 334H294V379H99Z" fill="#211B17" stroke="#744519" stroke-width="3"/>
+    </g>
+    <g id="BlueprintResearch_DraftingDesk">
+      <path d="M111 471H287L272 565H126Z" fill="#4E3425" stroke="#1C1715" stroke-width="7"/>
+      <path d="M128 483H272L258 542H141Z" fill="#D8C49D" stroke="#8E6C40" stroke-width="5"/>
+      <path d="M155 503H227M151 519H246M173 489L191 540M225 489L211 540" stroke="#46708F" stroke-width="4"/>
+      <path d="M139 561L123 605M260 561L275 605" stroke="#36251C" stroke-width="10"/>
+    </g>
+    <g id="BlueprintResearch_DoorGears">
+      <path d="M52 463H102V606H52Z" fill="#31231D" stroke="#171416" stroke-width="7"/>
+      <path d="M300 466H350V606H300Z" fill="#31231D" stroke="#171416" stroke-width="7"/>
+      <circle cx="327" cy="439" r="27" fill="#78532D" stroke="url(#gold)" stroke-width="6"/>
+      <circle cx="327" cy="439" r="9" fill="#252A31"/>
+      <path d="M327 404V416M327 462V474M292 439H304M350 439H362M303 415L312 424M342 454L351 463M303 463L312 454M342 424L351 415" stroke="#D99A2B" stroke-width="8"/>
+    </g>
+  </g>
+
+  <g id="Building_SoulRefinery" transform="translate(2000 0)">
+    <title>Soul Refinery</title>
+    <g id="SoulRefinery_Foundation">
+      <path d="M8 624H382V654H8Z" fill="#292F38" stroke="#111720" stroke-width="6"/>
+      <path d="M24 602H366V628H24Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="6"/>
+    </g>
+    <g id="SoulRefinery_MainBody">
+      <path d="M45 325H347V606H45Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="9"/>
+      <path d="M67 375H325V605H67Z" fill="#3B3044" stroke="#211B27" stroke-width="7"/>
+    </g>
+    <g id="SoulRefinery_Roof">
+      <path d="M19 371L102 250H291L375 371Z" fill="url(#purpleTiles)" stroke="#21172F" stroke-width="10"/>
+      <path d="M95 258L195 139L302 258Z" fill="url(#purpleTiles)" stroke="#21172F" stroke-width="10"/>
+      <path d="M107 264L195 164L290 264" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M17 370H378" stroke="url(#gold)" stroke-width="9"/>
+    </g>
+    <g id="SoulRefinery_TowerChimney">
+      <path d="M274 117H326V285H274Z" fill="url(#brickPattern)" stroke="#151A22" stroke-width="7"/>
+      <path d="M265 106H335V126H265Z" fill="#5D6470" stroke="#151A22" stroke-width="7"/>
+      <path d="M287 93C270 68 307 59 293 37C332 54 310 77 326 92Z" fill="#8A4BB1" opacity=".55" filter="url(#soulGlow)"/>
+    </g>
+    <g id="SoulRefinery_BlankSign">
+      <path d="M84 299H307V371H84Z" fill="#15101B" stroke="url(#gold)" stroke-width="8"/>
+      <path d="M97 312H294V358H97Z" fill="#241B2B" stroke="#744519" stroke-width="3"/>
+    </g>
+    <g id="SoulRefinery_Furnace">
+      <path d="M113 421Q196 362 278 421V604H113Z" fill="#221925" stroke="#72459B" stroke-width="8"/>
+      <path d="M140 470Q196 420 251 470V579H140Z" fill="#2F173B" stroke="#A24ADF" stroke-width="7"/>
+      <path d="M159 561C168 527 185 517 182 480C201 501 216 510 210 540C225 525 239 541 236 570H156Z" fill="url(#soul)" filter="url(#soulGlow)"/>
+      <path d="M120 596H270" stroke="#D99A2B" stroke-width="9"/>
+    </g>
+    <g id="SoulRefinery_TanksAndPipes">
+      <path d="M51 474H99V597H51Z" fill="#342640" stroke="#17131C" stroke-width="7"/>
+      <path d="M60 493H90V565H60Z" fill="#7D3EB0" opacity=".6"/>
+      <path d="M294 464H347V598H294Z" fill="#342640" stroke="#17131C" stroke-width="7"/>
+      <path d="M304 486H337V568H304Z" fill="#7D3EB0" opacity=".6"/>
+      <path d="M75 473V432H126M320 464V414H264" stroke="#B37A37" stroke-width="10"/>
+      <circle cx="75" cy="432" r="11" fill="#D99A2B"/>
+      <circle cx="320" cy="414" r="11" fill="#D99A2B"/>
+    </g>
+  </g>
+
+  <g id="Guide_Labels" font-family="Inter, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#D7C49B" opacity=".75">
+    <text x="220" y="692">MATERIAL SHOP</text>
+    <text x="608" y="692">PLAYER BLACKSMITH</text>
+    <text x="1010" y="692">TOWN HALL</text>
+    <text x="1407" y="692">SWORD SOUL SHOP</text>
+    <text x="1804" y="692">BLUEPRINT RESEARCH</text>
+    <text x="2194" y="692">SOUL REFINERY</text>
+  </g>
+</svg>

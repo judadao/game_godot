@@ -71,6 +71,9 @@ func _run() -> void:
 				"card_id": "cleave",
 				"name": "Cleave",
 				"level": 2,
+				"type": "combo",
+				"cost": 2,
+				"icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png",
 				"description": "Deal damage to nearby enemies.",
 				"upgrade_description": "The swing becomes a full visible circle.",
 			},
@@ -81,6 +84,9 @@ func _run() -> void:
 				"card_id": "guard",
 				"name": "Iron Will",
 				"level": 1,
+				"type": "combo",
+				"cost": 1,
+				"icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0001_Shield.png",
 				"description": "Gain weak super armor.",
 				"upgrade_description": "Super armor lasts longer.",
 			},
@@ -95,10 +101,19 @@ func _run() -> void:
 	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection") as Control).visible, "Fallback resources must stay hidden while growth exists.")
 	_expect(ui.call("get_choice_button_count") == 2, "The compact upgrade layout must retain both supplied unfinished cards.")
 	_expect(_all_text(ui).contains("LV.2"), "Upgrade choices must show the selected instance level.")
+	var upgrade_button := (ui.call("get_choice_buttons") as Array)[0] as Button
+	var upgrade_lines := upgrade_button.text.split("\n")
 	_expect(
 		_all_text(ui).contains("Deal damage to nearby enemies.")
 			and _all_text(ui).contains("The swing becomes a full visible circle."),
 		"Upgrade choices must show both the current card effect and the exact next-level change."
+	)
+	_expect(
+		upgrade_button.icon != null
+			and upgrade_lines.size() == 4
+			and String(upgrade_lines[2]).begins_with("• NOW")
+			and String(upgrade_lines[3]).begins_with("• NEXT"),
+		"Upgrade cards must use one icon and exactly two scannable NOW/NEXT bullet points."
 	)
 
 	var fusion_page := {

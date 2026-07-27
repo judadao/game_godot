@@ -42,13 +42,10 @@ var unlocked_cards: Array[String] = [
 	"keen_focus_combo", "storm_charge",
 	"kinetic_acceleration", "giant_arc", "iron_bone", "fleet_footwork",
 	"arcane_breath", "deep_reservoir", "venom_edge",
+	"echo_volley",
 ]
 var selected_deck: Array[String] = [
-	"guard", "guard", "iron_skin", "healing_light", "renewal",
-	"blood_pact_combo", "verdant_renewal",
-	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
-	"sweeping_reach", "quickened_cadence", "crushing_momentum",
-	"keen_focus_combo", "storm_charge",
+	"healing_light", "flame_imbue", "echo_volley", "storm_charge",
 ]
 var auto_attack_card_id := "ember_bolt"
 var permanent_card_levels: Dictionary = {}
@@ -147,6 +144,11 @@ func apply_dict(data: Dictionary) -> void:
 				_last_migration_report["expanded_combo_cards_unlocked"] = int(
 					_last_migration_report.get("expanded_combo_cards_unlocked", 0)
 				) + 1
+	for starter_combo_id in [
+		"healing_light", "flame_imbue", "echo_volley", "storm_charge",
+	]:
+		if not unlocked_cards.has(starter_combo_id):
+			unlocked_cards.append(starter_combo_id)
 	var legacy_selected_deck := _safe_string_array(data.get("selected_deck"), selected_deck)
 	var legacy_levels := _safe_dictionary(data.get("permanent_card_levels"), {})
 	if data.get("selected_card_instances") is Array:

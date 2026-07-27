@@ -1,0 +1,88 @@
+{
+  "gifts": [
+    {
+      "id": "resonant_grace",
+      "name": "Infernal Grace",
+      "description": "Every Combo builds additional resonance; named Finishers strike harder.",
+      "prefix": "煉獄業火的",
+      "element": "fire",
+      "finisher_mutations": {"burn_damage": 4, "burn_duration": 4.0, "final_burst": true},
+      "icon": "✦",
+      "effects_by_level": [
+        {"combo_stack_bonus": 1, "finisher_damage_multiplier": 1.10},
+        {"combo_stack_bonus": 1, "combo_effect_multiplier": 1.10, "finisher_damage_multiplier": 1.20},
+        {"combo_stack_bonus": 2, "combo_effect_multiplier": 1.15, "finisher_damage_multiplier": 1.35}
+      ]
+    },
+    {
+      "id": "echoing_will",
+      "name": "Echoing Will",
+      "description": "Every Combo becomes stronger; named Finishers gain an echo.",
+      "prefix": "無盡迴響的",
+      "element": "echo",
+      "finisher_mutations": {"finisher_echoes": 1, "echo_decay": 0.7},
+      "icon": "↻",
+      "effects_by_level": [
+        {"combo_effect_multiplier": 1.08, "finisher_damage_multiplier": 1.08},
+        {"combo_effect_multiplier": 1.16, "finisher_damage_multiplier": 1.16},
+        {"combo_effect_multiplier": 1.25, "finisher_damage_multiplier": 1.25, "finisher_echoes": 1}
+      ]
+    },
+    {
+      "id": "boundless_font",
+      "name": "Venomous Font",
+      "description": "Every Combo refunds AP; named Finishers restore health.",
+      "prefix": "萬毒蝕心的",
+      "element": "venom",
+      "finisher_mutations": {"poison_damage": 3, "poison_duration": 5.0, "death_spread": true},
+      "icon": "◆",
+      "effects_by_level": [
+        {"combo_ap_refund": 0.10, "finisher_heal": 2},
+        {"combo_ap_refund": 0.20, "finisher_heal": 4},
+        {"combo_ap_refund": 0.35, "finisher_heal": 7}
+      ]
+    },
+    {
+      "id": "prismatic_oath",
+      "name": "Thunder Oath",
+      "description": "Every Combo carries elemental force; named Finishers spread every element.",
+      "prefix": "天罰雷霆的",
+      "element": "thunder",
+      "finisher_mutations": {"combo_stun": 0.6, "chain_lightning": true},
+      "icon": "◇",
+      "effects_by_level": [
+        {"combo_element_bonus": 1, "finisher_element_damage": 2},
+        {"combo_element_bonus": 2, "finisher_element_damage": 4},
+        {"combo_element_bonus": 3, "finisher_element_damage": 7}
+      ]
+    },
+    {
+      "id": "celestial_momentum",
+      "name": "Celestial Momentum",
+      "description": "Every Combo accelerates combat; named Finishers become larger and faster.",
+      "prefix": "天穹神速的",
+      "element": "celestial",
+      "finisher_mutations": {"piercing": true, "speed_multiplier": 1.5},
+      "icon": "»",
+      "effects_by_level": [
+        {"combo_speed_bonus": 0.04, "finisher_size_multiplier": 1.10},
+        {"combo_speed_bonus": 0.08, "finisher_size_multiplier": 1.22},
+        {"combo_speed_bonus": 0.14, "finisher_size_multiplier": 1.38}
+      ]
+    },
+    {
+      "id": "eternal_memory",
+      "name": "Absolute Zero",
+      "description": "Every Combo retains more power; named Finishers read deeper into the formula.",
+      "prefix": "絕對零度的",
+      "element": "ice",
+      "finisher_mutations": {"frost_ratio": 0.65, "frost_duration": 4.5, "shatter": true},
+      "icon": "∞",
+      "effects_by_level": [
+        {"combo_stack_cap_bonus": 3, "finisher_history_bonus": 0},
+        {"combo_stack_cap_bonus": 6, "finisher_history_bonus": 1},
+        {"combo_stack_cap_bonus": 12, "finisher_history_bonus": 2}
+      ]
+    }
+  ]
+}

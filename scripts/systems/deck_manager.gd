@@ -16,6 +16,7 @@ var cooldown_pile: Array[Dictionary] = []
 var protected_card_id := ""
 var protected_card_ids: Array[String] = []
 var last_play_retained := false
+var fixed_hand_mode := false
 
 var _card_database: RefCounted
 var _protected_instance_ids: Dictionary = {}
@@ -42,6 +43,7 @@ func is_card_protected(card_or_instance: Variant) -> bool:
 
 
 func start(deck_ids: Array, starting_energy: float = 5.0, shuffle_deck: bool = false) -> void:
+	fixed_hand_mode = false
 	draw_instances.clear()
 	hand_instances.clear()
 	discard_instances.clear()
@@ -76,6 +78,12 @@ func start(deck_ids: Array, starting_energy: float = 5.0, shuffle_deck: bool = f
 			_protected_instance_ids[fixed_instance.instance_id] = true
 	_sync_id_views()
 	draw_cards(hand_size - hand_instances.size())
+
+
+func start_fixed_hand(card_ids: Array, starting_energy: float = 5.0) -> void:
+	var fixed_cards := card_ids.slice(0, mini(hand_size, card_ids.size()))
+	start(fixed_cards, starting_energy, false)
+	fixed_hand_mode = true
 
 
 func draw_cards(count: int) -> Array[String]:
@@ -121,7 +129,7 @@ func play_from_hand(
 	if cost > energy:
 		return {}
 	energy -= cost
-	if is_card_protected(instance):
+	if fixed_hand_mode or is_card_protected(instance):
 		last_play_retained = true
 		return _project_played_card(card, instance)
 	hand_instances.remove_at(index)
@@ -191,7 +199,7 @@ func regenerate_energy(delta: float, rate: float) -> float:
 
 
 func discard_and_redraw_hand() -> bool:
-	if hand_instances.is_empty():
+	if fixed_hand_mode or hand_instances.is_empty():
 		return false
 	var retained := _extract_protected_hand()
 	hand_instances.clear()
@@ -202,6 +210,9 @@ func discard_and_redraw_hand() -> bool:
 
 
 func end_turn() -> void:
+	if fixed_hand_mode:
+		energy = max_energy
+		return
 	var retained := _extract_protected_hand()
 	hand_instances.clear()
 	hand_instances.append_array(retained)

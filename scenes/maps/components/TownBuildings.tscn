@@ -10,25 +10,31 @@
 [node name="TownBuildings" type="Node2D" unique_id=1300937398]
 
 [node name="WestHouse" parent="." unique_id=2002577784 instance=ExtResource("1_west")]
-position = Vector2(265, 618)
+position = Vector2(180, 618)
 scale = Vector2(0.82, 0.82)
+metadata/location_id = &"material_yard"
 
 [node name="ItemShop" parent="." unique_id=1340452614 instance=ExtResource("2_shop")]
-position = Vector2(1430, 615)
+position = Vector2(1370, 615)
 scale = Vector2(0.82, 0.82)
+metadata/location_id = &"sword_soul_shop"
 
 [node name="Blacksmith" parent="." unique_id=1146742380 instance=ExtResource("3_smith")]
-position = Vector2(2117, 620)
+position = Vector2(470, 620)
 scale = Vector2(0.82, 0.82)
+metadata/location_id = &"player_blacksmith"
 
 [node name="MarketStall" parent="." unique_id=29367277 instance=ExtResource("4_market")]
-position = Vector2(1759, 613)
+position = Vector2(1800, 613)
 scale = Vector2(0.82, 0.82)
+metadata/location_id = &"soul_refinery"
 
 [node name="EmptyResidence" parent="." unique_id=1515707324 instance=ExtResource("5_house")]
-position = Vector2(597, 620)
+position = Vector2(1100, 620)
 scale = Vector2(0.82, 0.82)
+metadata/location_id = &"town_hall"
 
 [node name="EmptyTowerHouse" parent="." unique_id=1823551390 instance=ExtResource("6_tower")]
-position = Vector2(1010, 609)
+position = Vector2(1590, 609)
 scale = Vector2(0.82, 0.82)
+metadata/location_id = &"blueprint_research"

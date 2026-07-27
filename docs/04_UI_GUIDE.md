@@ -87,7 +87,8 @@ Game (Node, scripts/managers/game.gd)
 
 Current ownership：
 
-- `HUDLayer`：持有一個 `HUD` authority；Autumn hand 內嵌在 AutumnHUD。
+- `HUDLayer`：持有一個 `HUD` authority；Town 的 `CardHandUI` 是相鄰 root，
+  Autumn hand 則內嵌在 AutumnHUD。
 - `MenuLayer`：持有 `ui_stack` 中的 Inventory、Pause、Dialogue、Shop、TownProgress、
   DeckBuilder、CardDiscard、LevelUp、RunResult 等 screen。
 - `Game.open_ui()`：instantiate、加入 stack、設定 pause flag、連 lifecycle、呼叫
@@ -97,18 +98,21 @@ Current ownership：
 
 ### 2.2 HUD adoption
 
-Authoritative map 透過 `scenes/dev/EditorHUDReference.tscn` author HUD：
+Authoritative map 透過 map-specific editor reference author HUD。Town 使用
+`scenes/dev/TownEternalForgeEditorHUDReference.tscn`；其他非 Autumn map 仍可使用
+`scenes/dev/EditorHUDReference.tscn`：
 
 ```text
 EditorHUDReference (CanvasLayer, editor-visible authoring layer)
 ├── ViewportBoundary
 ├── CardStageGuide
-└── HUD
-    └── AutumnCardHandUI（Autumn only）
+├── HUD
+└── CardHandUI（Town only；runtime sibling authority）
 ```
 
 Runtime 時 `Game.load_hud()` 將 exact HUD instance `reparent()` 到
-`Game/HUDLayer`；Autumn hand 隨 HUD 移動，不另成第二個 root。原 reference layer
+`Game/HUDLayer`；Town 同時 adopt sibling hand，Autumn hand 則隨 HUD 移動且不另成
+第二個 root。原 reference layer
 仍進入 runtime tree，但由
 `editor_hud_reference.gd` 隱藏。不得在 `_ready()` 重設 root anchor、offset、
 position 或 scale，否則會破壞 map-authored override。
@@ -443,7 +447,7 @@ MenuLayer
 
 ## 10. HUD
 
-### 10.1 Current tree
+### 10.1 Shared/Town-compatible tree
 
 ```text
 HUD
@@ -462,6 +466,17 @@ HUD
 - `set_currency()` / `set_experience()`
 - `set_objective()`
 - `set_interaction_prompt()` / `clear_interaction_prompt()`
+
+Town 以 `scenes/ui/town/TownEternalForgeHUD.tscn` 重新 author 此 NodePath/API
+contract，並由 `scenes/ui/town/TownCardHandUI.tscn` 提供 Eternal Forge theme。
+兩者只取代 Town presentation，不修改 shared HUD，也不直接讀寫 town managers。
+
+Town 世界內的八個地點名稱由
+`scenes/maps/components/TownEternalForgeIdentity.tscn/LocationLabels` author。
+建築招牌採 compact floating plaque：高度不超過 `34px`、字級不超過 `16px`、
+左側 `4–5px` 色帶、其餘 `1px` 細框、`10px` 圓角與不超過 `5px` 的陰影。
+一般／市政使用鍛造金，主設施使用火焰橘，戰鬥傳送門使用魔力藍，劍魂相關
+建築使用靈魂紫。招牌寬度不得超過 `200px`，避免壓過背景建築與 NPC。
 
 ### 10.2 HUD rules
 
@@ -483,7 +498,7 @@ HUD
 
 ### 11.1 Current
 
-專案沒有獨立 `BattleUI.tscn`。Town 保留既有 presentation；Autumn Battle UI 是
+專案沒有獨立 `BattleUI.tscn`。Town 使用 Eternal Forge presentation；Autumn Battle UI 是
 單一 HUD root：
 
 ```text
@@ -997,7 +1012,8 @@ Godot 4 使用 typed signals、`Control.PRESET_*`、`size_flags_*` 與
 
 ## 33. Autumn Battle V2 HUD
 
-Autumn Battle V2 不共用 Town presentation；Town HUD 本次不改。Autumn runtime 與
+Autumn Battle V2 不共用 Town presentation。Town HUD 由獨立 Eternal Forge scenes
+管理；Autumn runtime 與
 editor preview 只採用一個 authority：
 
 - `res://scenes/ui/autumn/AutumnHUD.tscn`
@@ -1056,18 +1072,28 @@ LOCK badge 或永久邊框，僅作為戰前選定的自動普攻。`quickstep` 
 卡表移除；玩家 Space Dash 是固有 action，不建立手牌 slot、不顯示 AP cost，
 也不透過 Q/W/E/R 操作。
 
-A, S, LT, and RT all call the same toggle operation. Pressing any one of them
-alternates between group 1 and group 2. With only one group, the operation is a
-no-op. Do not restore the previous "A selects group 1 / S selects group 2"
-behavior.
+Combat has one fixed card row and no group-toggle operation. A/D remain movement;
+Q/W/E/R reuse the same four skills. Basic Attack fires automatically and only
+checks the horizontal corridor in the player's facing direction.
 
 equipment-modified AP cost 必須在 affordability 與 input check 前 projection 到 card。
-戰鬥卡只由 AP 限制，打出後進 discard 並補回四張，不再投影 card cooldown。
-右側 `ComboSkillRows` 持續顯示本次 Combo Chain 的技能名稱與各自疊層。
+戰鬥卡只由 AP 限制，打出後留在原 slot；HUD 不顯示 draw、discard、redraw 或
+Auto Use control。卡片以短類型、icon、AP 與永久 stack 為主，不顯示
+START／LINK／FINISH 等角色說明。
+右側 `ComboSkillRows` 顯示三格 Combo 公式、永久 stacks、持有神賜與 FIFO
+終結技 queue；Healing 不進公式。公式完成時必須突出實際招式全名，例如
+`絕對零度的千刃殺 · NEXT AUTO SHOT`，後續排隊招式仍須可讀。
 
-Deck Builder 另有 auto-attack selector。它不是手牌 slot：UI 必須明示所選 attack
-會在 Run 開始後鎖定、免費自動施放，且只有近距離內存在有效目標時才攻擊。
-戰鬥 HUD 不提供切換 auto attack 的 control。
+Deck Builder 以四個可點選槽位呈現固定手牌，不使用全卡表 `＋／－` 計數器：
+第一格是綠色 Healing 專用欄位，後三格是紫色 Combo 1／2／3。點槽位後，下方候選
+只顯示該類型，Combo 候選排除另外兩格已選技能。畫面必須即時列出目前三張 Combo
+能完成的已學會終結技名稱。另有 Basic Attack selector；它不是四格手牌之一，
+UI 必須明示所選 attack 會在 Run 開始後鎖定、免費、自動水平攻擊。
+
+每個 stage/wave 的首次菁英掉落使用既有 `CardGrowthUI` modal shell，但內容是
+Divine Gift，不是卡牌升級：顯示 icon、短名稱、等級、最多三點效果，主稱號神賜
+標記 `MAIN`。存在兩個不同滿級神賜時，同頁提供融合選項；若頁面只有融合選項則
+允許略過，避免 modal 反覆開啟。
 
 ### Responsive contract
 
@@ -1081,7 +1107,8 @@ Deck Builder 另有 auto-attack selector。它不是手牌 slot：UI 必須明�
 - 2560×1440
 
 每個尺寸都要確認 top-left stack、top-center stack、bottom stage、兩列 cards、
-Combo Chain 清單、interaction prompt 與 world-safe area 不重疊、不裁切、不超界。
+Combo Chain 清單、四格 Deck Builder、interaction prompt 與 world-safe area
+不重疊、不裁切、不超界。
 禁止用 gameplay script 為單一解析度寫絕對位置。
 
 ## 34. Card Growth Modal

@@ -75,89 +75,45 @@ func _run() -> void:
 	)
 	_expect(toast_stack.get_child_count() == 1, "Triggered skill must show one temporary HUD toast.")
 
-	deck.start(run.card_instances, run.max_energy, false)
-	var guard_index := -1
-	for index in deck.hand_instances.size():
-		if deck.hand_instances[index].card_id == "guard":
-			guard_index = index
-			break
-	_expect(guard_index >= 0, "Deterministic test hand must contain Iron Will.")
-	if guard_index >= 0:
-		deck.energy = deck.max_energy
-		game.call("_on_card_selected", guard_index)
-		_expect(
-			deck.cooldown_pile.is_empty() and deck.hand_instances.size() == deck.hand_size,
-			"Combat cards must use AP, recycle through discard, and refill without cooldown gating."
-		)
-	run.add_experience(run.experience_required)
-	game.call("_enqueue_experience_growth")
-	run.add_experience(run.experience_required)
-	game.call("_enqueue_experience_growth")
+	var fixed_ids := deck.hand.duplicate()
+	deck.energy = deck.max_energy
+	game.call("_on_card_selected", 0)
 	_expect(
-		(game.get("growth_choice_queue") as GrowthChoiceQueue).size() == 1,
-		"Pending EXP levels must project one fresh page at a time instead of queuing stale choices."
+		deck.hand == fixed_ids
+			and deck.draw_pile.is_empty()
+			and deck.discard_pile.is_empty(),
+		"Combat skills must spend AP while remaining in their fixed slots."
 	)
+	run.add_experience(run.experience_required * 2)
+	game.call("_on_experience_collected", 0)
+	await process_frame
+	_expect(
+		game.get_open_ui("CardGrowthUI") == null,
+		"EXP must not open card upgrade or fusion pages during combat."
+	)
+	game.call("_on_elite_defeated", Vector2.ZERO)
 	await process_frame
 	await process_frame
-	var growth_ui: Control = game.get_open_ui("CardGrowthUI") as Control
-	_expect(growth_ui != null, "Pending EXP growth must open the unified CardGrowthUI.")
-	_expect(paused, "CardGrowthUI must pause gameplay.")
-	_expect(growth_ui.process_mode == Node.PROCESS_MODE_ALWAYS, "Growth UI must remain interactive while gameplay is paused.")
-	var status_before := float((player.call("get_combat_status_projection") as Array)[0].get("remaining_seconds", 0.0))
-	await create_timer(0.12, true, false, true).timeout
-	_expect(
-		is_equal_approx(float((player.call("get_combat_status_projection") as Array)[0].get("remaining_seconds", 0.0)), status_before),
-		"Combat status timers must freeze while growth modal owns pause."
-	)
+	var growth_ui := game.get_open_ui("CardGrowthUI") as Control
+	_expect(growth_ui != null and paused, "Elite Divine Gift choice must own the paused growth modal.")
 	var page := (game.get("growth_choice_queue") as GrowthChoiceQueue).peek()
-	var page_choices := page.get("choices", []) as Array
-	var all_page_choices_are_unfinished_upgrades := true
-	var all_page_choices_explain_effects := true
-	for choice in page_choices:
-		var choice_data := choice as Dictionary
-		all_page_choices_are_unfinished_upgrades = (
-			all_page_choices_are_unfinished_upgrades
-			and String(choice_data.get("action", "")) == "upgrade"
-			and int(choice_data.get("level", 3)) < CardInstance.MAX_LEVEL
-		)
-		all_page_choices_explain_effects = (
-			all_page_choices_explain_effects
-			and not String(choice_data.get("description", "")).strip_edges().is_empty()
-			and not String(choice_data.get("upgrade_description", "")).strip_edges().is_empty()
+	var divine_only := true
+	for choice_variant in page.get("choices", []) as Array:
+		var choice := choice_variant as Dictionary
+		divine_only = (
+			divine_only
+			and String(choice.get("action", "")).begins_with("divine_")
 		)
 	_expect(
-		page_choices.size() == 5
-			and all_page_choices_are_unfinished_upgrades,
-		"EXP growth must offer five unfinished card instances instead of the full deck."
+		String(page.get("source", "")) == "divine"
+			and divine_only,
+		"Every reachable in-combat growth choice must be a Divine Gift action."
 	)
-	_expect(
-		all_page_choices_explain_effects,
-		"Every EXP choice must explain the current effect and exact next-level change."
-	)
-	var first_choice := (page.get("choices", []) as Array)[0] as Dictionary
-	var selected_instance := run.get_card_instance(String(first_choice.get("instance_id", "")))
-	var selected_level_before := selected_instance.level if selected_instance != null else -1
-	game.set("save_service", FailingSaveService.new())
-	growth_ui.call("select_choice", String(first_choice.get("choice_id", "")))
-	growth_ui.call("confirm_selected_choice")
-	await process_frame
-	await process_frame
-	_expect(paused and game.get_open_ui("CardGrowthUI") == growth_ui, "A failed permanent save must keep the growth modal open.")
-	_expect((game.get("growth_choice_queue") as GrowthChoiceQueue).size() == 1, "A failed permanent save must not consume the queued page.")
-	_expect(run.pending_level_ups == 2, "A failed permanent save must not consume pending EXP levels.")
-	if selected_instance != null:
-		_expect(selected_instance.level == selected_level_before, "A failed permanent save must roll back the selected CardInstance level.")
-	game.set("save_service", SaveService.new())
-	growth_ui.call("confirm_selected_choice")
-	await process_frame
-	await process_frame
-	_expect(paused, "Resolving the first of multiple pending levels must immediately open the next paused page.")
-	_expect(run.pending_level_ups == 1, "A successful retry must consume exactly one pending level.")
 	paused = false
 	game.queue_free()
 	await process_frame
 	if _failures == 0:
-		print("PASS: Game card instances, Skill, growth queue, and single Autumn HUD authority")
+		print("PASS: fixed card instances, Skill, Divine Gift queue, and single Autumn HUD authority")
 	quit(1 if _failures > 0 else 0)
 
 

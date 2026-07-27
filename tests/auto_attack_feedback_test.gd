@@ -49,7 +49,7 @@ func _run() -> void:
 	await create_timer(0.4).timeout
 	_expect(not is_instance_valid(feedback), "Short combat feedback must clean itself up.")
 	if _failures == 0:
-		print("PASS: visible automatic attack travel, hit, damage, and Combo feedback")
+		print("PASS: visible Basic Attack travel, hit, damage, and Combo feedback")
 	quit(1 if _failures > 0 else 0)
 
 

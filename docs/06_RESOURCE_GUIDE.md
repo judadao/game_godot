@@ -9,7 +9,7 @@ pipeline描述成Current。
 
 1. [目的、現況與術語](#1-目的現況與術語)
 2. [資料分層與 Ownership](#2-資料分層與-ownership)
-3. [現有四個 JSON Catalog](#3-現有四個-json-catalog)
+3. [現有七個 JSON Catalog](#3-現有七個-json-catalog)
 4. [Card Data 與 CardDatabase](#4-card-data-與-carddatabase)
 5. [Fusion Recipe 與 EvolutionManager](#5-fusion-recipe-與-evolutionmanager)
 6. [Equipment Data 與 Inventory Runtime State](#6-equipment-data-與-inventory-runtime-state)
@@ -36,18 +36,21 @@ pipeline描述成Current。
 
 | 類型 | 數量 | Path |
 |---|---:|---|
-| Gameplay JSON | 4 | `res://data/*.json` |
+| Gameplay JSON | 7 | `res://data/*.json` |
 | Gameplay `.tres` / `.res` | 0 | 無 |
 | `resources/` content | 只有`.gitkeep` | `res://resources/.gitkeep` |
 | Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
 | Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
 
-四個JSON：
+七個 JSON：
 
 - `res://data/cards.json`
 - `res://data/evolutions.json`
+- `res://data/skills.json`
 - `res://data/equipment.json`
 - `res://data/town_upgrades.json`
+- `res://data/divine_gifts.json`
+- `res://data/combo_finishers.json`
 
 ### 1.2 術語
 
@@ -122,7 +125,7 @@ UI setter/configure API
 如果getter回傳catalog內部reference，consumer可能污染所有後續讀取。Current
 `CardDatabase.get_card()`與`get_all_cards()`已回傳deep copies。
 
-## 3. 現有五個 JSON Catalog
+## 3. 現有七個 JSON Catalog
 
 | JSON | Loader | Root field | Current validated content |
 |---|---|---|---|
@@ -131,6 +134,8 @@ UI setter/configure API
 | `skills.json` | `SkillRecipeManager` | `skills` | attack-only passive skill recipes |
 | `equipment.json` | `inventory_manager.gd` | `resource_order`, `starting_resources`, `equipment` | 5 resources, 10 equipment |
 | `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 4 buildings × 3 levels, 3 stages |
+| `divine_gifts.json` | `DivineGiftManager` | `gifts` | 6 個三級 Run-local 神賜 |
+| `combo_finishers.json` | `ComboFinisherCatalog` | `recipes` | 5 個精確三招終結技配方 |
 
 數量與重要cross-reference由`tests/content_validation_test.gd`驗證。新增內容時，
 測試中的固定數量若代表產品contract需一起更新；不得只為通過測試放寬assertion。
@@ -152,6 +157,8 @@ UI setter/configure API
 - `skills.json`：目前沒有 schema_version field
 - `equipment.json`：目前沒有schema_version field
 - `town_upgrades.json`：目前沒有schema_version field
+- `divine_gifts.json`：目前沒有 schema_version field
+- `combo_finishers.json`：目前沒有 schema_version field
 
 Loader目前不以schema version分派migration。新增／更改schema前，必須先建立version
 policy與old fixture，不能只提高number。
@@ -507,6 +514,10 @@ inventory_state / town_state
 `inventory_state`與`town_state`是current manager DTO；其他equipment/building fields
 同時保留legacy compatibility。
 
+`selected_deck`／`selected_card_instances` 的 production loadout 固定為四個 unique
+instances：剛好一個 Healing 與三個 Combo。舊存檔可帶較大的 legacy list，
+但 Deck Builder 與 Run start 必須正規化成此 invariant。
+
 ### 9.2 RunState
 
 Transient fields：
@@ -526,27 +537,30 @@ defeated_enemies / elite_defeated / boss_defeated
 
 ### 9.3 DeckManager
 
-`DeckManager`持有：
+`DeckManager.start_fixed_hand()` 持有四張 hand instances 與 energy/max energy。
+production fixed mode 的 draw/discard/exhaust/cooldown piles 永遠為空；出牌不移動
+instance。Basic Attack 只以 `MetaState.auto_attack_card_id` 與 run-local lock
+表示，不建立 CardInstance、不加入 DeckManager。
 
-- draw pile
-- hand
-- discard pile
-- exhaust pile
-- cooldown pile
-- energy/max energy
-- hand size（8）
+### 9.4 DivineGiftManager
 
-這些不是 static card data，也不是 MetaState selected deck。selected deck 是最多
-16 張普通卡的 ID/instance projection；piles 是 runtime sequence。auto attack 只以
-`MetaState.auto_attack_card_id` 與 run-local lock 表示，不建立 CardInstance、
-不加入 DeckManager piles。
+`data/divine_gifts.json` 每筆資料包含 `id`、`name`、`description`、`icon`、
+`prefix`、`element`、`finisher_mutations` 與三筆 `effects_by_level`。每級效果
+必須對 Combo 或終結技有可觀察影響；主神賜的稱號前綴與原終結技名稱組合，所有
+持有神賜的 mechanics 則合併套用。Manager inventory 只存在於 Run，重複 ID 升級
+至 Lv.3。兩個不同 Lv.3 融合後建立 dynamic evolved entry；材料標記 ascended，
+不再回到本 Run 的一般獎勵池，同一融合配方也不能重複建立。
+
+`data/combo_finishers.json` 每筆 recipe 包含 `id`、`name`、精確三項 `sequence`、
+`required_skills` 與 `base_effect`。`ComboFinisherCatalog` 只匹配相同順序的完整
+三招；AAA 與 ABC 都是合法配方，但任何 required skill 未學會時不得排入終結技。
 
 跨 authority 的 add／fuse／exact removal 不再由 `Game` 分別呼叫
 `MetaState`、`RunState` 與 `DeckManager` mutation API，而統一經
 `CardCollectionService`。三者仍保有各自的資料責任；service 只協調同一
 `CardInstance` object identity 與失敗 rollback。
 
-### 9.4 Static、runtime、UI例
+### 9.5 Static、runtime、UI例
 
 ```text
 cards.json "ember_bolt" base card
@@ -928,7 +942,7 @@ func read_dictionary(path: String) -> Dictionary:
 
 ## 20. Review Checklist
 
-- [ ] 四個JSON仍可由current loader成功載入。
+- [ ] 七個 JSON 仍可由 current loader 成功載入。
 - [ ] Catalog count與ID contract符合產品需求。
 - [ ] Card icon與cross-reference paths存在。
 - [ ] Equipment cost/effect/special ability consumer一致。

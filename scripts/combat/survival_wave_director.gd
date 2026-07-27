@@ -111,6 +111,7 @@ func _spawn_survival_enemy(archetype_id: StringName, is_guardian: bool) -> void:
 		return
 	var enemy := packed.instantiate()
 	add_child(enemy)
+	enemy.set_meta("encounter_archetype_id", String(archetype_id))
 	if enemy is Node2D:
 		var slot := _active_enemies.size()
 		var side := -1.0 if (slot % 2 == 0) else 1.0
@@ -133,6 +134,8 @@ func _on_survival_enemy_defeated(enemy: Node, experience: int, gold: int, is_gua
 		return
 	var reward_position := (enemy as Node2D).global_position if enemy is Node2D else global_position
 	_active_enemies.erase(enemy)
+	if String(enemy.get_meta("encounter_archetype_id", "")) == "elite":
+		elite_defeated.emit(reward_position)
 	_gold += maxi(0, gold)
 	if not is_guardian:
 		_spawn_experience_gem(reward_position, maxi(1, experience))

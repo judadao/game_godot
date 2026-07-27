@@ -13,184 +13,62 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	game.call("_begin_autumn_run", [
-		"guard", "guard", "iron_skin", "healing_light",
-		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
+		"healing_light", "flame_imbue", "echo_volley", "storm_charge",
 	])
 	var run := game.get("run_state") as RunState
-	var meta := game.get("meta_state") as MetaState
 	var deck := game.get("deck_manager") as DeckManager
+	var original_ids: Array[String] = []
+	var original_levels: Dictionary = {}
 	for instance in run.card_instances:
-		instance.level = 1
+		original_ids.append(instance.instance_id)
+		original_levels[instance.instance_id] = instance.level
 
-	var guards := _instances_for_card(run.card_instances, "guard")
-	_expect(guards.size() >= 2, "Default run must contain distinct Iron Will instances.")
-	var upgraded := guards[0] as CardInstance
-	var untouched := guards[1] as CardInstance
-	_expect(game.call("_apply_growth_resolution", {
-		"action": "upgrade",
-		"instance_id": upgraded.instance_id,
-	}), "An eligible individual instance must upgrade.")
-	_expect(upgraded.level == 2, "The selected instance must gain exactly one level.")
-	_expect(untouched.level == 1, "Another copy of the same card must keep its own level.")
+	run.add_experience(run.experience_required * 3)
+	game.call("_on_experience_collected", 0)
+	await process_frame
 	_expect(
-		deck.find_instance(upgraded.instance_id) == upgraded
-		and meta.get_card_instance(upgraded.instance_id) == upgraded,
-		"Upgrade must remain visible through shared Meta, Run, and Deck identity."
+		game.get_open_ui("CardGrowthUI") == null,
+		"Experience must not open in-combat card upgrades."
 	)
 	_expect(
-		_first_instance(run.card_instances, "ember_bolt") == null,
-		"Automatic attacks must remain outside the Combo backpack."
+		deck.hand.size() == 4
+			and deck.draw_pile.is_empty()
+			and deck.discard_pile.is_empty(),
+		"Experience must not alter or rotate the fixed hand."
 	)
+	for instance in run.card_instances:
+		_expect(
+			original_ids.has(instance.instance_id)
+				and instance.level == int(original_levels[instance.instance_id]),
+			"Experience must not upgrade, replace, or fuse fixed cards."
+		)
 
-	var guard := upgraded
-	var stone := _first_instance(run.card_instances, "iron_skin")
-	guard.level = 3
-	stone.level = 3
-	var before_fusion_count := run.card_instances.size()
-	_expect(game.call("_apply_growth_resolution", {
-		"action": "fusion",
-		"left_instance_id": guard.instance_id,
-		"right_instance_id": stone.instance_id,
-		"result_card_id": "fortress_stance",
-	}), "Two matching distinct Lv3 instances must fuse.")
-	_expect(run.card_instances.size() == before_fusion_count - 1, "Fusion must consume two and add one, for net minus one.")
-	_expect(run.get_card_instance(guard.instance_id) == null and run.get_card_instance(stone.instance_id) == null, "Both selected materials must be consumed.")
-	var fortress := _first_instance(run.card_instances, "fortress_stance")
-	_expect(fortress != null and fortress.level == 1, "Fusion result must be one new Lv1 instance.")
-	_expect(deck.find_instance(fortress.instance_id) == fortress and meta.get_card_instance(fortress.instance_id) == fortress, "Fusion result identity must be shared everywhere.")
-
-	var before_reward_count := run.card_instances.size()
-	_expect(game.call("_apply_growth_resolution", {
-		"action": "new_card",
-		"card_id": "renewal",
-	}), "Wave blessing must add a Healing card instance.")
-	_expect(run.card_instances.size() == before_reward_count + 1, "New card reward must add exactly one instance.")
-	var renewal := _first_instance(run.card_instances, "renewal")
-	_expect(renewal != null and deck.find_instance(renewal.instance_id) == renewal, "New reward must share identity with Deck.")
-	while run.card_instances.size() < CardCollectionService.MAX_EXPEDITION_CARDS:
-		_expect(game.call("_apply_growth_resolution", {
-			"action": "new_card",
-			"card_id": "battle_rhythm",
-		}), "Test setup must fill the expedition deck.")
-	_expect(
-		not game.call("_apply_growth_resolution", {
-			"action": "new_card",
-			"card_id": "storm_charge",
-		}),
-		"A full expedition deck must reject a seventeenth card without replacement."
-	)
-
-	var growth_queue := game.get("growth_choice_queue") as GrowthChoiceQueue
-	var compact_deck_size := run.card_instances.size()
-	_expect(
-		growth_queue.enqueue_wave_blessing([
-			{"card_id": "storm_charge", "name": "Storm Charge"},
-		]),
-		"A new-card reward must be offered even when the deck is not full."
-	)
-	game.call("_open_next_growth_choice")
+	game.call("_on_elite_defeated", Vector2.ZERO)
 	await process_frame
-	var compact_growth_ui := game.get_open_ui("CardGrowthUI") as Control
-	_expect(compact_growth_ui != null, "A non-full deck must show the optional new-card reward.")
-	compact_growth_ui.call("skip_reward")
 	await process_frame
+	var gift_ui := game.get_open_ui("CardGrowthUI") as Control
+	_expect(gift_ui != null, "Elite defeat must open a Divine Gift choice.")
+	var queue := game.get("growth_choice_queue") as GrowthChoiceQueue
+	var page := queue.peek()
 	_expect(
-		growth_queue.is_empty() and run.card_instances.size() == compact_deck_size,
-		"Skipping a new-card reward must preserve a compact non-full deck."
+		String(page.get("source", "")) == "divine"
+			and not (page.get("choices", []) as Array).is_empty(),
+		"Elite growth must contain Divine Gift choices only."
 	)
+	if gift_ui != null:
+		gift_ui.call("confirm_selected_choice")
+		await process_frame
+	var gifts := game.get("divine_gift_manager") as RefCounted
 	_expect(
-		growth_queue.enqueue_wave_blessing([
-			{"card_id": "storm_charge", "name": "Storm Charge"},
-		]),
-		"A full-deck reward must still open a choice."
-	)
-	game.call("_open_next_growth_choice")
-	await process_frame
-	var growth_ui := game.get_open_ui("CardGrowthUI") as Control
-	_expect(growth_ui != null, "Full-deck reward must first show the new card.")
-	growth_ui.call("confirm_selected_choice")
-	await process_frame
-	var replacement_ui := game.get_open_ui("CardDiscardUI") as Control
-	_expect(
-		replacement_ui != null and bool(replacement_ui.call("is_skip_available")),
-		"A full deck must offer replacement or Skip."
-	)
-	replacement_ui.call("skip_reward")
-	await process_frame
-	_expect(
-		growth_queue.is_empty()
-			and run.card_instances.size() == CardCollectionService.MAX_EXPEDITION_CARDS,
-		"Skipping a full-deck reward must keep the existing sixteen cards."
-	)
-
-	_expect(
-		growth_queue.enqueue_wave_blessing([
-			{"card_id": "storm_charge", "name": "Storm Charge"},
-		]),
-		"A second full-deck reward must support replacement."
-	)
-	game.call("_open_next_growth_choice")
-	await process_frame
-	growth_ui = game.get_open_ui("CardGrowthUI") as Control
-	growth_ui.call("confirm_selected_choice")
-	await process_frame
-	replacement_ui = game.get_open_ui("CardDiscardUI") as Control
-	var pending_ids: Array = game.get("_pending_reward_instance_ids")
-	var replacement_index := -1
-	for index in pending_ids.size():
-		var candidate := run.get_card_instance(pending_ids[index])
-		if candidate != null and candidate.card_id != "storm_charge":
-			replacement_index = index
-			break
-	_expect(replacement_index >= 0, "Replacement must expose a removable existing card.")
-	var removed_instance_id := String(pending_ids[replacement_index])
-	var storm_count_before := _instances_for_card(run.card_instances, "storm_charge").size()
-	replacement_ui.call("select_index", replacement_index)
-	replacement_ui.call("confirm_selection")
-	await process_frame
-	_expect(
-		growth_queue.is_empty()
-			and run.card_instances.size() == CardCollectionService.MAX_EXPEDITION_CARDS
-			and run.get_card_instance(removed_instance_id) == null
-			and _instances_for_card(run.card_instances, "storm_charge").size() == storm_count_before + 1,
-		"Replacing must atomically remove one existing card and add the selected reward."
-	)
-
-	var meta_gold_before := int(meta.resources.get("gold", 0))
-	var inventory := game.get("inventory_manager") as RefCounted
-	var inventory_gold_before := int(inventory.call("get_resource_amount", &"gold"))
-	_expect(game.call("_apply_growth_resolution", {
-		"action": "fallback",
-		"reward": {"gold": 75},
-	}), "Fallback gold bundle must resolve.")
-	_expect(int(meta.resources.get("gold", 0)) == meta_gold_before + 75, "Fallback gold must enter permanent Meta resources.")
-	_expect(int(inventory.call("get_resource_amount", &"gold")) == inventory_gold_before + 75, "Fallback gold must update live inventory.")
-	_expect(
-		int((meta.inventory_state.get("resources", {}) as Dictionary).get("gold", 0))
-		== inventory_gold_before + 75,
-		"Immediate fallback persistence must synchronize the authoritative inventory payload."
+		not (gifts.call("get_inventory") as Array).is_empty(),
+		"Confirming the elite reward must add one run-local Divine Gift."
 	)
 
 	game.queue_free()
 	await process_frame
 	if _failures == 0:
-		print("PASS: individual card upgrades, Lv3 fusion, rewards, and fallback resources")
+		print("PASS: EXP leaves cards fixed and elite growth awards Divine Gifts")
 	quit(1 if _failures > 0 else 0)
-
-
-func _instances_for_card(instances: Array[CardInstance], card_id: String) -> Array[CardInstance]:
-	var result: Array[CardInstance] = []
-	for instance in instances:
-		if instance.card_id == card_id:
-			result.append(instance)
-	return result
-
-
-func _first_instance(instances: Array[CardInstance], card_id: String) -> CardInstance:
-	for instance in instances:
-		if instance.card_id == card_id:
-			return instance
-	return null
 
 
 func _expect(condition: bool, message: String) -> void:

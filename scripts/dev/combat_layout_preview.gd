@@ -1,6 +1,7 @@
 extends Node2D
 
 const CAPTURE_PATH_ENV := "AUTUMN_HUD_CAPTURE_PATH"
+const CAPTURE_SIZE_ENV := "AUTUMN_HUD_CAPTURE_SIZE"
 
 @onready var preview_camera: Camera2D = $PreviewCamera
 @onready var hud: AutumnCombatHUD = $HUDLayer/HUD
@@ -8,6 +9,7 @@ const CAPTURE_PATH_ENV := "AUTUMN_HUD_CAPTURE_PATH"
 
 
 func _ready() -> void:
+	_apply_capture_size()
 	var gameplay_camera := get_node_or_null("AutumnBattleMapV2/Player/Camera2D") as Camera2D
 	if gameplay_camera != null:
 		gameplay_camera.enabled = false
@@ -31,17 +33,48 @@ func _ready() -> void:
 		{"id": "renewal", "name": "Verdant Renewal", "icon": "+", "remaining_seconds": 4.1},
 	])
 	hud.set_boss_health("HEARTWOOD GUARDIAN", 72, 100)
-	hud.set_combo_chain([
-		{"name": "Flame Imbue", "count": 3},
-		{"name": "Sweeping Reach", "count": 2},
-		{"name": "Keen Focus", "count": 2},
-	], 7, 5.8)
+	hud.set_combo_formula(
+		[
+			{"id": "echo_volley", "name": "Echo Volley"},
+			{"id": "echo_volley", "name": "Echo Volley"},
+			{"id": "echo_volley", "name": "Echo Volley"},
+		],
+		{"echo_volley": 7, "storm_charge": 4},
+		true,
+		[
+			{
+				"id": "eternal_memory",
+				"name": "Absolute Zero",
+				"icon": "❄",
+				"level": 3,
+				"primary": true,
+			},
+		],
+		[
+			{"display_name": "絕對零度的千刃殺"},
+			{"display_name": "天罰雷霆的雷獄穿心"},
+		]
+	)
 	hud.show_skill_toast("iron_momentum", "IRON MOMENTUM")
 
 	card_hand.set_cards(_sample_cards(), 3.7)
 	card_hand.set_action_points(3.7, 5.0)
 	if OS.has_environment(CAPTURE_PATH_ENV):
 		call_deferred("_capture_preview")
+
+
+func _apply_capture_size() -> void:
+	if not OS.has_environment(CAPTURE_SIZE_ENV):
+		return
+	var parts := OS.get_environment(CAPTURE_SIZE_ENV).to_lower().split("x")
+	if parts.size() != 2:
+		push_error("Invalid Autumn HUD capture size.")
+		return
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	DisplayServer.window_set_size(Vector2i(
+		maxi(1, int(parts[0])),
+		maxi(1, int(parts[1]))
+	))
 
 
 func _capture_preview() -> void:
@@ -70,10 +103,10 @@ func _preview_zoom_for_size(viewport_size: Vector2) -> Vector2:
 
 func _sample_cards() -> Array[Dictionary]:
 	return [
-		_card("Iron Will", "combo", "Gain weak super armor for 2.5 seconds.", 1),
 		_card("Healing Light", "healing", "Restore health.", 1, "healing_light"),
 		_card("Flame Imbue", "combo", "Attacks gain flame.", 3, "flame_imbue"),
-		_card("Verdant Renewal", "healing", "Gain regeneration.", 2, "verdant_renewal"),
+		_card("Echo Volley", "combo", "Add one horizontal projectile.", 2, "echo_volley"),
+		_card("Storm Charge", "combo", "Attacks gain thunder.", 2, "storm_charge"),
 	]
 
 

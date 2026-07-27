@@ -1519,3 +1519,39 @@ Required semantic children:
 - Responsibility: transient “used skill” projection only
 - Contract: maximum three entries; duplicate skill refreshes; each entry fades
   after about 1.5 seconds; no permanent recipe-progress rows
+
+## 33. Town Eternal Forge UI Components
+
+### TownEternalForgeHUD
+
+- Scene: `res://scenes/ui/town/TownEternalForgeHUD.tscn`
+- Script contract: `res://scripts/ui/hud.gd`
+- Owner: Town only
+- Responsibility: display only the compact Eternal Forge area title and active
+  interaction affordance in Town. The unused Flame Keeper, Soul Network,
+  player-resource, commission, and ledger panels remain hidden while their
+  compatibility NodePaths stay available to `hud.gd`.
+- Layout: Full Rect; the area title is compact at top center and the interaction
+  prompt uses a narrow bottom safe area without reserving a persistent lower HUD.
+- Data boundary: this scene only accepts Game projections through the existing
+  HUD API. It does not invent an Eternal Flame progression value or query
+  `TownManager`.
+
+### TownCardHandUI
+
+- Scene: `res://scenes/ui/town/TownCardHandUI.tscn`
+- Base: `res://scenes/ui/CardHandUI.tscn`
+- Script contract: `res://scripts/ui/card_hand_ui.gd`
+- Owner: Town's sibling card-hand authority
+- Responsibility: preserve CardHandUI signals, methods, NodePaths, and fan
+  layout while applying the Eternal Forge iron/ember/gold presentation.
+
+### TownEternalForgeEditorHUDReference
+
+- Scene: `res://scenes/dev/TownEternalForgeEditorHUDReference.tscn`
+- Owner: `res://scenes/maps/town/TownMap.tscn`
+- Runtime contract: `Game.load_hud()` adopts its exact `HUD` and sibling
+  `CardHandUI` instances into `HUDLayer`; other maps continue using their own
+  editor references.
+- Verification: HUD layout and prompt reservation are contract-tested at
+  1152×720, 1280×720, 1600×900, 1920×1080, 2560×1080, and 2560×1440.

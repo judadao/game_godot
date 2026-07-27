@@ -38,28 +38,19 @@ func _run() -> void:
 		"NPCs/ItemMerchantInteractive",
 		"NPCs/BlacksmithInteractive",
 		"NPCs/InnkeeperInteractive",
-		"Portals/ForestPortal/TownVisual",
-		"Portals/CavesPortal/TownVisual",
-		"Portals/GraveyardPortal/TownVisual",
+		"Portals/BattleGateway/TownVisual",
 	]:
 		_expect(town.has_node(node_path), "Town rebuild node missing: %s" % node_path)
 
-	_expect(int(town.get_meta("map_width")) >= 3900, "Town map must remain at least 3900px wide.")
+	var configured_map_width := float(town.get_meta("map_width"))
+	_expect(configured_map_width == 1942.0, "Town map must match its single Eternal Forge segment.")
 	_expect(
 		int(town.get_meta("camera_limit_right")) >= int(town.get_meta("map_width")),
 		"Town camera must reach the configured map edge."
 	)
 
-	for portal_name in ["ForestPortal", "CavesPortal", "GraveyardPortal"]:
-		var portal := town.get_node("Portals/%s" % portal_name) as CollisionObject2D
-		_expect(portal.collision_layer == 0, "%s must not block the town road." % portal_name)
-
-	for portal_name in ["EntranceFastTravelPortal", "EastRoadPortal"]:
-		var portal := town.get_node("Portals/%s" % portal_name)
-		_expect(
-			not portal.get_node("Visual").is_visible_in_tree(),
-			"%s must not render the retired default portal visual." % portal_name
-		)
+	var battle_gateway := town.get_node("Portals/BattleGateway") as CollisionObject2D
+	_expect(battle_gateway.collision_layer == 0, "BattleGateway must not block the town road.")
 
 	for npc_name in [
 		"Mayor",
@@ -138,7 +129,7 @@ func _run() -> void:
 	)
 	_expect(
 		sky_sprite.global_position.x - sky_half_width <= 0.0
-		and sky_sprite.global_position.x + sky_half_width >= 3900.0,
+		and sky_sprite.global_position.x + sky_half_width >= configured_map_width,
 		"Town sky must cover both edges after backdrop positioning."
 	)
 	for module_name in background_modules:
@@ -169,7 +160,7 @@ func _run() -> void:
 		+ continuous_ground.position.x
 		+ ground_width * 0.5
 	)
-	_expect(ground_right >= 3900.0, "Town continuous ground must reach the 3900px east edge.")
+	_expect(ground_right >= configured_map_width, "Town continuous ground must reach the configured east edge.")
 
 	var floor_collision := town.get_node("WorldCollision/FloorCollision") as CollisionShape2D
 	var floor_shape := floor_collision.shape as RectangleShape2D
@@ -179,23 +170,15 @@ func _run() -> void:
 		+ floor_collision.position.x
 		+ floor_shape.size.x * 0.5
 	)
-	_expect(floor_right >= 3900.0, "Town floor collision must reach the 3900px east edge.")
+	_expect(floor_right >= configured_map_width, "Town floor collision must reach the configured east edge.")
 	var right_wall := town.get_node("WorldCollision/RightWall") as CollisionShape2D
 	_expect(
-		collision_root.position.x + right_wall.position.x >= 3900.0,
+		collision_root.position.x + right_wall.position.x >= configured_map_width,
 		"Town right wall must be at or beyond the east boundary."
 	)
-	var east_portal := town.get_node("Portals/EastRoadPortal") as Node2D
-	var tail_arrival := town.get_node("TownTailArrival") as Node2D
-	var map_width := float(town.get_meta("map_width"))
 	_expect(
-		east_portal.global_position.x >= 0.0
-		and east_portal.global_position.x < map_width,
-		"EastRoadPortal must remain inside the playable Town bounds."
-	)
-	_expect(
-		absf(east_portal.global_position.x - tail_arrival.global_position.x) >= 128.0,
-		"TownTailArrival must keep safe clearance from EastRoadPortal."
+		String(battle_gateway.get("target_scene_path")) == "res://scenes/maps/battle_portal_hub.tscn",
+		"Town must route its sole battle gateway through the portal hub."
 	)
 
 	for asset_name in [
@@ -244,7 +227,7 @@ func _run() -> void:
 		)
 	_expect(not town.has_node("PortalVisuals"), "Town must not keep a detached portal visual layer.")
 	_expect(not town.has_node("Ground/RoadStones"), "Town must not keep retired hidden road nodes.")
-	_expect(town.get_node("NPCs/Guard").position.y == 618.0, "Guard must stand on the town baseline.")
+	_expect(town.get_node("NPCs/Guard").position.y == 672.0, "Guard must stand on the Eternal Forge road baseline.")
 
 	town.queue_free()
 	await process_frame

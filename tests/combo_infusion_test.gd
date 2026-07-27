@@ -19,20 +19,19 @@ func _run() -> void:
 	])
 	var deck := game.get("deck_manager") as DeckManager
 	var complete_deck: Array = deck.hand + deck.draw_pile + deck.discard_pile
-	_expect(complete_deck.has("flame_imbue") and complete_deck.has("frostburst_imbue"), "Combo cards must be shuffled into the ordinary combat deck.")
 	_expect(
-		complete_deck.has("healing_light")
-			and complete_deck.has("verdant_renewal")
-			and not complete_deck.has("dash_strike")
-			and not complete_deck.has("gale_lunge"),
-		"Combat hand pool must include Healing cards without prioritizing Dash Combo cards."
+		complete_deck.size() == 4
+			and complete_deck.count("healing_light") == 1
+			and deck.draw_pile.is_empty()
+			and deck.discard_pile.is_empty(),
+		"Combat must normalize legacy input into one fixed Healing plus three Combo skills."
 	)
-	_expect(deck.hand.size() == 4, "Combat must draw one four-card Combo/Healing hand.")
+	_expect(deck.hand.size() == 4, "Combat must expose one fixed four-card Combo/Healing hand.")
 
 	for _play_index in 12:
 		deck.energy = deck.max_energy
 		game.call("_on_card_selected", 0)
-		_expect(deck.hand.size() == 4, "Playing cards repeatedly must always refill the hand to four.")
+		_expect(deck.hand.size() == 4, "Playing cards repeatedly must retain the same four slots.")
 	var run := game.get("run_state") as RunState
 	run.temporary_buffs["active_infusions"] = []
 	run.temporary_buffs["combo_levels"] = {}
@@ -154,11 +153,11 @@ func _run() -> void:
 	run.temporary_buffs["infusion_effects"] = []
 	game.call("_refresh_combo_runtime_modifiers")
 
-	deck.start(["flame_imbue", "flame_imbue", "frostburst_imbue", "battle_rhythm"], 5.0)
+	deck.start_fixed_hand(["flame_imbue", "frostburst_imbue", "battle_rhythm", "healing_light"], 5.0)
 	var flame := deck.play_from_hand(0)
 	_expect(not flame.is_empty() and is_equal_approx(deck.energy, 2.0), "Flame Imbue must be an ordinary three-AP hand play.")
 	_expect(bool(game.call("_resolve_combo_card", flame)), "Playing Flame Imbue must activate its persistent infusion.")
-	_expect(deck.discard_pile.has("flame_imbue") and deck.exhaust_pile.is_empty(), "A played Combo card must recycle through discard without cooldown or exhaust.")
+	_expect(deck.hand[0] == "flame_imbue" and deck.discard_pile.is_empty(), "A played Combo card must remain in its fixed slot.")
 	deck.energy = 5.0
 	var second_flame := deck.play_from_hand(0)
 	_expect(bool(game.call("_resolve_combo_card", second_flame)), "A duplicate Combo card must add another stack.")
@@ -187,12 +186,12 @@ func _run() -> void:
 			and float(milestone_effect.get("combo_stun", 0.0)) >= 0.15,
 		"Nine Combo stacks must unlock Power, Lifesteal, and Stun milestones."
 	)
-	var frost := deck.play_from_hand(0)
+	var frost := deck.play_from_hand(1)
 	_expect(frost.is_empty(), "An unaffordable Combo card must remain in hand.")
 	deck.energy = 5.0
-	frost = deck.play_from_hand(0)
+	frost = deck.play_from_hand(1)
 	_expect(bool(game.call("_resolve_combo_card", frost)), "Playing Frostburst Imbue must activate its persistent infusion.")
-	var rhythm := deck.play_from_hand(0)
+	var rhythm := deck.play_from_hand(2)
 	_expect(bool(game.call("_resolve_combo_card", rhythm)), "Non-element Combo cards must also resolve run buffs.")
 	_expect(
 		not bool(game.call("_resolve_combo_card", database_card(game, "stoneguard_combo"))),

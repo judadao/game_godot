@@ -28,6 +28,30 @@ func _run() -> void:
 		_expect(card_ids.has(String(recipe["right_card_id"])), "Fusion right material card must exist.")
 		_expect(card_ids.has(String(recipe["result_card_id"])), "Fusion result card must exist.")
 
+	var finishers := ComboFinisherCatalog.new()
+	_expect(finishers.load_catalog(), "Combo Finisher content must load.")
+	_expect(
+		finishers.get_all_recipes().size() == 5,
+		"Vertical slice must ship five learned three-Combo Finisher recipes."
+	)
+	for finisher in finishers.get_all_recipes():
+		_expect(
+			(finisher.get("sequence", []) as Array).size() == 3,
+			"Every Finisher must use one exact three-Combo sequence."
+		)
+		for skill_id in finisher.get("required_skills", []):
+			_expect(
+				card_ids.has(String(skill_id)),
+				"Every Finisher required skill must exist in the card catalog."
+			)
+
+	var gifts := DivineGiftManager.new()
+	_expect(gifts.load_catalog(), "Divine Gift content must load.")
+	_expect(
+		gifts.get_reward_choices(20).size() == 6,
+		"Vertical slice must ship six Run-local Divine Gifts."
+	)
+
 	var inventory_script := load("res://scripts/systems/inventory_manager.gd")
 	var inventory: RefCounted = inventory_script.new()
 	var equipment_catalog := inventory.call("get_equipment_catalog") as Array
@@ -62,10 +86,15 @@ func _run() -> void:
 	for scene_path in [
 		"res://scenes/game/game.tscn",
 		"res://scenes/maps/town.tscn",
+		"res://scenes/maps/battle_portal_hub.tscn",
 		"res://scenes/maps/autumn_forest.tscn",
 		"res://scenes/monsters/AutumnEnemy.tscn",
 		"res://scenes/monsters/AutumnGuardian.tscn",
 		"res://scenes/ui/CardHandUI.tscn",
+		"res://scenes/ui/town/TownEternalForgeHUD.tscn",
+		"res://scenes/ui/town/TownCardHandUI.tscn",
+		"res://scenes/props/town/portals/TownBattleGateway.tscn",
+		"res://scenes/dev/TownEternalForgeEditorHUDReference.tscn",
 		"res://scenes/ui/TownProgressUI.tscn",
 		"res://scenes/ui/RunResultUI.tscn",
 		"res://scenes/ui/DeckBuilderUI.tscn",

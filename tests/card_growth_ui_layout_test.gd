@@ -81,12 +81,25 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	var choice_buttons := ui.call("get_choice_buttons") as Array
 	_expect(choice_buttons.size() == 5, "Dense pages must project only five readable choices at %s." % viewport_size)
 	_expect(scroll.clip_contents, "Choice overflow must be clipped by the authored scroll region at %s." % viewport_size)
+	for choice_variant in choice_buttons:
+		var choice := choice_variant as Button
+		_expect(
+			panel_rect.encloses(_canvas_rect(choice)),
+			"Every icon-bearing choice card must remain inside the modal at %s." % viewport_size
+		)
 	var first_choice := choice_buttons[0] as Button
-	_expect(panel_rect.encloses(_canvas_rect(first_choice)), "The first visible choice row must remain inside the modal at %s." % viewport_size)
 	_expect(
 		first_choice.text_overrun_behavior == TextServer.OVERRUN_TRIM_ELLIPSIS
-		and first_choice.tooltip_text == first_choice.text,
+		and first_choice.tooltip_text.contains(
+			"Next level substantially improves this card's visible combat effect."
+		),
 		"Long localized choice text must trim safely while retaining its full tooltip at %s." % viewport_size
+	)
+	_expect(
+		first_choice.icon != null
+		and first_choice.icon.get_width() <= 48
+		and first_choice.icon.get_height() <= 48,
+		"Choice icons must be thumbnail-sized so source textures cannot expand the modal at %s." % viewport_size
 	)
 	var top_row := ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/TopRow") as HBoxContainer
 	var bottom_row := ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/BottomRow") as HBoxContainer
@@ -112,6 +125,7 @@ func _dense_experience_page() -> Dictionary:
 			"level": 1 + index % 2,
 			"description": "Current effect text remains readable in the compact modal.",
 			"upgrade_description": "Next level substantially improves this card's visible combat effect.",
+			"icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png",
 		})
 	for index in 4:
 		choices.append({

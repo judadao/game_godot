@@ -4,7 +4,7 @@ const AUTUMN_HAND_PATH := "res://scenes/ui/autumn/AutumnCardHandUI.tscn"
 const AUTUMN_HUD_PATH := "res://scenes/ui/autumn/AutumnHUD.tscn"
 const AUTUMN_CARD_PATH := "res://scenes/ui/autumn/AutumnBattleCard.tscn"
 const AUTUMN_RENDERER_PATH := "res://scripts/ui/autumn_card_hand_ui.gd"
-const TOWN_HAND_PATH := "res://scenes/ui/CardHandUI.tscn"
+const TOWN_HAND_PATH := "res://scenes/ui/town/TownCardHandUI.tscn"
 const TOWN_RENDERER_PATH := "res://scripts/ui/card_hand_ui.gd"
 const REQUIRED_CARD_NODES := [
 	"CardContent/Shortcut",
@@ -42,7 +42,7 @@ func _run() -> void:
 	var town := (load(TOWN_HAND_PATH) as PackedScene).instantiate() as Control
 	_expect(
 		String(town.get_script().resource_path) == TOWN_RENDERER_PATH,
-		"Town must keep the shared card-hand renderer."
+		"Town hand must retain the shared CardHandUI renderer contract."
 	)
 	town.free()
 
@@ -102,11 +102,11 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 		_expect(card.has_method("is_fixed"), "Autumn card %d must expose lock-state projection." % index)
 		if card.has_method("is_fixed"):
 			_expect(
-				not bool(card.call("is_fixed")),
-				"No random-hand slot may show removed fixed-card treatment at %s." % viewport_size
+				bool(card.call("is_fixed")),
+				"Every reusable hand slot must show fixed-card treatment at %s." % viewport_size
 			)
 			var lock_badge := card.get_node("LockBadge") as Control
-			_expect(not lock_badge.visible, "Random-hand cards must hide the old lock badge.")
+			_expect(lock_badge.visible, "Reusable fixed cards must show the lock badge.")
 		var aspect := card.size.x / maxf(1.0, card.size.y)
 		_expect(
 			aspect >= 0.68 and aspect <= 0.78,
@@ -125,9 +125,15 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 			]
 		)
 		var card_name := card.get_node("CardContent/CardName") as Label
+		var role_label := card.get_node("CardContent/CardType") as Label
 		_expect(
 			card_name.get_theme_font_size("font_size") >= 10,
 			"Card %d name must use at least 10px text at %s." % [index, viewport_size]
+		)
+		_expect(
+			role_label.text.begins_with("COMBO")
+				or role_label.text.begins_with("HEALING"),
+			"Card %d must show its compact persistent skill type at %s." % [index, viewport_size]
 		)
 		_expect(_inside_lower_hud(card, viewport_size), "Card %d must remain inside the lower HUD at %s." % [index, viewport_size])
 	_verify_group_states(hand, 0, viewport_size)
@@ -168,10 +174,10 @@ func _inside_lower_hud(card: Control, viewport_size: Vector2i) -> bool:
 
 func _sample_cards() -> Array:
 	return [
-		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain super armor.", "cost": 1, "level": 1},
-		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Restore health.", "cost": 1, "level": 1},
-		{"id": "flame_imbue", "name": "Flame Imbue", "type": "combo", "description": "Add flame.", "cost": 3, "level": 1},
-		{"id": "verdant_renewal", "name": "Verdant Renewal", "type": "healing", "description": "Gain regeneration.", "cost": 2, "level": 1},
+		{"id": "flame_imbue", "name": "Flame Imbue", "type": "combo", "description": "Add flame.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 2},
+		{"id": "echo_volley", "name": "Echo Volley", "type": "combo", "description": "Add projectiles.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 1},
+		{"id": "storm_charge", "name": "Storm Charge", "type": "combo", "description": "Add storm.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 3},
+		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Restore health.", "cost": 1, "level": 1, "fixed": true},
 	]
 
 

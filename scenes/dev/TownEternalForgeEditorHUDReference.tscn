@@ -1,0 +1,54 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/dev/editor_hud_reference.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/town/TownEternalForgeHUD.tscn" id="2_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/town/TownCardHandUI.tscn" id="3_card_hand"]
+
+[sub_resource type="StyleBoxFlat" id="ViewportBorder"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85098, 0.603922, 0.168627, 0.9)
+
+[sub_resource type="StyleBoxFlat" id="CardStage"]
+bg_color = Color(0.035, 0.018, 0.012, 0.9)
+border_width_top = 2
+border_color = Color(0.95, 0.38, 0.08, 0.9)
+
+[node name="EditorHUDReference" type="CanvasLayer"]
+layer = 90
+script = ExtResource("1_script")
+
+[node name="ViewportBoundary" type="Panel" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("ViewportBorder")
+
+[node name="CardStageGuide" type="Panel" parent="."]
+offset_top = 540.0
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("CardStage")
+
+[node name="GuideLabel" type="Label" parent="CardStageGuide"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 8.0
+offset_bottom = 36.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.76, 0.37, 0.9)
+theme_override_colors/font_outline_color = Color(0.08, 0.02, 0.01, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 13
+text = "ETERNAL FORGE — Town HUD / bottom 25% / sibling CardHandUI is runtime-authoritative"
+horizontal_alignment = 1
+
+[node name="HUD" parent="." instance=ExtResource("2_hud")]
+
+[node name="CardHandUI" parent="." instance=ExtResource("3_card_hand")]

@@ -13,12 +13,22 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	var player := game.get("player") as Node
-	var portal := game.get("current_map").get_node("Portals/ForestPortal") as Node
+	var portal := game.get("current_map").get_node("Portals/BattleGateway") as Node
+	game.call("_on_interaction_available", portal, player)
+	game.call("_try_interact")
+	await process_frame
+	await process_frame
+	_expect(
+		game.get("current_map").scene_file_path == "res://scenes/maps/battle_portal_hub.tscn",
+		"Town BattleGateway must enter the portal hub."
+	)
+	player = game.get("player") as Node
+	portal = game.get("current_map").get_node("RegionPortals/AutumnPortal") as Node
 	game.call("_on_interaction_available", portal, player)
 	game.call("_try_interact")
 	await process_frame
 	var builder := game.call("get_open_ui", "DeckBuilderUI") as Control
-	_expect(builder != null, "Real Town forest-portal interaction must open deck building.")
+	_expect(builder != null, "Hub Autumn portal interaction must open deck building.")
 	_expect(game.has_method("_normalize_expedition_deck"), "Game must normalize migrated expedition decks.")
 	if builder != null:
 		var invalid_deck: Array[String] = ["missing_card"]

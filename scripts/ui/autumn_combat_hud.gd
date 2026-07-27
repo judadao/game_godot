@@ -149,7 +149,7 @@ func set_action_point_regen(rate: float) -> void:
 
 func set_auto_attack(display_name: String) -> void:
 	var normalized := display_name.strip_edges()
-	_auto_attack_name.text = "AUTO ATTACK\n%s" % (
+	_auto_attack_name.text = "AUTO · HORIZONTAL\n%s" % (
 		normalized if not normalized.is_empty() else "NONE"
 	)
 
@@ -249,13 +249,101 @@ func show_skill_toast(
 	_expire_toast(key, generation)
 
 
-func set_combo_chain(skills: Array, total: int = 0, remaining: float = 0.0) -> void:
+func set_combo_formula(
+	formula: Array,
+	stacks: Dictionary,
+	finisher_pending: bool,
+	gifts: Array,
+	finisher_queue: Array = []
+) -> void:
+	var formula_names: Array[String] = []
+	for card_variant in formula:
+		if card_variant is Dictionary:
+			formula_names.append(String(
+				(card_variant as Dictionary).get("name", "Combo")
+			))
+	var next_finisher_name := ""
+	if not finisher_queue.is_empty() and finisher_queue[0] is Dictionary:
+		next_finisher_name = String(
+			(finisher_queue[0] as Dictionary).get("display_name", "")
+		)
+	_combo_summary.text = (
+		"%s · NEXT AUTO SHOT" % (
+			next_finisher_name
+			if not next_finisher_name.is_empty()
+			else "FINISHER READY"
+		)
+		if finisher_pending
+		else "FORMULA  %d / 3" % formula_names.size()
+	)
+	_combo_milestones.text = (
+		" + ".join(formula_names)
+		if not formula_names.is_empty()
+		else "MATCH A LEARNED 3-COMBO RECIPE"
+	)
+	var signature := "%s|%s|%s" % [
+		",".join(formula_names),
+		str(stacks),
+		"%s|%s" % [str(gifts), str(finisher_queue)],
+	]
+	if signature == _combo_skills_signature:
+		return
+	_combo_skills_signature = signature
+	for child in _combo_skill_rows.get_children():
+		_combo_skill_rows.remove_child(child)
+		child.queue_free()
+	var stack_pairs: Array[String] = []
+	for stack_key_variant in stacks:
+		stack_pairs.append("%s %d" % [
+			String(stack_key_variant).to_upper(),
+			int(stacks[stack_key_variant]),
+		])
+	stack_pairs.sort()
+	var stack_row := Label.new()
+	stack_row.text = (
+		"STACKS  " + " · ".join(stack_pairs.slice(0, 4))
+		if not stack_pairs.is_empty()
+		else "STACKS  —"
+	)
+	stack_row.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	stack_row.add_theme_font_size_override("font_size", 10)
+	stack_row.add_theme_color_override("font_color", Color(0.86, 0.72, 1.0, 1.0))
+	_combo_skill_rows.add_child(stack_row)
+	for gift_variant in gifts.slice(0, 2):
+		if not gift_variant is Dictionary:
+			continue
+		var gift := gift_variant as Dictionary
+		var row := Label.new()
+		row.text = "%s%s %s  LV.%d" % [
+			"MAIN · " if bool(gift.get("primary", false)) else "",
+			String(gift.get("icon", "✦")),
+			String(gift.get("name", "Divine Gift")),
+			int(gift.get("level", 1)),
+		]
+		row.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		row.add_theme_font_size_override("font_size", 10)
+		row.add_theme_color_override("font_color", Color(1.0, 0.82, 0.34, 1.0))
+		_combo_skill_rows.add_child(row)
+
+
+func set_combo_chain(
+	skills: Array,
+	total: int = 0,
+	_remaining: float = 0.0,
+	flow_count: int = -1,
+	flow_role: String = "",
+	finisher_ready: bool = false
+) -> void:
 	var projected_total := maxi(0, total)
 	var signature_parts: Array[String] = []
 	if projected_total == 0:
 		for skill_variant in skills:
 			if skill_variant is Dictionary:
 				projected_total += maxi(0, int((skill_variant as Dictionary).get("count", 0)))
+	if flow_count < 0:
+		flow_count = mini(2, projected_total)
+		flow_role = "LINK" if flow_count > 0 else ""
+		finisher_ready = flow_count >= 2
 	for skill_variant in skills:
 		if skill_variant is Dictionary:
 			var skill := skill_variant as Dictionary
@@ -270,32 +358,26 @@ func set_combo_chain(skills: Array, total: int = 0, remaining: float = 0.0) -> v
 		for child in _combo_skill_rows.get_children():
 			_combo_skill_rows.remove_child(child)
 			child.queue_free()
-	if projected_total == 0 or skills.is_empty():
-		_combo_summary.text = "COMBO CHAIN  —"
-		_combo_milestones.text = "3 POWER  ·  6 LIFESTEAL  ·  9 STUN"
+	if flow_count <= 0 and not finisher_ready:
+		_combo_summary.text = "COMBO  ▶ START"
+		_combo_milestones.text = "▶ START  →  ＋ LINK  →  ★ FINISH"
 		if rebuild_rows:
 			var empty := Label.new()
-			empty.text = "NO COMBO SKILLS YET"
+			empty.text = "REACTION CARDS KEEP YOUR ROUTE"
 			empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			empty.add_theme_font_size_override("font_size", 10)
 			empty.add_theme_color_override("font_color", Color(0.34, 0.44, 0.46, 1.0))
 			_combo_skill_rows.add_child(empty)
 		return
-	_combo_summary.text = "COMBO CHAIN  ×%d   %.1fs" % [
-		projected_total,
-		maxf(0.0, remaining),
-	]
-	var active_milestones: Array[String] = []
-	if projected_total >= 3:
-		active_milestones.append("POWER")
-	if projected_total >= 6:
-		active_milestones.append("LIFESTEAL")
-	if projected_total >= 9:
-		active_milestones.append("STUN")
+	_combo_summary.text = (
+		"COMBO READY  ★ FINISH"
+		if finisher_ready
+		else "COMBO  %s  %d/2" % [flow_role, maxi(0, flow_count)]
+	)
 	_combo_milestones.text = (
-		"ACTIVE  " + "  ·  ".join(active_milestones)
-		if not active_milestones.is_empty()
-		else "NEXT  3 POWER"
+		"PLAY A FINISHER · FORWARD SHOCKWAVE"
+		if finisher_ready
+		else "NEXT  ＋ LINK"
 	)
 	if not rebuild_rows:
 		return

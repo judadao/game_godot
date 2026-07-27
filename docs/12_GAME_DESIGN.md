@@ -88,11 +88,11 @@ Town
 進入 Town 的 Autumn portal 時：
 
 1. 先開啟 Deck Builder；
-2. 普通背包結果被正規化為 1–16 張；
-3. 從已解鎖 attack cards 選一個獨立 auto attack；
+2. 技能配置正規化為剛好一張 Healing 與三張不重複 Combo；
+3. 從已解鎖 attack cards 選一個獨立 Basic Attack；
 4. 建立新的 `RunState`；
-5. auto attack ID 鎖定為本 Run 的選擇，戰鬥中不可切換；
-6. 普通背包洗牌後抽 4 張 Combo／Healing 卡，建立 draw/hand/discard piles；
+5. Basic Attack ID 鎖定為本 Run 的選擇，戰鬥中不可切換；
+6. 建立四張可重複使用的固定手牌與空的 Divine Gift inventory；
 7. 載入 `scenes/maps/autumn_battle/AutumnBattleMapV2.tscn`。
 
 ### 2.3 Run 的結束
@@ -288,27 +288,19 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 
 目前規則：
 
-- expedition backpack 最少 4 張、最多 16 張 Combo／Healing 卡；同名卡最多 3 份且各自保存等級；
-- auto attack 在背包之外獨立選擇，必須是已解鎖的 `attack` card；
-- 同名 Combo／Healing card 最多三張；
+- fixed loadout 必須剛好 4 張：1 Healing 與 3 張不重複 Combo；
+- 傳送門前直接顯示 Healing、Combo 1、Combo 2、Combo 3 四格；點格後只列出合法類型；
+- 配置畫面即時列出目前三張 Combo 可完成的已學會終結技；
+- Basic Attack 在固定技能之外獨立選擇，必須是已解鎖的 `attack` card；
+- 固定技能整個 Run 不抽換、不輪巡；
 - Meta 預設解鎖 20 張卡；
 - `MetaState` 分別保存 selected deck 與 `auto_attack_card_id`。
 
 ### 6.3 牌堆與手牌
 
-`DeckManager` 管理：
-
-- `draw_pile`；
-- `hand`；
-- `discard_pile`；
-- `exhaust_pile`；
-- `cooldown_pile`（DeckManager 相容性路徑；production 戰鬥卡不使用）。
-
-五個牌區都保存 `CardInstance(instance_id, card_id, level)` identity。戰鬥背包
-只收 `combat_hand != false` 的 Combo／Healing 卡，最多 16 張；洗牌後抽成單組
-4 張手牌，Q/W/E/R 直接打出。不再有 A/S 或 controller LT/RT 切換組別。
-戰鬥手牌只以 AP 限制，打出後統一進 discard 並立即補回四張；production
-Combo／Healing catalog 不再使用 exhaust／cooldown destination。
+`DeckManager.start_fixed_hand()` 保存四個 `CardInstance` slot。Q/W/E/R 使用後，
+同一 instance 留在原 slot；production 戰鬥不使用 draw、discard、exhaust、
+cooldown、redraw 或 overflow。舊 pile API 只保留資料相容性，不是目前 gameplay。
 
 `ember_bolt` 是普通卡，可以在背包、手牌與牌堆中出現，也依一般規則升級、
 融合、移除與 routing。`quickstep` 已從正式卡表移除。Dash 是玩家固有 action，
@@ -326,18 +318,15 @@ Combo／Healing catalog 不再使用 exhaust／cooldown destination。
 | Energy Cycle | 消耗 1 AP、基礎回復 2 AP |
 | Card Tempo | 最多 +0.96 AP／秒，6 秒未出牌後歸零 |
 
-卡片 cost 大於目前 AP 時不能打出。成功打出後扣除 cost、執行 effect、依
-destination 離開手牌，補抽一張 replacement，再加上 effect 指定的額外抽牌。
-auto attack 永遠免費，不使用這條 AP/hand 流程。
+卡片 cost 大於目前 AP 時不能打出。成功打出後扣除 cost、執行 effect，卡片留在
+原 slot。Basic Attack 永遠免費，不使用 AP/hand 流程。
 
-### 6.5 Redraw 與 overflow
+### 6.5 Fixed-hand invariant
 
-- hand 非空時可用 T／D-pad down 棄掉目前四張並補抽四張；
-- 棄牌不要求滿 AP，也不消耗 AP；
-- 戰鬥手牌統一進入 discard；
-- 每次出牌後立即循環牌堆，將 hand 補回 4 張；
-- 額外抽牌造成 hand overflow 時開啟 modal discard；
-- auto attack 不在 hand，因此不參與 redraw 或 overflow。
+- 四個 slot 在 Run 期間不變；
+- exactly one Healing、three unique Combo；
+- 沒有 redraw、discard、replacement、overflow 或 Auto Use；
+- Basic Attack 不在 hand。
 
 ### 6.6 Card focus
 
@@ -347,31 +336,39 @@ Card focus 會把 `Engine.time_scale` 設為 0.22，hit stop 也會短暫改變�
 
 ### 7.1 Combo cards
 
-`combo` 是卡牌類型，不是另一套非攻擊牌序 manager。原防禦牌以 timed status
-combo 形式提供霸體、減傷、反擊或攻擊 infusion；打出後進 discard 並立即補牌。
-每次 Combo 疊加全域 Combo Chain 並刷新 2.5 秒窗口：3 層提高攻擊、6 層追加
-5% 吸血、9 層追加短暫硬直。相同 infusion 另可疊至 12 層，讓效果持續增強。
-右側 HUD 持續列出本次 chain 使用過的技能與各自層數。舊 `ComboManager` 與非攻擊
-sequence rules 已移除。
+`combo` 是固定技能類型。每次使用會永久增加對應 stack，infusion 持續影響之後
+所有 Basic Attack，不因時間、受傷或攻擊次數中斷。只有 Combo 會進入三格公式；
+Healing 不進入也不會中斷。三招必須精確匹配已學會的 AAA 或有順序 ABC 配方，
+才會排入對應終結技；不再以任意三招產生同一招式。效果組成為：
+
+```text
+recipe Finisher base + matched three-Combo combination + every Divine Gift effect
+```
+
+完成的終結技以 FIFO queue 保留，下一發自動水平 Basic Attack 逐一施放。施放後
+只移除 queue 第一招，不消耗永久 Combo stacks。
 
 通用 Combo infusion 包含攻擊範圍（Sweeping Reach）、攻擊速度
 （Quickened Cadence）、攻擊力（Crushing Momentum）、爆擊率／倍率
 （Keen Focus）、彈體數量與展開角度（Echo Volley）與雷屬性硬直
 （Storm Charge）；Flame／Frost infusion
 則繼續提供火焰與冰霜附加屬性。這些卡都只消耗 AP，不使用 card cooldown。
-沒有 Echo Volley 時，自動攻擊固定為單方向、單發、單目標基本型態。Echo Volley
-同時增加彈體與方向：Lv.1 是 2 發／90° 扇形、Lv.2 是 4 發／180° 扇形、Lv.3 是
-8 發／360° 圓形。Combo Chain 本身只提高傷害、射程與攻擊尺寸，不免費增加方向、
-目標數或彈體數。攻擊方向以玩家當下朝向為中心，不以最近敵人重新瞄準，也不在
-飛行途中追蹤；每個扇形方向只會命中該方向覆蓋的不同敵人，空方向直接落空，不會
-把額外傷害重複灌入同一個目標。
+沒有 Echo Volley 時，Basic Attack 固定為單方向、單發、單目標基本型態。
+Echo Volley 增加同一輪的彈體數與可命中目標數，但所有彈體仍沿角色面向的水平
+戰鬥走廊前進。攻擊不向最近敵人重新瞄準，也不在飛行途中追蹤；走廊外與角色
+背後的敵人不受傷。有合法水平目標時自動射擊；沒有目標時不消耗 cooldown、
+公式或已排隊的終結技。
 
-戰鬥手牌旁提供可選的 `Auto Use`。關閉時維持純手動；開啟後由 `Game` 依 AP、
-手牌停留時間、Combo Chain 剩餘時間、同效果疊層、玩家失血比例與 Energy Cycle
-淨 AP 收益評分。策略會跳過已疊滿或滿血時無效的直接治療牌，也可短暫保留 AP
-等待高價值高費牌，避免四格手牌被高費牌長期堵住或永遠只循環一費牌。
+### 7.2 Divine Gifts
 
-### 7.2 Passive attack Skill
+每個 stage/wave 的首次菁英擊殺掉落一次必選神賜頁。神賜是 Run-local；最新取得
+者是主神賜並為原招式附上稱號，例如 `千刃殺` 變成 `絕對零度的千刃殺`，所有
+持有神賜共同提供 mechanics，因此公式固定為「神賜效果＋終結技效果＋前三招
+Combo 組合效果」。相同神賜重複取得時升級，最高 Lv.3；兩個不同 Lv.3 神賜可融合
+為 evolved gift。融合材料 ascended 後不再進獎勵池，同一融合不能反覆發生；
+fusion-only 頁可略過，因此不會形成無限 modal loop。
+
+### 7.3 Passive attack Skill
 
 Skill recipe 不是卡牌類型，也不由 non-attack card 推進。每次成功且正傷害的
 attack card 只產生一個 skill event；multi-hit 仍算一個。active skills 可平行判定：
@@ -386,7 +383,7 @@ attack card 只產生一個 skill event；multi-hit 仍算一個。active skills
 level 的 capacity 是 10/14/18/24/30。初始 `Iron Momentum` 使用 1 memory，五次
 attack 觸發三秒弱霸體，cooldown 十秒。
 
-### 7.3 Card upgrade 與 fusion
+### 7.4 Meta card upgrade 與 fusion
 
 EXP growth 對個別 `CardInstance` 升級，最高 Lv.3；同 card ID 的兩張卡可有不同
 level。fusion 必須明確選兩張不同的 Lv.3 instances，消耗兩張材料並建立一張
@@ -420,7 +417,8 @@ contract。Dash Edge 與 Gale Drive 標記為 `combat_hand = false`，不再由�
 
 ### 8.1 Experience
 
-一般敵人死亡產生 ExperienceGem。收集後呼叫 `RunState.add_experience()`。
+一般敵人死亡產生 ExperienceGem。收集後呼叫 `RunState.add_experience()`；經驗只記錄
+Run 進度，不再於戰鬥中開啟卡牌升級頁。
 
 Run 初始：
 
@@ -437,24 +435,11 @@ next_required = ceil(previous_required * 1.25 + 10)
 
 一次取得大量經驗可跨多級，每一級加入 `pending_level_ups`，不會只保留一次升級。
 
-### 8.2 Level-up choices
+### 8.2 In-run choices
 
-每一個 pending level-up enqueue 一頁 EXP growth choice：
-
-- 只要存在低於 Lv.3 的 `CardInstance`，隨機抽出最多五張形成獨立升級頁；
-- 全部卡片都滿級後，才以另一頁提供最多五組合法 Lv.3 fusion；
-- 只有兩者都沒有候選時，改選 75 gold、12 autumn wood + 8 stone、
-  或 4 magic shards。
-
-Wave blessing 是另一種 queue source，只提供 new card，不混入 upgrade/fusion；
-玩家可直接 Skip，以維持精簡牌組。
-牌組已滿 16 張時，選取新卡後必須進入 replacement modal：玩家可移除一張
-現有卡換入獎勵，或 Skip 並維持原牌組。
-`CardGrowthUI` 把最多五個選項固定排成上三張、下兩張置中的兩列，依 FIFO
-一頁一頁處理；舊全牌清單與 max-health/AP-regen/purge fallback 不再是這條
-卡牌成長流程的 contract。
-New-card 選項必須直接顯示卡牌類型、AP cost 與基礎效果；upgrade 選項必須同時
-顯示目前效果與下一級的精確變化，不能只靠 tooltip 或卡牌名稱讓玩家猜測。
+一般 EXP 與 wave 開始不提供新卡、卡牌升級或卡牌融合。唯一的戰鬥內 build
+成長是菁英掉落的 Divine Gift。`CardGrowthUI` 只重用 modal 外殼，神賜頁以
+icon、短名稱、等級與最多三點效果呈現；可融合時同頁列出合法 evolved gift。
 
 ## 9. 城鎮、資源與裝備
 
@@ -531,6 +516,17 @@ magic_shard = 2 × current_level
 每棟最多三個 level。Village stage 的 total-building-level threshold 為 0、3、7。Mayor interaction 開啟 Town Progress UI。
 
 目前場景只直接改變 MarketStall、EmptyResidence、EmptyTowerHouse 與 Blacksmith 的部分視覺。Manager 產生的其他 visual flag 尚未完整投影，不得宣稱所有升級都有對應外觀。
+
+Town presentation 已替換為單一 `1942 × 720` Eternal Forge v1，地點由左至右為材料行、
+主角鐵匠鋪、不滅火炬、戰鬥傳送門、村長家、劍魂商、圖紙研究室與劍魂精煉所。
+背景只顯示一次，因此中央不滅火炬也只有一座。NPC、Portal、碰撞與 progression
+仍是獨立 scene authority，
+建築與 landmark 的逐物件精修列為後續 presentation 工作，不代表新增玩法。
+
+Town 不再直接排列各戰區傳送門，也不保留東西 fast travel。唯一的
+`BattleGateway` 進入 `battle_portal_hub.tscn`：大廳左右各兩個戰區入口，中央
+保留未來尾王 Portal 空位。Autumn、Crystal Caves、Forbidden Graveyard 已接線；
+第四戰區入口目前可見但鎖定，因為第四張正式戰鬥 map 尚未存在。
 
 ### 9.4 兩套 inventory/economy
 
@@ -654,6 +650,7 @@ user://saves/quick_save.json
 |---|---|
 | Move | A/D 或左右方向鍵 |
 | Jump | ↑ |
+| Basic Attack | 自動；依角色面向的水平走廊 |
 | Interact | F |
 | Inventory | I |
 | Pause | Escape |
@@ -661,9 +658,8 @@ user://saves/quick_save.json
 | Card focus | Tab／左肩鍵 |
 | Card slots | Q/W/E/R／手把 face buttons |
 | Combo hand | Q/W/E/R／手把 face buttons |
-| Discard and draw 4 | T／D-pad down |
 
-A/S 僅供移動；`card_group_1` 與 `card_group_2` InputMap actions 已移除。
+S／↓ 不負責攻擊；`card_group_1` 與 `card_group_2` InputMap actions 已移除。
 
 ### 12.2 HUD
 
@@ -781,15 +777,16 @@ func _on_survival_phase_time_changed(
 
 這是 Godot 4 signal 語法示例；實際專案由 `Game` 的既有 wiring method 管理連接。
 
-### Auto attack and Dash
+### Basic Attack and Dash
 
-Deck Builder 在戰前從已解鎖 attack cards 選一個 auto attack，與 16 張普通背包
-分開保存。Run 開始時鎖定選擇；戰鬥中不可切換。auto attack：
+Deck Builder 在戰前從已解鎖 attack cards 選一個 Basic Attack，與四張固定技能
+分開保存。Run 開始時鎖定選擇；戰鬥中不可切換。Basic Attack：
 
 - cost 固定為 0，不進 hand/draw/discard/exhaust/cooldown；
-- 只有玩家附近存在有效敵人時才依 catalog range/interval 自動施放；
+- 有合法水平目標時依 catalog interval 自動發射；
 - 不建立出牌事件，因此不推進 `SkillRecipeManager` 的 count/sequence；
 - 可使用所選 attack card 的有效 level/equipment projection；
+- 固定沿玩家面向發射，傷害只判定在可見彈道的水平窄射線走廊內；
 - 無效選擇 fallback 到已解鎖的有效 attack。
 
 Dash 是玩家固有 action：↑ 只觸發 Jump，Space 觸發 Dash。Dash 不建立
@@ -798,27 +795,20 @@ Dash 是玩家固有 action：↑ 只觸發 Jump，Space 觸發 Dash。Dash 不�
 Dash Edge/Gale Drive 是 `combat_hand = false` 的 legacy Combo cards，以 `target_action = dash` 在各自 effect
 window 內暫時強化固有 Dash；Combo 本身不直接移動玩家。
 
-The combat hand is one four-card Combo/Healing row. Q/W/E/R play those four cards.
-A/S remain movement-only and there is no group-toggle input.
+The combat hand is one fixed four-card Combo/Healing row. Q/W/E/R reuse those cards.
+Basic Attack fires automatically; there is no vertical attack or group-toggle input.
 
-### Timed Combo windows
+### Persistent Combo formula
 
-Combo cards recycle through discard after play and add one independently timed effect
-stack. The base window is 2.5 real-time seconds. Fast play can therefore keep
-several stacks active at once; when an older stack expires, only that stack is
-removed and the displayed level falls accordingly. Eight distinct Combo types
-and twelve stacks per type are supported. Evolved Combo effects inherit the
-longest remaining time from their consumed ingredients.
+Combo cards remain in their slot after play. Their stacks and attack infusions persist
+for the entire Run. Healing does not enter or interrupt the formula. An exact learned
+three-Combo recipe queues its named Finisher for a later automatic horizontal shot;
+multiple Finishers resolve FIFO. The HUD shows formula slots, persistent stacks,
+owned Divine Gifts, Gift-modified names, and the queued ready state.
 
-The HUD shows the longest remaining Combo timer. Equipment special effects may
-modify this loop through:
-
-- `combo_cost_reduction`, applied to Combo cards with a minimum cost of 1 AP;
-- `combo_duration_bonus`, added when each new timed stack is created.
-
-Focus Amulet currently provides `-1 Combo AP` and `+0.5 seconds`. Combo effects and
-the global Combo Chain are capped at three seconds. Countdown uses real time even
-during tactical slowdown, so slowdown cannot extend the window.
+`combo_cost_reduction` still applies with a minimum cost of 1 AP. Legacy
+`combo_duration_bonus` remains save/data compatible but does not extend charged
+attack effects.
 
 ### Card tempo and AP flow
 
@@ -844,10 +834,8 @@ window expire clears every tempo stack.
 individual upgrade or any fusion. Its AP amount grows horizontally instead:
 each Memory Library level adds one AP and Apprentice Staff adds two AP.
 
-Deck drawing prevents a four-card brick hand when any one-cost or stable flow
-card remains in the draw/discard cycle. Wave rewards always include low-cost
-choices, and the default expedition deck is twelve cards instead of starting at
-the sixteen-card capacity.
+The fixed loadout and AP regeneration prevent a dead hand; Energy Cycle remains a
+stable flow option, and Divine Gift rewards may add global AP refunds.
 
 ## 16. Best Practice
 
@@ -1011,7 +999,7 @@ of being pinned by the original 720-pixel limit. The dock presents character
 status, decimal regenerating AP, the single four-card Combo/Healing hand, discard
 guidance, a persistent per-skill Combo Chain list, and transient recent-skill feedback.
 
-Q/W/E/R play the single four-card Combo/Healing hand. Played cards refill immediately. T discards and refills the hand
+Q/W/E/R reuse the single fixed four-card Combo/Healing hand. Cards never rotate
 without an AP requirement. A/S and LT/RT do not switch groups. Auto attack
 does not occupy a HUD card slot. Intrinsic Space Dash also has no card slot or
 AP presentation; `quickstep` is not part of the card catalog.

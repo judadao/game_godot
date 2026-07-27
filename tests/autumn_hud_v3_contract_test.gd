@@ -2,7 +2,7 @@ extends SceneTree
 
 const AUTUMN_MAP_PATH := "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn"
 const TOWN_MAP_PATH := "res://scenes/maps/town/TownMap.tscn"
-const SHARED_HUD_PATH := "res://scenes/ui/HUD.tscn"
+const TOWN_HUD_PATH := "res://scenes/ui/town/TownEternalForgeHUD.tscn"
 const AUTUMN_HUD_PATH := "res://scenes/ui/autumn/AutumnHUD.tscn"
 const AUTUMN_CARD_PATH := "res://scenes/ui/autumn/AutumnCardHandUI.tscn"
 const AUTUMN_PROMPT_PATH := "res://scenes/ui/autumn/AutumnInteractionPrompt.tscn"
@@ -38,7 +38,7 @@ func _run() -> void:
 	var autumn_card := autumn.get_node_or_null(
 		"EditorHUDReference/HUD/BottomStage/CardStage/AutumnCardHandUI"
 	) as Control
-	_expect(town_hud != null, "Town must retain its shared HUD.")
+	_expect(town_hud != null, "Town must expose its dedicated Eternal Forge HUD.")
 	_expect(autumn_hud != null, "Autumn must expose its dedicated HUD.")
 	_expect(autumn_card != null, "Autumn HUD must embed its dedicated card hand renderer.")
 	_expect(
@@ -46,7 +46,7 @@ func _run() -> void:
 		"Autumn map must not retain a second card-hand HUD authority."
 	)
 	if town_hud != null:
-		_expect(town_hud.scene_file_path == SHARED_HUD_PATH, "Town must keep using the shared HUD scene.")
+		_expect(town_hud.scene_file_path == TOWN_HUD_PATH, "Town must use its dedicated Eternal Forge HUD scene.")
 	if autumn_hud != null:
 		_expect(autumn_hud.scene_file_path == AUTUMN_HUD_PATH, "Autumn must use AutumnHUD.")
 		_expect(autumn_hud.name == "HUD", "Autumn map must retain the exact HUD adoption path.")

@@ -1,7 +1,5 @@
 extends SceneTree
 
-const BASE_COMBO_SECONDS := 2.5
-
 var _failures := 0
 
 
@@ -15,29 +13,25 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	game.call("_begin_autumn_run")
-	_expect(game.has_method("_tick_combo_effects"), "Game must expose deterministic Combo countdown ticking.")
-	_expect(game.has_method("_get_combo_time_remaining"), "Game must expose the current Combo window.")
-	if not game.has_method("_tick_combo_effects") or not game.has_method("_get_combo_time_remaining"):
-		game.queue_free()
-		await process_frame
-		quit(1)
-		return
-
 	var flame := (game.get("card_database") as CardDatabase).get_card("flame_imbue")
-	_expect(bool(game.call("_resolve_combo_card", flame)), "A Combo effect card must open a timed window.")
-	_expect(
-		is_equal_approx(float(game.call("_get_combo_time_remaining")), BASE_COMBO_SECONDS),
-		"Base Combo window must last 2.5 seconds."
-	)
-	game.call("_tick_combo_effects", 1.0)
-	_expect(
-		is_equal_approx(float(game.call("_get_combo_time_remaining")), 1.5),
-		"Combo time must count down in real time."
-	)
-	_expect(bool(game.call("_resolve_combo_card", flame)), "Fast play must add a separately timed Combo stack.")
-	game.call("_tick_combo_effects", 1.6)
+	_expect(bool(game.call("_resolve_combo_card", flame)), "A Combo effect card must add persistent attack power.")
 	var run := game.get("run_state") as RunState
-	_expect(int((run.temporary_buffs.get("combo_levels", {}) as Dictionary).get("flame", 0)) == 1, "An old stack must expire without deleting a newer fast-played stack.")
+	var flame_effects := run.temporary_buffs.get("infusion_effects", []) as Array
+	_expect(
+		flame_effects.size() == 1
+			and bool((flame_effects[0] as Dictionary).get("persistent", false)),
+		"A Combo card must empower every later automatic attack."
+	)
+	game.call("_tick_combo_effects", 10.0)
+	_expect(
+		not (run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(),
+		"Prepared Combo effects must not disappear while the player is lining up a shot."
+	)
+	_expect(bool(game.call("_resolve_combo_card", flame)), "A repeated Combo card must add a persistent stack.")
+	_expect(
+		int((run.temporary_buffs.get("combo_levels", {}) as Dictionary).get("flame", 0)) == 2,
+		"Repeated effects must stack without a timer."
+	)
 
 	var inventory := game.get("inventory_manager") as RefCounted
 	inventory.call("add_equipment", &"focus_amulet")
@@ -52,19 +46,20 @@ func _run() -> void:
 	_expect(is_equal_approx(cost_deck.energy, 3.0), "Playing through DeckManager must spend the equipment-adjusted Combo AP.")
 
 	var frost := (game.get("card_database") as CardDatabase).get_card("frostburst_imbue")
-	_expect(bool(game.call("_resolve_combo_card", frost)), "A second timed Combo type must activate.")
+	_expect(bool(game.call("_resolve_combo_card", frost)), "A second persistent Combo type must activate.")
 	_expect(
-		is_equal_approx(float(game.call("_get_combo_time_remaining")), 3.0),
-		"Combo equipment must extend new Combo windows."
+		(run.temporary_buffs.get("active_infusions", []) as Array).has("frost"),
+		"A second Combo type must join the prepared attack."
 	)
-	game.call("_tick_combo_effects", 3.1)
-	_expect((run.temporary_buffs.get("active_infusions", []) as Array).is_empty(), "All Combo effects must disappear after their individual timers expire.")
-	_expect((run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(), "Expired effects must stop modifying attacks.")
+	for _attack in 3:
+		game.call("_consume_combo_attack_charges")
+	_expect(not (run.temporary_buffs.get("active_infusions", []) as Array).is_empty(), "Automatic attacks must not consume Combo identities.")
+	_expect(not (run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(), "Persistent Combo effects must remain active.")
 
 	game.queue_free()
 	await process_frame
 	if _failures == 0:
-		print("PASS: timed Combo stacks, AP discount, and equipment duration")
+		print("PASS: persistent Combo stacks and AP discount")
 	quit(1 if _failures > 0 else 0)
 
 

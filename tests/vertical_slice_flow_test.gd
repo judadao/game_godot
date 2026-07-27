@@ -51,12 +51,16 @@ func _run() -> void:
 	first_enemy.global_position = (game.get("player") as Node2D).global_position + Vector2(24, 0)
 	game.set("_auto_attack_remaining", 0.0)
 	game.call("_process", 0.2)
-	_expect(is_equal_approx(deck.energy, energy_before), "Automatic attacks must not spend AP.")
-	_expect(deck.hand == hand_before, "Automatic attacks must not mutate the four-card Combo/Healing hand.")
+	_expect(
+		float(game.get("_auto_attack_remaining")) > 0.0,
+		"The equipped Basic Attack must fire automatically at a horizontal target."
+	)
+	_expect(is_equal_approx(deck.energy, energy_before), "Basic Attacks must not spend AP.")
+	_expect(deck.hand == hand_before, "Basic Attacks must not mutate the four-card Combo/Healing hand.")
 	var total_health_after := 0
 	for enemy in director.get_active_enemies():
 		total_health_after += int(enemy.get("health"))
-	_expect(total_health_after < total_health_before, "The equipped automatic attack must damage the live encounter.")
+	_expect(total_health_after < total_health_before, "The equipped Basic Attack must damage the live encounter.")
 	var paid_index := -1
 	for index in deck.hand_instances.size():
 		var projected := game.call("_card_for_cast", deck.hand_instances[index]) as Dictionary
@@ -71,17 +75,11 @@ func _run() -> void:
 	game.call("_process", 2.0)
 	_expect(deck.energy >= 1.29 and not deck.hand.is_empty(), "AP must recover over time so the run cannot deadlock.")
 
-	var healing_instance: CardInstance
-	for instance in run.card_instances:
-		if instance.card_id == "healing_light":
-			healing_instance = instance
-			break
-	_expect(healing_instance != null, "The expedition deck must retain a Healing instance.")
-	if healing_instance != null:
-		game.call("_apply_growth_resolution", {"action": "upgrade", "instance_id": healing_instance.instance_id})
-		game.call("_apply_growth_resolution", {"action": "upgrade", "instance_id": healing_instance.instance_id})
-		_expect(healing_instance.level == 3, "Individual growth must upgrade only the selected Healing card.")
-		_expect(healing_instance.card_id == "healing_light", "A level-three Healing card must not passively evolve.")
+	var gifts := game.get("divine_gift_manager") as RefCounted
+	_expect(
+		gifts != null and bool(gifts.call("add_or_upgrade", "resonant_grace")),
+		"In-run progression must award a Divine Gift instead of upgrading fixed cards."
+	)
 
 	for _phase in 4:
 		director.call("advance_survival", 999.0)
@@ -113,7 +111,14 @@ func _run() -> void:
 
 	var town := game.get("town_manager") as RefCounted
 	var inventory := game.get("inventory_manager") as RefCounted
+	town.call("apply_dict", {"building_levels": {"blacksmith": 0}})
 	var smith_before := int(town.call("get_building_level", &"blacksmith"))
+	for resource_id in (town.call("get_next_upgrade_cost", &"blacksmith") as Dictionary):
+		inventory.call(
+			"add_resource",
+			StringName(resource_id),
+			int((town.call("get_next_upgrade_cost", &"blacksmith") as Dictionary)[resource_id])
+		)
 	_expect(bool(town.call("upgrade_building", &"blacksmith")), "Retained run resources must support a Town upgrade.")
 	_expect(int(town.call("get_building_level", &"blacksmith")) == smith_before + 1, "Town upgrade must persist in manager state.")
 	game.call("_sync_progression_to_meta")

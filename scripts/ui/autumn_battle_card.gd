@@ -51,7 +51,12 @@ func configure(card: Dictionary, shortcut: String, affordable: bool) -> void:
 	tooltip_text = String(card.get("description", ""))
 	_shortcut.text = shortcut
 	_card_name.text = String(card.get("name", "Card"))
-	_type_label.text = _card_type
+	var combo_stack := maxi(0, int(card.get("combo_stack", 0)))
+	_type_label.text = (
+		"%s ×%d" % [_card_type, combo_stack]
+		if combo_stack > 0
+		else _card_type
+	)
 	_level.text = "STABLE" if _fixed else "LV.%d" % maxi(1, int(card.get("level", 1)))
 	_cost_value.text = str(maxi(0, int(card.get("cost", 0))))
 	_lock_badge.visible = _fixed

@@ -29,8 +29,8 @@
 
 目前測試是直接繼承 `SceneTree` 的 Godot 原生腳本，存放於 `tests/`，多數以 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT、統一測試執行器與 CI；新增這些能力前不得在交付報告中宣稱已具備。
 
-現有 76 個測試腳本涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
-流程、HUD 與多解析度排版；其中 75 個符合 `*_test.gd`。
+現有 82 個測試腳本涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+流程、HUD 與多解析度排版；其中 81 個符合 `*_test.gd`。
 `tests/test_ui_keyboard.gd` 不符合目前主要的檔名慣例，建立統一 runner 時必須
 一併納入或改名，避免漏跑。
 
@@ -291,9 +291,10 @@ instance.queue_free()
 | Memory Library | capacity 10/14/18/24/30；learned 與 active loadout 分離 |
 | Growth queue | wave new-card 可直接 skip；滿 16 張可 replace/skip；EXP upgrade 五選一、全滿後獨立 fusion；無候選才 fallback；FIFO 不漏頁 |
 | Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一 |
-| Deck/hand | 4–16 Combo／Healing cards；shuffle draw 4；連續出牌固定補回 4；QWER 出牌；T 棄四張補四張且不耗 AP |
-| Auto attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；以玩家朝向固定發射、不追蹤；不餵 skill sequence；成功命中會產生短彈道、傷害與 Combo power 回饋 |
-| Auto Use | checkbox 可即時開關；依 AP、低血量、Combo 延續、疊層與卡手評分；可保留 AP；UI modal 開啟時不出牌 |
+| Deck/hand | 傳送門前四格直選；Healing 專用格＋3 unique Combo；候選依格篩選並預覽終結技；QWER 使用後保留原 slot |
+| Basic Attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；有水平走廊目標時自動攻擊；不向上／下追蹤；無目標不消耗 cooldown 或公式 |
+| Combo formula | 只有 Combo 記錄且 Healing 不打斷；精確已學會 AAA/ABC 配方；多招 FIFO 排隊；下一發自動水平攻擊逐一施放；stacks 不消耗 |
+| Divine Gifts | 每 stage/wave 一個必選頁；主神賜提供稱號；全 inventory 合併 mechanics；Lv.3 融合材料退出獎勵池；fusion-only 可 skip |
 | Growth card readability | upgrade/new/fusion choice 顯示 icon、類型色、AP/level；多效果使用 bullets；六解析度不裁切 |
 | Dash | ↑ 只觸發 Jump；Space 觸發玩家固有 Dash；不進牌庫/手牌、不耗 AP；Dash Combo infusions 使用 `target_action=dash` |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |

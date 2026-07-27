@@ -1,0 +1,334 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://design/figma/town/vector_sources/eternal_flame.svg" id="1_flame"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_location_plaque"]
+content_margin_left = 14.0
+content_margin_top = 5.0
+content_margin_right = 14.0
+content_margin_bottom = 5.0
+bg_color = Color(0.027451, 0.0431373, 0.0666667, 0.86)
+border_width_left = 4
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.85098, 0.603922, 0.168627, 0.92)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.42)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_primary_plaque"]
+content_margin_left = 15.0
+content_margin_top = 5.0
+content_margin_right = 14.0
+content_margin_bottom = 5.0
+bg_color = Color(0.109804, 0.0470588, 0.0235294, 0.9)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.541176, 0.0941176, 0.96)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.121569, 0.027451, 0.00392157, 0.5)
+shadow_size = 5
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_portal_plaque"]
+content_margin_left = 14.0
+content_margin_top = 5.0
+content_margin_right = 14.0
+content_margin_bottom = 5.0
+bg_color = Color(0.0196078, 0.0627451, 0.101961, 0.88)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.180392, 0.690196, 1, 0.96)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.00392157, 0.0392157, 0.0901961, 0.55)
+shadow_size = 5
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_soul_plaque"]
+content_margin_left = 14.0
+content_margin_top = 5.0
+content_margin_right = 14.0
+content_margin_bottom = 5.0
+bg_color = Color(0.0627451, 0.027451, 0.0941176, 0.88)
+border_width_left = 4
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.654902, 0.352941, 0.960784, 0.94)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.054902, 0.00784314, 0.0941176, 0.5)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
+
+[node name="TownEternalForgeIdentity" type="Node2D"]
+metadata/world_width = 1942
+metadata/world_height = 720
+metadata/baseline_y = 672
+metadata/design_contract = "Town / Eternal Forge / Editable v2"
+
+[node name="SemanticVisualLayers" type="Node2D" parent="."]
+z_index = 2
+metadata/layer_role = "identity_accents"
+
+[node name="DistrictGroundGlow" type="Node2D" parent="SemanticVisualLayers"]
+z_index = -1
+metadata/layer_role = "glow"
+
+[node name="MaterialGlow" type="Polygon2D" parent="SemanticVisualLayers/DistrictGroundGlow"]
+polygon = PackedVector2Array(80, 620, 650, 620, 590, 664, 135, 664)
+color = Color(0.85098, 0.603922, 0.168627, 0.09)
+
+[node name="ForgeGlow" type="Polygon2D" parent="SemanticVisualLayers/DistrictGroundGlow"]
+polygon = PackedVector2Array(720, 620, 1580, 620, 1500, 676, 785, 676)
+color = Color(1, 0.541176, 0.0941176, 0.12)
+
+[node name="SanctuaryGlow" type="Polygon2D" parent="SemanticVisualLayers/DistrictGroundGlow"]
+polygon = PackedVector2Array(1600, 620, 2260, 620, 2180, 684, 1680, 684)
+color = Color(1, 0.541176, 0.0941176, 0.17)
+
+[node name="PortalGroundGlow" type="Polygon2D" parent="SemanticVisualLayers/DistrictGroundGlow"]
+polygon = PackedVector2Array(2240, 620, 2750, 620, 2675, 672, 2305, 672)
+color = Color(0.156863, 0.662745, 1, 0.14)
+
+[node name="CivicGlow" type="Polygon2D" parent="SemanticVisualLayers/DistrictGroundGlow"]
+polygon = PackedVector2Array(2790, 620, 3560, 620, 3495, 670, 2860, 670)
+color = Color(0.85098, 0.603922, 0.168627, 0.08)
+
+[node name="SoulDistrictGlow" type="Polygon2D" parent="SemanticVisualLayers/DistrictGroundGlow"]
+polygon = PackedVector2Array(3560, 620, 5120, 620, 5020, 684, 3650, 684)
+color = Color(0.654902, 0.262745, 1, 0.12)
+
+[node name="BaselineInlay" type="Polygon2D" parent="SemanticVisualLayers"]
+z_index = 1
+polygon = PackedVector2Array(32, 665, 1910, 665, 1910, 672, 32, 672)
+color = Color(0.85098, 0.603922, 0.168627, 0.52)
+metadata/layer_role = "baseline"
+
+[node name="EternalFlameMonument" type="Node2D" parent="."]
+visible = false
+z_index = 3
+position = Vector2(1930, 422)
+metadata/location_id = "eternal_flame"
+metadata/layer_role = "primary_landmark"
+
+[node name="OuterGlow" type="Polygon2D" parent="EternalFlameMonument"]
+z_index = -2
+polygon = PackedVector2Array(-196, -144, -128, -228, 0, -260, 128, -228, 196, -144, 206, -28, 154, 92, 0, 136, -154, 92, -206, -28)
+color = Color(1, 0.364706, 0.0392157, 0.08)
+metadata/layer_role = "glow"
+
+[node name="InnerGlow" type="Polygon2D" parent="EternalFlameMonument"]
+z_index = -1
+polygon = PackedVector2Array(-116, -128, -70, -184, 0, -206, 70, -184, 116, -128, 124, -50, 86, 18, 0, 48, -86, 18, -124, -50)
+color = Color(1, 0.541176, 0.0941176, 0.15)
+metadata/layer_role = "glow"
+
+[node name="EditableVector" type="Sprite2D" parent="EternalFlameMonument"]
+texture_filter = 1
+scale = Vector2(0.55, 0.55)
+texture = ExtResource("1_flame")
+metadata/source_role = "editable_svg_landmark"
+
+[node name="BattlePortalIdentity" type="Node2D" parent="."]
+visible = false
+z_index = 4
+position = Vector2(2510, 457)
+metadata/location_id = "battle_portal"
+metadata/layer_role = "portal_accent"
+
+[node name="OuterArc" type="Polygon2D" parent="BattlePortalIdentity"]
+polygon = PackedVector2Array(-118, 154, -150, 78, -148, -24, -108, -112, -42, -158, 42, -158, 108, -112, 148, -24, 150, 78, 118, 154, 84, 132, 112, 61, 108, -13, 80, -73, 34, -107, -34, -107, -80, -73, -108, -13, -112, 61, -84, 132)
+color = Color(0.156863, 0.662745, 1, 0.32)
+
+[node name="PortalCore" type="Polygon2D" parent="BattlePortalIdentity"]
+polygon = PackedVector2Array(-78, 130, -102, 62, -96, -15, -64, -72, 0, -100, 64, -72, 96, -15, 102, 62, 78, 130, 52, 105, 68, 48, 62, 1, 38, -36, 0, -52, -38, -36, -62, 1, -68, 48, -52, 105)
+color = Color(0.168627, 0.407843, 0.780392, 0.28)
+
+[node name="PortalRune" type="Polygon2D" parent="BattlePortalIdentity"]
+polygon = PackedVector2Array(-11, -59, 12, -59, 12, -18, 42, -18, 42, 5, 12, 5, 12, 50, -11, 50, -11, 5, -42, 5, -42, -18, -11, -18)
+color = Color(0.54902, 0.890196, 1, 0.8)
+
+[node name="DistrictBanners" type="Node2D" parent="."]
+visible = false
+z_index = 5
+metadata/layer_role = "banners"
+
+[node name="WestForgeBanner" type="Node2D" parent="DistrictBanners"]
+position = Vector2(730, 385)
+
+[node name="Pole" type="Polygon2D" parent="DistrictBanners/WestForgeBanner"]
+polygon = PackedVector2Array(-5, -72, 5, -72, 5, 105, -5, 105)
+color = Color(0.258824, 0.152941, 0.0862745, 1)
+
+[node name="Cloth" type="Polygon2D" parent="DistrictBanners/WestForgeBanner"]
+polygon = PackedVector2Array(5, -64, 77, -64, 77, 20, 42, 48, 5, 20)
+color = Color(0.47451, 0.227451, 0.196078, 0.95)
+
+[node name="Sigil" type="Polygon2D" parent="DistrictBanners/WestForgeBanner"]
+polygon = PackedVector2Array(33, -44, 49, -44, 49, -24, 62, -24, 62, -10, 49, -10, 49, 10, 33, 10, 33, -10, 20, -10, 20, -24, 33, -24)
+color = Color(0.85098, 0.603922, 0.168627, 1)
+
+[node name="EastSoulBanner" type="Node2D" parent="DistrictBanners"]
+position = Vector2(4490, 385)
+
+[node name="Pole" type="Polygon2D" parent="DistrictBanners/EastSoulBanner"]
+polygon = PackedVector2Array(-5, -72, 5, -72, 5, 105, -5, 105)
+color = Color(0.258824, 0.152941, 0.0862745, 1)
+
+[node name="Cloth" type="Polygon2D" parent="DistrictBanners/EastSoulBanner"]
+polygon = PackedVector2Array(-77, -64, -5, -64, -5, 20, -42, 48, -77, 20)
+color = Color(0.141176, 0.298039, 0.439216, 0.96)
+
+[node name="Sigil" type="Polygon2D" parent="DistrictBanners/EastSoulBanner"]
+polygon = PackedVector2Array(-48, -45, -31, -30, -39, -14, -22, 2, -42, 23, -62, 2, -45, -14, -53, -30)
+color = Color(0.654902, 0.262745, 1, 0.96)
+
+[node name="LocationLabels" type="Node2D" parent="."]
+z_index = 10
+metadata/layer_role = "editable_location_labels"
+
+[node name="MaterialYard" type="Label" parent="LocationLabels"]
+offset_left = 105.0
+offset_top = 500.0
+offset_right = 255.0
+offset_bottom = 534.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.901961, 0.658824, 1)
+theme_override_colors/font_outline_color = Color(0.0627451, 0.0823529, 0.113725, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBox_location_plaque")
+text = "材料行"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/location_id = "material_yard"
+
+[node name="PlayerBlacksmith" type="Label" parent="LocationLabels"]
+offset_left = 380.0
+offset_top = 496.0
+offset_right = 560.0
+offset_bottom = 530.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.901961, 0.658824, 1)
+theme_override_colors/font_outline_color = Color(0.0627451, 0.0823529, 0.113725, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBox_primary_plaque")
+text = "我的鐵匠鋪"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/location_id = "player_blacksmith"
+
+[node name="EternalFlame" type="Label" parent="LocationLabels"]
+offset_left = 725.0
+offset_top = 250.0
+offset_right = 935.0
+offset_bottom = 286.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.941176, 0.733333, 1)
+theme_override_colors/font_outline_color = Color(0.333333, 0.0823529, 0.0156863, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBox_primary_plaque")
+text = "不滅火炬"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/location_id = "eternal_flame"
+
+[node name="BattlePortal" type="Label" parent="LocationLabels"]
+offset_left = 725.0
+offset_top = 460.0
+offset_right = 935.0
+offset_bottom = 496.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.690196, 0.92549, 1, 1)
+theme_override_colors/font_outline_color = Color(0.027451, 0.0862745, 0.164706, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBox_portal_plaque")
+text = "戰鬥傳送門"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/location_id = "battle_portal"
+
+[node name="TownHall" type="Label" parent="LocationLabels"]
+offset_left = 1020.0
+offset_top = 500.0
+offset_right = 1200.0
+offset_bottom = 534.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.901961, 0.658824, 1)
+theme_override_colors/font_outline_color = Color(0.0627451, 0.0823529, 0.113725, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBox_location_plaque")
+text = "村長家／委託所"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/location_id = "town_hall"
+
+[node name="SwordSoulShop" type="Label" parent="LocationLabels"]
+offset_left = 1280.0
+offset_top = 500.0
+offset_right = 1420.0
+offset_bottom = 534.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.866667, 0.705882, 1, 1)
+theme_override_colors/font_outline_color = Color(0.101961, 0.027451, 0.164706, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBox_soul_plaque")
+text = "劍魂商"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/location_id = "sword_soul_shop"
+
+[node name="BlueprintResearch" type="Label" parent="LocationLabels"]
+offset_left = 1485.0
+offset_top = 496.0
+offset_right = 1675.0
+offset_bottom = 530.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.866667, 0.705882, 1, 1)
+theme_override_colors/font_outline_color = Color(0.101961, 0.027451, 0.164706, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBox_soul_plaque")
+text = "設計稿研究室"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/location_id = "blueprint_research"
+
+[node name="SoulRefinery" type="Label" parent="LocationLabels"]
+offset_left = 1725.0
+offset_top = 496.0
+offset_right = 1915.0
+offset_bottom = 530.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.866667, 0.705882, 1, 1)
+theme_override_colors/font_outline_color = Color(0.101961, 0.027451, 0.164706, 1)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBox_soul_plaque")
+text = "劍魂精煉工房"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/location_id = "soul_refinery"

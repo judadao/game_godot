@@ -116,17 +116,23 @@ func _run() -> void:
 	run.temporary_buffs["combo_chain_count"] = 0
 	run.temporary_buffs["combo_chain_remaining"] = 0.0
 	var flame := database.get_card("flame_imbue")
-	_expect(bool(game.call("_resolve_combo_card", flame)), "Flame Combo must activate for duration testing.")
+	_expect(bool(game.call("_resolve_combo_card", flame)), "Flame Combo must prepare charged attacks.")
+	var prepared_effects := run.temporary_buffs.get("infusion_effects", []) as Array
 	_expect(
-		float(game.call("_get_combo_time_remaining")) <= 3.0
-			and float(run.temporary_buffs.get("combo_chain_remaining", 0.0)) <= 3.0,
-		"Combo effects and Combo Chain must use short action windows."
+		prepared_effects.size() == 1
+			and bool((prepared_effects[0] as Dictionary).get("persistent", false)),
+		"Combo power must remain prepared for every later automatic attack."
 	)
 	game.call("_tick_combo_effects", 3.1)
 	_expect(
-		is_zero_approx(float(game.call("_get_combo_time_remaining")))
-			and int(run.temporary_buffs.get("combo_chain_count", 0)) == 0,
-		"Combo effects and Chain must fully expire after the short window."
+		not (run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(),
+		"Idle time must not erase prepared Combo power."
+	)
+	for _attack in 3:
+		game.call("_consume_combo_attack_charges")
+	_expect(
+		not (run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(),
+		"Automatic attacks must not consume persistent Combo power."
 	)
 
 	game.queue_free()

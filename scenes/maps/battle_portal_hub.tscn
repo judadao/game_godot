@@ -1,0 +1,197 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownFastTravelPortal.tscn" id="2_return"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownForestPortal.tscn" id="3_autumn"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownCavesPortal.tscn" id="4_crystal"]
+[ext_resource type="PackedScene" path="res://scenes/props/town/portals/TownGraveyardPortal.tscn" id="5_graveyard"]
+[ext_resource type="PackedScene" path="res://scenes/dev/TownEternalForgeEditorHUDReference.tscn" id="6_hud"]
+
+[sub_resource type="RectangleShape2D" id="FloorShape"]
+size = Vector2(1650, 96)
+
+[sub_resource type="RectangleShape2D" id="WallShape"]
+size = Vector2(48, 720)
+
+[sub_resource type="StyleBoxFlat" id="PortalLabelStyle"]
+bg_color = Color(0.025, 0.035, 0.055, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85098, 0.603922, 0.168627, 0.92)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="LockedLabelStyle"]
+bg_color = Color(0.045, 0.025, 0.06, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.28, 0.55, 0.9)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="BattlePortalHub" type="Node2D"]
+metadata/map_width = 1600
+metadata/map_height = 720
+metadata/camera_limit_left = 0
+metadata/camera_limit_top = 0
+metadata/camera_limit_right = 1600
+metadata/camera_limit_bottom = 720
+metadata/map_role = "battle_portal_hub"
+
+[node name="Backdrop" type="Node2D" parent="."]
+z_index = -20
+
+[node name="Void" type="ColorRect" parent="Backdrop"]
+offset_right = 1600.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0.012, 0.018, 0.035, 1)
+
+[node name="UpperGlow" type="Polygon2D" parent="Backdrop"]
+polygon = PackedVector2Array(0, 0, 1600, 0, 1600, 500, 1280, 430, 800, 470, 320, 430, 0, 500)
+color = Color(0.055, 0.09, 0.16, 1)
+
+[node name="CentralRecess" type="Polygon2D" parent="Backdrop"]
+polygon = PackedVector2Array(650, 80, 950, 80, 1040, 672, 560, 672)
+color = Color(0.025, 0.03, 0.055, 1)
+
+[node name="Floor" type="ColorRect" parent="Backdrop"]
+offset_top = 672.0
+offset_right = 1600.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0.12, 0.105, 0.11, 1)
+
+[node name="RegionPortals" type="Node2D" parent="."]
+
+[node name="AutumnPortal" parent="RegionPortals" instance=ExtResource("3_autumn")]
+position = Vector2(280, 672)
+
+[node name="CrystalPortal" parent="RegionPortals" instance=ExtResource("4_crystal")]
+position = Vector2(530, 672)
+
+[node name="FourthRegionPortal" parent="RegionPortals" instance=ExtResource("4_crystal")]
+position = Vector2(1050, 672)
+locked = true
+locked_reason = "第四戰區尚未開放"
+target_scene_path = ""
+interaction_id = &"fourth_region_reserved"
+display_name = "Fourth Region"
+portal_tint = Color(0.38, 0.3, 0.48, 1)
+
+[node name="GraveyardPortal" parent="RegionPortals" instance=ExtResource("5_graveyard")]
+position = Vector2(1270, 672)
+
+[node name="BossPortalAnchor" type="Marker2D" parent="."]
+position = Vector2(800, 672)
+metadata/portal_role = "future_final_boss"
+metadata/unlock_state = "reserved"
+
+[node name="PortalLabels" type="Node2D" parent="."]
+
+[node name="AutumnLabel" type="Label" parent="PortalLabels"]
+offset_left = 185.0
+offset_top = 480.0
+offset_right = 375.0
+offset_bottom = 522.0
+theme_override_colors/font_color = Color(0.67, 1, 0.71, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("PortalLabelStyle")
+text = "秋林戰區"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CrystalLabel" type="Label" parent="PortalLabels"]
+offset_left = 435.0
+offset_top = 480.0
+offset_right = 625.0
+offset_bottom = 522.0
+theme_override_colors/font_color = Color(0.55, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("PortalLabelStyle")
+text = "水晶洞窟"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FourthLabel" type="Label" parent="PortalLabels"]
+offset_left = 955.0
+offset_top = 480.0
+offset_right = 1145.0
+offset_bottom = 522.0
+theme_override_colors/font_color = Color(0.62, 0.55, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("LockedLabelStyle")
+text = "第四戰區・未開放"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GraveyardLabel" type="Label" parent="PortalLabels"]
+offset_left = 1175.0
+offset_top = 480.0
+offset_right = 1365.0
+offset_bottom = 522.0
+theme_override_colors/font_color = Color(0.87, 0.66, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("PortalLabelStyle")
+text = "禁忌墓園"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TownPortal" parent="." instance=ExtResource("2_return")]
+position = Vector2(150, 672)
+target_scene_path = "res://scenes/maps/town.tscn"
+target_spawn_name = &"PlayerSpawn"
+interaction_id = &"battle_hub_return"
+prompt_text = "Return to Town"
+
+[node name="TownVisual" parent="TownPortal" index="3"]
+visible = false
+
+[node name="ReturnLabel" type="Label" parent="."]
+offset_left = 90.0
+offset_top = 610.0
+offset_right = 210.0
+offset_bottom = 646.0
+theme_override_colors/font_color = Color(0.64, 0.72, 0.82, 1)
+theme_override_font_sizes/font_size = 14
+text = "← 返回城鎮"
+horizontal_alignment = 1
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(730, 702)
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(730, 702)
+
+[node name="WorldCollision" type="StaticBody2D" parent="."]
+
+[node name="FloorCollision" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(800, 720)
+shape = SubResource("FloorShape")
+
+[node name="LeftWall" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(-24, 360)
+shape = SubResource("WallShape")
+
+[node name="RightWall" type="CollisionShape2D" parent="WorldCollision"]
+position = Vector2(1624, 360)
+shape = SubResource("WallShape")
+
+[node name="EditorHUDReference" parent="." instance=ExtResource("6_hud")]
+
+[editable path="RegionPortals/AutumnPortal"]
+[editable path="RegionPortals/CrystalPortal"]
+[editable path="RegionPortals/FourthRegionPortal"]
+[editable path="RegionPortals/GraveyardPortal"]
+[editable path="TownPortal"]
+[editable path="EditorHUDReference"]
+[editable path="EditorHUDReference/HUD"]
+[editable path="EditorHUDReference/CardHandUI"]

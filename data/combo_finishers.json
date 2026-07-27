@@ -1,0 +1,69 @@
+{
+  "recipes": [
+    {
+      "id": "thousand_blade_kill",
+      "name": "千刃殺",
+      "sequence": ["echo_volley", "echo_volley", "echo_volley"],
+      "required_skills": ["echo_volley"],
+      "description": "Condense three Echo Volleys into a horizontal storm of blades.",
+      "base_effect": {
+        "damage_bonus": 36,
+        "projectile_bonus": 8,
+        "size_multiplier": 1.65
+      }
+    },
+    {
+      "id": "inferno_cremation",
+      "name": "焚天滅",
+      "sequence": ["flame_imbue", "flame_imbue", "flame_imbue"],
+      "required_skills": ["flame_imbue"],
+      "description": "Compress three flame invocations into one incinerating execution.",
+      "base_effect": {
+        "damage_bonus": 44,
+        "burn_damage": 5,
+        "burn_duration": 5.0,
+        "size_multiplier": 2.0
+      }
+    },
+    {
+      "id": "thunder_prison_pierce",
+      "name": "雷獄穿心",
+      "sequence": ["storm_charge", "storm_charge", "storm_charge"],
+      "required_skills": ["storm_charge"],
+      "description": "Drive a continuous thunder execution through the horizontal lane.",
+      "base_effect": {
+        "damage_bonus": 40,
+        "combo_stun": 0.8,
+        "size_multiplier": 1.8
+      }
+    },
+    {
+      "id": "heavenly_wheel_sever",
+      "name": "天輪斷",
+      "sequence": ["flame_imbue", "echo_volley", "storm_charge"],
+      "required_skills": ["flame_imbue", "echo_volley", "storm_charge"],
+      "description": "Flame opens the route, Echo multiplies it, and Storm executes it.",
+      "base_effect": {
+        "damage_bonus": 52,
+        "projectile_bonus": 3,
+        "burn_damage": 3,
+        "burn_duration": 3.0,
+        "combo_stun": 0.45,
+        "size_multiplier": 2.15
+      }
+    },
+    {
+      "id": "frozen_burial",
+      "name": "霜葬",
+      "sequence": ["frostburst_imbue", "frostburst_imbue", "frostburst_imbue"],
+      "required_skills": ["frostburst_imbue"],
+      "description": "Three frost invocations bury the horizontal lane in ice.",
+      "base_effect": {
+        "damage_bonus": 38,
+        "frost_ratio": 0.55,
+        "frost_duration": 4.0,
+        "size_multiplier": 1.9
+      }
+    }
+  ]
+}

@@ -9,31 +9,39 @@
 [ext_resource type="PackedScene" path="res://scenes/maps/components/TownNPCs.tscn" id="7_npcs"]
 [ext_resource type="PackedScene" uid="uid://ckbaviqhvukg5" path="res://scenes/player/Player.tscn" id="8_player"]
 [ext_resource type="PackedScene" path="res://scenes/maps/components/TownWorldCollision.tscn" id="9_collision"]
+[ext_resource type="PackedScene" path="res://scenes/maps/components/TownEternalForgeIdentity.tscn" id="10_identity"]
 
 [node name="Town" type="Node2D" unique_id=296374039]
 script = ExtResource("1_preview")
-metadata/map_width = 3900
-metadata/map_height = 724
+metadata/map_width = 1942
+metadata/map_height = 720
 metadata/editor_preview_width = 1280
 metadata/editor_preview_height = 720
 metadata/camera_limit_left = 0
 metadata/camera_limit_top = 0
-metadata/camera_limit_right = 3900
-metadata/camera_limit_bottom = 724
+metadata/camera_limit_right = 1942
+metadata/camera_limit_bottom = 720
 
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=1210315716]
-position = Vector2(220, 576)
+position = Vector2(220, 702)
 
 [node name="TownEntranceArrival" type="Marker2D" parent="." unique_id=431745468]
-position = Vector2(480, 576)
+position = Vector2(480, 702)
 
 [node name="TownTailArrival" type="Marker2D" parent="." unique_id=2017773689]
-position = Vector2(3650, 576)
+position = Vector2(1700, 702)
 
 [node name="ParallaxBackground" parent="." unique_id=1600227815 instance=ExtResource("2_backdrop")]
-position = Vector2(-33, -63)
+position = Vector2(0, 0)
+
+[node name="Sky" parent="ParallaxBackground" index="0"]
+visible = false
+
+[node name="Clouds" parent="ParallaxBackground" index="1"]
+visible = false
 
 [node name="Mountains" parent="ParallaxBackground" index="2" unique_id=1144931803]
+visible = false
 position = Vector2(23, 8)
 
 [node name="Mountain01" parent="ParallaxBackground/Mountains" index="0"]
@@ -49,6 +57,7 @@ position = Vector2(3629, 438)
 scale = Vector2(1.3333383, 1.9491838)
 
 [node name="DistantBuildings" parent="ParallaxBackground" index="3" unique_id=1788861348]
+visible = false
 position = Vector2(-259, -50)
 
 [node name="DistantBuildings01" parent="ParallaxBackground/DistantBuildings" index="0" unique_id=1958803097]
@@ -60,54 +69,40 @@ position = Vector2(3662.249, 471.08054)
 scale = Vector2(-1.7873898, 1.9333193)
 
 [node name="Trees" parent="ParallaxBackground" index="4" unique_id=1098043427]
+visible = false
 position = Vector2(177, 12)
 
+[node name="DistantBuildings2" parent="ParallaxBackground" index="5"]
+visible = false
+
 [node name="Trees2" parent="ParallaxBackground" index="6" unique_id=1703298562]
+visible = false
 position = Vector2(-161, -2)
 
 [node name="Buildings" parent="." unique_id=961392485 instance=ExtResource("4_buildings")]
-position = Vector2(8, 39)
+visible = false
 metadata/layer_role = "near"
 
 [node name="Ground" parent="." unique_id=148187483 instance=ExtResource("3_ground")]
-position = Vector2(0, -4)
+visible = false
 metadata/layer_role = "ground"
 
 [node name="Props" parent="." unique_id=1884118247 instance=ExtResource("5_props")]
-position = Vector2(17, 33)
+visible = false
 metadata/layer_role = "near"
 
 [node name="Portals" parent="." unique_id=1397079685 instance=ExtResource("6_portals")]
-position = Vector2(671, 20)
 metadata/layer_role = "near"
-
-[node name="EntranceFastTravelPortal" parent="Portals" index="0" unique_id=990929359]
-position = Vector2(-191, 644)
-
-[node name="ForestPortal" parent="Portals" index="1" unique_id=2077706239]
-position = Vector2(2137, 646)
-
-[node name="CavesPortal" parent="Portals" index="2" unique_id=2069987569]
-position = Vector2(2363, 650)
-
-[node name="GraveyardPortal" parent="Portals" index="3" unique_id=804408309]
-position = Vector2(2564, 646)
-
-[node name="EastRoadPortal" parent="Portals" index="4" unique_id=709159382]
-position = Vector2(1922, 652)
 
 [node name="NPCs" parent="." unique_id=2141749617 instance=ExtResource("7_npcs")]
-position = Vector2(5, 38)
 metadata/layer_role = "near"
 
-[node name="BlacksmithInteractive" parent="NPCs" index="5"]
-position = Vector2(2139, 608)
+[node name="EternalForgeIdentity" parent="." instance=ExtResource("10_identity")]
 
 [node name="Player" parent="." unique_id=1438006060 instance=ExtResource("8_player")]
-position = Vector2(220, 647)
+position = Vector2(220, 702)
 
 [node name="WorldCollision" parent="." unique_id=477183193 instance=ExtResource("9_collision")]
-position = Vector2(6, 39)
 
 [editable path="ParallaxBackground"]
 [editable path="ParallaxBackground/Clouds"]

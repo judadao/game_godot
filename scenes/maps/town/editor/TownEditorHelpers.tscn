@@ -7,7 +7,7 @@ z_index = 200
 script = ExtResource("1_helpers")
 
 [node name="MapBounds" type="Line2D" parent="."]
-points = PackedVector2Array(0, 0, 3900, 0, 3900, 724, 0, 724, 0, 0)
+points = PackedVector2Array(0, 0, 1942, 0, 1942, 720, 0, 720, 0, 0)
 width = 4.0
 default_color = Color(1, 0.24, 0.18, 0.9)
 
@@ -25,7 +25,7 @@ theme_override_colors/font_color = Color(1, 0.86, 0.38, 1)
 theme_override_colors/font_outline_color = Color(0.08, 0.04, 0.02, 1)
 theme_override_constants/outline_size = 5
 theme_override_font_sizes/font_size = 24
-text = "TOWN — COMPLETE MAP"
+text = "TOWN — ETERNAL FORGE V1"
 
 [node name="SpawnLabel" type="Label" parent="."]
 offset_left = 160.0
@@ -37,54 +37,54 @@ theme_override_constants/outline_size = 4
 text = "◆ PLAYER SPAWN"
 
 [node name="WestDistrict" type="Label" parent="."]
-offset_left = 520.0
+offset_left = 240.0
 offset_top = 120.0
-offset_right = 900.0
+offset_right = 1500.0
 offset_bottom = 154.0
 theme_override_colors/font_color = Color(0.86, 0.94, 1, 0.95)
 theme_override_constants/outline_size = 4
-text = "WEST RESIDENTIAL / FAST TRAVEL"
+text = "MATERIAL YARD / PLAYER BLACKSMITH"
 
 [node name="CivicDistrict" type="Label" parent="."]
-offset_left = 1450.0
+offset_left = 1850.0
 offset_top = 120.0
-offset_right = 1780.0
+offset_right = 3200.0
 offset_bottom = 154.0
 theme_override_colors/font_color = Color(0.86, 0.94, 1, 0.95)
 theme_override_constants/outline_size = 4
-text = "CIVIC / MARKET"
+text = "ETERNAL FLAME / BATTLE PORTAL"
 
 [node name="EastDistrict" type="Label" parent="."]
-offset_left = 2450.0
+offset_left = 3350.0
 offset_top = 120.0
-offset_right = 2900.0
+offset_right = 5100.0
 offset_bottom = 154.0
 theme_override_colors/font_color = Color(0.86, 0.94, 1, 0.95)
 theme_override_constants/outline_size = 4
-text = "EAST GATES / MAP TRANSITIONS"
+text = "TOWN HALL / SWORD SOUL DISTRICT"
 
 [node name="ForestPortalLabel" type="Label" parent="."]
-offset_left = 2700.0
+offset_left = 2440.0
 offset_top = 548.0
-offset_right = 2980.0
+offset_right = 2670.0
 offset_bottom = 582.0
 theme_override_colors/font_color = Color(1, 0.58, 0.24, 1)
 theme_override_constants/outline_size = 4
 text = "→ AUTUMN TREE"
 
 [node name="CavesPortalLabel" type="Label" parent="."]
-offset_left = 2980.0
+offset_left = 2640.0
 offset_top = 548.0
-offset_right = 3220.0
+offset_right = 2860.0
 offset_bottom = 582.0
 theme_override_colors/font_color = Color(0.45, 0.82, 1, 1)
 theme_override_constants/outline_size = 4
 text = "→ CRYSTAL CAVES"
 
 [node name="GraveyardPortalLabel" type="Label" parent="."]
-offset_left = 3230.0
+offset_left = 2840.0
 offset_top = 548.0
-offset_right = 3510.0
+offset_right = 3100.0
 offset_bottom = 582.0
 theme_override_colors/font_color = Color(0.78, 0.65, 1, 1)
 theme_override_constants/outline_size = 4

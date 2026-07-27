@@ -11,23 +11,22 @@
 [node name="TownNPCs" type="Node2D"]
 
 [node name="Mayor" parent="." instance=ExtResource("1_mayor")]
-position = Vector2(1120, 618)
+position = Vector2(1130, 672)
 
 [node name="VillagerMale" parent="." instance=ExtResource("2_male")]
-position = Vector2(760, 618)
+position = Vector2(1280, 672)
 
 [node name="VillagerFemale" parent="." instance=ExtResource("3_female")]
-position = Vector2(1320, 618)
+position = Vector2(1570, 672)
 
 [node name="Guard" parent="." instance=ExtResource("4_guard")]
-position = Vector2(360, 618)
+position = Vector2(260, 672)
 
 [node name="ItemMerchantInteractive" parent="." instance=ExtResource("5_merchant")]
-position = Vector2(1530, 618)
+position = Vector2(1420, 672)
 
 [node name="BlacksmithInteractive" parent="." instance=ExtResource("6_smith")]
-position = Vector2(2010, 618)
+position = Vector2(550, 672)
 
 [node name="InnkeeperInteractive" parent="." instance=ExtResource("7_innkeeper")]
-position = Vector2(1810, 618)
-
+position = Vector2(1780, 672)

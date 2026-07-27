@@ -1,0 +1,1 @@
+The official Figma connector requires your approval. Click the Figma install/connect prompt, authorize it, then reply **“connected”**. I’ll immediately inspect node `4:2` and create the editable design in the target file without touching Godot runtime files.
