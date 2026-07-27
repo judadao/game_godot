@@ -1093,8 +1093,8 @@ Combo Chain 清單、interaction prompt 與 world-safe area 不重疊、不裁�
 - EXP upgrade page 只隨機顯示最多五張未滿級 instances；全部卡片滿級後才另開
   最多五組合法 Lv.3 fusion page；沒有合法 growth 時才顯示三種永久資源 fallback。
 - 五個成長選項固定為上排三張、下排兩張置中，不使用可捲動的全牌清單。
-- wave new-card reward 遇到 16 張上限時，改開 replacement modal；玩家可選一張
-  現有卡替換，或按 Skip Reward 保留原牌組。
+- wave new-card page 一律提供 `Skip Reward`，讓玩家可維持精簡牌組；若玩家選牌但
+  已達 16 張上限，則改開 replacement modal，可替換一張現有卡或再次 Skip。
 - UI 必須清楚標示 instance level、兩張 fusion 材料與 Lv.1 結果。
 - `CardGrowthUI` 只 emit choice intent，不能直接改 deck、Meta 或 inventory。
 - modal 開啟期間 gameplay clock、AP、skill cooldowns、status、skills、waves 與 projectile

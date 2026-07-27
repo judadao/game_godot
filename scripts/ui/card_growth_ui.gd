@@ -2,6 +2,7 @@ class_name CardGrowthUI
 extends Control
 
 signal choice_confirmed(choice_id: String)
+signal reward_skipped
 
 const MAX_GROWTH_CHOICES := 5
 
@@ -14,6 +15,8 @@ const MAX_GROWTH_CHOICES := 5
 @onready var fusion_section: VBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection
 @onready var fallback_section: VBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection
 @onready var fallback_grid: GridContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection/FallbackGrid
+@onready var required_hint: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/RequiredHint
+@onready var skip_button: Button = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/SkipButton
 @onready var confirm_button: Button = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/ConfirmButton
 
 var _page: Dictionary = {}
@@ -27,6 +30,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	confirm_button.pressed.connect(confirm_selected_choice)
+	skip_button.pressed.connect(skip_reward)
 
 
 func present_page(page: Dictionary) -> void:
@@ -74,6 +78,14 @@ func present_page(page: Dictionary) -> void:
 
 	confirm_button.disabled = _choice_buttons.is_empty()
 	confirm_button.text = "CONFIRM CHOICE"
+	var can_skip := String(_page.get("source", "")).to_lower() == "wave" and not new_cards.is_empty()
+	skip_button.visible = can_skip
+	skip_button.disabled = not can_skip
+	required_hint.text = (
+		"Choose a card, or skip to keep your expedition deck compact."
+		if can_skip
+		else "A choice is required. This screen cannot be skipped."
+	)
 	visible = true
 	if not _choice_buttons.is_empty():
 		_wire_focus_navigation()
@@ -104,6 +116,17 @@ func confirm_selected_choice() -> void:
 	for button in _choice_buttons:
 		button.disabled = true
 	choice_confirmed.emit(_selected_choice_id)
+
+
+func skip_reward() -> void:
+	if _confirmed or not skip_button.visible or skip_button.disabled:
+		return
+	_confirmed = true
+	skip_button.disabled = true
+	confirm_button.disabled = true
+	for button in _choice_buttons:
+		button.disabled = true
+	reward_skipped.emit()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -221,6 +244,10 @@ func _wire_focus_navigation() -> void:
 	confirm_button.focus_neighbor_top = confirm_button.get_path_to(_choice_buttons[-1])
 	confirm_button.focus_previous = confirm_button.get_path_to(_choice_buttons[-1])
 	confirm_button.focus_next = confirm_button.get_path_to(_choice_buttons[0])
+	if skip_button.visible:
+		skip_button.focus_neighbor_top = skip_button.get_path_to(_choice_buttons[-1])
+		skip_button.focus_previous = skip_button.get_path_to(_choice_buttons[-1])
+		skip_button.focus_next = skip_button.get_path_to(confirm_button)
 
 
 func _new_card_text(choice: Dictionary) -> String:

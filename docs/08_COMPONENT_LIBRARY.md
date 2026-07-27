@@ -1428,6 +1428,9 @@ Required semantic children:
 - `BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack`
 - `FooterRail`
 
+`ComboSkillRows` 是固定高度、會裁切溢位的 projection viewport；最多只投影最近
+三種 Combo 能力，技能數量不得回推並放大 `ActivityFeed` 或 `BottomStage`。
+
 `AutumnCardHandUI` 是 HUD 內的 presentation subtree，不是可被 map 或 `Game`
 另外 adopt 的 sibling authority。
 

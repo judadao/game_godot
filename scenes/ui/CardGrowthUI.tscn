@@ -182,10 +182,17 @@ text = "A choice is required. This screen cannot be skipped."
 vertical_alignment = 1
 autowrap_mode = 2
 
+[node name="SkipButton" type="Button" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer"]
+custom_minimum_size = Vector2(190, 54)
+layout_mode = 2
+focus_neighbor_left = NodePath(".")
+focus_neighbor_right = NodePath("../ConfirmButton")
+text = "SKIP REWARD"
+
 [node name="ConfirmButton" type="Button" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer"]
 custom_minimum_size = Vector2(230, 54)
 layout_mode = 2
-focus_neighbor_left = NodePath(".")
+focus_neighbor_left = NodePath("../SkipButton")
 focus_neighbor_right = NodePath(".")
 theme_type_variation = &"ConfirmButton"
 text = "CONFIRM CHOICE"

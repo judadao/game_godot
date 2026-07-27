@@ -17,6 +17,7 @@ func _run() -> void:
 	_expect(ui.process_mode == Node.PROCESS_MODE_ALWAYS, "Card growth UI must process while gameplay is paused.")
 	_expect(ui.mouse_filter == Control.MOUSE_FILTER_STOP, "The modal root must block pointer input from reaching combat.")
 	_expect(ui.has_signal("choice_confirmed"), "Card growth UI must expose the choice_confirmed intent signal.")
+	_expect(ui.has_signal("reward_skipped"), "Card growth UI must expose the optional new-card Skip intent.")
 
 	var wave_page := {
 		"event_id": 11,
@@ -33,6 +34,8 @@ func _run() -> void:
 	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Source") as Label).text.contains("WAVE"), "Wave source must remain visible.")
 	_expect(ui.call("get_choice_button_count") == 2, "Duplicate choice IDs must not create ambiguous buttons.")
 	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/ConfirmButton") as Button).disabled, "The first presented choice must be selected and confirmable.")
+	var skip_button := ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/SkipButton") as Button
+	_expect(skip_button.visible and not skip_button.disabled, "Wave new-card pages must allow players to keep a compact deck by skipping.")
 	var wave_buttons := ui.call("get_choice_buttons") as Array
 	_expect(
 		(wave_buttons[0] as Button).get_node_or_null((wave_buttons[0] as Button).focus_neighbor_right) == wave_buttons[1],
@@ -70,6 +73,7 @@ func _run() -> void:
 	}
 	ui.call("present_page", experience_page)
 	await process_frame
+	_expect(not skip_button.visible, "Experience upgrades must remain mandatory and must not expose the new-card Skip action.")
 	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "CHOOSE AN UPGRADE", "EXP growth must identify the unfinished-card upgrade page.")
 	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection") as Control).visible, "EXP pages must expose individual upgrades.")
 	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection") as Control).visible, "EXP upgrade and fusion choices must share one compact five-card layout.")

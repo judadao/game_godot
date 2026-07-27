@@ -81,6 +81,23 @@ func _run() -> void:
 	)
 
 	var growth_queue := game.get("growth_choice_queue") as GrowthChoiceQueue
+	var compact_deck_size := run.card_instances.size()
+	_expect(
+		growth_queue.enqueue_wave_blessing([
+			{"card_id": "storm_charge", "name": "Storm Charge"},
+		]),
+		"A new-card reward must be offered even when the deck is not full."
+	)
+	game.call("_open_next_growth_choice")
+	await process_frame
+	var compact_growth_ui := game.get_open_ui("CardGrowthUI") as Control
+	_expect(compact_growth_ui != null, "A non-full deck must show the optional new-card reward.")
+	compact_growth_ui.call("skip_reward")
+	await process_frame
+	_expect(
+		growth_queue.is_empty() and run.card_instances.size() == compact_deck_size,
+		"Skipping a new-card reward must preserve a compact non-full deck."
+	)
 	_expect(
 		growth_queue.enqueue_wave_blessing([
 			{"card_id": "storm_charge", "name": "Storm Charge"},

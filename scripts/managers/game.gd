@@ -782,6 +782,10 @@ func _open_next_growth_choice() -> void:
 		"choice_confirmed",
 		_on_growth_choice_confirmed.bind(ui_control)
 	)
+	ui_control.connect(
+		"reward_skipped",
+		_on_growth_reward_skipped.bind(ui_control)
+	)
 
 
 func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void:
@@ -817,6 +821,14 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 	if run_state.pending_level_ups > 0 and growth_choice_queue.is_empty():
 		_enqueue_experience_growth()
 	elif not growth_choice_queue.is_empty():
+		call_deferred("_open_next_growth_choice")
+
+
+func _on_growth_reward_skipped(ui_control: Control) -> void:
+	if growth_choice_queue.skip_wave_reward().is_empty():
+		return
+	close_ui(ui_control)
+	if not growth_choice_queue.is_empty():
 		call_deferred("_open_next_growth_choice")
 
 

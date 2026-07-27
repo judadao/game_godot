@@ -582,13 +582,23 @@ theme_override_colors/font_color = Color(0.62, 0.68, 0.7, 1)
 theme_override_font_sizes/font_size = 9
 text = "3 POWER  ·  6 LIFESTEAL  ·  9 STUN"
 
-[node name="ComboSkillRows" type="VBoxContainer" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+[node name="ComboSkillRows" type="Control" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 3
+clip_contents = true
 mouse_filter = 2
 
-[node name="EmptyCombo" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows"]
+[node name="Rows" type="VBoxContainer" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 58.0
+grow_horizontal = 2
+theme_override_constants/separation = 2
+mouse_filter = 2
+
+[node name="EmptyCombo" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows/Rows"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.34, 0.44, 0.46, 1)
 theme_override_font_sizes/font_size = 10

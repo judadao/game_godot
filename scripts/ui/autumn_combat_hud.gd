@@ -7,6 +7,7 @@ signal redraw_requested
 signal group_changed(group_index: int)
 
 const MAX_SKILL_TOASTS := 3
+const MAX_VISIBLE_COMBO_SKILLS := 3
 const SKILL_TOAST_LIFETIME := 1.5
 
 @onready var hp_bar: ProgressBar = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow/HPBar
@@ -28,7 +29,7 @@ const SKILL_TOAST_LIFETIME := 1.5
 @onready var _feed_empty_state: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/FeedEmptyState
 @onready var _combo_summary: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSummary
 @onready var _combo_milestones: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboMilestones
-@onready var _combo_skill_rows: VBoxContainer = $BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows
+@onready var _combo_skill_rows: VBoxContainer = $BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows/Rows
 @onready var _card_hand: AutumnCardHandUI = $BottomStage/CardStage/AutumnCardHandUI
 @onready var _action_points_label: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader/APValue
 @onready var _action_points_rate: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader/APRate
@@ -291,7 +292,7 @@ func set_combo_chain(skills: Array, total: int = 0, remaining: float = 0.0) -> v
 	)
 	if not rebuild_rows:
 		return
-	for skill_variant in skills.slice(0, 6):
+	for skill_variant in skills.slice(0, MAX_VISIBLE_COMBO_SKILLS):
 		if not skill_variant is Dictionary:
 			continue
 		var skill := skill_variant as Dictionary

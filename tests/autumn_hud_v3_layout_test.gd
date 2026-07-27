@@ -57,6 +57,28 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	var screen := Rect2(Vector2.ZERO, Vector2(viewport_size))
 	var bottom_stage := hud.get_node("BottomStage") as HBoxContainer
 	var bottom_rect := _canvas_rect(bottom_stage)
+	var activity_feed := hud.get_node("BottomStage/ActivityFeed") as Control
+	var activity_rect_before_dense_combo := _canvas_rect(activity_feed)
+	var dense_combo_skills: Array[Dictionary] = []
+	for index in 18:
+		dense_combo_skills.append({
+			"name": "Long Combo Ability Name %02d" % index,
+			"count": index + 1,
+		})
+	hud.call("set_combo_chain", dense_combo_skills, 171, 9.8)
+	await process_frame
+	await process_frame
+	var combo_viewport := hud.get_node(
+		"BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows"
+	) as Control
+	var combo_rows := combo_viewport.get_node("Rows") as VBoxContainer
+	_expect(combo_viewport.clip_contents, "Combo ability rows must be clipped inside a fixed HUD viewport at %s." % viewport_size)
+	_expect(combo_rows.get_child_count() == 3, "Only three recent Combo abilities may occupy HUD layout space at %s." % viewport_size)
+	_expect(
+		_canvas_rect(activity_feed).is_equal_approx(activity_rect_before_dense_combo),
+		"Dense Combo abilities must not resize the ActivityFeed frame at %s." % viewport_size
+	)
+	bottom_rect = _canvas_rect(bottom_stage)
 	_expect(
 		absf(bottom_rect.position.y - float(viewport_size.y) * 0.66 - 6.0) <= 5.0,
 		"Autumn bottom stage must begin at the approved 66%% gameplay boundary at %s; got %.1f." % [

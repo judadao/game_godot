@@ -433,7 +433,8 @@ next_required = ceil(previous_required * 1.32 + 12)
 - 只有兩者都沒有候選時，改選 75 gold、12 autumn wood + 8 stone、
   或 4 magic shards。
 
-Wave blessing 是另一種 queue source，只提供 new card，不混入 upgrade/fusion。
+Wave blessing 是另一種 queue source，只提供 new card，不混入 upgrade/fusion；
+玩家可直接 Skip，以維持精簡牌組。
 牌組已滿 16 張時，選取新卡後必須進入 replacement modal：玩家可移除一張
 現有卡換入獎勵，或 Skip 並維持原牌組。
 `CardGrowthUI` 把最多五個選項固定排成上三張、下兩張置中的兩列，依 FIFO

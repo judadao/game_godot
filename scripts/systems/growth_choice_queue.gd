@@ -119,6 +119,23 @@ func resolve(choice_id: String) -> Dictionary:
 	return {}
 
 
+func skip_wave_reward() -> Dictionary:
+	if _entries.is_empty():
+		return {}
+	var entry := _entries[0]
+	if String(entry.get("source", "")) != "wave":
+		return {}
+	var resolution := {
+		"action": "skip",
+		"event_id": int(entry.get("event_id", 0)),
+		"source": "wave",
+	}
+	_entries.pop_front()
+	choice_resolved.emit(resolution.duplicate(true))
+	queue_changed.emit(_entries.size())
+	return resolution
+
+
 func size() -> int:
 	return _entries.size()
 

@@ -40,9 +40,23 @@ func _run() -> void:
 	_expect((first.get("choices", []) as Array).all(func(choice: Dictionary) -> bool: return String(choice.get("action", "")) == "new_card"), "Wave blessing must only offer new cards.")
 	_expect(queue.resolve("missing").is_empty(), "An invalid choice must not consume the queue.")
 	_expect(queue.size() == 2, "Invalid resolution must leave every entry pending.")
-	var first_choice_id := String(((first.get("choices", []) as Array)[0] as Dictionary).get("choice_id", ""))
+	var skipped_wave := queue.skip_wave_reward()
+	_expect(
+		String(skipped_wave.get("action", "")) == "skip"
+			and String(skipped_wave.get("source", "")) == "wave"
+			and queue.size() == 1,
+		"Wave new-card rewards must be skippable without adding a card."
+	)
+	_expect(queue.skip_wave_reward().is_empty(), "Experience growth must never be skipped through the wave reward API.")
+	queue.clear()
+	_expect(queue.enqueue_wave_blessing(wave_cards), "Wave choice resolution setup must enqueue again.")
+	var replayed_wave := queue.peek()
+	var first_choice_id := String(
+		((replayed_wave.get("choices", []) as Array)[0] as Dictionary).get("choice_id", "")
+	)
 	var wave_resolution := queue.resolve(first_choice_id)
 	_expect(String(wave_resolution.get("action", "")) == "new_card", "Wave resolution must select one card.")
+	_expect(queue.enqueue_experience_growth(upgrades, fusions), "Upgrade choice resolution setup must enqueue after the wave.")
 	var second := queue.peek()
 	var second_actions: Array[String] = []
 	for choice in second.get("choices", []) as Array:
