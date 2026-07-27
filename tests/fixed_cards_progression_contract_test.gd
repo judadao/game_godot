@@ -249,6 +249,7 @@ func _run() -> void:
 		}]
 		player.call("_tick_dash_cooldown", 999.0)
 		_expect(bool(player.call("try_dash", 1)), "Intrinsic Space Dash must execute during combat.")
+		player.call("_advance_dash", float(player.get("dash_duration")))
 		_expect(
 			is_equal_approx(player.global_position.x, dash_origin.x + dash_distance),
 			"One intrinsic Dash must move exactly once, without a second card-effect displacement."
@@ -266,6 +267,7 @@ func _run() -> void:
 		dash_target.global_position = player.global_position + Vector2(dash_distance, 0.0)
 		var expired_health := int(dash_target.get("health"))
 		_expect(bool(player.call("try_dash", 1)), "Intrinsic Dash must remain usable after Dash Combo expires.")
+		player.call("_advance_dash", float(player.get("dash_duration")))
 		_expect(
 			int(dash_target.get("health")) == expired_health,
 			"Intrinsic Dash must stop dealing combo damage after the Dash Combo expires."

@@ -164,6 +164,11 @@ func _apply_infused_statuses(targets: Array, effect: Dictionary) -> void:
 				"duration": float(effect["frost_duration"]),
 				"ratio": float(effect.get("frost_ratio", 0.25)),
 			})
+		if float(effect.get("poison_duration", 0.0)) > 0.0:
+			target.call("apply_status", "poison", {
+				"duration": float(effect["poison_duration"]),
+				"damage": int(effect.get("poison_damage", 1)),
+			})
 		if float(effect.get("combo_stun", 0.0)) > 0.0:
 			target.call("apply_status", "stun", {"duration": float(effect["combo_stun"])})
 

@@ -10,7 +10,7 @@ func _init() -> void:
 func _run() -> void:
 	var cards := CardDatabase.new()
 	_expect(cards.load_catalog(), "Card content must load.")
-	_expect(cards.get_all_cards().size() == 29, "Vertical slice must ship 29 practical cards.")
+	_expect(cards.get_all_cards().size() == 36, "Vertical slice must ship 36 practical cards.")
 	var card_ids := {}
 	var represented_types := {}
 	for card in cards.get_all_cards():

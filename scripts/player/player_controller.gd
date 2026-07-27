@@ -23,7 +23,10 @@ const JUMP_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/leg
 @export var jump_velocity: float = -420.0
 @export var dash_distance: float = 150.0
 @export var dash_cooldown: float = 0.65
+@export var dash_duration: float = 0.14
 @export var dash_evasion_seconds: float = 0.18
+@export var jump_evasion_seconds: float = 0.10
+@export var max_air_jumps: int = 0
 @export var level: int = 1
 @export var character_class: String = "Adventurer"
 @export var experience: int = 0
@@ -43,10 +46,14 @@ const JUMP_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/leg
 var facing_direction: int = 1
 var current_state: StringName = STATE_IDLE
 var _dash_cooldown_remaining: float = 0.0
+var _dash_remaining: float = 0.0
+var _dash_start_position := Vector2.ZERO
+var _dash_collision_layer: int = 0
+var _air_jumps_remaining: int = 0
 var _animation_name: StringName = &""
 var _animation_elapsed: float = 0.0
 var input_enabled: bool = true
-var _invulnerable := false
+var _invulnerability_remaining := 0.0
 var _block := 0
 
 func _ready() -> void:
@@ -56,6 +63,12 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_tick_dash_cooldown(delta)
+	_tick_invulnerability(delta)
+	if _dash_remaining > 0.0:
+		_advance_dash(delta)
+		_update_state(float(facing_direction))
+		_update_character_animation(delta)
+		return
 
 	var direction := get_move_direction()
 	if direction != 0.0:
@@ -63,13 +76,24 @@ func _physics_process(delta: float) -> void:
 
 	velocity.x = direction * speed
 
-	if not is_on_floor():
+	if is_on_floor():
+		_air_jumps_remaining = max_air_jumps
+		if _is_action_just_pressed(ACTION_JUMP):
+			_start_jump()
+	else:
 		velocity.y += gravity * delta
-	elif _is_action_just_pressed(ACTION_JUMP):
-		velocity.y = jump_velocity
+		if _is_action_just_pressed(ACTION_JUMP) and _air_jumps_remaining > 0:
+			_air_jumps_remaining -= 1
+			_start_jump()
 
-	if _is_action_just_pressed(&"dash"):
-		try_dash(signi(direction) if direction != 0.0 else facing_direction)
+	if (
+		_is_action_just_pressed(&"dash")
+		and try_dash(signi(direction) if direction != 0.0 else facing_direction)
+	):
+		_advance_dash(delta)
+		_update_state(float(facing_direction))
+		_update_character_animation(delta)
+		return
 
 	move_and_slide()
 	_update_state(direction)
@@ -112,7 +136,7 @@ func take_hit(
 	unblockable: bool = false,
 	source: Node = null
 ) -> int:
-	if _invulnerable or health <= 0:
+	if is_invulnerable() or health <= 0:
 		return 0
 	var applied := maxi(1, raw_damage - defense)
 	if not unblockable and combat_status_controller != null:
@@ -133,19 +157,31 @@ func take_hit(
 				source.call("take_hit", retaliation, global_position, 0.0)
 			elif source.has_method("take_damage"):
 				source.call("take_damage", retaliation)
-	_invulnerable = true
-	get_tree().create_timer(0.55).timeout.connect(_clear_invulnerability, CONNECT_ONE_SHOT)
+	grant_invulnerability(0.55)
 	return applied
 
+func grant_invulnerability(duration: float) -> void:
+	_invulnerability_remaining = maxf(_invulnerability_remaining, maxf(0.0, duration))
+
+
+func is_invulnerable() -> bool:
+	return _invulnerability_remaining > 0.0
+
+
 func _clear_invulnerability() -> void:
-	_invulnerable = false
+	_invulnerability_remaining = 0.0
+
 
 func revive(at_position: Vector2) -> void:
 	global_position = at_position
 	health = max_health
 	mana = maxi(1, max_mana / 2)
 	velocity = Vector2.ZERO
-	_invulnerable = false
+	_invulnerability_remaining = 0.0
+	_dash_remaining = 0.0
+	if _dash_collision_layer != 0:
+		collision_layer = _dash_collision_layer
+	_dash_collision_layer = 0
 	_block = 0
 	if combat_status_controller != null:
 		combat_status_controller.clear_all()
@@ -186,20 +222,31 @@ func spend_mana(amount: int) -> bool:
 
 
 func try_dash(direction: int = 0) -> bool:
-	if not input_enabled or _dash_cooldown_remaining > 0.0:
+	if not input_enabled or _dash_cooldown_remaining > 0.0 or _dash_remaining > 0.0:
 		return false
 	var dash_direction := direction if direction != 0 else facing_direction
 	set_facing_direction(dash_direction)
-	var start_position := global_position
-	global_position.x += dash_distance * float(facing_direction)
+	_dash_start_position = global_position
+	_dash_remaining = maxf(0.01, dash_duration)
 	_dash_cooldown_remaining = dash_cooldown
-	_invulnerable = true
-	get_tree().create_timer(dash_evasion_seconds).timeout.connect(
-		_clear_invulnerability,
-		CONNECT_ONE_SHOT
-	)
-	dash_performed.emit(start_position, global_position)
+	_dash_collision_layer = collision_layer
+	collision_layer = 0
+	velocity = Vector2(dash_distance * float(facing_direction) / _dash_remaining, 0.0)
+	grant_invulnerability(_dash_remaining + dash_evasion_seconds)
 	return true
+
+
+func _advance_dash(delta: float) -> void:
+	var step := minf(maxf(delta, 0.0), _dash_remaining)
+	velocity = Vector2(dash_distance * float(facing_direction) / maxf(0.01, dash_duration), 0.0)
+	move_and_collide(velocity * step)
+	_dash_remaining = maxf(0.0, _dash_remaining - step)
+	if _dash_remaining > 0.0:
+		return
+	velocity.x = 0.0
+	collision_layer = _dash_collision_layer
+	_dash_collision_layer = 0
+	dash_performed.emit(_dash_start_position, global_position)
 
 
 func add_block(amount: int) -> int:
@@ -237,6 +284,15 @@ func resolve_lifesteal(dealt_damage: int) -> int:
 
 func _tick_dash_cooldown(delta: float) -> void:
 	_dash_cooldown_remaining = maxf(_dash_cooldown_remaining - delta, 0.0)
+
+
+func _tick_invulnerability(delta: float) -> void:
+	_invulnerability_remaining = maxf(_invulnerability_remaining - maxf(delta, 0.0), 0.0)
+
+
+func _start_jump() -> void:
+	velocity.y = jump_velocity
+	grant_invulnerability(jump_evasion_seconds)
 
 func _update_state(direction: float) -> void:
 	var next_state := STATE_IDLE

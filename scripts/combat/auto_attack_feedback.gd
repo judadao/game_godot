@@ -13,6 +13,7 @@ var _target_offset := Vector2.ZERO
 var _travel_progress := 0.0
 var _impact_progress := 0.0
 var _accent := Color(1.0, 0.56, 0.18, 1.0)
+var _attack_size_multiplier := 1.0
 
 
 func play(
@@ -21,11 +22,14 @@ func play(
 	damage: int,
 	combo_count: int,
 	combo_damage_bonus: int = 0,
-	critical: bool = false
+	critical: bool = false,
+	projectile_speed_multiplier: float = 1.0,
+	attack_size_multiplier: float = 1.0
 ) -> void:
 	global_position = origin
 	_target_offset = target_position - origin
 	_accent = _accent_for_combo(combo_count)
+	_attack_size_multiplier = clampf(attack_size_multiplier, 1.0, 2.5)
 	damage_label.text = "%s%d" % ["CRIT  -" if critical else "-", maxi(0, damage)]
 	damage_label.add_theme_color_override("font_color", _accent)
 	combo_label.text = (
@@ -43,7 +47,12 @@ func play(
 	var travel_tween := create_tween()
 	travel_tween.set_trans(Tween.TRANS_QUAD)
 	travel_tween.set_ease(Tween.EASE_OUT)
-	travel_tween.tween_method(_set_travel_progress, 0.0, 1.0, TRAVEL_DURATION)
+	travel_tween.tween_method(
+		_set_travel_progress,
+		0.0,
+		1.0,
+		TRAVEL_DURATION / maxf(0.25, projectile_speed_multiplier)
+	)
 	travel_tween.tween_callback(_show_impact)
 	travel_tween.tween_method(_set_impact_progress, 0.0, 1.0, IMPACT_DURATION)
 	travel_tween.tween_callback(_finish)
@@ -61,13 +70,13 @@ func _draw() -> void:
 	if _travel_progress < 1.0:
 		var tip := Vector2.ZERO.lerp(_target_offset, _travel_progress)
 		var tail := Vector2.ZERO.lerp(_target_offset, maxf(0.0, _travel_progress - 0.24))
-		draw_line(tail, tip, Color(_accent, 0.46), 8.0, true)
-		draw_line(tail, tip, _accent, 3.0, true)
-		draw_circle(tip, 7.0, _accent)
-		draw_circle(tip, 3.0, Color.WHITE)
+		draw_line(tail, tip, Color(_accent, 0.46), 8.0 * _attack_size_multiplier, true)
+		draw_line(tail, tip, _accent, 3.0 * _attack_size_multiplier, true)
+		draw_circle(tip, 7.0 * _attack_size_multiplier, _accent)
+		draw_circle(tip, 3.0 * _attack_size_multiplier, Color.WHITE)
 	if _impact_progress > 0.0:
 		var alpha := 1.0 - _impact_progress
-		var radius := lerpf(8.0, 34.0, _impact_progress)
+		var radius := lerpf(8.0, 34.0, _impact_progress) * _attack_size_multiplier
 		draw_arc(
 			_target_offset,
 			radius,

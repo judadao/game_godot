@@ -10,6 +10,13 @@ const EXPANDED_COMBO_CARD_IDS := [
 	"crushing_momentum",
 	"keen_focus_combo",
 	"storm_charge",
+	"kinetic_acceleration",
+	"giant_arc",
+	"iron_bone",
+	"fleet_footwork",
+	"arcane_breath",
+	"deep_reservoir",
+	"venom_edge",
 ]
 var resources := {
 	"gold": 0,
@@ -33,6 +40,8 @@ var unlocked_cards: Array[String] = [
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
 	"sweeping_reach", "quickened_cadence", "crushing_momentum",
 	"keen_focus_combo", "storm_charge",
+	"kinetic_acceleration", "giant_arc", "iron_bone", "fleet_footwork",
+	"arcane_breath", "deep_reservoir", "venom_edge",
 ]
 var selected_deck: Array[String] = [
 	"guard", "guard", "iron_skin", "healing_light", "renewal",

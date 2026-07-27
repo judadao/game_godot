@@ -72,9 +72,12 @@ func _run() -> void:
 	for card_id in [
 		"sweeping_reach",
 		"quickened_cadence",
+		"kinetic_acceleration",
+		"giant_arc",
 		"crushing_momentum",
 		"keen_focus_combo",
 		"storm_charge",
+		"venom_edge",
 	]:
 		var expanded_card := database_card(game, card_id)
 		_expect(
@@ -98,7 +101,47 @@ func _run() -> void:
 			and float(expanded_attack_effect.get("combo_stun", 0.0)) >= 0.12,
 		"Expanded Combo cards must modify range, speed, power, critical chance, and lightning status."
 	)
+	_expect(
+		float(expanded_attack.get("projectile_speed_multiplier", 1.0)) > 1.0
+			and float(expanded_attack.get("attack_size_multiplier", 1.0)) > 1.0
+			and float(expanded_attack_effect.get("poison_duration", 0.0)) > 0.0,
+		"Offense and element Combo families must project travel speed, attack size, and poison."
+	)
+	var family_requirements := {
+		"offense": ["quickened_cadence", "kinetic_acceleration", "giant_arc", "keen_focus_combo"],
+		"body": ["iron_bone", "fleet_footwork", "arcane_breath", "deep_reservoir"],
+		"element": ["flame_imbue", "frostburst_imbue", "storm_charge", "venom_edge"],
+		"healing": ["healing_light", "blood_pact_combo", "verdant_renewal"],
+	}
+	for family in family_requirements:
+		for card_id in family_requirements[family]:
+			_expect(
+				String(database_card(game, card_id).get("combo_family", "")) == family,
+				"%s must belong to the %s Combo family." % [card_id, family]
+			)
 	run.temporary_buffs["infusion_effects"] = []
+
+	var body_effects: Array = []
+	for card_id in ["iron_bone", "fleet_footwork", "arcane_breath", "deep_reservoir"]:
+		var body_effect := (database_card(game, card_id).get("effect", {}) as Dictionary).duplicate(true)
+		body_effect["remaining_seconds"] = 8.0
+		body_effects.append(body_effect)
+	run.temporary_buffs["infusion_effects"] = body_effects
+	game.call("_refresh_combo_runtime_modifiers")
+	var game_player: Node = game.get("player")
+	_expect(
+		game_player != null
+			and int(game_player.get("defense")) >= int(game_player.get_meta("equipment_defense")) + 2
+			and float(game_player.get("speed")) > float(game_player.get_meta("equipment_speed"))
+			and deck.max_energy > run.max_energy,
+		"Body Combo cards must modify defense, movement speed, and maximum AP at runtime."
+	)
+	_expect(
+		float(game.get("_combo_runtime_totals").get("ap_regen_bonus", 0.0)) >= 0.25,
+		"Arcane Breath must increase runtime AP regeneration."
+	)
+	run.temporary_buffs["infusion_effects"] = []
+	game.call("_refresh_combo_runtime_modifiers")
 
 	deck.start(["flame_imbue", "flame_imbue", "frostburst_imbue", "battle_rhythm"], 5.0)
 	var flame := deck.play_from_hand(0)
@@ -174,6 +217,14 @@ func _run() -> void:
 	_expect(float(status.get("burn_remaining", 0.0)) > 0.0, "Flame infusion must apply burn.")
 	_expect(float(status.get("slow_remaining", 0.0)) > 0.0, "Frost infusion must apply slow.")
 	_expect(float(status.get("stun_remaining", 0.0)) > 0.0, "Dual infusion must briefly stun.")
+	var venom := database_card(game, "venom_edge")
+	var venom_effect := (venom.get("effect", {}) as Dictionary).duplicate(true)
+	venom_effect["remaining_seconds"] = 8.0
+	run.temporary_buffs["infusion_effects"] = [venom_effect]
+	var poisoned_attack := game.call("_apply_combo_infusions_to_card", base) as Dictionary
+	runner.cast(poisoned_attack, player, [enemy])
+	status = enemy.call("get_status_snapshot") as Dictionary
+	_expect(float(status.get("poison_remaining", 0.0)) > 0.0, "Venom infusion must apply poison.")
 	runner.queue_free()
 	enemy.queue_free()
 	player.queue_free()

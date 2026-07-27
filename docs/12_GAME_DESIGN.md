@@ -909,7 +909,28 @@ Future Extension 不等於承諾，不代表已排期，也不可用來填補現
 - `docs/rule_2.md`
 - `.superpowers/sdd/2026-07-25-project-governance/gameplay-testing-audit.md`
 
-## 23. Autumn Battle V2 Presentation Contract
+## 23. Systematic Combo and Mobility Contract
+
+Combat support cards use `combo_family` as a stable gameplay taxonomy:
+
+- `offense`: damage, attack frequency, travel speed, critical chance, reach,
+  and attack size.
+- `body`: defense, movement speed, AP regeneration, and maximum AP.
+- `element`: fire damage over time, frost slow, lightning stun, and poison
+  damage over time.
+- `healing`: immediate healing, lifesteal, and regeneration.
+
+Infusion copies stack for their duration and are projected from the run's
+temporary effects into attacks, player movement/defense, and DeckManager AP.
+Runtime caps prevent unlimited copies from breaking movement or AP economy.
+
+Space Dash is an intrinsic evasive action, not a hand card. It travels over a
+short duration, collides with terrain, phases through enemy bodies, is
+invulnerable during travel, and retains a post-dash evasion window. Up performs
+jump; jump start has a short evasion window. Defeating the progression guardian
+unlocks one air jump and continues to enable equipment-based Dash evolution.
+
+## 24. Autumn Battle V2 Presentation Contract
 
 Autumn Battle V2 reserves the upper 66% of the viewport for world play. The
 remaining space contains the combat dock and footer rail. The camera extends its

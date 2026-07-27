@@ -29,6 +29,9 @@ var _stun_remaining := 0.0
 var _burn_remaining := 0.0
 var _burn_damage := 0
 var _burn_tick_remaining := 1.0
+var _poison_remaining := 0.0
+var _poison_damage := 0
+var _poison_tick_remaining := 0.75
 var _attack_generation := 0
 
 
@@ -62,6 +65,7 @@ func _physics_process(delta: float) -> void:
 	_slow_remaining = maxf(0.0, _slow_remaining - delta)
 	_stun_remaining = maxf(0.0, _stun_remaining - delta)
 	_update_burn(delta)
+	_update_poison(delta)
 	if not is_on_floor():
 		velocity.y += gravity * delta
 	_cooldown = maxf(0.0, _cooldown - delta)
@@ -174,6 +178,10 @@ func apply_status(status_id: String, effect: Dictionary) -> void:
 			_burn_remaining = maxf(_burn_remaining, duration)
 			_burn_damage = maxi(_burn_damage, int(effect.get("damage", 1)))
 			_burn_tick_remaining = minf(_burn_tick_remaining, 1.0)
+		"poison":
+			_poison_remaining = maxf(_poison_remaining, duration)
+			_poison_damage = maxi(_poison_damage, int(effect.get("damage", 1)))
+			_poison_tick_remaining = minf(_poison_tick_remaining, 0.75)
 		_:
 			_slow_ratio = clampf(float(effect.get("ratio", 0.0)), 0.0, 0.95)
 			_slow_remaining = maxf(_slow_remaining, duration)
@@ -185,6 +193,7 @@ func get_status_snapshot() -> Dictionary:
 		"slow_remaining": _slow_remaining,
 		"stun_remaining": _stun_remaining,
 		"burn_remaining": _burn_remaining,
+		"poison_remaining": _poison_remaining,
 	}
 
 
@@ -200,6 +209,9 @@ func reset_encounter(spawn_position: Vector2) -> void:
 	_burn_remaining = 0.0
 	_burn_damage = 0
 	_burn_tick_remaining = 1.0
+	_poison_remaining = 0.0
+	_poison_damage = 0
+	_poison_tick_remaining = 0.75
 	health = int(archetype.get("max_health"))
 	position = spawn_position
 	velocity = Vector2.ZERO
@@ -220,6 +232,17 @@ func _update_burn(delta: float) -> void:
 		return
 	_burn_tick_remaining += 1.0
 	take_hit(_burn_damage, global_position, 0.0)
+
+
+func _update_poison(delta: float) -> void:
+	if _poison_remaining <= 0.0 or _poison_damage <= 0:
+		return
+	_poison_remaining = maxf(0.0, _poison_remaining - delta)
+	_poison_tick_remaining -= delta
+	if _poison_tick_remaining > 0.0:
+		return
+	_poison_tick_remaining += 0.75
+	take_hit(_poison_damage, global_position, 0.0)
 
 
 func _get_attack_telegraph_time() -> float:

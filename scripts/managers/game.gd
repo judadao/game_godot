@@ -111,6 +111,12 @@ var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
 var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
 var _pending_player_state: Dictionary = {}
 var _last_combo_name := "—"
+var _combo_runtime_totals := {
+	"defense_bonus": 0,
+	"move_speed_multiplier": 0.0,
+	"ap_regen_bonus": 0.0,
+	"ap_max_bonus": 0.0,
+}
 var _pending_reward_choice_id := ""
 var _pending_reward_card_id := ""
 var _pending_reward_instance_ids: Array[String] = []
@@ -189,6 +195,7 @@ func _process(delta: float) -> void:
 	var regen_rate := BASE_AP_REGEN
 	regen_rate += float((inventory_manager.call("get_special_ability_totals") as Dictionary).get("ap_regen", 0.0))
 	regen_rate += float(run_state.temporary_buffs.get("level_ap_regen", 0.0))
+	regen_rate += float(_combo_runtime_totals.get("ap_regen_bonus", 0.0))
 	var wisp_seconds := float(run_state.temporary_buffs.get("ap_wisp_seconds", 0.0))
 	if wisp_seconds > 0.0:
 		regen_rate += float(run_state.temporary_buffs.get("ap_wisp_rate", WISP_AP_REGEN))
@@ -529,6 +536,9 @@ func _apply_intrinsic_dash_upgrades() -> void:
 	var equipment_specials := {}
 	if meta_state.dash_upgrade_unlocked:
 		equipment_specials = inventory_manager.call("get_special_ability_totals") as Dictionary
+	var air_jump_value: Variant = player.get("max_air_jumps")
+	if air_jump_value != null:
+		player.set("max_air_jumps", 1 if meta_state.dash_upgrade_unlocked else 0)
 	var distance_value: Variant = player.get("dash_distance")
 	if distance_value != null:
 		if not player.has_meta("base_dash_distance"):
@@ -1090,8 +1100,8 @@ func _show_card_reward_choices(wave_number: int) -> void:
 	if not run_state.active:
 		return
 	var choices_by_wave := {
-		2: ["sweeping_reach", "crushing_momentum", "healing_light"],
-		3: ["quickened_cadence", "keen_focus_combo", "storm_charge"],
+		2: ["sweeping_reach", "kinetic_acceleration", "fleet_footwork", "healing_light"],
+		3: ["quickened_cadence", "deep_reservoir", "storm_charge", "venom_edge"],
 	}
 	var card_ids: Array = choices_by_wave.get(wave_number, ["guard", "renewal", "frostburst_imbue"])
 	var choices: Array[Dictionary] = []
@@ -1131,6 +1141,7 @@ func _finish_run(victory: bool) -> Dictionary:
 		return {}
 	var summary := run_state.finish_run(victory)
 	_auto_attack_remaining = 0.0
+	_refresh_combo_runtime_modifiers()
 	_update_player_input_state()
 	_set_tactical_slowdown(false)
 	card_hand_ui.visible = false
@@ -1302,7 +1313,9 @@ func _spawn_auto_attack_feedback(
 		damage,
 		int(run_state.temporary_buffs.get("combo_chain_count", 0)),
 		power_bonus,
-		bool(result.get("critical", false))
+		bool(result.get("critical", false)),
+		float(card.get("projectile_speed_multiplier", 1.0)),
+		float(card.get("attack_size_multiplier", 1.0))
 	)
 
 
@@ -1448,6 +1461,7 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 	effects.append(timed_effect)
 	run_state.temporary_buffs["infusion_effects"] = effects
 	_try_evolve_combo_abilities()
+	_refresh_combo_runtime_modifiers()
 	return true
 
 
@@ -1587,6 +1601,54 @@ func _rebuild_combo_state_from_effects(effects: Array) -> void:
 			active.append(infusion_id)
 	run_state.temporary_buffs["active_infusions"] = active
 	run_state.temporary_buffs["combo_levels"] = levels
+	_refresh_combo_runtime_modifiers()
+
+
+func _refresh_combo_runtime_modifiers() -> void:
+	_combo_runtime_totals = {
+		"defense_bonus": 0,
+		"move_speed_multiplier": 0.0,
+		"ap_regen_bonus": 0.0,
+		"ap_max_bonus": 0.0,
+	}
+	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
+	if effects_variant is Array:
+		for effect_variant in effects_variant:
+			if not effect_variant is Dictionary:
+				continue
+			var effect := effect_variant as Dictionary
+			_combo_runtime_totals["defense_bonus"] = (
+				int(_combo_runtime_totals["defense_bonus"])
+				+ int(effect.get("defense_bonus", 0))
+			)
+			_combo_runtime_totals["move_speed_multiplier"] = (
+				float(_combo_runtime_totals["move_speed_multiplier"])
+				+ float(effect.get("move_speed_multiplier", 0.0))
+			)
+			_combo_runtime_totals["ap_regen_bonus"] = (
+				float(_combo_runtime_totals["ap_regen_bonus"])
+				+ float(effect.get("ap_regen_bonus", 0.0))
+			)
+			_combo_runtime_totals["ap_max_bonus"] = (
+				float(_combo_runtime_totals["ap_max_bonus"])
+				+ float(effect.get("ap_max_bonus", 0.0))
+			)
+	_combo_runtime_totals["defense_bonus"] = mini(20, int(_combo_runtime_totals["defense_bonus"]))
+	_combo_runtime_totals["move_speed_multiplier"] = minf(
+		0.75,
+		float(_combo_runtime_totals["move_speed_multiplier"])
+	)
+	_combo_runtime_totals["ap_regen_bonus"] = minf(3.0, float(_combo_runtime_totals["ap_regen_bonus"]))
+	_combo_runtime_totals["ap_max_bonus"] = minf(6.0, float(_combo_runtime_totals["ap_max_bonus"]))
+	if player != null:
+		var base_defense := int(player.get_meta("equipment_defense", player.defense))
+		var base_speed := float(player.get_meta("equipment_speed", player.speed))
+		player.defense = base_defense + int(_combo_runtime_totals["defense_bonus"])
+		player.speed = base_speed * (1.0 + float(_combo_runtime_totals["move_speed_multiplier"]))
+	if run_state.active:
+		deck_manager.max_energy = run_state.max_energy + float(_combo_runtime_totals["ap_max_bonus"])
+		deck_manager.energy = minf(deck_manager.energy, deck_manager.max_energy)
+		run_state.energy = deck_manager.energy
 
 
 func _get_combo_time_remaining() -> float:
@@ -1653,6 +1715,17 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 				float(infused.get("auto_attack_interval", DEFAULT_AUTO_ATTACK_INTERVAL))
 				* float(infusion.get("attack_interval_multiplier", 1.0))
 			)
+			infused["projectile_speed_multiplier"] = (
+				float(infused.get("projectile_speed_multiplier", 1.0))
+				* float(infusion.get("projectile_speed_multiplier", 1.0))
+			)
+			var size_multiplier := float(infusion.get("attack_size_multiplier", 1.0))
+			infused["attack_size_multiplier"] = (
+				float(infused.get("attack_size_multiplier", 1.0))
+				* size_multiplier
+			)
+			if effect.has("radius"):
+				effect["radius"] = float(effect["radius"]) * size_multiplier
 			effect["critical_chance"] = clampf(
 				float(effect.get("critical_chance", 0.0))
 				+ float(infusion.get("critical_chance", 0.0)),
@@ -1675,6 +1748,12 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			has_frost = true
 			effect["frost_ratio"] = float(infusion.get("frost_ratio", 0.25))
 			effect["frost_duration"] = float(effect.get("frost_duration", 0.0)) + float(infusion.get("frost_duration", 0.0))
+		elif infusion_id == "venom":
+			effect["poison_damage"] = int(infusion.get("poison_damage", 1))
+			effect["poison_duration"] = (
+				float(effect.get("poison_duration", 0.0))
+				+ float(infusion.get("poison_duration", 0.0))
+			)
 		elif infusion_id == "thermal_shatter":
 			has_flame = true
 			has_frost = true
@@ -2293,7 +2372,10 @@ func _apply_equipment_stats() -> void:
 	player.max_health = maxi(player.max_health, equipment_health) if run_state.active else equipment_health
 	player.max_mana = maxi(player.max_mana, equipment_mana) if run_state.active else equipment_mana
 	player.speed = 260.0 * (1.0 + float(effects.get("move_speed_multiplier", 0.0)))
+	player.set_meta("equipment_defense", player.defense)
+	player.set_meta("equipment_speed", player.speed)
 	_apply_intrinsic_dash_upgrades()
+	_refresh_combo_runtime_modifiers()
 	player.health = mini(player.health, player.max_health)
 	player.mana = mini(player.mana, player.max_mana)
 	_update_hud_resources()

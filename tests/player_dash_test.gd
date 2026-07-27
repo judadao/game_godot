@@ -23,8 +23,18 @@ func _run() -> void:
 		quit(1)
 		return
 	var start: Vector2 = player.global_position
+	var original_collision_layer: int = player.collision_layer
 	_expect(bool(player.call("try_dash", 1)), "Ready player must be able to dash.")
+	_expect(bool(player.call("is_invulnerable")), "Dash must grant invulnerability immediately.")
+	_expect(player.collision_layer == 0, "Dash must temporarily phase through enemy body collisions.")
+	player.call("_advance_dash", float(player.get("dash_duration")))
 	_expect(player.global_position.x > start.x, "Dash must move the player in the requested direction.")
+	_expect(player.collision_layer == original_collision_layer, "Dash must restore the player collision layer after movement.")
+	_expect(bool(player.call("is_invulnerable")), "Post-dash evasion must remain active after movement ends.")
+	player.call("grant_invulnerability", 0.8)
+	player.call("grant_invulnerability", 0.1)
+	player.call("_tick_invulnerability", 0.2)
+	_expect(bool(player.call("is_invulnerable")), "A shorter evasion source must not cancel a longer invulnerability window.")
 	_expect(not bool(player.call("try_dash", 1)), "Dash cooldown must prevent immediate repeated dashes.")
 	player.call("_tick_dash_cooldown", float(player.get("dash_cooldown")))
 	_expect(bool(player.call("try_dash", -1)), "Dash must become available after cooldown.")
