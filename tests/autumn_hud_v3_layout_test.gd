@@ -47,8 +47,9 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	])
 	hud.call("set_cards", _sample_cards(), 5.0)
 	hud.call("set_action_points", 5.0, 5.0)
-	hud.call("set_cooldown_cards", [
-		{"card_id": "guard", "name": "Iron Will", "remaining_seconds": 6.2},
+	hud.call("set_combo_chain", [
+		{"name": "Iron Will", "count": 2},
+		{"name": "Flame Imbue", "count": 3},
 	])
 	await process_frame
 	await process_frame
@@ -97,7 +98,6 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 		"Boss/toast projections must not cover the lower card stage at %s." % viewport_size
 	)
 
-	var cooldown := hud.get_node("BottomStage/CardStage/ActionStrip/CooldownStrip") as Control
 	var hand := hud.get_node("BottomStage/CardStage/AutumnCardHandUI") as CardHandUI
 	var redraw := hud.get_node("BottomStage/CardStage/ActionStrip/RedrawHand") as Button
 	_expect(
@@ -105,8 +105,8 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 		"Redraw must remain mouse-interactive at %s." % viewport_size
 	)
 	_expect(
-		_canvas_rect(cooldown).end.y <= _canvas_rect(hand).position.y + 1.5,
-		"Cooldown strip must remain above the embedded hand at %s." % viewport_size
+		not hud.has_node("BottomStage/CardStage/ActionStrip/CooldownStrip"),
+		"Card cooldown UI must remain removed at %s." % viewport_size
 	)
 	_expect(hand.get_card_button_count() == 4, "Embedded Autumn hand must render only the active four-card group at %s." % viewport_size)
 	for index in hand.get_card_button_count():

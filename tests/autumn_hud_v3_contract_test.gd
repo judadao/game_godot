@@ -55,9 +55,9 @@ func _run() -> void:
 			"TopRightMeta",
 			"TopCenterStack/BossHealth",
 			"BottomStage/PlayerVitals",
-			"BottomStage/CardStage/ActionStrip/CooldownStrip",
 			"BottomStage/CardStage/ActionStrip/RedrawHand",
 			"BottomStage/CardStage/AutumnCardHandUI",
+			"BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows",
 			"BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack",
 			"FooterRail",
 		]:
@@ -70,7 +70,7 @@ func _run() -> void:
 			"set_boss_health",
 			"hide_boss_health",
 			"show_skill_toast",
-			"set_cooldown_cards",
+			"set_combo_chain",
 			"set_material_count",
 		]:
 			_expect(
@@ -78,8 +78,8 @@ func _run() -> void:
 				"AutumnHUD must expose the %s projection API." % method_name
 			)
 		_expect(
-			autumn_hud.find_child("ComboHint", true, false) == null,
-			"AutumnHUD must not expose persistent combo or Skill recipe progress."
+			not autumn_hud.has_node("BottomStage/CardStage/ActionStrip/CooldownStrip"),
+			"AutumnHUD must use AP instead of a card cooldown strip."
 		)
 		_expect(autumn_hud.has_node("InteractionPanel"), "AutumnHUD must contain its interaction prompt.")
 		var prompt := autumn_hud.get_node_or_null("InteractionPanel")

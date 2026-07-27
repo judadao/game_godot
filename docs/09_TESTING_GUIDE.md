@@ -303,7 +303,7 @@ instance.queue_free()
 - semantic node rect 在 viewport 內；
 - top-left 與 top-center 不互蓋；
 - bottom stage 不蓋 world interaction prompt；
-- 兩列 cards、cooldown strip、AP、resources 不裁切；
+- 四張 Combo／Healing cards、AP、Combo Chain 清單與 resources 不裁切；
 - 1152×720 與 2560×1080 仍保持相同 ownership，不生成替代 layout；
 - modal choice grid、繁中/英文長字、focus navigation 與 confirm button 可用。
 

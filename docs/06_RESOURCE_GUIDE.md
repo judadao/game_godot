@@ -484,7 +484,7 @@ extends Resource
 
 ### 9.1 MetaState
 
-`MetaState.SCHEMA_VERSION = 5`。
+`MetaState.SCHEMA_VERSION = 7`。
 
 主要fields：
 

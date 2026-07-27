@@ -16,11 +16,11 @@ func _run() -> void:
 		"The defense card type must be removed from the catalog."
 	)
 
-	_expect_card(database, "guard", "Iron Will", "combo", 1, "cooldown", 8.0)
-	_expect_card(database, "iron_skin", "Stone Form", "combo", 2, "cooldown", 12.0)
-	_expect_card(database, "fortress_stance", "Unbreakable Stance", "combo", 4, "cooldown", 18.0)
-	_expect_card(database, "stoneguard_combo", "Counterguard", "combo", 3, "cooldown", 14.0)
-	_expect_card(database, "healing_light", "Healing Light", "healing", 1, "exhaust", 0.0)
+	_expect_card(database, "guard", "Iron Will", "combo", 1, "discard", 0.0)
+	_expect_card(database, "iron_skin", "Stone Form", "combo", 2, "discard", 0.0)
+	_expect_card(database, "fortress_stance", "Unbreakable Stance", "combo", 4, "discard", 0.0)
+	_expect_card(database, "stoneguard_combo", "Counterguard", "combo", 3, "discard", 0.0)
+	_expect_card(database, "healing_light", "Healing Light", "healing", 1, "discard", 0.0)
 	_expect_healing_card(database, "renewal")
 	_expect_healing_card(database, "blood_pact_combo")
 	_expect_healing_card(database, "verdant_renewal")
@@ -90,7 +90,7 @@ func _expect_card(
 	)
 	_expect(
 		is_equal_approx(float(card.get("cooldown_seconds", 0.0)), expected_cooldown),
-		"%s must expose its cooldown." % card_id
+		"%s must not require a cooldown in AP-only combat." % card_id
 	)
 
 
@@ -99,6 +99,11 @@ func _expect_healing_card(database: CardDatabase, card_id: String) -> void:
 	_expect(not card.is_empty(), "%s must exist." % card_id)
 	_expect(String(card.get("type", "")) == "healing", "%s must be a green healing card." % card_id)
 	_expect(String(card.get("card_color", "")) == "green", "%s must expose green presentation metadata." % card_id)
+	_expect(
+		String(card.get("play_destination", "")) == "discard"
+			and is_zero_approx(float(card.get("cooldown_seconds", 0.0))),
+		"%s must recycle through discard and use AP instead of cooldown." % card_id
+	)
 
 
 func _expect(condition: bool, message: String) -> void:

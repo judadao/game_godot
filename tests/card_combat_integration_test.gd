@@ -56,6 +56,18 @@ func _run() -> void:
 		),
 		"Manual Attack cards must leave the hand and follow ordinary discard routing."
 	)
+	var critical_card := database.get_card("ember_bolt")
+	var critical_effect := (critical_card.get("effect", {}) as Dictionary).duplicate(true)
+	critical_effect["critical_chance"] = 1.0
+	critical_effect["critical_multiplier"] = 2.0
+	critical_card["effect"] = critical_effect
+	var critical_health_before := int(second_enemy.get("health"))
+	var critical_result := runner.call("cast", critical_card, player, [second_enemy]) as Dictionary
+	_expect(
+		bool(critical_result.get("critical", false))
+			and critical_health_before - int(second_enemy.get("health")) > 12,
+		"Guaranteed critical projection must deal the configured doubled damage."
+	)
 
 	var guard_index := deck.hand.find("guard")
 	var guard_card := deck.play_from_hand(guard_index)
@@ -63,8 +75,9 @@ func _run() -> void:
 	var status_controller := player.get_node("CombatStatusController") as CombatStatusController
 	_expect(
 		status_controller.get_super_armor_tier() >= 1
-		and deck.cooldown_pile.size() == 1,
-		"Iron Will must grant timed super armor and move its exact instance to cooldown."
+		and deck.cooldown_pile.is_empty()
+		and deck.discard_pile.has("guard"),
+		"Iron Will must grant timed super armor and recycle through discard."
 	)
 	player.set("velocity", Vector2.ZERO)
 	player.call("take_hit", 10, enemy.global_position, 0.0)

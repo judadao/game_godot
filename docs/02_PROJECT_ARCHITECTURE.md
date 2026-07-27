@@ -400,7 +400,7 @@ Validated static JSON
 Permanent meta：
 
 - path：`user://saves/meta_progress.json`
-- schema：`MetaState.SCHEMA_VERSION == 5`
+- schema：`MetaState.SCHEMA_VERSION == 7`
 - service：`SaveService`
 - behavior：`.tmp` write → parse validation → backup → rename
 
@@ -743,7 +743,8 @@ CardInstance
 `DeckManager` 的 hand、draw、discard、exhaust、cooldown 五個區域都必須保留同一
 instance identity。cooldown 到期回 discard；modal pause 時 cooldown 不前進。
 expedition backpack 最多 16 張 Combo／Healing `CardInstance`；洗牌後只抽一組 4 張。
-戰鬥手牌打出後統一進 discard 並立即補牌，避免 exhaust／cooldown 導致手牌縮減。
+戰鬥手牌只由 AP 限制，打出後統一進 discard 並立即補牌；production
+Combo／Healing cards 不使用 exhaust／cooldown routing。
 `ember_bolt` 僅作為獨立自動普攻，不進入手牌、棄牌或 Combo 抽牌循環。`quickstep`
 已從正式卡表移除。玩家固有 Dash 由 `PlayerController` 的 Space action 擁有，
 不是 `CardInstance`，不進 deck/hand/piles、不花 AP，也不觸發出牌事件。
@@ -793,7 +794,7 @@ new-card／fusion／exact removal，並提供 collection snapshot／restore 給 
 failure rollback。它不擁有 AP、出牌、cooldown tick 或 UI。
 
 `CardGrowthUI` 只 projection queue page 並 emit choice intent。modal 開啟期間，
-`Game` 必須以成對 pause token 暫停 gameplay、AP、card cooldown、status/skill
+`Game` 必須以成對 pause token 暫停 gameplay、AP、status/skill
 timers、wave 與 projectile；UI 使用 always process。close/teardown 必須釋放 token。
 
 Autumn 的唯一 combat presentation root 是
@@ -811,7 +812,7 @@ AutumnHUD
     ├── PlayerVitals
     ├── ActionPoints
     ├── CardStage
-    │   ├── CooldownStrip
+    │   ├── ActionSpacer
     │   └── AutumnCardHandUI
     ├── InputGlyphHints
     └── PersonalResources

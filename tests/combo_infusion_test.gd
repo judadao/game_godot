@@ -39,18 +39,56 @@ func _run() -> void:
 	run.temporary_buffs["infusion_effects"] = []
 	run.temporary_buffs["combo_chain_count"] = 0
 	run.temporary_buffs["combo_chain_remaining"] = 0.0
+	run.temporary_buffs["combo_chain_skills"] = {}
+	run.temporary_buffs["combo_chain_order"] = []
+	var expanded_effects: Array = []
+	for card_id in [
+		"sweeping_reach",
+		"quickened_cadence",
+		"crushing_momentum",
+		"keen_focus_combo",
+		"storm_charge",
+	]:
+		var expanded_card := database_card(game, card_id)
+		_expect(
+			String(expanded_card.get("type", "")) == "combo",
+			"%s must be an available non-Dash Combo card." % card_id
+		)
+		var expanded_effect := (expanded_card.get("effect", {}) as Dictionary).duplicate(true)
+		expanded_effect["remaining_seconds"] = 8.0
+		expanded_effects.append(expanded_effect)
+	run.temporary_buffs["infusion_effects"] = expanded_effects
+	var expanded_attack := game.call(
+		"_apply_combo_infusions_to_card",
+		database_card(game, "ember_bolt")
+	) as Dictionary
+	var expanded_attack_effect := expanded_attack.get("effect", {}) as Dictionary
+	_expect(
+		float(expanded_attack.get("auto_attack_range", 0.0)) > 260.0
+			and float(expanded_attack.get("auto_attack_interval", 99.0)) < 1.0
+			and int(expanded_attack_effect.get("amount", 0)) >= 19
+			and float(expanded_attack_effect.get("critical_chance", 0.0)) >= 0.18
+			and float(expanded_attack_effect.get("combo_stun", 0.0)) >= 0.12,
+		"Expanded Combo cards must modify range, speed, power, critical chance, and lightning status."
+	)
+	run.temporary_buffs["infusion_effects"] = []
 
 	deck.start(["flame_imbue", "flame_imbue", "frostburst_imbue", "battle_rhythm"], 5.0)
 	var flame := deck.play_from_hand(0)
 	_expect(not flame.is_empty() and is_equal_approx(deck.energy, 2.0), "Flame Imbue must be an ordinary three-AP hand play.")
 	_expect(bool(game.call("_resolve_combo_card", flame)), "Playing Flame Imbue must activate its persistent infusion.")
-	_expect(deck.exhaust_pile.has("flame_imbue") and not deck.discard_pile.has("flame_imbue"), "A played Combo card must exhaust instead of entering the draw cycle.")
+	_expect(deck.discard_pile.has("flame_imbue") and deck.exhaust_pile.is_empty(), "A played Combo card must recycle through discard without cooldown or exhaust.")
 	deck.energy = 5.0
 	var second_flame := deck.play_from_hand(0)
 	_expect(bool(game.call("_resolve_combo_card", second_flame)), "A duplicate Combo card must add another stack.")
 	_expect(
 		int(run.temporary_buffs.get("combo_chain_count", 0)) >= 2,
 		"Repeated Combo cards must build a visible global Combo Chain."
+	)
+	var chain_skills := run.temporary_buffs.get("combo_chain_skills", {}) as Dictionary
+	_expect(
+		int(chain_skills.get("Flame Imbue", 0)) == 2,
+		"Combo Chain must retain per-skill stack counts for the persistent HUD list."
 	)
 	for _stack_index in 7:
 		_expect(

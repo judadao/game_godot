@@ -500,26 +500,10 @@ layout_mode = 2
 theme_override_constants/separation = 7
 mouse_filter = 2
 
-[node name="CooldownStrip" type="PanelContainer" parent="BottomStage/CardStage/ActionStrip"]
+[node name="ActionSpacer" type="Control" parent="BottomStage/CardStage/ActionStrip"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("InnerPanel")
 mouse_filter = 2
-
-[node name="CooldownMargin" type="MarginContainer" parent="BottomStage/CardStage/ActionStrip/CooldownStrip"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="CooldownRows" type="HBoxContainer" parent="BottomStage/CardStage/ActionStrip/CooldownStrip/CooldownMargin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-mouse_filter = 2
-
-[node name="EmptyState" type="Label" parent="BottomStage/CardStage/ActionStrip/CooldownStrip/CooldownMargin/CooldownRows"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.65, 0.55, 1)
-theme_override_font_sizes/font_size = 10
-text = "READY"
 
 [node name="RedrawHand" type="Button" parent="BottomStage/CardStage/ActionStrip"]
 custom_minimum_size = Vector2(116, 34)
@@ -586,9 +570,36 @@ text = "SPACE"
 [node name="Divider" type="HSeparator" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
 layout_mode = 2
 
-[node name="SkillToastStack" type="VBoxContainer" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+[node name="ComboSummary" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.48, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "COMBO CHAIN  —"
+
+[node name="ComboMilestones" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.68, 0.7, 1)
+theme_override_font_sizes/font_size = 9
+text = "3 POWER  ·  6 LIFESTEAL  ·  9 STUN"
+
+[node name="ComboSkillRows" type="VBoxContainer" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/separation = 3
+mouse_filter = 2
+
+[node name="EmptyCombo" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.34, 0.44, 0.46, 1)
+theme_override_font_sizes/font_size = 10
+text = "NO COMBO SKILLS YET"
+horizontal_alignment = 1
+
+[node name="ActivityDivider" type="HSeparator" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+layout_mode = 2
+
+[node name="SkillToastStack" type="VBoxContainer" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+layout_mode = 2
 theme_override_constants/separation = 6
 mouse_filter = 2
 
@@ -596,7 +607,7 @@ mouse_filter = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.34, 0.44, 0.46, 1)
 theme_override_font_sizes/font_size = 10
-text = "SKILL ACTIVITY"
+text = "RECENT SKILL"
 horizontal_alignment = 1
 
 [node name="FooterRail" type="PanelContainer" parent="."]

@@ -23,10 +23,10 @@ func _run() -> void:
 
 	var flame := deck.play_from_hand(deck.find_hand_index("flame-two"))
 	_expect(
-		deck.exhaust_instances.any(
+		deck.discard_instances.any(
 			func(instance: CardInstance) -> bool: return instance.instance_id == "flame-two"
 		),
-		"Legacy infusion Combo cards must retain their exhaust-on-play lifecycle."
+		"Production Combo cards must recycle through discard under AP-only combat."
 	)
 
 	var caster := Node.new()
@@ -40,7 +40,7 @@ func _run() -> void:
 		"CardEffectRunner results must preserve the exact card instance identity and level."
 	)
 	_expect(
-		String(cast_result.get("play_destination", "")) == "exhaust"
+		String(cast_result.get("play_destination", "")) == "discard"
 		and is_zero_approx(float(cast_result.get("cooldown_seconds", -1.0))),
 		"CardEffectRunner results must preserve the authoritative post-play routing metadata."
 	)
@@ -48,19 +48,12 @@ func _run() -> void:
 	var guard := deck.play_from_hand(deck.find_hand_index("guard-one"))
 	_expect(
 		not guard.is_empty()
-		and deck.cooldown_pile.size() == 1
+		and deck.cooldown_pile.is_empty()
+		and deck.discard_instances.any(
+			func(instance: CardInstance) -> bool: return instance.instance_id == "guard-one"
+		)
 		and String(guard.get("instance_id", "")) == "guard-one",
-		"Timed Combo cards must enter cooldown without flattening instance identity."
-	)
-	deck.set_cooldowns_paused(true)
-	var remaining_before := float(deck.cooldown_pile[0].get("remaining_seconds", 0.0))
-	deck.tick_cooldowns(999.0)
-	_expect(
-		is_equal_approx(
-			float(deck.cooldown_pile[0].get("remaining_seconds", 0.0)),
-			remaining_before
-		),
-		"Paused cooldown clocks must remain frozen at the production catalog boundary."
+		"Timed Combo cards must preserve identity while recycling without cooldown."
 	)
 
 	var reward_instance := CardInstance.new("cleave", 2, "reward-cleave")

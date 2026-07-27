@@ -787,7 +787,7 @@ AutumnBattleMapV2
             ├── PlayerVitals
             ├── ActionPoints
             ├── CardStage
-            │   ├── CooldownStrip
+            │   ├── ActionSpacer
             │   └── AutumnCardHandUI
             ├── InputGlyphHints
             └── PersonalResources

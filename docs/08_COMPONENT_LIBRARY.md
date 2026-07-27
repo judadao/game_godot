@@ -1422,7 +1422,7 @@ Required semantic children:
 - `TopRightMeta`
 - `TopCenterStack/BossHealth`
 - `BottomStage/PlayerVitals`
-- `BottomStage/CardStage/ActionStrip/CooldownStrip`
+- `BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows`
 - `BottomStage/CardStage/ActionStrip/RedrawHand`
 - `BottomStage/CardStage/AutumnCardHandUI`
 - `BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack`

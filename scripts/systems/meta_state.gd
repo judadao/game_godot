@@ -1,9 +1,16 @@
 class_name MetaState
 extends RefCounted
 
-const SCHEMA_VERSION := 6
+const SCHEMA_VERSION := 7
 const RESOURCE_IDS := ["gold", "autumn_wood", "stone", "magic_shard", "autumn_core"]
 const RETIRED_CARD_IDS := ["quickstep"]
+const EXPANDED_COMBO_CARD_IDS := [
+	"sweeping_reach",
+	"quickened_cadence",
+	"crushing_momentum",
+	"keen_focus_combo",
+	"storm_charge",
+]
 var resources := {
 	"gold": 0,
 	"autumn_wood": 0,
@@ -24,11 +31,15 @@ var unlocked_cards: Array[String] = [
 	"dash_strike", "healing_light", "frost_bind", "energy_surge",
 	"renewal", "blood_pact_combo", "verdant_renewal",
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
+	"sweeping_reach", "quickened_cadence", "crushing_momentum",
+	"keen_focus_combo", "storm_charge",
 ]
 var selected_deck: Array[String] = [
 	"guard", "guard", "iron_skin", "healing_light", "renewal",
 	"blood_pact_combo", "verdant_renewal",
 	"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
+	"sweeping_reach", "quickened_cadence", "crushing_momentum",
+	"keen_focus_combo", "storm_charge",
 ]
 var auto_attack_card_id := "ember_bolt"
 var permanent_card_levels: Dictionary = {}
@@ -111,7 +122,8 @@ func to_dict() -> Dictionary:
 
 
 func apply_dict(data: Dictionary) -> void:
-	_last_migration_report = _empty_migration_report(int(data.get("schema_version", 0)))
+	var incoming_schema := int(data.get("schema_version", 0))
+	_last_migration_report = _empty_migration_report(incoming_schema)
 	var incoming_resources: Variant = data.get("resources", {})
 	if incoming_resources is Dictionary:
 		for resource_id in RESOURCE_IDS:
@@ -119,6 +131,13 @@ func apply_dict(data: Dictionary) -> void:
 	village_level = clampi(int(data.get("village_level", village_level)), 1, 3)
 	building_levels = _safe_integer_dictionary(data.get("building_levels"), building_levels)
 	unlocked_cards = _safe_string_array(data.get("unlocked_cards"), unlocked_cards)
+	if incoming_schema < 7:
+		for card_id in EXPANDED_COMBO_CARD_IDS:
+			if not unlocked_cards.has(card_id):
+				unlocked_cards.append(card_id)
+				_last_migration_report["expanded_combo_cards_unlocked"] = int(
+					_last_migration_report.get("expanded_combo_cards_unlocked", 0)
+				) + 1
 	var legacy_selected_deck := _safe_string_array(data.get("selected_deck"), selected_deck)
 	var legacy_levels := _safe_dictionary(data.get("permanent_card_levels"), {})
 	if data.get("selected_card_instances") is Array:
@@ -389,6 +408,7 @@ func _empty_migration_report(from_schema: int) -> Dictionary:
 		"duplicate_fixed_cards_removed": 0,
 		"fixed_levels_repaired": 0,
 		"discarded_invalid_instances": 0,
+		"expanded_combo_cards_unlocked": 0,
 		"retired_cards_removed": 0,
 	}
 

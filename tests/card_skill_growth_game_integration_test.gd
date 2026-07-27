@@ -83,12 +83,12 @@ func _run() -> void:
 			break
 	_expect(guard_index >= 0, "Deterministic test hand must contain Iron Will.")
 	if guard_index >= 0:
-		deck.play_from_hand(guard_index)
-		game.call("_refresh_cooldown_display")
-		var cooldown_rows := (game.get("hud") as Control).get_node(
-			"BottomStage/CardStage/ActionStrip/CooldownStrip/CooldownMargin/CooldownRows"
+		deck.energy = deck.max_energy
+		game.call("_on_card_selected", guard_index)
+		_expect(
+			deck.cooldown_pile.is_empty() and deck.hand_instances.size() == deck.hand_size,
+			"Combat cards must use AP, recycle through discard, and refill without cooldown gating."
 		)
-		_expect(cooldown_rows.get_child_count() == 1 and "Iron Will" in String(cooldown_rows.get_child(0).text), "Played cooldown card must appear in the HUD cooldown strip.")
 	run.add_experience(run.experience_required)
 	game.call("_enqueue_experience_growth")
 	run.add_experience(run.experience_required)
@@ -103,13 +103,8 @@ func _run() -> void:
 	_expect(growth_ui != null, "Pending EXP growth must open the unified CardGrowthUI.")
 	_expect(paused, "CardGrowthUI must pause gameplay.")
 	_expect(growth_ui.process_mode == Node.PROCESS_MODE_ALWAYS, "Growth UI must remain interactive while gameplay is paused.")
-	var cooldown_before := float(deck.cooldown_pile[0].get("remaining_seconds", 0.0))
 	var status_before := float((player.call("get_combat_status_projection") as Array)[0].get("remaining_seconds", 0.0))
 	await create_timer(0.12, true, false, true).timeout
-	_expect(
-		is_equal_approx(float(deck.cooldown_pile[0].get("remaining_seconds", 0.0)), cooldown_before),
-		"Card cooldowns must freeze while growth modal owns pause."
-	)
 	_expect(
 		is_equal_approx(float((player.call("get_combat_status_projection") as Array)[0].get("remaining_seconds", 0.0)), status_before),
 		"Combat status timers must freeze while growth modal owns pause."

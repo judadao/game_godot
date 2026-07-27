@@ -31,7 +31,7 @@ func _run() -> void:
 	var database: RefCounted = database_script.new()
 	_expect(bool(database.call("load_catalog")), "Card catalog must load and validate.")
 	var cards: Array = database.call("get_all_cards")
-	_expect(cards.size() == 24, "Card catalog must contain 24 practical cards without a direct Dash card.")
+	_expect(cards.size() == 29, "Card catalog must contain 29 practical cards without a direct Dash card.")
 
 	var seen_ids := {}
 	var seen_types := {}
@@ -96,9 +96,12 @@ func _run() -> void:
 	cycle_deck.call("play_from_hand", 0)
 	var redrawn: Array = cycle_deck.call("draw_cards", 3)
 	_expect(
-		redrawn == ["dash_strike", "ember_bolt"]
-		and (cycle_deck.get("cooldown_pile") as Array).size() == 1,
-		"Ordinary cards must recycle while timed cards stay out of the draw cycle during cooldown."
+		redrawn.size() == 3
+		and redrawn.has("dash_strike")
+		and redrawn.has("ember_bolt")
+		and redrawn.has("guard")
+		and (cycle_deck.get("cooldown_pile") as Array).is_empty(),
+		"Production cards must recycle through discard without card cooldown gating."
 	)
 
 	var redraw_deck := DeckManager.new(database)

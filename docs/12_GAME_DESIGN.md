@@ -92,7 +92,7 @@ Town
 3. 從已解鎖 attack cards 選一個獨立 auto attack；
 4. 建立新的 `RunState`；
 5. auto attack ID 鎖定為本 Run 的選擇，戰鬥中不可切換；
-6. 普通背包洗牌後抽 4 張 Combo／Healing 卡，建立 draw/hand/discard/exhaust/cooldown piles；
+6. 普通背包洗牌後抽 4 張 Combo／Healing 卡，建立 draw/hand/discard piles；
 7. 載入 `scenes/maps/autumn_battle/AutumnBattleMapV2.tscn`。
 
 ### 2.3 Run 的結束
@@ -279,7 +279,7 @@ Guardian 死亡後：
 - ultimate；
 - combo。
 
-`defense` 不再是有效卡牌類型；原防禦牌改為具 cooldown 的 combo status cards。
+`defense` 不再是有效卡牌類型；原防禦牌改為消耗 AP 的 combo status cards。
 Healing 卡以綠色呈現，效果明確區分 immediate restore、regeneration 與
 lifesteal。卡片資料包含 ID、名稱、類型、cost、tag、effect、icon path 與
 level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
@@ -290,9 +290,8 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 
 - expedition backpack 最少 4 張、最多 16 張 Combo／Healing 卡；同名卡最多 3 份且各自保存等級；
 - auto attack 在背包之外獨立選擇，必須是已解鎖的 `attack` card；
-- combo card 最多一張；
-- 其他一般卡最多三張；
-- Meta 預設解鎖 13 張卡；
+- 同名 Combo／Healing card 最多三張；
+- Meta 預設解鎖 20 張卡；
 - `MetaState` 分別保存 selected deck 與 `auto_attack_card_id`。
 
 ### 6.3 牌堆與手牌
@@ -303,13 +302,13 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 - `hand`；
 - `discard_pile`；
 - `exhaust_pile`；
-- `cooldown_pile`。
+- `cooldown_pile`（DeckManager 相容性路徑；production 戰鬥卡不使用）。
 
 五個牌區都保存 `CardInstance(instance_id, card_id, level)` identity。戰鬥背包
 只收 `combat_hand != false` 的 Combo／Healing 卡，最多 16 張；洗牌後抽成單組
 4 張手牌，Q/W/E/R 直接打出。不再有 A/S 或 controller LT/RT 切換組別。
-戰鬥手牌打出後統一進 discard 並立即補回四張；catalog 的 exhaust／cooldown
-destination 仍供非戰鬥手牌流程使用，不得再讓 HUD 手牌越打越少。
+戰鬥手牌只以 AP 限制，打出後統一進 discard 並立即補回四張；production
+Combo／Healing catalog 不再使用 exhaust／cooldown destination。
 
 `ember_bolt` 是普通卡，可以在背包、手牌與牌堆中出現，也依一般規則升級、
 融合、移除與 routing。`quickstep` 已從正式卡表移除。Dash 是玩家固有 action，
@@ -352,7 +351,13 @@ Card focus 會把 `Engine.time_scale` 設為 0.22，hit stop 也會短暫改變�
 combo 形式提供霸體、減傷、反擊或攻擊 infusion；打出後進 discard 並立即補牌。
 每次 Combo 疊加全域 Combo Chain 並刷新 8 秒窗口：3 層提高攻擊、6 層追加
 5% 吸血、9 層追加短暫硬直。相同 infusion 另可疊至 12 層，讓效果持續增強。
-才回 discard。舊 `ComboManager` 與非攻擊 sequence rules 已移除。
+右側 HUD 持續列出本次 chain 使用過的技能與各自層數。舊 `ComboManager` 與非攻擊
+sequence rules 已移除。
+
+通用 Combo infusion 包含攻擊範圍（Sweeping Reach）、攻擊速度
+（Quickened Cadence）、攻擊力（Crushing Momentum）、爆擊率／倍率
+（Keen Focus）與雷屬性硬直（Storm Charge）；Flame／Frost infusion
+則繼續提供火焰與冰霜附加屬性。這些卡都只消耗 AP，不使用 card cooldown。
 
 ### 7.2 Passive attack Skill
 
@@ -650,7 +655,7 @@ A/S 僅供移動；`card_group_1` 與 `card_group_2` InputMap actions 已移除�
 - enemy alive/cap；
 - AP；
 - 單組四張 Combo／Healing 手牌；
-- combo 提示；
+- 持續顯示總層數、剩餘時間與技能分項的 Combo Chain 清單；
 - Guardian health；
 - interaction prompt；
 - Run Result、Level Up、Discard、Deck Builder modal。
@@ -782,8 +787,8 @@ A/S remain movement-only and there is no group-toggle input.
 Combo cards recycle through discard after play and add one independently timed effect
 stack. The base window is six real-time seconds. Fast play can therefore keep
 several stacks active at once; when an older stack expires, only that stack is
-removed and the displayed level falls accordingly. Four distinct Combo types
-and three stacks per type remain the limits. Evolved Combo effects inherit the
+removed and the displayed level falls accordingly. Eight distinct Combo types
+and twelve stacks per type are supported. Evolved Combo effects inherit the
 longest remaining time from their consumed ingredients.
 
 The HUD shows the longest remaining Combo timer. Equipment special effects may
@@ -844,7 +849,7 @@ Reviewer 必須確認：
 - [ ] 所有不確定內容都標記 TODO。
 - [ ] Town → Autumn → Guardian → Result 流程未被破壞。
 - [ ] Backpack 維持 1–16 張普通卡，auto attack 獨立且 Run 內鎖定。
-- [ ] Hand、draw、discard、exhaust、cooldown、overflow 的 instance identity 一致。
+- [ ] Hand、draw、discard 與 overflow 的 instance identity 一致。
 - [ ] AP cost、regen 與 redraw 行為有測試。
 - [ ] XP 跨級 queue 與 CardGrowth upgrade/fusion/fallback 有測試。
 - [ ] Combo status cards、passive attack skill、fusion 各自有明確 contract。
@@ -906,7 +911,7 @@ remaining space contains the combat dock and footer rail. The camera extends its
 bottom limit by 90 pixels so the authored world composition moves upward instead
 of being pinned by the original 720-pixel limit. The dock presents character
 status, decimal regenerating AP, the single four-card Combo/Healing hand, discard
-guidance, and a three-entry fading Skill/Combo activity feed.
+guidance, a persistent per-skill Combo Chain list, and transient recent-skill feedback.
 
 Q/W/E/R play the single four-card Combo/Healing hand. Played cards refill immediately. T discards and refills the hand
 without an AP requirement. A/S and LT/RT do not switch groups. Auto attack

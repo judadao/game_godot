@@ -869,7 +869,7 @@ HUDLayer (CanvasLayer)
     ├── TopCenterStack
     └── BottomStage
         └── CardStage
-            ├── CooldownStrip
+            ├── ActionSpacer
             └── AutumnCardHandUI
 ```
 
@@ -1018,7 +1018,7 @@ AutumnHUD
     ├── PlayerVitals
     ├── CardStage
     │   ├── ActionStrip
-    │   │   ├── CooldownStrip
+    │   │   ├── ActionSpacer
     │   │   └── RedrawHand
     │   └── AutumnCardHandUI
     └── ActivityFeed
@@ -1062,7 +1062,8 @@ no-op. Do not restore the previous "A selects group 1 / S selects group 2"
 behavior.
 
 equipment-modified AP cost 必須在 affordability 與 input check 前 projection 到 card。
-Card cooldown 另投影至 `CooldownStrip`；cooldown timer 在 growth modal pause 時停止。
+戰鬥卡只由 AP 限制，打出後進 discard 並補回四張，不再投影 card cooldown。
+右側 `ComboSkillRows` 持續顯示本次 Combo Chain 的技能名稱與各自疊層。
 
 Deck Builder 另有 auto-attack selector。它不是手牌 slot：UI 必須明示所選 attack
 會在 Run 開始後鎖定、免費自動施放，且只有近距離內存在有效目標時才攻擊。
@@ -1080,7 +1081,7 @@ Deck Builder 另有 auto-attack selector。它不是手牌 slot：UI 必須明�
 - 2560×1440
 
 每個尺寸都要確認 top-left stack、top-center stack、bottom stage、兩列 cards、
-cooldown strip、interaction prompt 與 world-safe area 不重疊、不裁切、不超界。
+Combo Chain 清單、interaction prompt 與 world-safe area 不重疊、不裁切、不超界。
 禁止用 gameplay script 為單一解析度寫絕對位置。
 
 ## 34. Card Growth Modal
@@ -1093,6 +1094,6 @@ cooldown strip、interaction prompt 與 world-safe area 不重疊、不裁切、
   growth 時才顯示三種永久資源 fallback。
 - UI 必須清楚標示 instance level、兩張 fusion 材料與 Lv.1 結果。
 - `CardGrowthUI` 只 emit choice intent，不能直接改 deck、Meta 或 inventory。
-- modal 開啟期間 gameplay clock、AP、cooldowns、status、skills、waves 與 projectile
+- modal 開啟期間 gameplay clock、AP、skill cooldowns、status、skills、waves 與 projectile
   都必須暫停；UI 保持 always-processing 與可操作 focus。
 - queue 逐頁處理；close/teardown 只有在 queue 清空後才釋放 pause token。

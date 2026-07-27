@@ -18,7 +18,7 @@ func supports_effect(kind: String) -> bool:
 func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 	if card.is_empty() or caster == null:
 		return {}
-	var effect := card.get("effect", {}) as Dictionary
+	var effect := (card.get("effect", {}) as Dictionary).duplicate(true)
 	var kind := String(effect.get("kind", ""))
 	var result := {
 		"card_id": String(card.get("id", "")),
@@ -30,6 +30,20 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 		"play_destination": String(card.get("play_destination", "discard")),
 		"cooldown_seconds": float(card.get("cooldown_seconds", 0.0)),
 	}
+	if (
+		kind in ["damage", "area_damage", "dash_impact", "damage_aura"]
+		and randf() <= clampf(float(effect.get("critical_chance", 0.0)), 0.0, 1.0)
+	):
+		effect["amount"] = maxi(
+			1,
+			roundi(
+				float(effect.get("amount", 0))
+				* maxf(1.0, float(effect.get("critical_multiplier", 1.5)))
+			)
+		)
+		result["critical"] = true
+	else:
+		result["critical"] = false
 
 	match kind:
 		"damage":

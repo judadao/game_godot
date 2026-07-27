@@ -31,15 +31,12 @@ func _ready() -> void:
 		{"id": "renewal", "name": "Verdant Renewal", "icon": "+", "remaining_seconds": 4.1},
 	])
 	hud.set_boss_health("HEARTWOOD GUARDIAN", 72, 100)
-	hud.set_cooldown_cards([
-		{"card_id": "guard", "name": "Iron Will", "remaining_seconds": 6.2},
-	])
+	hud.set_combo_chain([
+		{"name": "Flame Imbue", "count": 3},
+		{"name": "Sweeping Reach", "count": 2},
+		{"name": "Keen Focus", "count": 2},
+	], 7, 5.8)
 	hud.show_skill_toast("iron_momentum", "IRON MOMENTUM")
-	hud.show_skill_toast(
-		"combo_chain",
-		"COMBO ×7  FLAME IMBUE  LIFESTEAL",
-		Color(0.78, 0.48, 1.0, 1.0)
-	)
 
 	card_hand.set_cards(_sample_cards(), 3.7)
 	card_hand.set_action_points(3.7, 5.0)

@@ -26,7 +26,9 @@ const SKILL_TOAST_LIFETIME := 1.5
 @onready var _boss_bar: ProgressBar = $TopCenterStack/BossHealth/BossMargin/BossRows/BossBar
 @onready var _toast_stack: VBoxContainer = $BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack
 @onready var _feed_empty_state: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/FeedEmptyState
-@onready var _cooldown_rows: HBoxContainer = $BottomStage/CardStage/ActionStrip/CooldownStrip/CooldownMargin/CooldownRows
+@onready var _combo_summary: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSummary
+@onready var _combo_milestones: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboMilestones
+@onready var _combo_skill_rows: VBoxContainer = $BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows
 @onready var _card_hand: AutumnCardHandUI = $BottomStage/CardStage/AutumnCardHandUI
 @onready var _action_points_label: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader/APValue
 @onready var _action_points_rate: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader/APRate
@@ -40,6 +42,7 @@ var _toast_by_key: Dictionary = {}
 var _toast_order: Array[String] = []
 var _toast_generation: Dictionary = {}
 var _toast_tween_by_key: Dictionary = {}
+var _combo_skills_signature := ""
 var _health_potions := 0
 var _mana_potions := 0
 
@@ -238,27 +241,69 @@ func show_skill_toast(
 	_expire_toast(key, generation)
 
 
-func set_cooldown_cards(cards: Array) -> void:
-	for child in _cooldown_rows.get_children():
-		_cooldown_rows.remove_child(child)
-		child.queue_free()
-	if cards.is_empty():
-		var empty := Label.new()
-		empty.text = "COOLDOWN  —"
-		empty.add_theme_color_override("font_color", Color(0.54, 0.51, 0.46, 1.0))
-		_cooldown_rows.add_child(empty)
+func set_combo_chain(skills: Array, total: int = 0, remaining: float = 0.0) -> void:
+	var projected_total := maxi(0, total)
+	var signature_parts: Array[String] = []
+	if projected_total == 0:
+		for skill_variant in skills:
+			if skill_variant is Dictionary:
+				projected_total += maxi(0, int((skill_variant as Dictionary).get("count", 0)))
+	for skill_variant in skills:
+		if skill_variant is Dictionary:
+			var skill := skill_variant as Dictionary
+			signature_parts.append("%s:%d" % [
+				String(skill.get("name", "Combo")),
+				maxi(1, int(skill.get("count", 1))),
+			])
+	var skills_signature := "|".join(signature_parts)
+	var rebuild_rows := skills_signature != _combo_skills_signature
+	if rebuild_rows:
+		_combo_skills_signature = skills_signature
+		for child in _combo_skill_rows.get_children():
+			_combo_skill_rows.remove_child(child)
+			child.queue_free()
+	if projected_total == 0 or skills.is_empty():
+		_combo_summary.text = "COMBO CHAIN  —"
+		_combo_milestones.text = "3 POWER  ·  6 LIFESTEAL  ·  9 STUN"
+		if rebuild_rows:
+			var empty := Label.new()
+			empty.text = "NO COMBO SKILLS YET"
+			empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			empty.add_theme_font_size_override("font_size", 10)
+			empty.add_theme_color_override("font_color", Color(0.34, 0.44, 0.46, 1.0))
+			_combo_skill_rows.add_child(empty)
 		return
-	for card_variant in cards.slice(0, 4):
-		if not card_variant is Dictionary:
+	_combo_summary.text = "COMBO CHAIN  ×%d   %.1fs" % [
+		projected_total,
+		maxf(0.0, remaining),
+	]
+	var active_milestones: Array[String] = []
+	if projected_total >= 3:
+		active_milestones.append("POWER")
+	if projected_total >= 6:
+		active_milestones.append("LIFESTEAL")
+	if projected_total >= 9:
+		active_milestones.append("STUN")
+	_combo_milestones.text = (
+		"ACTIVE  " + "  ·  ".join(active_milestones)
+		if not active_milestones.is_empty()
+		else "NEXT  3 POWER"
+	)
+	if not rebuild_rows:
+		return
+	for skill_variant in skills.slice(0, 6):
+		if not skill_variant is Dictionary:
 			continue
-		var card := card_variant as Dictionary
-		var chip := Label.new()
-		chip.text = "%s  %.1fs" % [
-			String(card.get("name", card.get("card_id", "Card"))),
-			maxf(0.0, float(card.get("remaining_seconds", card.get("remaining", 0.0)))),
+		var skill := skill_variant as Dictionary
+		var row := Label.new()
+		row.text = "◆  %s   ×%d" % [
+			String(skill.get("name", "Combo")),
+			maxi(1, int(skill.get("count", 1))),
 		]
-		chip.add_theme_color_override("font_color", Color(0.86, 0.76, 0.56, 1.0))
-		_cooldown_rows.add_child(chip)
+		row.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		row.add_theme_font_size_override("font_size", 11)
+		row.add_theme_color_override("font_color", Color(0.86, 0.72, 1.0, 1.0))
+		_combo_skill_rows.add_child(row)
 
 
 func set_interaction_prompt(

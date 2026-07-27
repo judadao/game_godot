@@ -29,7 +29,7 @@ const BASE_AP_REGEN := 0.65
 const WISP_AP_REGEN := 0.35
 const WISP_DURATION := 6.0
 const COMBAT_CAMERA_SAFE_OFFSET_Y := 90.0
-const MAX_COMBO_ABILITIES := 4
+const MAX_COMBO_ABILITIES := 8
 const MAX_COMBO_LEVEL := 3
 const MAX_COMBO_EFFECT_STACKS := 12
 const MAX_COMBO_CHAIN := 99
@@ -176,10 +176,8 @@ func _process(delta: float) -> void:
 	if not run_state.active or get_tree().paused:
 		return
 	var real_delta := delta / maxf(Engine.time_scale, 0.001)
-	deck_manager.tick_cooldowns(real_delta)
 	skill_recipe_manager.tick(real_delta)
 	_tick_auto_attack(real_delta)
-	_refresh_cooldown_display()
 	if _tick_combo_effects(real_delta):
 		_refresh_combo_display()
 	var regen_rate := BASE_AP_REGEN
@@ -951,6 +949,8 @@ func _begin_autumn_run(deck_override: Array = []) -> void:
 		"guard", "guard", "iron_skin", "healing_light", "renewal",
 		"blood_pact_combo", "verdant_renewal",
 		"flame_imbue", "frostburst_imbue", "battle_rhythm", "stoneguard_combo",
+		"sweeping_reach", "quickened_cadence", "crushing_momentum",
+		"keen_focus_combo", "storm_charge",
 	]
 	var selected: Array = deck_override if deck_override.size() > 0 and deck_override.size() <= 16 else meta_state.selected_deck
 	var normalized := _normalize_expedition_deck(selected if selected.size() > 0 and selected.size() <= 16 else fallback_deck)
@@ -977,8 +977,8 @@ func _show_card_reward_choices(wave_number: int) -> void:
 	if not run_state.active:
 		return
 	var choices_by_wave := {
-		2: ["guard", "healing_light", "flame_imbue"],
-		3: ["verdant_renewal", "battle_rhythm", "stoneguard_combo"],
+		2: ["sweeping_reach", "crushing_momentum", "healing_light"],
+		3: ["quickened_cadence", "keen_focus_combo", "storm_charge"],
 	}
 	var card_ids: Array = choices_by_wave.get(wave_number, ["guard", "renewal", "frostburst_imbue"])
 	var choices: Array[Dictionary] = []
@@ -1095,6 +1095,7 @@ func _tick_auto_attack(delta: float) -> void:
 	if card.is_empty():
 		_auto_attack_remaining = AUTO_ATTACK_RETRY_INTERVAL
 		return
+	card = _apply_combo_infusions_to_card(card)
 	var targets := _get_combat_targets()
 	var attack_range := maxf(1.0, float(card.get("auto_attack_range", 220.0)))
 	targets = targets.filter(func(target: Variant) -> bool:
@@ -1110,7 +1111,6 @@ func _tick_auto_attack(delta: float) -> void:
 	if targets.is_empty():
 		_auto_attack_remaining = AUTO_ATTACK_RETRY_INTERVAL
 		return
-	card = _apply_combo_infusions_to_card(card)
 	card["cost"] = 0
 	card_effect_runner.cast(card, player, targets)
 	_auto_attack_remaining = maxf(
@@ -1274,20 +1274,15 @@ func _record_combo_chain(card: Dictionary) -> void:
 		+ float(equipment_specials.get("combo_duration_bonus", 0.0))
 	)
 	_last_combo_name = String(card.get("name", card.get("id", "Combo")))
-	if hud != null and hud.has_method("show_skill_toast"):
-		var milestone := ""
-		if next >= 9:
-			milestone = "  STUN"
-		elif next >= 6:
-			milestone = "  LIFESTEAL"
-		elif next >= 3:
-			milestone = "  POWER"
-		hud.call(
-			"show_skill_toast",
-			"combo_chain",
-			"COMBO ×%d  %s%s" % [next, _last_combo_name, milestone],
-			Color(0.78, 0.48, 1.0, 1.0)
-		)
+	var skills_variant: Variant = run_state.temporary_buffs.get("combo_chain_skills", {})
+	var skills: Dictionary = skills_variant if skills_variant is Dictionary else {}
+	skills[_last_combo_name] = int(skills.get(_last_combo_name, 0)) + 1
+	run_state.temporary_buffs["combo_chain_skills"] = skills
+	var order_variant: Variant = run_state.temporary_buffs.get("combo_chain_order", [])
+	var order: Array = order_variant if order_variant is Array else []
+	order.erase(_last_combo_name)
+	order.push_front(_last_combo_name)
+	run_state.temporary_buffs["combo_chain_order"] = order
 
 
 func _try_evolve_combo_abilities() -> bool:
@@ -1346,6 +1341,8 @@ func _tick_combo_effects(delta: float) -> bool:
 		run_state.temporary_buffs["combo_chain_remaining"] = chain_remaining
 		if is_zero_approx(chain_remaining):
 			run_state.temporary_buffs["combo_chain_count"] = 0
+			run_state.temporary_buffs["combo_chain_skills"] = {}
+			run_state.temporary_buffs["combo_chain_order"] = []
 	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
 	if not effects_variant is Array:
 		return changed
@@ -1452,6 +1449,25 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			continue
 		if String(infused.get("type", "")) == "attack":
 			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("damage_bonus", 0))
+			infused["auto_attack_range"] = (
+				float(infused.get("auto_attack_range", 220.0))
+				+ float(infusion.get("attack_range_bonus", 0.0))
+			)
+			infused["auto_attack_interval"] = maxf(
+				0.1,
+				float(infused.get("auto_attack_interval", DEFAULT_AUTO_ATTACK_INTERVAL))
+				* float(infusion.get("attack_interval_multiplier", 1.0))
+			)
+			effect["critical_chance"] = clampf(
+				float(effect.get("critical_chance", 0.0))
+				+ float(infusion.get("critical_chance", 0.0)),
+				0.0,
+				1.0
+			)
+			effect["critical_multiplier"] = maxf(
+				float(effect.get("critical_multiplier", 1.5)),
+				float(infusion.get("critical_multiplier", 1.5))
+			)
 			if float(infusion.get("lifesteal_ratio", 0.0)) > 0.0:
 				effect["lifesteal_ratio"] = float(effect.get("lifesteal_ratio", 0.0)) + float(infusion["lifesteal_ratio"])
 		elif String(infused.get("type", "")) == "defense":
@@ -1472,6 +1488,11 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			effect["frost_ratio"] = float(infusion.get("frost_ratio", 0.25))
 			effect["frost_duration"] = float(infusion.get("frost_duration", 0.0))
 			effect["combo_stun"] = float(infusion.get("combo_stun", 0.5))
+		elif float(infusion.get("combo_stun", 0.0)) > 0.0:
+			effect["combo_stun"] = maxf(
+				float(effect.get("combo_stun", 0.0)),
+				float(infusion.get("combo_stun", 0.0))
+			)
 	if String(infused.get("type", "")) == "attack" and has_flame and has_frost:
 		effect["amount"] = int(effect.get("amount", 0)) + 2
 		effect["combo_stun"] = 0.25
@@ -1633,24 +1654,6 @@ func _refresh_card_hand() -> void:
 	if hud != null and hud.has_method("set_auto_attack"):
 		var auto_attack := _get_auto_attack_card()
 		hud.call("set_auto_attack", String(auto_attack.get("name", "Auto Attack")))
-	_refresh_cooldown_display()
-
-
-func _refresh_cooldown_display() -> void:
-	if hud == null or not hud.has_method("set_cooldown_cards"):
-		return
-	var projection: Array[Dictionary] = []
-	for entry in deck_manager.cooldown_pile:
-		var instance := entry.get("instance") as CardInstance
-		if instance == null:
-			continue
-		projection.append({
-			"instance_id": instance.instance_id,
-			"card_id": instance.card_id,
-			"name": _card_name(instance.card_id),
-			"remaining_seconds": float(entry.get("remaining_seconds", 0.0)),
-		})
-	hud.call("set_cooldown_cards", projection)
 
 
 func _on_player_statuses_changed(statuses: Array) -> void:
@@ -1659,15 +1662,24 @@ func _on_player_statuses_changed(statuses: Array) -> void:
 
 
 func _refresh_combo_display() -> void:
-	if card_hand_ui == null:
+	if hud == null or not hud.has_method("set_combo_chain"):
 		return
 	var combo_count := int(run_state.temporary_buffs.get("combo_chain_count", 0))
 	var seconds := float(run_state.temporary_buffs.get("combo_chain_remaining", 0.0))
-	card_hand_ui.call(
-		"set_combo",
-		"%s  ×%d  %.1fs" % [_last_combo_name, combo_count, seconds],
-		"3 Power / 6 Lifesteal / 9 Stun"
-	)
+	var skills_variant: Variant = run_state.temporary_buffs.get("combo_chain_skills", {})
+	var skills: Dictionary = skills_variant if skills_variant is Dictionary else {}
+	var order_variant: Variant = run_state.temporary_buffs.get("combo_chain_order", [])
+	var order: Array = order_variant if order_variant is Array else []
+	var projection: Array[Dictionary] = []
+	for skill_name_variant in order:
+		var skill_name := String(skill_name_variant)
+		if not skills.has(skill_name):
+			continue
+		projection.append({
+			"name": skill_name,
+			"count": int(skills.get(skill_name, 0)),
+		})
+	hud.call("set_combo_chain", projection, combo_count, seconds)
 
 
 func _update_card_hand_visibility() -> void:
