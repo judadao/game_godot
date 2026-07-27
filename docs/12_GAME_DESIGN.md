@@ -356,12 +356,13 @@ sequence rules 已移除。
 
 通用 Combo infusion 包含攻擊範圍（Sweeping Reach）、攻擊速度
 （Quickened Cadence）、攻擊力（Crushing Momentum）、爆擊率／倍率
-（Keen Focus）、額外攻擊方向（Forked Arc）、每方向額外彈體（Echo Volley）與雷屬性硬直
+（Keen Focus）、彈體數量與展開角度（Echo Volley）與雷屬性硬直
 （Storm Charge）；Flame／Frost infusion
 則繼續提供火焰與冰霜附加屬性。這些卡都只消耗 AP，不使用 card cooldown。
-沒有 Forked Arc 與 Echo Volley 時，自動攻擊固定為單方向、單發、單目標基本型態；
-Forked Arc 決定方向數，Echo Volley 決定每個方向的彈體數。Combo Chain 本身只提高
-傷害、射程與攻擊尺寸，不免費增加方向、目標數或彈體數。
+沒有 Echo Volley 時，自動攻擊固定為單方向、單發、單目標基本型態。Echo Volley
+同時增加彈體與方向：Lv.1 是 2 發／90° 扇形、Lv.2 是 4 發／180° 扇形、Lv.3 是
+8 發／360° 圓形。Combo Chain 本身只提高傷害、射程與攻擊尺寸，不免費增加方向、
+目標數或彈體數；扇形空方向不會把額外傷害重複灌入同一個目標。
 
 ### 7.2 Passive attack Skill
 

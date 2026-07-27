@@ -47,23 +47,27 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 
 	match kind:
 		"damage":
-			var projectiles_per_direction := maxi(
+			var projectile_count := maxi(
 				1,
 				int(effect.get("projectile_count", effect.get("projectiles", 1)))
 			)
-			var direction_count := maxi(1, int(effect.get("direction_count", 1)))
-			var projectile_count := direction_count * projectiles_per_direction
+			var direction_count := maxi(1, int(effect.get("direction_count", projectile_count)))
 			var selected := _nearest_targets(
 				caster,
 				targets,
 				maxi(1, int(effect.get("target_count", direction_count)))
+			)
+			var resolved_projectile_count := (
+				mini(projectile_count, selected.size())
+				if float(effect.get("spread_degrees", 0.0)) > 0.0
+				else projectile_count
 			)
 			_damage_projectile_volley(
 				caster,
 				selected,
 				int(effect.get("amount", 0)),
 				result,
-				projectile_count
+				resolved_projectile_count
 			)
 			_apply_infused_statuses(selected, effect)
 		"area_damage":

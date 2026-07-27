@@ -30,7 +30,7 @@ func _run() -> void:
 	var database: RefCounted = database_script.new()
 	_expect(bool(database.call("load_catalog")), "Card catalog must load and validate.")
 	var cards: Array = database.call("get_all_cards")
-	_expect(cards.size() == 39, "Card catalog must contain 39 practical cards without a direct Dash card.")
+	_expect(cards.size() == 38, "Card catalog must contain 38 practical cards without duplicate direction or direct Dash cards.")
 
 	var seen_ids := {}
 	var seen_types := {}

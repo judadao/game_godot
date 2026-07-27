@@ -1130,7 +1130,7 @@ func _show_card_reward_choices(wave_number: int) -> void:
 	if not run_state.active:
 		return
 	var choices_by_wave := {
-		2: ["seeking_arc", "echo_volley", "energy_surge", "healing_light"],
+		2: ["echo_volley", "giant_arc", "energy_surge", "healing_light"],
 		3: ["sweeping_reach", "quickened_cadence", "deep_reservoir", "storm_charge"],
 	}
 	var card_ids: Array = choices_by_wave.get(wave_number, ["guard", "renewal", "frostburst_imbue"])
@@ -1348,10 +1348,12 @@ func _tick_auto_attack(delta: float) -> void:
 	var result := card_effect_runner.cast(card, player, targets)
 	if int(result.get("affected", 0)) > 0:
 		var direction_count := maxi(1, int(effect.get("direction_count", 1)))
-		var projectiles_per_direction := maxi(1, int(effect.get("projectile_count", 1)))
-		var total_projectiles := direction_count * projectiles_per_direction
-		for projectile_index in total_projectiles:
-			var direction_index := projectile_index % direction_count
+		var spread_degrees := clampf(float(effect.get("spread_degrees", 0.0)), 0.0, 360.0)
+		var visual_aim_position := (
+			feedback_targets[0].global_position + Vector2(0.0, -34.0)
+		)
+		for projectile_index in direction_count:
+			var direction_index := projectile_index
 			var feedback_target := feedback_targets[direction_index % feedback_targets.size()]
 			var damage := maxi(
 				0,
@@ -1362,7 +1364,7 @@ func _tick_auto_attack(delta: float) -> void:
 				continue
 			var target_index := direction_index % feedback_targets.size()
 			var assigned_projectiles := ceili(
-				float(total_projectiles - target_index) / float(feedback_targets.size())
+				float(direction_count - target_index) / float(feedback_targets.size())
 			)
 			var feedback_card := card.duplicate(true)
 			var visual_profile := (
@@ -1370,17 +1372,15 @@ func _tick_auto_attack(delta: float) -> void:
 			).duplicate(true)
 			visual_profile["direction_index"] = direction_index
 			visual_profile["direction_count"] = direction_count
-			visual_profile["projectile_index"] = floori(
-				float(projectile_index) / float(direction_count)
-			)
-			visual_profile["projectiles_per_direction"] = projectiles_per_direction
+			visual_profile["spread_degrees"] = spread_degrees
 			feedback_card["combo_visual_profile"] = visual_profile
 			_spawn_auto_attack_feedback(
 				feedback_card,
 				base_card,
 				feedback_target,
 				maxi(1, roundi(float(damage) / float(maxi(1, assigned_projectiles)))),
-				result
+				result,
+				visual_aim_position
 			)
 	_auto_attack_remaining = maxf(
 		0.1,
@@ -1418,7 +1418,8 @@ func _spawn_auto_attack_feedback(
 	base_card: Dictionary,
 	target: Node2D,
 	damage: int,
-	result: Dictionary
+	result: Dictionary,
+	visual_target_position: Vector2
 ) -> void:
 	if (
 		auto_attack_feedback_scene == null
@@ -1442,7 +1443,7 @@ func _spawn_auto_attack_feedback(
 	feedback.call(
 		"play",
 		(player as Node2D).global_position + Vector2(0.0, -42.0),
-		target.global_position + Vector2(0.0, -34.0),
+		visual_target_position,
 		damage,
 		int(run_state.temporary_buffs.get("combo_chain_count", 0)),
 		power_bonus,
@@ -1891,17 +1892,16 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			)
 			if float(infusion.get("lifesteal_ratio", 0.0)) > 0.0:
 				effect["lifesteal_ratio"] = float(effect.get("lifesteal_ratio", 0.0)) + float(infusion["lifesteal_ratio"])
-			var direction_bonus := maxi(0, int(infusion.get("direction_bonus", 0)))
-			if direction_bonus > 0:
-				effect["direction_count"] = mini(
-					8,
-					maxi(1, int(effect.get("direction_count", 1))) + direction_bonus
-				)
 			var projectile_bonus := maxi(0, int(infusion.get("projectile_bonus", 0)))
 			if projectile_bonus > 0:
 				effect["projectile_count"] = mini(
 					8,
 					maxi(1, int(effect.get("projectile_count", 1))) + projectile_bonus
+				)
+				effect["direction_count"] = int(effect["projectile_count"])
+				effect["spread_degrees"] = maxf(
+					float(effect.get("spread_degrees", 0.0)),
+					float(infusion.get("spread_degrees", 0.0))
 				)
 		elif String(infused.get("type", "")) == "defense":
 			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("block_bonus", 0))
@@ -1974,6 +1974,7 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 		"elements": visual_elements,
 		"lifesteal": visual_lifesteal or float(effect.get("lifesteal_ratio", 0.0)) > 0.0,
 		"direction_count": int(effect.get("direction_count", 1)),
+		"spread_degrees": float(effect.get("spread_degrees", 0.0)),
 	}
 	infused["effect"] = effect
 	return infused

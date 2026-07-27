@@ -21,21 +21,24 @@ func _initialize() -> void:
 func _run() -> void:
 	var database := CardDatabase.new()
 	_expect(database.load_catalog(), "Projectile Combo contract requires the production catalog.")
-	for card_id in ["seeking_arc", "echo_volley"]:
-		var combo := database.get_card(card_id)
-		_expect(
-			String(combo.get("type", "")) == "combo"
-				and String(combo.get("combo_family", "")) == "offense"
-				and float((combo.get("effect", {}) as Dictionary).get("combo_duration", 99.0)) <= 2.5,
-			"%s must be a short offensive Combo card." % card_id
-		)
+	_expect(
+		database.get_card("seeking_arc").is_empty(),
+		"Directional growth must not remain duplicated as a separate Forked Arc card."
+	)
+	var combo := database.get_card("echo_volley")
+	_expect(
+		String(combo.get("type", "")) == "combo"
+			and String(combo.get("combo_family", "")) == "offense"
+			and float((combo.get("effect", {}) as Dictionary).get("combo_duration", 99.0)) <= 2.5,
+		"Echo Volley must be the single short projectile-amount Combo card."
+	)
 
 	var game := (load("res://scenes/game/game.tscn") as PackedScene).instantiate()
 	root.add_child(game)
 	await process_frame
 	await process_frame
 	game.call("_begin_autumn_run", [
-		"seeking_arc", "echo_volley", "guard", "healing_light",
+		"echo_volley", "guard", "healing_light", "renewal",
 	])
 	var run := game.get("run_state") as RunState
 	run.temporary_buffs["combo_chain_count"] = 12
@@ -58,12 +61,8 @@ func _run() -> void:
 
 	run.temporary_buffs["combo_chain_count"] = 0
 	_expect(
-		bool(game.call("_resolve_combo_card", database.get_card("seeking_arc"))),
-		"Forked Arc must activate additional attack directions."
-	)
-	_expect(
 		bool(game.call("_resolve_combo_card", database.get_card("echo_volley"))),
-		"Echo Volley must activate projectile amount."
+		"Echo Volley must activate projectile amount and fan spread."
 	)
 	var modified_attack := game.call(
 		"_apply_combo_infusions_to_card",
@@ -76,8 +75,24 @@ func _run() -> void:
 			and int(modified_effect.get("projectile_count", 1)) >= 2
 			and int(modified_effect.get("target_count", 1))
 				== int(modified_effect.get("direction_count", 1)),
-		"Direction count and per-direction projectile amount must come from separate Combo cards."
+		"Echo Volley projectile amount must also define its number of attack directions."
 	)
+	_expect(
+		is_equal_approx(float(modified_effect.get("spread_degrees", 0.0)), 90.0),
+		"Echo Volley Lv.1 must form a narrow 90-degree fan."
+	)
+	for target_level in [2, 3]:
+		var instance := CardInstance.new("echo_volley", target_level, "echo-%d" % target_level)
+		var leveled_combo := game.call("_card_for_cast", instance) as Dictionary
+		var leveled_effect := leveled_combo.get("effect", {}) as Dictionary
+		_expect(
+			int(leveled_effect.get("projectile_bonus", 0)) == (3 if target_level == 2 else 7)
+				and is_equal_approx(
+					float(leveled_effect.get("spread_degrees", 0.0)),
+					180.0 if target_level == 2 else 360.0
+				),
+			"Echo Volley Lv.%d must increase amount and expand toward a full circle." % target_level
+		)
 	var runner := CardEffectRunner.new()
 	root.add_child(runner)
 	var damage_targets: Array = []
@@ -88,14 +103,30 @@ func _run() -> void:
 		damage_targets.append(target)
 	var volley_result := runner.cast(modified_attack, game.get("player"), damage_targets)
 	var expected_directions := int(modified_effect.get("direction_count", 1))
-	var expected_projectiles := int(modified_effect.get("projectile_count", 1))
+	var expected_projectiles := mini(
+		int(modified_effect.get("projectile_count", 1)),
+		damage_targets.size()
+	)
 	_expect(
 		int(volley_result.get("affected", 0)) == expected_directions
 			and int(volley_result.get("total", 0))
 				== int(modified_effect.get("amount", 0))
-					* expected_directions
 					* expected_projectiles,
-		"Forked Arc must spread targets by direction while Echo Volley repeats each direction."
+		"Echo Volley must distribute one projectile per available fan direction."
+	)
+	var isolated_target := DamageTarget.new()
+	isolated_target.position = Vector2(80.0, 0.0)
+	root.add_child(isolated_target)
+	var isolated_result := runner.cast(
+		modified_attack,
+		game.get("player"),
+		[isolated_target]
+	)
+	_expect(
+		int(isolated_result.get("affected", 0)) == 1
+			and int(isolated_result.get("total", 0))
+				== int(modified_effect.get("amount", 0)),
+		"Empty fan directions must miss instead of multiplying damage into one isolated target."
 	)
 	_expect(
 		float(game.call("_get_combo_time_remaining")) <= 3.0
@@ -123,19 +154,27 @@ func _run() -> void:
 		false,
 		1.0,
 		1.0,
-		{"direction_count": 3, "direction_index": 1}
+		{"direction_count": 8, "direction_index": 7, "spread_degrees": 360.0}
 	)
 	_expect(
 		feedback.has_method("get_direction_count")
-			and int(feedback.call("get_direction_count")) == 3
+			and int(feedback.call("get_direction_count")) == 8
+			and feedback.has_method("get_spread_degrees")
+			and is_equal_approx(float(feedback.call("get_spread_degrees")), 360.0)
+			and feedback.has_method("get_direction_angle_degrees")
+			and is_equal_approx(
+				float(feedback.call("get_direction_angle_degrees")),
+				135.0
+			)
 			and not feedback.has_method("get_homing_strength"),
-		"Direction Combo must reach the visible automatic-attack fan without homing."
+		"Max-level amount Combo must reach the visible full-circle attack without homing."
 	)
 
 	feedback.queue_free()
 	runner.queue_free()
 	for target in damage_targets:
 		(target as Node).queue_free()
+	isolated_target.queue_free()
 	game.queue_free()
 	await process_frame
 	quit(0 if _failures == 0 else 1)

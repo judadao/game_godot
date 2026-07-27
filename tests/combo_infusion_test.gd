@@ -78,7 +78,6 @@ func _run() -> void:
 		"keen_focus_combo",
 		"storm_charge",
 		"venom_edge",
-		"seeking_arc",
 		"echo_volley",
 	]:
 		var expanded_card := database_card(game, card_id)
@@ -114,13 +113,13 @@ func _run() -> void:
 	var expanded_visual := expanded_attack.get("combo_visual_profile", {}) as Dictionary
 	var expanded_elements := expanded_visual.get("elements", []) as Array
 	_expect(
-		int(expanded_visual.get("stack_count", 0)) >= 10
+		int(expanded_visual.get("stack_count", 0)) >= 9
 			and expanded_elements.has("storm")
 			and expanded_elements.has("venom"),
 		"Every active Combo stack and element must reach the automatic-attack visual profile."
 	)
 	var family_requirements := {
-		"offense": ["quickened_cadence", "kinetic_acceleration", "giant_arc", "keen_focus_combo", "seeking_arc", "echo_volley"],
+		"offense": ["quickened_cadence", "kinetic_acceleration", "giant_arc", "keen_focus_combo", "echo_volley"],
 		"body": ["iron_bone", "fleet_footwork", "arcane_breath", "deep_reservoir"],
 		"element": ["flame_imbue", "frostburst_imbue", "storm_charge", "venom_edge"],
 		"healing": ["healing_light", "blood_pact_combo", "verdant_renewal"],

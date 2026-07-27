@@ -19,8 +19,7 @@ var _stack_count := 0
 var _lifesteal := false
 var _direction_index := 0
 var _direction_count := 1
-var _projectile_index := 0
-var _projectiles_per_direction := 1
+var _spread_degrees := 0.0
 
 
 func play(
@@ -44,15 +43,8 @@ func play(
 		0,
 		_direction_count - 1
 	)
-	_projectiles_per_direction = maxi(
-		1,
-		int(visual_profile.get("projectiles_per_direction", 1))
-	)
-	_projectile_index = clampi(
-		int(visual_profile.get("projectile_index", 0)),
-		0,
-		_projectiles_per_direction - 1
-	)
+	_spread_degrees = clampf(float(visual_profile.get("spread_degrees", 0.0)), 0.0, 360.0)
+	_target_offset = _target_offset.rotated(deg_to_rad(_direction_angle_degrees()))
 	_visual_colors = _colors_for_elements(visual_profile.get("elements", []) as Array)
 	_accent = _blended_accent(_visual_colors, _accent_for_combo(combo_count))
 	_attack_size_multiplier = clampf(
@@ -106,6 +98,14 @@ func get_attack_scale() -> float:
 
 func get_direction_count() -> int:
 	return _direction_count
+
+
+func get_spread_degrees() -> float:
+	return _spread_degrees
+
+
+func get_direction_angle_degrees() -> float:
+	return _direction_angle_degrees()
 
 
 func _draw() -> void:
@@ -177,21 +177,18 @@ func _draw() -> void:
 
 
 func _travel_point(progress: float) -> Vector2:
-	if _target_offset.is_zero_approx():
-		return Vector2.ZERO.lerp(_target_offset, progress)
-	var normal := _target_offset.normalized().orthogonal()
-	var direction_center := float(_direction_count - 1) * 0.5
-	var projectile_center := float(_projectiles_per_direction - 1) * 0.5
-	var direction_bend := (float(_direction_index) - direction_center) * 42.0
-	var projectile_lane := (float(_projectile_index) - projectile_center) * 8.0
-	var bend := direction_bend + projectile_lane
-	if is_zero_approx(bend):
-		return Vector2.ZERO.lerp(_target_offset, progress)
-	var control := _target_offset * 0.45 + normal * bend
-	var remaining := 1.0 - progress
-	return (
-		2.0 * remaining * progress * control
-		+ progress * progress * _target_offset
+	return Vector2.ZERO.lerp(_target_offset, progress)
+
+
+func _direction_angle_degrees() -> float:
+	if _direction_count <= 1 or _spread_degrees <= 0.0:
+		return 0.0
+	if _spread_degrees >= 359.5:
+		return -180.0 + 360.0 * float(_direction_index) / float(_direction_count)
+	return lerpf(
+		-_spread_degrees * 0.5,
+		_spread_degrees * 0.5,
+		float(_direction_index) / float(_direction_count - 1)
 	)
 
 

@@ -647,27 +647,6 @@
       ]
     },
     {
-      "id": "seeking_arc",
-      "name": "Forked Arc",
-      "type": "combo",
-      "combo_family": "offense",
-      "rarity": "uncommon",
-      "level": 1,
-      "max_level": 3,
-      "cost": 1,
-      "description": "For 2.5 seconds, automatic attacks fire in one additional direction.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png",
-      "tags": ["combo", "direction", "infusion"],
-      "combo_tags": ["combo", "direction"],
-      "play_destination": "discard",
-      "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "seeking_arc", "combo_duration": 2.5, "direction_bonus": 1},
-      "upgrade_effects": [
-        {"level": 2, "description": "Automatic attacks fire in two additional directions.", "effect": {"direction_bonus": 2}},
-        {"level": 3, "description": "Automatic attacks fire in three additional directions.", "mechanic_change": "four_way_arc", "effect": {"direction_bonus": 3}}
-      ]
-    },
-    {
       "id": "echo_volley",
       "name": "Echo Volley",
       "type": "combo",
@@ -676,16 +655,16 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "description": "For 2.5 seconds, automatic attacks fire one additional projectile.",
+      "description": "For 2.5 seconds, fire 2 projectiles across a 90-degree fan.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
-      "tags": ["combo", "projectile", "amount", "infusion"],
-      "combo_tags": ["combo", "projectile"],
+      "tags": ["combo", "projectile", "amount", "fan", "infusion"],
+      "combo_tags": ["combo", "projectile", "fan"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "echo_volley", "combo_duration": 2.5, "projectile_bonus": 1},
+      "effect": {"kind": "infusion", "infusion_id": "echo_volley", "combo_duration": 2.5, "projectile_bonus": 1, "spread_degrees": 90.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Automatic attacks fire two additional projectiles.", "effect": {"projectile_bonus": 2}},
-        {"level": 3, "description": "A storm of echoes fires three additional projectiles.", "mechanic_change": "storm_of_echoes", "effect": {"projectile_bonus": 3}}
+        {"level": 2, "description": "Fire 4 projectiles across a 180-degree fan.", "effect": {"projectile_bonus": 3, "spread_degrees": 180.0}},
+        {"level": 3, "description": "Fire 8 projectiles in a full 360-degree circle.", "mechanic_change": "circular_echo_volley", "effect": {"projectile_bonus": 7, "spread_degrees": 360.0}}
       ]
     },
     {
