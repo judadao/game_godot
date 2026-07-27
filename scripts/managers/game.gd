@@ -72,6 +72,9 @@ const COMBO_EVOLUTIONS := [
 @export var deck_builder_scene: PackedScene = preload("res://scenes/ui/DeckBuilderUI.tscn")
 @export var card_discard_scene: PackedScene = preload("res://scenes/ui/CardDiscardUI.tscn")
 @export var card_growth_scene: PackedScene = preload("res://scenes/ui/CardGrowthUI.tscn")
+@export var auto_attack_feedback_scene: PackedScene = preload(
+	"res://scenes/combat/AutoAttackFeedback.tscn"
+)
 
 @onready var map_root: Node = $MapRoot
 @onready var hud_root: CanvasLayer = $HUDLayer
@@ -1221,11 +1224,85 @@ func _tick_auto_attack(delta: float) -> void:
 	if targets.is_empty():
 		_auto_attack_remaining = AUTO_ATTACK_RETRY_INTERVAL
 		return
+	var visual_target := _nearest_combat_target(targets)
+	var target_health_before := _read_health(visual_target)
+	var base_card := card_database.get_card(String(card.get("id", "")))
 	card["cost"] = 0
-	card_effect_runner.cast(card, player, targets)
+	var result := card_effect_runner.cast(card, player, targets)
+	var dealt_to_visual_target := maxi(0, target_health_before - _read_health(visual_target))
+	if int(result.get("affected", 0)) > 0 and visual_target != null:
+		_spawn_auto_attack_feedback(
+			card,
+			base_card,
+			visual_target,
+			dealt_to_visual_target,
+			result
+		)
 	_auto_attack_remaining = maxf(
 		0.1,
 		float(card.get("auto_attack_interval", DEFAULT_AUTO_ATTACK_INTERVAL))
+	)
+
+
+func _nearest_combat_target(targets: Array) -> Node2D:
+	if not player is Node2D:
+		return null
+	var nearest: Node2D
+	var nearest_distance := INF
+	for target_variant in targets:
+		if not target_variant is Node2D or not is_instance_valid(target_variant):
+			continue
+		var target := target_variant as Node2D
+		var distance := (player as Node2D).global_position.distance_squared_to(
+			target.global_position
+		)
+		if distance < nearest_distance:
+			nearest = target
+			nearest_distance = distance
+	return nearest
+
+
+func _read_health(target: Node) -> int:
+	if target == null or not is_instance_valid(target):
+		return 0
+	var health: Variant = target.get("health")
+	return int(health) if health != null else 0
+
+
+func _spawn_auto_attack_feedback(
+	card: Dictionary,
+	base_card: Dictionary,
+	target: Node2D,
+	damage: int,
+	result: Dictionary
+) -> void:
+	if (
+		auto_attack_feedback_scene == null
+		or current_map == null
+		or not player is Node2D
+		or target == null
+		or not is_instance_valid(target)
+	):
+		return
+	var feedback := auto_attack_feedback_scene.instantiate()
+	current_map.add_child(feedback)
+	if not feedback.has_method("play"):
+		feedback.queue_free()
+		return
+	var effect := card.get("effect", {}) as Dictionary
+	var base_effect := base_card.get("effect", {}) as Dictionary
+	var power_bonus := maxi(
+		0,
+		int(effect.get("amount", 0)) - int(base_effect.get("amount", 0))
+	)
+	feedback.call(
+		"play",
+		(player as Node2D).global_position + Vector2(0.0, -42.0),
+		target.global_position + Vector2(0.0, -34.0),
+		damage,
+		int(run_state.temporary_buffs.get("combo_chain_count", 0)),
+		power_bonus,
+		bool(result.get("critical", false))
 	)
 
 
@@ -1536,7 +1613,15 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 				effect["amount"] = int(effect.get("amount", 0)) + int(equipment_specials.get("card_heal_bonus", 0))
 	var combo_chain := int(run_state.temporary_buffs.get("combo_chain_count", 0))
 	if String(infused.get("type", "")) == "attack":
-		effect["amount"] = int(effect.get("amount", 0)) + floori(float(combo_chain) / 3.0) * 2
+		var combo_power_tiers := floori(float(combo_chain) / 3.0)
+		var combo_power_per_tier := maxi(
+			3,
+			ceili(float(effect.get("amount", 0)) * 0.20)
+		)
+		effect["amount"] = (
+			int(effect.get("amount", 0))
+			+ combo_power_tiers * combo_power_per_tier
+		)
 		if combo_chain >= 6:
 			effect["lifesteal_ratio"] = float(effect.get("lifesteal_ratio", 0.0)) + 0.05
 		if combo_chain >= 9:

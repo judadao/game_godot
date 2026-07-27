@@ -4,7 +4,7 @@ extends RefCounted
 var active := false
 var level := 1
 var experience := 0
-var experience_required := 40
+var experience_required := 30
 var pending_level_ups := 0
 var energy := 5.0
 var max_energy := 5.0
@@ -69,7 +69,7 @@ func add_experience(amount: int) -> int:
 		level += 1
 		pending_level_ups += 1
 		queued += 1
-		experience_required = int(ceil(float(experience_required) * 1.32 + 12.0))
+		experience_required = int(ceil(float(experience_required) * 1.25 + 10.0))
 	return queued
 
 
@@ -157,7 +157,7 @@ func _reset_transient() -> void:
 	active = false
 	level = 1
 	experience = 0
-	experience_required = 40
+	experience_required = 30
 	pending_level_ups = 0
 	energy = max_energy
 	starting_deck.clear()

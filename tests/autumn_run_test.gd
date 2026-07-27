@@ -44,6 +44,23 @@ func _test_archetype_catalog() -> void:
 		(catalog[&"elite"].get("attack_patterns") as Array) == [&"cleave", &"shockwave"],
 		"Elite must expose cleave and shockwave patterns."
 	)
+	var database := CardDatabase.new()
+	_expect(database.load_catalog(), "Early-game balance test must load the card catalog.")
+	var ember := database.get_card("ember_bolt")
+	var ember_damage := int((ember.get("effect", {}) as Dictionary).get("amount", 0))
+	for early_id in [&"sprout", &"hopper"]:
+		var early_enemy := catalog[early_id] as EnemyArchetype
+		var damage_after_defense := maxi(1, ember_damage - early_enemy.defense)
+		_expect(
+			ceili(float(early_enemy.max_health) / float(damage_after_defense)) <= 2,
+			"%s must die within two default Ember Bolt hits." % early_id
+		)
+	_expect(
+		int((catalog[&"sprout"] as EnemyArchetype).experience_reward)
+			+ int((catalog[&"hopper"] as EnemyArchetype).experience_reward)
+			>= 30,
+		"The first two enemy types must fund the first fast level-up."
+	)
 
 
 func _test_enemy_and_elite_contract() -> void:
@@ -61,8 +78,8 @@ func _test_enemy_and_elite_contract() -> void:
 
 	var health_before := int(enemy.get("health"))
 	var applied := int(enemy.call("take_hit", 12, Vector2.ZERO, 0.0))
-	_expect(applied == 11, "Sprout defense must reduce 12 raw damage to 11.")
-	_expect(int(enemy.get("health")) == health_before - 11, "Enemy damage must reduce health.")
+	_expect(applied == 12, "The early Sprout must take the full 12 raw test damage.")
+	_expect(int(enemy.get("health")) == health_before - 12, "Enemy damage must reduce health.")
 
 	_expect(enemy.call("configure_archetype", &"elite"), "Enemy must configure the elite archetype.")
 	var first_pattern: StringName = enemy.call("perform_next_attack")

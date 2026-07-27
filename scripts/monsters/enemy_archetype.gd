@@ -4,9 +4,9 @@ extends Resource
 @export var archetype_id: StringName = &"sprout"
 @export var display_name: String = "Autumn Sprout"
 @export var behavior: StringName = &"chase"
-@export var max_health: int = 42
+@export var max_health: int = 30
 @export var attack_damage: int = 10
-@export var defense: int = 1
+@export var defense: int = 0
 @export var speed: float = 75.0
 @export var detection_range: float = 320.0
 @export var attack_range: float = 60.0
@@ -23,27 +23,27 @@ static func autumn_catalog() -> Dictionary:
 	return {
 		&"sprout": _make(
 			&"sprout", "Autumn Sprout", &"chase",
-			42, 10, 1, 75.0, 320.0, 60.0, 1.1, 0.35, 18, 5,
+			30, 9, 0, 75.0, 320.0, 60.0, 1.1, 0.35, 16, 5,
 			[&"jab"], Color(0.78, 0.32, 0.12), Vector2(0.86, 0.86)
 		),
 		&"hopper": _make(
 			&"hopper", "Leaf Hopper", &"leap",
-			34, 11, 0, 110.0, 400.0, 72.0, 0.9, 0.42, 22, 6,
+			26, 10, 0, 110.0, 400.0, 72.0, 0.9, 0.42, 18, 6,
 			[&"leap"], Color(0.94, 0.58, 0.12), Vector2(0.78, 0.78)
 		),
 		&"thornling": _make(
 			&"thornling", "Thornling", &"ranged",
-			30, 9, 0, 62.0, 520.0, 240.0, 1.35, 0.55, 26, 7,
+			28, 9, 0, 62.0, 520.0, 240.0, 1.35, 0.55, 22, 7,
 			[&"thorn_volley"], Color(0.42, 0.62, 0.18), Vector2(0.82, 0.82)
 		),
 		&"charger": _make(
 			&"charger", "Bark Charger", &"charge",
-			70, 15, 2, 135.0, 500.0, 82.0, 1.8, 0.7, 35, 10,
+			60, 14, 2, 135.0, 500.0, 82.0, 1.8, 0.7, 32, 10,
 			[&"rush"], Color(0.55, 0.25, 0.1), Vector2(1.12, 1.05)
 		),
 		&"elite": _make(
 			&"elite", "Crimson Grove Elite", &"elite",
-			150, 20, 4, 95.0, 520.0, 110.0, 1.25, 0.65, 90, 30,
+			125, 18, 3, 95.0, 520.0, 110.0, 1.25, 0.65, 80, 30,
 			[&"cleave", &"shockwave"], Color(0.75, 0.1, 0.12), Vector2(1.35, 1.3)
 		),
 	}

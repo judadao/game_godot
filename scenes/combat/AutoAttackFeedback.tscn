@@ -1,0 +1,29 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/auto_attack_feedback.gd" id="1_feedback"]
+
+[node name="AutoAttackFeedback" type="Node2D" groups=["AutoAttackFeedback"]]
+z_index = 60
+script = ExtResource("1_feedback")
+
+[node name="DamageLabel" type="Label" parent="."]
+visible = false
+offset_right = 84.0
+offset_bottom = 30.0
+theme_override_colors/font_color = Color(1, 0.7, 0.25, 1)
+theme_override_colors/font_outline_color = Color(0.08, 0.02, 0.01, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 22
+text = "-0"
+horizontal_alignment = 1
+
+[node name="ComboLabel" type="Label" parent="."]
+visible = false
+offset_right = 140.0
+offset_bottom = 22.0
+theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
+theme_override_colors/font_outline_color = Color(0.08, 0.02, 0.01, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 13
+text = "AUTO ATTACK"
+horizontal_alignment = 1

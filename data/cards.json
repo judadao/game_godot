@@ -9,16 +9,16 @@
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "auto_attack_interval": 1.0,
+      "auto_attack_interval": 0.75,
       "auto_attack_range": 260,
-      "description": "Deal 12 damage and apply burn.",
+      "description": "Deal 16 damage and apply burn.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
       "tags": ["attack", "fire"],
       "combo_tags": ["strike", "fire"],
-      "effect": {"kind": "damage", "amount": 12, "status": "burn", "status_stacks": 1},
+      "effect": {"kind": "damage", "amount": 16, "status": "burn", "status_stacks": 1},
       "upgrade_effects": [
-        {"level": 2, "description": "Damage increases to 16.", "effect": {"amount": 16}},
-        {"level": 3, "description": "Splits into two visible bolts.", "mechanic_change": "split_projectile", "effect": {"amount": 10, "projectiles": 2}}
+        {"level": 2, "description": "Damage increases to 21.", "effect": {"amount": 21}},
+        {"level": 3, "description": "Splits into two visible bolts.", "mechanic_change": "split_projectile", "effect": {"amount": 14, "projectiles": 2}}
       ]
     },
     {
@@ -29,16 +29,16 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "auto_attack_interval": 1.25,
+      "auto_attack_interval": 1.0,
       "auto_attack_range": 120,
-      "description": "Deal 18 damage to nearby enemies.",
+      "description": "Deal 22 damage to nearby enemies.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png",
       "tags": ["attack", "melee", "area"],
       "combo_tags": ["strike", "melee"],
-      "effect": {"kind": "area_damage", "amount": 18, "radius": 120},
+      "effect": {"kind": "area_damage", "amount": 22, "radius": 120},
       "upgrade_effects": [
-        {"level": 2, "description": "Damage increases to 23.", "effect": {"amount": 23}},
-        {"level": 3, "description": "The swing becomes a full visible circle.", "mechanic_change": "full_circle_swing", "effect": {"amount": 23, "arc_degrees": 360}}
+        {"level": 2, "description": "Damage increases to 28.", "effect": {"amount": 28}},
+        {"level": 3, "description": "The swing becomes a full visible circle.", "mechanic_change": "full_circle_swing", "effect": {"amount": 28, "arc_degrees": 360}}
       ]
     },
     {
@@ -49,13 +49,13 @@
       "level": 1,
       "max_level": 3,
       "cost": 4,
-      "auto_attack_interval": 2.0,
+      "auto_attack_interval": 1.6,
       "auto_attack_range": 180,
-      "description": "Deal 32 fire damage in a wide area.",
+      "description": "Deal 36 fire damage in a wide area.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_03.png",
       "tags": ["attack", "fire", "area"],
       "combo_tags": ["strike", "fire"],
-      "effect": {"kind": "area_damage", "amount": 32, "radius": 180, "status": "burn", "status_stacks": 2},
+      "effect": {"kind": "area_damage", "amount": 36, "radius": 180, "status": "burn", "status_stacks": 2},
       "upgrade_effects": [
         {"level": 2, "description": "Explosion radius increases.", "effect": {"radius": 220}},
         {"level": 3, "description": "Leaves a visible burning ground field.", "mechanic_change": "burning_ground", "effect": {"field_damage": 6, "field_duration": 4.0}}

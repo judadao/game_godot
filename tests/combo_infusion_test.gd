@@ -41,6 +41,33 @@ func _run() -> void:
 	run.temporary_buffs["combo_chain_remaining"] = 0.0
 	run.temporary_buffs["combo_chain_skills"] = {}
 	run.temporary_buffs["combo_chain_order"] = []
+	var base_ember := database_card(game, "ember_bolt")
+	var baseline_attack := game.call(
+		"_apply_combo_infusions_to_card",
+		base_ember
+	) as Dictionary
+	var baseline_damage := int(
+		(baseline_attack.get("effect", {}) as Dictionary).get("amount", 0)
+	)
+	var expected_power_step := maxi(3, ceili(float(baseline_damage) * 0.20))
+	run.temporary_buffs["combo_chain_count"] = 3
+	var three_stack_attack := game.call(
+		"_apply_combo_infusions_to_card",
+		base_ember
+	) as Dictionary
+	run.temporary_buffs["combo_chain_count"] = 6
+	var six_stack_attack := game.call(
+		"_apply_combo_infusions_to_card",
+		base_ember
+	) as Dictionary
+	_expect(
+		int((three_stack_attack.get("effect", {}) as Dictionary).get("amount", 0))
+			== baseline_damage + expected_power_step
+			and int((six_stack_attack.get("effect", {}) as Dictionary).get("amount", 0))
+			== baseline_damage + expected_power_step * 2,
+		"Combo Power milestones must visibly add one 20%% damage step every three stacks."
+	)
+	run.temporary_buffs["combo_chain_count"] = 0
 	var expanded_effects: Array = []
 	for card_id in [
 		"sweeping_reach",

@@ -29,7 +29,7 @@
 
 目前測試是直接繼承 `SceneTree` 的 Godot 原生腳本，存放於 `tests/`，多數以 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT、統一測試執行器與 CI；新增這些能力前不得在交付報告中宣稱已具備。
 
-現有 69 個測試腳本涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+現有 70 個測試腳本涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版；其中 68 個符合 `*_test.gd`。
 `tests/test_ui_keyboard.gd` 不符合目前主要的檔名慣例，建立統一 runner 時必須
 一併納入或改名，避免漏跑。
@@ -292,7 +292,7 @@ instance.queue_free()
 | Growth queue | wave new-card 可直接 skip；滿 16 張可 replace/skip；EXP upgrade 五選一、全滿後獨立 fusion；無候選才 fallback；FIFO 不漏頁 |
 | Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一 |
 | Deck/hand | 4–16 Combo／Healing cards；shuffle draw 4；連續出牌固定補回 4；QWER 出牌；T 棄四張補四張且不耗 AP |
-| Auto attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；近距離目標；不餵 skill sequence |
+| Auto attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；近距離目標；不餵 skill sequence；成功命中會產生短彈道、傷害與 Combo power 回饋 |
 | Dash | ↑ 只觸發 Jump；Space 觸發玩家固有 Dash；不進牌庫/手牌、不耗 AP；Dash Combo infusions 使用 `target_action=dash` |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |
 | HUD authority | Autumn 只有一個 HUD root；hand 在 `CardStage`；Town HUD identity 不變 |

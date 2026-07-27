@@ -266,6 +266,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | Class | Source | Contract |
 |---|---|---|
 | `CardEffectRunner` | `scripts/combat/card_effect_runner.gd` | `cast()` 修改 caster/targets，emit `effect_resolved` |
+| `AutoAttackFeedback` | `scripts/combat/auto_attack_feedback.gd` | 投影自動普攻彈道、命中、實際傷害與 Combo power；不處理傷害規則 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
 | `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | timed phases、boss stage、XP gem |

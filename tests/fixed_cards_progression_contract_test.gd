@@ -149,8 +149,16 @@ func _run() -> void:
 		var energy_before := deck.energy
 		var hand_before := deck.hand.duplicate()
 		game.set("_auto_attack_remaining", 0.0)
+		run.temporary_buffs["combo_chain_count"] = 6
 		game.call("_process", 0.2)
 		_expect(int(target.get("health")) < health_before, "Automatic attack must damage an in-range enemy.")
+		var feedback_nodes := get_nodes_in_group("AutoAttackFeedback")
+		_expect(not feedback_nodes.is_empty(), "A successful automatic attack must spawn visible world feedback.")
+		if not feedback_nodes.is_empty():
+			_expect(
+				String(feedback_nodes[0].call("get_combo_text")).contains("COMBO ×6"),
+				"The attack feedback must visibly confirm the active Combo chain."
+			)
 		_expect(is_equal_approx(deck.energy, energy_before), "Automatic attack must not spend AP.")
 		_expect(deck.hand == hand_before, "Automatic attack must not mutate the four-card Combo/Healing hand.")
 		var first_hit_health := int(target.get("health"))

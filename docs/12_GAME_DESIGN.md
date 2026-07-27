@@ -419,7 +419,8 @@ Run 初始：
 下一級門檻公式：
 
 ```text
-next_required = ceil(previous_required * 1.32 + 12)
+initial_required = 30
+next_required = ceil(previous_required * 1.25 + 10)
 ```
 
 一次取得大量經驗可跨多級，每一級加入 `pending_level_ups`，不會只保留一次升級。
@@ -724,7 +725,7 @@ func add_experience(amount: int) -> int:
 		pending_level_ups += 1
 		queued += 1
 		experience_required = int(
-			ceil(float(experience_required) * 1.32 + 12.0)
+			ceil(float(experience_required) * 1.25 + 10.0)
 		)
 	return queued
 ```
@@ -925,3 +926,6 @@ AP presentation; `quickstep` is not part of the card catalog.
 Autumn interactions use a compact F prompt attached to the current world
 object. It follows the object and clamps above the HUD boundary so merchants,
 caches, portals, and events do not create a second competing bottom overlay.
+Combo 的攻擊提高採每三層一階：每階增加當前基礎攻擊 amount 的 20%，最低 +3。
+自動普攻命中時以世界空間短彈道、命中環、實際傷害數字與 `COMBO ×N / POWER +N`
+直接呈現本次強化，讓玩家不必只靠 HUD 判斷是否生效。
