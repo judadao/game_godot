@@ -12,12 +12,12 @@ func _initialize() -> void:
 func _run() -> void:
 	var queue := GrowthChoiceQueueScript.new()
 	var wave_cards: Array[Dictionary] = [
-		{"card_id": "cleave", "name": "Cleave"},
-		{"card_id": "frost_bind", "name": "Frost Bind"},
+		{"card_id": "cleave", "name": "Cleave", "description": "Deal area damage.", "type": "attack", "cost": 2},
+		{"card_id": "frost_bind", "name": "Frost Bind", "description": "Slow nearby enemies.", "type": "status", "cost": 2},
 	]
 	_expect(queue.enqueue_wave_blessing(wave_cards), "Wave blessings must enqueue new-card choices.")
 	var upgrades: Array[Dictionary] = [
-		{"instance_id": "card-a", "card_id": "cleave", "name": "Crescent Cleave", "level": 1},
+		{"instance_id": "card-a", "card_id": "cleave", "name": "Crescent Cleave", "level": 1, "description": "Deal area damage.", "upgrade_description": "Damage increases."},
 		{"instance_id": "card-a", "card_id": "cleave", "name": "Duplicate Cleave", "level": 1},
 	]
 	var fusions: Array[Dictionary] = [
@@ -38,6 +38,11 @@ func _run() -> void:
 	var first := queue.peek()
 	_expect(String(first.get("source", "")) == "wave", "Wave blessing must stay first.")
 	_expect((first.get("choices", []) as Array).all(func(choice: Dictionary) -> bool: return String(choice.get("action", "")) == "new_card"), "Wave blessing must only offer new cards.")
+	_expect(
+		String(((first.get("choices", []) as Array)[0] as Dictionary).get("description", ""))
+			== "Deal area damage.",
+		"Wave choices must preserve production descriptions for the modal."
+	)
 	_expect(queue.resolve("missing").is_empty(), "An invalid choice must not consume the queue.")
 	_expect(queue.size() == 2, "Invalid resolution must leave every entry pending.")
 	var skipped_wave := queue.skip_wave_reward()
@@ -68,6 +73,11 @@ func _run() -> void:
 		func(choice: Dictionary) -> bool: return String(choice.get("action", "")) == "upgrade"
 	)[0] as Dictionary
 	_expect(String(upgrade_choice.get("name", "")) == "Crescent Cleave", "Upgrade choices must preserve display names for the modal.")
+	_expect(
+		String(upgrade_choice.get("description", "")) == "Deal area damage."
+			and String(upgrade_choice.get("upgrade_description", "")) == "Damage increases.",
+		"Upgrade choices must preserve current and next-level descriptions."
+	)
 	queue.clear()
 	_expect(queue.enqueue_experience_growth([], fusions), "Fusion must receive its own page when no card can upgrade.")
 	var fusion_choice := (queue.peek().get("choices", []) as Array)[0] as Dictionary

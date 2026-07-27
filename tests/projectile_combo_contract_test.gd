@@ -3,6 +3,17 @@ extends SceneTree
 var _failures := 0
 
 
+class DamageTarget:
+	extends Node2D
+
+	var health := 1000
+
+	func take_damage(amount: int) -> int:
+		var dealt := mini(health, maxi(0, amount))
+		health -= dealt
+		return dealt
+
+
 func _initialize() -> void:
 	call_deferred("_run")
 
@@ -35,9 +46,10 @@ func _run() -> void:
 	var basic_effect := basic_attack.get("effect", {}) as Dictionary
 	_expect(
 		int(basic_effect.get("projectile_count", 1)) == 1
+			and int(basic_effect.get("direction_count", 1)) == 1
 			and int(basic_effect.get("target_count", 1)) == 1
-			and is_zero_approx(float(basic_attack.get("homing_strength", 0.0))),
-		"Combo Chain alone must preserve the base attack's single non-homing projectile."
+			and not basic_attack.has("homing_strength"),
+		"Combo Chain alone must preserve the base attack's single forward direction."
 	)
 	_expect(
 		float(basic_attack.get("attack_size_multiplier", 1.0)) >= 2.0,
@@ -47,7 +59,7 @@ func _run() -> void:
 	run.temporary_buffs["combo_chain_count"] = 0
 	_expect(
 		bool(game.call("_resolve_combo_card", database.get_card("seeking_arc"))),
-		"Seeking Arc must activate tracking."
+		"Forked Arc must activate additional attack directions."
 	)
 	_expect(
 		bool(game.call("_resolve_combo_card", database.get_card("echo_volley"))),
@@ -59,10 +71,31 @@ func _run() -> void:
 	) as Dictionary
 	var modified_effect := modified_attack.get("effect", {}) as Dictionary
 	_expect(
-		float(modified_attack.get("homing_strength", 0.0)) > 0.0
+		not modified_attack.has("homing_strength")
+			and int(modified_effect.get("direction_count", 1)) >= 2
 			and int(modified_effect.get("projectile_count", 1)) >= 2
-			and int(modified_effect.get("target_count", 1)) >= 2,
-		"Tracking and amount must come only from their active Combo cards."
+			and int(modified_effect.get("target_count", 1))
+				== int(modified_effect.get("direction_count", 1)),
+		"Direction count and per-direction projectile amount must come from separate Combo cards."
+	)
+	var runner := CardEffectRunner.new()
+	root.add_child(runner)
+	var damage_targets: Array = []
+	for target_index in 4:
+		var target := DamageTarget.new()
+		target.position = Vector2(60.0 + target_index * 20.0, target_index * 12.0)
+		root.add_child(target)
+		damage_targets.append(target)
+	var volley_result := runner.cast(modified_attack, game.get("player"), damage_targets)
+	var expected_directions := int(modified_effect.get("direction_count", 1))
+	var expected_projectiles := int(modified_effect.get("projectile_count", 1))
+	_expect(
+		int(volley_result.get("affected", 0)) == expected_directions
+			and int(volley_result.get("total", 0))
+				== int(modified_effect.get("amount", 0))
+					* expected_directions
+					* expected_projectiles,
+		"Forked Arc must spread targets by direction while Echo Volley repeats each direction."
 	)
 	_expect(
 		float(game.call("_get_combo_time_remaining")) <= 3.0
@@ -90,15 +123,19 @@ func _run() -> void:
 		false,
 		1.0,
 		1.0,
-		{"homing_strength": 0.8}
+		{"direction_count": 3, "direction_index": 1}
 	)
 	_expect(
-		feedback.has_method("get_homing_strength")
-			and float(feedback.call("get_homing_strength")) >= 0.8,
-		"Tracking Combo must reach the visible automatic-attack trajectory."
+		feedback.has_method("get_direction_count")
+			and int(feedback.call("get_direction_count")) == 3
+			and not feedback.has_method("get_homing_strength"),
+		"Direction Combo must reach the visible automatic-attack fan without homing."
 	)
 
 	feedback.queue_free()
+	runner.queue_free()
+	for target in damage_targets:
+		(target as Node).queue_free()
 	game.queue_free()
 	await process_frame
 	quit(0 if _failures == 0 else 1)

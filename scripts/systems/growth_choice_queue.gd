@@ -30,6 +30,9 @@ func enqueue_wave_blessing(cards: Array[Dictionary]) -> bool:
 			"action": "new_card",
 			"card_id": card_id,
 			"name": String(card.get("name", card_id)),
+			"description": String(card.get("description", "")),
+			"type": String(card.get("type", "")),
+			"cost": int(card.get("cost", 0)),
 		})
 	if choices.is_empty():
 		return false
@@ -54,6 +57,8 @@ func enqueue_experience_growth(upgrades: Array[Dictionary], fusions: Array[Dicti
 			"card_id": String(upgrade.get("card_id", "")),
 			"name": String(upgrade.get("name", "")),
 			"level": int(upgrade.get("level", 1)),
+			"description": String(upgrade.get("description", "")),
+			"upgrade_description": String(upgrade.get("upgrade_description", "")),
 		})
 	upgrade_choices.shuffle()
 	for choice in upgrade_choices.slice(

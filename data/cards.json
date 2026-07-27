@@ -648,23 +648,23 @@
     },
     {
       "id": "seeking_arc",
-      "name": "Seeking Arc",
+      "name": "Forked Arc",
       "type": "combo",
       "combo_family": "offense",
       "rarity": "uncommon",
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "description": "For 2.5 seconds, automatic attacks curve toward enemies.",
+      "description": "For 2.5 seconds, automatic attacks fire in one additional direction.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png",
-      "tags": ["combo", "tracking", "infusion"],
-      "combo_tags": ["combo", "tracking"],
+      "tags": ["combo", "direction", "infusion"],
+      "combo_tags": ["combo", "direction"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "seeking_arc", "combo_duration": 2.5, "homing_strength": 0.45},
+      "effect": {"kind": "infusion", "infusion_id": "seeking_arc", "combo_duration": 2.5, "direction_bonus": 1},
       "upgrade_effects": [
-        {"level": 2, "description": "Tracking curves more sharply.", "effect": {"homing_strength": 0.70}},
-        {"level": 3, "description": "Attacks relentlessly seek their targets.", "mechanic_change": "perfect_tracking", "effect": {"homing_strength": 1.0}}
+        {"level": 2, "description": "Automatic attacks fire in two additional directions.", "effect": {"direction_bonus": 2}},
+        {"level": 3, "description": "Automatic attacks fire in three additional directions.", "mechanic_change": "four_way_arc", "effect": {"direction_bonus": 3}}
       ]
     },
     {

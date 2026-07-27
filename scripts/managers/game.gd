@@ -779,11 +779,17 @@ func _enqueue_experience_growth() -> void:
 			or instance.level >= CardInstance.MAX_LEVEL
 		):
 			continue
+		var card := card_database.get_card(instance.card_id)
 		upgrades.append({
 			"instance_id": instance.instance_id,
 			"card_id": instance.card_id,
 			"name": _card_name(instance.card_id),
 			"level": instance.level,
+			"description": _card_level_description(card, instance.level),
+			"upgrade_description": _card_upgrade_description(
+				card,
+				instance.level + 1
+			),
 		})
 	var fusions := _available_fusions_with_names()
 	if not growth_choice_queue.enqueue_experience_growth(upgrades, fusions):
@@ -1134,6 +1140,10 @@ func _show_card_reward_choices(wave_number: int) -> void:
 		choices.append({
 			"text": "%s — %s" % [String(card.get("name", card_id)), String(card.get("description", ""))],
 			"card_id": String(card_id),
+			"name": String(card.get("name", card_id)),
+			"description": String(card.get("description", "")),
+			"type": String(card.get("type", "")),
+			"cost": int(card.get("cost", 0)),
 		})
 	if growth_choice_queue.enqueue_wave_blessing(choices):
 		call_deferred("_open_next_growth_choice")
@@ -1337,9 +1347,12 @@ func _tick_auto_attack(delta: float) -> void:
 	card["cost"] = 0
 	var result := card_effect_runner.cast(card, player, targets)
 	if int(result.get("affected", 0)) > 0:
-		var projectile_count := maxi(1, int(effect.get("projectile_count", 1)))
-		for projectile_index in projectile_count:
-			var feedback_target := feedback_targets[projectile_index % feedback_targets.size()]
+		var direction_count := maxi(1, int(effect.get("direction_count", 1)))
+		var projectiles_per_direction := maxi(1, int(effect.get("projectile_count", 1)))
+		var total_projectiles := direction_count * projectiles_per_direction
+		for projectile_index in total_projectiles:
+			var direction_index := projectile_index % direction_count
+			var feedback_target := feedback_targets[direction_index % feedback_targets.size()]
 			var damage := maxi(
 				0,
 				int(health_before.get(feedback_target.get_instance_id(), 0))
@@ -1347,16 +1360,20 @@ func _tick_auto_attack(delta: float) -> void:
 			)
 			if damage <= 0:
 				continue
-			var target_index := projectile_index % feedback_targets.size()
+			var target_index := direction_index % feedback_targets.size()
 			var assigned_projectiles := ceili(
-				float(projectile_count - target_index) / float(feedback_targets.size())
+				float(total_projectiles - target_index) / float(feedback_targets.size())
 			)
 			var feedback_card := card.duplicate(true)
 			var visual_profile := (
 				feedback_card.get("combo_visual_profile", {}) as Dictionary
 			).duplicate(true)
-			visual_profile["volley_index"] = projectile_index
-			visual_profile["volley_count"] = projectile_count
+			visual_profile["direction_index"] = direction_index
+			visual_profile["direction_count"] = direction_count
+			visual_profile["projectile_index"] = floori(
+				float(projectile_index) / float(direction_count)
+			)
+			visual_profile["projectiles_per_direction"] = projectiles_per_direction
 			feedback_card["combo_visual_profile"] = visual_profile
 			_spawn_auto_attack_feedback(
 				feedback_card,
@@ -1874,22 +1891,17 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			)
 			if float(infusion.get("lifesteal_ratio", 0.0)) > 0.0:
 				effect["lifesteal_ratio"] = float(effect.get("lifesteal_ratio", 0.0)) + float(infusion["lifesteal_ratio"])
-			if float(infusion.get("homing_strength", 0.0)) > 0.0:
-				infused["homing_strength"] = clampf(
-					float(infused.get("homing_strength", 0.0))
-					+ float(infusion.get("homing_strength", 0.0)),
-					0.0,
-					1.0
+			var direction_bonus := maxi(0, int(infusion.get("direction_bonus", 0)))
+			if direction_bonus > 0:
+				effect["direction_count"] = mini(
+					8,
+					maxi(1, int(effect.get("direction_count", 1))) + direction_bonus
 				)
 			var projectile_bonus := maxi(0, int(infusion.get("projectile_bonus", 0)))
 			if projectile_bonus > 0:
 				effect["projectile_count"] = mini(
 					8,
 					maxi(1, int(effect.get("projectile_count", 1))) + projectile_bonus
-				)
-				effect["target_count"] = maxi(
-					int(effect.get("target_count", 1)),
-					int(effect["projectile_count"])
 				)
 		elif String(infused.get("type", "")) == "defense":
 			effect["amount"] = int(effect.get("amount", 0)) + int(infusion.get("block_bonus", 0))
@@ -1952,11 +1964,16 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 	if String(infused.get("type", "")) == "attack" and has_flame and has_frost:
 		effect["amount"] = int(effect.get("amount", 0)) + 2
 		effect["combo_stun"] = 0.25
+	if String(infused.get("type", "")) == "attack":
+		effect["target_count"] = maxi(
+			int(effect.get("target_count", 1)),
+			int(effect.get("direction_count", 1))
+		)
 	infused["combo_visual_profile"] = {
 		"stack_count": visual_stack_count,
 		"elements": visual_elements,
 		"lifesteal": visual_lifesteal or float(effect.get("lifesteal_ratio", 0.0)) > 0.0,
-		"homing_strength": float(infused.get("homing_strength", 0.0)),
+		"direction_count": int(effect.get("direction_count", 1)),
 	}
 	infused["effect"] = effect
 	return infused
@@ -2935,6 +2952,27 @@ func _show_campfire_result(ui_control: Control, message: String) -> void:
 func _card_name(card_id: String) -> String:
 	var card := card_database.get_card(card_id)
 	return String(card.get("name", card_id.capitalize()))
+
+
+func _card_upgrade_description(card: Dictionary, target_level: int) -> String:
+	for upgrade_variant in card.get("upgrade_effects", []) as Array:
+		if not upgrade_variant is Dictionary:
+			continue
+		var upgrade := upgrade_variant as Dictionary
+		if int(upgrade.get("level", 0)) == target_level:
+			return String(upgrade.get("description", "")).strip_edges()
+	return ""
+
+
+func _card_level_description(card: Dictionary, level: int) -> String:
+	if level <= CardInstance.MIN_LEVEL:
+		return String(card.get("description", "")).strip_edges()
+	var upgraded_description := _card_upgrade_description(card, level)
+	return (
+		upgraded_description
+		if not upgraded_description.is_empty()
+		else String(card.get("description", "")).strip_edges()
+	)
 
 
 func _update_interaction_prompt() -> void:

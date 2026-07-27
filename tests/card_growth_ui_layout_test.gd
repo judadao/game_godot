@@ -110,6 +110,8 @@ func _dense_experience_page() -> Dictionary:
 			"card_id": "card-%d" % index,
 			"name": "Upgrade Card With An Intentionally Long Localized Display Name %d" % (index + 1),
 			"level": 1 + index % 2,
+			"description": "Current effect text remains readable in the compact modal.",
+			"upgrade_description": "Next level substantially improves this card's visible combat effect.",
 		})
 	for index in 4:
 		choices.append({

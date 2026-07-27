@@ -356,11 +356,12 @@ sequence rules 已移除。
 
 通用 Combo infusion 包含攻擊範圍（Sweeping Reach）、攻擊速度
 （Quickened Cadence）、攻擊力（Crushing Momentum）、爆擊率／倍率
-（Keen Focus）、追蹤彈道（Seeking Arc）、額外彈體（Echo Volley）與雷屬性硬直
+（Keen Focus）、額外攻擊方向（Forked Arc）、每方向額外彈體（Echo Volley）與雷屬性硬直
 （Storm Charge）；Flame／Frost infusion
 則繼續提供火焰與冰霜附加屬性。這些卡都只消耗 AP，不使用 card cooldown。
-沒有 Seeking Arc 與 Echo Volley 時，自動攻擊固定為不追蹤的單發、單目標基本型態；
-Combo Chain 本身只提高傷害、射程與攻擊尺寸，不免費增加追蹤、目標數或彈體數。
+沒有 Forked Arc 與 Echo Volley 時，自動攻擊固定為單方向、單發、單目標基本型態；
+Forked Arc 決定方向數，Echo Volley 決定每個方向的彈體數。Combo Chain 本身只提高
+傷害、射程與攻擊尺寸，不免費增加方向、目標數或彈體數。
 
 ### 7.2 Passive attack Skill
 
@@ -444,6 +445,8 @@ Wave blessing 是另一種 queue source，只提供 new card，不混入 upgrade
 `CardGrowthUI` 把最多五個選項固定排成上三張、下兩張置中的兩列，依 FIFO
 一頁一頁處理；舊全牌清單與 max-health/AP-regen/purge fallback 不再是這條
 卡牌成長流程的 contract。
+New-card 選項必須直接顯示卡牌類型、AP cost 與基礎效果；upgrade 選項必須同時
+顯示目前效果與下一級的精確變化，不能只靠 tooltip 或卡牌名稱讓玩家猜測。
 
 ## 9. 城鎮、資源與裝備
 

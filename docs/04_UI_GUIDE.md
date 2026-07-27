@@ -1095,6 +1095,8 @@ Combo Chain 清單、interaction prompt 與 world-safe area 不重疊、不裁�
 - 五個成長選項固定為上排三張、下排兩張置中，不使用可捲動的全牌清單。
 - wave new-card page 一律提供 `Skip Reward`，讓玩家可維持精簡牌組；若玩家選牌但
   已達 16 張上限，則改開 replacement modal，可替換一張現有卡或再次 Skip。
+- new-card 選項直接標示 type、AP cost 與基礎效果；upgrade 選項直接標示目前效果
+  與下一級變化，不得只把完整說明藏在 tooltip。
 - UI 必須清楚標示 instance level、兩張 fusion 材料與 Lv.1 結果。
 - `CardGrowthUI` 只 emit choice intent，不能直接改 deck、Meta 或 inventory。
 - modal 開啟期間 gameplay clock、AP、skill cooldowns、status、skills、waves 與 projectile

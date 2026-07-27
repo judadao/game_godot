@@ -195,7 +195,7 @@ func _add_choice_button(parent: Control, choice: Dictionary, display_text: Strin
 	_choice_ids[choice_id] = true
 	var button := Button.new()
 	button.name = "Choice%d" % (_choice_buttons.size() + 1)
-	button.custom_minimum_size = Vector2(280.0, 108.0)
+	button.custom_minimum_size = Vector2(280.0, 148.0)
 	button.size_flags_horizontal = (
 		Control.SIZE_SHRINK_CENTER
 		if parent is HBoxContainer
@@ -204,6 +204,8 @@ func _add_choice_button(parent: Control, choice: Dictionary, display_text: Strin
 	button.focus_mode = Control.FOCUS_ALL
 	button.toggle_mode = true
 	button.text = display_text
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	button.add_theme_font_size_override("font_size", 13)
 	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	button.tooltip_text = display_text
 	button.set_meta("choice_id", choice_id)
@@ -259,16 +261,22 @@ func _wire_focus_navigation() -> void:
 
 
 func _new_card_text(choice: Dictionary) -> String:
-	return "%s\nNEW CARD  •  LV.1" % _choice_name(choice, "name", "card_id", "Unknown Card")
+	return "%s\nNEW CARD  •  LV.1  •  %s  •  AP %d\n%s" % [
+		_choice_name(choice, "name", "card_id", "Unknown Card"),
+		String(choice.get("type", "card")).to_upper(),
+		maxi(0, int(choice.get("cost", 0))),
+		_choice_description(choice, "description", "No effect description available."),
+	]
 
 
 func _upgrade_text(choice: Dictionary) -> String:
 	var level := clampi(int(choice.get("level", 1)), 1, 2)
-	return "%s\nLV.%d  →  LV.%d\nINSTANCE  %s" % [
+	return "%s\nLV.%d  →  LV.%d\nNOW: %s\nUPGRADE: %s" % [
 		_choice_name(choice, "name", "card_id", "Unknown Card"),
 		level,
 		level + 1,
-		_short_id(String(choice.get("instance_id", ""))),
+		_choice_description(choice, "description", "No effect description available."),
+		_choice_description(choice, "upgrade_description", "No upgrade description available."),
 	]
 
 
@@ -303,7 +311,6 @@ func _choice_name(choice: Dictionary, name_key: String, id_key: String, fallback
 	return raw_id.replace("_", " ").capitalize()
 
 
-func _short_id(instance_id: String) -> String:
-	if instance_id.is_empty():
-		return "—"
-	return instance_id.left(12)
+func _choice_description(choice: Dictionary, key: String, fallback: String) -> String:
+	var description := String(choice.get(key, "")).strip_edges()
+	return description if not description.is_empty() else fallback

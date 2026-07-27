@@ -1015,6 +1015,6 @@ cannot leave only one authority changed.
 初期 auto attack balance baseline：Ember Bolt Lv.1 為 16 damage／0.75 秒，
 Sprout 與 Hopper 應在未加成時兩發內擊殺。Combo power 每三層提升一階，
 每階為當前基礎 attack amount 的 35%，最低 +4，並同步增加射程與尺寸。
-追蹤只由 Seeking Arc 提供，額外彈體與分散目標只由 Echo Volley 提供；
-兩者都未啟動時維持單發、直線、單目標。`growth_locked` 卡維持 Lv.1、不可升級或合成；其效果
+額外方向只由 Forked Arc 提供，每方向額外彈體只由 Echo Volley 提供；
+兩者都未啟動時維持單方向、單發、單目標。`growth_locked` 卡維持 Lv.1、不可升級或合成；其效果
 只能由場外建築與裝備加成。

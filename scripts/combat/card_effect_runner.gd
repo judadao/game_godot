@@ -47,14 +47,16 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 
 	match kind:
 		"damage":
-			var projectile_count := maxi(
+			var projectiles_per_direction := maxi(
 				1,
 				int(effect.get("projectile_count", effect.get("projectiles", 1)))
 			)
+			var direction_count := maxi(1, int(effect.get("direction_count", 1)))
+			var projectile_count := direction_count * projectiles_per_direction
 			var selected := _nearest_targets(
 				caster,
 				targets,
-				maxi(1, int(effect.get("target_count", projectile_count)))
+				maxi(1, int(effect.get("target_count", direction_count)))
 			)
 			_damage_projectile_volley(
 				caster,

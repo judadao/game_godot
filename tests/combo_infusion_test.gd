@@ -107,9 +107,9 @@ func _run() -> void:
 		float(expanded_attack.get("projectile_speed_multiplier", 1.0)) > 1.0
 			and float(expanded_attack.get("attack_size_multiplier", 1.0)) > 1.0
 			and float(expanded_attack_effect.get("poison_duration", 0.0)) > 0.0
-			and float(expanded_attack.get("homing_strength", 0.0)) > 0.0
+			and int(expanded_attack_effect.get("direction_count", 1)) >= 2
 			and int(expanded_attack_effect.get("projectile_count", 1)) >= 2,
-		"Offense and element Combo families must project travel speed, size, poison, tracking, and projectile amount."
+		"Offense and element Combo families must project travel speed, size, poison, direction, and projectile amount."
 	)
 	var expanded_visual := expanded_attack.get("combo_visual_profile", {}) as Dictionary
 	var expanded_elements := expanded_visual.get("elements", []) as Array

@@ -110,7 +110,7 @@ func _run() -> void:
 		int(catastrophic_effect.get("target_count", 1)) == 1
 			and int(catastrophic_effect.get("projectile_count", 1)) == 1
 			and float(catastrophic_attack.get("attack_size_multiplier", 1.0)) >= 2.0,
-		"High Combo Chain must amplify spectacle without granting free tracking or projectiles."
+		"High Combo Chain must amplify spectacle without granting free directions or projectiles."
 	)
 
 	run.temporary_buffs["combo_chain_count"] = 0

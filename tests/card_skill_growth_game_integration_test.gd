@@ -112,6 +112,7 @@ func _run() -> void:
 	var page := (game.get("growth_choice_queue") as GrowthChoiceQueue).peek()
 	var page_choices := page.get("choices", []) as Array
 	var all_page_choices_are_unfinished_upgrades := true
+	var all_page_choices_explain_effects := true
 	for choice in page_choices:
 		var choice_data := choice as Dictionary
 		all_page_choices_are_unfinished_upgrades = (
@@ -119,10 +120,19 @@ func _run() -> void:
 			and String(choice_data.get("action", "")) == "upgrade"
 			and int(choice_data.get("level", 3)) < CardInstance.MAX_LEVEL
 		)
+		all_page_choices_explain_effects = (
+			all_page_choices_explain_effects
+			and not String(choice_data.get("description", "")).strip_edges().is_empty()
+			and not String(choice_data.get("upgrade_description", "")).strip_edges().is_empty()
+		)
 	_expect(
 		page_choices.size() == 5
 			and all_page_choices_are_unfinished_upgrades,
 		"EXP growth must offer five unfinished card instances instead of the full deck."
+	)
+	_expect(
+		all_page_choices_explain_effects,
+		"Every EXP choice must explain the current effect and exact next-level change."
 	)
 	var first_choice := (page.get("choices", []) as Array)[0] as Dictionary
 	var selected_instance := run.get_card_instance(String(first_choice.get("instance_id", "")))

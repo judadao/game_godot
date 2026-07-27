@@ -23,9 +23,9 @@ func _run() -> void:
 		"event_id": 11,
 		"source": "wave",
 		"choices": [
-			{"choice_id": "wave:11:0:cleave", "action": "new_card", "card_id": "cleave", "name": "Cleave"},
-			{"choice_id": "wave:11:0:cleave", "action": "new_card", "card_id": "cleave", "name": "Duplicate Cleave"},
-			{"choice_id": "wave:11:1:frost_bind", "action": "new_card", "card_id": "frost_bind", "name": "Frost Bind"},
+			{"choice_id": "wave:11:0:cleave", "action": "new_card", "card_id": "cleave", "name": "Cleave", "description": "Deal damage to nearby enemies.", "type": "attack", "cost": 2},
+			{"choice_id": "wave:11:0:cleave", "action": "new_card", "card_id": "cleave", "name": "Duplicate Cleave", "description": "Duplicate.", "type": "attack", "cost": 2},
+			{"choice_id": "wave:11:1:frost_bind", "action": "new_card", "card_id": "frost_bind", "name": "Frost Bind", "description": "Slow enemies in a wide area.", "type": "status", "cost": 2},
 		],
 	}
 	ui.call("present_page", wave_page)
@@ -37,6 +37,11 @@ func _run() -> void:
 	var skip_button := ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/SkipButton") as Button
 	_expect(skip_button.visible and not skip_button.disabled, "Wave new-card pages must allow players to keep a compact deck by skipping.")
 	var wave_buttons := ui.call("get_choice_buttons") as Array
+	_expect(
+		(wave_buttons[0] as Button).text.contains("Deal damage to nearby enemies.")
+			and (wave_buttons[0] as Button).text.contains("AP 2"),
+		"New-card choices must explain the card effect and AP cost without relying on a tooltip."
+	)
 	_expect(
 		(wave_buttons[0] as Button).get_node_or_null((wave_buttons[0] as Button).focus_neighbor_right) == wave_buttons[1],
 		"Choice cards must author runtime focus neighbors for keyboard and gamepad navigation."
@@ -60,6 +65,8 @@ func _run() -> void:
 				"card_id": "cleave",
 				"name": "Cleave",
 				"level": 2,
+				"description": "Deal damage to nearby enemies.",
+				"upgrade_description": "The swing becomes a full visible circle.",
 			},
 			{
 				"choice_id": "exp:12:upgrade:guard-a",
@@ -68,6 +75,8 @@ func _run() -> void:
 				"card_id": "guard",
 				"name": "Iron Will",
 				"level": 1,
+				"description": "Gain weak super armor.",
+				"upgrade_description": "Super armor lasts longer.",
 			},
 		],
 	}
@@ -80,6 +89,11 @@ func _run() -> void:
 	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection") as Control).visible, "Fallback resources must stay hidden while growth exists.")
 	_expect(ui.call("get_choice_button_count") == 2, "The compact upgrade layout must retain both supplied unfinished cards.")
 	_expect(_all_text(ui).contains("LV.2"), "Upgrade choices must show the selected instance level.")
+	_expect(
+		_all_text(ui).contains("Deal damage to nearby enemies.")
+			and _all_text(ui).contains("The swing becomes a full visible circle."),
+		"Upgrade choices must show both the current card effect and the exact next-level change."
+	)
 
 	var fusion_page := {
 		"event_id": 14,
