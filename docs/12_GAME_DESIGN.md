@@ -930,6 +930,15 @@ invulnerable during travel, and retains a post-dash evasion window. Up performs
 jump; jump start has a short evasion window. Defeating the progression guardian
 unlocks one air jump and continues to enable equipment-based Dash evolution.
 
+### Modal pause authority
+
+`Game` remains `PROCESS_MODE_ALWAYS` so it can route menu input while paused,
+but `MapRoot` and `CardEffectRunner` are explicitly `PROCESS_MODE_PAUSABLE`.
+Any UI registered with `pause_game = true` pauses the SceneTree before its
+`open()` method runs. This contract applies to ESC PauseMenu, card upgrades,
+new-card rewards, full-deck replacement, discard, and other combat modals.
+Closing the final pausing modal resumes world processing.
+
 ## 24. Autumn Battle V2 Presentation Contract
 
 Autumn Battle V2 reserves the upper 66% of the viewport for world play. The

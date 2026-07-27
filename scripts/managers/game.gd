@@ -132,8 +132,10 @@ var _merchant_catalogs: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	map_root.process_mode = Node.PROCESS_MODE_PAUSABLE
 	hud_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_root.process_mode = Node.PROCESS_MODE_ALWAYS
+	card_effect_runner.process_mode = Node.PROCESS_MODE_PAUSABLE
 	meta_state.apply_dict(save_service.load_meta(META_SAVE_PATH))
 	inventory_manager.call("set_progression_unlocks", {
 		"dash_upgrade_unlocked": meta_state.dash_upgrade_unlocked,
@@ -405,6 +407,9 @@ func _update_hud_resources(
 func open_ui(ui_name: String, ui_scene: PackedScene, pause_game: bool = false) -> Control:
 	var existing_ui := get_open_ui(ui_name)
 	if existing_ui != null:
+		if pause_game:
+			_ui_pause_flags[existing_ui] = true
+			_update_pause_state()
 		existing_ui.move_to_front()
 		return existing_ui
 
@@ -425,12 +430,12 @@ func open_ui(ui_name: String, ui_scene: PackedScene, pause_game: bool = false) -
 	ui_stack.append(ui_control)
 	_ui_names[ui_control] = ui_name
 	_ui_pause_flags[ui_control] = pause_game
+	_update_pause_state()
 	_wire_common_ui_controls(ui_control)
 	_wire_ui_lifecycle(ui_control)
 	if ui_control.has_method("open"):
 		ui_control.call("open")
 	_focus_first_control(ui_control)
-	_update_pause_state()
 	ui_opened.emit(ui_name, ui_control)
 	return ui_control
 
