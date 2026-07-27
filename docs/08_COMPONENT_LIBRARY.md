@@ -1505,6 +1505,7 @@ Required semantic children:
 - Signal: `choice_confirmed(choice_id: String)`
 - Responsibility: render one `GrowthChoiceQueue` page and expose a single
   selected choice; it does not mutate deck, fusion materials, Meta or resources
+- Layout: at most five growth choices, centered as three cards above two cards
 - Replaces: Autumn Blessing popup and `LevelUpUI` in the card-growth flow
 
 ### SkillToastStack

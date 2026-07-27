@@ -20,6 +20,8 @@ const REQUIRED_AUTHORED_PATHS := [
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection",
+	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/TopRow",
+	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/BottomRow",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/ConfirmButton",
@@ -74,10 +76,10 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	_expect(not _canvas_rect(header).intersects(_canvas_rect(footer)), "Header and footer must not overlap at %s." % viewport_size)
 	_expect(not _canvas_rect(body).intersects(_canvas_rect(footer)), "Scrollable choice body and confirm controls must not overlap at %s." % viewport_size)
 	_expect(panel_rect.encloses(_canvas_rect(confirm)), "Confirm button must remain inside the modal at %s." % viewport_size)
-	_expect(scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "Dense choices must use authored scrolling at %s." % viewport_size)
+	_expect(scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "Five choices must not become a scrolling card list at %s." % viewport_size)
 
 	var choice_buttons := ui.call("get_choice_buttons") as Array
-	_expect(choice_buttons.size() == 12, "Dense test page must retain every choice at %s." % viewport_size)
+	_expect(choice_buttons.size() == 5, "Dense pages must project only five readable choices at %s." % viewport_size)
 	_expect(scroll.clip_contents, "Choice overflow must be clipped by the authored scroll region at %s." % viewport_size)
 	var first_choice := choice_buttons[0] as Button
 	_expect(panel_rect.encloses(_canvas_rect(first_choice)), "The first visible choice row must remain inside the modal at %s." % viewport_size)
@@ -86,7 +88,12 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 		and first_choice.tooltip_text == first_choice.text,
 		"Long localized choice text must trim safely while retaining its full tooltip at %s." % viewport_size
 	)
-	_expect(scroll.get_v_scroll_bar().max_value > scroll.size.y, "Dense choices must become vertically scrollable at %s." % viewport_size)
+	var top_row := ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/TopRow") as HBoxContainer
+	var bottom_row := ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/BottomRow") as HBoxContainer
+	_expect(
+		top_row.get_child_count() == 3 and bottom_row.get_child_count() == 2,
+		"Five choices must use a centered three-over-two layout at %s." % viewport_size
+	)
 	_expect(ui.get_viewport().gui_get_focus_owner() is Button, "A presented page must establish keyboard/gamepad focus at %s." % viewport_size)
 
 	viewport.queue_free()

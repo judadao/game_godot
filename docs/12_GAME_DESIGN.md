@@ -428,14 +428,17 @@ next_required = ceil(previous_required * 1.32 + 12)
 
 每一個 pending level-up enqueue 一頁 EXP growth choice：
 
-- 選一張低於 Lv.3 的 `CardInstance` 個別升級；
-- 或選兩張不同的合法 Lv.3 instances 進行 fusion；
+- 只要存在低於 Lv.3 的 `CardInstance`，隨機抽出最多五張形成獨立升級頁；
+- 全部卡片都滿級後，才以另一頁提供最多五組合法 Lv.3 fusion；
 - 只有兩者都沒有候選時，改選 75 gold、12 autumn wood + 8 stone、
   或 4 magic shards。
 
 Wave blessing 是另一種 queue source，只提供 new card，不混入 upgrade/fusion。
-`CardGrowthUI` 依 FIFO 一頁一頁處理；舊 max-health/AP-regen/purge fallback 不再是
-這條卡牌成長流程的 contract。
+牌組已滿 16 張時，選取新卡後必須進入 replacement modal：玩家可移除一張
+現有卡換入獎勵，或 Skip 並維持原牌組。
+`CardGrowthUI` 把最多五個選項固定排成上三張、下兩張置中的兩列，依 FIFO
+一頁一頁處理；舊全牌清單與 max-health/AP-regen/purge fallback 不再是這條
+卡牌成長流程的 contract。
 
 ## 9. 城鎮、資源與裝備
 

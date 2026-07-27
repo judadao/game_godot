@@ -1,6 +1,8 @@
 class_name CardCollectionService
 extends RefCounted
 
+const MAX_EXPEDITION_CARDS := 16
+
 var _meta_state: MetaState
 var _run_state: RunState
 var _deck_manager: DeckManager
@@ -51,6 +53,7 @@ func add_persistent_card(card_id: String) -> CardInstance:
 		not is_configured()
 		or not _run_state.active
 		or card_id.is_empty()
+		or get_deck_size() >= MAX_EXPEDITION_CARDS
 		or _deck_manager.is_card_protected(card_id)
 		or not _card_database.has_card(card_id)
 	):

@@ -33,7 +33,7 @@ func _run() -> void:
 			"result_name": "Gale Lunge",
 		},
 	]
-	_expect(queue.enqueue_experience_growth(upgrades, fusions), "EXP growth must enqueue upgrade and fusion choices together.")
+	_expect(queue.enqueue_experience_growth(upgrades, fusions), "EXP growth must accept upgrade and fusion candidates.")
 	_expect(queue.size() == 2, "Multiple growth events must remain FIFO.")
 	var first := queue.peek()
 	_expect(String(first.get("source", "")) == "wave", "Wave blessing must stay first.")
@@ -47,21 +47,47 @@ func _run() -> void:
 	var second_actions: Array[String] = []
 	for choice in second.get("choices", []) as Array:
 		second_actions.append(String((choice as Dictionary).get("action", "")))
-	_expect(second_actions.has("upgrade") and second_actions.has("fusion"), "EXP page must combine individual upgrades and full-level fusion.")
+	_expect(second_actions.has("upgrade") and not second_actions.has("fusion"), "EXP upgrade pages must stay limited to unfinished cards.")
 	_expect(not second_actions.has("fallback"), "Fallback resources must not appear while growth is possible.")
 	_expect(second_actions.count("upgrade") == 1, "Duplicate instance candidates must not create ambiguous choice IDs.")
 	var upgrade_choice := (second.get("choices", []) as Array).filter(
 		func(choice: Dictionary) -> bool: return String(choice.get("action", "")) == "upgrade"
 	)[0] as Dictionary
 	_expect(String(upgrade_choice.get("name", "")) == "Crescent Cleave", "Upgrade choices must preserve display names for the modal.")
-	var fusion_choice := (second.get("choices", []) as Array).filter(
-		func(choice: Dictionary) -> bool: return String(choice.get("action", "")) == "fusion"
-	)[0] as Dictionary
+	queue.clear()
+	_expect(queue.enqueue_experience_growth([], fusions), "Fusion must receive its own page when no card can upgrade.")
+	var fusion_choice := (queue.peek().get("choices", []) as Array)[0] as Dictionary
 	_expect(
 		String(fusion_choice.get("left_card_id", "")) == "dash_strike"
 		and String(fusion_choice.get("right_card_id", "")) == "cleave"
 		and String(fusion_choice.get("result_name", "")) == "Gale Lunge",
 		"Fusion choices must preserve material and result display identity."
+	)
+
+	queue.clear()
+	var dense_upgrades: Array[Dictionary] = []
+	for index in 9:
+		dense_upgrades.append({
+			"instance_id": "dense-%d" % index,
+			"card_id": "card-%d" % index,
+			"name": "Card %d" % index,
+			"level": 1 + index % 2,
+		})
+	_expect(
+		queue.enqueue_experience_growth(dense_upgrades, fusions),
+		"Dense EXP growth must enqueue a bounded choice page."
+	)
+	var dense_choices := queue.peek().get("choices", []) as Array
+	var all_dense_choices_are_upgrades := true
+	for choice in dense_choices:
+		all_dense_choices_are_upgrades = (
+			all_dense_choices_are_upgrades
+			and String((choice as Dictionary).get("action", "")) == "upgrade"
+		)
+	_expect(
+		dense_choices.size() == 5
+			and all_dense_choices_are_upgrades,
+		"EXP growth must sample exactly five unfinished cards before offering fusion."
 	)
 
 	queue.clear()

@@ -67,6 +67,77 @@ func _run() -> void:
 	_expect(run.card_instances.size() == before_reward_count + 1, "New card reward must add exactly one instance.")
 	var renewal := _first_instance(run.card_instances, "renewal")
 	_expect(renewal != null and deck.find_instance(renewal.instance_id) == renewal, "New reward must share identity with Deck.")
+	while run.card_instances.size() < CardCollectionService.MAX_EXPEDITION_CARDS:
+		_expect(game.call("_apply_growth_resolution", {
+			"action": "new_card",
+			"card_id": "battle_rhythm",
+		}), "Test setup must fill the expedition deck.")
+	_expect(
+		not game.call("_apply_growth_resolution", {
+			"action": "new_card",
+			"card_id": "storm_charge",
+		}),
+		"A full expedition deck must reject a seventeenth card without replacement."
+	)
+
+	var growth_queue := game.get("growth_choice_queue") as GrowthChoiceQueue
+	_expect(
+		growth_queue.enqueue_wave_blessing([
+			{"card_id": "storm_charge", "name": "Storm Charge"},
+		]),
+		"A full-deck reward must still open a choice."
+	)
+	game.call("_open_next_growth_choice")
+	await process_frame
+	var growth_ui := game.get_open_ui("CardGrowthUI") as Control
+	_expect(growth_ui != null, "Full-deck reward must first show the new card.")
+	growth_ui.call("confirm_selected_choice")
+	await process_frame
+	var replacement_ui := game.get_open_ui("CardDiscardUI") as Control
+	_expect(
+		replacement_ui != null and bool(replacement_ui.call("is_skip_available")),
+		"A full deck must offer replacement or Skip."
+	)
+	replacement_ui.call("skip_reward")
+	await process_frame
+	_expect(
+		growth_queue.is_empty()
+			and run.card_instances.size() == CardCollectionService.MAX_EXPEDITION_CARDS,
+		"Skipping a full-deck reward must keep the existing sixteen cards."
+	)
+
+	_expect(
+		growth_queue.enqueue_wave_blessing([
+			{"card_id": "storm_charge", "name": "Storm Charge"},
+		]),
+		"A second full-deck reward must support replacement."
+	)
+	game.call("_open_next_growth_choice")
+	await process_frame
+	growth_ui = game.get_open_ui("CardGrowthUI") as Control
+	growth_ui.call("confirm_selected_choice")
+	await process_frame
+	replacement_ui = game.get_open_ui("CardDiscardUI") as Control
+	var pending_ids: Array = game.get("_pending_reward_instance_ids")
+	var replacement_index := -1
+	for index in pending_ids.size():
+		var candidate := run.get_card_instance(pending_ids[index])
+		if candidate != null and candidate.card_id != "storm_charge":
+			replacement_index = index
+			break
+	_expect(replacement_index >= 0, "Replacement must expose a removable existing card.")
+	var removed_instance_id := String(pending_ids[replacement_index])
+	var storm_count_before := _instances_for_card(run.card_instances, "storm_charge").size()
+	replacement_ui.call("select_index", replacement_index)
+	replacement_ui.call("confirm_selection")
+	await process_frame
+	_expect(
+		growth_queue.is_empty()
+			and run.card_instances.size() == CardCollectionService.MAX_EXPEDITION_CARDS
+			and run.get_card_instance(removed_instance_id) == null
+			and _instances_for_card(run.card_instances, "storm_charge").size() == storm_count_before + 1,
+		"Replacing must atomically remove one existing card and add the selected reward."
+	)
 
 	var meta_gold_before := int(meta.resources.get("gold", 0))
 	var inventory := game.get("inventory_manager") as RefCounted

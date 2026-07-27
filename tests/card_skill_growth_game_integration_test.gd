@@ -110,6 +110,20 @@ func _run() -> void:
 		"Combat status timers must freeze while growth modal owns pause."
 	)
 	var page := (game.get("growth_choice_queue") as GrowthChoiceQueue).peek()
+	var page_choices := page.get("choices", []) as Array
+	var all_page_choices_are_unfinished_upgrades := true
+	for choice in page_choices:
+		var choice_data := choice as Dictionary
+		all_page_choices_are_unfinished_upgrades = (
+			all_page_choices_are_unfinished_upgrades
+			and String(choice_data.get("action", "")) == "upgrade"
+			and int(choice_data.get("level", 3)) < CardInstance.MAX_LEVEL
+		)
+	_expect(
+		page_choices.size() == 5
+			and all_page_choices_are_unfinished_upgrades,
+		"EXP growth must offer five unfinished card instances instead of the full deck."
+	)
 	var first_choice := (page.get("choices", []) as Array)[0] as Dictionary
 	var selected_instance := run.get_card_instance(String(first_choice.get("instance_id", "")))
 	var selected_level_before := selected_instance.level if selected_instance != null else -1

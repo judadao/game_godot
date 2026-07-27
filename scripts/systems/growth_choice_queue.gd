@@ -9,6 +9,7 @@ const FALLBACK_REWARDS: Array[Dictionary] = [
 	{"autumn_wood": 12, "stone": 8},
 	{"magic_shard": 4},
 ]
+const MAX_EXPERIENCE_CHOICES := 5
 
 var _entries: Array[Dictionary] = []
 var _next_event_id := 1
@@ -41,11 +42,12 @@ func enqueue_experience_growth(upgrades: Array[Dictionary], fusions: Array[Dicti
 	var event_id := _claim_event_id()
 	var choices: Array[Dictionary] = []
 	var seen_choice_ids: Dictionary = {}
+	var upgrade_choices: Array[Dictionary] = []
 	for upgrade in upgrades:
 		var instance_id := String(upgrade.get("instance_id", ""))
 		if instance_id.is_empty() or int(upgrade.get("level", 0)) >= 3:
 			continue
-		_append_unique_choice(choices, seen_choice_ids, {
+		_append_unique_choice(upgrade_choices, seen_choice_ids, {
 			"choice_id": "exp:%d:upgrade:%s" % [event_id, instance_id],
 			"action": "upgrade",
 			"instance_id": instance_id,
@@ -53,25 +55,34 @@ func enqueue_experience_growth(upgrades: Array[Dictionary], fusions: Array[Dicti
 			"name": String(upgrade.get("name", "")),
 			"level": int(upgrade.get("level", 1)),
 		})
-	for fusion in fusions:
-		var left_id := String(fusion.get("left_instance_id", ""))
-		var right_id := String(fusion.get("right_instance_id", ""))
-		var result_id := String(fusion.get("result_card_id", ""))
-		if left_id.is_empty() or right_id.is_empty() or left_id == right_id or result_id.is_empty():
-			continue
-		_append_unique_choice(choices, seen_choice_ids, {
-			"choice_id": "exp:%d:fusion:%s:%s" % [event_id, left_id, right_id],
-			"action": "fusion",
-			"recipe_id": String(fusion.get("recipe_id", result_id)),
-			"left_instance_id": left_id,
-			"right_instance_id": right_id,
-			"left_card_id": String(fusion.get("left_card_id", "")),
-			"right_card_id": String(fusion.get("right_card_id", "")),
-			"left_name": String(fusion.get("left_name", "")),
-			"right_name": String(fusion.get("right_name", "")),
-			"result_card_id": result_id,
-			"result_name": String(fusion.get("result_name", fusion.get("name", ""))),
-		})
+	upgrade_choices.shuffle()
+	for choice in upgrade_choices.slice(
+		0,
+		mini(MAX_EXPERIENCE_CHOICES, upgrade_choices.size())
+	):
+		choices.append(choice)
+	if choices.is_empty():
+		for fusion in fusions:
+			if choices.size() >= MAX_EXPERIENCE_CHOICES:
+				break
+			var left_id := String(fusion.get("left_instance_id", ""))
+			var right_id := String(fusion.get("right_instance_id", ""))
+			var result_id := String(fusion.get("result_card_id", ""))
+			if left_id.is_empty() or right_id.is_empty() or left_id == right_id or result_id.is_empty():
+				continue
+			_append_unique_choice(choices, seen_choice_ids, {
+				"choice_id": "exp:%d:fusion:%s:%s" % [event_id, left_id, right_id],
+				"action": "fusion",
+				"recipe_id": String(fusion.get("recipe_id", result_id)),
+				"left_instance_id": left_id,
+				"right_instance_id": right_id,
+				"left_card_id": String(fusion.get("left_card_id", "")),
+				"right_card_id": String(fusion.get("right_card_id", "")),
+				"left_name": String(fusion.get("left_name", "")),
+				"right_name": String(fusion.get("right_name", "")),
+				"result_card_id": result_id,
+				"result_name": String(fusion.get("result_name", fusion.get("name", ""))),
+			})
 	if choices.is_empty():
 		for index in FALLBACK_REWARDS.size():
 			choices.append({

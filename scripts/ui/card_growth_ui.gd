@@ -3,13 +3,15 @@ extends Control
 
 signal choice_confirmed(choice_id: String)
 
+const MAX_GROWTH_CHOICES := 5
+
 @onready var title_label: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title
 @onready var source_label: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Source
 @onready var instruction_label: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Instruction
 @onready var upgrade_section: VBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection
-@onready var upgrade_grid: GridContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid
+@onready var upgrade_top_row: HBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/TopRow
+@onready var upgrade_bottom_row: HBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/BottomRow
 @onready var fusion_section: VBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection
-@onready var fusion_grid: GridContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection/FusionGrid
 @onready var fallback_section: VBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection
 @onready var fallback_grid: GridContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection/FallbackGrid
 @onready var confirm_button: Button = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/ConfirmButton
@@ -53,17 +55,20 @@ func present_page(page: Dictionary) -> void:
 				fallbacks.append(choice)
 
 	upgrade_section.visible = not upgrades.is_empty() or not new_cards.is_empty()
-	fusion_section.visible = not fusions.is_empty()
+	upgrade_section.visible = upgrade_section.visible or not fusions.is_empty()
+	fusion_section.visible = false
 	fallback_section.visible = not fallbacks.is_empty()
 	($SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/SectionTitle as Label).text = (
-		"NEW CARDS" if not new_cards.is_empty() else "INDIVIDUAL UPGRADES"
+		"NEW CARDS"
+		if not new_cards.is_empty()
+		else ("FULL-LEVEL FUSIONS" if upgrades.is_empty() and not fusions.is_empty() else "INDIVIDUAL UPGRADES")
 	)
 	for choice in new_cards:
-		_add_choice_button(upgrade_grid, choice, _new_card_text(choice))
+		_add_growth_choice_button(choice, _new_card_text(choice))
 	for choice in upgrades:
-		_add_choice_button(upgrade_grid, choice, _upgrade_text(choice))
+		_add_growth_choice_button(choice, _upgrade_text(choice))
 	for choice in fusions:
-		_add_choice_button(fusion_grid, choice, _fusion_text(choice))
+		_add_growth_choice_button(choice, _fusion_text(choice))
 	for choice in fallbacks:
 		_add_choice_button(fallback_grid, choice, _fallback_text(choice))
 
@@ -115,12 +120,22 @@ func _apply_header() -> void:
 			instruction_label.text = "Add one card to this expedition deck."
 		"experience":
 			var has_fallback := _page_has_action("fallback")
-			title_label.text = "CHOOSE RESOURCES" if has_fallback else "UPGRADE OR FUSE"
+			var has_upgrade := _page_has_action("upgrade")
+			var has_fusion := _page_has_action("fusion")
+			title_label.text = (
+				"CHOOSE RESOURCES"
+				if has_fallback
+				else ("CHOOSE AN UPGRADE" if has_upgrade else "CHOOSE A FUSION")
+			)
 			source_label.text = "EXPERIENCE GROWTH"
 			instruction_label.text = (
 				"No card can grow. Choose one permanent resource bundle."
 				if has_fallback
-				else "Raise one card instance, or fuse two full-level cards."
+				else (
+					"Choose one of five unfinished cards to level up."
+					if has_upgrade
+					else "Fuse one pair of full-level cards."
+				)
 			)
 		_:
 			title_label.text = "CARD GROWTH"
@@ -135,7 +150,14 @@ func _page_has_action(action: String) -> bool:
 	return false
 
 
-func _add_choice_button(parent: GridContainer, choice: Dictionary, display_text: String) -> void:
+func _add_growth_choice_button(choice: Dictionary, display_text: String) -> void:
+	if _choice_buttons.size() >= MAX_GROWTH_CHOICES:
+		return
+	var parent := upgrade_top_row if _choice_buttons.size() < 3 else upgrade_bottom_row
+	_add_choice_button(parent, choice, display_text)
+
+
+func _add_choice_button(parent: Control, choice: Dictionary, display_text: String) -> void:
 	var choice_id := String(choice.get("choice_id", ""))
 	if choice_id.is_empty() or _choice_ids.has(choice_id):
 		return
@@ -143,7 +165,11 @@ func _add_choice_button(parent: GridContainer, choice: Dictionary, display_text:
 	var button := Button.new()
 	button.name = "Choice%d" % (_choice_buttons.size() + 1)
 	button.custom_minimum_size = Vector2(280.0, 108.0)
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.size_flags_horizontal = (
+		Control.SIZE_SHRINK_CENTER
+		if parent is HBoxContainer
+		else Control.SIZE_EXPAND_FILL
+	)
 	button.focus_mode = Control.FOCUS_ALL
 	button.toggle_mode = true
 	button.text = display_text

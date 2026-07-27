@@ -784,8 +784,11 @@ active skill 必須是 learned 的子集。`RunState.card_instances` 是 expedit
 ### 21.3 成長與 UI ownership
 
 `GrowthChoiceQueue` 將 wave blessing 與 EXP level-up 排成單一 FIFO。wave 只提供
-new card；EXP 提供單一 instance upgrade 或兩張不同 Lv.3 instances 的 fusion。
-fusion 消耗兩張材料並加入一張 Lv.1 結果，牌組淨減一。若沒有合法 upgrade/fusion，
+new card；EXP 優先隨機抽最多五張未滿級 instance 形成 upgrade page，全部滿級後
+才提供獨立 fusion page。fusion 消耗兩張材料並加入一張 Lv.1 結果，牌組淨減一。
+wave reward 遇到 16 張上限時由 `Game` 開啟 replacement modal，原子執行
+remove-one/add-one，或由玩家 Skip 而不改牌組。
+若沒有合法 upgrade/fusion，
 才提供 75 gold、12 wood + 8 stone、或 4 magic shards 的永久 fallback。
 
 `Game` resolve choice、處理單張 upgrade／fallback、同步 Meta DTO 並提交 save。

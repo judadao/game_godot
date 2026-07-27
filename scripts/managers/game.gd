@@ -108,6 +108,9 @@ var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
 var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
 var _pending_player_state: Dictionary = {}
 var _last_combo_name := "—"
+var _pending_reward_choice_id := ""
+var _pending_reward_card_id := ""
+var _pending_reward_instance_ids: Array[String] = []
 var _tactical_slowdown := false
 var _run_auto_attack_card_id := DEFAULT_AUTO_ATTACK_CARD_ID
 var _auto_attack_remaining := 0.0
@@ -791,6 +794,16 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 			break
 	if selected.is_empty():
 		return
+	if (
+		String(selected.get("action", "")) == "new_card"
+		and _get_run_deck_size() >= CardCollectionService.MAX_EXPEDITION_CARDS
+	):
+		close_ui(ui_control)
+		_open_reward_replacement(
+			choice_id,
+			String(selected.get("card_id", ""))
+		)
+		return
 	if not _apply_growth_resolution(selected):
 		ui_control.call("present_page", page)
 		return
@@ -805,6 +818,91 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 		_enqueue_experience_growth()
 	elif not growth_choice_queue.is_empty():
 		call_deferred("_open_next_growth_choice")
+
+
+func _open_reward_replacement(choice_id: String, card_id: String) -> void:
+	if (
+		choice_id.is_empty()
+		or not _is_combat_hand_card(card_database.get_card(card_id))
+		or get_open_ui("CardDiscardUI") != null
+	):
+		return
+	var cards: Array[Dictionary] = []
+	_pending_reward_instance_ids.clear()
+	for instance in deck_manager.get_all_instances():
+		var card := _card_for_cast(instance)
+		card["instance_id"] = instance.instance_id
+		cards.append(card)
+		_pending_reward_instance_ids.append(instance.instance_id)
+	_pending_reward_choice_id = choice_id
+	_pending_reward_card_id = card_id
+	var ui_control := open_ui("CardDiscardUI", card_discard_scene, true)
+	if ui_control == null:
+		_clear_pending_reward_replacement()
+		call_deferred("_open_next_growth_choice")
+		return
+	ui_control.call(
+		"configure",
+		cards,
+		1,
+		[],
+		"DECK FULL — REPLACE ONE CARD?",
+		true
+	)
+	ui_control.connect(
+		"discard_confirmed",
+		_on_reward_replacement_confirmed.bind(ui_control)
+	)
+	ui_control.connect(
+		"skipped",
+		_on_reward_replacement_skipped.bind(ui_control)
+	)
+
+
+func _on_reward_replacement_confirmed(indices: Array[int], ui_control: Control) -> void:
+	if (
+		indices.size() != 1
+		or _pending_reward_choice_id.is_empty()
+		or _pending_reward_card_id.is_empty()
+	):
+		return
+	var index := indices[0]
+	if index < 0 or index >= _pending_reward_instance_ids.size():
+		return
+	var snapshot := _capture_growth_transaction()
+	var replaced := (
+		_remove_card_instance(_pending_reward_instance_ids[index])
+		and _add_persistent_run_card(_pending_reward_card_id)
+	)
+	if replaced:
+		_sync_progression_to_meta()
+	if not replaced or not save_service.save_meta(META_SAVE_PATH, meta_state.to_dict()):
+		_restore_growth_transaction(snapshot)
+		return
+	_finish_reward_replacement(ui_control)
+
+
+func _on_reward_replacement_skipped(ui_control: Control) -> void:
+	if _pending_reward_choice_id.is_empty():
+		return
+	_finish_reward_replacement(ui_control)
+
+
+func _finish_reward_replacement(ui_control: Control) -> void:
+	var choice_id := _pending_reward_choice_id
+	if growth_choice_queue.resolve(choice_id).is_empty():
+		return
+	_clear_pending_reward_replacement()
+	close_ui(ui_control)
+	_refresh_card_hand()
+	if not growth_choice_queue.is_empty():
+		call_deferred("_open_next_growth_choice")
+
+
+func _clear_pending_reward_replacement() -> void:
+	_pending_reward_choice_id = ""
+	_pending_reward_card_id = ""
+	_pending_reward_instance_ids.clear()
 
 
 func _apply_growth_resolution(choice: Dictionary) -> bool:

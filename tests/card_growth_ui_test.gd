@@ -59,26 +59,43 @@ func _run() -> void:
 				"level": 2,
 			},
 			{
-				"choice_id": "exp:12:fusion:guard-a:iron-a",
-				"action": "fusion",
-				"left_instance_id": "guard-a",
-				"right_instance_id": "iron-a",
-				"left_card_id": "guard",
-				"right_card_id": "iron_skin",
-				"left_name": "Iron Will",
-				"right_name": "Stone Form",
-				"result_card_id": "fortress_stance",
-				"result_name": "Unbreakable Stance",
+				"choice_id": "exp:12:upgrade:guard-a",
+				"action": "upgrade",
+				"instance_id": "guard-a",
+				"card_id": "guard",
+				"name": "Iron Will",
+				"level": 1,
 			},
 		],
 	}
 	ui.call("present_page", experience_page)
 	await process_frame
-	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "UPGRADE OR FUSE", "EXP growth must explain both available actions on one page.")
+	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "CHOOSE AN UPGRADE", "EXP growth must identify the unfinished-card upgrade page.")
 	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection") as Control).visible, "EXP pages must expose individual upgrades.")
-	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection") as Control).visible, "EXP pages must expose full-level fusion on the same page.")
+	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection") as Control).visible, "EXP upgrade and fusion choices must share one compact five-card layout.")
 	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection") as Control).visible, "Fallback resources must stay hidden while growth exists.")
+	_expect(ui.call("get_choice_button_count") == 2, "The compact upgrade layout must retain both supplied unfinished cards.")
 	_expect(_all_text(ui).contains("LV.2"), "Upgrade choices must show the selected instance level.")
+
+	var fusion_page := {
+		"event_id": 14,
+		"source": "experience",
+		"choices": [{
+			"choice_id": "exp:14:fusion:guard-a:iron-a",
+			"action": "fusion",
+			"left_instance_id": "guard-a",
+			"right_instance_id": "iron-a",
+			"left_card_id": "guard",
+			"right_card_id": "iron_skin",
+			"left_name": "Iron Will",
+			"right_name": "Stone Form",
+			"result_card_id": "fortress_stance",
+			"result_name": "Unbreakable Stance",
+		}],
+	}
+	ui.call("present_page", fusion_page)
+	await process_frame
+	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "CHOOSE A FUSION", "Full-level fusion must use a separate page.")
 	_expect(_all_text(ui).contains("LV.3  +  LV.3"), "Fusion choices must make both full-level materials explicit.")
 	_expect(_all_text(ui).contains("LV.1"), "Fusion choices must show that the result returns at level one.")
 
