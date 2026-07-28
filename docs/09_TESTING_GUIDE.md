@@ -27,12 +27,14 @@
 
 ## 2. 現況基線
 
-目前測試是直接繼承 `SceneTree` 的 Godot 原生腳本，存放於 `tests/`，多數以 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT、統一測試執行器與 CI；新增這些能力前不得在交付報告中宣稱已具備。
+目前測試是直接繼承 `SceneTree` 的 Godot 原生腳本，存放於 `tests/`，全部以
+`*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
+能力前不得在交付報告中宣稱已具備。
 
-現有 82 個測試腳本涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
-流程、HUD 與多解析度排版；其中 81 個符合 `*_test.gd`。
-`tests/test_ui_keyboard.gd` 不符合目前主要的檔名慣例，建立統一 runner 時必須
-一併納入或改名，避免漏跑。
+現有 88 個測試腳本涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
+repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
+掃描 Godot error markers，並可執行 editor／main smoke。
 
 ## 3. 測試分層
 
@@ -54,7 +56,59 @@
 
 ## 5. 執行方式
 
-Windows 範例：
+### 5.1 Focused tests
+
+單一測試仍可直接執行：
+
+```bash
+godot --headless --path . --script res://tests/card_system_test.gd
+```
+
+更建議使用 runner，讓 user data 隔離與 marker 掃描保持一致：
+
+```bash
+tools/run_godot_tests.sh --pattern 'card_system_test'
+```
+
+常用 focused suites：
+
+```bash
+tools/run_godot_tests.sh --suite ui
+tools/run_godot_tests.sh --suite cards --fail-fast
+tools/run_godot_tests.sh --suite scene --strict-warnings
+tools/run_godot_tests.sh --pattern 'map_registry|quick_save'
+```
+
+### 5.2 Full regression
+
+Linux 全量驗證：
+
+```bash
+tools/run_godot_tests.sh --suite all --smoke --strict-warnings
+```
+
+上述命令會：
+
+- 依檔名排序執行所有 `tests/*_test.gd`。
+- 為每個測試設定隔離 `APPDATA`、`XDG_DATA_HOME`、`XDG_CONFIG_HOME` 與
+  `XDG_CACHE_HOME`。
+- 掃描 `SCRIPT ERROR`、`Parse Error`、`ERROR:`、`Invalid call`、
+  `Previously freed`、`Node not found`，並在 `--strict-warnings` 時也掃描
+  `WARNING:`。
+- 執行 `--headless --editor --path . --quit`。
+- 執行 `--headless --path . --quit-after 300`。
+- 顯示 total、failures 與 failing path；失敗時保留 log path。
+
+若 Godot 不在 `PATH`，指定執行檔：
+
+```bash
+GODOT_BIN=/home/judd/.local/bin/godot tools/run_godot_tests.sh --suite all --smoke
+```
+
+### 5.3 Windows compatibility
+
+Windows 尚未有 repository-owned PowerShell runner。需要在 Windows 執行時，可用
+`GODOT_BIN` 等價指定 console executable，或沿用下列手動模式：
 
 ```powershell
 $godot = "D:\game\Godot_v4.7.1-stable_win64.exe\Godot_v4.7.1-stable_win64_console.exe"
@@ -70,41 +124,7 @@ try {
 
 上述 `APPDATA` 覆寫只存在於目前 PowerShell process，用來把 Godot
 `user://` 導向 repository 內的隔離位置；不得永久改寫系統設定。單一測試必須
-以退出碼 `0` 表示成功，非零表示失敗。全量測試應逐一執行所有
-`tests/*_test.gd`，並額外執行 `tests/test_ui_keyboard.gd`。執行輸出除了退出碼，
-也必須掃描：
-
-```powershell
-$test_files = @(Get-ChildItem tests -Filter *_test.gd | Sort-Object FullName)
-$test_files += Get-Item tests/test_ui_keyboard.gd
-$test_failures = @()
-$suite_run_id = [guid]::NewGuid().ToString("N")
-$suite_user_data_root = Join-Path $env:TEMP (
-	"game_godot_tests\{0}" -f $suite_run_id
-)
-$original_app_data = $env:APPDATA
-try {
-	foreach ($test_file in $test_files) {
-		$env:APPDATA = Join-Path $suite_user_data_root (
-			$test_file.BaseName
-		)
-		$test_output = @(& $godot --headless --path . --script $test_file.FullName 2>&1)
-		$test_output | Write-Output
-		if ($LASTEXITCODE -ne 0 -or
-			($test_output -join "`n") -match "SCRIPT ERROR|Parse Error|ERROR:") {
-			$test_failures += $test_file.FullName
-		}
-	}
-} finally {
-	$env:APPDATA = $original_app_data
-	if (Test-Path -LiteralPath $suite_user_data_root) {
-		Remove-Item -LiteralPath $suite_user_data_root -Recurse -Force
-	}
-}
-if ($test_failures.Count -gt 0) {
-	throw "Godot tests failed: $($test_failures -join ', ')"
-}
-```
+以退出碼 `0` 表示成功，非零表示失敗。
 
 若舊版 runner 曾在 repository root 留下 `.tmp*`、`.final_*`、
 `.test_userdata` 或根目錄 `*.log`，執行：
@@ -181,7 +201,8 @@ headless editor scan, main-scene smoke, and the affected feature tests.
 
 測試不得讀寫玩家真實存檔。CLI 測試使用專案內隔離的 user data 位置，例如 `.test_userdata/`，並避免與平行執行的測試共用可變檔案。對時間、亂數或輸入敏感的測試應注入可控制的值。
 
-目前尚無平行安全的統一 runner，因此預設逐一執行 SceneTree 測試。若未來平行化，必須先隔離存檔路徑、DisplayServer 與共享資源。
+目前 runner 預設逐一執行 SceneTree 測試。若未來平行化，必須先隔離存檔路徑、
+DisplayServer 與共享資源。
 
 ## 9. 回歸策略
 
@@ -328,7 +349,7 @@ editor smoke、main smoke 與人工六尺寸截圖/操作檢查。
 
 ## 18. Future Extension
 
-- TODO：新增統一測試 runner，明確納入所有測試檔。
+- TODO：新增 Windows PowerShell wrapper，與 Linux runner 使用相同 suite 與 marker 規則。
 - TODO：評估導入 GUT；導入前保留既有 SceneTree 測試可執行性。
 - TODO：建立 CI，執行全量測試、editor 與主場景冒煙測試。
 - TODO：建立可重現的截圖比較流程，避免跨 GPU 的脆弱像素比對。

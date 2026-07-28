@@ -84,7 +84,7 @@ Roadmap item 的建立與關閉依序使用：
 
 | Check | Baseline |
 |---|---|
-| Total standalone test scripts | 69/69 passed（68 個 `*_test.gd` + `test_ui_keyboard.gd`） |
+| Total standalone test scripts | 88/88 passed（全部符合 `*_test.gd`） |
 | Six-resolution geometry suite | 6/6 passed |
 | Godot error markers | 0 |
 | Editor parse | exit 0，0 markers |
@@ -99,7 +99,8 @@ Roadmap item 的建立與關閉依序使用：
 - 無 central test runner；
 - 無 CI；
 - 無 performance/memory budget；
-- `tests/*_test.gd` glob 會漏掉 `test_ui_keyboard.gd`；
+- `tools/run_godot_tests.sh` 可發現全部 `*_test.gd`，並支援 suite、pattern、
+  fail-fast、smoke 與 strict warning 掃描；
 - working tree 在治理建立期間不是 clean release candidate。
 
 ## 3. 優先級與狀態定義
@@ -403,20 +404,25 @@ Game composition root
 
 ### 6.1 Central test runner
 
-**Status:** Open
+**Status:** Verified
 
 **Evidence**
 
-所有 `*_test.gd` 加上命名例外 `test_ui_keyboard.gd` 必須逐一執行；標準 glob
-會漏測命名例外。
+- `tests/test_ui_keyboard.gd` 已改名為 `tests/ui_keyboard_test.gd`，消除 glob
+  例外。
+- `tools/run_godot_tests.sh` 會發現所有 `tests/*_test.gd`，為每個測試建立隔離
+  `APPDATA`／`XDG_*` user data，掃描 Godot error markers，並可選擇
+  `--suite`、`--pattern`、`--fail-fast`、`--smoke` 與 `--strict-warnings`。
+- 2026-07-28 以 `tools/run_godot_tests.sh --suite all --smoke --strict-warnings`
+  驗證 88/88 tests、editor smoke 與 main smoke 全部通過。
 
 **Acceptance Criteria**
 
-- [ ] 一個 documented command 發現全部 current standalone tests。
-- [ ] 任一 test 非零 exit 時 runner 非零 exit。
-- [ ] Summary 顯示 total、passed、failed 與 failing path。
-- [ ] 新 test 依命名規則自動被發現。
-- [ ] Runner 不讀寫真實 gameplay save。
+- [x] 一個 documented command 發現全部 current standalone tests。
+- [x] 任一 test 非零 exit 時 runner 非零 exit。
+- [x] Summary 顯示 total、passed、failed 與 failing path。
+- [x] 新 test 依命名規則自動被發現。
+- [x] Runner 不讀寫真實 gameplay save。
 
 ### 6.2 CI
 

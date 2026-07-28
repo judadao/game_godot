@@ -78,16 +78,20 @@ The repository uses UTF-8 via `.editorconfig`. Follow Godot conventions: use Pas
 
 ## 5. Testing Guidelines
 
-Headless `SceneTree` tests live under `tests/`. Most use the `*_test.gd` suffix;
-the current exception is `tests/test_ui_keyboard.gd`. Run every affected test
-directly:
+Headless `SceneTree` tests live under `tests/` and use the `*_test.gd` suffix.
+Run every affected test directly:
 
 ```bash
 godot --headless --path . --script res://tests/<name>_test.gd
 ```
 
 Then run the affected scene or the main project and exercise the changed flow.
-Full regression means all `tests/*_test.gd` plus `tests/test_ui_keyboard.gd`.
+Full regression uses the repository runner:
+
+```bash
+tools/run_godot_tests.sh --suite all --smoke --strict-warnings
+```
+
 For UI changes, also perform the multi-resolution checks required by
 `docs/rule_1.md`.
 

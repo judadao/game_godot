@@ -139,11 +139,10 @@ re-review；不同意 finding 時用 code/test 證據裁決。
 
 ### 7.2 Full regression
 
-- 執行所有 `tests/*_test.gd`，並額外執行目前未符合該 suffix 的
-  `tests/test_ui_keyboard.gd`。
+- 執行 `tools/run_godot_tests.sh --suite all --smoke --strict-warnings`。
 - 使用隔離 `APPDATA`，避免 editor cache 影響。
-- `--headless --editor --path . --quit`。
-- `--headless --path . --quit-after 300`。
+- runner 會執行 `--headless --editor --path . --quit`。
+- runner 會執行 `--headless --path . --quit-after 300`。
 - UI 依 `04_UI_GUIDE.md` 做多解析度行為／視覺檢查。
 
 ## 8. Risk Analysis

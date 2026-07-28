@@ -31,8 +31,8 @@
 - 靜態地圖與 UI 必須可在 Godot Scene editor 中編輯。
 - UI 修改必須做多解析度行為／視覺驗證。
 - Bug 與 refactor 使用先失敗的回歸測試。
-- 完成前執行 focused tests、全部 `tests/*_test.gd`、例外檔
-  `tests/test_ui_keyboard.gd`、editor 與 main smoke。
+- 完成前執行 focused tests，並用 `tools/run_godot_tests.sh --suite all --smoke
+  --strict-warnings` 執行全量 tests、editor 與 main smoke。
 - 架構、資料、UI contract、測試或玩法改變時同步更新 docs。
 - commit 前核對 staged files；不得混入使用者變更。
 

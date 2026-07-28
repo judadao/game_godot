@@ -813,7 +813,7 @@ Current gaps：
 - key hint Q/W/E/R/T/F/Esc/Start hard-code，不反映 remap/device。
 - 沒有 UI scale、高對比、color-blind、reduced motion。
 - 沒有 screen-reader metadata 或 narration。
-- `tests/test_ui_keyboard.gd` 不符合 `*_test.gd` suffix。
+- `tests/ui_keyboard_test.gd` 覆蓋目前 keyboard/controller focus baseline。
 
 ### 22.3 規則
 
