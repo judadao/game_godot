@@ -75,7 +75,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="DetailsLayout" type="VBoxContainer" parent="."]
 layout_mode = 2
-theme_override_constants/separation = 9
+theme_override_constants/separation = 8
 
 [node name="SectionLabel" type="Label" parent="DetailsLayout"]
 layout_mode = 2
@@ -84,7 +84,7 @@ theme_override_font_sizes/font_size = 13
 text = "ITEM DETAILS"
 
 [node name="PreviewFrame" type="PanelContainer" parent="DetailsLayout"]
-custom_minimum_size = Vector2(0, 126)
+custom_minimum_size = Vector2(0, 112)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_preview")
 
@@ -92,7 +92,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_preview")
 layout_mode = 2
 
 [node name="PreviewIcon" type="TextureRect" parent="DetailsLayout/PreviewFrame/PreviewLayout"]
-custom_minimum_size = Vector2(96, 96)
+custom_minimum_size = Vector2(88, 88)
 layout_mode = 2
 texture_filter = 1
 expand_mode = 3
@@ -108,7 +108,7 @@ text_overrun_behavior = 3
 vertical_alignment = 1
 
 [node name="ItemDescription" type="RichTextLabel" parent="DetailsLayout"]
-custom_minimum_size = Vector2(0, 112)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/default_color = Color(0.83, 0.86, 0.86, 1)

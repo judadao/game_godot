@@ -401,8 +401,10 @@ Current assets：
 
 Current：
 
-- 沒有 project Theme、Font resource、Theme Variation、`.tres` 或 `.res`。
-- 122 個 StyleBoxFlat 與大量 font/color override 散落。
+- 沒有 project-global Theme 或 Font resource。
+- `CardGrowthTheme.tres` 與 `TownServiceFrameTheme.tres` 分別提供成長畫面與
+  Town 功能建築的小範圍 Theme Variations；其餘 UI 仍有大量 local
+  StyleBox/font/color override。
 - 詳細現況與未來 token contract 見 `docs/07_THEME_GUIDE.md`。
 
 修改現有 UI 時：
@@ -579,10 +581,10 @@ HUDLayer
 - 8 個 authored `ShopItemRow.tscn` 作為初始列，較長 catalog 會動態補列
 - 商品列位於 `ScrollContainer`，鍵盤 focus 會將選取列捲入可視區
 - Buy/Sell、quantity、Confirm/Close 都有圖示、文字與 tooltip
-- `set_shop_context()` 讓劍魂商使用 `SWORD SOUL SHOP` 建築標題，其餘商店保留
+- `set_shop_context()` 讓劍魂商使用 `SWORD SOUL BLUEPRINTS` 建築標題，其餘商店保留
   `TRADE COUNTER`
 - 商品列使用 icon、name、stock/owned 與 unit price 的獨立欄位
-- detail panel 使用 96px preview、可捲動 RichTextLabel、quantity/total icons
+- detail panel 使用 88px preview、可捲動 RichTextLabel、quantity/total icons
 - explicit focus navigation，以及 selected／hover／focus 分離的視覺狀態
 
 `shop_ui.gd` emit `mode_changed`、`confirmed` 等 intent；交易由 Game 處理。
@@ -614,16 +616,21 @@ HUDLayer
   village stage 或下一級成本。
 
 三者均使用 Full Rect root、dim backdrop、safe margin、center container、semantic
-window 與 authored ScrollContainer；動態 equipment row 必須只放在既定
-`EquipmentList`。開啟後 focus 落在可用 action，`ui_cancel` 關閉並釋放 focus，
+window 與 authored ScrollContainer；Player Blacksmith 的動態 recipe row 必須只放在
+既定 `RecipeList`。開啟後 focus 落在可用 action，`ui_cancel` 關閉並釋放 focus，
 重開不得重複 controls 或 signals。
 
 Town Hall、Material Yard、Player Blacksmith、Sword Soul Blueprint Shop 與
-Equipment Blueprint Shop 使用同一套功能建築大框架：`1040×640` window、
-`58px` header、`218px` 左側人物欄、至少 `250px` 高人物框與 `270px` 中間
-功能／catalog 欄；剩餘寬度由右側 detail/action 欄使用。Blueprint Shop 的
-buy-only mode 不顯示額外模式列，Close 固定於右上 header。各 screen 可依功能
-調整中欄內容，但不得另建較小 modal 或縮小人物層級。
+Equipment Blueprint Shop 使用同一套功能建築大框架。共同 presentation 由
+`TownServiceFrameTheme.tres` 擁有，包括 window、portrait、title 與 Close button
+variations；各 screen 不得以 local override 改寫這四個共同部分。
+
+共同 geometry 為 `1040×640` window、`58px` header、header 下方 `10px` 間距、
+`218px` 左側人物欄、`218×252` 人物框與 `270px` 中間功能／catalog 欄；欄間距
+固定 `12px`，剩餘寬度由右側 detail/action 欄使用。Blueprint Shop 的 buy-only
+mode 不顯示額外模式列，Close 固定於右上 header。各 screen 可依功能調整中欄
+內容與右側 workspace，但不得另建較小 modal、縮小人物層級或在 header 與三欄
+內容之間插入 screen-local toolbar。
 
 ## 14. Quest UI
 

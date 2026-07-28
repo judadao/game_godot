@@ -158,8 +158,10 @@ AutumnHUD（含內嵌 CardHandUI）至少驗證以下視窗尺寸：
 自動測試應檢查安全區、地圖 viewport、卡牌操作區、焦點、遮擋與螢幕邊界。人工驗證則確認字體清楚、卡牌可讀、HUD 不阻擋玩法資訊，以及編輯器所見與執行結果一致。
 
 Theme 修改需載入受影響 scene，確認 theme、theme variation、font、
-StyleBox 與所有互動狀態可解析；本專案尚無共用 Theme resource，因此現有
-scene-local override 與未來 Theme migration 必須分開驗證。Animation 修改需
+StyleBox 與所有互動狀態可解析；Town 功能建築與 Shop frame 共用
+`TownServiceFrameTheme.tres`，layout test 會檢查 assignment、variation 名稱、
+resolved window StyleBox 與各功能替代狀態；其餘 scene-local override 必須分開
+驗證。Animation 修改需
 檢查 AnimationPlayer/AnimatedSprite2D 的 library、track target、loop 與完成狀態，
 並實際跑過進入、中斷、重播與場景切換。
 
@@ -169,7 +171,7 @@ Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
 |---|---|
 | `town_building_ui_contract_test.gd` | 四個 screen 可載入；Full Rect、PROCESS_MODE_ALWAYS、class/API/signal/semantic nodes |
 | `town_building_ui_behavior_test.gd` | Material offer intent；blacksmith 升級／recipe intent；Town Hall 精確升級；一般 Shop quantity 與圖紙商 buy-only |
-| `town_building_ui_layout_test.gd` | 1152×720、1280×720、1600×900、1920×1080、2560×1080、2560×1440 的 window/controls/text/icon 邊界 |
+| `town_building_ui_layout_test.gd` | 六解析度的 window/controls/text/icon 邊界，以及共同 Theme、1040×640 frame、58px header、218／270px 欄寬與 Close variation |
 | `town_building_ui_lifecycle_test.gd` | open/close/ui_cancel signals、focus release/restore、重開不重複 controls |
 | `shop_system_test.gd` / `ui_keyboard_test.gd` | 交易 ownership、方向 focus、quantity controls 與 player input lock |
 | `forge_catalog_test.gd` / `forge_service_test.gd` | offer/recipe schema、Tier gate、購買、鍛造與 sale escrow |
@@ -177,6 +179,9 @@ Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
 
 Layout test 另外要求每個 screen 顯示至少三種 distinct functional icon；Button
 必須有文字、icon 或 tooltip，且可見 hit target 不小於 32×32。
+設定 `TOWN_BUILDING_UI_CAPTURE_DIR` 的 PNG capture 需要 graphical Godot renderer，
+只產生 1280×720 人工比對圖；headless runner 負責六解析度 geometry/behavior，
+不等待 `frame_post_draw`。
 
 ## 7. Scene 與資料契約
 

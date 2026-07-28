@@ -8,6 +8,8 @@
 [ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon64_1.png" id="6_coin"]
 [ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon25_1.png" id="7_buy"]
 [ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon1_1.png" id="8_close"]
+[ext_resource type="Texture2D" path="res://assets/ui/shop/generated/shop_sign.png" id="9_sign"]
+[ext_resource type="Theme" path="res://scenes/ui/town/TownServiceFrameTheme.tres" id="10_frame_theme"]
 
 [sub_resource type="AtlasTexture" id="ShopkeeperPortrait"]
 atlas = ExtResource("2_npc_atlas")
@@ -163,6 +165,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("10_frame_theme")
 script = ExtResource("1_script")
 
 [node name="DimBackground" type="ColorRect" parent="."]
@@ -182,10 +185,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [node name="CenterContainer" type="CenterContainer" parent="SafeMargin"]
 layout_mode = 2
@@ -193,7 +196,7 @@ layout_mode = 2
 [node name="Window" type="PanelContainer" parent="SafeMargin/CenterContainer"]
 custom_minimum_size = Vector2(1040, 640)
 layout_mode = 2
-theme_override_styles/panel = SubResource("WindowStyle")
+theme_type_variation = &"TownServiceWindow"
 
 [node name="WindowMargin" type="MarginContainer" parent="SafeMargin/CenterContainer/Window"]
 layout_mode = 2
@@ -206,62 +209,48 @@ theme_override_constants/margin_bottom = 14
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Header" type="PanelContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout"]
+[node name="Header" type="HBoxContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout"]
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
-theme_override_styles/panel = SubResource("HeaderStyle")
+theme_override_constants/separation = 10
 
-[node name="HeaderRow" type="HBoxContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Header"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="HeaderIcon" type="TextureRect" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Header/HeaderRow"]
-custom_minimum_size = Vector2(42, 42)
+[node name="HeaderIcon" type="TextureRect" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Header"]
+custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 texture_filter = 1
 texture = ExtResource("3_ore")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TitleBanner" type="TextureRect" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("9_sign")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TitleStack" type="VBoxContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Header/HeaderRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 0
-
-[node name="Title" type="Label" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Header/HeaderRow/TitleStack"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.84, 0.48, 1)
-theme_override_font_sizes/font_size = 25
+[node name="Title" type="Label" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Header/TitleBanner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"TownServiceTitle"
 text = "MATERIAL YARD"
-
-[node name="Subtitle" type="Label" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Header/HeaderRow/TitleStack"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.68, 0.7, 0.68, 1)
-theme_override_font_sizes/font_size = 13
-text = "FORGING MATERIALS  /  PERMANENT TOOLS"
-
-[node name="TierLabel" type="Label" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Header/HeaderRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.91, 0.73, 0.42, 1)
-theme_override_font_sizes/font_size = 14
-text = "ETERNAL TORCH  •  TIER 1"
-horizontal_alignment = 2
+horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CloseButton" type="Button" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Header/HeaderRow"]
+[node name="CloseButton" type="Button" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Header"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(44, 42)
+custom_minimum_size = Vector2(104, 42)
 layout_mode = 2
 tooltip_text = "Close Material Yard"
 icon = ExtResource("8_close")
-icon_max_width = 22
+icon_max_width = 20
 expand_icon = true
-theme_override_styles/normal = SubResource("ButtonStyle")
-theme_override_styles/hover = SubResource("ButtonHoverStyle")
-theme_override_styles/pressed = SubResource("ButtonPressedStyle")
-theme_override_styles/focus = SubResource("FocusStyle")
+theme_type_variation = &"TownServiceCloseButton"
+text = "Close"
 
 [node name="Content" type="HBoxContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout"]
 layout_mode = 2
@@ -283,7 +272,7 @@ text = "YARD KEEPER"
 [node name="PortraitFrame" type="PanelContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content/ShopkeeperPanel"]
 custom_minimum_size = Vector2(218, 252)
 layout_mode = 2
-theme_override_styles/panel = SubResource("PortraitStyle")
+theme_type_variation = &"TownServicePortrait"
 
 [node name="ShopkeeperPortrait" type="TextureRect" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content/ShopkeeperPanel/PortraitFrame"]
 unique_name_in_owner = true
@@ -297,18 +286,16 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.86, 0.55, 1)
 theme_override_font_sizes/font_size = 20
 text = "MARA"
-horizontal_alignment = 1
 
 [node name="ShopkeeperRole" type="Label" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content/ShopkeeperPanel"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.63, 0.72, 0.74, 1)
 theme_override_font_sizes/font_size = 12
 text = "Keeper of the Eternal Torch Stock"
-horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="DialoguePanel" type="PanelContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content/ShopkeeperPanel"]
-custom_minimum_size = Vector2(0, 112)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("DialogueStyle")
@@ -320,6 +307,17 @@ theme_override_font_sizes/font_size = 14
 text = "The torch draws better stock to town. Pick what your forge needs."
 autowrap_mode = 2
 vertical_alignment = 1
+
+[node name="TierLabel" type="Label" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content/ShopkeeperPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.91, 0.73, 0.42, 1)
+theme_override_font_sizes/font_size = 13
+text = "ETERNAL TORCH  •  TIER 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
 
 [node name="CatalogPanel" type="PanelContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content"]
 custom_minimum_size = Vector2(270, 0)
@@ -344,7 +342,7 @@ theme_override_constants/separation = 8
 
 [node name="MaterialsButton" type="Button" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content/CatalogPanel/CatalogLayout/FilterBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(148, 42)
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
 toggle_mode = true
@@ -361,7 +359,7 @@ text = "Materials"
 
 [node name="ForgeToolsButton" type="Button" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content/CatalogPanel/CatalogLayout/FilterBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(148, 42)
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
 toggle_mode = true

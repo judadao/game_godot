@@ -2,6 +2,7 @@ extends SceneTree
 
 const INVENTORY_SCRIPT := preload("res://scripts/systems/inventory_manager.gd")
 const TOWN_SCRIPT := preload("res://scripts/systems/town_manager.gd")
+const FRAME_THEME_PATH := "res://scenes/ui/town/TownServiceFrameTheme.tres"
 const VIEWPORT_SIZES := [
 	Vector2i(1152, 720),
 	Vector2i(1280, 720),
@@ -15,6 +16,11 @@ const UI_LAYOUTS := [
 		"name": "MaterialYardUI",
 		"path": "res://scenes/ui/town/MaterialYardUI.tscn",
 		"window": "Window",
+		"header": "Header",
+		"content": "Content",
+		"identity": "ShopkeeperPanel",
+		"title": "Title",
+		"close": "CloseButton",
 		"terms": ["MATERIAL", "FORGE TOOLS", "BUY"],
 		"minimum_icons": 3,
 	},
@@ -22,6 +28,11 @@ const UI_LAYOUTS := [
 		"name": "PlayerBlacksmithUI",
 		"path": "res://scenes/ui/town/PlayerBlacksmithUI.tscn",
 		"window": "PlayerBlacksmithWindow",
+		"header": "Header",
+		"content": "MainContent",
+		"identity": "ServiceRail",
+		"title": "TitleLabel",
+		"close": "CloseButton",
 		"terms": ["FORGE", "WORKSHOP", "SALES TABLE"],
 		"minimum_icons": 3,
 	},
@@ -29,6 +40,11 @@ const UI_LAYOUTS := [
 		"name": "TownHallUI",
 		"path": "res://scenes/ui/town/TownHallUI.tscn",
 		"window": "TownHallWindow",
+		"header": "Header",
+		"content": "Content",
+		"identity": "MayorPanel",
+		"title": "TitleText",
+		"close": "CloseButton",
 		"terms": ["TOWN HALL", "VILLAGE"],
 		"minimum_icons": 3,
 	},
@@ -36,6 +52,11 @@ const UI_LAYOUTS := [
 		"name": "ShopUI",
 		"path": "res://scenes/ui/shop/ShopUI.tscn",
 		"window": "ShopWindow",
+		"header": "Title",
+		"content": "Content",
+		"identity": "MerchantPanel",
+		"title": "TitleText",
+		"close": "CancelButton",
 		"terms": ["BLUEPRINT", "GOLD"],
 		"minimum_icons": 4,
 	},
@@ -76,7 +97,7 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 		and viewport_size == Vector2i(1280, 720)
 	)
 	viewport.render_target_update_mode = (
-		SubViewport.UPDATE_ONCE if should_capture else SubViewport.UPDATE_DISABLED
+		SubViewport.UPDATE_ALWAYS if should_capture else SubViewport.UPDATE_DISABLED
 	)
 	root.add_child(viewport)
 	var ui := (
@@ -126,7 +147,7 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 		"%s window must preserve an 8px viewport margin at %s."
 		% [descriptor["name"], viewport_size]
 	)
-	_check_unified_building_frame(ui, String(descriptor["name"]), viewport_size)
+	_check_unified_building_frame(ui, descriptor, viewport_size)
 
 	var all_text := _visible_text(ui).to_upper()
 	for required_term in descriptor["terms"]:
@@ -160,6 +181,7 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 			"%s button %s needs text, an icon, or an accessible tooltip at %s."
 			% [descriptor["name"], button.name, viewport_size]
 		)
+		_check_text_minimum(button, String(descriptor["name"]), viewport_size)
 
 	for child in window.find_children("*", "Label", true, false):
 		var label := child as Label
@@ -172,6 +194,8 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 					"%s visible label %s must remain inside its window at %s."
 					% [descriptor["name"], label.name, viewport_size]
 				)
+				_check_text_minimum(label, String(descriptor["name"]), viewport_size)
+
 	for child in window.find_children("*", "RichTextLabel", true, false):
 		var rich_text := child as RichTextLabel
 		if rich_text.is_visible_in_tree() and not rich_text.text.strip_edges().is_empty():
@@ -182,6 +206,17 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 					window_rect.encloses(rich_rect),
 					"%s visible rich text %s must remain inside its window at %s."
 					% [descriptor["name"], rich_text.name, viewport_size]
+				)
+
+	for child in window.find_children("*", "TextureRect", true, false):
+		var texture_rect := child as TextureRect
+		if texture_rect.is_visible_in_tree() and texture_rect.texture != null:
+			var texture_scroll := _nearest_scroll_container(texture_rect)
+			if texture_scroll == null:
+				_expect(
+					window_rect.encloses(_canvas_rect(texture_rect)),
+					"%s visible texture %s must remain inside its window at %s."
+					% [descriptor["name"], texture_rect.name, viewport_size]
 				)
 
 	for child in window.find_children("*", "ScrollContainer", true, false):
@@ -225,17 +260,26 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 			await process_frame
 			await _capture_viewport(viewport, "equipment_blueprint_shop")
 
+	await _check_alternate_states(ui, String(descriptor["name"]), window_rect, viewport_size)
 	viewport.queue_free()
 	await process_frame
 
 
 func _check_unified_building_frame(
 	ui: Control,
-	ui_name: String,
+	descriptor: Dictionary,
 	viewport_size: Vector2i
 ) -> void:
-	var header_name := "Title" if ui_name == "ShopUI" else "Header"
-	var header := ui.find_child(header_name, true, false) as Control
+	var ui_name := String(descriptor["name"])
+	var window := ui.find_child(String(descriptor["window"]), true, false) as Control
+	var header := ui.find_child(String(descriptor["header"]), true, false) as Control
+	var content := ui.find_child(String(descriptor["content"]), true, false) as Control
+	var identity := ui.find_child(String(descriptor["identity"]), true, false) as Control
+	var title := ui.find_child(String(descriptor["title"]), true, false) as Label
+	var close_button := ui.find_child(String(descriptor["close"]), true, false) as Button
+	var header_icon_name := "HallIcon" if ui_name == "TownHallUI" else "HeaderIcon"
+	var header_icon := ui.find_child(header_icon_name, true, false) as TextureRect
+	var title_banner := ui.find_child("TitleBanner", true, false) as TextureRect
 	var portrait := ui.find_child("PortraitFrame", true, false) as Control
 	var middle_name: String = {
 		"MaterialYardUI": "CatalogPanel",
@@ -244,33 +288,235 @@ func _check_unified_building_frame(
 		"ShopUI": "ItemListPanel",
 	}.get(ui_name, "")
 	var middle := ui.find_child(String(middle_name), true, false) as Control
+	var header_rect := _canvas_rect(header) if header != null else Rect2()
+	var content_rect := _canvas_rect(content) if content != null else Rect2()
+	var identity_rect := _canvas_rect(identity) if identity != null else Rect2()
+	var portrait_rect := _canvas_rect(portrait) if portrait != null else Rect2()
+	var middle_rect := _canvas_rect(middle) if middle != null else Rect2()
 	_expect(
-		header != null and header.custom_minimum_size.y == 58.0,
+		window != null
+			and window.custom_minimum_size.is_equal_approx(Vector2(1040.0, 640.0))
+			and window.size.x <= 1040.5
+			and window.size.y <= 640.5
+			and window.theme_type_variation == &"TownServiceWindow",
+		"%s must use the shared 1040x640 Town service window at %s; got %s."
+		% [ui_name, viewport_size, window.size if window != null else Vector2.ZERO]
+	)
+	_expect(
+		ui.theme != null and ui.theme.resource_path == FRAME_THEME_PATH,
+		"%s must reference the shared Town service frame Theme at %s."
+		% [ui_name, viewport_size]
+	)
+	_expect(
+		header != null
+			and header.custom_minimum_size.y == 58.0
+			and is_equal_approx(header.size.y, 58.0)
+			and content != null
+			and is_equal_approx(header_rect.position.x, content_rect.position.x)
+			and is_equal_approx(header_rect.size.x, content_rect.size.x),
 		"%s must use the shared 58px building header at %s."
 		% [ui_name, viewport_size]
 	)
 	_expect(
-		portrait != null and portrait.custom_minimum_size.y >= 250.0,
-		"%s must use the large Town Hall portrait format at %s."
+		content != null
+			and header != null
+			and is_equal_approx(content_rect.position.y, header_rect.end.y + 10.0),
+		"%s content must begin 10px below the shared header at %s."
 		% [ui_name, viewport_size]
 	)
 	_expect(
-		middle != null and middle.custom_minimum_size.x == 270.0,
+		identity != null
+			and identity.custom_minimum_size.x == 218.0
+			and content != null
+			and is_equal_approx(identity_rect.position.x, content_rect.position.x),
+		"%s must use the shared 218px identity column at %s."
+		% [ui_name, viewport_size]
+	)
+	_expect(
+		portrait != null
+			and portrait.custom_minimum_size == Vector2(218.0, 252.0)
+			and portrait.theme_type_variation == &"TownServicePortrait"
+			and identity != null
+			and is_equal_approx(portrait_rect.position.x, identity_rect.position.x),
+		"%s must use the shared 218x252 Town portrait frame at %s."
+		% [ui_name, viewport_size]
+	)
+	_expect(
+		middle != null
+			and middle.custom_minimum_size.x == 270.0
+			and identity != null
+			and is_equal_approx(middle_rect.position.x, identity_rect.end.x + 12.0),
 		"%s must use the shared 270px middle column at %s."
 		% [ui_name, viewport_size]
+	)
+	_expect(
+		close_button != null
+			and close_button.custom_minimum_size == Vector2(104.0, 42.0)
+			and close_button.icon != null
+			and close_button.text == "Close"
+			and not close_button.disabled
+			and close_button.modulate.a > 0.99
+			and close_button.self_modulate.a > 0.99,
+		"%s must use the shared icon-and-text Close action at %s."
+		% [ui_name, viewport_size]
+	)
+	_expect(
+		title != null
+			and title.theme_type_variation == &"TownServiceTitle"
+			and title.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER
+			and title.vertical_alignment == VERTICAL_ALIGNMENT_CENTER
+			and title.get_minimum_size().x <= title.size.x + 0.5
+			and title_banner != null
+			and _canvas_rect(title_banner).encloses(_canvas_rect(title)),
+		"%s must center its title in the shared header title region at %s."
+		% [ui_name, viewport_size]
+	)
+	_expect(
+		close_button != null
+			and close_button.theme_type_variation == &"TownServiceCloseButton",
+		"%s must use the shared Close button Theme variation at %s."
+		% [ui_name, viewport_size]
+	)
+	_expect(
+		header_icon != null
+			and header_icon.custom_minimum_size == Vector2(46.0, 46.0)
+			and header_icon.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST,
+		"%s must use the shared filtered 46px header icon at %s."
+		% [ui_name, viewport_size]
+	)
+	var window_style := window.get_theme_stylebox("panel") as StyleBoxFlat
+	_expect(
+		window_style != null
+			and window_style.border_width_left == 4
+			and window_style.border_color.is_equal_approx(Color(0.67, 0.49, 0.24, 1.0)),
+		"%s must resolve the shared Town service window StyleBox at %s."
+		% [ui_name, viewport_size]
+	)
+
+
+func _check_alternate_states(
+	ui: Control,
+	ui_name: String,
+	window_rect: Rect2,
+	viewport_size: Vector2i
+) -> void:
+	match ui_name:
+		"MaterialYardUI":
+			(ui.find_child("ForgeToolsButton", true, false) as Button).pressed.emit()
+			await process_frame
+			_expect(
+				_visible_text(ui).to_upper().contains("FORGING HAMMER"),
+				"MaterialYardUI Forge Tools state must remain reachable at %s."
+				% viewport_size
+			)
+		"PlayerBlacksmithUI":
+			ui.call("select_blacksmith_service", &"workshop_upgrade")
+			await process_frame
+			_expect(
+				_visible_text(ui).contains("Workshop Level"),
+				"PlayerBlacksmithUI upgrade state must remain readable at %s."
+				% viewport_size
+			)
+			ui.call("select_blacksmith_service", &"sales_table")
+			await process_frame
+			_expect(
+				_visible_text(ui).contains("Workshop Sales Table"),
+				"PlayerBlacksmithUI sales state must remain readable at %s."
+				% viewport_size
+			)
+			var ledger := ui.find_child("WorkshopLedger", true, false) as Label
+			_expect(
+				ledger != null
+					and ledger.is_visible_in_tree()
+					and ledger.text.contains("Workshop Lv.")
+					and ledger.text.contains("Gold"),
+				"PlayerBlacksmithUI must keep workshop level and resources visible at %s."
+				% viewport_size
+			)
+		"TownHallUI":
+			(ui.find_child("HallUpgradeButton", true, false) as Button).pressed.emit()
+			await process_frame
+			var upgrade_content := ui.find_child("UpgradeContent", true, false) as Control
+			var overview_content := ui.find_child("OverviewContent", true, false) as Control
+			var detail_title := ui.find_child("DetailTitle", true, false) as Label
+			_expect(
+				upgrade_content != null
+					and upgrade_content.is_visible_in_tree()
+					and overview_content != null
+					and not overview_content.visible
+					and detail_title != null
+					and detail_title.text == "Hall Upgrade",
+				"TownHallUI upgrade state must remain readable at %s." % viewport_size
+			)
+		"ShopUI":
+			ui.call("set_shop_context", &"equipment_blueprint_shop")
+			await process_frame
+			_expect(
+				(ui.find_child("TitleText", true, false) as Label).text
+					== "EQUIPMENT BLUEPRINTS",
+				"ShopUI equipment blueprint state must retain its title at %s."
+				% viewport_size
+			)
+	_check_visible_non_scroll_controls_inside(ui, ui_name, window_rect, viewport_size)
+
+
+func _check_visible_non_scroll_controls_inside(
+	ui: Control,
+	ui_name: String,
+	window_rect: Rect2,
+	viewport_size: Vector2i
+) -> void:
+	for type_name in ["Button", "Label", "RichTextLabel", "TextureRect"]:
+		for child in ui.find_children("*", type_name, true, false):
+			var control := child as Control
+			if (
+				control == null
+				or not control.is_visible_in_tree()
+				or _nearest_scroll_container(control) != null
+			):
+				continue
+			_expect(
+				window_rect.encloses(_canvas_rect(control)),
+				"%s alternate state control %s must remain inside the window at %s."
+				% [ui_name, control.name, viewport_size]
+			)
+			if control is Label or control is Button:
+				_check_text_minimum(control, ui_name, viewport_size)
+
+
+func _check_text_minimum(
+	control: Control,
+	ui_name: String,
+	viewport_size: Vector2i
+) -> void:
+	if control is Label:
+		var label := control as Label
+		if label.autowrap_mode != TextServer.AUTOWRAP_OFF:
+			return
+		if label.text_overrun_behavior != TextServer.OVERRUN_NO_TRIMMING:
+			return
+	var minimum := control.get_minimum_size()
+	_expect(
+		minimum.x <= control.size.x + 0.5 and minimum.y <= control.size.y + 0.5,
+		"%s text control %s must fit its allocated rect at %s; minimum=%s size=%s."
+		% [ui_name, control.name, viewport_size, minimum, control.size]
 	)
 
 
 func _capture_viewport(viewport: SubViewport, file_stem: String) -> void:
 	DirAccess.make_dir_recursive_absolute(_capture_directory)
-	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
-	await process_frame
-	await RenderingServer.frame_post_draw
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	for child in viewport.find_children("*", "CanvasItem", true, false):
+		(child as CanvasItem).queue_redraw()
+	for _frame in 5:
+		await process_frame
+		await RenderingServer.frame_post_draw
 	var capture_path := _capture_directory.path_join("%s_1280x720.png" % file_stem)
 	_expect(
 		viewport.get_texture().get_image().save_png(capture_path) == OK,
 		"Visual capture must save to %s." % capture_path
 	)
+	viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 
 
 func _configure_ui(ui: Control, ui_name: String) -> bool:

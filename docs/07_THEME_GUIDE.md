@@ -2,7 +2,8 @@
 
 本文件定義 Godot 4 UI Theme、Theme Variation、顏色、字型、圖示、StyleBox 與 spacing
 的治理規則。它先記錄目前 repository 的真實狀態，再定義可逐步導入的目標契約。
-目前沒有 Theme/Font resource；所有「Target」或「TODO」內容均未實作。
+目前有 Card Growth 與 Town Service 兩個功能域 Theme，沒有 project-global Theme
+或 Font resource；所有「Target」或「TODO」內容不代表已實作。
 
 ## 目錄
 
@@ -64,28 +65,31 @@ production path 搜尋結果：
 | Resource | 數量 |
 |---|---:|
 | `.theme` | 0 |
-| `.tres` | 0 |
+| `.tres` | 2 |
 | `.res` | 0 |
 | `.ttf` / `.otf` / `.woff` / `.woff2` | 0 |
 | project global Theme assignment | 0 |
-| Theme Variation | 0 |
+| 功能域 Theme resource | 2 |
 
 目前 UI 使用 Godot default font，沒有專案字型、fallback chain 或 CJK glyph contract。
+`CardGrowthTheme.tres` 提供 `ConfirmButton` variation；
+`TownServiceFrameTheme.tres` 提供 Town service window、portrait、title 與 Close
+variations。
 
 ### 2.2 Scene-local theme data
 
 `scenes/ui/**` 實際有：
 
-- 122 × `StyleBoxFlat`
+- 123 × `StyleBoxFlat`
 - 1 × `StyleBoxTexture`
 - 1 × `StyleBoxEmpty`
 - 14 × `LabelSettings`
-- 240 × `theme_override_font_sizes/*`
-- 237 × `theme_override_colors/font_color`
-- 116 × panel style assignment
-- 51 × normal style assignment
-- 158 × 一般 `separation` override，另有 7 × `h_separation` 與
-  7 × `v_separation`（廣義 spacing override 合計 172）
+- 216 × `theme_override_font_sizes/*`
+- 203 × `theme_override_colors/font_color`
+- 90 × panel style assignment
+- 55 × normal style assignment
+- 139 × 一般 `separation` override，另有 4 × `h_separation` 與
+  4 × `v_separation`（廣義 spacing override 合計 147）
 
 另有 runtime `StyleBoxFlat.new()`：
 
@@ -99,16 +103,18 @@ production path 搜尋結果：
 - 同一 scene 內可共用 subresource。
 - HUD 子場景有各自 LabelSettings/StyleBox。
 - MaterialYardUI、PlayerBlacksmithUI、TownHallUI 與 ShopUI 共用「深色鍛造底、
-  金色主框、冷藍資訊區、語意資源色」的視覺語言，但目前仍以 scene-local
-  StyleBox 實作。
+  金色主框、冷藍資訊區、語意資源色」的視覺語言。共同外框、標題與 Close
+  button 由 `scenes/ui/town/TownServiceFrameTheme.tres` 的
+  `TownServiceWindow`、`TownServiceTitle`、`TownServiceCloseButton`
+  variations 擁有；功能 panel 與 selected state 仍是 scene-local。
 
-這是 local reuse，不是全域 Theme layer。
+這是功能域 Theme，不是全域 Theme layer。
 
 ### 2.4 Known Risks
 
-1. 相似棕色 panel、gold border、button states 重複。
+1. 功能 panel、row 與 action button 的相似 StyleBox 仍有重複。
 2. 14/16/18/20 等字級散落，無 semantic typography。
-3. 同一 style change 要改多個 `.tscn` 與 `.gd`。
+3. 非 frame style change 仍可能要改多個 `.tscn` 與 `.gd`。
 4. runtime 建立 StyleBox 容易每次 rebuild 產生重複資源。
 5. 沒有 Font fallback，無法保證繁中、特殊符號與 controller glyph。
 6. 沒有 dark/light mode；不能把目前深色木質風格稱為正式 Dark Theme。
@@ -117,7 +123,9 @@ production path 搜尋結果：
 
 ### 3.1 Current
 
-目前沒有 Theme owner。每個 scene/node 透過 local override 決定外觀。
+目前沒有 application-wide Theme owner。Town 功能建築 frame 由
+`TownServiceFrameTheme.tres` 擁有，其餘 scene/node 仍主要透過 local override
+決定外觀。
 
 ### 3.2 TODO — Not Implemented target layers
 
@@ -649,7 +657,7 @@ func build_preview_theme() -> Theme:
 建立/修改 Theme 前：
 
 - [ ] 已盤點受影響 scenes/scripts/local overrides。
-- [ ] 已確認目前沒有可重用既有 Theme resource。
+- [ ] 已確認是否可重用既有功能域 Theme resource。
 - [ ] 已定 semantic role，不用視覺名稱。
 - [ ] 已列 normal/hover/pressed/focus/disabled。
 - [ ] 已列 dark/light、pixel/filter與font fallback影響。

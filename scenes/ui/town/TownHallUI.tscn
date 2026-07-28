@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment Icon.png" id="5_upgrade"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_07.png" id="6_gold"]
 [ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon1_1.png" id="7_close"]
+[ext_resource type="Theme" path="res://scenes/ui/town/TownServiceFrameTheme.tres" id="8_frame_theme"]
 
 [sub_resource type="AtlasTexture" id="MayorPortraitTexture"]
 atlas = ExtResource("3_npc_atlas")
@@ -204,6 +205,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("8_frame_theme")
 script = ExtResource("1_script")
 
 [node name="DimBackground" type="ColorRect" parent="."]
@@ -233,7 +235,7 @@ layout_mode = 2
 [node name="TownHallWindow" type="PanelContainer" parent="SafeMargin/Center"]
 custom_minimum_size = Vector2(1040, 640)
 layout_mode = 2
-theme_override_styles/panel = SubResource("WindowStyle")
+theme_type_variation = &"TownServiceWindow"
 
 [node name="WindowMargin" type="MarginContainer" parent="SafeMargin/Center/TownHallWindow"]
 layout_mode = 2
@@ -255,6 +257,7 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 texture = ExtResource("4_overview")
+texture_filter = 1
 expand_mode = 3
 stretch_mode = 5
 
@@ -273,8 +276,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
-theme_override_font_sizes/font_size = 28
+theme_type_variation = &"TownServiceTitle"
 text = "TOWN HALL"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -287,11 +289,7 @@ tooltip_text = "Close Town Hall"
 icon = ExtResource("7_close")
 icon_max_width = 20
 expand_icon = true
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("AgendaStyle")
-theme_override_styles/hover = SubResource("AgendaSelectedStyle")
-theme_override_styles/pressed = SubResource("AgendaSelectedStyle")
-theme_override_styles/focus = SubResource("FocusStyle")
+theme_type_variation = &"TownServiceCloseButton"
 text = "Close"
 
 [node name="Content" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout"]
@@ -314,7 +312,7 @@ text = "VILLAGE MAYOR"
 [node name="PortraitFrame" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/MayorPanel"]
 custom_minimum_size = Vector2(218, 252)
 layout_mode = 2
-theme_override_styles/panel = SubResource("PortraitStyle")
+theme_type_variation = &"TownServicePortrait"
 
 [node name="MayorPortrait" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/MayorPanel/PortraitFrame"]
 layout_mode = 2
@@ -335,7 +333,7 @@ theme_override_font_sizes/font_size = 13
 text = "Keeper of the Village Ledger"
 
 [node name="DialoguePanel" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/MayorPanel"]
-custom_minimum_size = Vector2(0, 112)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 theme_override_styles/panel = SubResource("DialogueStyle")
 

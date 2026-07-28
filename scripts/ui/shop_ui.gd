@@ -24,7 +24,7 @@ const DEFAULT_MERCHANT_PORTRAIT := preload("res://assets/ui/shop/generated/merch
 @onready var mode_bar: HBoxContainer = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar
 @onready var buy_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/BuyButton
 @onready var sell_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/SellButton
-@onready var title_text: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title/TitleText
+@onready var title_text: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title/TitleBanner/TitleText
 @onready var header_icon: TextureRect = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title/HeaderIcon
 @onready var merchant_name: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/MerchantName
 @onready var merchant_role: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/SectionLabel
@@ -112,11 +112,11 @@ func set_shop_context(shop_id: StringName) -> void:
 	match shop_id:
 		&"sword_soul_shop":
 			_apply_shop_identity(
-				"SWORD SOUL SHOP - BLUEPRINTS",
+				"SWORD SOUL BLUEPRINTS",
 				"SOULWRIGHT",
 				"Soulwright Ilyra",
 				"Every sword soul begins as a design.\nChoose the one your forge will awaken.",
-				"Purchased blueprints are forged and upgraded at your own workshop.",
+				"Forge and upgrade purchased blueprints at your workshop.",
 				Rect2(330, 54, 280, 590)
 			)
 		&"equipment_blueprint_shop":
@@ -125,7 +125,7 @@ func set_shop_context(shop_id: StringName) -> void:
 				"MASTER DRAFTSWOMAN",
 				"Draftswoman Elara",
 				"A sound weapon starts with a precise plan.\nInspect each design before you invest.",
-				"Each blueprint is unique and becomes available at your workshop.",
+				"Each blueprint unlocks a permanent workshop recipe.",
 				Rect2(1940, 54, 172, 590)
 			)
 		&"material_store", &"material_yard":

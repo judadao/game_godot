@@ -33,13 +33,24 @@ corner_radius_bottom_left = 4
 [node name="MerchantPanel" type="VBoxContainer"]
 custom_minimum_size = Vector2(218, 0)
 size_flags_vertical = 3
-theme_override_constants/separation = 9
+theme_override_constants/separation = 8
 
 [node name="SectionLabel" type="Label" parent="."]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.64, 0.34, 1)
 theme_override_font_sizes/font_size = 13
 text = "MERCHANT"
+
+[node name="PortraitFrame" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(218, 252)
+layout_mode = 2
+theme_type_variation = &"TownServicePortrait"
+
+[node name="MerchantPortrait" type="TextureRect" parent="PortraitFrame"]
+layout_mode = 2
+texture = ExtResource("1_merchant")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="IdentityLabel" type="Label" parent="."]
 layout_mode = 2
@@ -49,26 +60,15 @@ text = "Mira"
 text_overrun_behavior = 3
 tooltip_text = "Shop host"
 
-[node name="PortraitFrame" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(218, 252)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_portrait")
-
-[node name="MerchantPortrait" type="TextureRect" parent="PortraitFrame"]
-layout_mode = 2
-texture = ExtResource("1_merchant")
-expand_mode = 1
-stretch_mode = 5
-
 [node name="DialoguePanel" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(0, 112)
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_dialogue")
 
 [node name="Dialogue" type="Label" parent="DialoguePanel"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.93, 0.86, 0.73, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "Welcome, traveler!
 What can I get for you?"
 autowrap_mode = 2
@@ -78,6 +78,6 @@ vertical_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.59, 0.66, 0.68, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "Choose a trade mode, then inspect an item."
 autowrap_mode = 2

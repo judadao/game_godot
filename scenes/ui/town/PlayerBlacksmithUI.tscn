@@ -9,6 +9,9 @@
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Stone.png" id="7_stone"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_03.png" id="8_shard"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png" id="9_core"]
+[ext_resource type="Texture2D" path="res://assets/ui/shop/generated/shop_sign.png" id="10_sign"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon1_1.png" id="11_close"]
+[ext_resource type="Theme" path="res://scenes/ui/town/TownServiceFrameTheme.tres" id="12_frame_theme"]
 
 [sub_resource type="AtlasTexture" id="PlayerPortrait"]
 atlas = ExtResource("2_player")
@@ -19,17 +22,17 @@ content_margin_left = 2.0
 content_margin_top = 2.0
 content_margin_right = 2.0
 content_margin_bottom = 2.0
-bg_color = Color(0.035, 0.036, 0.037, 0.99)
+bg_color = Color(0.055, 0.055, 0.06, 0.985)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
-border_color = Color(0.74, 0.53, 0.23, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-shadow_color = Color(0, 0, 0, 0.68)
+border_color = Color(0.67, 0.49, 0.24, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.48)
 shadow_size = 12
 
 [sub_resource type="StyleBoxFlat" id="RailStyle"]
@@ -252,6 +255,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("12_frame_theme")
 script = ExtResource("1_script")
 
 [node name="DimBackground" type="ColorRect" parent="."]
@@ -271,10 +275,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [node name="Center" type="CenterContainer" parent="SafeMargin"]
 layout_mode = 2
@@ -282,7 +286,7 @@ layout_mode = 2
 [node name="PlayerBlacksmithWindow" type="PanelContainer" parent="SafeMargin/Center"]
 custom_minimum_size = Vector2(1040, 640)
 layout_mode = 2
-theme_override_styles/panel = SubResource("WindowStyle")
+theme_type_variation = &"TownServiceWindow"
 
 [node name="WindowMargin" type="MarginContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow"]
 layout_mode = 2
@@ -293,7 +297,7 @@ theme_override_constants/margin_bottom = 14
 
 [node name="WindowLayout" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 10
 
 [node name="Header" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout"]
 custom_minimum_size = Vector2(0, 58)
@@ -301,26 +305,35 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="HeaderIcon" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header"]
-custom_minimum_size = Vector2(44, 44)
+custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 texture_filter = 1
 texture = ExtResource("3_forge")
 expand_mode = 3
 stretch_mode = 5
 
-[node name="TitleLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header"]
+[node name="TitleBanner" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.86, 0.50, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 25
+texture = ExtResource("10_sign")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header/TitleBanner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"TownServiceTitle"
 text = "PLAYER BLACKSMITH"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="StageLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header"]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(245, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.66, 0.76, 0.79, 1)
@@ -331,17 +344,17 @@ vertical_alignment = 1
 
 [node name="CloseButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(76, 40)
+custom_minimum_size = Vector2(104, 42)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.88, 0.82, 0.72, 1)
-theme_override_font_sizes/font_size = 15
-theme_override_styles/normal = SubResource("SecondaryStyle")
-theme_override_styles/hover = SubResource("HoverStyle")
-theme_override_styles/pressed = SubResource("HoverStyle")
-theme_override_styles/focus = SubResource("FocusStyle")
+tooltip_text = "Close Player Blacksmith"
+icon = ExtResource("11_close")
+icon_max_width = 20
+expand_icon = true
+theme_type_variation = &"TownServiceCloseButton"
 text = "Close"
 
 [node name="ResourceBar" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout"]
+visible = false
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 alignment = 2
@@ -456,21 +469,26 @@ text = "Gold 0  |  Wood 0  |  Stone 0  |  Shards 0  |  Cores 0"
 [node name="MainContent" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 12
 
-[node name="ServiceRail" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent"]
+[node name="ServiceRail" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent"]
 custom_minimum_size = Vector2(218, 0)
 layout_mode = 2
-theme_override_styles/panel = SubResource("RailStyle")
 
 [node name="ServiceLayout" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail"]
 layout_mode = 2
-theme_override_constants/separation = 7
+theme_override_constants/separation = 8
+
+[node name="SectionLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.64, 0.34, 1)
+theme_override_font_sizes/font_size = 13
+text = "PLAYER FORGEMASTER"
 
 [node name="PortraitFrame" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
-custom_minimum_size = Vector2(0, 252)
+custom_minimum_size = Vector2(218, 252)
 layout_mode = 2
-theme_override_styles/panel = SubResource("PortraitStyle")
+theme_type_variation = &"TownServicePortrait"
 
 [node name="PortraitCenter" type="CenterContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout/PortraitFrame"]
 layout_mode = 2
@@ -486,16 +504,15 @@ stretch_mode = 5
 [node name="ForgemasterName" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.50, 1)
-theme_override_font_sizes/font_size = 18
-text = "PLAYER FORGEMASTER"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+text = "THE FORGEKEEPER"
 
 [node name="ForgemasterRole" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.58, 0.69, 0.72, 1)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 13
 text = "MASTER OF THE PRIVATE FORGE"
-horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="ForgeServiceButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
 unique_name_in_owner = true
@@ -555,12 +572,23 @@ alignment = 0
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="WorkshopLedger" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.77, 0.76, 1)
+theme_override_font_sizes/font_size = 12
+text = "Village Stage 1  ·  Workshop Lv.0  •  Gold 0  |  Wood 0  |  Stone 0  |  Shards 0  |  Cores 0"
+text_overrun_behavior = 3
+tooltip_text = "Current workshop level and forge resources"
 
 [node name="ForgeWorkspace" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 12
 
 [node name="RecipePanel" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace"]
 custom_minimum_size = Vector2(270, 0)

@@ -1212,12 +1212,14 @@ portrait、dialogue 與操作提示。
 - `scenes/ui/town/MaterialYardUI.tscn`
 - `scenes/ui/town/PlayerBlacksmithUI.tscn`
 - `scenes/ui/town/TownHallUI.tscn`
+- `scenes/ui/town/TownServiceFrameTheme.tres`
 
 三者是 domain screen，不是 generic component。它們共用 Full Rect modal、
-safe-margin centered window、圖示化 header/resource/status/action pattern，但各自
-保留獨立 script/API 與 service semantics。穩定 controls 在 Scene author；
-PlayerBlacksmithUI 只動態建立 equipment row。不得抽成一個以 mode Dictionary
-重建所有 layout 的通用 screen。
+safe-margin centered window、圖示化 header/resource/status/action pattern，並與
+`ShopUI` 共用 `TownServiceFrameTheme` 的 window/portrait/title/Close variations；各自保留
+獨立 script/API 與 service semantics。穩定 controls 在 Scene author；
+PlayerBlacksmithUI 只動態建立 recipe row。不得抽成一個以 mode Dictionary重建
+所有 layout 的通用 screen。
 
 ## 22. Unused / Prototype / Disabled Legacy Components
 

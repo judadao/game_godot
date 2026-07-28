@@ -208,15 +208,19 @@ func _check_contract(contract: Dictionary) -> void:
 		)
 	if contract["name"] == "ShopUI":
 		var portrait := ui.find_child("MerchantPortrait", true, false) as TextureRect
-		var title := ui.find_child("Title", true, false) as Control
+		var title := ui.find_child("TitleText", true, false) as Label
+		var title_banner := ui.find_child("TitleBanner", true, false) as TextureRect
 		_expect(
 			portrait != null
 				and portrait.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED,
 			"Shop merchant portraits must remain fully visible instead of using a crop mode."
 		)
 		_expect(
-			title != null and not title is TextureRect,
-			"Shop titles must not overlap a decorative sign texture."
+			title != null
+				and title_banner != null
+				and title.get_parent() == title_banner
+				and title.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER,
+			"Shop titles must be centered inside the shared title banner."
 		)
 
 	ui.queue_free()

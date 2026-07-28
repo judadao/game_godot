@@ -55,6 +55,7 @@ const SLOT_LABELS := {
 @onready var sales_service_button: Button = %SalesServiceButton
 @onready var stage_label: Label = %StageLabel
 @onready var resource_summary: Label = %ResourceSummary
+@onready var workshop_ledger: Label = %WorkshopLedger
 @onready var recipe_scroll: ScrollContainer = %RecipeScroll
 @onready var recipe_list: VBoxContainer = %RecipeList
 @onready var recipe_row_template: Button = %RecipeRowTemplate
@@ -440,6 +441,8 @@ func _refresh_stage() -> void:
 		]
 	else:
 		stage_label.text = "Private Workshop"
+	workshop_ledger.text = "%s  •  %s" % [stage_label.text, resource_summary.text]
+	workshop_ledger.tooltip_text = workshop_ledger.text
 
 
 func _refresh_recipe_catalog() -> void:
