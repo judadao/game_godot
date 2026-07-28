@@ -1,0 +1,1043 @@
+[gd_scene load_steps=22 format=3]
+
+[ext_resource type="Script" uid="uid://bl4jfw2re34g3" path="res://scripts/ui/player_blacksmith_ui.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/shop/generated/shop_sign.png" id="2_sign"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png" id="3_forge"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_06.png" id="4_research"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png" id="5_soul"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_01.png" id="6_gold"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png" id="7_wood"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Stone.png" id="8_stone"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_03.png" id="9_shard"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Ore_04.png" id="10_core"]
+
+[sub_resource type="StyleBoxFlat" id="WindowStyle"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0.045, 0.041, 0.038, 0.985)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.72, 0.52, 0.24, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.65)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="RailStyle"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0.075, 0.067, 0.06, 1)
+border_width_right = 1
+border_color = Color(0.34, 0.28, 0.2, 1)
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+bg_color = Color(0.075, 0.07, 0.066, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.37, 0.29, 0.18, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="InsetStyle"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.035, 0.038, 0.042, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.31, 0.34, 0.36, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="ServiceNormal"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.11, 0.095, 0.075, 1)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.34, 0.27, 0.18, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="ServiceSelected"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.34, 0.22, 0.08, 1)
+border_width_left = 4
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.98, 0.74, 0.28, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="ServiceHover"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.22, 0.16, 0.09, 1)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.82, 0.58, 0.22, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="FocusStyle"]
+bg_color = Color(0.05, 0.16, 0.23, 0.75)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.83, 0.98, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="RowNormal"]
+content_margin_left = 10.0
+content_margin_top = 7.0
+content_margin_right = 10.0
+content_margin_bottom = 7.0
+bg_color = Color(0.095, 0.09, 0.085, 1)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.28, 0.27, 0.25, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="RowSelected"]
+content_margin_left = 10.0
+content_margin_top = 7.0
+content_margin_right = 10.0
+content_margin_bottom = 7.0
+bg_color = Color(0.055, 0.18, 0.27, 1)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.94, 0.69, 0.27, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="RowHover"]
+content_margin_left = 10.0
+content_margin_top = 7.0
+content_margin_right = 10.0
+content_margin_bottom = 7.0
+bg_color = Color(0.13, 0.18, 0.21, 1)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.58, 0.66, 0.69, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="PrimaryButton"]
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+bg_color = Color(0.54, 0.35, 0.12, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.98, 0.75, 0.32, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="PrimaryHover"]
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+bg_color = Color(0.68, 0.45, 0.16, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.86, 0.48, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="SecondaryButton"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.12, 0.14, 0.15, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.39, 0.45, 0.47, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="SecondaryHover"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.08, 0.23, 0.3, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.47, 0.8, 0.91, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="DisabledButton"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.075, 0.073, 0.07, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.19, 0.18, 0.16, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="PreviewStyle"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.035, 0.095, 0.13, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.68, 0.5, 0.23, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="FacilityStyle"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+bg_color = Color(0.12, 0.082, 0.052, 1)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.46, 0.31, 0.15, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="PlayerBlacksmithUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="DimBackground" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.008, 0.012, 0.015, 0.82)
+
+[node name="SafeMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="Center" type="CenterContainer" parent="SafeMargin"]
+layout_mode = 2
+
+[node name="PlayerBlacksmithWindow" type="PanelContainer" parent="SafeMargin/Center"]
+custom_minimum_size = Vector2(1080, 650)
+layout_mode = 2
+theme_override_styles/panel = SubResource("WindowStyle")
+
+[node name="WindowMargin" type="MarginContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="WindowLayout" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ForgeMark" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("3_forge")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TitleSign" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header"]
+custom_minimum_size = Vector2(360, 58)
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("2_sign")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header/TitleSign"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.87, 0.53, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 26
+text = "PLAYER BLACKSMITH"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HeaderStatus" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+alignment = 1
+
+[node name="StageLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header/HeaderStatus"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.68, 0.78, 0.81, 1)
+theme_override_font_sizes/font_size = 14
+text = "Village Stage 1 / 3"
+horizontal_alignment = 2
+
+[node name="HeaderHint" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header/HeaderStatus"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.61, 0.39, 1)
+theme_override_font_sizes/font_size = 13
+text = "Forged for the next expedition"
+horizontal_alignment = 2
+
+[node name="CloseButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(82, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.82, 0.72, 1)
+theme_override_colors/font_disabled_color = Color(0.44, 0.42, 0.39, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("SecondaryButton")
+theme_override_styles/hover = SubResource("SecondaryHover")
+theme_override_styles/pressed = SubResource("SecondaryHover")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Close"
+
+[node name="ResourceBar" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+alignment = 2
+theme_override_constants/separation = 16
+
+[node name="GoldResource" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/GoldResource"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("6_gold")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Labels" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/GoldResource"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/GoldResource/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.58, 0.51, 1)
+theme_override_font_sizes/font_size = 11
+text = "GOLD"
+
+[node name="GoldAmount" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/GoldResource/Labels"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.34, 1)
+theme_override_font_sizes/font_size = 15
+text = "0"
+
+[node name="WoodResource" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/WoodResource"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("7_wood")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Labels" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/WoodResource"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/WoodResource/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.58, 0.51, 1)
+theme_override_font_sizes/font_size = 11
+text = "WOOD"
+
+[node name="WoodAmount" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/WoodResource/Labels"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.67, 0.43, 1)
+theme_override_font_sizes/font_size = 15
+text = "0"
+
+[node name="StoneResource" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/StoneResource"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("8_stone")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Labels" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/StoneResource"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/StoneResource/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.58, 0.51, 1)
+theme_override_font_sizes/font_size = 11
+text = "STONE"
+
+[node name="StoneAmount" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/StoneResource/Labels"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.76, 0.77, 1)
+theme_override_font_sizes/font_size = 15
+text = "0"
+
+[node name="ShardResource" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/ShardResource"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("9_shard")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Labels" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/ShardResource"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/ShardResource/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.58, 0.51, 1)
+theme_override_font_sizes/font_size = 11
+text = "SHARDS"
+
+[node name="ShardAmount" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/ShardResource/Labels"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.51, 0.82, 0.96, 1)
+theme_override_font_sizes/font_size = 15
+text = "0"
+
+[node name="CoreResource" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/CoreResource"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("10_core")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Labels" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/CoreResource"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/CoreResource/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.58, 0.51, 1)
+theme_override_font_sizes/font_size = 11
+text = "CORES"
+
+[node name="CoreAmount" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar/CoreResource/Labels"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.58, 0.91, 1)
+theme_override_font_sizes/font_size = 15
+text = "0"
+
+[node name="ResourceSummary" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/ResourceBar"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Gold 0 | Wood 0 | Stone 0 | Shards 0 | Cores 0"
+
+[node name="MainContent" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="ServiceRail" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent"]
+custom_minimum_size = Vector2(190, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("RailStyle")
+
+[node name="ServiceLayout" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ServiceHeading" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.76, 0.52, 1)
+theme_override_font_sizes/font_size = 14
+text = "WORKBENCH SERVICES"
+
+[node name="ForgeServiceButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+texture_filter = 1
+icon = ExtResource("3_forge")
+icon_max_width = 42
+expand_icon = true
+theme_override_colors/font_color = Color(1, 0.86, 0.54, 1)
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("ServiceSelected")
+theme_override_styles/hover = SubResource("ServiceHover")
+theme_override_styles/pressed = SubResource("ServiceSelected")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Forge"
+alignment = 0
+
+[node name="ResearchServiceButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+texture_filter = 1
+icon = ExtResource("4_research")
+icon_max_width = 42
+expand_icon = true
+theme_override_colors/font_color = Color(0.71, 0.85, 0.97, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("ServiceNormal")
+theme_override_styles/hover = SubResource("ServiceHover")
+theme_override_styles/pressed = SubResource("ServiceSelected")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Design Research"
+alignment = 0
+
+[node name="RefineryServiceButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+texture_filter = 1
+icon = ExtResource("5_soul")
+icon_max_width = 42
+expand_icon = true
+theme_override_colors/font_color = Color(0.89, 0.7, 0.95, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("ServiceNormal")
+theme_override_styles/hover = SubResource("ServiceHover")
+theme_override_styles/pressed = SubResource("ServiceSelected")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Soul Refinery"
+alignment = 0
+
+[node name="ServiceSpacer" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ServiceHint" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.52, 0.55, 0.56, 1)
+theme_override_font_sizes/font_size = 12
+text = "Choose a service to change the workbench."
+autowrap_mode = 2
+
+[node name="WorkspaceHolder" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ForgeWorkspace" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="CatalogPanel" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace"]
+custom_minimum_size = Vector2(365, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="CatalogLayout" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/CatalogPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CatalogHeading" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/CatalogPanel/CatalogLayout"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/CatalogPanel/CatalogLayout/CatalogHeading"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.97, 0.82, 0.49, 1)
+theme_override_font_sizes/font_size = 19
+text = "Equipment Catalog"
+
+[node name="Count" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/CatalogPanel/CatalogLayout/CatalogHeading"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.65, 0.68, 1)
+theme_override_font_sizes/font_size = 13
+text = "10 DESIGNS"
+vertical_alignment = 1
+
+[node name="CatalogLegend" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/CatalogPanel/CatalogLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53, 0.57, 0.58, 1)
+theme_override_font_sizes/font_size = 12
+text = "WEAPON  ·  ARMOR  ·  ACCESSORY"
+
+[node name="EquipmentScroll" type="ScrollContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/CatalogPanel/CatalogLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="EquipmentList" type="GridContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/CatalogPanel/CatalogLayout/EquipmentScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 1
+
+[node name="EquipmentRowTemplate" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/CatalogPanel/CatalogLayout/EquipmentScroll/EquipmentList"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 62)
+layout_mode = 2
+size_flags_horizontal = 3
+texture_filter = 1
+icon = ExtResource("3_forge")
+icon_max_width = 38
+expand_icon = true
+theme_override_colors/font_color = Color(0.9, 0.84, 0.74, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("RowNormal")
+theme_override_styles/hover = SubResource("RowHover")
+theme_override_styles/pressed = SubResource("RowSelected")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Equipment Name\nWPN  ·  L0  ·  SALE"
+alignment = 0
+
+[node name="EmptyCatalogLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/CatalogPanel/CatalogLayout"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.58, 0.56, 0.52, 1)
+text = "No equipment designs are available."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="DetailPanel" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace"]
+custom_minimum_size = Vector2(405, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="DetailLayout" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ItemHeader" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout"]
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PreviewFrame" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ItemHeader"]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+theme_override_styles/panel = SubResource("PreviewStyle")
+
+[node name="ItemPreview" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ItemHeader/PreviewFrame"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(68, 68)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("3_forge")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Identity" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ItemHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 3
+
+[node name="ItemNameLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ItemHeader/Identity"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.5, 1)
+theme_override_font_sizes/font_size = 22
+text = "Iron Sword"
+text_overrun_behavior = 3
+
+[node name="ItemSlotLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ItemHeader/Identity"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.68, 0.72, 1)
+theme_override_font_sizes/font_size = 12
+text = "WEAPON EQUIPMENT  ·  LEVEL 0 / 3"
+
+[node name="ItemStatusLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ItemHeader/Identity"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "AVAILABLE"
+
+[node name="EffectsFrame" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("InsetStyle")
+
+[node name="ItemEffectsLabel" type="RichTextLabel" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/EffectsFrame"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 118)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.77, 0.78, 0.76, 1)
+theme_override_font_sizes/normal_font_size = 14
+bbcode_enabled = true
+text = "[color=#f5ca63][b]Equipment Effects[/b][/color]
+• Attack  [color=#f6e4bd]+4[/color]"
+fit_content = false
+scroll_active = true
+
+[node name="PurchaseCostLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.77, 0.7, 0.58, 1)
+theme_override_font_sizes/font_size = 13
+text = "Purchase  ·  Gold 60  ·  Wood 5"
+text_overrun_behavior = 3
+
+[node name="EquipmentActions" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PurchaseButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/EquipmentActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.91, 0.68, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.39, 0.37, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("PrimaryButton")
+theme_override_styles/hover = SubResource("PrimaryHover")
+theme_override_styles/pressed = SubResource("PrimaryHover")
+theme_override_styles/disabled = SubResource("DisabledButton")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Purchase"
+
+[node name="EquipButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/EquipmentActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(98, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.75, 0.9, 0.95, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.39, 0.37, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("SecondaryButton")
+theme_override_styles/hover = SubResource("SecondaryHover")
+theme_override_styles/pressed = SubResource("SecondaryHover")
+theme_override_styles/disabled = SubResource("DisabledButton")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Equip"
+
+[node name="StrengthenButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/EquipmentActions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(148, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.91, 0.79, 0.97, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.39, 0.37, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("SecondaryButton")
+theme_override_styles/hover = SubResource("SecondaryHover")
+theme_override_styles/pressed = SubResource("SecondaryHover")
+theme_override_styles/disabled = SubResource("DisabledButton")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Strengthen"
+
+[node name="ActionFeedback" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.54, 0.64, 0.65, 1)
+theme_override_font_sizes/font_size = 12
+text = "Select a design to begin."
+text_overrun_behavior = 3
+
+[node name="ForgeFacility" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("FacilityStyle")
+
+[node name="FacilityLayout" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ForgeFacility"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="FacilityIcon" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ForgeFacility/FacilityLayout"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("3_forge")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="FacilityText" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ForgeFacility/FacilityLayout"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ForgeLevelLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ForgeFacility/FacilityLayout/FacilityText"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.79, 0.45, 1)
+theme_override_font_sizes/font_size = 14
+text = "Forge Facility  ·  Level 0 / 3"
+
+[node name="ForgeUpgradeCostLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ForgeFacility/FacilityLayout/FacilityText"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.59, 0.49, 1)
+theme_override_font_sizes/font_size = 11
+text = "Next facility tier"
+text_overrun_behavior = 3
+
+[node name="UpgradeButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/DetailPanel/DetailLayout/ForgeFacility/FacilityLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(118, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.62, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.39, 0.37, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("PrimaryButton")
+theme_override_styles/hover = SubResource("PrimaryHover")
+theme_override_styles/pressed = SubResource("PrimaryHover")
+theme_override_styles/disabled = SubResource("DisabledButton")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Upgrade Forge"
+
+[node name="SoulWorkspace" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="SoulIdentityPanel" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace"]
+custom_minimum_size = Vector2(310, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="SoulIdentity" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulIdentityPanel"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="SoulIconFrame" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulIdentityPanel/SoulIdentity"]
+custom_minimum_size = Vector2(0, 184)
+layout_mode = 2
+theme_override_styles/panel = SubResource("PreviewStyle")
+
+[node name="SoulIconCenter" type="CenterContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulIdentityPanel/SoulIdentity/SoulIconFrame"]
+layout_mode = 2
+
+[node name="SoulIcon" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulIdentityPanel/SoulIdentity/SoulIconFrame/SoulIconCenter"]
+custom_minimum_size = Vector2(132, 132)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("5_soul")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="SoulTitle" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulIdentityPanel/SoulIdentity"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.72, 0.98, 1)
+theme_override_font_sizes/font_size = 23
+text = "Soul Refinery"
+horizontal_alignment = 1
+
+[node name="SoulDescription" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulIdentityPanel/SoulIdentity"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.68, 0.68, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "Stabilize recovered memories and expand the number of skills your archive can preserve."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="SoulUpgradePanel" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="SoulUpgradeLayout" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulUpgradePanel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="ModeEyebrow" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulUpgradePanel/SoulUpgradeLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.68, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+text = "BUILDING UPGRADE MODE"
+
+[node name="SoulLevelLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulUpgradePanel/SoulUpgradeLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.83, 0.49, 1)
+theme_override_font_sizes/font_size = 25
+text = "Soul Refinery  ·  Level 0 / 4"
+
+[node name="SoulCapacityFrame" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulUpgradePanel/SoulUpgradeLayout"]
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+theme_override_styles/panel = SubResource("InsetStyle")
+
+[node name="SoulCapacityCenter" type="CenterContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulUpgradePanel/SoulUpgradeLayout/SoulCapacityFrame"]
+layout_mode = 2
+
+[node name="SoulCapacityLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulUpgradePanel/SoulUpgradeLayout/SoulCapacityFrame/SoulCapacityCenter"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.86, 0.96, 1)
+theme_override_font_sizes/font_size = 22
+text = "Memory Capacity  ·  10 skills"
+horizontal_alignment = 1
+
+[node name="SoulUpgradeInfo" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulUpgradePanel/SoulUpgradeLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.7, 0.7, 0.68, 1)
+theme_override_font_sizes/font_size = 15
+text = "Each refinery tier expands the Memory Library capacity. Resources are consumed only after a successful upgrade."
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="SoulUpgradeCostLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulUpgradePanel/SoulUpgradeLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.68, 0.52, 1)
+theme_override_font_sizes/font_size = 14
+text = "Next resonance tier"
+text_overrun_behavior = 3
+
+[node name="SoulUpgradeButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SoulWorkspace/SoulUpgradePanel/SoulUpgradeLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.64, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.39, 0.37, 1)
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("PrimaryButton")
+theme_override_styles/hover = SubResource("PrimaryHover")
+theme_override_styles/pressed = SubResource("PrimaryHover")
+theme_override_styles/disabled = SubResource("DisabledButton")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Upgrade Refinery"
