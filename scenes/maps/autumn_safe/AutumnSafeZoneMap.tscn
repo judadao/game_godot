@@ -23,25 +23,25 @@ atlas = ExtResource("3_trees")
 region = Rect2(700, 64, 260, 690)
 
 [sub_resource type="RectangleShape2D" id="FloorShape"]
-size = Vector2(1804, 90)
+size = Vector2(1284, 90)
 
 [sub_resource type="RectangleShape2D" id="WallShape"]
 size = Vector2(32, 720)
 
 [node name="AutumnSafeZoneMap" type="Node2D"]
 metadata/map_role = "autumn_safe_zone"
-metadata/map_width = 1800
+metadata/map_width = 1280
 metadata/map_height = 720
 metadata/camera_limit_left = 0
 metadata/camera_limit_top = 0
-metadata/camera_limit_right = 1800
+metadata/camera_limit_right = 1280
 metadata/camera_limit_bottom = 720
 
 [node name="Backdrop" type="Node2D" parent="."]
 z_index = -100
 
 [node name="SkyFill" type="ColorRect" parent="Backdrop"]
-offset_right = 1800.0
+offset_right = 1280.0
 offset_bottom = 540.0
 mouse_filter = 2
 color = Color(0.36, 0.69, 0.82, 1)
@@ -53,7 +53,7 @@ texture_filter = 1
 texture = ExtResource("1_background")
 
 [node name="PanoramaEast" type="Sprite2D" parent="Backdrop"]
-position = Vector2(1536, 270)
+position = Vector2(1280, 270)
 scale = Vector2(-0.75, 0.75)
 texture_filter = 1
 texture = ExtResource("1_background")
@@ -63,19 +63,19 @@ z_index = 4
 modulate = Color(0.76, 0.66, 0.5, 0.82)
 
 [node name="WestOak" type="Sprite2D" parent="Backdrop/RearTrees"]
-position = Vector2(330, 405)
+position = Vector2(250, 405)
 scale = Vector2(0.31, 0.31)
 texture_filter = 1
 texture = SubResource("OakTexture")
 
 [node name="CampMaple" type="Sprite2D" parent="Backdrop/RearTrees"]
-position = Vector2(1030, 404)
+position = Vector2(650, 404)
 scale = Vector2(0.31, 0.31)
 texture_filter = 1
 texture = SubResource("MapleTexture")
 
 [node name="EastOak" type="Sprite2D" parent="Backdrop/RearTrees"]
-position = Vector2(1515, 405)
+position = Vector2(1080, 405)
 scale = Vector2(0.31, 0.31)
 texture_filter = 1
 texture = SubResource("OakTexture")
@@ -100,30 +100,18 @@ scale = Vector2(0.5, 0.5)
 texture_filter = 1
 texture = SubResource("GroundTexture")
 
-[node name="GroundEast" type="Sprite2D" parent="Terrain"]
-position = Vector2(1540, 500)
-scale = Vector2(0.5, 0.5)
-texture_filter = 1
-texture = SubResource("GroundTexture")
-
-[node name="GroundTail" type="Sprite2D" parent="Terrain"]
-position = Vector2(1780, 500)
-scale = Vector2(0.5, 0.5)
-texture_filter = 1
-texture = SubResource("GroundTexture")
-
 [node name="PlayerSpawn" type="Marker2D" parent="."]
-position = Vector2(310, 470)
+position = Vector2(300, 470)
 
 [node name="BattleReturnSpawn" type="Marker2D" parent="."]
-position = Vector2(1435, 470)
+position = Vector2(1000, 470)
 
 [node name="Player" parent="." instance=ExtResource("5_player")]
-position = Vector2(310, 470)
+position = Vector2(300, 470)
 z_index = 30
 
 [node name="TownPortal" parent="." instance=ExtResource("6_portal")]
-position = Vector2(150, 500)
+position = Vector2(140, 500)
 z_index = 22
 interaction_id = &"autumn_safe_town_return"
 prompt_text = "Return to Town"
@@ -134,15 +122,15 @@ target_spawn_name = &"PlayerSpawn"
 scale = Vector2(0.34, 0.34)
 
 [node name="Campfire" parent="." instance=ExtResource("7_fire")]
-position = Vector2(1040, 492)
+position = Vector2(650, 492)
 z_index = 24
 
 [node name="SeatedTrailMerchant" parent="." instance=ExtResource("8_merchant")]
-position = Vector2(1225, 492)
+position = Vector2(800, 492)
 z_index = 25
 
 [node name="BattlePortal" parent="." instance=ExtResource("6_portal")]
-position = Vector2(1650, 500)
+position = Vector2(1140, 500)
 z_index = 22
 interaction_id = &"autumn_safe_battle_gate"
 prompt_text = "Enter Autumn Front"
@@ -155,7 +143,7 @@ scale = Vector2(0.34, 0.34)
 [node name="WorldCollision" type="StaticBody2D" parent="."]
 
 [node name="FloorCollision" type="CollisionShape2D" parent="WorldCollision"]
-position = Vector2(900, 500)
+position = Vector2(640, 500)
 shape = SubResource("FloorShape")
 
 [node name="LeftWall" type="CollisionShape2D" parent="WorldCollision"]
@@ -163,7 +151,7 @@ position = Vector2(-16, 360)
 shape = SubResource("WallShape")
 
 [node name="RightWall" type="CollisionShape2D" parent="WorldCollision"]
-position = Vector2(1816, 360)
+position = Vector2(1296, 360)
 shape = SubResource("WallShape")
 
 [node name="EditorHUDReference" parent="." instance=ExtResource("9_hud")]

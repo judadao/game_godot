@@ -140,18 +140,18 @@ Town 可直接進入 Crystal Caves 與 Forbidden Graveyard，因此 Autumn Guard
 
 Autumn 場景包含：
 
-- 1,800px 安全區，左側回 Town、右側進戰鬥；
+- 1,280px 單畫面安全區，左側回 Town、右側進戰鬥；
 - 安全區營火與不阻擋路線的兜帽旅商；
 - 10,560px 戰鬥區，由 24 個 440px chunks 組合；
-- 每次進入依 seed 改變 optional one-way platforms 與 dressing；
+- 每次進入依 seed 改變宏觀地形區段與 optional one-way platform groups；
 - 可重複延伸的 panorama／rear-tree 背景；
 - 戰鬥區兩端皆可回安全區；
-- 戰鬥區保留 hidden cache、Run 金幣 wandering merchant 與 shortcut lever，
-  三者皆不阻擋主路；
 - `AutumnRunDirector`、一般敵人與 Guardian。
 
-程序平台群之間至少保留一個完整平地 chunk。樹冠路線以逐階可跳高度延伸到上方；
-站在單向平台時按 ↓ 可向下穿越，continuous floor 永遠不可穿越。
+地形依序組合低地、中台、高台、平原與短 transition chunks；相鄰 transition
+不得超過兩個，避免形成連續鋸齒階梯。One-way platforms 以 1–2 chunks 群組與
+1–2 chunks 空白交替。站在單向平台時按 ↓ 可向下穿越，continuous floor 永遠
+不可穿越。
 
 ### 3.4 後續區域邊界
 
@@ -199,8 +199,9 @@ Player 根節點為 `CharacterBody2D`，已實作：
 ### 4.3 Encounter leash
 
 Autumn encounter 的 engage radius 為 720，leash radius 為 980。長路線以最近存活
-enemy 計算 engagement，敵人則在玩家前後 340–650px、且不超出 route bounds 的位置
-生成。玩家離開外圈後開始六秒警告：
+enemy 計算 engagement；敵人在玩家前後 720–1040px 的視野外 perimeter、且不超出
+route bounds 的位置生成。距離玩家超過 1500px 的一般怪會回收到新的 perimeter
+位置。玩家離開外圈後開始六秒警告：
 
 - 在倒數結束前返回會取消重置；
 - 倒數結束時，存活敵人恢復生命、位置與狀態；
@@ -582,8 +583,9 @@ Rest 每個 Run 只能成功使用一次，會把 health 與 mana 恢復到上�
 `forest_gate` 相容旗標仍可讀取，但不再改變新 route 的出生點。
 
 地板輪廓與平台組件由獨立 catalog 拼裝；每次進場 seed 不同，但所有 chunk 接縫
-保持連續，平台垂直階差受可通行限制約束。怪物從玩家視野外持續補入，遠離玩家的
-一般怪會回收到新視野外位置，避免舊怪占滿密度預算。
+保持連續。Generator 先規劃低、中、高地與平原區段，只在高度區段交界使用短坡，
+並限制浮空平台群組長度。怪物從玩家視野外持續補入，遠離玩家的一般怪會回收到新
+視野外位置，避免舊怪占滿密度預算。
 
 階段只依累積存活秒數推進，擊殺數與場上存活數不參與階段判斷。`density_cap`
 只用於效能與畫面密度控制；最終 Guardian 擊敗後才完成戰鬥。

@@ -163,8 +163,9 @@ Autumn map 變更至少需執行 `autumn_safe_zone_contract_test.gd`、
 `battle_map_v2_spatial_flow_test.gd` 與 `town_autumn_portal_flow_test.gd`。程序路線
 必須驗證同 seed 重現、不同 seed 變化、24 個以上 chunks、完整寬度覆蓋、十柱式
 無縫地形、至少 96px route relief、24px 最大相鄰高差、至少五種 floor profiles、
-至少六種 platform assemblies、平台密度、高層樹冠路線、視野外生怪及兩端 portal
-都回安全區。
+6–12 個 flat chunks、最多兩個連續 relief chunks、8–14 個 platform chunks、
+最多兩個連續 platform chunks、高層樹冠路線、視野外生怪及兩端 portal 都回安全
+區。Safe zone 另需驗證 map width 與 camera right 都是 1280。
 
 Theme 修改需載入受影響 scene，確認 theme、theme variation、font、
 StyleBox 與所有互動狀態可解析；Town 功能建築與 Shop frame 共用

@@ -235,7 +235,9 @@ AutumnBattleMapV2
 ```
 
 `AutumnRouteCatalog` 是地板輪廓與平台組件的唯一目錄；`AutumnRouteGenerator`
-負責 seed、密度、接縫與高度邊界，`AutumnRouteChunk` 只依 layout 建立貼圖與碰撞。
+負責 seed、宏觀高度區段、平台群組、接縫與高度邊界，`AutumnRouteChunk` 只依
+layout 建立貼圖與碰撞。Safe zone 的 map width 與 camera right 固定為 1280，
+Town portal、營火、商人與 battle portal 必須同時落在一個基準 viewport 內。
 每個 440px chunk 由十個 44px terrain columns 組成。每柱拆成連續 atlas
 頂蓋、垂直平鋪岩層與延伸至 y=720 的實體碰撞，水平接縫保留 2px overlap。
 相鄰 chunk 的 exit／entry 高度必須相同，所有 floor top 保持在 y=360..470，
@@ -243,8 +245,9 @@ AutumnBattleMapV2
 one-way collision，舊地圖的
 固定 Run interactives 與 fence／sign dressing 不得重新掛入戰鬥 route。
 新增變體需同步 `autumn_modular_route_test.gd` 的 manifest、determinism、floor
-signature、route relief、platform density 與 continuous-floor contract。安全區
-使用不含 CardHand 的專用 editor HUD reference。
+signature、route relief、flat-zone 數量、最多兩個連續 transition/platform
+chunks 與 continuous-floor contract。安全區使用不含 CardHand 的專用 editor HUD
+reference。
 
 ### 5.4 Required map metadata
 

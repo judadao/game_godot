@@ -75,6 +75,9 @@ func _run() -> void:
 			String(route.call("get_route_fingerprint")) != first_fingerprint,
 			"Different entries must be able to produce different terrain fingerprints."
 		)
+		for audit_seed in [8675309, 20260728, 314159]:
+			route.call("regenerate", audit_seed)
+			_assert_manifest(route.call("get_manifest") as Array, map_width)
 
 	for portal_path in ["WestSafePortal", "EastSafePortal"]:
 		var portal := map.get_node_or_null(portal_path)
@@ -113,6 +116,11 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 	var route_maximum_floor_y := 0.0
 	var platform_chunks := 0
 	var relief_chunks := 0
+	var flat_chunks := 0
+	var consecutive_relief := 0
+	var maximum_consecutive_relief := 0
+	var consecutive_platform_chunks := 0
+	var maximum_consecutive_platform_chunks := 0
 	var empty_platform_streak := 0
 	var maximum_empty_platform_streak := 0
 	var has_high_route := false
@@ -176,6 +184,14 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 			- float(entry.get("minimum_floor_y", 0.0))
 		) >= 16.0:
 			relief_chunks += 1
+			consecutive_relief += 1
+			maximum_consecutive_relief = maxi(
+				maximum_consecutive_relief,
+				consecutive_relief
+			)
+		else:
+			flat_chunks += 1
+			consecutive_relief = 0
 		platform_variants[String(entry.get("variant", ""))] = true
 		expected_left = right
 		var variant_id := String(entry.get("variant", ""))
@@ -183,6 +199,7 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 		var platform_count := int(entry.get("platform_count", -1))
 		if platform_count == 0:
 			empty_platform_streak += 1
+			consecutive_platform_chunks = 0
 			maximum_empty_platform_streak = maxi(
 				maximum_empty_platform_streak,
 				empty_platform_streak
@@ -190,6 +207,11 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 		else:
 			platform_chunks += 1
 			empty_platform_streak = 0
+			consecutive_platform_chunks += 1
+			maximum_consecutive_platform_chunks = maxi(
+				maximum_consecutive_platform_chunks,
+				consecutive_platform_chunks
+			)
 		if float(entry.get("minimum_platform_y", 999.0)) <= 300.0:
 			has_high_route = true
 	_expect(
@@ -207,12 +229,24 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 		% MINIMUM_PLATFORM_VARIANTS
 	)
 	_expect(
-		platform_chunks >= 16,
-		"At least two thirds of the route must provide useful raised traversal."
+		platform_chunks >= 8 and platform_chunks <= 14,
+		"Raised traversal must form occasional clusters instead of covering the route."
 	)
 	_expect(
-		relief_chunks >= manifest.size() - 2,
-		"Every interior route module must contribute a visible terrain silhouette."
+		flat_chunks >= 6 and flat_chunks <= 12,
+		"Macro terrain must mix substantial flat zones with high and low landmarks."
+	)
+	_expect(
+		relief_chunks >= 8,
+		"Macro terrain must retain enough high and low landmark modules."
+	)
+	_expect(
+		maximum_consecutive_relief <= 2,
+		"Terrain transitions must not become a long connected staircase."
+	)
+	_expect(
+		maximum_consecutive_platform_chunks <= 2,
+		"Floating platforms must not form a long continuous ceiling."
 	)
 	_expect(
 		maximum_empty_platform_streak <= 2,

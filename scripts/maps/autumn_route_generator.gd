@@ -44,24 +44,13 @@ func regenerate(seed_value: int) -> void:
 	_manifest.clear()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
-	var floor_order := CATALOG.FLOOR_PROFILE_ORDER.duplicate()
 	var platform_order := CATALOG.PLATFORM_ASSEMBLY_ORDER.duplicate()
-	_shuffle_strings(floor_order, rng)
 	_shuffle_strings(platform_order, rng)
+	var floor_plan := _build_floor_profile_plan(rng)
+	var platform_plan := _build_platform_plan(platform_order, rng)
 	var current_floor_top := BASE_FLOOR_TOP
-	var floor_offset := rng.randi_range(0, floor_order.size() - 1)
-	var platform_offset := rng.randi_range(0, platform_order.size() - 1)
 	for chunk_index in chunk_count:
-		var gateway := chunk_index == 0 or chunk_index == chunk_count - 1
-		var floor_profile_id := (
-			"level"
-			if gateway
-			else _pick_floor_profile(
-				floor_order,
-				chunk_index + floor_offset,
-				current_floor_top
-			)
-		)
+		var floor_profile_id := floor_plan[chunk_index]
 		var floor_offsets := CATALOG.floor_profile(floor_profile_id)
 		var floor_segments := _build_floor_segments(
 			floor_offsets,
@@ -71,11 +60,7 @@ func regenerate(seed_value: int) -> void:
 		)
 		var floor_exit_y := float(floor_segments[-1]["top_y"])
 		var floor_range := _floor_range(floor_segments)
-		var assembly_id := "open"
-		if not gateway and chunk_index % 6 != 0:
-			assembly_id = platform_order[
-				(chunk_index - 1 + platform_offset) % platform_order.size()
-			]
+		var assembly_id := platform_plan[chunk_index]
 		var platforms := _build_platforms(
 			CATALOG.platform_assembly(assembly_id),
 			floor_segments,
@@ -162,25 +147,113 @@ func get_enemy_spawn_positions() -> Array[Vector2]:
 	return positions
 
 
-func _pick_floor_profile(
-	order: Array[String],
-	start_index: int,
-	current_floor_top: float
-) -> String:
-	for candidate_offset in order.size():
-		var profile_id := order[(start_index + candidate_offset) % order.size()]
-		if profile_id == "level":
+func _build_floor_profile_plan(rng: RandomNumberGenerator) -> Array[String]:
+	var plan: Array[String] = []
+	plan.resize(chunk_count)
+	plan.fill("level")
+	var relief_flags: Array[bool] = []
+	relief_flags.resize(chunk_count)
+	relief_flags.fill(false)
+	var transition_indices: Array[int] = []
+	var previous_index := 0
+	for transition_number in 4:
+		var remaining := 3 - transition_number
+		var candidate := int(round(
+			float(chunk_count - 1) * (float(transition_number + 1) / 5.0)
+		)) + rng.randi_range(-1, 1)
+		candidate = maxi(previous_index + 3, candidate)
+		candidate = mini(
+			candidate,
+			chunk_count - 2 - remaining * 3
+		)
+		transition_indices.append(candidate)
+		relief_flags[candidate] = true
+		previous_index = candidate
+	plan[transition_indices[0]] = "rise_48"
+	plan[transition_indices[1]] = "rise_48"
+	plan[transition_indices[2]] = "fall_48"
+	plan[transition_indices[3]] = "fall_48"
+
+	var local_candidates: Array[int] = []
+	for chunk_index in range(1, chunk_count - 1):
+		if not relief_flags[chunk_index]:
+			local_candidates.append(chunk_index)
+	_shuffle_ints(local_candidates, rng)
+	var local_target := maxi(4, int(round(float(chunk_count - 2) * 0.36)))
+	var selected_locals := 0
+	for candidate in local_candidates:
+		if selected_locals >= local_target:
+			break
+		if _would_form_three_relief(relief_flags, candidate):
 			continue
-		var offsets := CATALOG.floor_profile(profile_id)
-		var profile_is_safe := true
-		for offset in offsets:
-			var segment_y := current_floor_top + offset
-			if segment_y < MIN_FLOOR_TOP or segment_y > MAX_FLOOR_TOP:
-				profile_is_safe = false
+		relief_flags[candidate] = true
+		selected_locals += 1
+
+	var current_floor_top := BASE_FLOOR_TOP
+	for chunk_index in range(1, chunk_count - 1):
+		var profile_id := plan[chunk_index]
+		if profile_id == "level" and relief_flags[chunk_index]:
+			profile_id = _pick_local_profile(current_floor_top, rng)
+			plan[chunk_index] = profile_id
+		current_floor_top += CATALOG.floor_profile(profile_id)[-1]
+	return plan
+
+
+func _build_platform_plan(
+	platform_order: Array[String],
+	rng: RandomNumberGenerator
+) -> Array[String]:
+	var plan: Array[String] = []
+	plan.resize(chunk_count)
+	plan.fill("open")
+	var chunk_index := 1
+	var use_platforms := true
+	var platform_cursor := rng.randi_range(0, platform_order.size() - 1)
+	while chunk_index < chunk_count - 1:
+		var run_length := rng.randi_range(1, 2)
+		for _run_index in run_length:
+			if chunk_index >= chunk_count - 1:
 				break
-		if profile_is_safe:
-			return profile_id
-	return "level"
+			if use_platforms:
+				plan[chunk_index] = platform_order[
+					platform_cursor % platform_order.size()
+				]
+				platform_cursor += 1
+			chunk_index += 1
+		use_platforms = not use_platforms
+	if (
+		plan[chunk_count - 2] == "open"
+		and plan[chunk_count - 3] == "open"
+	):
+		plan[chunk_count - 2] = platform_order[
+			platform_cursor % platform_order.size()
+		]
+	return plan
+
+
+func _pick_local_profile(
+	current_floor_top: float,
+	rng: RandomNumberGenerator
+) -> String:
+	var candidates: Array[String]
+	if current_floor_top <= 370.0:
+		candidates = ["basin_48"]
+	elif current_floor_top >= 450.0:
+		candidates = ["hill_48", "mesa_64", "shallow_roll"]
+	else:
+		candidates = ["hill_48", "basin_48", "shallow_roll"]
+	return candidates[rng.randi_range(0, candidates.size() - 1)]
+
+
+func _would_form_three_relief(flags: Array[bool], candidate: int) -> bool:
+	for start_index in range(maxi(0, candidate - 2), mini(candidate, flags.size() - 3) + 1):
+		var relief_count := 0
+		for flag_index in range(start_index, start_index + 3):
+			if flag_index == candidate or flags[flag_index]:
+				relief_count += 1
+		if relief_count == 3:
+			return true
+	return false
 
 
 func _build_floor_segments(
@@ -255,6 +328,14 @@ func _build_platforms(
 
 
 func _shuffle_strings(values: Array[String], rng: RandomNumberGenerator) -> void:
+	for index in range(values.size() - 1, 0, -1):
+		var swap_index := rng.randi_range(0, index)
+		var temporary := values[index]
+		values[index] = values[swap_index]
+		values[swap_index] = temporary
+
+
+func _shuffle_ints(values: Array[int], rng: RandomNumberGenerator) -> void:
 	for index in range(values.size() - 1, 0, -1):
 		var swap_index := rng.randi_range(0, index)
 		var temporary := values[index]

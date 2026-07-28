@@ -206,13 +206,13 @@ portal slots 擁有，中央 `BossPortalAnchor` 是無互動、無 scene target 
 
 Autumn 現在拆為 safe zone 與 battle route。Town/hub 的 Autumn portal 先進入
 `AutumnSafeZoneMap`；安全區由左至右配置 Town return、Player spawn、可重複使用
-的營火、非阻擋坐姿商人及 battle portal。battle portal 才開啟 Deck Builder 並
-開始 Run。戰鬥 route 為 `24 × 440 = 10560` pixels，由
-`AutumnRouteGenerator` 以 seed 組合 `AutumnRouteChunk`。每個 chunk 保證連續
-地面；隨機高台只提供可選路線，不得成為前進必要條件。兩端 portal 都回到安全區，
-離開時依 Guardian 狀態以勝利或撤退結算 Run。
-安全區 HUD 不建立 CardHand authority。戰鬥區保留非阻擋的 hidden cache、
-wandering card merchant 與 shortcut lever，維持既有 Run economy 與存檔入口。
+的營火、非阻擋坐姿商人及 battle portal，完整收在單一 1280px gameplay viewport。
+battle portal 才開啟 Deck Builder 並開始 Run。戰鬥 route 為
+`24 × 440 = 10560` pixels，由 `AutumnRouteGenerator` 先規劃低地、中台、高台與
+平原區段，再以短 transition chunks 連接。浮空平台以 1–2 chunks 群組及 1–2
+chunks 空白交替，只提供可選路線，不得成為前進必要條件。兩端 portal 都回到安全
+區，離開時依 Guardian 狀態以勝利或撤退結算 Run。安全區 HUD 不建立 CardHand
+authority，戰鬥 route 不放置固定商人、寶箱或捷徑開關。
 
 規則：
 

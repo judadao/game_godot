@@ -3,15 +3,12 @@ extends RefCounted
 
 const FLOOR_PROFILE_ORDER: Array[String] = [
 	"level",
-	"grand_hill",
-	"grand_basin",
-	"high_plateau",
-	"rolling",
-	"double_ridge",
-	"broken_steps",
-	"long_climb",
-	"long_descent",
-	"high_terrace",
+	"rise_48",
+	"fall_48",
+	"hill_48",
+	"basin_48",
+	"mesa_64",
+	"shallow_roll",
 ]
 
 const PLATFORM_ASSEMBLY_ORDER: Array[String] = [
@@ -28,50 +25,35 @@ const PLATFORM_ASSEMBLY_ORDER: Array[String] = [
 
 static func floor_profile(profile_id: String) -> PackedFloat32Array:
 	match profile_id:
-		"grand_hill":
+		"rise_48":
 			return PackedFloat32Array([
-				0.0, -24.0, -48.0, -72.0, -96.0,
-				-96.0, -72.0, -48.0, -24.0, 0.0,
+				0.0, 0.0, -16.0, -32.0, -48.0,
+				-48.0, -48.0, -48.0, -48.0, -48.0,
 			])
-		"grand_basin":
+		"fall_48":
 			return PackedFloat32Array([
-				0.0, 12.0, 24.0, 36.0, 48.0,
-				48.0, 36.0, 24.0, 12.0, 0.0,
+				0.0, 0.0, 16.0, 32.0, 48.0,
+				48.0, 48.0, 48.0, 48.0, 48.0,
 			])
-		"high_plateau":
+		"hill_48":
 			return PackedFloat32Array([
-				0.0, -20.0, -40.0, -64.0, -64.0,
-				-64.0, -64.0, -40.0, -20.0, 0.0,
+				0.0, 0.0, -16.0, -32.0, -48.0,
+				-48.0, -32.0, -16.0, 0.0, 0.0,
 			])
-		"rolling":
+		"basin_48":
 			return PackedFloat32Array([
-				0.0, -16.0, -32.0, -16.0, 0.0,
-				16.0, 32.0, 16.0, 0.0, 0.0,
+				0.0, 0.0, 16.0, 32.0, 48.0,
+				48.0, 32.0, 16.0, 0.0, 0.0,
 			])
-		"double_ridge":
-			return PackedFloat32Array([
-				0.0, -24.0, -48.0, -24.0, 0.0,
-				-24.0, -48.0, -24.0, 0.0, 0.0,
-			])
-		"broken_steps":
-			return PackedFloat32Array([
-				0.0, -16.0, -16.0, -32.0, -32.0,
-				-48.0, -48.0, -24.0, -24.0, 0.0,
-			])
-		"long_climb":
-			return PackedFloat32Array([
-				0.0, -12.0, -24.0, -36.0, -48.0,
-				-60.0, -72.0, -84.0, -96.0, -96.0,
-			])
-		"long_descent":
-			return PackedFloat32Array([
-				0.0, 12.0, 24.0, 36.0, 48.0,
-				60.0, 72.0, 84.0, 96.0, 96.0,
-			])
-		"high_terrace":
+		"mesa_64":
 			return PackedFloat32Array([
 				0.0, -16.0, -32.0, -48.0, -64.0,
-				-64.0, -64.0, -64.0, -64.0, -64.0,
+				-64.0, -48.0, -32.0, -16.0, 0.0,
+			])
+		"shallow_roll":
+			return PackedFloat32Array([
+				0.0, 0.0, -12.0, -24.0, -24.0,
+				-12.0, 0.0, 0.0, 0.0, 0.0,
 			])
 		_:
 			return PackedFloat32Array([

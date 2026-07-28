@@ -36,6 +36,11 @@ func _run() -> void:
 		String(map.get_meta("map_role", "")) == "autumn_safe_zone",
 		"Safe zone must declare its map role."
 	)
+	_expect(
+		int(map.get_meta("map_width", 0)) == 1280
+			and int(map.get_meta("camera_limit_right", 0)) == 1280,
+		"Safe-zone camp must fit inside one 1280px gameplay viewport."
+	)
 	for node_path in [
 		"PlayerSpawn",
 		"BattleReturnSpawn",
@@ -82,7 +87,7 @@ func _run() -> void:
 			"Safe zone BattlePortal must enter the Autumn battle canonical route."
 		)
 		_expect(
-			(battle_portal as Node2D).position.x <= 1660.0,
+			(battle_portal as Node2D).position.x <= 1180.0,
 			"Safe-zone Battle portal must remain fully inside the right camera edge."
 		)
 	if town_portal is Node2D and battle_portal is Node2D and spawn != null and campfire != null:
