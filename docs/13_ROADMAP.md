@@ -368,6 +368,37 @@ Game composition root
 - [x] 已完成新檔責任、架構、resource 與 testing 文件同步。
 - [ ] 其餘 UI、combat、commerce 與 save orchestration 依相同邊界分階段抽離。
 
+### 5.8 Scene authoring maintainability
+
+**Status:** Open
+
+**Evidence**
+
+- 2026-07-28 audit 掃描 94 個 `scenes/**/*.tscn`，未發現可安全刪除的
+  zero-reference scene；stable map path、classified Town legacy scenes 與 editor HUD
+  reference scenes 均由 code、scene、test 或 save/path contract 引用。
+- `scenes/ui/hud/HUD.tscn` 與 `scenes/maps/crystal_caves.tscn` 曾含 stale
+  `ext_resource uid`，Godot 需 fallback 到文字 path，已改為直接使用 path，降低
+  scene registry 與 smoke log noise。
+- 高複雜度 scene 目前集中在 `AutumnHUD.tscn`、`TownEternalForgeHUD.tscn`、
+  `HUD.tscn`、`InventoryUI.tscn`、`ShopUI.tscn` 與 `CardGrowthUI.tscn`；它們多數
+  已用 Container，但深度與局部 StyleBox duplication 仍提高修改成本。
+- `crystal_caves.tscn`、`forbidden_graveyard.tscn` 與 legacy `autumn_forest.tscn`
+  仍是大量 inline Sprite2D 的 canonical map content；現有 public path 不應直接搬移。
+
+**Acceptance Criteria**
+
+- [ ] 建立可重跑的 scene audit script 或 test，列出 root type、node count、
+  max depth、ext_resource、metadata、groups 與 stale UID warning。
+- [ ] Crystal／Graveyard 若要拆分，先保留 canonical wrapper path，再抽出
+  background、terrain、props、collision、portals 與 editor reference component scenes。
+- [ ] UI 高複雜度 scene 先抽共用 Theme／StyleBox 或 feature component，不移動
+  public UI scene path。
+- [ ] 動態建構為主的 `CardDiscardUI`、`DeckBuilderUI`、`RunResultUI`、
+  `TownProgressUI` 若改為 editor-authored layout，需加對應 layout/behavior tests。
+- [ ] Scene registry、content validation、map path、UI layout、editor smoke 與 main
+  smoke 在每次拆分後均通過且無新增 Godot warning。
+
 ## 6. Later：交付、效能與長期治理
 
 ### 6.1 Central test runner

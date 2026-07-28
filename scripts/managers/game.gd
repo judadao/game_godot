@@ -317,7 +317,7 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 	_apply_shortcut_spawn()
 	_apply_equipment_stats()
 	_wire_interactives()
-	_wire_combat_zones()
+	_wire_encounter_directors()
 	_update_hud_area_name()
 	if run_state.active:
 		_refresh_card_hand()
@@ -672,14 +672,9 @@ func _wire_interactives() -> void:
 		_connect_if_present(interactive, &"chest_opened", &"_on_chest_opened")
 
 
-func _wire_combat_zones() -> void:
+func _wire_encounter_directors() -> void:
 	if current_map == null:
 		return
-	for zone in current_map.get_tree().get_nodes_in_group("CombatZones"):
-		if not current_map.is_ancestor_of(zone):
-			continue
-		_connect_if_present(zone, &"progress_changed", &"_on_combat_progress_changed")
-		_connect_if_present(zone, &"zone_cleared", &"_on_combat_zone_cleared")
 	for director in current_map.get_tree().get_nodes_in_group("EncounterDirectors"):
 		if not current_map.is_ancestor_of(director):
 			continue
@@ -696,36 +691,6 @@ func _wire_combat_zones() -> void:
 		_connect_if_present(director, &"elite_defeated", &"_on_elite_defeated")
 		if director.has_method("start_encounter") and not bool(director.get("_running")):
 			director.call_deferred("start_encounter")
-
-
-func _on_combat_progress_changed(remaining: int, total: int) -> void:
-	if hud != null and hud.has_method("set_objective"):
-		hud.call(
-			"set_objective",
-			"Defeat the forest slimes",
-			"Enemies remaining: %d / %d" % [remaining, total]
-		)
-
-
-func _on_combat_zone_cleared(experience_reward: int, gold_reward: int) -> void:
-	inventory_manager.call("add_resource", &"gold", maxi(0, gold_reward))
-	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
-	if player != null:
-		player.experience += maxi(0, experience_reward)
-		while player.experience >= player.experience_to_next_level:
-			player.experience -= player.experience_to_next_level
-			player.level += 1
-			player.experience_to_next_level = int(round(player.experience_to_next_level * 1.25))
-			player.max_health += 10
-			player.max_mana += 5
-			player.restore_health(player.max_health)
-			player.restore_mana(player.max_mana)
-	if hud != null:
-		if hud.has_method("set_currency"):
-			hud.call("set_currency", wallet_gold)
-		if hud.has_method("set_objective"):
-			hud.call("set_objective", "Autumn Forest secured", "+%d EXP   +%d Gold" % [experience_reward, gold_reward])
-	_update_hud_player_identity()
 
 
 func _on_run_wave_started(wave_number: int, total_waves: int, enemy_count: int) -> void:
