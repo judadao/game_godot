@@ -1,148 +1,154 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
-[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/components/AutumnBattleBackdrop.tscn" id="1_backdrop"]
-[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/components/AutumnBattleTerrain.tscn" id="2_terrain"]
-[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/components/AutumnBattleSetDressing.tscn" id="3_dressing"]
-[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/components/AutumnBattleWorldCollision.tscn" id="4_collision"]
-[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="5_player"]
-[ext_resource type="Script" path="res://scripts/combat/survival_wave_director.gd" id="6_director"]
-[ext_resource type="PackedScene" path="res://scenes/props/Chest.tscn" id="7_chest"]
-[ext_resource type="PackedScene" path="res://scenes/npc/Merchant.tscn" id="8_merchant"]
-[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="9_portal"]
-[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn" id="10_ui"]
-[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnBattleMapV2EditorHelpers.tscn" id="11_helpers"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/chunks/AutumnRouteChunk.tscn" id="1_chunk"]
+[ext_resource type="Script" path="res://scripts/maps/autumn_route_generator.gd" id="2_generator"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="3_player"]
+[ext_resource type="Script" path="res://scripts/combat/survival_wave_director.gd" id="4_director"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="5_portal"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnBattleMapV2EditorHelpers.tscn" id="7_helpers"]
+[ext_resource type="PackedScene" path="res://scenes/props/Chest.tscn" id="8_chest"]
+[ext_resource type="PackedScene" path="res://scenes/npc/Merchant.tscn" id="9_merchant"]
+
+[sub_resource type="RectangleShape2D" id="WallShape"]
+size = Vector2(32, 720)
 
 [node name="AutumnBattleMapV2" type="Node2D"]
-metadata/map_width = 2600
+metadata/map_role = "autumn_battle_route"
+metadata/map_width = 10560
 metadata/map_height = 720
 metadata/camera_limit_left = 0
 metadata/camera_limit_top = 0
-metadata/camera_limit_right = 2600
+metadata/camera_limit_right = 10560
 metadata/camera_limit_bottom = 810
 
-[node name="Background" parent="." instance=ExtResource("1_backdrop")]
+[node name="GeneratedBackdrop" type="Node2D" parent="."]
+z_index = -100
 
-[node name="Ground" parent="." instance=ExtResource("2_terrain")]
-
-[node name="SetDressing" parent="." instance=ExtResource("3_dressing")]
+[node name="GeneratedRoute" type="Node2D" parent="."]
+script = ExtResource("2_generator")
+chunk_scene = ExtResource("1_chunk")
+chunk_count = 24
+preview_seed = 20260728
 
 [node name="GameplayZones" type="Node2D" parent="."]
 
-[node name="SpawnZone" type="Marker2D" parent="GameplayZones"]
-position = Vector2(210, 450)
-metadata/route_label = "SPAWN / CABIN"
+[node name="RouteHead" type="Marker2D" parent="GameplayZones"]
+position = Vector2(300, 452)
+metadata/route_label = "WEST GATE / ENTRY"
 
-[node name="EventChoiceZone" type="Marker2D" parent="GameplayZones"]
-position = Vector2(620, 450)
-metadata/route_label = "EVENT / CHOICE"
+[node name="FirstEncounter" type="Marker2D" parent="GameplayZones"]
+position = Vector2(2640, 452)
+metadata/route_label = "ROAMING ENCOUNTER"
 
-[node name="EnemyWaveZone" type="Marker2D" parent="GameplayZones"]
-position = Vector2(1235, 450)
-metadata/route_label = "SURVIVAL WAVES"
+[node name="MidpointEncounter" type="Marker2D" parent="GameplayZones"]
+position = Vector2(5280, 452)
+metadata/route_label = "SURVIVAL MIDPOINT"
 
-[node name="MerchantZone" type="Marker2D" parent="GameplayZones"]
-position = Vector2(1875, 450)
-metadata/route_label = "CAMPFIRE / MERCHANT"
+[node name="GuardianEncounter" type="Marker2D" parent="GameplayZones"]
+position = Vector2(7920, 452)
+metadata/route_label = "GUARDIAN APPROACH"
 
-[node name="ExitZone" type="Marker2D" parent="GameplayZones"]
-position = Vector2(2350, 450)
-metadata/route_label = "BOSS GATE / NEXT MAP"
+[node name="RouteTail" type="Marker2D" parent="GameplayZones"]
+position = Vector2(10260, 452)
+metadata/route_label = "EAST GATE / RETURN"
 
 [node name="PlayerSpawn" type="Marker2D" parent="."]
-position = Vector2(340, 470)
+position = Vector2(300, 470)
 
 [node name="ForestShortcutSpawn" type="Marker2D" parent="."]
-position = Vector2(1980, 470)
+position = Vector2(9240, 470)
 
-[node name="Player" parent="." instance=ExtResource("5_player")]
-position = Vector2(340, 470)
+[node name="Player" parent="." instance=ExtResource("3_player")]
+position = Vector2(300, 470)
 z_index = 30
 
 [node name="AutumnRunDirector" type="Node2D" parent="." groups=["EncounterDirectors"]]
-position = Vector2(1235, 470)
 z_index = 25
-script = ExtResource("6_director")
+script = ExtResource("4_director")
 auto_start = false
-engage_radius = 520.0
-leash_radius = 700.0
-disengage_duration = 5.0
+engage_radius = 720.0
+leash_radius = 980.0
+disengage_duration = 6.0
+route_wide_encounter = true
+spawn_around_player = true
+spawn_route_left = 260.0
+spawn_route_right = 10300.0
 
-[node name="HiddenBranchCache" parent="." instance=ExtResource("7_chest")]
-position = Vector2(690, 485)
+[node name="HiddenBranchCache" parent="." instance=ExtResource("8_chest")]
+position = Vector2(3300, 492)
 z_index = 24
+collision_layer = 0
+collision_mask = 0
 interaction_id = &"forest_hidden_cache"
 prompt_text = "Open hidden cache"
 loot_table_id = &"forest_hidden_cache"
 
-[node name="ForestRest" parent="." instance=ExtResource("7_chest")]
-position = Vector2(1740, 485)
+[node name="WanderingCardMerchant" parent="." instance=ExtResource("9_merchant")]
+position = Vector2(6600, 492)
 z_index = 24
-interaction_id = &"forest_rest"
-prompt_text = "Rest at campfire"
-loot_table_id = &"forest_rest"
-
-[node name="Visual" parent="ForestRest" index="0"]
-visible = false
-
-[node name="WanderingCardMerchant" parent="." instance=ExtResource("8_merchant")]
-position = Vector2(1900, 492)
-z_index = 24
+collision_layer = 0
+collision_mask = 0
 interaction_id = &"wandering_card_merchant"
 prompt_text = "Trade Cards"
 display_name = "Wandering Cardwright"
 dialogue_id = &"wandering_card_greeting"
 shop_id = &"wandering_cards"
 
-[node name="ShortcutLever" parent="." instance=ExtResource("7_chest")]
-position = Vector2(2050, 485)
+[node name="ShortcutLever" parent="." instance=ExtResource("8_chest")]
+position = Vector2(9000, 492)
 z_index = 24
+collision_layer = 0
+collision_mask = 0
 interaction_id = &"forest_shortcut"
 prompt_text = "Unlock forest shortcut"
 loot_table_id = &"forest_shortcut"
 
-[node name="TownPortal" parent="." instance=ExtResource("9_portal")]
-position = Vector2(45, 495)
+[node name="WestSafePortal" parent="." instance=ExtResource("5_portal")]
+position = Vector2(82, 500)
 z_index = 22
-interaction_id = &"autumn_forest_return"
-prompt_text = "Return to Town"
-target_scene_path = "res://scenes/maps/town.tscn"
-target_spawn_name = &"PlayerSpawn"
+interaction_id = &"autumn_battle_west_return"
+prompt_text = "Return to Autumn Camp"
+target_scene_path = "res://scenes/maps/autumn_safe_zone.tscn"
+target_spawn_name = &"BattleReturnSpawn"
 
-[node name="Visual" parent="TownPortal" index="0"]
-scale = Vector2(0.36, 0.36)
+[node name="Visual" parent="WestSafePortal" index="0"]
+scale = Vector2(0.34, 0.34)
 
-[node name="ForwardPortal" parent="." instance=ExtResource("9_portal")]
-position = Vector2(2350, 500)
+[node name="EastSafePortal" parent="." instance=ExtResource("5_portal")]
+position = Vector2(10478, 500)
 z_index = 22
-interaction_id = &"autumn_forward_gate"
-prompt_text = "Continue Expedition"
-target_scene_path = "res://scenes/maps/crystal_caves.tscn"
-target_spawn_name = &"PlayerSpawn"
-locked = true
-locked_reason = "Defeat the Heartwood Guardian"
+interaction_id = &"autumn_battle_east_return"
+prompt_text = "Return to Autumn Camp"
+target_scene_path = "res://scenes/maps/autumn_safe_zone.tscn"
+target_spawn_name = &"BattleReturnSpawn"
 
-[node name="WorldCollision" parent="." instance=ExtResource("4_collision")]
+[node name="Visual" parent="EastSafePortal" index="0"]
+scale = Vector2(0.34, 0.34)
 
-[node name="EditorHUDReference" parent="." instance=ExtResource("10_ui")]
+[node name="WorldBounds" type="StaticBody2D" parent="."]
 
-[node name="EditorHelpers" parent="." instance=ExtResource("11_helpers")]
+[node name="LeftWall" type="CollisionShape2D" parent="WorldBounds"]
+position = Vector2(-16, 360)
+shape = SubResource("WallShape")
 
-[editable path="HiddenBranchCache"]
-[editable path="HiddenBranchCache/InteractionArea"]
-[editable path="ForestRest"]
-[editable path="ForestRest/InteractionArea"]
-[editable path="ShortcutLever"]
-[editable path="ShortcutLever/InteractionArea"]
-[editable path="WanderingCardMerchant"]
-[editable path="WanderingCardMerchant/InteractionArea"]
-[editable path="TownPortal"]
-[editable path="TownPortal/InteractionArea"]
-[editable path="ForwardPortal"]
-[editable path="ForwardPortal/InteractionArea"]
-[editable path="Background"]
-[editable path="Ground"]
-[editable path="SetDressing"]
-[editable path="WorldCollision"]
+[node name="RightWall" type="CollisionShape2D" parent="WorldBounds"]
+position = Vector2(10576, 360)
+shape = SubResource("WallShape")
+
+[node name="EditorHUDReference" parent="." instance=ExtResource("6_hud")]
+
+[node name="EditorHelpers" parent="." instance=ExtResource("7_helpers")]
+
+[editable path="WestSafePortal"]
+[editable path="WestSafePortal/InteractionArea"]
+[editable path="EastSafePortal"]
+[editable path="EastSafePortal/InteractionArea"]
 [editable path="EditorHUDReference"]
 [editable path="EditorHUDReference/HUD"]
-[editable path="EditorHelpers"]
+[editable path="HiddenBranchCache"]
+[editable path="HiddenBranchCache/InteractionArea"]
+[editable path="WanderingCardMerchant"]
+[editable path="WanderingCardMerchant/InteractionArea"]
+[editable path="ShortcutLever"]
+[editable path="ShortcutLever/InteractionArea"]

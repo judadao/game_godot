@@ -183,6 +183,7 @@ wrappers，讓 portal、HUD、save 與既有測試不需知道實作已抽離：
 | Canonical path | Authoritative path | Runtime root |
 |---|---|---|
 | `res://scenes/maps/town.tscn` | `res://scenes/maps/town/TownMap.tscn` | `TownMap` |
+| `res://scenes/maps/autumn_safe_zone.tscn` | `res://scenes/maps/autumn_safe/AutumnSafeZoneMap.tscn` | `AutumnSafeZoneMap` |
 | `res://scenes/maps/autumn_forest.tscn` | `res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn` | `AutumnBattleMapV2` |
 | `res://scenes/maps/crystal_caves.tscn` | `res://scenes/maps/layouts/CrystalCavesLayout.tscn` | `CrystalCaves` |
 | `res://scenes/maps/forbidden_graveyard.tscn` | `res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn` | `ForbiddenGraveyard` |
@@ -202,6 +203,16 @@ Town portal ownership 已收斂為 `TownPortalSet/BattleGateway`。它只前往
 `res://scenes/maps/battle_portal_hub.tscn`；區域目的地由 hub 的四個 region
 portal slots 擁有，中央 `BossPortalAnchor` 是無互動、無 scene target 的未來尾王
 定位點。
+
+Autumn 現在拆為 safe zone 與 battle route。Town/hub 的 Autumn portal 先進入
+`AutumnSafeZoneMap`；安全區由左至右配置 Town return、Player spawn、可重複使用
+的營火、非阻擋坐姿商人及 battle portal。battle portal 才開啟 Deck Builder 並
+開始 Run。戰鬥 route 為 `24 × 440 = 10560` pixels，由
+`AutumnRouteGenerator` 以 seed 組合 `AutumnRouteChunk`。每個 chunk 保證連續
+地面；隨機高台只提供可選路線，不得成為前進必要條件。兩端 portal 都回到安全區，
+離開時依 Guardian 狀態以勝利或撤退結算 Run。
+安全區 HUD 不建立 CardHand authority。戰鬥區保留非阻擋的 hidden cache、
+wandering card merchant 與 shortcut lever，維持既有 Run economy 與存檔入口。
 
 規則：
 
@@ -480,7 +491,11 @@ service；修改 mappings或處理順序時須用實際 run驗證。
 
 ### 9.1 Combat — Current
 
-- Autumn Forest使用 `SurvivalWaveDirector`。
+- Autumn battle route 使用 `SurvivalWaveDirector`；安全區沒有 encounter director。
+- 長路線的 enemy spawn 以 Player 為錨點並限制在 route bounds，engagement
+  distance 以最近存活 enemy 計算，不以 director 原點計算。
+- 端點附近若單側沒有至少 340px 淨空，spawn 必須改用另一側，不得 clamp 到 Player
+  身上。`GeneratedRoute.route_seed` 可供 remote inspector 取得以重現地圖。
 - director runtime-spawn enemy/guardian/experience gem。
 - `Enemies`、`EncounterDirectors` groups用於 target與wiring。
 - card effect透過 capability methods，例如 `take_hit()`、`add_block()`、

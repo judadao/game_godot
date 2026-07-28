@@ -29,8 +29,19 @@ func _run() -> void:
 	game.call("_on_interaction_available", portal, player)
 	game.call("_try_interact")
 	await process_frame
+	await process_frame
+	_expect(
+		game.get("current_map").scene_file_path == "res://scenes/maps/autumn_safe/AutumnSafeZoneMap.tscn",
+		"Hub Autumn portal must enter the dedicated safe zone."
+	)
+	player = game.get("player") as Node
+	portal = game.get("current_map").get_node("BattlePortal") as Node
+	(player as Node2D).global_position = (portal as Node2D).global_position
+	game.call("_on_interaction_available", portal, player)
+	game.call("_try_interact")
+	await process_frame
 	var builder := game.call("get_open_ui", "DeckBuilderUI") as Control
-	_expect(builder != null, "Hub Autumn portal interaction must open deck building.")
+	_expect(builder != null, "Safe-zone battle portal interaction must open deck building.")
 	_expect(game.has_method("_normalize_expedition_deck"), "Game must normalize migrated expedition decks.")
 	if builder != null:
 		var invalid_deck: Array[String] = ["missing_card"]
@@ -39,7 +50,7 @@ func _run() -> void:
 		await process_frame
 	_expect(
 		game.get("current_map").scene_file_path == "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn",
-		"Normalized confirmation must enter the authoritative Autumn Battle V2 scene."
+		"Safe-zone confirmation must enter the authoritative Autumn Battle V2 scene."
 	)
 	_expect((game.get("run_state") as RunState).active, "Entering Autumn Forest must start a run.")
 	game.queue_free()

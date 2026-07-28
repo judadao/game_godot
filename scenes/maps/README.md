@@ -3,17 +3,20 @@
 ## Authoritative scenes
 
 - Town: `res://scenes/maps/town/TownMap.tscn`
+- Autumn Safe Zone: `res://scenes/maps/autumn_safe/AutumnSafeZoneMap.tscn`
 - Autumn Battle V2: `res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn`
 
 Open these `*Map.tscn` scenes in Godot to edit the playable map. The canonical
-portal paths (`town.tscn` and `autumn_forest.tscn`) resolve to these entries at
+portal paths (`town.tscn`, `autumn_safe_zone.tscn`, and `autumn_forest.tscn`) resolve to these entries at
 runtime; do not use a legacy layout scene as an editing or runtime entry.
 
 Town exposes `ParallaxBackground`, `Buildings`, `Ground`, `Props`, `Portals`,
 `NPCs`, `BuildingEntrances`, `WorldCollision`, the player spawn,
-`EditorHUDReference`, and `EditorHelpers`. Autumn Forest exposes its background, terrain, platforms,
-set dressing, run director, interactables, portals, collision, player spawn,
-`EditorHUDReference`, and `EditorHelpers`. Expand editable children in the
+`EditorHUDReference`, and `EditorHelpers`. Autumn Safe exposes its campfire,
+seated trail merchant, Town/Battle portals, collision, player spawn, and a HUD
+reference without a CardHand root. Autumn Battle exposes generated backdrop/route authorities, a
+route-wide director, two safe-zone return portals, bounds, player spawn,
+`EditorHUDReference`, and chunk-seam helpers. Expand editable children in the
 Scene tree to adjust their Inspector overrides.
 
 Town NPC scenes are display and body-collision only. Building UI triggers live
@@ -50,6 +53,15 @@ Autumn Battle V2 is standalone and must not inherit or override the legacy
   static safe-area and control placement there (or through the map's editable
   child overrides). Gameplay creates only the variable card buttons inside the
   two authored row containers.
+
+The battle route is `24 × 440 = 10560` pixels. Add traversal variety in
+`scripts/maps/autumn_route_chunk.gd`; preserve a continuous floor and use only
+optional one-way platforms. `AutumnRouteGenerator.regenerate(seed)` owns
+runtime variation and repeatable backdrop tiling. Do not serialize generated
+children into the main scene.
+Runtime seed is available through `get_active_seed()` and `route_seed` metadata.
+Hidden cache, wandering card merchant, and shortcut lever remain fixed,
+nonblocking interaction landmarks over the generated route.
 
 When a map loads, `Game.load_hud()` and `Game.load_card_hand()` reparent those
 exact instances to `Game/HUDLayer`. Root anchors, offsets, position, scale, and

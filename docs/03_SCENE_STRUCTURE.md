@@ -144,11 +144,12 @@ Current map identity：
 | Canonical content | Authoritative editor/runtime |
 |---|---|
 | `res://scenes/maps/town.tscn` | `res://scenes/maps/town/TownMap.tscn` |
+| `res://scenes/maps/autumn_safe_zone.tscn` | `res://scenes/maps/autumn_safe/AutumnSafeZoneMap.tscn` |
 | `res://scenes/maps/autumn_forest.tscn` | `res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn` |
 | `res://scenes/maps/crystal_caves.tscn` | `res://scenes/maps/layouts/CrystalCavesLayout.tscn` |
 | `res://scenes/maps/forbidden_graveyard.tscn` | `res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn` |
 
-Canonical scene包含世界content；authoritative scene instance/inherit它，並加入
+Canonical scene是穩定 compatibility entry；authoritative scene擁有可編輯世界、
 per-map editor HUD reference與helper。runtime透過
 `Game._resolve_main_scene_path()`使用authoritative path。
 
@@ -209,28 +210,37 @@ Town 入口沿用背景圖內建的大型藍色門作為唯一視覺，因此
 
 ### 5.3 Autumn required contract
 
-`res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn`：
+Autumn 有兩個 authoritative scenes：
 
 ```text
+AutumnSafeZoneMap
+├── Backdrop / Terrain / WorldCollision
+├── PlayerSpawn / BattleReturnSpawn / Player
+├── TownPortal / BattlePortal
+├── Campfire
+├── SeatedTrailMerchant
+├── EditorHUDReference
+└── EditorHelpers
+
 AutumnBattleMapV2
-├── Background / RearSilhouettes / Architecture
-├── Ground / Platforms / SetDressing
-├── PlayerSpawn
-├── Player
+├── GeneratedBackdrop
+├── GeneratedRoute
+│   └── RouteChunk00..23
+├── GameplayZones
+├── PlayerSpawn / ForestShortcutSpawn / Player
 ├── AutumnRunDirector
-├── HiddenBranchCache
-├── ForestRest
-├── ShortcutLever
-├── WorldCollision
-├── TownPortal
-├── ForwardPortal
-├── WanderingCardMerchant
+├── HiddenBranchCache / WanderingCardMerchant / ShortcutLever
+├── WestSafePortal / EastSafePortal
+├── WorldBounds
 ├── EditorHUDReference
 └── EditorHelpers
 ```
 
-`ForestScout`雖以Scout命名，實際instance是`AutumnEnemy`，domain判斷以Scene/script
-為準，不以display name推測NPC功能。
+`AutumnRouteChunk` 的 440px floor collision 在接縫保留 2px overlap。平台只可使用
+one-way collision；樹、柵欄、岩石等 dressing 不得阻擋主路。新增變體需同步
+`autumn_modular_route_test.gd` 的 manifest／determinism／continuous-floor contract。
+固定 Run interactives 的 body collision layer 必須為 0，只保留 InteractionArea。
+安全區使用不含 CardHand 的專用 editor HUD reference。
 
 ### 5.4 Required map metadata
 
@@ -315,6 +325,7 @@ Current helper scenes：
 - `scenes/maps/town/editor/TownEternalForgeEditorHUDReference.tscn`
 - `scenes/maps/autumn_battle/editor/AutumnBattleMapV2EditorHelpers.tscn`
 - `scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn`
+- `scenes/maps/autumn_safe/editor/AutumnSafeZoneEditorHelpers.tscn`
 - `scenes/ui/hud/editor/SharedEditorHUDReference.tscn`
 
 Helper script必須：

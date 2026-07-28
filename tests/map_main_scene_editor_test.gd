@@ -17,20 +17,29 @@ const MAIN_SCENES := [
 		],
 	},
 	{
+		"path": "res://scenes/maps/autumn_safe/AutumnSafeZoneMap.tscn",
+		"root": "AutumnSafeZoneMap",
+		"required": [
+			"Backdrop",
+			"Terrain",
+			"Campfire",
+			"SeatedTrailMerchant",
+			"TownPortal",
+			"BattlePortal",
+			"WorldCollision",
+			"PlayerSpawn",
+		],
+	},
+	{
 		"path": "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn",
 		"root": "AutumnBattleMapV2",
 		"required": [
-			"Background",
-			"Ground",
-			"Ground/Platforms",
-			"SetDressing",
+			"GeneratedBackdrop",
+			"GeneratedRoute",
 			"AutumnRunDirector",
-			"HiddenBranchCache",
-			"ForestRest",
-			"ShortcutLever",
-			"TownPortal",
-			"ForwardPortal",
-			"WorldCollision",
+			"WestSafePortal",
+			"EastSafePortal",
+			"WorldBounds",
 			"PlayerSpawn",
 		],
 	},
@@ -63,18 +72,23 @@ func _run() -> void:
 		_expect(helpers != null, "%s must contain EditorHelpers." % scene_path)
 		_expect(helpers != null and not helpers.visible, "EditorHelpers must hide outside the editor.")
 		_expect(map.has_node("EditorHUDReference/HUD"), "%s must preview the real HUD." % scene_path)
+		var is_safe_zone := scene_path.ends_with("AutumnSafeZoneMap.tscn")
 		var card_hand_path := (
 			"EditorHUDReference/HUD/BottomStage/CardStage/AutumnCardHandUI"
 			if scene_path.ends_with("AutumnBattleMapV2.tscn")
 			else "EditorHUDReference/CardHandUI"
 		)
-		_expect(map.has_node(card_hand_path), "%s must preview the real card hand." % scene_path)
+		if not is_safe_zone:
+			_expect(map.has_node(card_hand_path), "%s must preview the real card hand." % scene_path)
 		_expect(map.find_children("HUD", "Control", true, false).size() == 1, "%s must contain one HUD preview." % scene_path)
 		var card_hands: Array[Node] = []
 		for control in map.find_children("*", "Control", true, false):
 			if control is CardHandUI:
 				card_hands.append(control)
-		_expect(card_hands.size() == 1, "%s must contain one card hand preview." % scene_path)
+		_expect(
+			card_hands.size() == (0 if is_safe_zone else 1),
+			"%s must contain the expected card hand authority count." % scene_path
+		)
 		map.queue_free()
 		await process_frame
 
@@ -92,8 +106,13 @@ func _run() -> void:
 		"Canonical Town portal path must resolve to TownMap.tscn."
 	)
 	_expect(
-		String(game.call("_resolve_main_scene_path", "res://scenes/maps/autumn_forest.tscn"))
+		String(game.call("_resolve_main_scene_path", "res://scenes/maps/autumn_safe_zone.tscn"))
 		== String(MAIN_SCENES[1]["path"]),
+		"Canonical Autumn safe-zone path must resolve to AutumnSafeZoneMap.tscn."
+	)
+	_expect(
+		String(game.call("_resolve_main_scene_path", "res://scenes/maps/autumn_forest.tscn"))
+		== String(MAIN_SCENES[2]["path"]),
 		"Canonical Autumn portal path must resolve to AutumnBattleMapV2.tscn."
 	)
 	game.queue_free()

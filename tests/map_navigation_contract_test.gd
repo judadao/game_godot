@@ -1,9 +1,24 @@
 extends SceneTree
 
 const MAP_SCENES := [
-	"res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn",
-	"res://scenes/maps/crystal_caves.tscn",
-	"res://scenes/maps/forbidden_graveyard.tscn",
+	{
+		"path": "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn",
+		"portal": "WestSafePortal",
+		"target": "res://scenes/maps/autumn_safe_zone.tscn",
+		"right_wall": "WorldBounds/RightWall",
+	},
+	{
+		"path": "res://scenes/maps/crystal_caves.tscn",
+		"portal": "TownPortal",
+		"target": "res://scenes/maps/town.tscn",
+		"right_wall": "WorldCollision/RightWall",
+	},
+	{
+		"path": "res://scenes/maps/forbidden_graveyard.tscn",
+		"portal": "TownPortal",
+		"target": "res://scenes/maps/town.tscn",
+		"right_wall": "WorldCollision/RightWall",
+	},
 ]
 
 var _failures := 0
@@ -14,7 +29,8 @@ func _init() -> void:
 
 
 func _run() -> void:
-	for scene_path in MAP_SCENES:
+	for spec in MAP_SCENES:
+		var scene_path := String(spec["path"])
 		var packed := load(scene_path) as PackedScene
 		_expect(packed != null, "%s must load." % scene_path)
 		if packed == null:
@@ -29,21 +45,22 @@ func _run() -> void:
 		_expect(map_width >= 2600, "%s must expose its full map width." % scene_path)
 		_expect(camera_right >= map_width, "%s camera must reach the map's right edge." % scene_path)
 		_expect(map.has_node("PlayerSpawn"), "%s must have PlayerSpawn." % scene_path)
-		_expect(map.has_node("TownPortal"), "%s must have a return portal." % scene_path)
+		var portal_path := String(spec["portal"])
+		_expect(map.has_node(portal_path), "%s must have a return portal." % scene_path)
 
-		var portal := map.get_node_or_null("TownPortal")
+		var portal := map.get_node_or_null(portal_path)
 		if portal != null:
 			_expect(portal.is_visible_in_tree(), "%s return portal must be visible." % scene_path)
 			_expect(
-				String(portal.get("target_scene_path")) == "res://scenes/maps/town.tscn",
-				"%s return portal must target town." % scene_path
+				String(portal.get("target_scene_path")) == String(spec["target"]),
+				"%s return portal must target its owning safe destination." % scene_path
 			)
 			_expect(
 				(portal as Node2D).position.x < float(camera_right),
 				"%s return portal must be inside the reachable camera range." % scene_path
 			)
 
-		var right_wall := map.get_node_or_null("WorldCollision/RightWall") as CollisionShape2D
+		var right_wall := map.get_node_or_null(String(spec["right_wall"])) as CollisionShape2D
 		_expect(right_wall != null, "%s must have a right boundary." % scene_path)
 		if right_wall != null:
 			_expect(

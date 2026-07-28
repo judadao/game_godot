@@ -18,6 +18,7 @@ signal elite_defeated(world_position: Vector2)
 @export var engage_radius := 650.0
 @export var leash_radius := 760.0
 @export var disengage_duration := 5.0
+@export var route_wide_encounter := false
 
 var _active_enemies: Array[Node] = []
 var _wave_index := -1
@@ -101,7 +102,11 @@ func get_disengage_remaining() -> float:
 func update_engagement(player_position: Vector2, delta: float) -> void:
 	if not _running or _active_enemies.is_empty():
 		return
-	var distance := global_position.distance_to(player_position)
+	var distance := (
+		_nearest_enemy_distance(player_position)
+		if route_wide_encounter
+		else global_position.distance_to(player_position)
+	)
 	if not _engaged:
 		if distance <= engage_radius:
 			_engaged = true
@@ -120,6 +125,14 @@ func update_engagement(player_position: Vector2, delta: float) -> void:
 	disengage_warning.emit(maxi(1, int(ceil(_disengage_remaining))))
 	if _disengage_remaining <= 0.0:
 		_reset_active_wave()
+
+
+func _nearest_enemy_distance(player_position: Vector2) -> float:
+	var nearest := INF
+	for enemy in _active_enemies:
+		if enemy is Node2D and is_instance_valid(enemy):
+			nearest = minf(nearest, (enemy as Node2D).global_position.distance_to(player_position))
+	return nearest
 
 
 func _spawn_next_wave() -> void:

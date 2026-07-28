@@ -19,26 +19,32 @@ func _run() -> void:
 	var enemy := (zone.get_active_enemies() as Array)[0] as Node
 	_expect(player.is_in_group("Player"), "Player must be discoverable by combat AI.")
 	_expect((zone.get_active_enemies() as Array).size() >= 3, "Survival battle must open with an initial enemy group and continue replenishing it.")
-	var floor_collision := map.get_node("WorldCollision/FloorCollision") as CollisionShape2D
-	var event_ledge := map.get_node("WorldCollision/EventLookoutCollision") as CollisionShape2D
-	var arena_west := map.get_node("WorldCollision/ArenaWestCollision") as CollisionShape2D
-	var arena_bridge := map.get_node("WorldCollision/ArenaCenterBridgeCollision") as CollisionShape2D
-	var arena_east := map.get_node("WorldCollision/ArenaEastCollision") as CollisionShape2D
-	var merchant_ledge := map.get_node("WorldCollision/MerchantAwningCollision") as CollisionShape2D
-	var floor_top := _shape_top(floor_collision)
-	var event_top := _shape_top(event_ledge)
-	var arena_west_top := _shape_top(arena_west)
-	var arena_bridge_top := _shape_top(arena_bridge)
-	var arena_east_top := _shape_top(arena_east)
-	var merchant_top := _shape_top(merchant_ledge)
-	var maximum_jump_height := pow(float(player.get("jump_velocity")), 2.0) / (2.0 * float(player.get("gravity")))
-	_expect(floor_top - event_top < maximum_jump_height, "Event lookout must be reachable from ground.")
-	_expect(floor_top - arena_west_top < maximum_jump_height, "Arena west platform must be reachable from ground.")
-	_expect(arena_west_top - arena_bridge_top < maximum_jump_height, "Arena bridge must be reachable from the west platform.")
-	_expect(floor_top - arena_east_top < maximum_jump_height, "Arena east platform must be reachable from ground.")
-	_expect(floor_top - merchant_top < maximum_jump_height, "Merchant platform must be reachable from ground.")
-	_expect(event_ledge.one_way_collision, "Event lookout must allow jumping through from below.")
-	_expect(arena_bridge.one_way_collision and merchant_ledge.one_way_collision, "Raised platforms must be one-way.")
+	var route := map.get_node("GeneratedRoute")
+	_expect(route.get_child_count() >= 24, "Combat route must instantiate all traversal chunks.")
+	var previous_floor_right := 0.0
+	var one_way_platform_count := 0
+	for chunk_index in route.get_child_count():
+		var chunk := route.get_child(chunk_index) as Node2D
+		var floor_collision := chunk.get_node("ContinuousFloorCollision/FloorShape") as CollisionShape2D
+		var floor_rectangle := floor_collision.shape as RectangleShape2D
+		var floor_left := chunk.position.x + floor_collision.position.x - floor_rectangle.size.x * 0.5
+		var floor_right := chunk.position.x + floor_collision.position.x + floor_rectangle.size.x * 0.5
+		_expect(
+			floor_left <= previous_floor_right + 1.0,
+			"Generated floor chunks must overlap instead of exposing a fall-through seam."
+		)
+		previous_floor_right = floor_right
+		for platform in chunk.get_node("OneWayPlatforms").get_children():
+			if not platform is StaticBody2D:
+				continue
+			var collision := platform.get_node("OneWayShape") as CollisionShape2D
+			one_way_platform_count += 1
+			_expect(collision.one_way_collision, "Every optional platform must allow jumping through from below.")
+			_expect(
+				collision.position.y < AutumnRouteChunk.FLOOR_Y,
+				"Optional platforms must remain above the continuous route."
+			)
+	_expect(one_way_platform_count > 0, "Generated combat route must include optional platform variety.")
 	_expect(map.get_node_or_null("Barriers") == null, "Forest must not contain invisible barrier bodies.")
 	_expect(map.get_node_or_null("Collectibles") == null, "Legacy floating collectible art must be removed.")
 
@@ -66,8 +72,3 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
-
-
-func _shape_top(collision: CollisionShape2D) -> float:
-	var rectangle := collision.shape as RectangleShape2D
-	return collision.position.y - rectangle.size.y * 0.5

@@ -41,7 +41,7 @@ func _run() -> void:
 	_expect(hub.get_node_or_null("BossPortal") == null, "Final boss portal must not exist before it is unlocked.")
 
 	var expected_targets := {
-		"AutumnPortal": "res://scenes/maps/autumn_forest.tscn",
+		"AutumnPortal": "res://scenes/maps/autumn_safe_zone.tscn",
 		"CrystalPortal": "res://scenes/maps/crystal_caves.tscn",
 		"GraveyardPortal": "res://scenes/maps/forbidden_graveyard.tscn",
 	}

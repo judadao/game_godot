@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 97 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 99 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -78,6 +78,7 @@ tools/run_godot_tests.sh --suite cards --fail-fast
 tools/run_godot_tests.sh --suite scene --strict-warnings
 tools/run_godot_tests.sh --pattern 'map_registry|quick_save'
 tools/run_godot_tests.sh --pattern 'town_building_ui_(contract|behavior|layout|lifecycle)'
+tools/run_godot_tests.sh --pattern 'autumn_(safe_zone_contract|modular_route)'
 ```
 
 ### 5.2 Full regression
@@ -156,6 +157,12 @@ AutumnHUD（含內嵌 CardHandUI）至少驗證以下視窗尺寸：
 - 2560×1080（較寬比例）
 
 自動測試應檢查安全區、地圖 viewport、卡牌操作區、焦點、遮擋與螢幕邊界。人工驗證則確認字體清楚、卡牌可讀、HUD 不阻擋玩法資訊，以及編輯器所見與執行結果一致。
+
+Autumn map 變更至少需執行 `autumn_safe_zone_contract_test.gd`、
+`autumn_modular_route_test.gd`、`battle_map_v2_scene_contract_test.gd`、
+`battle_map_v2_spatial_flow_test.gd` 與 `town_autumn_portal_flow_test.gd`。程序路線
+必須驗證同 seed 重現、不同 seed 變化、24 個以上 chunks、完整寬度覆蓋、連續地面
+及兩端 portal 都回安全區。
 
 Theme 修改需載入受影響 scene，確認 theme、theme variation、font、
 StyleBox 與所有互動狀態可解析；Town 功能建築與 Shop frame 共用

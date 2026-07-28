@@ -22,9 +22,10 @@ func _run() -> void:
 	var forest := (load("res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn") as PackedScene).instantiate()
 	root.add_child(forest)
 	await process_frame
-	_expect(forest.has_node("ForwardPortal"), "Battle stage must contain a boss-gated forward portal.")
-	if forest.has_node("ForwardPortal"):
-		_expect(bool(forest.get_node("ForwardPortal").get("locked")), "Forward portal must start locked.")
+	for portal_path in ["WestSafePortal", "EastSafePortal"]:
+		_expect(forest.has_node(portal_path), "Battle stage must contain %s." % portal_path)
+		if forest.has_node(portal_path):
+			_expect(not bool(forest.get_node(portal_path).get("locked")), "Safe-zone return portals must not trap the player.")
 	forest.queue_free()
 	portal.queue_free()
 	await process_frame

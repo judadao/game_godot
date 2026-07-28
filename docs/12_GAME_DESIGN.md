@@ -72,20 +72,21 @@
 ```text
 Town
   → 從建築地基開啟材料行、主角鐵匠鋪、村長家、劍魂商服務
-  → 進入 Autumn portal
+  → 進入 Autumn 安全區，在營火休息或向旅商購物
+  → 從安全區右側進入 Autumn battle portal
   → Deck Builder 選擇 1–16 張普通遠征牌與一個獨立 auto attack
   → 開始 Autumn Run
   → 四個限時生存階段
   → Guardian 階段
-  → Guardian 死亡，解鎖本次場景的 forward portal
-  → 經 portal 離開並結算
+  → Guardian 死亡
+  → 從戰鬥區任一端 portal 返回安全區並結算
   → Run Result
   → 回到 Town／進入下一個 layout
 ```
 
 ### 2.2 Run 的開始
 
-進入 Town 的 Autumn portal 時：
+進入 Town/hub 的 Autumn portal 只載入安全區。與安全區右側 battle portal 互動時：
 
 1. 先開啟 Deck Builder；
 2. 技能配置正規化為剛好一張 Healing 與三張不重複 Combo；
@@ -101,11 +102,11 @@ Town
 
 | 情況 | Runtime 行為 |
 |---|---|
-| Guardian 後進入 forward portal | 以勝利結束 Run，顯示結果並套用獎勵 |
-| Run 進行中返回 Town | 以非勝利結束，保留已記錄的 Run 獎勵 |
+| Guardian 後由任一端返回安全區 | 以勝利結束 Run並套用獎勵 |
+| Guardian 前由任一端返回安全區 | 以非勝利撤退，保留已記錄的 Run 獎勵 |
 | 玩家生命歸零 | 短暫延遲後以非勝利結束並返回 Town |
 
-Guardian 死亡本身不是最終結算點；目前成功是在玩家使用 forward portal 時完成。
+Guardian 死亡本身不是最終結算點；玩家回到安全區時才完成結算。
 
 ## 3. 世界、地圖與導航
 
@@ -115,6 +116,7 @@ Guardian 死亡本身不是最終結算點；目前成功是在玩家使用 forw
 |---|---|---|
 | Game entry | `res://scenes/game/game.tscn` | 已實作 |
 | Town | `res://scenes/maps/town/TownMap.tscn` | Hub gameplay |
+| Autumn Safe Zone | `res://scenes/maps/autumn_safe/AutumnSafeZoneMap.tscn` | 營火、旅商與出入口 |
 | Autumn | `res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn` | 完整 survival vertical slice |
 | Crystal Caves | `res://scenes/maps/layouts/CrystalCavesLayout.tscn` | Layout only |
 | Forbidden Graveyard | `res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn` | Layout only |
@@ -138,14 +140,15 @@ Town 可直接進入 Crystal Caves 與 Forbidden Graveyard，因此 Autumn Guard
 
 Autumn 場景包含：
 
-- `AutumnRunDirector`；
-- `HiddenBranchCache`；
-- `ForestRest`；
-- `ShortcutLever`；
-- `WanderingCardMerchant`；
-- Town return portal；
-- 初始 locked 的 forward portal；
-- Player、一般敵人、Guardian 與戰鬥區域。
+- 1,800px 安全區，左側回 Town、右側進戰鬥；
+- 安全區營火與不阻擋路線的兜帽旅商；
+- 10,560px 戰鬥區，由 24 個 440px chunks 組合；
+- 每次進入依 seed 改變 optional one-way platforms 與 dressing；
+- 可重複延伸的 panorama／rear-tree 背景；
+- 戰鬥區兩端皆可回安全區；
+- 戰鬥區保留 hidden cache、Run 金幣 wandering merchant 與 shortcut lever，
+  三者皆不阻擋主路；
+- `AutumnRunDirector`、一般敵人與 Guardian。
 
 ### 3.4 後續區域邊界
 
@@ -192,7 +195,9 @@ Player 根節點為 `CharacterBody2D`，已實作：
 
 ### 4.3 Encounter leash
 
-Autumn encounter 的預設 engage radius 為 650，leash radius 為 760。玩家離開外圈後開始五秒警告：
+Autumn encounter 的 engage radius 為 720，leash radius 為 980。長路線以最近存活
+enemy 計算 engagement，敵人則在玩家前後 340–650px、且不超出 route bounds 的位置
+生成。玩家離開外圈後開始六秒警告：
 
 - 在倒數結束前返回會取消重置；
 - 倒數結束時，存活敵人恢復生命、位置與狀態；
@@ -581,6 +586,7 @@ Wandering merchant 使用本次 Run 的 `gold_earned`，不是 Town persistent g
 | Purge one removable card | 45 run gold |
 
 Stock 存在 `RunState.temporary_buffs` 中，只對本次 Run 有效。
+Wandering merchant 位於程序戰鬥路線中段，body 不參與地形碰撞。
 
 ### 10.3 Hidden cache
 
@@ -593,7 +599,9 @@ Stock 存在 `RunState.temporary_buffs` 中，只對本次 Run 有效。
 
 ### 10.4 Shortcut
 
-`ShortcutLever` 寫入永久 `forest_gate` flag。之後進入 Autumn 時，既有程式可把玩家放在約 `Vector2(1580, 576)` 的 shortcut spawn。
+已解鎖的既有 `forest_gate` 相容旗標會使用 battle route 的
+`ForestShortcutSpawn`，目前位於 route 尾段附近。ShortcutLever 保留為非阻擋
+互動物件，供新玩家取得該永久旗標。
 
 ## 11. Run 結算、Meta Progression 與存檔
 
@@ -705,13 +713,12 @@ Game (Node)                         scenes/game/game.tscn
 │   └── AutumnBattleMapV2 (Node2D)  runtime instance
 │       ├── PlayerSpawn (Marker2D)
 │       ├── Player (CharacterBody2D)
+│       ├── GeneratedBackdrop (Node2D)
+│       ├── GeneratedRoute (Node2D)
+│       │   └── RouteChunk00..23
 │       ├── AutumnRunDirector (Node2D)
-│       ├── HiddenBranchCache
-│       ├── ForestRest
-│       ├── ShortcutLever
-│       ├── TownPortal
-│       ├── ForwardPortal
-│       └── WanderingCardMerchant
+│       ├── WestSafePortal
+│       └── EastSafePortal
 ├── HUDLayer (CanvasLayer)
 │   └── HUD (AutumnHUD)
 │       └── AutumnCardHandUI (Control)

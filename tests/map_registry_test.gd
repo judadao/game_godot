@@ -8,6 +8,10 @@ const MAP_CASES: Array[Dictionary] = [
 		"authoritative": "res://scenes/maps/town/TownMap.tscn",
 	},
 	{
+		"canonical": "res://scenes/maps/autumn_safe_zone.tscn",
+		"authoritative": "res://scenes/maps/autumn_safe/AutumnSafeZoneMap.tscn",
+	},
+	{
 		"canonical": "res://scenes/maps/autumn_forest.tscn",
 		"authoritative": "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn",
 	},

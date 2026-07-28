@@ -14,6 +14,7 @@ const CARD_COLLECTION_SERVICE_SCRIPT := preload(
 	"res://scripts/systems/card_collection_service.gd"
 )
 const TOWN_SCENE_PATH := MAP_REGISTRY_SCRIPT.TOWN_SCENE_PATH
+const AUTUMN_SAFE_ZONE_SCENE_PATH := MAP_REGISTRY_SCRIPT.AUTUMN_SAFE_ZONE_SCENE_PATH
 const AUTUMN_FOREST_SCENE_PATH := MAP_REGISTRY_SCRIPT.AUTUMN_FOREST_SCENE_PATH
 const CRYSTAL_CAVES_SCENE_PATH := MAP_REGISTRY_SCRIPT.CRYSTAL_CAVES_SCENE_PATH
 const FORBIDDEN_GRAVEYARD_SCENE_PATH := MAP_REGISTRY_SCRIPT.FORBIDDEN_GRAVEYARD_SCENE_PATH
@@ -377,6 +378,9 @@ func load_card_hand() -> void:
 			card_hand_ui.queue_free()
 		card_hand_ui = null
 
+	if _current_map_matches(AUTUMN_SAFE_ZONE_SCENE_PATH):
+		return
+
 	var hand_instance: Node = current_map.get_node_or_null("EditorHUDReference/CardHandUI") if current_map != null else null
 	if hand_instance == null and hud != null:
 		hand_instance = hud.get_node_or_null("BottomStage/CardStage/AutumnCardHandUI")
@@ -407,6 +411,7 @@ func _update_hud_area_name() -> void:
 
 	var area_names := {
 		TOWN_SCENE_PATH: "Town",
+		AUTUMN_SAFE_ZONE_SCENE_PATH: "Autumn Wayfarer's Camp",
 		AUTUMN_FOREST_SCENE_PATH: "Autumn Forest",
 		CRYSTAL_CAVES_SCENE_PATH: "Crystal Caves",
 		FORBIDDEN_GRAVEYARD_SCENE_PATH: "Forbidden Graveyard",
@@ -750,11 +755,11 @@ func _on_boss_stage_completed() -> void:
 	meta_state.shortcuts["autumn_route_cleared"] = true
 	_discover_equipment_reward()
 	if current_map != null:
-		var forward_portal := current_map.get_node_or_null("ForwardPortal")
-		if forward_portal != null and forward_portal.has_method("set_locked"):
-			forward_portal.call("set_locked", false, "")
+		var east_safe_portal := current_map.get_node_or_null("EastSafePortal")
+		if east_safe_portal != null and east_safe_portal.has_method("set_locked"):
+			east_safe_portal.call("set_locked", false, "")
 	if hud != null and hud.has_method("set_objective"):
-		hud.call("set_objective", "BOSS DEFEATED — ROUTE OPEN", "The forward portal now leads to the next region.")
+		hud.call("set_objective", "BOSS DEFEATED — EXPEDITION COMPLETE", "Either gate returns to the autumn camp.")
 
 
 func _on_experience_gem_spawned(gem: Node, _value: int) -> void:
@@ -3786,6 +3791,14 @@ func _on_portal_entered(_portal: Node, target_scene_path: String, target_spawn_n
 	if canonical_target == AUTUMN_FOREST_SCENE_PATH:
 		_open_deck_builder(canonical_target, target_spawn_name)
 		return
+	elif canonical_target == AUTUMN_SAFE_ZONE_SCENE_PATH and run_state.active:
+		var victory := run_state.boss_defeated
+		var summary := _finish_run(victory)
+		_pending_player_state.clear()
+		player = null
+		load_current_map(load(resolved_target) as PackedScene, target_spawn_name)
+		_show_run_result(victory, summary)
+		return
 	elif canonical_target == TOWN_SCENE_PATH and run_state.active:
 		_finish_run(false)
 		_pending_player_state.clear()
@@ -3978,11 +3991,14 @@ func _on_campfire_choice(_index: int, _text: String, metadata: Dictionary, ui_co
 
 
 func _rest_at_campfire() -> bool:
-	if not run_state.active or bool(run_state.temporary_buffs.get("campfire_used", false)) or player == null:
+	if player == null:
+		return false
+	if run_state.active and bool(run_state.temporary_buffs.get("campfire_used", false)):
 		return false
 	player.call("restore_health", int(player.get("max_health")))
 	player.call("restore_mana", int(player.get("max_mana")))
-	run_state.temporary_buffs["campfire_used"] = true
+	if run_state.active:
+		run_state.temporary_buffs["campfire_used"] = true
 	return true
 
 

@@ -19,12 +19,13 @@ func _run() -> void:
 	await process_frame
 
 	var map: Node = game.get_current_map()
-	var target := map.get_node_or_null("HiddenBranchCache") as CanvasItem
+	var target := map.get_node_or_null("WestSafePortal") as CanvasItem
 	_expect(target != null, "Autumn V2 must expose a real interactive target.")
 	if target == null:
 		game.queue_free()
 		quit(1)
 		return
+	(target as Node2D).position.x = 650.0
 	game.call("_on_interaction_available", target, game.get_player())
 	await process_frame
 	await process_frame
@@ -34,7 +35,7 @@ func _run() -> void:
 	_expect(prompt_label != null, "Autumn interaction prompt label must exist.")
 	_expect(prompt_panel != null and prompt_panel.visible, "Autumn interaction prompt must become visible.")
 	if prompt_label != null:
-		_expect(prompt_label.text == "Open hidden cache", "Prompt must show the interactive action.")
+		_expect(prompt_label.text == "Return to Autumn Camp", "Prompt must show the interactive action.")
 		_expect(
 			prompt_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER,
 			"Interaction prompt text must remain centered."

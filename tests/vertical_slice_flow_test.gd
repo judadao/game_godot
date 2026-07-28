@@ -100,13 +100,23 @@ func _run() -> void:
 		int((game.get("meta_state") as MetaState).resources.get("autumn_core", 0)) >= 1,
 		"Boss victory must award an Autumn Core."
 	)
-	var forward_portal: Node = game.get("current_map").get_node("ForwardPortal")
-	_expect(not bool(forward_portal.get("locked")), "Boss victory must unlock the forward route.")
-	game.call("_on_portal_entered", forward_portal, "res://scenes/maps/crystal_caves.tscn", &"PlayerSpawn", game.get("player"))
+	var east_portal: Node = game.get("current_map").get_node("EastSafePortal")
+	_expect(not bool(east_portal.get("locked")), "Boss victory must preserve the east return route.")
+	game.call("_on_portal_entered", east_portal, "res://scenes/maps/autumn_safe_zone.tscn", &"BattleReturnSpawn", game.get("player"))
 	await process_frame
 	_expect(
-		game.get("current_map").scene_file_path == "res://scenes/maps/layouts/CrystalCavesLayout.tscn",
-		"Boss victory must enter the authoritative Crystal Caves layout."
+		game.get("current_map").scene_file_path == "res://scenes/maps/autumn_safe/AutumnSafeZoneMap.tscn",
+		"Boss victory must return to the authoritative Autumn safe zone."
+	)
+	_expect(not (game.get("run_state") as RunState).active, "Returning to camp after victory must settle the run.")
+	var result_ui := game.call("get_open_ui", "RunResultUI") as Control
+	_expect(result_ui != null, "Returning to camp must present the settled Run Result.")
+	if result_ui != null:
+		result_ui.emit_signal("return_to_town_requested")
+	await process_frame
+	_expect(
+		game.get("current_map").scene_file_path == "res://scenes/maps/town/TownMap.tscn",
+		"Safe-zone Town portal must return to the authoritative Town map."
 	)
 
 	var town := game.get("town_manager") as RefCounted

@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/merchant.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_safe_zone/generated/hooded_trail_merchant.png" id="2_merchant"]
+
+[sub_resource type="RectangleShape2D" id="InteractionShape"]
+size = Vector2(270, 180)
+
+[node name="SeatedTrailMerchant" type="StaticBody2D" groups=["NPCs", "Merchants", "Interactives"]]
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("1_script")
+interaction_id = &"autumn_trail_merchant"
+prompt_text = "Browse trail supplies"
+display_name = "Hearthside Wayfarer"
+dialogue_id = &"item_merchant_greeting"
+shop_id = &"general_store"
+
+[node name="Visual" type="Sprite2D" parent="."]
+position = Vector2(0, -108)
+scale = Vector2(0.54, 0.54)
+texture_filter = 1
+texture = ExtResource("2_merchant")
+
+[node name="InteractionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+position = Vector2(0, -82)
+shape = SubResource("InteractionShape")
+debug_color = Color(0.3, 0.75, 1, 0.25)

@@ -13,11 +13,16 @@ signal experience_gem_spawned(gem: Node, value: int)
 	{"duration": -1.0, "spawn_interval": 0.72, "spawn_batch": 3, "alive_cap": 30, "pool": [&"moth_swarm", &"thornling", &"charger", &"grove_shaman"]},
 ]
 @export var experience_gem_scene: PackedScene = preload("res://scenes/combat/ExperienceGem.tscn")
+@export var spawn_around_player := false
+@export var spawn_route_left := 0.0
+@export var spawn_route_right := 0.0
+@export var spawn_floor_y := 470.0
 
 var _phase_remaining := 0.0
 var _spawn_remaining := 0.0
 var _guardian_spawn_count := 0
 var _exit_unlocked := false
+var _rng := RandomNumberGenerator.new()
 
 
 func _process(delta: float) -> void:
@@ -35,6 +40,7 @@ func start_encounter() -> bool:
 	_gold = 0
 	_guardian_spawn_count = 0
 	_exit_unlocked = false
+	_rng.seed = int(Time.get_ticks_usec() ^ get_instance_id())
 	_begin_phase()
 	encounter_started.emit(survival_phases.size())
 	return true
@@ -95,7 +101,7 @@ func _spawn_until_cap(maximum_new: int) -> void:
 		var pool := survival_phases[_wave_index].get("pool", []) as Array
 		if pool.is_empty():
 			return
-		_spawn_survival_enemy(StringName(pool[randi() % pool.size()]), false)
+		_spawn_survival_enemy(StringName(pool[_rng.randi_range(0, pool.size() - 1)]), false)
 
 
 func _spawn_guardian() -> void:
@@ -117,10 +123,28 @@ func _spawn_survival_enemy(archetype_id: StringName, is_guardian: bool) -> void:
 		var side := -1.0 if (slot % 2 == 0) else 1.0
 		var rank := floori(float(slot) / 10.0) % 3
 		var lane := (slot % 5) - 2
-		(enemy as Node2D).position = Vector2(
+		var local_spawn := Vector2(
 			side * (190.0 + 92.0 * float(rank)),
 			-18.0 * float(abs(lane))
 		)
+		if spawn_around_player:
+			var player := get_tree().get_first_node_in_group("Player") as Node2D
+			var anchor_x := player.global_position.x if player != null else global_position.x
+			var can_spawn_left := anchor_x - 340.0 >= spawn_route_left
+			var can_spawn_right := anchor_x + 340.0 <= spawn_route_right
+			if can_spawn_left != can_spawn_right:
+				side = -1.0 if can_spawn_left else 1.0
+			var distance := _rng.randf_range(340.0, 650.0)
+			var global_spawn := Vector2(
+				clampf(
+					anchor_x + side * distance,
+					spawn_route_left,
+					spawn_route_right
+				),
+				spawn_floor_y - 18.0 * float(abs(lane))
+			)
+			local_spawn = to_local(global_spawn)
+		(enemy as Node2D).position = local_spawn
 		_spawn_positions[enemy.get_instance_id()] = (enemy as Node2D).position
 	if not is_guardian and enemy.has_method("configure_archetype"):
 		enemy.call("configure_archetype", archetype_id)
