@@ -4,7 +4,6 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/shop/ShopItemRow.tscn" id="9_shop_item_row"]
 [ext_resource type="PackedScene" path="res://scenes/ui/shop/ShopDetailPanel.tscn" id="10_shop_detail"]
 [ext_resource type="PackedScene" path="res://scenes/ui/shop/ShopMerchantPanel.tscn" id="11_shop_merchant"]
-[ext_resource type="Texture2D" uid="uid://v0oej3ymqm6g" path="res://assets/ui/shop/generated/shop_sign.png" id="12_shop_sign"]
 [ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon67_1.png" id="13_buy"]
 [ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon50_1.png" id="14_sell"]
 [ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon64_1.png" id="15_coin"]
@@ -143,12 +142,9 @@ theme_override_constants/margin_bottom = 14
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="TextureRect" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=2094390937]
-custom_minimum_size = Vector2(0, 58)
+[node name="Title" type="Control" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=2094390937]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-texture = ExtResource("12_shop_sign")
-expand_mode = 1
-stretch_mode = 5
 
 [node name="TitleText" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title" unique_id=898097820]
 layout_mode = 1
@@ -158,10 +154,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 24
 text = "TRADE COUNTER"
 horizontal_alignment = 1
 vertical_alignment = 1
+text_overrun_behavior = 3
+tooltip_text = "Current merchant service"
 
 [node name="ModeBar" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=1382795265]
 layout_mode = 2

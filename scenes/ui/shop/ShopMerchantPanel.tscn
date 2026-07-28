@@ -58,7 +58,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_portrait")
 layout_mode = 2
 texture = ExtResource("1_merchant")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
 
 [node name="DialoguePanel" type="PanelContainer" parent="."]
 custom_minimum_size = Vector2(0, 102)
