@@ -48,8 +48,8 @@ func collect() -> void:
 	if _collected:
 		return
 	_collected = true
-	monitoring = false
-	monitorable = false
+	set_deferred("monitoring", false)
+	set_deferred("monitorable", false)
 	collected.emit(_value)
 	queue_free()
 

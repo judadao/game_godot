@@ -103,6 +103,10 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 	)
 	var variant_ids: Dictionary = {}
 	var expected_left := 0.0
+	var flat_chunks := 0
+	var consecutive_raised := 0
+	var maximum_consecutive_raised := 0
+	var has_high_route := false
 	for entry_variant in manifest:
 		_expect(entry_variant is Dictionary, "Every route manifest entry must be structured.")
 		if not entry_variant is Dictionary:
@@ -120,7 +124,17 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 			"Every module must preserve a continuous ground route."
 		)
 		expected_left = right
-		variant_ids[String(entry.get("variant", ""))] = true
+		var variant_id := String(entry.get("variant", ""))
+		variant_ids[variant_id] = true
+		var platform_count := int(entry.get("platform_count", -1))
+		if platform_count == 0:
+			flat_chunks += 1
+			consecutive_raised = 0
+		else:
+			consecutive_raised += 1
+			maximum_consecutive_raised = maxi(maximum_consecutive_raised, consecutive_raised)
+		if float(entry.get("minimum_platform_y", 999.0)) <= 300.0:
+			has_high_route = true
 	_expect(
 		is_equal_approx(expected_left, float(map_width)),
 		"Route manifest must cover the complete battle width."
@@ -129,6 +143,12 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 		variant_ids.size() >= MINIMUM_VARIANTS,
 		"Generated route must use at least %d distinct module variants." % MINIMUM_VARIANTS
 	)
+	_expect(flat_chunks >= 6, "Generated route must include breathing-room chunks between platform clusters.")
+	_expect(
+		maximum_consecutive_raised <= 1,
+		"Generated route must not form a repetitive wall of raised platforms."
+	)
+	_expect(has_high_route, "Generated route must include at least one reachable upper-canopy sequence.")
 
 
 func _assert_route_wide_spawning(map: Node) -> void:

@@ -496,6 +496,8 @@ service；修改 mappings或處理順序時須用實際 run驗證。
   distance 以最近存活 enemy 計算，不以 director 原點計算。
 - 端點附近若單側沒有至少 340px 淨空，spawn 必須改用另一側，不得 clamp 到 Player
   身上。`GeneratedRoute.route_seed` 可供 remote inspector 取得以重現地圖。
+- 程序平台段與 flat breathing-room chunk 必須交錯；Player 按 ↓ 時只可穿越
+  `one_way_collision` 平台，不得穿越 continuous floor。
 - director runtime-spawn enemy/guardian/experience gem。
 - `Enemies`、`EncounterDirectors` groups用於 target與wiring。
 - card effect透過 capability methods，例如 `take_hit()`、`add_block()`、

@@ -241,6 +241,7 @@ one-way collision；樹、柵欄、岩石等 dressing 不得阻擋主路。新�
 `autumn_modular_route_test.gd` 的 manifest／determinism／continuous-floor contract。
 固定 Run interactives 的 body collision layer 必須為 0，只保留 InteractionArea。
 安全區使用不含 CardHand 的專用 editor HUD reference。
+Raised chunks 不得相鄰；`upper_canopy` 以不超過 70px 的垂直階差提供可抵達高層。
 
 ### 5.4 Required map metadata
 

@@ -150,6 +150,9 @@ Autumn 場景包含：
   三者皆不阻擋主路；
 - `AutumnRunDirector`、一般敵人與 Guardian。
 
+程序平台群之間至少保留一個完整平地 chunk。樹冠路線以逐階可跳高度延伸到上方；
+站在單向平台時按 ↓ 可向下穿越，continuous floor 永遠不可穿越。
+
 ### 3.4 後續區域邊界
 
 Crystal Caves 與 Forbidden Graveyard 目前只有可走動 layout、portal、碰撞與裝飾物件。不得在遊戲設計、release note 或 review 中將它們描述為已有完整戰鬥、Boss 或獎勵循環。

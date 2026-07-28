@@ -7,9 +7,11 @@ signal dash_performed(start_position: Vector2, end_position: Vector2)
 
 const ACTION_MOVE_LEFT: StringName = &"move_left"
 const ACTION_MOVE_RIGHT: StringName = &"move_right"
+const ACTION_MOVE_DOWN: StringName = &"move_down"
 const ACTION_JUMP: StringName = &"jump"
 const FALLBACK_MOVE_LEFT: StringName = &"ui_left"
 const FALLBACK_MOVE_RIGHT: StringName = &"ui_right"
+const FALLBACK_MOVE_DOWN: StringName = &"ui_down"
 const STATE_IDLE: StringName = &"idle"
 const STATE_WALK: StringName = &"walk"
 const STATE_JUMP: StringName = &"jump"
@@ -27,6 +29,8 @@ const JUMP_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/leg
 @export var dash_evasion_seconds: float = 0.18
 @export var jump_evasion_seconds: float = 0.10
 @export var max_air_jumps: int = 0
+@export var platform_drop_speed := 180.0
+@export var platform_drop_clearance := 24.0
 @export var level: int = 1
 @export var character_class: String = "Adventurer"
 @export var experience: int = 0
@@ -78,7 +82,9 @@ func _physics_process(delta: float) -> void:
 
 	if is_on_floor():
 		_air_jumps_remaining = max_air_jumps
-		if _is_action_just_pressed(ACTION_JUMP):
+		if _is_action_just_pressed(ACTION_MOVE_DOWN, [FALLBACK_MOVE_DOWN]):
+			try_drop_through_platform()
+		elif _is_action_just_pressed(ACTION_JUMP):
 			_start_jump()
 	else:
 		velocity.y += gravity * delta
@@ -117,6 +123,30 @@ func set_input_enabled(is_enabled: bool) -> void:
 		return
 	velocity.x = 0.0
 	_update_state(0.0)
+
+
+func try_drop_through_platform() -> bool:
+	if not input_enabled or not is_on_floor() or not _is_standing_on_one_way_platform():
+		return false
+	global_position.y += platform_drop_clearance
+	velocity.y = maxf(velocity.y, platform_drop_speed)
+	return true
+
+
+func _is_standing_on_one_way_platform() -> bool:
+	for collision_index in get_slide_collision_count():
+		var collision := get_slide_collision(collision_index)
+		if collision.get_normal().dot(up_direction) < 0.7:
+			continue
+		var collider := collision.get_collider() as CollisionObject2D
+		if collider == null:
+			continue
+		var shape_index := collision.get_collider_shape_index()
+		var owner_id := collider.shape_find_owner(shape_index)
+		var shape_owner := collider.shape_owner_get_owner(owner_id) as CollisionShape2D
+		if shape_owner != null and shape_owner.one_way_collision:
+			return true
+	return false
 
 
 func set_facing_direction(direction: int) -> void:

@@ -62,6 +62,8 @@ children into the main scene.
 Runtime seed is available through `get_active_seed()` and `route_seed` metadata.
 Hidden cache, wandering card merchant, and shortcut lever remain fixed,
 nonblocking interaction landmarks over the generated route.
+Raised chunks alternate with flat breathing-room chunks. Upper-canopy steps use
+reachable vertical gaps; Down drops the Player through one-way platforms only.
 
 When a map loads, `Game.load_hud()` and `Game.load_card_hand()` reparent those
 exact instances to `Game/HUDLayer`. Root anchors, offsets, position, scale, and

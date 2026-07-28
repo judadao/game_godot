@@ -60,6 +60,7 @@ func _run() -> void:
 	_expect(cameras.size() == 1, "Safe zone must own exactly one Camera2D.")
 	_expect(directors.is_empty(), "Safe zone must not own a combat director.")
 	_expect(card_hands.is_empty(), "Safe zone must not create an unused CardHand UI authority.")
+	_expect(not map.has_node("Shelter"), "Safe-zone camp must not render an unrelated house behind the fire.")
 
 	var town_portal := map.get_node_or_null("TownPortal")
 	var battle_portal := map.get_node_or_null("BattlePortal")
@@ -71,10 +72,18 @@ func _run() -> void:
 			String(town_portal.get("target_scene_path")) == TOWN_CANONICAL_PATH,
 			"Safe zone TownPortal must return to Town."
 		)
+		_expect(
+			(town_portal as Node2D).position.x >= 140.0,
+			"Safe-zone Town portal must remain fully inside the left camera edge."
+		)
 	if battle_portal != null:
 		_expect(
 			String(battle_portal.get("target_scene_path")) == BATTLE_CANONICAL_PATH,
 			"Safe zone BattlePortal must enter the Autumn battle canonical route."
+		)
+		_expect(
+			(battle_portal as Node2D).position.x <= 1660.0,
+			"Safe-zone Battle portal must remain fully inside the right camera edge."
 		)
 	if town_portal is Node2D and battle_portal is Node2D and spawn != null and campfire != null:
 		_expect(

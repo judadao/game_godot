@@ -1,9 +1,8 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_forest_background.png" id="1_background"]
 [ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_ground_atlas.png" id="2_ground"]
 [ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_trees_atlas.png" id="3_trees"]
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_props_atlas.png" id="4_props"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="5_player"]
 [ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="6_portal"]
 [ext_resource type="PackedScene" path="res://scenes/maps/autumn_safe/components/SafeZoneCampfire.tscn" id="7_fire"]
@@ -22,10 +21,6 @@ region = Rect2(34, 122, 650, 632)
 [sub_resource type="AtlasTexture" id="MapleTexture"]
 atlas = ExtResource("3_trees")
 region = Rect2(700, 64, 260, 690)
-
-[sub_resource type="AtlasTexture" id="CabinTexture"]
-atlas = ExtResource("4_props")
-region = Rect2(48, 95, 505, 385)
 
 [sub_resource type="RectangleShape2D" id="FloorShape"]
 size = Vector2(1804, 90)
@@ -117,13 +112,6 @@ scale = Vector2(0.5, 0.5)
 texture_filter = 1
 texture = SubResource("GroundTexture")
 
-[node name="Shelter" type="Sprite2D" parent="."]
-position = Vector2(1035, 438)
-scale = Vector2(0.38, 0.38)
-texture_filter = 1
-texture = SubResource("CabinTexture")
-modulate = Color(0.72, 0.58, 0.46, 0.74)
-
 [node name="PlayerSpawn" type="Marker2D" parent="."]
 position = Vector2(310, 470)
 
@@ -135,7 +123,7 @@ position = Vector2(310, 470)
 z_index = 30
 
 [node name="TownPortal" parent="." instance=ExtResource("6_portal")]
-position = Vector2(82, 500)
+position = Vector2(150, 500)
 z_index = 22
 interaction_id = &"autumn_safe_town_return"
 prompt_text = "Return to Town"
@@ -154,7 +142,7 @@ position = Vector2(1225, 492)
 z_index = 25
 
 [node name="BattlePortal" parent="." instance=ExtResource("6_portal")]
-position = Vector2(1718, 500)
+position = Vector2(1650, 500)
 z_index = 22
 interaction_id = &"autumn_safe_battle_gate"
 prompt_text = "Enter Autumn Front"

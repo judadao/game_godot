@@ -24,34 +24,59 @@ const VARIANT_PLATFORMS := {
 	"gateway": [],
 	"flat": [],
 	"twin_ledges": [
-		{"position": Vector2(120, 406), "kind": "platform"},
-		{"position": Vector2(320, 366), "kind": "platform"},
+		{"position": Vector2(115, 412), "kind": "small"},
+		{"position": Vector2(330, 372), "kind": "small"},
 	],
 	"high_bridge": [
-		{"position": Vector2(220, 350), "kind": "bridge"},
+		{"position": Vector2(105, 418), "kind": "small"},
+		{"position": Vector2(305, 350), "kind": "bridge"},
 	],
 	"stepping_stones": [
-		{"position": Vector2(92, 418), "kind": "platform"},
-		{"position": Vector2(220, 378), "kind": "platform"},
-		{"position": Vector2(348, 418), "kind": "platform"},
+		{"position": Vector2(82, 420), "kind": "small"},
+		{"position": Vector2(220, 382), "kind": "small"},
+		{"position": Vector2(358, 420), "kind": "small"},
 	],
 	"canopy_walk": [
-		{"position": Vector2(150, 390), "kind": "bridge"},
-		{"position": Vector2(336, 342), "kind": "platform"},
+		{"position": Vector2(125, 408), "kind": "small"},
+		{"position": Vector2(320, 344), "kind": "bridge"},
 	],
 	"crossing": [
-		{"position": Vector2(105, 360), "kind": "platform"},
-		{"position": Vector2(335, 400), "kind": "platform"},
+		{"position": Vector2(105, 368), "kind": "small"},
+		{"position": Vector2(338, 412), "kind": "small"},
+	],
+	"upper_canopy": [
+		{"position": Vector2(78, 420), "kind": "small"},
+		{"position": Vector2(200, 350), "kind": "small"},
+		{"position": Vector2(322, 280), "kind": "small"},
+	],
+	"broken_crown": [
+		{"position": Vector2(92, 410), "kind": "small"},
+		{"position": Vector2(235, 342), "kind": "small"},
+		{"position": Vector2(370, 294), "kind": "small"},
 	],
 }
 
 var variant_id := "flat"
 var chunk_index := 0
+var _platform_specs: Array[Dictionary] = []
 
 
-func configure(next_variant_id: String, next_chunk_index: int) -> void:
+func configure(next_variant_id: String, next_chunk_index: int, layout_seed: int = 0) -> void:
 	variant_id = next_variant_id if VARIANT_PLATFORMS.has(next_variant_id) else "flat"
 	chunk_index = next_chunk_index
+	_platform_specs.clear()
+	for platform_spec in VARIANT_PLATFORMS[variant_id] as Array:
+		_platform_specs.append((platform_spec as Dictionary).duplicate(true))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = layout_seed
+	var mirror_layout := rng.randi_range(0, 1) == 1
+	for platform_spec in _platform_specs:
+		var platform_position := platform_spec["position"] as Vector2
+		if mirror_layout:
+			platform_position.x = CHUNK_WIDTH - platform_position.x
+		platform_position += Vector2(rng.randf_range(-16.0, 16.0), rng.randf_range(-7.0, 7.0))
+		platform_position.x = clampf(platform_position.x, 68.0, CHUNK_WIDTH - 68.0)
+		platform_spec["position"] = platform_position
 	set_meta("variant_id", variant_id)
 	set_meta("chunk_index", chunk_index)
 	set_meta("continuous_floor", true)
@@ -60,13 +85,24 @@ func configure(next_variant_id: String, next_chunk_index: int) -> void:
 
 func get_platform_signature() -> String:
 	var parts: Array[String] = []
-	for platform_spec in VARIANT_PLATFORMS[variant_id]:
+	for platform_spec in _platform_specs:
 		var position := platform_spec["position"] as Vector2
 		parts.append(
 			"%s:%d:%d"
 			% [String(platform_spec["kind"]), int(position.x), int(position.y)]
 		)
 	return ",".join(parts)
+
+
+func get_platform_count() -> int:
+	return _platform_specs.size()
+
+
+func get_minimum_platform_y() -> float:
+	var minimum_y := 999.0
+	for platform_spec in _platform_specs:
+		minimum_y = minf(minimum_y, (platform_spec["position"] as Vector2).y)
+	return minimum_y
 
 
 func _rebuild() -> void:
@@ -105,8 +141,8 @@ func _add_platforms() -> void:
 	platforms.name = "OneWayPlatforms"
 	platforms.z_index = 4
 	add_child(platforms)
-	for platform_index in (VARIANT_PLATFORMS[variant_id] as Array).size():
-		var platform_spec := (VARIANT_PLATFORMS[variant_id] as Array)[platform_index] as Dictionary
+	for platform_index in _platform_specs.size():
+		var platform_spec := _platform_specs[platform_index]
 		var kind := String(platform_spec["kind"])
 		var platform_position := platform_spec["position"] as Vector2
 		var platform_sprite := Sprite2D.new()
@@ -117,7 +153,11 @@ func _add_platforms() -> void:
 			GROUND_ATLAS,
 			BRIDGE_REGION if kind == "bridge" else PLATFORM_REGION
 		)
-		platform_sprite.scale = Vector2(0.42, 0.42) if kind == "bridge" else Vector2(0.34, 0.34)
+		platform_sprite.scale = (
+			Vector2(0.42, 0.42)
+			if kind == "bridge"
+			else Vector2(0.25, 0.25) if kind == "small" else Vector2(0.34, 0.34)
+		)
 		platforms.add_child(platform_sprite)
 
 		var platform_body := StaticBody2D.new()
@@ -129,7 +169,11 @@ func _add_platforms() -> void:
 		collision.one_way_collision = true
 		collision.one_way_collision_margin = 12.0
 		var rectangle := RectangleShape2D.new()
-		rectangle.size = Vector2(184, 22) if kind == "bridge" else Vector2(172, 18)
+		rectangle.size = (
+			Vector2(184, 22)
+			if kind == "bridge"
+			else Vector2(126, 18) if kind == "small" else Vector2(172, 18)
+		)
 		collision.shape = rectangle
 		platform_body.add_child(collision)
 

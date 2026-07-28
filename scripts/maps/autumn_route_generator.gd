@@ -9,6 +9,8 @@ const VARIANT_IDS: Array[String] = [
 	"stepping_stones",
 	"canopy_walk",
 	"crossing",
+	"upper_canopy",
+	"broken_crown",
 ]
 const PANORAMA := preload(
 	"res://assets/environments/autumn_town_style/generated/autumn_forest_background.png"
@@ -26,6 +28,8 @@ const AMBER_TREE_REGION := Rect2(964, 166, 370, 590)
 
 var _manifest: Array[Dictionary] = []
 var _active_seed := 0
+
+
 func _ready() -> void:
 	var initial_seed := (
 		preview_seed
@@ -45,18 +49,27 @@ func regenerate(seed_value: int) -> void:
 	_manifest.clear()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
-	var offset := rng.randi_range(0, VARIANT_IDS.size() - 1)
+	var rest_offset := rng.randi_range(0, 3)
+	var upper_chunk_index := rng.randi_range(5, chunk_count - 6)
+	var raised_streak := 0
 	for chunk_index in chunk_count:
 		var variant_id := "gateway"
 		if chunk_index > 0 and chunk_index < chunk_count - 1:
-			var jitter := rng.randi_range(0, VARIANT_IDS.size() - 1)
-			variant_id = VARIANT_IDS[(chunk_index + offset + jitter) % VARIANT_IDS.size()]
+			if chunk_index == upper_chunk_index:
+				variant_id = "upper_canopy"
+				raised_streak += 1
+			elif raised_streak >= 1 or chunk_index % 4 == rest_offset or rng.randf() < 0.24:
+				variant_id = "flat"
+				raised_streak = 0
+			else:
+				variant_id = VARIANT_IDS[rng.randi_range(0, VARIANT_IDS.size() - 1)]
+				raised_streak += 1
 		var chunk := chunk_scene.instantiate() as Node2D
 		chunk.name = "RouteChunk%02d_%s" % [chunk_index, variant_id]
 		chunk.position = Vector2(float(chunk_index) * CHUNK_WIDTH, 0)
 		add_child(chunk)
 		if chunk.has_method("configure"):
-			chunk.call("configure", variant_id, chunk_index)
+			chunk.call("configure", variant_id, chunk_index, rng.randi())
 		var left := float(chunk_index) * CHUNK_WIDTH
 		_manifest.append({
 			"index": chunk_index,
@@ -68,6 +81,16 @@ func regenerate(seed_value: int) -> void:
 				String(chunk.call("get_platform_signature"))
 				if chunk.has_method("get_platform_signature")
 				else ""
+			),
+			"platform_count": (
+				int(chunk.call("get_platform_count"))
+				if chunk.has_method("get_platform_count")
+				else 0
+			),
+			"minimum_platform_y": (
+				float(chunk.call("get_minimum_platform_y"))
+				if chunk.has_method("get_minimum_platform_y")
+				else 999.0
 			),
 		})
 	_rebuild_backdrop()
@@ -134,12 +157,18 @@ func _rebuild_backdrop() -> void:
 		panorama.texture = PANORAMA
 		backdrop.add_child(panorama)
 	var tree_regions := [OAK_REGION, MAPLE_REGION, AMBER_TREE_REGION]
-	for chunk_index in range(1, chunk_count, 2):
+	var tree_rng := RandomNumberGenerator.new()
+	tree_rng.seed = _active_seed ^ 0x5F3759DF
+	for chunk_index in range(1, chunk_count):
 		var tree := Sprite2D.new()
 		tree.name = "RearTree%02d" % chunk_index
-		tree.position = Vector2((float(chunk_index) + 0.5) * CHUNK_WIDTH, 408)
-		tree.scale = Vector2(0.3, 0.3)
-		tree.modulate = Color(0.62, 0.49, 0.37, 0.7)
+		tree.position = Vector2(
+			(float(chunk_index) + tree_rng.randf_range(0.22, 0.78)) * CHUNK_WIDTH,
+			tree_rng.randf_range(398.0, 430.0)
+		)
+		var tree_scale := tree_rng.randf_range(0.28, 0.41)
+		tree.scale = Vector2(tree_scale, tree_scale)
+		tree.modulate = Color(0.62, 0.49, 0.37, tree_rng.randf_range(0.55, 0.78))
 		tree.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		var texture := AtlasTexture.new()
 		texture.atlas = TREE_ATLAS

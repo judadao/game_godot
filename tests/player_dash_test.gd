@@ -12,11 +12,14 @@ func _run() -> void:
 	_expect(_has_physical_key("dash", KEY_SPACE), "Dash must be bound to Space.")
 	_expect(not _has_physical_key("jump", KEY_SPACE), "Space must not also trigger Jump.")
 	_expect(_has_physical_key("jump", KEY_UP), "Jump must be bound to the Up arrow.")
+	_expect(InputMap.has_action("move_down"), "Project must define platform drop input.")
+	_expect(_has_physical_key("move_down", KEY_DOWN), "Platform drop must be bound to the Down arrow.")
 	_expect(InputMap.has_action("card_focus"), "Project must define tactical card-focus input.")
 	var player := (load("res://scenes/player/Player.tscn") as PackedScene).instantiate()
 	root.add_child(player)
 	await process_frame
 	_expect(player.has_method("try_dash"), "Player must expose dash behavior.")
+	_expect(player.has_method("try_drop_through_platform"), "Player must expose one-way platform drop behavior.")
 	if not player.has_method("try_dash"):
 		player.queue_free()
 		await process_frame

@@ -105,7 +105,7 @@ prompt_text = "Unlock forest shortcut"
 loot_table_id = &"forest_shortcut"
 
 [node name="WestSafePortal" parent="." instance=ExtResource("5_portal")]
-position = Vector2(82, 500)
+position = Vector2(150, 500)
 z_index = 22
 interaction_id = &"autumn_battle_west_return"
 prompt_text = "Return to Autumn Camp"
@@ -116,7 +116,7 @@ target_spawn_name = &"BattleReturnSpawn"
 scale = Vector2(0.34, 0.34)
 
 [node name="EastSafePortal" parent="." instance=ExtResource("5_portal")]
-position = Vector2(10478, 500)
+position = Vector2(10410, 500)
 z_index = 22
 interaction_id = &"autumn_battle_east_return"
 prompt_text = "Return to Autumn Camp"
