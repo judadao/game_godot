@@ -5,11 +5,16 @@ signal closed
 
 var _town: RefCounted
 var _inventory: RefCounted
+var _context_id: StringName
+var _title_label: Label
 var _resource_label: Label
 var _stage_label: Label
 var _building_list: VBoxContainer
 var _equipment_list: VBoxContainer
 var _detail_label: Label
+var _building_column: VBoxContainer
+var _equipment_column: VBoxContainer
+var _detail_panel: VBoxContainer
 var _building_buttons: Array[Button] = []
 var _equipment_buttons: Array[Button] = []
 var _selected_equipment: StringName
@@ -36,6 +41,17 @@ func set_services(town: RefCounted, inventory: RefCounted) -> void:
 	_inventory = inventory
 	if is_node_ready():
 		_refresh()
+
+
+func set_context(context_id: StringName) -> void:
+	_context_id = context_id
+	if is_node_ready():
+		_apply_context()
+		_refresh()
+
+
+func get_context_id() -> StringName:
+	return _context_id
 
 
 func get_building_button_count() -> int:
@@ -73,12 +89,12 @@ func _build_layout() -> void:
 	panel.add_child(main)
 	var title_row := HBoxContainer.new()
 	main.add_child(title_row)
-	var title := Label.new()
-	title.text = "TOWN DEVELOPMENT"
-	title.add_theme_font_size_override("font_size", 28)
-	title.add_theme_color_override("font_color", Color(1.0, 0.84, 0.46))
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title_row.add_child(title)
+	_title_label = Label.new()
+	_title_label.text = "TOWN DEVELOPMENT"
+	_title_label.add_theme_font_size_override("font_size", 28)
+	_title_label.add_theme_color_override("font_color", Color(1.0, 0.84, 0.46))
+	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_row.add_child(_title_label)
 	var close_button := Button.new()
 	close_button.name = "CloseButton"
 	close_button.text = "Close"
@@ -95,22 +111,25 @@ func _build_layout() -> void:
 	main.add_child(columns)
 	_building_list = _make_scroll_column(columns, "BUILDINGS")
 	_equipment_list = _make_scroll_column(columns, "EQUIPMENT")
-	var detail_panel := VBoxContainer.new()
-	detail_panel.custom_minimum_size = Vector2(250, 0)
-	columns.add_child(detail_panel)
+	_building_column = _building_list.get_parent().get_parent() as VBoxContainer
+	_equipment_column = _equipment_list.get_parent().get_parent() as VBoxContainer
+	_detail_panel = VBoxContainer.new()
+	_detail_panel.custom_minimum_size = Vector2(250, 0)
+	columns.add_child(_detail_panel)
 	var detail_title := Label.new()
 	detail_title.text = "WORKBENCH"
 	detail_title.add_theme_font_size_override("font_size", 20)
-	detail_panel.add_child(detail_title)
+	_detail_panel.add_child(detail_title)
 	_detail_label = Label.new()
 	_detail_label.text = "Select equipment to own, equip, and strengthen."
 	_detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_detail_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	detail_panel.add_child(_detail_label)
+	_detail_panel.add_child(_detail_label)
 	var upgrade := Button.new()
 	upgrade.text = "Strengthen Selected"
 	upgrade.pressed.connect(_upgrade_selected_equipment)
-	detail_panel.add_child(upgrade)
+	_detail_panel.add_child(upgrade)
+	_apply_context()
 
 
 func _make_scroll_column(parent: Container, title_text: String) -> VBoxContainer:
@@ -154,7 +173,10 @@ func _rebuild_buildings() -> void:
 	for child in _building_list.get_children():
 		child.queue_free()
 	_building_buttons.clear()
+	var focused_building := _focused_building_id()
 	for building_id in _town.call("get_building_ids"):
+		if not focused_building.is_empty() and building_id != focused_building:
+			continue
 		var level := int(_town.call("get_building_level", building_id))
 		var max_level := int(_town.call("get_max_building_level", building_id))
 		var cost := _town.call("get_next_upgrade_cost", building_id) as Dictionary
@@ -169,6 +191,39 @@ func _rebuild_buildings() -> void:
 		button.pressed.connect(_upgrade_building.bind(building_id))
 		_building_list.add_child(button)
 		_building_buttons.append(button)
+
+
+func _apply_context() -> void:
+	if _title_label == null:
+		return
+	var titles := {
+		&"material_yard": "MATERIAL YARD",
+		&"player_blacksmith": "PLAYER BLACKSMITH",
+		&"town_hall": "TOWN HALL",
+		&"soul_refinery": "SOUL REFINERY",
+	}
+	_title_label.text = String(titles.get(_context_id, "TOWN DEVELOPMENT"))
+	var uses_workbench := _context_id in [&"player_blacksmith", &"soul_refinery"]
+	if _building_column != null:
+		_building_column.visible = true
+	if _equipment_column != null:
+		_equipment_column.visible = uses_workbench or _context_id.is_empty()
+	if _detail_panel != null:
+		_detail_panel.visible = uses_workbench or _context_id.is_empty()
+
+
+func _focused_building_id() -> StringName:
+	match _context_id:
+		&"material_yard":
+			return &"workshop"
+		&"player_blacksmith":
+			return &"blacksmith"
+		&"town_hall":
+			return &"town_hall"
+		&"soul_refinery":
+			return &"memory_library"
+		_:
+			return StringName()
 
 
 func _rebuild_equipment() -> void:

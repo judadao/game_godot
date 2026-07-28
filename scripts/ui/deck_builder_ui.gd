@@ -16,6 +16,7 @@ var _active_slot_index := 0
 var _visible_choice_ids: Array[String] = []
 var _auto_attack_card_id := "ember_bolt"
 var _finisher_catalog := ComboFinisherCatalog.new()
+var _context_id: StringName
 
 var _slot_buttons: Array[Button] = []
 var _choice_grid: GridContainer
@@ -58,6 +59,14 @@ func configure(
 	_auto_attack_card_id = auto_attack_card_id
 	if is_node_ready():
 		_refresh_all()
+
+
+func set_context(context_id: StringName) -> void:
+	_context_id = context_id
+
+
+func get_context_id() -> StringName:
+	return _context_id
 
 
 func _restore_fixed_loadout(requested: Array[String]) -> void:

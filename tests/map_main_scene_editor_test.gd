@@ -11,6 +11,7 @@ const MAIN_SCENES := [
 			"Props",
 			"Portals",
 			"NPCs",
+			"BuildingEntrances",
 			"WorldCollision",
 			"PlayerSpawn",
 		],

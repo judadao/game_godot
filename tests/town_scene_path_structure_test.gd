@@ -4,6 +4,7 @@ const ACTIVE_SCENES := [
 	"res://scenes/maps/town/components/TownBackdrop.tscn",
 	"res://scenes/maps/town/components/TownEternalForgeIdentity.tscn",
 	"res://scenes/maps/town/components/TownNPCs.tscn",
+	"res://scenes/maps/town/components/TownBuildingEntrances.tscn",
 	"res://scenes/maps/town/components/TownWorldCollision.tscn",
 	"res://scenes/maps/town/portals/TownPortalSet.tscn",
 	"res://scenes/maps/town/portals/TownBattleGateway.tscn",
@@ -58,6 +59,7 @@ func _run() -> void:
 		"Props": "res://scenes/maps/town/legacy/props/TownStreetProps.tscn",
 		"Portals": "res://scenes/maps/town/portals/TownPortalSet.tscn",
 		"NPCs": "res://scenes/maps/town/components/TownNPCs.tscn",
+		"BuildingEntrances": "res://scenes/maps/town/components/TownBuildingEntrances.tscn",
 		"WorldCollision": "res://scenes/maps/town/components/TownWorldCollision.tscn",
 		"EternalForgeIdentity": "res://scenes/maps/town/components/TownEternalForgeIdentity.tscn",
 	}

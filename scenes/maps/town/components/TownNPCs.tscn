@@ -22,11 +22,11 @@ position = Vector2(1570, 672)
 [node name="Guard" parent="." instance=ExtResource("4_guard")]
 position = Vector2(260, 672)
 
-[node name="ItemMerchantInteractive" parent="." instance=ExtResource("5_merchant")]
+[node name="ItemMerchant" parent="." instance=ExtResource("5_merchant")]
 position = Vector2(1420, 672)
 
-[node name="BlacksmithInteractive" parent="." instance=ExtResource("6_smith")]
+[node name="Blacksmith" parent="." instance=ExtResource("6_smith")]
 position = Vector2(550, 672)
 
-[node name="InnkeeperInteractive" parent="." instance=ExtResource("7_innkeeper")]
+[node name="Innkeeper" parent="." instance=ExtResource("7_innkeeper")]
 position = Vector2(1780, 672)

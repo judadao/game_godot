@@ -1,6 +1,5 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=4 format=3]
 
-[ext_resource type="Script" path="res://scripts/npc/npc.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_npcs_atlas_v2.png" id="2_texture"]
 
 [sub_resource type="AtlasTexture" id="MayorTexture"]
@@ -10,17 +9,9 @@ region = Rect2(36, 54, 274, 590)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(54, 104)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_interaction"]
-size = Vector2(108, 126)
-
-[node name="Mayor" type="StaticBody2D" groups=["NPCs", "Interactives"]]
+[node name="Mayor" type="StaticBody2D" groups=["NPCs"]]
 collision_layer = 2
 collision_mask = 1
-script = ExtResource("1_script")
-interaction_id = &"town_mayor"
-prompt_text = "Talk"
-display_name = "Mayor"
-dialogue_id = &"town_mayor"
 
 [node name="Visual" type="Sprite2D" parent="."]
 texture = SubResource("MayorTexture")
@@ -30,12 +21,3 @@ scale = Vector2(0.23, 0.23)
 [node name="BodyCollision" type="CollisionShape2D" parent="."]
 position = Vector2(0, -52)
 shape = SubResource("RectangleShape2D_body")
-
-[node name="InteractionArea" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 1
-
-[node name="InteractionCollision" type="CollisionShape2D" parent="InteractionArea"]
-position = Vector2(0, -63)
-shape = SubResource("RectangleShape2D_interaction")
-debug_color = Color(0.3, 0.75, 1, 0.25)

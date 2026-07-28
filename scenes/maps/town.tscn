@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://ckbaviqhvukg5" path="res://scenes/player/Player.tscn" id="8_player"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownWorldCollision.tscn" id="9_collision"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownEternalForgeIdentity.tscn" id="10_identity"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownBuildingEntrances.tscn" id="11_entrances"]
 
 [node name="Town" type="Node2D" unique_id=296374039]
 script = ExtResource("1_preview")
@@ -97,6 +98,9 @@ metadata/layer_role = "near"
 [node name="NPCs" parent="." unique_id=2141749617 instance=ExtResource("7_npcs")]
 metadata/layer_role = "near"
 
+[node name="BuildingEntrances" parent="." instance=ExtResource("11_entrances")]
+metadata/layer_role = "interaction"
+
 [node name="EternalForgeIdentity" parent="." instance=ExtResource("10_identity")]
 
 [node name="Player" parent="." unique_id=1438006060 instance=ExtResource("8_player")]
@@ -110,3 +114,4 @@ position = Vector2(220, 702)
 [editable path="ParallaxBackground/DistantBuildings"]
 [editable path="Portals"]
 [editable path="NPCs"]
+[editable path="BuildingEntrances"]

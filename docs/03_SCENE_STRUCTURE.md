@@ -165,6 +165,7 @@ TownMap
 ├── Props
 ├── Portals
 ├── NPCs
+├── BuildingEntrances
 ├── EternalForgeIdentity
 ├── WorldCollision
 ├── PlayerSpawn
@@ -187,12 +188,17 @@ X/Y scale 拉寬圖中物件；`TownEternalForgeIdentity.tscn` 持有八個
 `Buildings`、`Ground`、`Props` linked scenes 保留作為 gameplay／progression
 identity，但初版 runtime 不與烘焙背景重複顯示。角色、NPC、Portal 與地面碰撞
 統一使用新圖道路的 `y=672` baseline。
+Town 的六個建築 UI 觸發由 `BuildingEntrances` 獨立擁有；NPC 僅保留角色視覺與
+body collision，不得加入 `Interactives` 或持有 `InteractionArea`。入口透過
+`building_ui_requested` 將 `building_id`、`ui_route` 與 `service_id` 交給 Game。
 
 `res://scenes/maps/battle_portal_hub.tscn` 是獨立可玩 map。Town 的唯一
 `BattleGateway` 先進入此大廳；大廳的 `RegionPortals` 固定有四個入口槽位：
 Autumn、Crystal、Graveyard 與鎖定的 Fourth Region。中央 `BossPortalAnchor`
 只保留位置，不得提前建立 `BossPortal`；尾王解鎖時再由正式 progression contract
 投影。Town return 使用無大型門體的左側互動出口。
+該出口的互動區與最左側 Autumn portal 必須保持大於一個 Player body 寬度的
+水平淨空，避免玩家同時進入兩個 portal interaction candidates。
 Town 入口沿用背景圖內建的大型藍色門作為唯一視覺，因此
 `Portals/BattleGateway/TownVisual` 必須保持隱藏，但互動碰撞與傳送行為仍保留；
 互動與兩塊地標標籤皆對齊背景貼圖主體的 `x=830` 中心線。火炬標籤使用上方塔身
@@ -280,6 +286,7 @@ Current composition：
 - active：`scenes/maps/town/components/TownBackdrop.tscn`
 - active：`scenes/maps/town/components/TownEternalForgeIdentity.tscn`
 - active：`scenes/maps/town/components/TownNPCs.tscn`
+- active：`scenes/maps/town/components/TownBuildingEntrances.tscn`
 - active：`scenes/maps/town/components/TownWorldCollision.tscn`
 - portals：`scenes/maps/town/portals/TownPortalSet.tscn`
 - hidden compatibility visuals：`scenes/maps/town/legacy/**`
@@ -292,7 +299,8 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 
 - backdrop只含視覺layer，不處理經濟或Portal。
 - ground/collision分開，視覺改動不得隱式改physics。
-- NPC container組合NPC instances，不承載對話資料。
+- NPC container組合display-only NPC instances，不承載互動或對話資料。
+- Building entrance container組合門口互動 instances，不承載 UI instance。
 - Portal set組合route instances，不自行load map。
 - decorative prop不應加入`Interactives`，除非它真的實作完整contract。
 

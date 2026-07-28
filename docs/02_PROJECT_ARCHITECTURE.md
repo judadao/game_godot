@@ -192,6 +192,9 @@ Player 與 progression identity 仍由 linked scenes 管理；烘焙圖不是 ga
 authority。背景以一個 1:1 等比例 Sprite 覆蓋世界，只顯示一座中央火炬，
 禁止重複貼圖或非等比例縮放建築。
 `EternalForgeIdentity` 提供八個精簡地點標籤與後續物件精修入口。
+六個建築門口由 `TownBuildingEntrances` 擁有互動 Area 與 UI route；NPC 不再是
+Town 建築服務的互動 authority。Game 接收 `building_ui_requested` 後開啟既有
+TownProgressUI、ShopUI 或不啟動出征的 DeckBuilderUI。
 
 Town portal ownership 已收斂為 `TownPortalSet/BattleGateway`。它只前往
 `res://scenes/maps/battle_portal_hub.tscn`；區域目的地由 hub 的四個 region
@@ -473,8 +476,9 @@ service；修改 mappings或處理順序時須用實際 run驗證。
 
 ### 9.2 NPC — Current
 
-- NPC/Merchant是 `StaticBody2D` + `Interactives` group。
-- Town NPC由 `scenes/maps/town/components/TownNPCs.tscn` 組合。
+- 通用 NPC/Merchant scene可使用 `StaticBody2D` + `Interactives` group。
+- Town NPC由 `scenes/maps/town/components/TownNPCs.tscn` 組合，且是
+  display-only；Town 互動由 `TownBuildingEntrances` 負責。
 - 沒有 NPC navigation、schedule、AI movement或persistent NPC state。
 - Merchant只發 intent signal；stock/economy由 `Game` 管理。
 

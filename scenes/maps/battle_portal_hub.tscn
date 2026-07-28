@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/portals/TownFastTravelPortal.tscn" id="2_return"]
@@ -12,6 +12,9 @@ size = Vector2(1650, 96)
 
 [sub_resource type="RectangleShape2D" id="WallShape"]
 size = Vector2(48, 720)
+
+[sub_resource type="RectangleShape2D" id="TownReturnInteractionShape"]
+size = Vector2(88, 140)
 
 [sub_resource type="StyleBoxFlat" id="PortalLabelStyle"]
 bg_color = Color(0.025, 0.035, 0.055, 0.94)
@@ -146,7 +149,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="TownPortal" parent="." instance=ExtResource("2_return")]
-position = Vector2(150, 672)
+position = Vector2(100, 672)
 target_scene_path = "res://scenes/maps/town.tscn"
 target_spawn_name = &"PlayerSpawn"
 interaction_id = &"battle_hub_return"
@@ -155,10 +158,13 @@ prompt_text = "Return to Town"
 [node name="TownVisual" parent="TownPortal" index="3"]
 visible = false
 
+[node name="CollisionShape2D" parent="TownPortal/InteractionArea" index="0"]
+shape = SubResource("TownReturnInteractionShape")
+
 [node name="ReturnLabel" type="Label" parent="."]
-offset_left = 90.0
+offset_left = 40.0
 offset_top = 610.0
-offset_right = 210.0
+offset_right = 160.0
 offset_bottom = 646.0
 theme_override_colors/font_color = Color(0.64, 0.72, 0.82, 1)
 theme_override_font_sizes/font_size = 14

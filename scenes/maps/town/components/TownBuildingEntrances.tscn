@@ -1,0 +1,53 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/props/BuildingEntrance.tscn" id="1_entrance"]
+
+[node name="TownBuildingEntrances" type="Node2D"]
+
+[node name="MaterialYard" parent="." instance=ExtResource("1_entrance")]
+position = Vector2(118, 614)
+interaction_id = &"material_yard_entrance"
+display_name = "Material Yard"
+building_id = &"material_yard"
+ui_route = &"town_progress"
+service_id = &"material_yard"
+
+[node name="PlayerBlacksmith" parent="." instance=ExtResource("1_entrance")]
+position = Vector2(332, 614)
+interaction_id = &"player_blacksmith_entrance"
+display_name = "Player Blacksmith"
+building_id = &"player_blacksmith"
+ui_route = &"town_progress"
+service_id = &"player_blacksmith"
+
+[node name="TownHall" parent="." instance=ExtResource("1_entrance")]
+position = Vector2(1024, 614)
+interaction_id = &"town_hall_entrance"
+display_name = "Town Hall"
+building_id = &"town_hall"
+ui_route = &"town_progress"
+service_id = &"town_hall"
+
+[node name="SwordSoulShop" parent="." instance=ExtResource("1_entrance")]
+position = Vector2(1286, 614)
+interaction_id = &"sword_soul_shop_entrance"
+display_name = "Sword Soul Shop"
+building_id = &"sword_soul_shop"
+ui_route = &"shop"
+service_id = &"sword_soul_shop"
+
+[node name="BlueprintResearch" parent="." instance=ExtResource("1_entrance")]
+position = Vector2(1500, 614)
+interaction_id = &"blueprint_research_entrance"
+display_name = "Blueprint Research"
+building_id = &"blueprint_research"
+ui_route = &"deck_builder"
+service_id = &"blueprint_research"
+
+[node name="SoulRefinery" parent="." instance=ExtResource("1_entrance")]
+position = Vector2(1716, 614)
+interaction_id = &"soul_refinery_entrance"
+display_name = "Soul Refinery"
+building_id = &"soul_refinery"
+ui_route = &"town_progress"
+service_id = &"soul_refinery"

@@ -3,6 +3,7 @@ extends SceneTree
 const SCENE_PATHS: Array[String] = [
 	"res://tests/fixtures/scenes/NPC.tscn",
 	"res://scenes/npc/Merchant.tscn",
+	"res://scenes/props/BuildingEntrance.tscn",
 	"res://scenes/props/Portal.tscn",
 	"res://scenes/props/Chest.tscn",
 ]
@@ -44,20 +45,23 @@ func _assert_scene_contract(scene_path: String, instance: Node) -> bool:
 		push_error("%s missing interact() method" % scene_path)
 		failed = true
 
-	if instance.get_node_or_null("Visual") == null:
-		push_error("%s missing Visual node" % scene_path)
-		failed = true
-
-	if instance.get_node_or_null("CollisionShape2D") == null:
-		push_error("%s missing CollisionShape2D node" % scene_path)
-		failed = true
+	if not scene_path.ends_with("BuildingEntrance.tscn"):
+		if instance.get_node_or_null("Visual") == null:
+			push_error("%s missing Visual node" % scene_path)
+			failed = true
+		if instance.get_node_or_null("CollisionShape2D") == null:
+			push_error("%s missing CollisionShape2D node" % scene_path)
+			failed = true
 
 	var interaction_area := instance.get_node_or_null("InteractionArea") as Area2D
 	if interaction_area == null:
 		push_error("%s missing InteractionArea Area2D" % scene_path)
 		failed = true
-	elif interaction_area.get_node_or_null("CollisionShape2D") == null:
-		push_error("%s missing InteractionArea/CollisionShape2D" % scene_path)
+	elif (
+		interaction_area.get_node_or_null("CollisionShape2D") == null
+		and interaction_area.get_node_or_null("InteractionCollision") == null
+	):
+		push_error("%s missing an interaction collision shape" % scene_path)
 		failed = true
 
 	if scene_path.ends_with("NPC.tscn") and not instance.has_signal("dialogue_requested"):
@@ -74,6 +78,9 @@ func _assert_scene_contract(scene_path: String, instance: Node) -> bool:
 
 	if scene_path.ends_with("Portal.tscn") and not instance.has_signal("portal_entered"):
 		push_error("%s missing portal_entered" % scene_path)
+		failed = true
+	if scene_path.ends_with("BuildingEntrance.tscn") and not instance.has_signal("building_ui_requested"):
+		push_error("%s missing building_ui_requested" % scene_path)
 		failed = true
 
 	return failed
@@ -105,6 +112,17 @@ func _assert_interaction_signals(scene_path: String, instance: Node) -> bool:
 		instance.chest_opened.connect(func(_chest: Node, _loot_table_id: StringName, _interactor: Node) -> void:
 			events.append("chest_opened")
 		)
+	if instance.has_signal("building_ui_requested"):
+		instance.building_ui_requested.connect(
+			func(
+				_entrance: Node,
+				_building_id: StringName,
+				_ui_route: StringName,
+				_service_id: StringName,
+				_interactor: Node
+			) -> void:
+				events.append("building_ui_requested")
+		)
 
 	if not instance.interact(null):
 		push_error("%s interact() returned false while enabled" % scene_path)
@@ -128,6 +146,12 @@ func _assert_interaction_signals(scene_path: String, instance: Node) -> bool:
 
 	if scene_path.ends_with("Chest.tscn") and not events.has("chest_opened"):
 		push_error("%s did not emit chest_opened" % scene_path)
+		failed = true
+	if (
+		scene_path.ends_with("BuildingEntrance.tscn")
+		and not events.has("building_ui_requested")
+	):
+		push_error("%s did not emit building_ui_requested" % scene_path)
 		failed = true
 
 	return failed

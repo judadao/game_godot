@@ -54,10 +54,10 @@ contracts remain compatible while camera and collision bounds match that segment
 
 ## Interaction preservation
 
-- Mayor: `town_mayor`
-- Item merchant: `item_merchant`, shop `general_store`
-- Blacksmith: `blacksmith`, shop `blacksmith`
-- Innkeeper: `innkeeper`
+- NPC roles are display-only and own no interaction area.
+- Material Yard, Player Blacksmith, Town Hall, Sword Soul Shop, Blueprint
+  Research, and Soul Refinery each own an independent building entrance trigger.
+- Building entrances route directly to Town Progress, Shop, or Deck Builder UI.
 - Forest portal: `forest_portal`
 - Caves portal: `caves_portal`
 - Graveyard portal: `graveyard_portal`
@@ -69,7 +69,7 @@ contracts remain compatible while camera and collision bounds match that segment
 - No mixed perspective or mismatched pixel density.
 - No decorative object blocks the player.
 - All seven NPC roles display exactly one visual.
-- Mayor interaction remains attached only to the bearded mayor.
+- No Town building UI is triggered by an NPC.
 - Every shop, dialogue and portal can be reached by keyboard.
 - Town BattleGateway enters the portal hub and the hub return interaction restores Town.
 - Background and ground cover the full camera width at every supported window size.

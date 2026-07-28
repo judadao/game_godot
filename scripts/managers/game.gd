@@ -668,6 +668,11 @@ func _wire_interactives() -> void:
 		_connect_if_present(interactive, &"interaction_unavailable", &"_on_interaction_unavailable")
 		_connect_if_present(interactive, &"dialogue_requested", &"_on_dialogue_requested")
 		_connect_if_present(interactive, &"shop_requested", &"_on_shop_requested")
+		_connect_if_present(
+			interactive,
+			&"building_ui_requested",
+			&"_on_building_ui_requested"
+		)
 		_connect_if_present(interactive, &"portal_entered", &"_on_portal_entered")
 		_connect_if_present(interactive, &"chest_opened", &"_on_chest_opened")
 
@@ -2936,6 +2941,8 @@ func _inventory_projection() -> Array[Dictionary]:
 		"town_map": {"name": "Town Map", "description": "Marks roads around town.", "category": "quest", "stats": "Quest item"},
 		"iron_sword": {"name": "Iron Sword", "description": "A reliable starter blade.", "category": "gear", "stats": "Attack +8"},
 		"guard_boots": {"name": "Guard Boots", "description": "Light boots for long roads.", "category": "gear", "stats": "Defense +2"},
+		"soul_edge": {"name": "Soul Edge", "description": "A blade tuned to sword-soul resonance.", "category": "gear", "stats": "Attack +12"},
+		"shard_charm": {"name": "Shard Charm", "description": "Stabilizes carried magic shards.", "category": "gear", "stats": "Magic stability"},
 	}
 	var projection: Array[Dictionary] = []
 	for item_id in player_inventory.keys():
@@ -3200,6 +3207,32 @@ func _on_dialogue_requested(npc: Node, dialogue_id: StringName, interactor: Node
 	])
 
 
+func _on_building_ui_requested(
+	entrance: Node,
+	_building_id: StringName,
+	ui_route: StringName,
+	service_id: StringName,
+	interactor: Node
+) -> void:
+	if interactor != null and interactor != player:
+		return
+	match ui_route:
+		&"town_progress":
+			var town_ui := open_ui("TownProgressUI", town_progress_scene, true)
+			if town_ui != null:
+				town_ui.call("set_context", service_id)
+				town_ui.call("set_services", town_manager, inventory_manager)
+		&"shop":
+			_on_shop_requested(entrance, service_id, interactor)
+		&"deck_builder":
+			_open_deck_builder("", &"")
+			var deck_ui := get_open_ui("DeckBuilderUI")
+			if deck_ui != null:
+				deck_ui.call("set_context", service_id)
+		_:
+			push_warning("Unknown Town building UI route: %s" % ui_route)
+
+
 func _sync_progression_to_meta() -> void:
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	meta_state.inventory_state = inventory_manager.call("to_dict") as Dictionary
@@ -3454,6 +3487,8 @@ func _on_loadout_confirmed(
 		meta_state.apply_dict(previous_meta)
 		return
 	close_ui(ui_control)
+	if target_scene_path.is_empty():
+		return
 	_begin_autumn_run(normalized)
 	load_current_map(load(_resolve_main_scene_path(target_scene_path)) as PackedScene, target_spawn_name)
 
@@ -3650,6 +3685,11 @@ func _shop_items_for(shop_id: StringName) -> Array[Dictionary]:
 		return [
 			{"id": "iron_sword", "name": "Iron Sword", "price": 120, "sell_price": 60, "description": "A reliable starter blade.", "stock": 2},
 			{"id": "guard_boots", "name": "Guard Boots", "price": 85, "sell_price": 42, "description": "Light boots made for long roads.", "stock": 3},
+		]
+	if shop_id == &"sword_soul_shop":
+		return [
+			{"id": "soul_edge", "name": "Soul Edge", "price": 180, "sell_price": 90, "description": "A blade tuned to sword-soul resonance.", "stock": 1},
+			{"id": "shard_charm", "name": "Shard Charm", "price": 110, "sell_price": 55, "description": "A charm for stabilizing magic shards.", "stock": 2},
 		]
 
 	return [

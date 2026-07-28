@@ -506,14 +506,19 @@ magic_shard = 2 × current_level
 
 ### 9.3 Town progression
 
-目前四個 building ID：
+目前五個 building ID：
 
 - blacksmith；
 - workshop；
 - market；
-- town hall。
+- town hall；
+- memory library。
 
-每棟最多三個 level。Village stage 的 total-building-level threshold 為 0、3、7。Mayor interaction 開啟 Town Progress UI。
+除 memory library 有四級外，其餘建築最多三級。Village stage 的
+total-building-level threshold 為 0、3、7。Town 建築服務由六個門口 trigger
+開啟：材料行、主角鐵匠鋪、村長家與劍魂精煉所使用具 context 的 Town Progress
+UI，劍魂商使用 Shop UI，圖紙研究室使用只儲存配置、不開始出征的 Deck Builder。
+NPC 不觸發這些建築 UI。
 
 目前場景只直接改變 MarketStall、EmptyResidence、EmptyTowerHouse 與 Blacksmith 的部分視覺。Manager 產生的其他 visual flag 尚未完整投影，不得宣稱所有升級都有對應外觀。
 

@@ -35,9 +35,15 @@ func _run() -> void:
 		"Buildings/MarketStall",
 		"Buildings/Blacksmith",
 		"NPCs/Mayor",
-		"NPCs/ItemMerchantInteractive",
-		"NPCs/BlacksmithInteractive",
-		"NPCs/InnkeeperInteractive",
+		"NPCs/ItemMerchant",
+		"NPCs/Blacksmith",
+		"NPCs/Innkeeper",
+		"BuildingEntrances/MaterialYard",
+		"BuildingEntrances/PlayerBlacksmith",
+		"BuildingEntrances/TownHall",
+		"BuildingEntrances/SwordSoulShop",
+		"BuildingEntrances/BlueprintResearch",
+		"BuildingEntrances/SoulRefinery",
 		"Portals/BattleGateway/TownVisual",
 	]:
 		_expect(town.has_node(node_path), "Town rebuild node missing: %s" % node_path)
@@ -57,9 +63,9 @@ func _run() -> void:
 		"VillagerMale",
 		"VillagerFemale",
 		"Guard",
-		"ItemMerchantInteractive",
-		"BlacksmithInteractive",
-		"InnkeeperInteractive",
+		"ItemMerchant",
+		"Blacksmith",
+		"Innkeeper",
 	]:
 		var npc := town.get_node("NPCs/%s" % npc_name)
 		var visual := npc if npc is Sprite2D else npc.get_node("Visual")
@@ -75,9 +81,9 @@ func _run() -> void:
 		"VillagerMale": "res://scenes/npc/town/MaleVillager.tscn",
 		"VillagerFemale": "res://scenes/npc/town/FemaleVillager.tscn",
 		"Guard": "res://scenes/npc/town/TownGuard.tscn",
-		"ItemMerchantInteractive": "res://scenes/npc/town/PotionMerchant.tscn",
-		"BlacksmithInteractive": "res://scenes/npc/town/Blacksmith.tscn",
-		"InnkeeperInteractive": "res://scenes/npc/town/Innkeeper.tscn",
+		"ItemMerchant": "res://scenes/npc/town/PotionMerchant.tscn",
+		"Blacksmith": "res://scenes/npc/town/Blacksmith.tscn",
+		"Innkeeper": "res://scenes/npc/town/Innkeeper.tscn",
 	}
 	var npc_regions: Array[Rect2] = []
 	for npc_name in npc_scene_paths:
@@ -87,12 +93,14 @@ func _run() -> void:
 			"%s must remain linked to its dedicated NPC scene." % npc_name
 		)
 		_expect(npc.has_node("Visual"), "%s must own its visual inside the NPC scene." % npc_name)
-		_expect(npc.has_node("InteractionArea/InteractionCollision"), "%s must own a complete interaction area." % npc_name)
+		_expect(not npc.is_in_group("Interactives"), "%s must not trigger Town building UI." % npc_name)
+		_expect(not npc.has_node("InteractionArea"), "%s must not own an interaction area." % npc_name)
 		var visual := npc.get_node_or_null("Visual") as Sprite2D
 		if visual != null and visual.texture is AtlasTexture:
 			var region := (visual.texture as AtlasTexture).region
 			_expect(not npc_regions.has(region), "%s must use a unique atlas region." % npc_name)
 			npc_regions.append(region)
+	_assert_town_building_entrances(town)
 
 	_expect(
 		not town.has_node("ParallaxBackground/ParallaxBackground"),
@@ -217,6 +225,7 @@ func _run() -> void:
 		"Props": "res://scenes/maps/town/legacy/props/TownStreetProps.tscn",
 		"Portals": "res://scenes/maps/town/portals/TownPortalSet.tscn",
 		"NPCs": "res://scenes/maps/town/components/TownNPCs.tscn",
+		"BuildingEntrances": "res://scenes/maps/town/components/TownBuildingEntrances.tscn",
 		"WorldCollision": "res://scenes/maps/town/components/TownWorldCollision.tscn",
 	}
 	for node_path in linked_scenes:
@@ -239,6 +248,67 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _assert_town_building_entrances(town: Node) -> void:
+	var expected_anchors := {
+		"BuildingEntrances/MaterialYard": {
+			"building_id": &"material_yard",
+			"ui_route": &"town_progress",
+			"position": Vector2(118, 614),
+		},
+		"BuildingEntrances/PlayerBlacksmith": {
+			"building_id": &"player_blacksmith",
+			"ui_route": &"town_progress",
+			"position": Vector2(332, 614),
+		},
+		"BuildingEntrances/TownHall": {
+			"building_id": &"town_hall",
+			"ui_route": &"town_progress",
+			"position": Vector2(1024, 614),
+		},
+		"BuildingEntrances/SwordSoulShop": {
+			"building_id": &"sword_soul_shop",
+			"ui_route": &"shop",
+			"position": Vector2(1286, 614),
+		},
+		"BuildingEntrances/BlueprintResearch": {
+			"building_id": &"blueprint_research",
+			"ui_route": &"deck_builder",
+			"position": Vector2(1500, 614),
+		},
+		"BuildingEntrances/SoulRefinery": {
+			"building_id": &"soul_refinery",
+			"ui_route": &"town_progress",
+			"position": Vector2(1716, 614),
+		},
+	}
+	for entrance_path in expected_anchors:
+		var entrance := town.get_node(entrance_path) as Node2D
+		var contract: Dictionary = expected_anchors[entrance_path]
+		_expect(
+			entrance.is_in_group("Interactives"),
+			"%s must be wired as an independent interactive." % entrance_path
+		)
+		_expect(
+			String(entrance.get("building_id")) == String(contract["building_id"]),
+			"%s must own its building ID." % entrance_path
+		)
+		_expect(
+			String(entrance.get("ui_route")) == String(contract["ui_route"]),
+			"%s must own its UI route." % entrance_path
+		)
+		var collision := entrance.get_node("InteractionArea/InteractionCollision") as CollisionShape2D
+		var shape := collision.shape as RectangleShape2D
+		_expect(
+			shape != null and shape.size == Vector2(92, 116),
+			"%s must use the shared compact door shape." % entrance_path
+		)
+		_expect(
+			collision.global_position.is_equal_approx(contract["position"]),
+			"%s trigger must sit at its building doorway %s."
+			% [entrance_path, contract["position"]]
+		)
 
 
 func _has_transparent_corners(texture_path: String) -> bool:

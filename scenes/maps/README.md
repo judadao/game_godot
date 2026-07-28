@@ -10,11 +10,16 @@ portal paths (`town.tscn` and `autumn_forest.tscn`) resolve to these entries at
 runtime; do not use a legacy layout scene as an editing or runtime entry.
 
 Town exposes `ParallaxBackground`, `Buildings`, `Ground`, `Props`, `Portals`,
-`NPCs`, `WorldCollision`, the player spawn, `EditorHUDReference`, and
-`EditorHelpers`. Autumn Forest exposes its background, terrain, platforms,
+`NPCs`, `BuildingEntrances`, `WorldCollision`, the player spawn,
+`EditorHUDReference`, and `EditorHelpers`. Autumn Forest exposes its background, terrain, platforms,
 set dressing, run director, interactables, portals, collision, player spawn,
 `EditorHUDReference`, and `EditorHelpers`. Expand editable children in the
 Scene tree to adjust their Inspector overrides.
+
+Town NPC scenes are display and body-collision only. Building UI triggers live
+in `town/components/TownBuildingEntrances.tscn`; each entrance owns its doorway
+position, building ID, UI route, and service context. Move an entrance instance
+when a doorway changes, and never add an interaction area back to an NPC.
 
 ## Per-map HUD preview and runtime adoption
 

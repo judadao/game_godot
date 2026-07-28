@@ -164,7 +164,7 @@ func _run() -> void:
 	)
 	for npc_name in [
 		"Mayor", "VillagerMale", "VillagerFemale", "Guard",
-		"ItemMerchantInteractive", "BlacksmithInteractive", "InnkeeperInteractive",
+		"ItemMerchant", "Blacksmith", "Innkeeper",
 	]:
 		_expect(
 			is_equal_approx((town.get_node("NPCs/%s" % npc_name) as Node2D).global_position.y, 672.0),
