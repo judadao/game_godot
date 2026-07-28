@@ -1,25 +1,23 @@
 [gd_scene format=3 uid="uid://chjyyb86xb0xs"]
 
 [ext_resource type="Script" uid="uid://davqb0slgdls8" path="res://scripts/ui/shop_ui.gd" id="1_shop_ui"]
-[ext_resource type="Texture2D" uid="uid://b547ik7uncbps" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png" id="2_sword"]
-[ext_resource type="Texture2D" uid="uid://iuy0fhbv24g2" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0001_Shield.png" id="3_shield"]
-[ext_resource type="Texture2D" uid="uid://b6beg82u45pt2" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0003_Chest.png" id="4_cloak"]
-[ext_resource type="Texture2D" uid="uid://csx1ap3vjek4k" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionHp_Small.png" id="5_health"]
-[ext_resource type="Texture2D" uid="uid://c0shg8g7odbwk" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionSp_Small.png" id="6_mana"]
-[ext_resource type="Texture2D" uid="uid://cqu4uv5mt4e0s" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png" id="7_torch"]
-[ext_resource type="Texture2D" uid="uid://dragagmpt5wjo" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png" id="8_gem"]
 [ext_resource type="PackedScene" path="res://scenes/ui/shop/ShopItemRow.tscn" id="9_shop_item_row"]
 [ext_resource type="PackedScene" path="res://scenes/ui/shop/ShopDetailPanel.tscn" id="10_shop_detail"]
 [ext_resource type="PackedScene" path="res://scenes/ui/shop/ShopMerchantPanel.tscn" id="11_shop_merchant"]
 [ext_resource type="Texture2D" uid="uid://v0oej3ymqm6g" path="res://assets/ui/shop/generated/shop_sign.png" id="12_shop_sign"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon67_1.png" id="13_buy"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon50_1.png" id="14_sell"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon64_1.png" id="15_coin"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon25_1.png" id="16_confirm"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon1_1.png" id="17_close"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
-bg_color = Color(0.09, 0.07, 0.055, 0.94)
+bg_color = Color(0.055, 0.055, 0.06, 0.97)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
-border_color = Color(0.72, 0.52, 0.24, 1)
+border_color = Color(0.67, 0.49, 0.24, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
@@ -28,7 +26,7 @@ shadow_color = Color(0, 0, 0, 0.45)
 shadow_size = 12
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
-bg_color = Color(0.54, 0.35, 0.14, 1)
+bg_color = Color(0.1, 0.3, 0.42, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -40,12 +38,12 @@ corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
-bg_color = Color(0.25, 0.17, 0.09, 1)
+bg_color = Color(0.13, 0.14, 0.15, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.62, 0.43, 0.19, 1)
+border_color = Color(0.43, 0.4, 0.34, 1)
 corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
@@ -56,12 +54,12 @@ content_margin_left = 14.0
 content_margin_top = 12.0
 content_margin_right = 14.0
 content_margin_bottom = 12.0
-bg_color = Color(0.15, 0.115, 0.08, 0.96)
+bg_color = Color(0.085, 0.085, 0.085, 0.98)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.42, 0.3, 0.16, 1)
+border_color = Color(0.39, 0.34, 0.26, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
@@ -69,10 +67,10 @@ corner_radius_bottom_left = 6
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_row_selected"]
 bg_color = Color(0.045, 0.19, 0.34, 0.96)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
 border_color = Color(0.95, 0.7, 0.28, 1)
 corner_radius_top_left = 5
 corner_radius_top_right = 5
@@ -80,12 +78,24 @@ corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_row"]
-bg_color = Color(0.22, 0.16, 0.1, 0.82)
-border_width_left = 1
+bg_color = Color(0.105, 0.09, 0.075, 0.94)
+border_width_left = 2
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.45, 0.32, 0.17, 1)
+border_color = Color(0.31, 0.27, 0.22, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_focus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.86, 0.48, 1)
 corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
@@ -118,23 +128,23 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ShopWindow" type="PanelContainer" parent="CenterContainer" unique_id=1517290008]
-custom_minimum_size = Vector2(1180, 650)
+custom_minimum_size = Vector2(1040, 640)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_window")
 
 [node name="WindowMargin" type="MarginContainer" parent="CenterContainer/ShopWindow" unique_id=359818337]
 layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 18
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
 
 [node name="WindowLayout" type="VBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin" unique_id=296861978]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 10
 
 [node name="Title" type="TextureRect" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=2094390937]
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 texture = ExtResource("12_shop_sign")
 expand_mode = 1
@@ -148,8 +158,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
-theme_override_font_sizes/font_size = 32
-text = "SHOP"
+theme_override_font_sizes/font_size = 28
+text = "TRADE COUNTER"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -160,19 +170,29 @@ theme_override_constants/separation = 10
 [node name="BuyButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar" unique_id=1237727422]
 custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
+tooltip_text = "Browse items available to buy"
+icon = ExtResource("13_buy")
+icon_max_width = 24
+expand_icon = true
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_pressed")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/focus = SubResource("StyleBoxFlat_focus")
 text = "Buy"
 
 [node name="SellButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar" unique_id=1787728941]
 custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
+tooltip_text = "Browse items available to sell"
+icon = ExtResource("14_sell")
+icon_max_width = 24
+expand_icon = true
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_button")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/focus = SubResource("StyleBoxFlat_focus")
 text = "Sell"
 
 [node name="ModeSpacer" type="Control" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar" unique_id=132273594]
@@ -181,21 +201,21 @@ size_flags_horizontal = 3
 
 [node name="MerchantName" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar" unique_id=1171229837]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.89, 0.75, 0.52, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.74, 0.81, 0.83, 1)
+theme_override_font_sizes/font_size = 16
 text = "Mira's Goods"
 vertical_alignment = 1
 
 [node name="Content" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=1075919554]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
 [node name="MerchantPanel" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" unique_id=445308930 instance=ExtResource("11_shop_merchant")]
 layout_mode = 2
 
 [node name="ItemListPanel" type="PanelContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" unique_id=857394039]
-custom_minimum_size = Vector2(390, 0)
+custom_minimum_size = Vector2(366, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -203,72 +223,89 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="ItemListLayout" type="VBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel" unique_id=446996967]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="ItemListHeader" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1392772843]
 layout_mode = 2
+theme_override_constants/separation = 8
 
 [node name="ItemHeader" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemListHeader" unique_id=1549389718]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.96, 0.82, 0.5, 1)
-theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.84, 0.68, 0.39, 1)
+theme_override_font_sizes/font_size = 14
 text = "Merchant Stock"
 
 [node name="PriceHeader" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemListHeader" unique_id=1263731348]
-custom_minimum_size = Vector2(90, 0)
+custom_minimum_size = Vector2(86, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.82, 0.5, 1)
-theme_override_font_sizes/font_size = 17
-text = "Gold"
+theme_override_colors/font_color = Color(0.84, 0.68, 0.39, 1)
+theme_override_font_sizes/font_size = 14
+text = "UNIT PRICE"
 horizontal_alignment = 2
 
 [node name="Row01" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1450596409 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row_selected")
-text = "Iron Longsword                                      120"
-icon = ExtResource("2_sword")
+metadata/preview_name = "Iron Longsword"
+metadata/preview_price = 120
+metadata/preview_stock = 5
+metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png"
 
 [node name="Row02" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=2105509603 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-text = "Oak Shield                                           90"
-icon = ExtResource("3_shield")
+metadata/preview_name = "Oak Shield"
+metadata/preview_price = 90
+metadata/preview_stock = 5
+metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0001_Shield.png"
 
 [node name="Row03" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1807439933 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-text = "Traveler's Cloak                                     75"
-icon = ExtResource("4_cloak")
+metadata/preview_name = "Traveler's Cloak"
+metadata/preview_price = 75
+metadata/preview_stock = 5
+metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0003_Chest.png"
 
 [node name="Row04" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=973364717 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-text = "Health Potion                                        25"
-icon = ExtResource("5_health")
+metadata/preview_name = "Health Potion"
+metadata/preview_price = 25
+metadata/preview_stock = 5
+metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionHp_Small.png"
 
 [node name="Row05" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=934604875 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-text = "Mana Tonic                                           30"
-icon = ExtResource("6_mana")
+metadata/preview_name = "Mana Tonic"
+metadata/preview_price = 30
+metadata/preview_stock = 5
+metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionSp_Small.png"
 
 [node name="Row06" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=491868519 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-text = "Torch Bundle                                         12"
-icon = ExtResource("7_torch")
+metadata/preview_name = "Torch Bundle"
+metadata/preview_price = 12
+metadata/preview_stock = 5
+metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png"
 
 [node name="Row07" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=514508573 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-text = "Antidote                                             18"
-icon = ExtResource("8_gem")
+metadata/preview_name = "Antidote"
+metadata/preview_price = 18
+metadata/preview_stock = 5
+metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png"
 
 [node name="Row08" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1045152025 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
-text = "Town Map                                             40"
+metadata/preview_name = "Town Map"
+metadata/preview_price = 40
+metadata/preview_stock = 5
 
 [node name="DetailsPanel" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" unique_id=2129227490 instance=ExtResource("10_shop_detail")]
 layout_mode = 2
@@ -277,10 +314,18 @@ layout_mode = 2
 layout_mode = 2
 theme_override_constants/separation = 12
 
+[node name="WalletIcon" type="TextureRect" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ActionBar"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("15_coin")
+texture_filter = 1
+expand_mode = 3
+stretch_mode = 5
+
 [node name="GoldBalance" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ActionBar" unique_id=172957030]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.89, 0.75, 0.52, 1)
+theme_override_colors/font_color = Color(1, 0.8, 0.36, 1)
 theme_override_font_sizes/font_size = 17
 text = "Wallet: 480 gold"
 vertical_alignment = 1
@@ -288,17 +333,27 @@ vertical_alignment = 1
 [node name="ConfirmButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ActionBar" unique_id=801924932]
 custom_minimum_size = Vector2(132, 42)
 layout_mode = 2
+tooltip_text = "Confirm this transaction"
+icon = ExtResource("16_confirm")
+icon_max_width = 24
+expand_icon = true
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_pressed")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/focus = SubResource("StyleBoxFlat_focus")
 text = "Confirm"
 
 [node name="CancelButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ActionBar" unique_id=1882606986]
 custom_minimum_size = Vector2(132, 42)
 layout_mode = 2
+tooltip_text = "Close the shop"
+icon = ExtResource("17_close")
+icon_max_width = 24
+expand_icon = true
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_button")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
-text = "Cancel"
+theme_override_styles/focus = SubResource("StyleBoxFlat_focus")
+text = "Close"

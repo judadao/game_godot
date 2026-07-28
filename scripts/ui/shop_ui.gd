@@ -11,6 +11,11 @@ signal confirmed(item_data: Dictionary, quantity: int, mode: String)
 signal canceled
 
 const ROW_CONTAINER_PATH := "CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout"
+const ITEM_ICON_SWORD := preload("res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png")
+const ITEM_ICON_BOOTS := preload("res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0006_Boots.png")
+const ITEM_ICON_GEM := preload("res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png")
+const ITEM_ICON_SUPPLY := preload("res://assets/ui/fantasy_icons_16x16/png/Separately/Icon67_1.png")
+const ITEM_ICON_MAP := preload("res://assets/ui/fantasy_icons_16x16/png/Separately/Icon46_1.png")
 
 @onready var buy_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/BuyButton
 @onready var sell_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/SellButton
@@ -34,6 +39,10 @@ var selected_index: int = -1
 var quantity: int = 1
 var wallet_balance: int = 0
 var _row_buttons: Array[Button] = []
+var _row_icons: Array[TextureRect] = []
+var _row_names: Array[Label] = []
+var _row_stock_labels: Array[Label] = []
+var _row_prices: Array[Label] = []
 var _row_normal_style: StyleBox
 var _row_selected_style: StyleBox
 var _mode_normal_style: StyleBox
@@ -114,10 +123,18 @@ func set_quantity(new_quantity: int) -> void:
 
 func _cache_rows() -> void:
 	_row_buttons.clear()
+	_row_icons.clear()
+	_row_names.clear()
+	_row_stock_labels.clear()
+	_row_prices.clear()
 	for child in row_container.get_children():
 		if child is Button:
 			var button := child as Button
 			_row_buttons.append(button)
+			_row_icons.append(button.get_node("RowMargin/RowLayout/ItemIcon") as TextureRect)
+			_row_names.append(button.get_node("RowMargin/RowLayout/ItemText/ItemName") as Label)
+			_row_stock_labels.append(button.get_node("RowMargin/RowLayout/ItemText/Stock") as Label)
+			_row_prices.append(button.get_node("RowMargin/RowLayout/PriceGroup/Price") as Label)
 			var index := _row_buttons.size() - 1
 			button.pressed.connect(set_selected_item.bind(index))
 			button.focus_entered.connect(_on_row_focused.bind(index))
@@ -179,20 +196,19 @@ func _bootstrap_placeholder_items() -> void:
 	if not items.is_empty():
 		return
 	for button in _row_buttons:
-		var row_text := button.text.strip_edges()
-		if row_text.is_empty():
+		var preview_name := str(button.get_meta("preview_name", "")).strip_edges()
+		if preview_name.is_empty():
 			continue
-		var parts := row_text.split(" ", false)
-		var price := 0
-		if not parts.is_empty() and parts[parts.size() - 1].is_valid_int():
-			price = int(parts[parts.size() - 1])
-			parts.remove_at(parts.size() - 1)
-		items.append({
-			"name": " ".join(parts),
-			"price": price,
+		var item := {
+			"name": preview_name,
+			"price": int(button.get_meta("preview_price", 0)),
 			"description": item_description.text if items.is_empty() else "A useful item from the merchant's stock.",
-			"stock": 5,
-		})
+			"stock": int(button.get_meta("preview_stock", 5)),
+		}
+		var icon_path := str(button.get_meta("preview_icon_path", ""))
+		if not icon_path.is_empty():
+			item["texture"] = load(icon_path) as Texture2D
+		items.append(item)
 	selected_index = 0 if not items.is_empty() else -1
 	_refresh_rows()
 	_refresh_details()
@@ -209,11 +225,10 @@ func _refresh_rows() -> void:
 				if mode == "sell"
 				else "Stock %d" % int(item.get("stock", 0))
 			)
-			button.text = "%s    %s    %s" % [
-				_item_title(item),
-				count_text,
-				_format_number(_unit_price(item)),
-			]
+			_row_icons[index].texture = _item_icon(item)
+			_row_names[index].text = _item_title(item)
+			_row_stock_labels[index].text = count_text
+			_row_prices[index].text = _format_number(_unit_price(item))
 			button.tooltip_text = str(item.get("description", ""))
 			button.add_theme_stylebox_override("normal", _row_selected_style if index == selected_index else _row_normal_style)
 	_configure_active_row_navigation()
@@ -250,8 +265,8 @@ func _refresh_details() -> void:
 	var available := int(item.get("owned_count", 0)) if mode == "sell" else int(item.get("stock", 0))
 	confirm_button.disabled = available <= 0
 	preview_icon.texture = item.get("texture") as Texture2D
-	if preview_icon.texture == null and selected_index < _row_buttons.size():
-		preview_icon.texture = _row_buttons[selected_index].icon
+	if preview_icon.texture == null and selected_index < _row_icons.size():
+		preview_icon.texture = _row_icons[selected_index].texture
 	item_name.text = _item_title(item)
 	item_description.text = "%s\n\n%s: %d" % [
 		str(item.get("description", "")),
@@ -285,6 +300,24 @@ func _unit_price(item: Dictionary) -> int:
 	if mode == "sell":
 		return int(item.get("sell_price", maxi(1, int(item.get("price", 0)) / 2)))
 	return int(item.get("price", 0))
+
+func _item_icon(item: Dictionary) -> Texture2D:
+	var explicit_texture := item.get("texture") as Texture2D
+	if explicit_texture != null:
+		return explicit_texture
+	var identity := "%s %s" % [
+		str(item.get("id", "")).to_lower(),
+		_item_title(item).to_lower(),
+	]
+	if "boot" in identity:
+		return ITEM_ICON_BOOTS
+	if "sword" in identity or "blade" in identity or "edge" in identity:
+		return ITEM_ICON_SWORD
+	if "map" in identity:
+		return ITEM_ICON_MAP
+	if "shard" in identity or "charm" in identity or "soul" in identity or "gem" in identity:
+		return ITEM_ICON_GEM
+	return ITEM_ICON_SUPPLY
 
 func _to_dictionary_array(source: Array) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []

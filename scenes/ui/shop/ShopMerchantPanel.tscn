@@ -3,40 +3,46 @@
 [ext_resource type="Texture2D" path="res://assets/ui/shop/generated/merchant_counter.png" id="1_merchant"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_portrait"]
-bg_color = Color(0.12, 0.085, 0.055, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.52, 0.34, 0.15, 1)
-corner_radius_top_left = 7
-corner_radius_top_right = 7
-corner_radius_bottom_right = 7
-corner_radius_bottom_left = 7
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialogue"]
-content_margin_left = 14.0
-content_margin_top = 12.0
-content_margin_right = 14.0
-content_margin_bottom = 12.0
-bg_color = Color(0.91, 0.83, 0.67, 1)
+bg_color = Color(0.055, 0.045, 0.035, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.36, 0.22, 0.1, 1)
+border_color = Color(0.58, 0.4, 0.18, 1)
 corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialogue"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+bg_color = Color(0.12, 0.105, 0.085, 1)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.63, 0.45, 0.22, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [node name="MerchantPanel" type="VBoxContainer"]
-custom_minimum_size = Vector2(270, 0)
+custom_minimum_size = Vector2(218, 0)
 size_flags_vertical = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 9
+
+[node name="SectionLabel" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.64, 0.34, 1)
+theme_override_font_sizes/font_size = 13
+text = "MERCHANT"
 
 [node name="PortraitFrame" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(270, 220)
+custom_minimum_size = Vector2(218, 180)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_portrait")
 
@@ -47,14 +53,14 @@ expand_mode = 1
 stretch_mode = 6
 
 [node name="DialoguePanel" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(0, 112)
+custom_minimum_size = Vector2(0, 102)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_dialogue")
 
 [node name="Dialogue" type="Label" parent="DialoguePanel"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.12, 0.055, 1)
-theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.93, 0.86, 0.73, 1)
+theme_override_font_sizes/font_size = 15
 text = "Welcome, traveler!
 What can I get for you?"
 autowrap_mode = 2
@@ -63,7 +69,7 @@ vertical_alignment = 1
 [node name="Hint" type="Label" parent="."]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.74, 0.61, 0.42, 1)
-theme_override_font_sizes/font_size = 14
-text = "Choose Buy or Sell, then select an item."
+theme_override_colors/font_color = Color(0.59, 0.66, 0.68, 1)
+theme_override_font_sizes/font_size = 13
+text = "Choose a trade mode, then inspect an item."
 autowrap_mode = 2
