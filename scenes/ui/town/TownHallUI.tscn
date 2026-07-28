@@ -1,0 +1,1079 @@
+[gd_scene load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/town_hall_ui.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/shop/generated/shop_sign.png" id="2_sign"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Storage Icon.png" id="3_hall"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_07.png" id="4_gold"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png" id="5_wood"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Stone.png" id="6_stone"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png" id="7_shard"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Ore_04.png" id="8_core"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment Icon.png" id="9_upgrade"]
+
+[sub_resource type="StyleBoxFlat" id="StyleWindow"]
+bg_color = Color(0.075, 0.054, 0.041, 0.985)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.72, 0.52, 0.24, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.55)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleHeader"]
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+bg_color = Color(0.135, 0.095, 0.06, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.45, 0.31, 0.15, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleStage"]
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+bg_color = Color(0.11, 0.085, 0.063, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.48, 0.34, 0.17, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleResource"]
+content_margin_left = 10.0
+content_margin_top = 7.0
+content_margin_right = 10.0
+content_margin_bottom = 7.0
+bg_color = Color(0.17, 0.12, 0.075, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.43, 0.3, 0.15, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StylePrimaryPanel"]
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+bg_color = Color(0.125, 0.092, 0.065, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.52, 0.36, 0.17, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleInset"]
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+bg_color = Color(0.075, 0.065, 0.055, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.36, 0.27, 0.16, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleLevelBadge"]
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+bg_color = Color(0.21, 0.145, 0.075, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.68, 0.47, 0.21, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleCost"]
+content_margin_left = 9.0
+content_margin_top = 7.0
+content_margin_right = 9.0
+content_margin_bottom = 7.0
+bg_color = Color(0.18, 0.13, 0.085, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.29, 0.16, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleButton"]
+content_margin_left = 15.0
+content_margin_top = 9.0
+content_margin_right = 15.0
+content_margin_bottom = 9.0
+bg_color = Color(0.245, 0.165, 0.085, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.61, 0.42, 0.19, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+content_margin_left = 15.0
+content_margin_top = 9.0
+content_margin_right = 15.0
+content_margin_bottom = 9.0
+bg_color = Color(0.4, 0.265, 0.115, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.96, 0.72, 0.29, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
+content_margin_left = 15.0
+content_margin_top = 9.0
+content_margin_right = 15.0
+content_margin_bottom = 9.0
+bg_color = Color(0.28, 0.19, 0.09, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.82, 0.4, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonDisabled"]
+content_margin_left = 15.0
+content_margin_top = 9.0
+content_margin_right = 15.0
+content_margin_bottom = 9.0
+bg_color = Color(0.12, 0.1, 0.085, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.31, 0.27, 0.22, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StylePrimaryButton"]
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+bg_color = Color(0.49, 0.315, 0.115, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.98, 0.75, 0.32, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StylePrimaryHover"]
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+bg_color = Color(0.63, 0.41, 0.14, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.86, 0.46, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleProgressBackground"]
+bg_color = Color(0.055, 0.045, 0.038, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.34, 0.25, 0.15, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleProgressFill"]
+bg_color = Color(0.82, 0.55, 0.2, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[node name="TownHallUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="DimBackground" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.01, 0.008, 0.006, 0.78)
+
+[node name="SafeMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="Center" type="CenterContainer" parent="SafeMargin"]
+layout_mode = 2
+
+[node name="TownHallWindow" type="PanelContainer" parent="SafeMargin/Center"]
+custom_minimum_size = Vector2(1060, 650)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleWindow")
+
+[node name="WindowMargin" type="MarginContainer" parent="SafeMargin/Center/TownHallWindow"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 18
+
+[node name="WindowLayout" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout"]
+custom_minimum_size = Vector2(0, 66)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleHeader")
+
+[node name="HeaderRow" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Header"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HallIcon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Header/HeaderRow"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+texture = ExtResource("3_hall")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TitleBanner" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Header/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("2_sign")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleText" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Header/HeaderRow/TitleBanner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.87, 0.5, 1)
+theme_override_font_sizes/font_size = 29
+text = "TOWN HALL"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Header/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 42)
+layout_mode = 2
+focus_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.82, 0.63, 1)
+theme_override_colors/font_disabled_color = Color(0.48, 0.43, 0.37, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleButton")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonHover")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+theme_override_styles/disabled = SubResource("StyleButtonDisabled")
+text = "Close"
+
+[node name="OverviewRow" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout"]
+custom_minimum_size = Vector2(0, 62)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="StagePanel" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/OverviewRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleStage")
+
+[node name="StageRow" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/OverviewRow/StagePanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="StageIcon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/OverviewRow/StagePanel/StageRow"]
+custom_minimum_size = Vector2(38, 38)
+layout_mode = 2
+texture = ExtResource("3_hall")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="StageText" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/OverviewRow/StagePanel/StageRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="StageName" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/OverviewRow/StagePanel/StageRow/StageText"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.48, 1)
+theme_override_font_sizes/font_size = 19
+text = "Settlement"
+
+[node name="StageIndex" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/OverviewRow/StagePanel/StageRow/StageText"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.73, 0.64, 0.51, 1)
+theme_override_font_sizes/font_size = 13
+text = "STAGE 1 / 3"
+
+[node name="StageProgress" type="ProgressBar" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/OverviewRow/StagePanel/StageRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 14)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/background = SubResource("StyleProgressBackground")
+theme_override_styles/fill = SubResource("StyleProgressFill")
+value = 33.0
+show_percentage = false
+
+[node name="TotalPanel" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/OverviewRow"]
+custom_minimum_size = Vector2(190, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleStage")
+
+[node name="TotalRow" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/OverviewRow/TotalPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TotalCaption" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/OverviewRow/TotalPanel/TotalRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.78, 0.69, 0.55, 1)
+theme_override_font_sizes/font_size = 14
+text = "VILLAGE LEVELS"
+vertical_alignment = 1
+
+[node name="TotalLevelValue" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/OverviewRow/TotalPanel/TotalRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.83, 0.38, 1)
+theme_override_font_sizes/font_size = 24
+text = "0"
+vertical_alignment = 1
+
+[node name="ResourcePanel" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout"]
+custom_minimum_size = Vector2(0, 66)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleInset")
+
+[node name="ResourceLayout" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="ResourceRow" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GoldResource" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleResource")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/GoldResource"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/GoldResource/Row"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+texture = ExtResource("4_gold")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/GoldResource/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Name" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/GoldResource/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.64, 0.51, 1)
+theme_override_font_sizes/font_size = 12
+text = "GOLD"
+
+[node name="GoldValue" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/GoldResource/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.81, 0.3, 1)
+theme_override_font_sizes/font_size = 17
+text = "0"
+
+[node name="WoodResource" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleResource")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/WoodResource"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/WoodResource/Row"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+texture = ExtResource("5_wood")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/WoodResource/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Name" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/WoodResource/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.64, 0.51, 1)
+theme_override_font_sizes/font_size = 12
+text = "WOOD"
+
+[node name="WoodValue" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/WoodResource/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.64, 0.37, 1)
+theme_override_font_sizes/font_size = 17
+text = "0"
+
+[node name="StoneResource" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleResource")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/StoneResource"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/StoneResource/Row"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+texture = ExtResource("6_stone")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/StoneResource/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Name" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/StoneResource/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.64, 0.51, 1)
+theme_override_font_sizes/font_size = 12
+text = "STONE"
+
+[node name="StoneValue" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/StoneResource/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.78, 0.8, 1)
+theme_override_font_sizes/font_size = 17
+text = "0"
+
+[node name="ShardResource" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleResource")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/ShardResource"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/ShardResource/Row"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+texture = ExtResource("7_shard")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/ShardResource/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Name" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/ShardResource/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.64, 0.51, 1)
+theme_override_font_sizes/font_size = 12
+text = "SHARDS"
+
+[node name="ShardValue" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/ShardResource/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.64, 0.79, 1, 1)
+theme_override_font_sizes/font_size = 17
+text = "0"
+
+[node name="CoreResource" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleResource")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/CoreResource"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/CoreResource/Row"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+texture = ExtResource("8_core")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/CoreResource/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Name" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/CoreResource/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.64, 0.51, 1)
+theme_override_font_sizes/font_size = 12
+text = "CORES"
+
+[node name="CoreValue" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout/ResourceRow/CoreResource/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.61, 0.36, 1)
+theme_override_font_sizes/font_size = 17
+text = "0"
+
+[node name="ResourceSummary" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ResourcePanel/ResourceLayout"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Resources unavailable"
+
+[node name="ContentScroll" type="ScrollContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ContentRow" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll"]
+custom_minimum_size = Vector2(1000, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="UpgradePanel" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch_ratio = 1.75
+theme_override_styles/panel = SubResource("StylePrimaryPanel")
+
+[node name="UpgradeLayout" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="UpgradeHeader" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="UpgradeIcon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/UpgradeHeader"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+texture = ExtResource("9_upgrade")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="UpgradeHeading" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/UpgradeHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 1
+
+[node name="Title" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/UpgradeHeader/UpgradeHeading"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
+theme_override_font_sizes/font_size = 22
+text = "Town Hall Development"
+
+[node name="Subtitle" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/UpgradeHeader/UpgradeHeading"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.66, 0.53, 1)
+theme_override_font_sizes/font_size = 14
+text = "Review the next construction level and required resources."
+
+[node name="UpgradeStatus" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/UpgradeHeader"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(154, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.66, 0.35, 1)
+theme_override_font_sizes/font_size = 14
+text = "UNAVAILABLE"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="LevelFlow" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CurrentBadge" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/LevelFlow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleLevelBadge")
+
+[node name="CurrentLayout" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/LevelFlow/CurrentBadge"]
+layout_mode = 2
+
+[node name="Caption" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/LevelFlow/CurrentBadge/CurrentLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.73, 0.64, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "CURRENT"
+horizontal_alignment = 1
+
+[node name="CurrentLevelValue" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/LevelFlow/CurrentBadge/CurrentLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.45, 1)
+theme_override_font_sizes/font_size = 21
+text = "LEVEL 0"
+horizontal_alignment = 1
+
+[node name="Arrow" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/LevelFlow"]
+custom_minimum_size = Vector2(34, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.66, 0.28, 1)
+theme_override_font_sizes/font_size = 25
+text = ">"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NextBadge" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/LevelFlow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleLevelBadge")
+
+[node name="NextLayout" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/LevelFlow/NextBadge"]
+layout_mode = 2
+
+[node name="Caption" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/LevelFlow/NextBadge/NextLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.73, 0.64, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+text = "NEXT"
+horizontal_alignment = 1
+
+[node name="NextLevelValue" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/LevelFlow/NextBadge/NextLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.45, 1)
+theme_override_font_sizes/font_size = 21
+text = "LEVEL 1"
+horizontal_alignment = 1
+
+[node name="LevelProgress" type="ProgressBar" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleProgressBackground")
+theme_override_styles/fill = SubResource("StyleProgressFill")
+max_value = 3.0
+show_percentage = false
+
+[node name="RequirementTitle" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.8, 0.51, 1)
+theme_override_font_sizes/font_size = 17
+text = "Upgrade requirements"
+
+[node name="RequirementHint" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.65, 0.55, 1)
+theme_override_font_sizes/font_size = 13
+text = "Available resources are compared with the next level cost."
+autowrap_mode = 2
+
+[node name="CostGrid" type="GridContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 2
+
+[node name="GoldCost" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleCost")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/GoldCost"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/GoldCost/Row"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("4_gold")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/GoldCost/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.86, 0.76, 0.59, 1)
+text = "Gold"
+vertical_alignment = 1
+
+[node name="GoldCostAmount" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/GoldCost/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.56, 0.38, 1)
+text = "0 / 25"
+vertical_alignment = 1
+
+[node name="GoldCostState" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/GoldCost/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.56, 0.38, 1)
+theme_override_font_sizes/font_size = 11
+text = "NEED 25"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="WoodCost" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleCost")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/WoodCost"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/WoodCost/Row"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("5_wood")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/WoodCost/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.86, 0.76, 0.59, 1)
+text = "Autumn Wood"
+vertical_alignment = 1
+
+[node name="WoodCostAmount" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/WoodCost/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.56, 0.38, 1)
+text = "0 / 15"
+vertical_alignment = 1
+
+[node name="WoodCostState" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/WoodCost/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.56, 0.38, 1)
+theme_override_font_sizes/font_size = 11
+text = "NEED 15"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="StoneCost" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleCost")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/StoneCost"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/StoneCost/Row"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("6_stone")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/StoneCost/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.86, 0.76, 0.59, 1)
+text = "Stone"
+vertical_alignment = 1
+
+[node name="StoneCostAmount" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/StoneCost/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.56, 0.38, 1)
+text = "0 / 12"
+vertical_alignment = 1
+
+[node name="StoneCostState" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/StoneCost/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.56, 0.38, 1)
+theme_override_font_sizes/font_size = 11
+text = "NEED 12"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ShardCost" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleCost")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/ShardCost"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/ShardCost/Row"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("7_shard")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/ShardCost/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.86, 0.76, 0.59, 1)
+text = "Magic Shards"
+vertical_alignment = 1
+
+[node name="ShardCostAmount" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/ShardCost/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.56, 0.38, 1)
+text = "0 / 4"
+vertical_alignment = 1
+
+[node name="ShardCostState" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/ShardCost/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.56, 0.38, 1)
+theme_override_font_sizes/font_size = 11
+text = "NEED 4"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="CoreCost" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleCost")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/CoreCost"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/CoreCost/Row"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("8_core")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/CoreCost/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.86, 0.76, 0.59, 1)
+text = "Autumn Cores"
+vertical_alignment = 1
+
+[node name="CoreCostAmount" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/CoreCost/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.56, 0.38, 1)
+text = "0 / 3"
+vertical_alignment = 1
+
+[node name="CoreCostState" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/UpgradePanel/UpgradeLayout/CostGrid/CoreCost/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.56, 0.38, 1)
+theme_override_font_sizes/font_size = 11
+text = "NEED 3"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="CouncilPanel" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StylePrimaryPanel")
+
+[node name="CouncilLayout" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HallPortrait" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout"]
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleInset")
+
+[node name="PortraitCenter" type="CenterContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout/HallPortrait"]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout/HallPortrait/PortraitCenter"]
+custom_minimum_size = Vector2(86, 86)
+layout_mode = 2
+texture = ExtResource("3_hall")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="CouncilTitle" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0.45, 1)
+theme_override_font_sizes/font_size = 19
+text = "Village Record"
+
+[node name="CouncilDescription" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.82, 0.73, 0.61, 1)
+theme_override_font_sizes/font_size = 15
+text = "Town Hall construction contributes to the village's total development level. Review current resources before approving the next upgrade."
+autowrap_mode = 2
+
+[node name="RecordPanel" type="PanelContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleInset")
+
+[node name="RecordLayout" type="VBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout/RecordPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TownHallRow" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout/RecordPanel/RecordLayout"]
+layout_mode = 2
+
+[node name="Caption" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout/RecordPanel/RecordLayout/TownHallRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.71, 0.63, 0.52, 1)
+text = "Town Hall"
+
+[node name="RecordHallLevelValue" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout/RecordPanel/RecordLayout/TownHallRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.83, 0.4, 1)
+text = "Level 0 / 3"
+
+[node name="VillageRow" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout/RecordPanel/RecordLayout"]
+layout_mode = 2
+
+[node name="Caption" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout/RecordPanel/RecordLayout/VillageRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.71, 0.63, 0.52, 1)
+text = "Total Levels"
+
+[node name="RecordTotalLevelValue" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ContentScroll/ContentRow/CouncilPanel/CouncilLayout/RecordPanel/RecordLayout/VillageRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.83, 0.4, 1)
+text = "0"
+
+[node name="ActionBar" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="FeedbackLabel" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ActionBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.92, 0.72, 0.48, 1)
+theme_override_font_sizes/font_size = 14
+text = "Town services are not connected."
+autowrap_mode = 2
+vertical_alignment = 1
+
+[node name="UpgradeButton" type="Button" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/ActionBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(270, 44)
+layout_mode = 2
+focus_mode = 2
+theme_override_colors/font_color = Color(1, 0.91, 0.68, 1)
+theme_override_colors/font_disabled_color = Color(0.5, 0.46, 0.4, 1)
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("StylePrimaryButton")
+theme_override_styles/hover = SubResource("StylePrimaryHover")
+theme_override_styles/pressed = SubResource("StylePrimaryHover")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+theme_override_styles/disabled = SubResource("StyleButtonDisabled")
+text = "Upgrade Unavailable"
+icon = ExtResource("9_upgrade")
+icon_max_width = 28
+expand_icon = true
