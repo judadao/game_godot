@@ -42,7 +42,7 @@ func _run() -> void:
 		"BuildingEntrances/PlayerBlacksmith",
 		"BuildingEntrances/TownHall",
 		"BuildingEntrances/SwordSoulShop",
-		"BuildingEntrances/EastResidence",
+		"BuildingEntrances/EquipmentBlueprintShop",
 		"BuildingEntrances/FarEastResidence",
 		"Portals/BattleGateway/TownVisual",
 	]:
@@ -61,7 +61,7 @@ func _run() -> void:
 	for npc_name in [
 		"Mayor",
 		"VillagerMale",
-		"VillagerFemale",
+		"EquipmentBlueprintMerchant",
 		"Guard",
 		"ItemMerchant",
 		"Blacksmith",
@@ -79,7 +79,7 @@ func _run() -> void:
 	var npc_scene_paths := {
 		"Mayor": "res://scenes/npc/town/Mayor.tscn",
 		"VillagerMale": "res://scenes/npc/town/MaleVillager.tscn",
-		"VillagerFemale": "res://scenes/npc/town/FemaleVillager.tscn",
+		"EquipmentBlueprintMerchant": "res://scenes/npc/town/FemaleVillager.tscn",
 		"Guard": "res://scenes/npc/town/TownGuard.tscn",
 		"ItemMerchant": "res://scenes/npc/town/PotionMerchant.tscn",
 		"Blacksmith": "res://scenes/npc/town/Blacksmith.tscn",
@@ -284,9 +284,9 @@ func _assert_town_building_entrances(town: Node) -> void:
 			"position": Vector2(1370, 614),
 			"size": Vector2(240, 116),
 		},
-		"BuildingEntrances/EastResidence": {
-			"building_id": &"east_residence",
-			"ui_route": &"residence",
+		"BuildingEntrances/EquipmentBlueprintShop": {
+			"building_id": &"equipment_blueprint_shop",
+			"ui_route": &"shop",
 			"position": Vector2(1595, 614),
 			"size": Vector2(210, 116),
 		},

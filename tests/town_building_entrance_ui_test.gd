@@ -34,7 +34,10 @@ func _run() -> void:
 		"PlayerBlacksmith": {"ui": "PlayerBlacksmithUI", "context": &"player_blacksmith"},
 		"TownHall": {"ui": "TownHallUI", "context": &"town_hall"},
 		"SwordSoulShop": {"ui": "ShopUI", "context": &"sword_soul_shop"},
-		"EastResidence": {"ui": "TownResidenceUI", "context": &"east_residence"},
+		"EquipmentBlueprintShop": {
+			"ui": "ShopUI",
+			"context": &"equipment_blueprint_shop",
+		},
 		"FarEastResidence": {"ui": "TownResidenceUI", "context": &"far_east_residence"},
 	}
 	var material_yard := town.get_node("BuildingEntrances/MaterialYard")
@@ -79,20 +82,29 @@ func _run() -> void:
 				"%s UI must receive its building context." % entrance_name
 			)
 		if ui_name in ["MaterialYardUI", "PlayerBlacksmithUI", "TownHallUI"] and ui != null:
+			var expected_button_count := 1 if ui_name == "TownHallUI" else 0
 			_expect(
-				int(ui.call("get_building_button_count")) == 1,
-				"%s must focus its own building upgrade controls." % entrance_name
+				int(ui.call("get_building_button_count")) == expected_button_count,
+				"%s must expose only controls owned by its current service." % entrance_name
 			)
 		if entrance_name == "MaterialYard" and ui != null:
 			var inventory_manager: RefCounted = game.get("inventory_manager")
-			var town_manager: RefCounted = game.get("town_manager")
 			for resource_id in inventory_manager.call("get_resource_ids"):
 				inventory_manager.call("set_resource_amount", resource_id, 5000)
-			_expect(
-				bool(ui.call("request_upgrade")),
-				"Material Yard fixture must change progression before the production close path."
+			var wood_before := int(
+				inventory_manager.call("get_resource_amount", &"autumn_wood")
 			)
-			var upgraded_level := int(town_manager.call("get_building_level", &"workshop"))
+			game.call(
+				"_on_material_offer_requested",
+				&"material_wood_bundle",
+				1,
+				ui
+			)
+			_expect(
+				int(inventory_manager.call("get_resource_amount", &"autumn_wood"))
+					== wood_before + 10,
+				"Material Yard must deliver purchased forge materials."
+			)
 			var cancel_event := InputEventAction.new()
 			cancel_event.action = &"ui_cancel"
 			cancel_event.pressed = true
@@ -100,15 +112,17 @@ func _run() -> void:
 			await process_frame
 			await process_frame
 			var meta_state: RefCounted = game.get("meta_state")
-			var saved_town := meta_state.get("town_state") as Dictionary
-			var saved_levels := saved_town.get("building_levels", {}) as Dictionary
 			_expect(
 				game.call("get_open_ui", "MaterialYardUI") == null,
 				"Game ui_cancel must close the active building screen."
 			)
 			_expect(
-				int(saved_levels.get("workshop", -1)) == upgraded_level,
-				"Game ui_cancel must synchronize changed building progression to meta state."
+				int(
+					(meta_state.get("inventory_state") as Dictionary)
+						.get("resources", {})
+						.get("autumn_wood", -1)
+				) == wood_before + 10,
+				"Material purchases must synchronize to meta inventory state."
 			)
 			_expect(
 				not save_spy.saved_payload.is_empty(),
@@ -122,55 +136,36 @@ func _run() -> void:
 		if entrance_name == "SwordSoulShop":
 			var catalog := game.call("_catalog_for_shop", &"sword_soul_shop") as Array
 			_expect(
-				not catalog.is_empty() and String((catalog[0] as Dictionary).get("id", "")) == "soul_edge",
-				"Sword Soul Shop must expose its own shop catalog."
+				not catalog.is_empty()
+					and String((catalog[0] as Dictionary).get("product_kind", ""))
+						== "blueprint"
+					and String((catalog[0] as Dictionary).get("target_kind", ""))
+						== "sword_soul",
+				"Sword Soul Shop must expose permanent Sword Soul blueprints."
 			)
 		if entrance_name == "PlayerBlacksmith" and ui != null:
 			_expect(
 				ui.has_method("select_blacksmith_service"),
 				"Player Blacksmith UI must own its combined services."
 			)
-			ui.call("select_blacksmith_service", &"soul_refinery")
+			ui.call("select_blacksmith_service", &"sales_table")
 			_expect(
-				String(ui.call("get_blacksmith_service")) == "soul_refinery",
-				"Player Blacksmith must expose Soul Refinery service."
+				String(ui.call("get_blacksmith_service")) == "sales_table",
+				"Player Blacksmith must expose its crafted-equipment sales table."
 			)
-			ui.call("request_blueprint_research")
-			await process_frame
-			await process_frame
-			var deck_ui := game.call("get_open_ui", "DeckBuilderUI") as Control
-			_expect(deck_ui != null, "Player Blacksmith must open Blueprint Research.")
+		if entrance_name == "EquipmentBlueprintShop":
+			var catalog := game.call(
+				"_catalog_for_shop",
+				&"equipment_blueprint_shop"
+			) as Array
 			_expect(
-				deck_ui != null and String(deck_ui.call("get_context_id")) == "blueprint_research",
-				"Blacksmith Blueprint Research must preserve its UI context."
+				not catalog.is_empty()
+					and String((catalog[0] as Dictionary).get("product_kind", ""))
+						== "blueprint"
+					and String((catalog[0] as Dictionary).get("target_kind", ""))
+						== "equipment",
+				"The converted residence must sell equipment blueprints."
 			)
-			_expect(
-				deck_ui != null
-					and (deck_ui.find_child("Title", true, false) as Label).text
-						== "DESIGN RESEARCH"
-					and (deck_ui.find_child("Footer", true, false) as Container)
-						.find_children("*", "Button", true, false)
-						.any(func(button: Button) -> bool: return button.text == "SAVE DESIGN"),
-				"Blacksmith research must use save-design language instead of expedition language."
-			)
-			if deck_ui != null:
-				deck_ui.emit_signal(
-					"loadout_confirmed",
-					deck_ui.call("get_selected_deck"),
-					deck_ui.call("get_auto_attack_card_id")
-				)
-			await process_frame
-			await process_frame
-			_expect(not bool(game.get("run_state").active), "Blacksmith research must not start a run.")
-			_expect(
-				game.get("current_map") == town,
-				"Blacksmith research must keep the player in Town."
-			)
-			_expect(
-				game.call("get_open_ui", "DeckBuilderUI") == null,
-				"Blacksmith research must save and close after confirmation."
-			)
-			ui = null
 		if ui_name == "TownResidenceUI" and ui != null:
 			var close_button := ui.get_node(
 				"Shade/Center/ResidencePanel/PanelMargin/Content/CloseButton"

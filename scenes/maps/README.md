@@ -18,10 +18,11 @@ Scene tree to adjust their Inspector overrides.
 
 Town NPC scenes are display and body-collision only. Building UI triggers live
 in `town/components/TownBuildingEntrances.tscn`; all six buildings own their
-complete foundation range, building ID, UI route, and service context. The two
-east residences open information-only UI. Design Research and Soul Refinery are
-services inside Player Blacksmith, not east-side services. Never add an
-interaction area back to an NPC.
+complete foundation range, building ID, UI route, and service context. The
+former east residence is now the Equipment Blueprint Shop; only the far-east
+residence remains information-only. Player Blacksmith owns blueprint forging,
+workshop upgrades, Sword Soul upgrades, and crafted-equipment sales. Never add
+an interaction area back to an NPC.
 
 ## Per-map HUD preview and runtime adoption
 

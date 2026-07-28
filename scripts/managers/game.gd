@@ -25,6 +25,8 @@ const FORBIDDEN_GRAVEYARD_LAYOUT_SCENE_PATH := MAP_REGISTRY_SCRIPT.FORBIDDEN_GRA
 const MAP_MAIN_SCENE_PATHS := MAP_REGISTRY_SCRIPT.CANONICAL_TO_AUTHORITATIVE
 const INVENTORY_MANAGER_SCRIPT := preload("res://scripts/systems/inventory_manager.gd")
 const TOWN_MANAGER_SCRIPT := preload("res://scripts/systems/town_manager.gd")
+const FORGE_CATALOG_SCRIPT := preload("res://scripts/systems/forge_catalog.gd")
+const FORGE_SERVICE_SCRIPT := preload("res://scripts/systems/forge_service.gd")
 const DIVINE_GIFT_MANAGER_SCRIPT := preload(
 	"res://scripts/systems/divine_gift_manager.gd"
 )
@@ -134,6 +136,8 @@ var divine_gift_manager: RefCounted = DIVINE_GIFT_MANAGER_SCRIPT.new()
 var combo_finisher_catalog: RefCounted = COMBO_FINISHER_CATALOG_SCRIPT.new()
 var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
 var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
+var forge_catalog: RefCounted = FORGE_CATALOG_SCRIPT.new()
+var forge_service: RefCounted = FORGE_SERVICE_SCRIPT.new(forge_catalog, inventory_manager)
 var _pending_player_state: Dictionary = {}
 var _last_combo_name := "—"
 var _combo_runtime_totals := {
@@ -187,6 +191,7 @@ func _ready() -> void:
 		town_manager.call("apply_dict", meta_state.town_state)
 	elif not meta_state.building_levels.is_empty():
 		town_manager.call("apply_dict", {"building_levels": meta_state.building_levels})
+	_refresh_forge_progression()
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	card_database.load_catalog()
 	meta_state.auto_attack_card_id = _resolve_auto_attack_card_id(meta_state.auto_attack_card_id)
@@ -2926,6 +2931,18 @@ func _connect_if_present(node: Node, signal_name: StringName, method_name: Strin
 		node.connect(signal_name, callable)
 
 
+func _connect_with_source_if_present(
+	node: Node,
+	signal_name: StringName,
+	method_name: StringName
+) -> void:
+	if not node.has_signal(signal_name):
+		return
+	var callable := Callable(self, method_name).bind(node)
+	if not node.is_connected(signal_name, callable):
+		node.connect(signal_name, callable)
+
+
 func _open_inventory_from_pause() -> void:
 	_open_inventory()
 
@@ -3291,26 +3308,291 @@ func _open_town_service_ui(service_id: StringName) -> void:
 	if town_ui == null:
 		return
 	town_ui.call("set_context", service_id)
-	town_ui.call("set_services", town_manager, inventory_manager)
-	if service_id == &"player_blacksmith":
-		_connect_if_present(
+	_refresh_forge_progression()
+	if service_id == &"town_hall":
+		town_ui.call("set_services", town_manager, inventory_manager)
+	else:
+		town_ui.call("set_services", town_manager, inventory_manager, forge_service)
+	if service_id == &"material_yard":
+		town_ui.call("set_offers", _material_store_offer_projection())
+		_connect_with_source_if_present(
 			town_ui,
-			&"blueprint_research_requested",
-			&"_on_blacksmith_blueprint_research_requested"
+			&"purchase_requested",
+			&"_on_material_offer_requested"
+		)
+	if service_id == &"player_blacksmith":
+		town_ui.call("set_recipes", _forge_recipe_projection())
+		town_ui.call("set_sale_state", _player_sale_projection())
+		_connect_with_source_if_present(
+			town_ui,
+			&"craft_requested",
+			&"_on_blacksmith_craft_requested"
+		)
+		_connect_with_source_if_present(
+			town_ui,
+			&"list_for_sale_requested",
+			&"_on_blacksmith_list_for_sale_requested"
+		)
+		_connect_with_source_if_present(
+			town_ui,
+			&"resolve_sale_requested",
+			&"_on_blacksmith_resolve_sale_requested"
+		)
+		_connect_with_source_if_present(
+			town_ui,
+			&"upgrade_sword_soul_requested",
+			&"_on_blacksmith_upgrade_sword_soul_requested"
+		)
+		_connect_with_source_if_present(
+			town_ui,
+			&"workshop_upgraded",
+			&"_on_blacksmith_workshop_upgraded"
 		)
 
 
-func _on_blacksmith_blueprint_research_requested() -> void:
-	var town_ui := get_open_ui("PlayerBlacksmithUI")
-	if town_ui != null:
-		close_ui(town_ui)
-	_open_deck_builder("", &"")
-	var deck_ui := get_open_ui("DeckBuilderUI")
-	if deck_ui != null:
-		deck_ui.call("set_context", &"blueprint_research")
+func _material_store_offer_projection() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for offer_variant in forge_catalog.call("get_all_offers") as Array:
+		var offer := (offer_variant as Dictionary).duplicate(true)
+		if StringName(offer.get("shop_id", "")) != &"material_store":
+			continue
+		var product_kind := StringName(offer.get("product_kind", ""))
+		var product_id := StringName(offer.get("product_id", ""))
+		offer["owned"] = (
+			inventory_manager.call("owns_tool", product_id)
+			if product_kind == &"tool"
+			else inventory_manager.call("get_resource_amount", product_id)
+		)
+		result.append(offer)
+	return result
+
+
+func _forge_recipe_projection() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for recipe_variant in forge_service.call("get_available_recipes") as Array:
+		var recipe := (recipe_variant as Dictionary).duplicate(true)
+		var result_id := StringName(recipe.get("result_id", ""))
+		var result_kind := StringName(recipe.get("result_kind", ""))
+		var source: Dictionary
+		if result_kind == &"equipment":
+			source = inventory_manager.call("get_equipment", result_id) as Dictionary
+			recipe["kind"] = source.get("slot", "equipment")
+			recipe["name"] = source.get("name", result_id)
+			recipe["description"] = _equipment_forge_description(source)
+			recipe["tier"] = source.get(
+				"quality_tier",
+				recipe.get("required_blacksmith_level", 1)
+			)
+		else:
+			source = card_database.get_card(String(result_id))
+			recipe["kind"] = "sword_soul"
+			recipe["name"] = source.get("name", result_id)
+			recipe["description"] = source.get(
+				"description",
+				"Forge this Sword Soul from its permanent design."
+			)
+			recipe["tier"] = recipe.get("required_blacksmith_level", 1)
+			var sword_soul_progress := _sword_soul_progress(result_id)
+			recipe["owned"] = bool(sword_soul_progress.get("owned", false))
+			recipe["level"] = int(sword_soul_progress.get("level", 0))
+		recipe["icon_path"] = _forge_blueprint_icon(
+			StringName(recipe.get("blueprint_id", ""))
+		)
+		recipe["unlocked"] = true
+		result.append(recipe)
+	return result
+
+
+func _equipment_forge_description(item: Dictionary) -> String:
+	var slot := String(item.get("slot", "equipment")).capitalize()
+	var effects := item.get("effects", {}) as Dictionary
+	if effects.is_empty():
+		return "A crafted %s design for the Player Blacksmith workshop." % slot
+	var effect_parts: Array[String] = []
+	for effect_variant in effects:
+		effect_parts.append(
+			"%s +%s" % [
+				String(effect_variant).replace("_", " ").capitalize(),
+				str(effects[effect_variant]),
+			]
+		)
+	return "%s. %s." % [slot, ", ".join(effect_parts)]
+
+
+func _forge_blueprint_icon(blueprint_id: StringName) -> String:
+	for offer_variant in forge_catalog.call("get_all_offers") as Array:
+		var offer := offer_variant as Dictionary
+		if StringName(offer.get("product_id", "")) == blueprint_id:
+			return String(offer.get("icon_path", ""))
+	return ""
+
+
+func _sword_soul_progress(card_id: StringName) -> Dictionary:
+	var highest_level := 0
+	for instance in meta_state.selected_card_instances:
+		if StringName(instance.card_id) == card_id:
+			highest_level = maxi(highest_level, int(instance.level))
+	return {
+		"owned": highest_level > 0,
+		"level": highest_level,
+	}
+
+
+func _player_sale_projection() -> Dictionary:
+	var slot := inventory_manager.call("get_sale_slot") as Dictionary
+	if slot.is_empty():
+		return {"status": "empty"}
+	var item_id := StringName(slot.get("item_id", ""))
+	var item := inventory_manager.call("get_equipment", item_id) as Dictionary
+	return {
+		"item_id": String(item_id),
+		"item_name": String(item.get("name", item_id)),
+		"crafted_count": int(inventory_manager.call("get_equipment_count", item_id)),
+		"status": "customer_ready",
+		"table_label": "%s is displayed on the sales table." % String(
+			item.get("name", item_id)
+		),
+		"customer_label": "A customer is ready to purchase for %d gold." % (
+			int(slot.get("quantity", 0)) * int(slot.get("unit_price", 0))
+		),
+	}
+
+
+func _on_material_offer_requested(
+	offer_id: StringName,
+	quantity: int,
+	ui_control: Control
+) -> void:
+	var result := forge_service.call("purchase_offer", offer_id, quantity) as Dictionary
+	var success := bool(result.get("ok", false))
+	_persist_forge_progress()
+	ui_control.call("set_offers", _material_store_offer_projection())
+	ui_control.call(
+		"set_transaction_feedback",
+		"Materials delivered to your workshop."
+		if success else _forge_result_message(StringName(result.get("code", ""))),
+		success
+	)
+
+
+func _on_blacksmith_craft_requested(
+	recipe_id: StringName,
+	ui_control: Control
+) -> void:
+	var result := forge_service.call("craft", recipe_id) as Dictionary
+	var success := bool(result.get("ok", false))
+	if success and String(result.get("intent", "")) == "grant_sword_soul":
+		for _index in maxi(1, int(result.get("quantity", 1))):
+			meta_state.add_card_instance(String(result.get("result_id", "")), 1)
+		var card_id := String(result.get("result_id", ""))
+		if not meta_state.unlocked_cards.has(card_id):
+			meta_state.unlocked_cards.append(card_id)
+	result["message"] = (
+		"Forging complete. The crafted item is ready."
+		if success else _forge_result_message(StringName(result.get("code", "")))
+	)
+	_persist_forge_progress()
+	ui_control.call("set_recipes", _forge_recipe_projection())
+	ui_control.call("set_sale_state", _player_sale_projection())
+	ui_control.call("show_action_result", result)
+
+
+func _on_blacksmith_list_for_sale_requested(
+	item_id: StringName,
+	ui_control: Control
+) -> void:
+	var item := inventory_manager.call("get_equipment", item_id) as Dictionary
+	var purchase_cost := item.get("purchase_cost", {}) as Dictionary
+	var unit_price := maxi(10, int(purchase_cost.get("gold", 40)) / 2)
+	var result := forge_service.call(
+		"list_for_sale",
+		item_id,
+		1,
+		unit_price
+	) as Dictionary
+	var success := bool(result.get("ok", false))
+	result["message"] = (
+		"Equipment placed on the sales table. A customer has arrived."
+		if success else _forge_result_message(StringName(result.get("code", "")))
+	)
+	_persist_forge_progress()
+	ui_control.call("set_sale_state", _player_sale_projection())
+	ui_control.call("show_action_result", result)
+
+
+func _on_blacksmith_resolve_sale_requested(ui_control: Control) -> void:
+	var result := forge_service.call("resolve_sale") as Dictionary
+	var success := bool(result.get("ok", false))
+	result["message"] = (
+		"Customer purchase complete."
+		if success else _forge_result_message(StringName(result.get("code", "")))
+	)
+	_persist_forge_progress()
+	result["sale_state"] = _player_sale_projection()
+	ui_control.call("show_sale_result", result)
+	ui_control.call("set_sale_state", result["sale_state"])
+
+
+func _on_blacksmith_upgrade_sword_soul_requested(
+	card_id: StringName,
+	ui_control: Control
+) -> void:
+	var target_instance: CardInstance
+	for instance in meta_state.selected_card_instances:
+		if StringName(instance.card_id) != card_id or int(instance.level) >= 3:
+			continue
+		if target_instance == null or int(instance.level) > int(target_instance.level):
+			target_instance = instance
+	var success := false
+	var code: StringName = &"sword_soul_not_owned"
+	if target_instance != null:
+		var upgrade_cost := {
+			&"gold": 30 * int(target_instance.level),
+			&"magic_shard": 3 * int(target_instance.level),
+		}
+		if inventory_manager.call("spend_resources", upgrade_cost):
+			success = meta_state.upgrade_card_instance(target_instance.instance_id)
+			code = &"upgraded" if success else &"upgrade_rejected"
+			if not success:
+				for resource_variant in upgrade_cost:
+					inventory_manager.call(
+						"add_resource",
+						StringName(resource_variant),
+						int(upgrade_cost[resource_variant])
+					)
+		else:
+			code = &"insufficient_resources"
+	var result := {
+		"ok": success,
+		"code": String(code),
+		"message": (
+			"Sword Soul upgraded to Level %d." % int(target_instance.level)
+			if success else _forge_result_message(code)
+		),
+	}
+	_persist_forge_progress()
+	ui_control.call("set_recipes", _forge_recipe_projection())
+	ui_control.call("show_action_result", result)
+
+
+func _on_blacksmith_workshop_upgraded(ui_control: Control) -> void:
+	_refresh_forge_progression()
+	_persist_forge_progress()
+	ui_control.call("set_recipes", _forge_recipe_projection())
+	ui_control.call("set_sale_state", _player_sale_projection())
+
+
+func _persist_forge_progress() -> void:
+	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
+	_sync_progression_to_meta()
+	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	if hud != null and hud.has_method("set_currency"):
+		hud.call("set_currency", wallet_gold)
+	_apply_equipment_stats()
 
 
 func _sync_progression_to_meta() -> void:
+	_refresh_forge_progression()
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	meta_state.inventory_state = inventory_manager.call("to_dict") as Dictionary
 	meta_state.town_state = town_manager.call("to_dict") as Dictionary
@@ -3321,6 +3603,14 @@ func _sync_progression_to_meta() -> void:
 		meta_state.town_state.get("building_levels", {}) as Dictionary
 	).duplicate(true)
 	meta_state.village_level = clampi(int(town_manager.call("get_village_stage")) + 1, 1, 3)
+
+
+func _refresh_forge_progression() -> void:
+	forge_service.call(
+		"set_progression_levels",
+		int(town_manager.call("get_village_stage")),
+		int(town_manager.call("get_building_level", &"blacksmith"))
+	)
 
 
 func _has_legacy_inventory_progress() -> bool:
@@ -3765,12 +4055,6 @@ func _shop_items_for(shop_id: StringName) -> Array[Dictionary]:
 			{"id": "iron_sword", "name": "Iron Sword", "price": 120, "sell_price": 60, "description": "A reliable starter blade.", "stock": 2},
 			{"id": "guard_boots", "name": "Guard Boots", "price": 85, "sell_price": 42, "description": "Light boots made for long roads.", "stock": 3},
 		]
-	if shop_id == &"sword_soul_shop":
-		return [
-			{"id": "soul_edge", "name": "Soul Edge", "price": 180, "sell_price": 90, "description": "A blade tuned to sword-soul resonance.", "stock": 1},
-			{"id": "shard_charm", "name": "Shard Charm", "price": 110, "sell_price": 55, "description": "A charm for stabilizing magic shards.", "stock": 2},
-		]
-
 	return [
 		{"id": "travel_bread", "name": "Travel Bread", "price": 12, "sell_price": 6, "description": "Simple food for the road.", "stock": 12},
 		{"id": "town_map", "name": "Town Map", "price": 45, "sell_price": 22, "description": "Marks roads around the prototype town.", "stock": 1},
@@ -3778,10 +4062,46 @@ func _shop_items_for(shop_id: StringName) -> Array[Dictionary]:
 
 
 func _catalog_for_shop(shop_id: StringName) -> Array[Dictionary]:
+	if _is_forge_shop(shop_id):
+		return _forge_shop_items(shop_id)
 	var key := String(shop_id)
 	if not _merchant_catalogs.has(key):
 		_merchant_catalogs[key] = _shop_items_for(shop_id)
 	return _merchant_catalogs[key] as Array[Dictionary]
+
+
+func _is_forge_shop(shop_id: StringName) -> bool:
+	return shop_id in [&"sword_soul_shop", &"equipment_blueprint_shop"]
+
+
+func _forge_shop_items(shop_id: StringName) -> Array[Dictionary]:
+	_refresh_forge_progression()
+	var result: Array[Dictionary] = []
+	for offer_variant in forge_service.call("get_shop_offers", shop_id) as Array:
+		var offer := (offer_variant as Dictionary).duplicate(true)
+		var owned_variant: Variant = offer.get("owned", false)
+		var owned_count := int(owned_variant) if owned_variant is int else int(bool(owned_variant))
+		var icon_path := String(offer.get("icon_path", ""))
+		result.append({
+			"id": String(offer.get("id", "")),
+			"name": String(offer.get("name", "Blueprint")),
+			"description": String(
+				offer.get(
+					"description",
+					"Permanent design for your Player Blacksmith workshop."
+				)
+			),
+			"price": int(offer.get("price", 0)),
+			"stock": 0 if owned_count > 0 else 1,
+			"owned_count": owned_count,
+			"product_kind": String(offer.get("product_kind", "")),
+			"product_id": String(offer.get("product_id", "")),
+			"target_kind": String(offer.get("target_kind", "")),
+			"target_id": String(offer.get("target_id", "")),
+			"required_flame_tier": int(offer.get("required_flame_tier", 0)),
+			"texture": load(icon_path) as Texture2D if not icon_path.is_empty() else null,
+		})
+	return result
 
 
 func _on_shop_mode_changed(mode: String, ui_control: Control, shop_id: StringName) -> void:
@@ -3795,7 +4115,8 @@ func _refresh_shop_projection(ui_control: Control, shop_id: StringName, mode: St
 	for raw_item in _catalog_for_shop(shop_id):
 		var item := raw_item.duplicate(true)
 		var item_id := String(item.get("id", ""))
-		item["owned_count"] = int(player_inventory.get(item_id, 0))
+		if not _is_forge_shop(shop_id):
+			item["owned_count"] = int(player_inventory.get(item_id, 0))
 		if mode == "sell" and int(item["owned_count"]) <= 0:
 			continue
 		projection.append(item)
@@ -3810,6 +4131,9 @@ func _on_shop_transaction_confirmed(
 	ui_control: Control,
 	shop_id: StringName
 ) -> void:
+	if _is_forge_shop(shop_id):
+		_purchase_forge_shop_offer(item, quantity, mode, ui_control, shop_id)
+		return
 	var safe_quantity := maxi(1, quantity)
 	var item_id := String(item.get("id", ""))
 	var catalog := _catalog_for_shop(shop_id)
@@ -3864,3 +4188,56 @@ func _on_shop_transaction_confirmed(
 	_sync_progression_to_meta()
 	_refresh_shop_projection(ui_control, shop_id, mode)
 	ui_control.call("set_transaction_feedback", message, success)
+
+
+func _purchase_forge_shop_offer(
+	item: Dictionary,
+	quantity: int,
+	mode: String,
+	ui_control: Control,
+	shop_id: StringName
+) -> void:
+	if mode != "buy":
+		ui_control.call("set_transaction_feedback", "Blueprint merchants only sell designs.", false)
+		return
+	var offer_id := StringName(item.get("id", ""))
+	var result := forge_service.call("purchase_offer", offer_id, quantity) as Dictionary
+	var success := bool(result.get("ok", false))
+	var message := (
+		"Blueprint added to your Player Blacksmith workshop."
+		if success
+		else _forge_result_message(StringName(result.get("code", "")))
+	)
+	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
+	_sync_progression_to_meta()
+	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	if hud != null and hud.has_method("set_currency"):
+		hud.call("set_currency", wallet_gold)
+	_refresh_shop_projection(ui_control, shop_id, "buy")
+	ui_control.call("set_transaction_feedback", message, success)
+
+
+func _forge_result_message(code: StringName) -> String:
+	match code:
+		&"insufficient_gold":
+			return "You do not have enough gold."
+		&"already_owned":
+			return "This permanent design is already in your workshop."
+		&"offer_locked", &"blacksmith_level_locked":
+			return "Raise the Eternal Flame or workshop tier to unlock this design."
+		&"tool_required":
+			return "Purchase the required forging tool from the Material Store."
+		&"blueprint_required":
+			return "Purchase this design before attempting to forge it."
+		&"insufficient_resources":
+			return "Your workshop lacks the required materials."
+		&"listing_rejected":
+			return "The sales table is occupied or this item cannot be listed."
+		&"no_active_listing":
+			return "Place crafted equipment on the sales table first."
+		&"sword_soul_not_owned":
+			return "Forge this Sword Soul before upgrading it."
+		&"upgrade_rejected":
+			return "This Sword Soul has reached its current upgrade limit."
+		_:
+			return "The transaction could not be completed."

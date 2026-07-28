@@ -1,6 +1,7 @@
 extends RefCounted
 
 const DEFAULT_DATA_PATH := "res://data/equipment.json"
+const SAVE_SCHEMA_VERSION := 2
 const VALID_SLOTS: Array[StringName] = [&"weapon", &"armor", &"accessory"]
 
 var _loaded := false
@@ -9,7 +10,11 @@ var _resources: Dictionary = {}
 var _equipment_catalog: Array[Dictionary] = []
 var _equipment_by_id: Dictionary = {}
 var _owned_equipment: Dictionary = {}
+var _equipment_counts: Dictionary = {}
 var _equipment_levels: Dictionary = {}
+var _owned_blueprints: Dictionary = {}
+var _owned_tools: Dictionary = {}
+var _sale_slot: Dictionary = {}
 var _progression_unlocks: Dictionary = {}
 var _equipped: Dictionary = {
 	"weapon": StringName(),
@@ -99,9 +104,7 @@ func add_equipment(item_id: StringName) -> bool:
 	var key := String(item_id)
 	if not _equipment_by_id.has(key) or _owned_equipment.has(key):
 		return false
-	_owned_equipment[key] = true
-	_equipment_levels[key] = 1
-	return true
+	return add_equipment_count(item_id, 1)
 
 
 func purchase_equipment(item_id: StringName) -> bool:
@@ -116,6 +119,71 @@ func purchase_equipment(item_id: StringName) -> bool:
 
 func has_equipment(item_id: StringName) -> bool:
 	return _owned_equipment.has(String(item_id))
+
+
+func get_equipment_count(item_id: StringName) -> int:
+	return int(_equipment_counts.get(String(item_id), 0))
+
+
+func add_equipment_count(item_id: StringName, quantity: int) -> bool:
+	var key := String(item_id)
+	if not _equipment_by_id.has(key) or quantity <= 0:
+		return false
+	_equipment_counts[key] = get_equipment_count(item_id) + quantity
+	_owned_equipment[key] = true
+	if not _equipment_levels.has(key):
+		_equipment_levels[key] = 1
+	return true
+
+
+func remove_equipment_count(item_id: StringName, quantity: int) -> bool:
+	var key := String(item_id)
+	var current := get_equipment_count(item_id)
+	if quantity <= 0 or current < quantity:
+		return false
+	var remaining := current - quantity
+	for slot in VALID_SLOTS:
+		if StringName(_equipped.get(String(slot), StringName())) == item_id and remaining <= 0:
+			return false
+	if remaining > 0:
+		_equipment_counts[key] = remaining
+		return true
+	_equipment_counts.erase(key)
+	_owned_equipment.erase(key)
+	_equipment_levels.erase(key)
+	return true
+
+
+func owns_blueprint(blueprint_id: StringName) -> bool:
+	return _owned_blueprints.has(String(blueprint_id))
+
+
+func grant_blueprint(blueprint_id: StringName) -> bool:
+	var key := String(blueprint_id)
+	if key.is_empty() or _owned_blueprints.has(key):
+		return false
+	_owned_blueprints[key] = true
+	return true
+
+
+func get_owned_blueprints() -> Array[String]:
+	return _sorted_string_keys(_owned_blueprints)
+
+
+func owns_tool(tool_id: StringName) -> bool:
+	return _owned_tools.has(String(tool_id))
+
+
+func grant_tool(tool_id: StringName) -> bool:
+	var key := String(tool_id)
+	if key.is_empty() or _owned_tools.has(key):
+		return false
+	_owned_tools[key] = true
+	return true
+
+
+func get_owned_tools() -> Array[String]:
+	return _sorted_string_keys(_owned_tools)
 
 
 func equip(item_id: StringName) -> bool:
@@ -214,12 +282,63 @@ func set_progression_unlocks(unlocks: Dictionary) -> void:
 	_progression_unlocks = unlocks.duplicate(true)
 
 
+func get_sale_slot() -> Dictionary:
+	return _sale_slot.duplicate(true)
+
+
+func list_equipment_for_sale(
+	item_id: StringName,
+	quantity: int,
+	unit_price: int
+) -> bool:
+	if not _sale_slot.is_empty() or quantity <= 0 or unit_price <= 0:
+		return false
+	if not remove_equipment_count(item_id, quantity):
+		return false
+	_sale_slot = {
+		"item_id": String(item_id),
+		"quantity": quantity,
+		"unit_price": unit_price,
+	}
+	return true
+
+
+func resolve_sale() -> Dictionary:
+	if _sale_slot.is_empty():
+		return {}
+	var quantity := int(_sale_slot.get("quantity", 0))
+	var unit_price := int(_sale_slot.get("unit_price", 0))
+	var gold := quantity * unit_price
+	if gold <= 0 or not add_resource(&"gold", gold):
+		return {}
+	var result := _sale_slot.duplicate(true)
+	result["gold"] = gold
+	_sale_slot.clear()
+	return result
+
+
+func cancel_sale() -> bool:
+	if _sale_slot.is_empty():
+		return false
+	var item_id := StringName(_sale_slot.get("item_id", ""))
+	var quantity := int(_sale_slot.get("quantity", 0))
+	if not add_equipment_count(item_id, quantity):
+		return false
+	_sale_slot.clear()
+	return true
+
+
 func to_dict() -> Dictionary:
 	return {
+		"schema_version": SAVE_SCHEMA_VERSION,
 		"resources": _resources.duplicate(true),
-		"owned_equipment": _owned_equipment.keys(),
+		"owned_equipment": _sorted_string_keys(_owned_equipment),
+		"equipment_counts": _equipment_counts.duplicate(true),
 		"equipment_levels": _equipment_levels.duplicate(true),
 		"equipped": _equipped.duplicate(true),
+		"owned_blueprints": get_owned_blueprints(),
+		"owned_tools": get_owned_tools(),
+		"sale_slot": _sale_slot.duplicate(true),
 	}
 
 
@@ -231,19 +350,33 @@ func apply_dict(data: Dictionary) -> void:
 			if saved_resources.has(key):
 				_resources[key] = maxi(0, int(saved_resources[key]))
 	_owned_equipment.clear()
+	_equipment_counts.clear()
 	_equipment_levels.clear()
-	var owned: Variant = data.get("owned_equipment", [])
-	if owned is Array:
-		for item_id_variant in owned:
+	var saved_counts: Variant = data.get("equipment_counts", {})
+	if saved_counts is Dictionary and not (saved_counts as Dictionary).is_empty():
+		for item_id_variant in saved_counts:
 			var item_id := String(item_id_variant)
-			if _equipment_by_id.has(item_id):
+			var count := maxi(0, int((saved_counts as Dictionary)[item_id_variant]))
+			if _equipment_by_id.has(item_id) and count > 0:
+				_equipment_counts[item_id] = count
 				_owned_equipment[item_id] = true
 				_equipment_levels[item_id] = 1
+	else:
+		var owned: Variant = data.get("owned_equipment", [])
+		if owned is Array:
+			for item_id_variant in owned:
+				var item_id := String(item_id_variant)
+				if _equipment_by_id.has(item_id):
+					_equipment_counts[item_id] = 1
+					_owned_equipment[item_id] = true
+					_equipment_levels[item_id] = 1
 	var saved_levels: Variant = data.get("equipment_levels", {})
 	if saved_levels is Dictionary:
 		for item_id in _owned_equipment:
 			_equipment_levels[item_id] = clampi(int(saved_levels.get(item_id, 1)), 1, 3)
 	var saved_equipped: Variant = data.get("equipped", {})
+	for slot in VALID_SLOTS:
+		_equipped[String(slot)] = StringName()
 	if saved_equipped is Dictionary:
 		for slot in VALID_SLOTS:
 			var item_id := StringName(saved_equipped.get(String(slot), StringName()))
@@ -251,6 +384,20 @@ func apply_dict(data: Dictionary) -> void:
 				_equipped[String(slot)] = StringName()
 			elif _owned_equipment.has(String(item_id)) and StringName((_equipment_by_id[String(item_id)] as Dictionary).get("slot", "")) == slot:
 				_equipped[String(slot)] = item_id
+	_owned_blueprints = _string_array_to_set(data.get("owned_blueprints", []))
+	_owned_tools = _string_array_to_set(data.get("owned_tools", []))
+	_sale_slot.clear()
+	var saved_sale_slot: Variant = data.get("sale_slot", {})
+	if saved_sale_slot is Dictionary:
+		var item_id := String((saved_sale_slot as Dictionary).get("item_id", ""))
+		var quantity := int((saved_sale_slot as Dictionary).get("quantity", 0))
+		var unit_price := int((saved_sale_slot as Dictionary).get("unit_price", 0))
+		if _equipment_by_id.has(item_id) and quantity > 0 and unit_price > 0:
+			_sale_slot = {
+				"item_id": item_id,
+				"quantity": quantity,
+				"unit_price": unit_price,
+			}
 
 
 func _load_data(data_path: String) -> void:
@@ -314,3 +461,22 @@ func _is_non_negative_whole_number(value: Variant) -> bool:
 func _meets_upgrade_requirement(item: Dictionary) -> bool:
 	var requirement := String(item.get("upgrade_requirement", ""))
 	return requirement.is_empty() or bool(_progression_unlocks.get(requirement, false))
+
+
+func _sorted_string_keys(source: Dictionary) -> Array[String]:
+	var result: Array[String] = []
+	for key_variant in source:
+		result.append(String(key_variant))
+	result.sort()
+	return result
+
+
+func _string_array_to_set(value: Variant) -> Dictionary:
+	var result: Dictionary = {}
+	if not value is Array:
+		return result
+	for entry_variant in value:
+		var entry := String(entry_variant)
+		if not entry.is_empty():
+			result[entry] = true
+	return result

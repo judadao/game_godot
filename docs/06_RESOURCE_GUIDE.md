@@ -694,20 +694,19 @@ UI不可以：
 
 ### 11.2 Dedicated Town building UI boundary
 
-Current `Game._open_town_service_ui()` 將相同的 TownManager/InventoryManager
-instances 注入 `MaterialYardUI`、`PlayerBlacksmithUI` 與 `TownHallUI`。三者透過
-`RefCounted.call()` 呼叫既有 domain API：
+Current `Game._open_town_service_ui()` 將同一份 TownManager/InventoryManager
+注入三個建築 UI，並把 ForgeService 注入 MaterialYardUI／PlayerBlacksmithUI：
 
-- Material Yard：`upgrade_building("workshop")`。
-- Player Blacksmith：equipment purchase/equip/upgrade，以及
-  `blacksmith`／`memory_library` building upgrade。
+- Material Yard：emit `purchase_requested`，由 ForgeService 驗證火炬 Tier、gold、
+  材料 bundle 與永久工具。
+- Player Blacksmith：emit craft/list/resolve/Sword Soul upgrade intent；鍛造依
+  owned blueprint、required tools、blacksmith level 與 resource cost 驗證。
 - Town Hall：`upgrade_building("town_hall")`。
 
-Design Research 是例外路由：PlayerBlacksmithUI emit
-`blueprint_research_requested`，由 Game 關閉鐵匠 UI 並開啟 DeckBuilder context。
-關閉三個功能建築 UI 時，Game 同步 manager DTO 至 Meta、儲存並重投影世界。
-直接 service mutation 仍是 Known Risk；新增 screen 優先 emit typed intent，由
-Game 或 coordinator 呼叫 domain service，再把結果投影回 UI。
+`data/forge_catalog.json` 是 offers/recipes authority。Inventory DTO 額外保存
+`equipment_counts`、`owned_blueprints`、`owned_tools` 與單格 `sale_slot` escrow；
+legacy `owned_equipment` 載入時遷移為 count。Forge 交易成功時立即同步 manager
+DTO 至 Meta 並儲存；關閉 UI 時仍執行最終同步與世界投影。
 
 ### 11.3 Projection copy
 

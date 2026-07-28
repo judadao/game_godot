@@ -27,7 +27,7 @@ contracts remain compatible while camera and collision bounds match that segment
 | x=980-1220 | Civic Hall | Mayor and town progress interaction |
 | x=1220-1460 | Sword Soul Shop | Merchant interaction and purple soul-magic storefront |
 | x=1460-1700 | Blueprint Research | Research landmark and future presentation refinement |
-| x=1700-1942 | Soul Refinery | Innkeeper/refinery district |
+| x=1700-1942 | Equipment Blueprint Shop | Draftswoman merchant district |
 
 ## Asset batches
 
@@ -57,7 +57,8 @@ contracts remain compatible while camera and collision bounds match that segment
 - NPC roles are display-only and own no interaction area.
 - Material Yard, Player Blacksmith, Town Hall, and Sword Soul Shop each own a
   full-foundation interaction trigger.
-- Design Research and Soul Refinery are services inside Player Blacksmith.
+- Blueprint forging, workshop upgrades, Sword Soul upgrades, and crafted-equipment
+  sales are services inside Player Blacksmith.
 - The two east-side buildings have full-foundation residence information
   triggers but no public services.
 - Forest portal: `forest_portal`

@@ -41,6 +41,14 @@ theme_override_colors/font_color = Color(0.82, 0.64, 0.34, 1)
 theme_override_font_sizes/font_size = 13
 text = "MERCHANT"
 
+[node name="IdentityLabel" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
+theme_override_font_sizes/font_size = 20
+text = "Mira"
+text_overrun_behavior = 3
+tooltip_text = "Shop host"
+
 [node name="PortraitFrame" type="PanelContainer" parent="."]
 custom_minimum_size = Vector2(218, 180)
 layout_mode = 2

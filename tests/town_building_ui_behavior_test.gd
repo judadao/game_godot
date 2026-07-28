@@ -30,7 +30,15 @@ func _test_material_yard() -> void:
 		return
 	if not _require_methods(
 		ui,
-		["open", "set_services", "set_context", "get_context_id", "get_resource_text"],
+		[
+			"open",
+			"set_services",
+			"set_offers",
+			"set_context",
+			"get_context_id",
+			"get_resource_text",
+			"get_offer_button_count",
+		],
 		"MaterialYardUI"
 	):
 		await _free_ui(ui)
@@ -38,6 +46,26 @@ func _test_material_yard() -> void:
 	var services := _new_services()
 	var town: RefCounted = services["town"]
 	ui.call("set_services", town, services["inventory"])
+	ui.call("set_offers", [
+		{
+			"id": "material_wood_bundle",
+			"name": "Autumn Wood Bundle",
+			"description": "Basic timber for forge recipes.",
+			"product_kind": "resource",
+			"product_id": "autumn_wood",
+			"price": 18,
+			"required_flame_tier": 0,
+		},
+		{
+			"id": "tool_forging_hammer",
+			"name": "Forging Hammer",
+			"description": "Permanent basic forging tool.",
+			"product_kind": "tool",
+			"product_id": "forging_hammer",
+			"price": 60,
+			"required_flame_tier": 0,
+		},
+	])
 	ui.call("set_context", &"material_yard")
 	ui.call("open")
 	await process_frame
@@ -47,21 +75,32 @@ func _test_material_yard() -> void:
 		"MaterialYardUI must preserve its building routing context."
 	)
 	_expect(
-		String(ui.call("get_resource_text")).contains("Autumn Wood")
-			and String(ui.call("get_resource_text")).contains("Stone"),
-		"MaterialYardUI must project the materials used by its upgrade."
+		String(ui.call("get_resource_text")).contains("5,000 G"),
+		"MaterialYardUI must project the persistent forge wallet."
 	)
-	var upgrade_button := ui.find_child("WorkshopUpgradeButton", true, false) as Button
 	_expect(
-		upgrade_button != null,
-		"MaterialYardUI must expose its authored workshop upgrade action."
+		int(ui.call("get_offer_button_count")) == 1,
+		"MaterialYardUI must show the active Materials filter."
 	)
-	if upgrade_button != null:
-		upgrade_button.pressed.emit()
+	var purchase_requests: Array[Dictionary] = []
+	ui.connect(
+		"purchase_requested",
+		func(offer_id: StringName, quantity: int) -> void:
+			purchase_requests.append({"offer_id": offer_id, "quantity": quantity})
+	)
+	var buy_button := ui.find_child("BuyButton", true, false) as Button
+	_expect(
+		buy_button != null,
+		"MaterialYardUI must expose its authored purchase action."
+	)
+	if buy_button != null:
+		buy_button.pressed.emit()
 		await process_frame
 	_expect(
-		int(town.call("get_building_level", &"workshop")) == 1,
-		"MaterialYardUI must upgrade workshop and no other building."
+		purchase_requests.size() == 1
+			and purchase_requests[0]["offer_id"] == &"material_wood_bundle"
+			and purchase_requests[0]["quantity"] == 1,
+		"MaterialYardUI must emit the selected offer and quantity."
 	)
 	await _free_ui(ui)
 
@@ -79,11 +118,11 @@ func _test_player_blacksmith() -> void:
 			"select_blacksmith_service",
 			"get_blacksmith_service",
 			"upgrade_service_building",
-			"request_blueprint_research",
-			"select_equipment",
-			"purchase_selected_equipment",
-			"equip_selected_equipment",
-			"strengthen_selected_equipment",
+			"set_recipes",
+			"set_sale_state",
+			"craft_selected_recipe",
+			"request_list_for_sale",
+			"request_resolve_sale",
 		],
 		"PlayerBlacksmithUI"
 	):
@@ -92,6 +131,19 @@ func _test_player_blacksmith() -> void:
 	var services := _new_services()
 	var town: RefCounted = services["town"]
 	ui.call("set_services", town, services["inventory"])
+	ui.call("set_recipes", [
+		{
+			"id": "forge_iron_sword",
+			"result_id": "iron_sword",
+			"result_kind": "equipment",
+			"name": "Iron Sword",
+			"description": "A basic forged weapon.",
+			"kind": "weapon",
+			"tier": 1,
+			"cost": {"autumn_wood": 5, "stone": 3},
+			"unlocked": true,
+		},
+	])
 	ui.call("set_context", &"player_blacksmith")
 	ui.call("open")
 	await process_frame
@@ -109,56 +161,42 @@ func _test_player_blacksmith() -> void:
 		StringName(ui.call("get_blacksmith_service")) == &"forge",
 		"PlayerBlacksmithUI must open on Forge."
 	)
+	var workshop_upgrade_requests := [0]
+	ui.connect(
+		"workshop_upgraded",
+		func() -> void: workshop_upgrade_requests[0] += 1
+	)
 	ui.call("upgrade_service_building")
 	_expect(
 		int(town.call("get_building_level", &"blacksmith")) == 1,
 		"Forge service must target the blacksmith building."
 	)
-
-	ui.call("select_blacksmith_service", &"soul_refinery")
 	_expect(
-		StringName(ui.call("get_blacksmith_service")) == &"soul_refinery",
-		"PlayerBlacksmithUI must expose the moved Soul Refinery service."
-	)
-	ui.call("upgrade_service_building")
-	_expect(
-		int(town.call("get_building_level", &"memory_library")) == 1,
-		"Soul Refinery must target memory_library progression."
+		workshop_upgrade_requests[0] == 1,
+		"Workshop upgrade must request an immediate projection and save refresh."
 	)
 
-	var research_requests := [0]
+	ui.call("select_blacksmith_service", &"sales_table")
+	_expect(
+		StringName(ui.call("get_blacksmith_service")) == &"sales_table",
+		"PlayerBlacksmithUI must expose crafted-equipment sales."
+	)
+	var craft_requests: Array[StringName] = []
 	ui.connect(
-		"blueprint_research_requested",
-		func() -> void: research_requests[0] += 1
+		"craft_requested",
+		func(recipe_id: StringName) -> void: craft_requests.append(recipe_id)
 	)
-	ui.call("request_blueprint_research")
+	ui.call("select_blacksmith_service", &"forge")
+	ui.call("craft_selected_recipe")
 	_expect(
-		research_requests[0] == 1,
-		"Design Research must emit exactly one routing intent for its external screen."
+		craft_requests == [&"forge_iron_sword"],
+		"Forge must emit the selected blueprint recipe."
 	)
 	_expect(
 		_visible_text(ui).contains("Forge")
-			and _visible_text(ui).contains("Design Research")
-			and _visible_text(ui).contains("Soul Refinery"),
-		"PlayerBlacksmithUI must keep all three moved services discoverable."
-	)
-	var inventory: RefCounted = services["inventory"]
-	ui.call("select_blacksmith_service", &"forge")
-	ui.call("select_equipment", &"iron_sword")
-	ui.call("purchase_selected_equipment")
-	_expect(
-		bool(inventory.call("has_equipment", &"iron_sword")),
-		"Forge must purchase the selected equipment through InventoryManager."
-	)
-	ui.call("equip_selected_equipment")
-	_expect(
-		StringName(inventory.call("get_equipped", &"weapon")) == &"iron_sword",
-		"Forge must equip the selected owned item."
-	)
-	ui.call("strengthen_selected_equipment")
-	_expect(
-		int(inventory.call("get_equipment_level", &"iron_sword")) == 2,
-		"Forge must strengthen the selected equipment exactly once."
+			and _visible_text(ui).contains("Workshop")
+			and _visible_text(ui).contains("Sales"),
+		"PlayerBlacksmithUI must keep Forge, workshop upgrade, and sales discoverable."
 	)
 	await _free_ui(ui)
 
@@ -252,8 +290,8 @@ func _test_shop() -> void:
 				"mode": mode,
 			})
 	)
+	ui.call("set_shop_context", &"general_store")
 	ui.call("set_merchant_name", "Sword Soul Merchant")
-	ui.call("set_shop_context", &"sword_soul_shop")
 	ui.call("set_wallet", 999)
 	ui.call("set_items", [item])
 	ui.call("open")
@@ -289,10 +327,10 @@ func _test_shop() -> void:
 		"ShopUI must preserve the sell transaction intent contract."
 	)
 	_expect(
-		_visible_text(ui).contains("SWORD SOUL SHOP")
-			and _visible_text(ui).contains("Sword Soul Merchant")
-			and _visible_text(ui).contains("999"),
-		"ShopUI must project building identity, merchant identity, and wallet balance."
+		(ui.find_child("TitleText", true, false) as Label).text == "TRADE COUNTER"
+			and (ui.find_child("GoldBalance", true, false) as Label).text
+				== "Wallet: 999 gold",
+		"ShopUI must project building identity and wallet balance."
 	)
 	var long_catalog: Array[Dictionary] = []
 	for index in 10:
@@ -325,6 +363,23 @@ func _test_shop() -> void:
 			and item_scroll != null
 			and item_scroll.scroll_vertical > 0,
 		"Keyboard focus must scroll a catalog row beyond the initial viewport into view."
+	)
+	ui.call("set_shop_context", &"sword_soul_shop")
+	ui.call("set_items", [{
+		"id": "sword_soul_blueprint_flame_imbue",
+		"name": "Flame Imbue Blueprint",
+		"description": "Permanent Sword Soul design.",
+		"price": 100,
+		"stock": 1,
+		"owned_count": 0,
+		"product_kind": "blueprint",
+		"target_kind": "sword_soul",
+		"texture": icon,
+	}])
+	var sell_button := ui.find_child("SellButton", true, false) as Button
+	_expect(
+		sell_button != null and (not sell_button.visible or sell_button.disabled),
+		"Sword Soul blueprint merchants must be buy-only."
 	)
 	await _free_ui(ui)
 

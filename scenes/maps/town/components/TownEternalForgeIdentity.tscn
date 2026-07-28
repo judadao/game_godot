@@ -301,7 +301,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/location_id = "sword_soul_shop"
 
-[node name="EastResidence" type="Label" parent="LocationLabels"]
+[node name="EquipmentBlueprintShop" type="Label" parent="LocationLabels"]
 offset_left = 1485.0
 offset_top = 496.0
 offset_right = 1675.0
@@ -312,10 +312,10 @@ theme_override_colors/font_outline_color = Color(0.0627451, 0.0823529, 0.113725,
 theme_override_constants/outline_size = 1
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBox_location_plaque")
-text = "東側民宅"
+text = "裝備圖紙商"
 horizontal_alignment = 1
 vertical_alignment = 1
-metadata/location_id = "east_residence"
+metadata/location_id = "equipment_blueprint_shop"
 
 [node name="FarEastResidence" type="Label" parent="LocationLabels"]
 offset_left = 1725.0

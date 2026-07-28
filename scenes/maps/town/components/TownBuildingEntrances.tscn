@@ -14,7 +14,7 @@ size = Vector2(260, 116)
 [sub_resource type="RectangleShape2D" id="SwordSoulShopFoundationShape"]
 size = Vector2(240, 116)
 
-[sub_resource type="RectangleShape2D" id="EastResidenceFoundationShape"]
+[sub_resource type="RectangleShape2D" id="EquipmentBlueprintShopFoundationShape"]
 size = Vector2(210, 116)
 
 [sub_resource type="RectangleShape2D" id="FarEastResidenceFoundationShape"]
@@ -66,16 +66,16 @@ service_id = &"sword_soul_shop"
 [node name="InteractionCollision" parent="SwordSoulShop/InteractionArea" index="0"]
 shape = SubResource("SwordSoulShopFoundationShape")
 
-[node name="EastResidence" parent="." instance=ExtResource("1_entrance")]
+[node name="EquipmentBlueprintShop" parent="." instance=ExtResource("1_entrance")]
 position = Vector2(1595, 614)
-interaction_id = &"east_residence_entrance"
-display_name = "East Residence"
-building_id = &"east_residence"
-ui_route = &"residence"
-service_id = &"east_residence"
+interaction_id = &"equipment_blueprint_shop_entrance"
+display_name = "Equipment Blueprint Merchant"
+building_id = &"equipment_blueprint_shop"
+ui_route = &"shop"
+service_id = &"equipment_blueprint_shop"
 
-[node name="InteractionCollision" parent="EastResidence/InteractionArea" index="0"]
-shape = SubResource("EastResidenceFoundationShape")
+[node name="InteractionCollision" parent="EquipmentBlueprintShop/InteractionArea" index="0"]
+shape = SubResource("EquipmentBlueprintShopFoundationShape")
 
 [node name="FarEastResidence" parent="." instance=ExtResource("1_entrance")]
 position = Vector2(1817, 614)

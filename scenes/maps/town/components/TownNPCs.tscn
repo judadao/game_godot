@@ -16,7 +16,7 @@ position = Vector2(1130, 672)
 [node name="VillagerMale" parent="." instance=ExtResource("2_male")]
 position = Vector2(1280, 672)
 
-[node name="VillagerFemale" parent="." instance=ExtResource("3_female")]
+[node name="EquipmentBlueprintMerchant" parent="." instance=ExtResource("3_female")]
 position = Vector2(1570, 672)
 
 [node name="Guard" parent="." instance=ExtResource("4_guard")]

@@ -17,16 +17,27 @@ const ITEM_ICON_BOOTS := preload("res://assets/curated/game_own/items/oga_rpg_it
 const ITEM_ICON_GEM := preload("res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png")
 const ITEM_ICON_SUPPLY := preload("res://assets/ui/fantasy_icons_16x16/png/Separately/Icon67_1.png")
 const ITEM_ICON_MAP := preload("res://assets/ui/fantasy_icons_16x16/png/Separately/Icon46_1.png")
+const ACTION_ICON_CONFIRM := preload("res://assets/ui/fantasy_icons_16x16/png/Separately/Icon25_1.png")
+const NPC_PORTRAIT_ATLAS := preload("res://assets/town/rebuild_v2/town_npcs_atlas_v2.png")
+const DEFAULT_MERCHANT_PORTRAIT := preload("res://assets/ui/shop/generated/merchant_counter.png")
 
 @onready var buy_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/BuyButton
 @onready var sell_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/SellButton
 @onready var title_text: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title/TitleText
 @onready var merchant_name: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/MerchantName
+@onready var merchant_role: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/SectionLabel
+@onready var merchant_identity: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/IdentityLabel
+@onready var merchant_portrait: TextureRect = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/PortraitFrame/MerchantPortrait
+@onready var merchant_dialogue: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/DialoguePanel/Dialogue
+@onready var merchant_hint: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/Hint
+@onready var blueprint_icon: TextureRect = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemListHeader/BlueprintIcon
 @onready var item_header: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemListHeader/ItemHeader
 @onready var item_scroll: ScrollContainer = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll
 @onready var preview_icon: TextureRect = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/PreviewFrame/PreviewLayout/PreviewIcon
+@onready var details_header: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/SectionLabel
 @onready var item_name: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/ItemName
 @onready var item_description: RichTextLabel = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/ItemDescription
+@onready var quantity_label: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow/QuantityLabel
 @onready var minus_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow/MinusButton
 @onready var quantity_value: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow/QuantityValue
 @onready var plus_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow/PlusButton
@@ -41,6 +52,8 @@ var mode: String = "buy"
 var selected_index: int = -1
 var quantity: int = 1
 var wallet_balance: int = 0
+var shop_context: StringName = &"general_store"
+var _merchant_name_override := ""
 var _row_buttons: Array[Button] = []
 var _row_icons: Array[TextureRect] = []
 var _row_names: Array[Label] = []
@@ -88,11 +101,51 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func set_merchant_name(display_name: String) -> void:
+	_merchant_name_override = display_name.strip_edges()
 	merchant_name.text = display_name
 
 
 func set_shop_context(shop_id: StringName) -> void:
-	title_text.text = "SWORD SOUL SHOP" if shop_id == &"sword_soul_shop" else "TRADE COUNTER"
+	shop_context = shop_id
+	match shop_id:
+		&"sword_soul_shop":
+			_apply_shop_identity(
+				"SWORD SOUL SHOP - BLUEPRINTS",
+				"SOULWRIGHT",
+				"Soulwright Ilyra",
+				"Every sword soul begins as a design.\nChoose the one your forge will awaken.",
+				"Purchased blueprints are forged and upgraded at your own workshop.",
+				Rect2(330, 54, 280, 590)
+			)
+		&"equipment_blueprint_shop":
+			_apply_shop_identity(
+				"EQUIPMENT BLUEPRINTS",
+				"MASTER DRAFTSWOMAN",
+				"Draftswoman Elara",
+				"A sound weapon starts with a precise plan.\nInspect each design before you invest.",
+				"Each blueprint is unique and becomes available at your workshop.",
+				Rect2(1940, 54, 172, 590)
+			)
+		&"material_store", &"material_yard":
+			_apply_shop_identity(
+				"FORGE MATERIALS",
+				"YARD QUARTERMASTER",
+				"Quartermaster Brann",
+				"Tools on the left, quality stock on the right.\nTake what your next forge job needs.",
+				"Materials and tools improve as the forge flame grows stronger.",
+				Rect2(620, 54, 300, 590)
+			)
+		_:
+			_apply_shop_identity(
+				"TRADE COUNTER",
+				"MERCHANT",
+				"Mira",
+				"Welcome, traveler!\nWhat can I get for you?",
+				"Choose a trade mode, then inspect an item.",
+				Rect2()
+			)
+	_apply_context_controls()
+	set_mode("buy" if _is_blueprint_shop() else mode)
 
 
 func set_wallet(amount: int) -> void:
@@ -101,9 +154,19 @@ func set_wallet(amount: int) -> void:
 	_refresh_details()
 
 func set_mode(new_mode: String) -> void:
-	mode = "sell" if new_mode.to_lower() == "sell" else "buy"
-	item_header.text = "Your Goods" if mode == "sell" else "Merchant Stock"
-	confirm_button.text = "Sell" if mode == "sell" else "Buy"
+	mode = "buy" if _is_blueprint_shop() else (
+		"sell" if new_mode.to_lower() == "sell" else "buy"
+	)
+	item_header.text = (
+		"Blueprint Catalog"
+		if _is_blueprint_shop()
+		else ("Your Goods" if mode == "sell" else "Merchant Stock")
+	)
+	confirm_button.text = (
+		"Buy Blueprint"
+		if _is_blueprint_shop()
+		else ("Sell" if mode == "sell" else "Buy")
+	)
 	buy_button.add_theme_stylebox_override("normal", _mode_selected_style if mode == "buy" else _mode_normal_style)
 	sell_button.add_theme_stylebox_override("normal", _mode_selected_style if mode == "sell" else _mode_normal_style)
 	mode_changed.emit(mode)
@@ -130,6 +193,12 @@ func set_selected_item(index: int) -> void:
 		item_selected.emit(selected_index, items[selected_index], mode)
 
 func set_quantity(new_quantity: int) -> void:
+	if _is_blueprint_shop():
+		quantity = 1
+		quantity_value.text = "1"
+		_refresh_total()
+		quantity_changed.emit(quantity)
+		return
 	var max_quantity := 99
 	if selected_index >= 0 and selected_index < items.size():
 		var limit_key := "owned_count" if mode == "sell" else "stock"
@@ -179,7 +248,9 @@ func _cache_styles() -> void:
 	_mode_normal_style = sell_button.get_theme_stylebox("normal")
 
 func _configure_focus_navigation() -> void:
-	buy_button.focus_neighbor_right = buy_button.get_path_to(sell_button)
+	buy_button.focus_neighbor_right = (
+		NodePath() if _is_blueprint_shop() else buy_button.get_path_to(sell_button)
+	)
 	sell_button.focus_neighbor_left = sell_button.get_path_to(buy_button)
 	if _row_buttons.is_empty():
 		return
@@ -253,9 +324,13 @@ func _refresh_rows() -> void:
 		if index < items.size():
 			var item := items[index]
 			var count_text := (
-				"Owned %d" % int(item.get("owned_count", 0))
-				if mode == "sell"
-				else "Stock %d" % int(item.get("stock", 0))
+				("OWNED" if int(item.get("owned_count", 0)) > 0 else "BLUEPRINT")
+				if _is_blueprint_shop()
+				else (
+					"Owned %d" % int(item.get("owned_count", 0))
+					if mode == "sell"
+					else "Stock %d" % int(item.get("stock", 0))
+				)
 			)
 			_row_icons[index].texture = _item_icon(item)
 			_row_names[index].text = _item_title(item)
@@ -292,19 +367,33 @@ func _refresh_details() -> void:
 		return
 
 	var item := items[selected_index]
-	minus_button.disabled = false
-	plus_button.disabled = false
+	minus_button.disabled = _is_blueprint_shop()
+	plus_button.disabled = _is_blueprint_shop()
 	var available := int(item.get("owned_count", 0)) if mode == "sell" else int(item.get("stock", 0))
-	confirm_button.disabled = available <= 0
+	var already_owned := _is_blueprint_shop() and int(item.get("owned_count", 0)) > 0
+	confirm_button.disabled = available <= 0 or already_owned
+	confirm_button.text = (
+		"Owned" if already_owned else (
+			"Buy Blueprint"
+			if _is_blueprint_shop()
+			else ("Sell" if mode == "sell" else "Buy")
+		)
+	)
 	preview_icon.texture = item.get("texture") as Texture2D
 	if preview_icon.texture == null and selected_index < _row_icons.size():
 		preview_icon.texture = _row_icons[selected_index].texture
 	item_name.text = _item_title(item)
-	item_description.text = "%s\n\n%s: %d" % [
-		str(item.get("description", "")),
-		"Owned" if mode == "sell" else "Stock",
-		available,
-	]
+	if _is_blueprint_shop():
+		item_description.text = "%s\n\n[b]Blueprint Status:[/b] %s" % [
+			str(item.get("description", "")),
+			"OWNED - available at your workshop" if already_owned else "AVAILABLE TO PURCHASE",
+		]
+	else:
+		item_description.text = "%s\n\n%s: %d" % [
+			str(item.get("description", "")),
+			"Owned" if mode == "sell" else "Stock",
+			available,
+		]
 	set_quantity(quantity)
 
 func _refresh_total() -> void:
@@ -326,7 +415,10 @@ func _cancel() -> void:
 	close()
 
 func _item_title(item: Dictionary) -> String:
-	return str(item.get("name", "Unknown Item"))
+	var display_name := str(item.get("name", "Unknown Item"))
+	if _is_blueprint_shop() and not "blueprint" in display_name.to_lower():
+		return "%s Blueprint" % display_name
+	return display_name
 
 func _unit_price(item: Dictionary) -> int:
 	if mode == "sell":
@@ -337,6 +429,8 @@ func _item_icon(item: Dictionary) -> Texture2D:
 	var explicit_texture := item.get("texture") as Texture2D
 	if explicit_texture != null:
 		return explicit_texture
+	if _is_blueprint_shop():
+		return ITEM_ICON_MAP
 	var identity := "%s %s" % [
 		str(item.get("id", "")).to_lower(),
 		_item_title(item).to_lower(),
@@ -365,3 +459,63 @@ func _format_number(value: int) -> String:
 		result = "," + text.substr(text.length() - 3, 3) + result
 		text = text.substr(0, text.length() - 3)
 	return text + result
+
+
+func _apply_shop_identity(
+	window_title: String,
+	role: String,
+	display_name: String,
+	dialogue: String,
+	hint: String,
+	atlas_region: Rect2
+) -> void:
+	title_text.text = window_title
+	merchant_role.text = role
+	var resolved_name := (
+		_merchant_name_override
+		if not _merchant_name_override.is_empty()
+		else display_name
+	)
+	merchant_name.text = resolved_name
+	merchant_identity.text = display_name
+	merchant_identity.tooltip_text = display_name
+	merchant_dialogue.text = dialogue
+	merchant_hint.text = hint
+	if atlas_region.size == Vector2.ZERO:
+		merchant_portrait.texture = DEFAULT_MERCHANT_PORTRAIT
+		return
+	var portrait := AtlasTexture.new()
+	portrait.atlas = NPC_PORTRAIT_ATLAS
+	portrait.region = atlas_region
+	merchant_portrait.texture = portrait
+
+
+func _apply_context_controls() -> void:
+	var blueprint_shop := _is_blueprint_shop()
+	sell_button.visible = not blueprint_shop
+	sell_button.disabled = blueprint_shop
+	blueprint_icon.visible = blueprint_shop
+	blueprint_icon.texture = ITEM_ICON_MAP if blueprint_shop else ITEM_ICON_SUPPLY
+	details_header.text = "BLUEPRINT DETAILS" if blueprint_shop else "ITEM DETAILS"
+	quantity_label.text = "Unique Blueprint" if blueprint_shop else "Quantity"
+	minus_button.tooltip_text = (
+		"Blueprints are purchased once"
+		if blueprint_shop
+		else "Decrease quantity"
+	)
+	plus_button.tooltip_text = (
+		"Blueprints are purchased once"
+		if blueprint_shop
+		else "Increase quantity"
+	)
+	confirm_button.icon = ITEM_ICON_MAP if blueprint_shop else ACTION_ICON_CONFIRM
+	confirm_button.tooltip_text = (
+		"Purchase this unique blueprint"
+		if blueprint_shop
+		else "Confirm this transaction"
+	)
+	_configure_focus_navigation()
+
+
+func _is_blueprint_shop() -> bool:
+	return shop_context == &"sword_soul_shop" or shop_context == &"equipment_blueprint_shop"

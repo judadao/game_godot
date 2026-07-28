@@ -29,7 +29,7 @@
 [editable path="NPCs"]
 [editable path="NPCs/Mayor"]
 [editable path="NPCs/VillagerMale"]
-[editable path="NPCs/VillagerFemale"]
+[editable path="NPCs/EquipmentBlueprintMerchant"]
 [editable path="NPCs/Guard"]
 [editable path="NPCs/ItemMerchant"]
 [editable path="NPCs/Blacksmith"]

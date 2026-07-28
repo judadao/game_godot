@@ -72,7 +72,8 @@ and render text as Figma/Godot UI so localization remains editable.
   rare materials, and Sword Soul refinement caps.
 - Forging level unlocks equipment quality, affix count, resource efficiency,
   advanced refinement methods, order difficulty, and sale value.
-- Design Research and Sword Soul refinement are Player Blacksmith services;
+- Blueprint forging, workshop upgrades, Sword Soul upgrades, and crafted-equipment
+  sales are Player Blacksmith services;
   the two east-side buildings are ordinary residences.
 - Weapons define the base attack; Sword Souls modify attacks and form named
   three-Soul Finishers. The healing Sword Soul does not enter Finisher recipes.

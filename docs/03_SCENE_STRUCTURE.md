@@ -192,8 +192,8 @@ Town 的六個建築 UI 觸發由 `BuildingEntrances` 獨立擁有；每個 Area
 該建築完整地基，交界處由 Game 選擇距離 Player 最近的 candidate。NPC 僅保留角色
 視覺與 body collision，不得加入 `Interactives` 或持有 `InteractionArea`。入口透過
 `building_ui_requested` 將 `building_id`、`ui_route` 與 `service_id` 交給 Game。
-東側原設計稿研究室與劍魂精煉工房改為普通民宅，只開啟無服務的住宅資訊 UI；
-Design Research 與 Soul Refinery 服務統一由 Player Blacksmith UI 提供。
+東側原設計稿研究室改為裝備圖紙商，使用 Shop UI 販售永久 equipment 圖紙；
+最東側原劍魂精煉工房改為普通民宅，只開啟無服務的住宅資訊 UI。
 
 `res://scenes/maps/battle_portal_hub.tscn` 是獨立可玩 map。Town 的唯一
 `BattleGateway` 先進入此大廳；大廳的 `RegionPortals` 固定有四個入口槽位：
@@ -487,8 +487,8 @@ Town prop/building多為`Sprite2D` scene，groups如`TownProp`、`TownBuilding`�
 | `scenes/ui/dialogue/DialogueUI.tscn` | `Control` | speaker/text/choice interaction |
 | `scenes/ui/shop/ShopUI.tscn` | `Control` | icon-based merchant catalog transaction intent |
 | `scenes/ui/system/PauseMenu.tscn` | `Control` | pause/settings/save/load intent |
-| `scenes/ui/town/MaterialYardUI.tscn` | `Control` | workshop stockpile and reinforcement |
-| `scenes/ui/town/PlayerBlacksmithUI.tscn` | `Control` | Forge, Design Research, Soul Refinery |
+| `scenes/ui/town/MaterialYardUI.tscn` | `Control` | forging materials and permanent tools |
+| `scenes/ui/town/PlayerBlacksmithUI.tscn` | `Control` | blueprint forge, workshop upgrades, sales table |
 | `scenes/ui/town/TownHallUI.tscn` | `Control` | village stage and Town Hall upgrade |
 | `scenes/ui/town/TownResidenceUI.tscn` | `Control` | information-only residence screen |
 
@@ -519,12 +519,11 @@ MenuLayer
                 └── Container-authored header/resources/workspace/actions
 ```
 
-- `MaterialYardUI` 的穩定 window 內容包含 resource cards、level progress、
-  cost grid、`DetailsScroll` 與 `WorkshopUpgradeButton`。
-- `PlayerBlacksmithUI` 以 service rail 切換 Forge／Design Research／Soul Refinery；
-  Forge 的 equipment rows 可動態建立於 `EquipmentScroll/EquipmentList`。
-- `TownHallUI` author village overview、resource row、`ContentScroll`、cost grid、
-  council record 與 `UpgradeButton`。
+- `MaterialYardUI` 以 Materials／Forge Tools filter 切換資料驅動 offers，鎖定項目
+  保持可見並顯示所需火炬 Tier。
+- `PlayerBlacksmithUI` 以 service rail 切換 Forge／Workshop Upgrade／Sales Table；
+  recipe rows 由已持有圖紙、工具與 blacksmith level 投影。
+- `TownHallUI` 只保留 Overview／Hall Upgrade 兩個主要入口，左側固定村長肖像。
 - 三者的 Full Rect root、semantic window、public API、focus、重開與六解析度
   geometry 由 dedicated tests 保護。
 

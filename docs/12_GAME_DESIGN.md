@@ -516,20 +516,19 @@ magic_shard = 2 × current_level
 
 除 memory library 有四級外，其餘建築最多三級。Village stage 的
 total-building-level threshold 為 0、3、7。Town 六棟建築的互動範圍皆覆蓋各自
-完整地基；材料行、主角鐵匠鋪、村長家與劍魂商提供服務，兩棟東側民宅只顯示
-住宅資訊。主角鐵匠鋪聚合 Forge、Design Research 與 Soul Refinery；Design
-Research 的 Deck Builder 只儲存配置、不開始出征。NPC 不觸發這些建築 UI。
+完整地基；材料行、主角鐵匠鋪、村長家、劍魂圖紙商與裝備圖紙商提供服務，
+最東側民宅只顯示住宅資訊。NPC 不觸發這些建築 UI。
 
 功能建築 UI 的玩家可見責任：
 
-- Material Yard：查看五種 persistent resources、workshop 等級、下一級成本並強化
-  workshop。
-- Player Blacksmith：Forge 購買／裝備／強化 equipment 與升級 blacksmith；
-  Design Research 開啟不開始 Run 的 Deck Builder；Soul Refinery 查看 memory
-  capacity 並升級 memory library。
+- Material Yard：以 gold 購買鍛造材料 bundle 與永久工具；高階 stock 隨 Eternal
+  Torch 對應的 village stage 解鎖。
+- Player Blacksmith：依已購圖紙鍛造 equipment／Sword Soul、升級 blacksmith
+  解鎖 recipe Tier、升級 Sword Soul，並將 crafted equipment 放到單格販售桌，
+  顧客結帳後顯示 `+GOLD`。
 - Town Hall：查看 village stage、總建築等級、資源與 Town Hall 升級成本。
-- Sword Soul Shop：以圖示化商品列查看 item、stock/owned、unit price、quantity
-  與 total，交易規則仍由 Game 驗證。
+- Sword Soul Shop／Equipment Blueprint Shop：buy-only 圖紙 catalog；持有後不能
+  重複購買，實際成品只能回玩家工坊鍛造。
 
 舊通用 Town progression UI 已退役；三個 dedicated screen 關閉時由 Game
 同步 Meta save、Town visual 與 equipment stats。

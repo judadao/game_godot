@@ -1,13 +1,21 @@
 class_name PlayerBlacksmithUI
 extends Control
 
-signal closed
-signal blueprint_research_requested
 signal opened
+signal closed
 signal toggled(is_open: bool)
 signal canceled
+signal craft_requested(recipe_id: StringName)
+signal list_for_sale_requested(item_id: StringName)
+signal resolve_sale_requested
+signal upgrade_sword_soul_requested(card_id: StringName)
+signal workshop_upgraded
 
-const VALID_SERVICES: Array[StringName] = [&"forge", &"soul_refinery"]
+const VALID_SERVICES: Array[StringName] = [
+	&"forge",
+	&"workshop_upgrade",
+	&"sales_table",
+]
 const RESOURCE_ORDER: Array[StringName] = [
 	&"gold",
 	&"autumn_wood",
@@ -38,57 +46,63 @@ const SLOT_LABELS := {
 	&"weapon": "Weapon",
 	&"armor": "Armor",
 	&"accessory": "Accessory",
-}
-const SLOT_SHORT_LABELS := {
-	&"weapon": "WPN",
-	&"armor": "ARM",
-	&"accessory": "ACC",
+	&"sword_soul": "Sword Soul",
 }
 
 @onready var close_button: Button = %CloseButton
 @onready var forge_service_button: Button = %ForgeServiceButton
-@onready var research_service_button: Button = %ResearchServiceButton
-@onready var soul_service_button: Button = %RefineryServiceButton
+@onready var upgrade_service_button: Button = %UpgradeServiceButton
+@onready var sales_service_button: Button = %SalesServiceButton
 @onready var stage_label: Label = %StageLabel
 @onready var resource_summary: Label = %ResourceSummary
-@onready var equipment_scroll: ScrollContainer = %EquipmentScroll
-@onready var equipment_list: GridContainer = %EquipmentList
-@onready var equipment_row_template: Button = %EquipmentRowTemplate
-@onready var empty_catalog_label: Label = %EmptyCatalogLabel
+@onready var recipe_scroll: ScrollContainer = %RecipeScroll
+@onready var recipe_list: VBoxContainer = %RecipeList
+@onready var recipe_row_template: Button = %RecipeRowTemplate
+@onready var empty_recipe_label: Label = %EmptyRecipeLabel
 @onready var forge_workspace: HBoxContainer = %ForgeWorkspace
-@onready var soul_workspace: HBoxContainer = %SoulWorkspace
-@onready var item_preview: TextureRect = %ItemPreview
-@onready var item_name_label: Label = %ItemNameLabel
-@onready var item_slot_label: Label = %ItemSlotLabel
-@onready var item_status_label: Label = %ItemStatusLabel
-@onready var item_effects_label: RichTextLabel = %ItemEffectsLabel
-@onready var purchase_cost_label: Label = %PurchaseCostLabel
-@onready var purchase_button: Button = %PurchaseButton
+@onready var upgrade_workspace: HBoxContainer = %UpgradeWorkspace
+@onready var sales_workspace: HBoxContainer = %SalesWorkspace
+@onready var recipe_preview: TextureRect = %RecipePreview
+@onready var recipe_name_label: Label = %RecipeNameLabel
+@onready var recipe_type_label: Label = %RecipeTypeLabel
+@onready var recipe_status_label: Label = %RecipeStatusLabel
+@onready var recipe_description: RichTextLabel = %RecipeDescription
+@onready var recipe_cost_label: Label = %RecipeCostLabel
+@onready var craft_button: Button = %CraftButton
 @onready var equip_button: Button = %EquipButton
 @onready var strengthen_button: Button = %StrengthenButton
 @onready var action_feedback: Label = %ActionFeedback
-@onready var forge_level_label: Label = %ForgeLevelLabel
-@onready var forge_upgrade_cost_label: Label = %ForgeUpgradeCostLabel
-@onready var forge_upgrade_button: Button = %UpgradeButton
-@onready var soul_level_label: Label = %SoulLevelLabel
-@onready var soul_capacity_label: Label = %SoulCapacityLabel
-@onready var soul_upgrade_cost_label: Label = %SoulUpgradeCostLabel
-@onready var soul_upgrade_button: Button = %SoulUpgradeButton
+@onready var workshop_level_label: Label = %WorkshopLevelLabel
+@onready var workshop_unlock_label: Label = %WorkshopUnlockLabel
+@onready var workshop_cost_label: Label = %WorkshopCostLabel
+@onready var upgrade_button: Button = %UpgradeButton
+@onready var sale_item_icon: TextureRect = %SaleItemIcon
+@onready var sale_item_name: Label = %SaleItemName
+@onready var sale_count_label: Label = %SaleCountLabel
+@onready var sale_status_label: Label = %SaleStatusLabel
+@onready var customer_status_label: Label = %CustomerStatusLabel
+@onready var list_for_sale_button: Button = %ListForSaleButton
+@onready var resolve_sale_button: Button = %ResolveSaleButton
+@onready var gold_feedback: Label = %GoldFeedback
 
 var _town: RefCounted
 var _inventory: RefCounted
+var _forge_service: RefCounted
 var _context_id: StringName = &"player_blacksmith"
 var _blacksmith_service: StringName = &"forge"
-var _selected_equipment: StringName
-var _equipment_buttons: Array[Button] = []
+var _recipes: Array[Dictionary] = []
+var _recipes_explicitly_set := false
+var _selected_recipe_id: StringName
+var _recipe_by_id: Dictionary = {}
+var _recipe_buttons: Array[Button] = []
 var _building_buttons: Array[Button] = []
-var _equipment_by_id: Dictionary = {}
+var _sale_state: Dictionary = {}
 var _icon_cache: Dictionary = {}
+var _resource_value_labels: Dictionary
 var _row_normal_style: StyleBox
 var _row_selected_style: StyleBox
 var _service_normal_style: StyleBox
 var _service_selected_style: StyleBox
-var _resource_value_labels: Dictionary
 var _has_action_feedback := false
 
 
@@ -102,8 +116,13 @@ func _ready() -> void:
 		&"magic_shard": %ShardAmount,
 		&"autumn_core": %CoreAmount,
 	}
-	_cache_authored_styles()
+	_row_normal_style = recipe_row_template.get_theme_stylebox("normal")
+	_row_selected_style = recipe_row_template.get_theme_stylebox("pressed")
+	_service_normal_style = upgrade_service_button.get_theme_stylebox("normal")
+	_service_selected_style = forge_service_button.get_theme_stylebox("normal")
 	_connect_controls()
+	gold_feedback.text = ""
+	gold_feedback.visible = false
 	visible = false
 	_apply_service()
 	_refresh()
@@ -113,6 +132,8 @@ func open() -> void:
 	var was_visible := visible
 	_blacksmith_service = &"forge"
 	_has_action_feedback = false
+	gold_feedback.text = ""
+	gold_feedback.visible = false
 	visible = true
 	_apply_service()
 	_refresh()
@@ -154,11 +175,59 @@ func get_building_id() -> StringName:
 	return &"blacksmith"
 
 
-func set_services(town: RefCounted, inventory: RefCounted) -> void:
+func set_services(
+	town: RefCounted,
+	inventory: RefCounted,
+	forge_service: RefCounted = null
+) -> void:
 	_town = town
 	_inventory = inventory
+	_forge_service = forge_service
+	if not _recipes_explicitly_set:
+		_recipes = _project_recipes_from_services()
 	if is_node_ready():
 		_refresh()
+
+
+func set_recipes(recipes: Array) -> void:
+	_recipes_explicitly_set = true
+	_recipes.clear()
+	for recipe_variant in recipes:
+		if recipe_variant is Dictionary:
+			var recipe := (recipe_variant as Dictionary).duplicate(true)
+			if not StringName(recipe.get("id", "")).is_empty():
+				_recipes.append(recipe)
+	if is_node_ready():
+		_refresh_recipe_catalog()
+		_refresh_recipe_detail()
+
+
+func set_sale_state(state: Dictionary) -> void:
+	_sale_state = state.duplicate(true)
+	if is_node_ready():
+		_refresh_sales_table()
+
+
+func show_sale_result(result: Dictionary) -> void:
+	var successful := bool(result.get("ok", result.get("success", false)))
+	var gold := int(result.get("gold", result.get("gold_earned", 0)))
+	var message := String(result.get("message", ""))
+	if message.is_empty():
+		message = "Customer purchase complete." if successful else "No sale was completed."
+	gold_feedback.text = "+%s GOLD" % _format_number(gold) if successful and gold > 0 else message
+	gold_feedback.modulate = (
+		Color(1.0, 0.82, 0.32) if successful
+		else Color(1.0, 0.58, 0.45)
+	)
+	gold_feedback.visible = true
+	if result.has("sale_state") and result["sale_state"] is Dictionary:
+		set_sale_state(result["sale_state"] as Dictionary)
+
+
+func show_action_result(result: Dictionary) -> void:
+	var successful := bool(result.get("ok", result.get("success", false)))
+	_set_feedback(String(result.get("message", "Action complete.")), successful)
+	_refresh()
 
 
 func select_blacksmith_service(service_id: StringName) -> void:
@@ -184,63 +253,73 @@ func get_selected_service() -> StringName:
 	return get_blacksmith_service()
 
 
-func request_blueprint_research() -> void:
-	if _context_id == &"player_blacksmith":
-		blueprint_research_requested.emit()
-
-
 func get_building_button_count() -> int:
 	return _building_buttons.size()
 
 
 func get_equipment_button_count() -> int:
-	return _equipment_buttons.size()
+	return _recipe_buttons.size()
 
 
 func get_resource_text() -> String:
 	return resource_summary.text if resource_summary != null else ""
 
 
-func select_equipment(item_id: StringName) -> void:
-	if not _equipment_by_id.has(item_id):
+func select_recipe(recipe_id: StringName) -> void:
+	if not _recipe_by_id.has(recipe_id):
 		return
-	_selected_equipment = item_id
+	_selected_recipe_id = recipe_id
 	_has_action_feedback = false
-	_refresh_equipment_rows()
-	_refresh_equipment_detail()
+	_refresh_recipe_rows()
+	_refresh_recipe_detail()
+
+
+func select_equipment(item_id: StringName) -> void:
+	for recipe_id in _recipe_by_id:
+		var recipe := _recipe_by_id[recipe_id] as Dictionary
+		if StringName(recipe.get("result_id", recipe.get("item_id", recipe_id))) == item_id:
+			select_recipe(recipe_id)
+			return
+
+
+func craft_selected_recipe() -> void:
+	if _selected_recipe_id.is_empty():
+		return
+	craft_requested.emit(_selected_recipe_id)
+	_set_feedback("Crafting request sent to the forge.", true)
 
 
 func purchase_selected_equipment() -> void:
-	if not _can_use_inventory() or _selected_equipment.is_empty():
-		return
-	var succeeded := bool(_inventory.call("purchase_equipment", _selected_equipment))
-	_set_feedback(
-		"Equipment added to your forge inventory." if succeeded
-		else "Missing materials or this equipment is already owned.",
-		succeeded
-	)
-	_refresh()
+	craft_selected_recipe()
 
 
 func equip_selected_equipment() -> void:
-	if not _can_use_inventory() or _selected_equipment.is_empty():
+	var item_id := _selected_equipment_id()
+	if item_id.is_empty() or not _inventory_has_method(&"equip"):
 		return
-	var succeeded := bool(_inventory.call("equip", _selected_equipment))
+	var succeeded := bool(_inventory.call("equip", item_id))
 	_set_feedback(
-		"Equipment is now fitted to your loadout." if succeeded
-		else "Purchase this equipment before equipping it.",
+		"Equipment fitted to your loadout." if succeeded
+		else "Craft this equipment before equipping it.",
 		succeeded
 	)
 	_refresh()
 
 
 func strengthen_selected_equipment() -> void:
-	if not _can_use_inventory() or _selected_equipment.is_empty():
+	var item_id := _selected_equipment_id()
+	if item_id.is_empty():
 		return
-	var succeeded := bool(_inventory.call("upgrade_equipment", _selected_equipment))
+	var recipe := _recipe_by_id.get(_selected_recipe_id, {}) as Dictionary
+	if StringName(recipe.get("result_kind", "")) == &"sword_soul":
+		upgrade_sword_soul_requested.emit(item_id)
+		return
+	if not _inventory_has_method(&"upgrade_equipment"):
+		return
+	var succeeded := bool(_inventory.call("upgrade_equipment", item_id))
 	_set_feedback(
-		"Tempering complete. Equipment level increased." if succeeded
-		else "Strengthening is locked, complete, or lacks materials.",
+		"Tempering complete." if succeeded
+		else "Strengthening is unavailable or lacks materials.",
 		succeeded
 	)
 	_refresh()
@@ -253,15 +332,36 @@ func upgrade_service_building() -> void:
 func request_upgrade() -> bool:
 	if not _can_use_town():
 		return false
-	var building_id := _active_building_id()
-	var succeeded := bool(_town.call("upgrade_building", building_id))
+	var succeeded := bool(_town.call("upgrade_building", &"blacksmith"))
 	_set_feedback(
-		"Facility upgrade complete." if succeeded
-		else "This facility is complete or requires more materials.",
+		"Workshop upgrade complete." if succeeded
+		else "Workshop is complete or requires more materials.",
 		succeeded
 	)
+	if succeeded and _forge_service != null and _forge_service.has_method(
+		"set_progression_levels"
+	):
+		_forge_service.call(
+			"set_progression_levels",
+			int(_town.call("get_village_stage")),
+			_building_level()
+		)
+		_recipes_explicitly_set = false
 	_refresh()
+	if succeeded:
+		workshop_upgraded.emit()
 	return succeeded
+
+
+func request_list_for_sale() -> void:
+	var item_id := _selected_sale_item_id()
+	if item_id.is_empty():
+		return
+	list_for_sale_requested.emit(item_id)
+
+
+func request_resolve_sale() -> void:
+	resolve_sale_requested.emit()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -271,39 +371,38 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-func _cache_authored_styles() -> void:
-	_row_normal_style = equipment_row_template.get_theme_stylebox("normal")
-	_row_selected_style = equipment_row_template.get_theme_stylebox("pressed")
-	_service_normal_style = soul_service_button.get_theme_stylebox("normal")
-	_service_selected_style = forge_service_button.get_theme_stylebox("normal")
-
-
 func _connect_controls() -> void:
 	close_button.pressed.connect(close)
 	forge_service_button.pressed.connect(select_blacksmith_service.bind(&"forge"))
-	research_service_button.pressed.connect(request_blueprint_research)
-	soul_service_button.pressed.connect(select_blacksmith_service.bind(&"soul_refinery"))
-	purchase_button.pressed.connect(purchase_selected_equipment)
+	upgrade_service_button.pressed.connect(select_blacksmith_service.bind(&"workshop_upgrade"))
+	sales_service_button.pressed.connect(select_blacksmith_service.bind(&"sales_table"))
+	craft_button.pressed.connect(craft_selected_recipe)
 	equip_button.pressed.connect(equip_selected_equipment)
 	strengthen_button.pressed.connect(strengthen_selected_equipment)
-	forge_upgrade_button.pressed.connect(upgrade_service_building)
-	soul_upgrade_button.pressed.connect(upgrade_service_building)
+	upgrade_button.pressed.connect(upgrade_service_building)
+	list_for_sale_button.pressed.connect(request_list_for_sale)
+	resolve_sale_button.pressed.connect(request_resolve_sale)
 
 
 func _apply_service() -> void:
-	var forge_selected := _blacksmith_service == &"forge"
-	forge_workspace.visible = forge_selected
-	soul_workspace.visible = not forge_selected
-	forge_service_button.add_theme_stylebox_override(
-		"normal",
-		_service_selected_style if forge_selected else _service_normal_style
-	)
-	soul_service_button.add_theme_stylebox_override(
-		"normal",
-		_service_selected_style if not forge_selected else _service_normal_style
-	)
+	forge_workspace.visible = _blacksmith_service == &"forge"
+	upgrade_workspace.visible = _blacksmith_service == &"workshop_upgrade"
+	sales_workspace.visible = _blacksmith_service == &"sales_table"
+	var buttons := {
+		&"forge": forge_service_button,
+		&"workshop_upgrade": upgrade_service_button,
+		&"sales_table": sales_service_button,
+	}
+	for service_id in buttons:
+		var button := buttons[service_id] as Button
+		button.add_theme_stylebox_override(
+			"normal",
+			_service_selected_style if service_id == _blacksmith_service
+			else _service_normal_style
+		)
 	_building_buttons.clear()
-	_building_buttons.append(forge_upgrade_button if forge_selected else soul_upgrade_button)
+	if _blacksmith_service == &"workshop_upgrade":
+		_building_buttons.append(upgrade_button)
 
 
 func _refresh() -> void:
@@ -311,14 +410,17 @@ func _refresh() -> void:
 		return
 	_refresh_resources()
 	_refresh_stage()
-	_refresh_equipment_catalog()
-	_refresh_equipment_detail()
-	_refresh_facility()
+	if not _recipes_explicitly_set:
+		_recipes = _project_recipes_from_services()
+	_refresh_recipe_catalog()
+	_refresh_recipe_detail()
+	_refresh_workshop()
+	_refresh_sales_table()
 
 
 func _refresh_resources() -> void:
 	var resources: Dictionary = {}
-	if _can_use_inventory():
+	if _inventory_has_method(&"get_resources"):
 		resources = _inventory.call("get_resources") as Dictionary
 	var summary_parts: Array[String] = []
 	for resource_id in RESOURCE_ORDER:
@@ -331,285 +433,381 @@ func _refresh_resources() -> void:
 
 
 func _refresh_stage() -> void:
-	if not _can_use_town():
-		stage_label.text = "Village data unavailable"
+	if _town != null and _town.has_method("get_village_stage"):
+		stage_label.text = "Village Stage %d  ·  Workshop Lv.%d" % [
+			int(_town.call("get_village_stage")) + 1,
+			_building_level(),
+		]
+	else:
+		stage_label.text = "Private Workshop"
+
+
+func _refresh_recipe_catalog() -> void:
+	_clear_recipe_rows()
+	_recipe_by_id.clear()
+	for recipe in _recipes:
+		var recipe_id := StringName(recipe.get("id", ""))
+		if recipe_id.is_empty():
+			continue
+		_recipe_by_id[recipe_id] = recipe
+		var button := recipe_row_template.duplicate() as Button
+		button.name = "Recipe_%s" % String(recipe_id)
+		button.visible = true
+		button.icon = _recipe_icon(recipe)
+		button.tooltip_text = "Inspect %s" % String(recipe.get("name", recipe_id))
+		button.pressed.connect(select_recipe.bind(recipe_id))
+		button.focus_entered.connect(_on_recipe_focused.bind(recipe_id, button))
+		recipe_list.add_child(button)
+		_recipe_buttons.append(button)
+	empty_recipe_label.visible = _recipe_buttons.is_empty()
+	if _selected_recipe_id.is_empty() or not _recipe_by_id.has(_selected_recipe_id):
+		_selected_recipe_id = (
+			StringName(_recipe_by_id.keys()[0]) if not _recipe_by_id.is_empty()
+			else StringName()
+		)
+	_refresh_recipe_rows()
+	_configure_focus_navigation()
+
+
+func _clear_recipe_rows() -> void:
+	for button in _recipe_buttons:
+		if is_instance_valid(button):
+			button.free()
+	_recipe_buttons.clear()
+
+
+func _refresh_recipe_rows() -> void:
+	for button in _recipe_buttons:
+		var recipe_id := StringName(button.name.trim_prefix("Recipe_"))
+		var recipe := _recipe_by_id.get(recipe_id, {}) as Dictionary
+		var kind := String(recipe.get("kind", recipe.get("result_kind", "equipment")))
+		var tier := int(recipe.get("tier", recipe.get("quality_tier", 0)))
+		var unlocked := bool(recipe.get("unlocked", true))
+		button.text = "%s\n%s  ·  TIER %d  ·  %s" % [
+			String(recipe.get("name", recipe_id)),
+			kind.replace("_", " ").to_upper(),
+			tier,
+			"READY" if unlocked else "LOCKED",
+		]
+		button.disabled = not bool(recipe.get("visible", true))
+		button.add_theme_stylebox_override(
+			"normal",
+			_row_selected_style if recipe_id == _selected_recipe_id else _row_normal_style
+		)
+
+
+func _refresh_recipe_detail() -> void:
+	if not _recipe_by_id.has(_selected_recipe_id):
+		_show_empty_recipe_detail()
 		return
-	stage_label.text = "Village Stage %d / 3  ·  %s" % [
-		int(_town.call("get_village_stage")) + 1,
-		String(_town.call("get_village_stage_id")).capitalize(),
+	var recipe := _recipe_by_id[_selected_recipe_id] as Dictionary
+	var result_id := StringName(
+		recipe.get("result_id", recipe.get("item_id", _selected_recipe_id))
+	)
+	var kind := StringName(recipe.get("kind", recipe.get("result_kind", "equipment")))
+	var is_sword_soul := kind == &"sword_soul"
+	var owned := (
+		bool(recipe.get("owned", false))
+		if is_sword_soul else _has_equipment(result_id)
+	)
+	var equipped := _is_equipped(result_id, recipe)
+	var level := (
+		int(recipe.get("level", 0))
+		if is_sword_soul else _equipment_level(result_id)
+	)
+	var unlocked := bool(recipe.get("unlocked", true))
+	var cost := recipe.get("cost", recipe.get("craft_cost", {})) as Dictionary
+	recipe_preview.texture = _recipe_icon(recipe)
+	recipe_name_label.text = String(recipe.get("name", _selected_recipe_id))
+	recipe_type_label.text = "%s  ·  TIER %d" % [
+		String(SLOT_LABELS.get(kind, String(kind).replace("_", " ").capitalize())).to_upper(),
+		int(recipe.get("tier", recipe.get("quality_tier", 0))),
 	]
+	recipe_status_label.text = "OWNED" if owned else ("READY TO FORGE" if unlocked else "LOCKED")
+	recipe_status_label.modulate = (
+		Color(0.50, 0.94, 0.74) if owned
+		else (Color(0.98, 0.78, 0.35) if unlocked else Color(0.95, 0.48, 0.40))
+	)
+	var description := String(recipe.get("description", "Forge this design into a permanent item."))
+	recipe_description.text = "[color=#f0c967][b]Blueprint[/b][/color]\n%s" % description
+	recipe_cost_label.text = "FORGE COST  ·  %s" % _format_cost(cost)
+	craft_button.disabled = not unlocked
+	craft_button.text = "Forge"
+	var is_equipment := not is_sword_soul
+	equip_button.visible = is_equipment and owned
+	equip_button.disabled = not owned or equipped
+	equip_button.text = "Equipped" if equipped else "Equip"
+	strengthen_button.visible = owned
+	strengthen_button.disabled = (
+		level >= 3
+		or (is_equipment and not _inventory_has_method(&"upgrade_equipment"))
+	)
+	strengthen_button.text = (
+		"Max Level" if level >= 3
+		else "Upgrade Sword Soul  ·  Lv.%d" % (level + 1)
+		if is_sword_soul
+		else "Strengthen  ·  Lv.%d" % (level + 1)
+	)
+	if not _has_action_feedback:
+		action_feedback.text = (
+			"Blueprint ready. Forge it when all requirements are met." if unlocked
+			else "Upgrade the workshop to unlock this blueprint tier."
+		)
+		action_feedback.modulate = Color(0.58, 0.69, 0.72)
 
 
-func _refresh_equipment_catalog() -> void:
-	_clear_equipment_rows()
-	_equipment_by_id.clear()
-	if not _can_use_inventory():
-		empty_catalog_label.visible = true
+func _show_empty_recipe_detail() -> void:
+	recipe_preview.texture = null
+	recipe_name_label.text = "No Blueprint Selected"
+	recipe_type_label.text = "FORGE RECIPES"
+	recipe_status_label.text = "WAITING"
+	recipe_description.text = "Acquire a blueprint, then return here to forge it."
+	recipe_cost_label.text = ""
+	craft_button.disabled = true
+	equip_button.visible = false
+	strengthen_button.visible = false
+
+
+func _refresh_workshop() -> void:
+	if not _can_use_town():
+		workshop_level_label.text = "Workshop data unavailable"
+		workshop_unlock_label.text = "Town service is not connected."
+		workshop_cost_label.text = ""
+		upgrade_button.disabled = true
 		return
-	var catalog := _inventory.call("get_equipment_catalog") as Array
-	for item_variant in catalog:
+	var level := _building_level()
+	var max_level := int(_town.call("get_max_building_level", &"blacksmith"))
+	var cost := _town.call("get_next_upgrade_cost", &"blacksmith") as Dictionary
+	workshop_level_label.text = "Workshop Level %d / %d" % [level, max_level]
+	workshop_unlock_label.text = (
+		"Current mastery: Tier %d blueprints  ·  Strengthening cap Lv.%d" % [
+			level,
+			min(level + 1, 3),
+		]
+	)
+	workshop_cost_label.text = (
+		"All workshop improvements complete." if cost.is_empty()
+		else "NEXT UPGRADE\n%s" % _format_cost_rows(cost)
+	)
+	upgrade_button.text = "Max Level" if cost.is_empty() else "Upgrade Workshop"
+	upgrade_button.disabled = not bool(_town.call("can_upgrade_building", &"blacksmith"))
+
+
+func _refresh_sales_table() -> void:
+	var state := _sale_state
+	var item_id := StringName(state.get("item_id", _selected_equipment_id()))
+	var recipe := _recipe_for_result(item_id)
+	var item_name := String(state.get("item_name", recipe.get("name", item_id)))
+	var count := int(state.get("crafted_count", _equipment_count(item_id)))
+	var status := String(state.get("status", "empty"))
+	sale_item_icon.texture = _texture_from_variant(
+		state.get("texture", state.get("icon", null))
+	)
+	if sale_item_icon.texture == null:
+		sale_item_icon.texture = _recipe_icon(recipe)
+	sale_item_name.text = item_name if not item_name.is_empty() else "Select crafted equipment"
+	sale_count_label.text = "CRAFTED INVENTORY  ·  %d AVAILABLE" % count
+	sale_status_label.text = String(state.get(
+		"table_label",
+		"Item displayed on the sales table." if status != "empty"
+		else "The sales table is empty."
+	))
+	customer_status_label.text = String(state.get(
+		"customer_label",
+		"Customer is ready to purchase." if status == "customer_ready"
+		else "Waiting for a customer..."
+	))
+	list_for_sale_button.disabled = item_id.is_empty() or count <= 0
+	resolve_sale_button.disabled = status != "customer_ready"
+	gold_feedback.visible = not gold_feedback.text.strip_edges().is_empty()
+
+
+func _project_recipes_from_services() -> Array[Dictionary]:
+	if _forge_service != null and _forge_service.has_method("get_available_recipes"):
+		var projected := _forge_service.call("get_available_recipes") as Array
+		var result: Array[Dictionary] = []
+		for entry in projected:
+			if entry is Dictionary:
+				result.append((entry as Dictionary).duplicate(true))
+		return result
+	if not _inventory_has_method(&"get_equipment_catalog"):
+		return []
+	var fallback: Array[Dictionary] = []
+	for item_variant in _inventory.call("get_equipment_catalog") as Array:
 		if not item_variant is Dictionary:
 			continue
 		var item := (item_variant as Dictionary).duplicate(true)
 		var item_id := StringName(item.get("id", ""))
 		if item_id.is_empty():
 			continue
-		_equipment_by_id[item_id] = item
-		var button := equipment_row_template.duplicate() as Button
-		button.name = "Equipment_%s" % String(item_id)
-		button.visible = true
-		button.disabled = false
-		button.icon = _equipment_icon(item_id)
-		button.tooltip_text = "Select %s" % String(item.get("name", item_id))
-		button.pressed.connect(select_equipment.bind(item_id))
-		button.focus_entered.connect(_on_equipment_focused.bind(item_id, button))
-		equipment_list.add_child(button)
-		_equipment_buttons.append(button)
-	empty_catalog_label.visible = _equipment_buttons.is_empty()
-	if _selected_equipment.is_empty() or not _equipment_by_id.has(_selected_equipment):
-		_selected_equipment = (
-			StringName(_equipment_by_id.keys()[0]) if not _equipment_by_id.is_empty()
-			else StringName()
-		)
-	_refresh_equipment_rows()
-	_configure_focus_navigation()
+		fallback.append({
+			"id": item_id,
+			"result_id": item_id,
+			"name": item.get("name", item_id),
+			"description": _equipment_description(item),
+			"kind": item.get("slot", "equipment"),
+			"tier": item.get("quality_tier", 0),
+			"cost": item.get("purchase_cost", {}),
+			"icon_path": EQUIPMENT_ICON_PATHS.get(item_id, ""),
+			"unlocked": true,
+		})
+	return fallback
 
 
-func _clear_equipment_rows() -> void:
-	for button in _equipment_buttons:
-		if is_instance_valid(button):
-			button.free()
-	_equipment_buttons.clear()
+func _equipment_description(item: Dictionary) -> String:
+	var effects := item.get("effects", {}) as Dictionary
+	if effects.is_empty():
+		return "A proven workshop design."
+	var parts: Array[String] = []
+	for effect_id in effects:
+		parts.append("%s %+d" % [String(effect_id).capitalize(), int(effects[effect_id])])
+	return "  ·  ".join(parts)
 
 
-func _refresh_equipment_rows() -> void:
-	for button in _equipment_buttons:
-		var item_id := StringName(button.name.trim_prefix("Equipment_"))
-		var item := _equipment_by_id.get(item_id, {}) as Dictionary
-		var level := int(_inventory.call("get_equipment_level", item_id))
-		var owned := bool(_inventory.call("has_equipment", item_id))
-		var slot := StringName(item.get("slot", ""))
-		var equipped := owned and StringName(_inventory.call("get_equipped", slot)) == item_id
-		var state := "EQUIPPED" if equipped else ("OWNED" if owned else "SALE")
-		button.text = "%s\n%s  ·  L%d  ·  %s" % [
-			String(item.get("name", item_id)),
-			SLOT_SHORT_LABELS.get(slot, String(slot).to_upper()),
-			level,
-			state,
-		]
-		button.add_theme_stylebox_override(
-			"normal",
-			_row_selected_style if item_id == _selected_equipment else _row_normal_style
-		)
+func _recipe_icon(recipe: Dictionary) -> Texture2D:
+	var recipe_id := StringName(recipe.get("id", ""))
+	if _icon_cache.has(recipe_id):
+		return _icon_cache[recipe_id] as Texture2D
+	var texture := _texture_from_variant(recipe.get("texture", recipe.get("icon", null)))
+	if texture == null:
+		var path := String(recipe.get(
+			"icon_path",
+			EQUIPMENT_ICON_PATHS.get(
+				StringName(recipe.get("result_id", recipe.get("item_id", recipe_id))),
+				""
+			)
+		))
+		if not path.is_empty() and ResourceLoader.exists(path):
+			texture = load(path) as Texture2D
+	_icon_cache[recipe_id] = texture
+	return texture
 
 
-func _refresh_equipment_detail() -> void:
-	if not _can_use_inventory() or not _equipment_by_id.has(_selected_equipment):
-		_show_empty_equipment_detail()
-		return
-	var item := _equipment_by_id[_selected_equipment] as Dictionary
-	var slot := StringName(item.get("slot", ""))
-	var owned := bool(_inventory.call("has_equipment", _selected_equipment))
-	var level := int(_inventory.call("get_equipment_level", _selected_equipment))
-	var equipped := owned and StringName(_inventory.call("get_equipped", slot)) == _selected_equipment
-	var purchase_cost := item.get("purchase_cost", {}) as Dictionary
-	var upgrade_cost := _inventory.call(
-		"get_equipment_upgrade_cost",
-		_selected_equipment
-	) as Dictionary
-	item_preview.texture = _equipment_icon(_selected_equipment)
-	item_name_label.text = String(item.get("name", _selected_equipment))
-	item_slot_label.text = "%s EQUIPMENT  ·  LEVEL %d / 3" % [
-		String(SLOT_LABELS.get(slot, String(slot).capitalize())).to_upper(),
-		level,
-	]
-	item_status_label.text = "EQUIPPED" if equipped else ("OWNED" if owned else "AVAILABLE")
-	item_status_label.modulate = (
-		Color(0.48, 0.94, 0.76) if equipped
-		else (Color(0.94, 0.78, 0.39) if owned else Color(0.62, 0.78, 0.96))
+func _texture_from_variant(value: Variant) -> Texture2D:
+	if value is Texture2D:
+		return value as Texture2D
+	if value is String and not String(value).is_empty() and ResourceLoader.exists(String(value)):
+		return load(String(value)) as Texture2D
+	return null
+
+
+func _selected_equipment_id() -> StringName:
+	if not _recipe_by_id.has(_selected_recipe_id):
+		return StringName()
+	var recipe := _recipe_by_id[_selected_recipe_id] as Dictionary
+	if StringName(recipe.get("kind", recipe.get("result_kind", "equipment"))) == &"sword_soul":
+		return StringName()
+	return StringName(recipe.get("result_id", recipe.get("item_id", _selected_recipe_id)))
+
+
+func _selected_sale_item_id() -> StringName:
+	var state_item := StringName(_sale_state.get("item_id", ""))
+	return state_item if not state_item.is_empty() else _selected_equipment_id()
+
+
+func _recipe_for_result(item_id: StringName) -> Dictionary:
+	for recipe in _recipes:
+		if StringName(recipe.get("result_id", recipe.get("item_id", recipe.get("id", "")))) == item_id:
+			return recipe
+	return {}
+
+
+func _has_equipment(item_id: StringName) -> bool:
+	return not item_id.is_empty() and _inventory_has_method(&"has_equipment") and bool(
+		_inventory.call("has_equipment", item_id)
 	)
-	item_effects_label.text = _format_item_effects(item)
-	purchase_cost_label.text = (
-		"Purchase complete" if owned
-		else "Purchase  ·  %s" % _format_cost(purchase_cost)
-	)
-	purchase_button.visible = not owned
-	purchase_button.disabled = owned or not bool(_inventory.call("can_afford", purchase_cost))
-	equip_button.visible = owned
-	equip_button.disabled = not owned or equipped
-	equip_button.text = "Equipped" if equipped else "Equip"
-	strengthen_button.visible = owned
-	strengthen_button.disabled = not owned or upgrade_cost.is_empty()
-	strengthen_button.text = (
-		"Max Level" if owned and level >= 3
-		else "Strengthen  ·  %s" % _format_cost(upgrade_cost)
-	)
-	if not _has_action_feedback:
-		_show_selection_guidance(owned, equipped, level)
 
 
-func _show_empty_equipment_detail() -> void:
-	item_preview.texture = null
-	item_name_label.text = "No Equipment Selected"
-	item_slot_label.text = "FORGE CATALOG"
-	item_status_label.text = "WAITING"
-	item_effects_label.text = "Select an equipment icon to inspect its effects."
-	purchase_cost_label.text = ""
-	purchase_button.visible = true
-	purchase_button.disabled = true
-	equip_button.visible = false
-	strengthen_button.visible = false
-	_has_action_feedback = false
-	action_feedback.text = "Select an equipment design to inspect its forge options."
-	action_feedback.modulate = Color(0.54, 0.64, 0.65)
+func _equipment_level(item_id: StringName) -> int:
+	return int(_inventory.call("get_equipment_level", item_id)) if (
+		not item_id.is_empty() and _inventory_has_method(&"get_equipment_level")
+	) else 0
 
 
-func _refresh_facility() -> void:
-	if not _can_use_town():
-		_set_facility_unavailable()
-		return
-	var building_id := _active_building_id()
-	var level := int(_town.call("get_building_level", building_id))
-	var max_level := int(_town.call("get_max_building_level", building_id))
-	var cost := _town.call("get_next_upgrade_cost", building_id) as Dictionary
-	var can_upgrade := bool(_town.call("can_upgrade_building", building_id))
-	if building_id == &"blacksmith":
-		forge_level_label.text = "Forge Facility  ·  Level %d / %d" % [level, max_level]
-		forge_upgrade_cost_label.text = (
-			"All forge improvements complete." if cost.is_empty()
-			else "Next facility tier\n%s" % _format_cost_rows(cost, 2)
-		)
-		forge_upgrade_button.text = "Max Level" if cost.is_empty() else "Upgrade"
-		forge_upgrade_button.disabled = not can_upgrade
-	else:
-		soul_level_label.text = "Soul Refinery  ·  Level %d / %d" % [level, max_level]
-		soul_capacity_label.text = "Memory Capacity  ·  %d skills" % int(
-			_town.call("get_skill_memory_capacity")
-		)
-		soul_upgrade_cost_label.text = (
-			"Refinery resonance is fully stabilized." if cost.is_empty()
-			else "UPGRADE REQUIREMENTS\n%s" % _format_cost_status(cost)
-		)
-		soul_upgrade_button.text = "Max Level" if cost.is_empty() else "Upgrade Refinery"
-		soul_upgrade_button.disabled = not can_upgrade
+func _equipment_count(item_id: StringName) -> int:
+	if item_id.is_empty():
+		return 0
+	if _inventory_has_method(&"get_equipment_count"):
+		return int(_inventory.call("get_equipment_count", item_id))
+	return 1 if _has_equipment(item_id) else 0
 
 
-func _set_facility_unavailable() -> void:
-	forge_level_label.text = "Forge facility unavailable"
-	forge_upgrade_cost_label.text = ""
-	forge_upgrade_button.disabled = true
-	soul_level_label.text = "Soul Refinery unavailable"
-	soul_capacity_label.text = "Memory Capacity unavailable"
-	soul_upgrade_cost_label.text = ""
-	soul_upgrade_button.disabled = true
+func _is_equipped(item_id: StringName, recipe: Dictionary) -> bool:
+	if not _has_equipment(item_id) or not _inventory_has_method(&"get_equipped"):
+		return false
+	var slot := StringName(recipe.get("kind", recipe.get("slot", "")))
+	return StringName(_inventory.call("get_equipped", slot)) == item_id
+
+
+func _building_level() -> int:
+	return int(_town.call("get_building_level", &"blacksmith")) if _can_use_town() else 0
 
 
 func _configure_focus_navigation() -> void:
 	forge_service_button.focus_neighbor_bottom = forge_service_button.get_path_to(
-		research_service_button
+		upgrade_service_button
 	)
-	forge_service_button.focus_neighbor_right = forge_service_button.get_path_to(
-		_equipment_buttons[0] if not _equipment_buttons.is_empty() else close_button
-	)
-	research_service_button.focus_neighbor_top = research_service_button.get_path_to(
+	upgrade_service_button.focus_neighbor_top = upgrade_service_button.get_path_to(
 		forge_service_button
 	)
-	research_service_button.focus_neighbor_bottom = research_service_button.get_path_to(
-		soul_service_button
+	upgrade_service_button.focus_neighbor_bottom = upgrade_service_button.get_path_to(
+		sales_service_button
 	)
-	research_service_button.focus_neighbor_right = research_service_button.get_path_to(
-		close_button
+	sales_service_button.focus_neighbor_top = sales_service_button.get_path_to(
+		upgrade_service_button
 	)
-	soul_service_button.focus_neighbor_top = soul_service_button.get_path_to(
-		research_service_button
-	)
-	soul_service_button.focus_neighbor_right = soul_service_button.get_path_to(
-		soul_upgrade_button
-	)
-	for index in _equipment_buttons.size():
-		var button := _equipment_buttons[index]
+	for index in _recipe_buttons.size():
+		var button := _recipe_buttons[index]
 		button.focus_neighbor_top = button.get_path_to(
-			forge_service_button if index == 0 else _equipment_buttons[index - 1]
+			forge_service_button if index == 0 else _recipe_buttons[index - 1]
 		)
 		button.focus_neighbor_bottom = button.get_path_to(
-			purchase_button if index == _equipment_buttons.size() - 1
-			else _equipment_buttons[index + 1]
+			craft_button if index == _recipe_buttons.size() - 1 else _recipe_buttons[index + 1]
 		)
-		button.focus_neighbor_right = button.get_path_to(purchase_button)
-	purchase_button.focus_neighbor_left = purchase_button.get_path_to(
-		_equipment_buttons[0] if not _equipment_buttons.is_empty() else forge_service_button
+		button.focus_neighbor_right = button.get_path_to(craft_button)
+	forge_service_button.focus_neighbor_right = forge_service_button.get_path_to(
+		_recipe_buttons[0] if not _recipe_buttons.is_empty() else craft_button
 	)
-	purchase_button.focus_neighbor_right = purchase_button.get_path_to(equip_button)
-	equip_button.focus_neighbor_left = equip_button.get_path_to(purchase_button)
-	equip_button.focus_neighbor_right = equip_button.get_path_to(strengthen_button)
-	strengthen_button.focus_neighbor_left = strengthen_button.get_path_to(equip_button)
-	forge_upgrade_button.focus_neighbor_top = forge_upgrade_button.get_path_to(strengthen_button)
-	soul_upgrade_button.focus_neighbor_top = soul_upgrade_button.get_path_to(soul_service_button)
+	upgrade_service_button.focus_neighbor_right = upgrade_service_button.get_path_to(
+		upgrade_button
+	)
+	sales_service_button.focus_neighbor_right = sales_service_button.get_path_to(
+		list_for_sale_button
+	)
 
 
 func _focus_current_workspace() -> void:
 	if not visible:
 		return
-	if _blacksmith_service == &"soul_refinery":
-		soul_upgrade_button.grab_focus()
-	elif not _equipment_buttons.is_empty():
-		var selected_button := _equipment_buttons[0]
-		for button in _equipment_buttons:
-			if button.name == "Equipment_%s" % String(_selected_equipment):
-				selected_button = button
-				break
-		selected_button.grab_focus()
-	else:
-		forge_service_button.grab_focus()
+	match _blacksmith_service:
+		&"workshop_upgrade":
+			upgrade_button.grab_focus()
+		&"sales_table":
+			list_for_sale_button.grab_focus()
+		_:
+			if not _recipe_buttons.is_empty():
+				_recipe_buttons[0].grab_focus()
+			else:
+				forge_service_button.grab_focus()
 
 
-func _on_equipment_focused(
-	item_id: StringName,
-	button: Button
-) -> void:
-	select_equipment(item_id)
-	equipment_scroll.ensure_control_visible(button)
+func _on_recipe_focused(recipe_id: StringName, button: Button) -> void:
+	select_recipe(recipe_id)
+	recipe_scroll.ensure_control_visible(button)
 
 
-func _equipment_icon(item_id: StringName) -> Texture2D:
-	if _icon_cache.has(item_id):
-		return _icon_cache[item_id] as Texture2D
-	var path := String(EQUIPMENT_ICON_PATHS.get(item_id, ""))
-	var texture: Texture2D
-	if not path.is_empty() and ResourceLoader.exists(path):
-		texture = load(path) as Texture2D
-	_icon_cache[item_id] = texture
-	return texture
-
-
-func _format_item_effects(item: Dictionary) -> String:
-	var lines: Array[String] = ["[color=#f5ca63][b]Equipment Effects[/b][/color]"]
-	var effects := item.get("effects", {}) as Dictionary
-	for effect_id in effects:
-		lines.append("• %s  [color=#f6e4bd]%s[/color]" % [
-			String(effect_id).capitalize(),
-			_format_effect_value(String(effect_id), effects[effect_id]),
-		])
-	var ability := item.get("special_ability", {}) as Dictionary
-	var description := String(ability.get("description", "")).strip_edges()
-	if not description.is_empty():
-		lines.append("")
-		lines.append("[color=#82c9e8][b]Tempered Trait[/b][/color]")
-		lines.append(description)
-	return "\n".join(lines)
-
-
-func _format_effect_value(effect_id: String, value: Variant) -> String:
-	if effect_id.ends_with("_multiplier") or effect_id.ends_with("_chance"):
-		return "%+.0f%%" % (float(value) * 100.0)
-	if value is float and not is_equal_approx(float(value), roundf(float(value))):
-		return "%+.2f" % float(value)
-	return "%+d" % int(value)
+func _set_feedback(message: String, successful: bool) -> void:
+	_has_action_feedback = true
+	action_feedback.text = message
+	action_feedback.modulate = (
+		Color(0.52, 0.94, 0.70) if successful
+		else Color(1.0, 0.60, 0.46)
+	)
 
 
 func _format_cost(cost: Dictionary) -> String:
 	if cost.is_empty():
-		return "Complete"
+		return "No material cost"
 	var parts: Array[String] = []
 	for resource_id in RESOURCE_ORDER:
 		if cost.has(String(resource_id)):
@@ -620,7 +818,7 @@ func _format_cost(cost: Dictionary) -> String:
 	return "  ·  ".join(parts)
 
 
-func _format_cost_rows(cost: Dictionary, columns: int) -> String:
+func _format_cost_rows(cost: Dictionary) -> String:
 	var parts: Array[String] = []
 	for resource_id in RESOURCE_ORDER:
 		if cost.has(String(resource_id)):
@@ -629,76 +827,24 @@ func _format_cost_rows(cost: Dictionary, columns: int) -> String:
 				_format_number(int(cost[String(resource_id)])),
 			])
 	var rows: Array[String] = []
-	var row: Array[String] = []
-	for part in parts:
-		row.append(part)
-		if row.size() == columns:
-			rows.append("  ·  ".join(row))
-			row.clear()
-	if not row.is_empty():
-		rows.append("  ·  ".join(row))
+	for index in range(0, parts.size(), 2):
+		rows.append("  ·  ".join(parts.slice(index, mini(index + 2, parts.size()))))
 	return "\n".join(rows)
-
-
-func _format_cost_status(cost: Dictionary) -> String:
-	var resources: Dictionary = {}
-	if _can_use_inventory():
-		resources = _inventory.call("get_resources") as Dictionary
-	var lines: Array[String] = []
-	for resource_id in RESOURCE_ORDER:
-		var key := String(resource_id)
-		if not cost.has(key):
-			continue
-		var available := int(resources.get(key, 0))
-		var required := int(cost[key])
-		var status := "READY" if available >= required else "NEED %s" % _format_number(
-			required - available
-		)
-		lines.append("%s  ·  %s  ·  %s available / %s required" % [
-			status,
-			RESOURCE_LABELS[resource_id],
-			_format_number(available),
-			_format_number(required),
-		])
-	return "\n".join(lines)
-
-
-func _show_selection_guidance(owned: bool, equipped: bool, level: int) -> void:
-	if not owned:
-		action_feedback.text = "Design selected. Review the cost, then purchase it."
-	elif equipped and level >= 3:
-		action_feedback.text = "This equipped design is fully strengthened."
-	elif equipped:
-		action_feedback.text = "Equipped. Strengthen it to improve its effects."
-	else:
-		action_feedback.text = "Owned. Equip it or strengthen it before your next run."
-	action_feedback.modulate = Color(0.54, 0.64, 0.65)
-
-
-func _set_feedback(message: String, successful: bool) -> void:
-	_has_action_feedback = true
-	action_feedback.text = message
-	action_feedback.modulate = Color(0.52, 0.94, 0.70) if successful else Color(1.0, 0.60, 0.46)
-
-
-func _active_building_id() -> StringName:
-	return &"memory_library" if _blacksmith_service == &"soul_refinery" else &"blacksmith"
-
-
-func _can_use_inventory() -> bool:
-	return (
-		_inventory != null
-		and _inventory.has_method("get_resources")
-		and _inventory.has_method("get_equipment_catalog")
-	)
 
 
 func _can_use_town() -> bool:
 	return (
 		_town != null
 		and _town.has_method("get_building_level")
+		and _town.has_method("get_max_building_level")
 		and _town.has_method("get_next_upgrade_cost")
+		and _town.has_method("can_upgrade_building")
+		and _town.has_method("upgrade_building")
 	)
+
+
+func _inventory_has_method(method_name: StringName) -> bool:
+	return _inventory != null and _inventory.has_method(method_name)
 
 
 func _format_number(value: int) -> String:

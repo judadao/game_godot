@@ -606,12 +606,12 @@ HUDLayer
 `MaterialYardUI`、`PlayerBlacksmithUI`、`TownHallUI` 共用 Shop 的深色鍛造介面語言，
 但各自擁有功能專屬資訊架構：
 
-- Material Yard：礦石 emblem、五種資源 cards、workshop level、cost cards 與單一
-  reinforcement action。
-- Player Blacksmith：圖示化 service rail；Forge 提供 equipment catalog、
-  preview、purchase/equip/strengthen，Design Research emit 路由 intent，
-  Soul Refinery 顯示 memory capacity 與升級。
-- Town Hall：village stage、總建築等級、五種資源、升級成本狀態與 council record。
+- Material Yard：左側店長肖像，中欄 Materials／Forge Tools offers，右欄商品、
+  持有量、火炬 Tier、數量與購買。
+- Player Blacksmith：左側主角肖像；Forge 依圖紙鍛造 equipment／Sword Soul，
+  Workshop Upgrade 解鎖鍛造上限，Sales Table 顯示商品、顧客與 `+GOLD` 回饋。
+- Town Hall：左側村長肖像，中欄只保留 Overview／Hall Upgrade，右欄顯示當前
+  village stage 或下一級成本。
 
 三者均使用 Full Rect root、dim backdrop、safe margin、center container、semantic
 window 與 authored ScrollContainer；動態 equipment row 必須只放在既定

@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 94 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 97 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -168,10 +168,12 @@ Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
 | Test | Contract |
 |---|---|
 | `town_building_ui_contract_test.gd` | 四個 screen 可載入；Full Rect、PROCESS_MODE_ALWAYS、class/API/signal/semantic nodes |
-| `town_building_ui_behavior_test.gd` | workshop/town hall 精確升級；Forge 購買/裝備/強化；Design Research intent；Soul Refinery progression；Shop buy/sell quantity |
+| `town_building_ui_behavior_test.gd` | Material offer intent；blacksmith 升級／recipe intent；Town Hall 精確升級；一般 Shop quantity 與圖紙商 buy-only |
 | `town_building_ui_layout_test.gd` | 1152×720、1280×720、1600×900、1920×1080、2560×1080、2560×1440 的 window/controls/text/icon 邊界 |
 | `town_building_ui_lifecycle_test.gd` | open/close/ui_cancel signals、focus release/restore、重開不重複 controls |
 | `shop_system_test.gd` / `ui_keyboard_test.gd` | 交易 ownership、方向 focus、quantity controls 與 player input lock |
+| `forge_catalog_test.gd` / `forge_service_test.gd` | offer/recipe schema、Tier gate、購買、鍛造與 sale escrow |
+| `forge_game_integration_test.gd` | 圖紙＋工具購買後鍛造 equipment／Sword Soul、升級、上桌販售、gold 與 meta save |
 
 Layout test 另外要求每個 screen 顯示至少三種 distinct functional icon；Button
 必須有文字、icon 或 tooltip，且可見 hit target 不小於 32×32。

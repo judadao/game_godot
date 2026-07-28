@@ -72,7 +72,7 @@ func _run() -> void:
 			"BattlePortal",
 			"TownHall",
 			"SwordSoulShop",
-			"EastResidence",
+			"EquipmentBlueprintShop",
 			"FarEastResidence",
 		]:
 			_expect(
@@ -84,7 +84,7 @@ func _run() -> void:
 			"PlayerBlacksmith",
 			"TownHall",
 			"SwordSoulShop",
-			"EastResidence",
+			"EquipmentBlueprintShop",
 			"FarEastResidence",
 		]:
 			var building_label := identity.get_node("LocationLabels/%s" % location_name) as Label
@@ -101,7 +101,7 @@ func _run() -> void:
 		["Blacksmith", &"player_blacksmith"],
 		["EmptyResidence", &"town_hall"],
 		["ItemShop", &"sword_soul_shop"],
-		["EmptyTowerHouse", &"east_residence"],
+		["EmptyTowerHouse", &"equipment_blueprint_shop"],
 		["MarketStall", &"far_east_residence"],
 	]
 	var previous_x := -INF
@@ -163,14 +163,14 @@ func _run() -> void:
 		"Battle Portal label must sit above the gateway instead of covering its portal core."
 	)
 	for npc_name in [
-		"Mayor", "VillagerMale", "VillagerFemale", "Guard",
+		"Mayor", "VillagerMale", "EquipmentBlueprintMerchant", "Guard",
 		"ItemMerchant", "Blacksmith", "Innkeeper",
 	]:
 		_expect(
 			is_equal_approx((town.get_node("NPCs/%s" % npc_name) as Node2D).global_position.y, 672.0),
 			"%s must stand on the artwork road baseline." % npc_name
 		)
-	for npc_name in ["VillagerMale", "VillagerFemale"]:
+	for npc_name in ["VillagerMale", "EquipmentBlueprintMerchant"]:
 		var npc_x := (town.get_node("NPCs/%s" % npc_name) as Node2D).global_position.x
 		_expect(
 			npc_x < 650.0 or npc_x > 950.0,

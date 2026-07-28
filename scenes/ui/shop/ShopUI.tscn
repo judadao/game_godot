@@ -229,6 +229,16 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_constants/separation = 8
 
+[node name="BlueprintIcon" type="TextureRect" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemListHeader"]
+visible = false
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+tooltip_text = "Blueprint catalog"
+texture = ExtResource("13_buy")
+texture_filter = 1
+expand_mode = 3
+stretch_mode = 5
+
 [node name="ItemHeader" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemListHeader" unique_id=1549389718]
 layout_mode = 2
 size_flags_horizontal = 3

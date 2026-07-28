@@ -194,9 +194,9 @@ authority。背景以一個 1:1 等比例 Sprite 覆蓋世界，只顯示一座�
 禁止重複貼圖或非等比例縮放建築。
 `EternalForgeIdentity` 提供八個精簡地點標籤與後續物件精修入口。
 六棟建築由 `TownBuildingEntrances` 擁有覆蓋完整地基的互動 Area 與 UI route；
-其中四棟提供服務，兩棟東側民宅只開啟資訊 UI。NPC 不再是 Town 建築服務的互動
-authority。相鄰 Area 同時候選時，Game 在互動當下選擇距離 Player 最近者。
-Design Research 與 Soul Refinery 由 Player Blacksmith UI 聚合。
+其中五棟提供服務，最東側民宅只開啟資訊 UI。原東側住宅改為裝備圖紙商，
+與劍魂商分別販售 equipment／Sword Soul 永久圖紙。NPC 不再是 Town 建築服務的
+互動 authority。相鄰 Area 同時候選時，Game 在互動當下選擇距離 Player 最近者。
 
 Town portal ownership 已收斂為 `TownPortalSet/BattleGateway`。它只前往
 `res://scenes/maps/battle_portal_hub.tscn`；區域目的地由 hub 的四個 region
@@ -302,17 +302,17 @@ UI 對上層提供 setter/configure API與 typed signals：
 - `ShopUI`：圖示化 catalog projection 與結構化商品列；emit
   mode/quantity/confirmed。
 - `InventoryUI`：prototype inventory projection。
-- `MaterialYardUI`：材料庫存、workshop 等級、升級成本與強化操作。
-- `PlayerBlacksmithUI`：Forge 裝備操作、Design Research 路由與 Soul Refinery
-  progression。
+- `MaterialYardUI`：依 Eternal Torch／village stage 解鎖的鍛造材料與永久工具。
+- `PlayerBlacksmithUI`：圖紙鍛造、blacksmith 等級、Sword Soul 升級與裝備販售桌。
 - `TownHallUI`：village stage、總建築等級、Town Hall 成本與升級操作。
 - `PauseMenu`：emit save/load/settings/quit 等 intent。
 
 三個功能建築 UI 都是 editor-authored Full Rect Scene，由
 `Game._open_town_service_ui()` 依 `service_id` 選擇，並透過 `set_context()` 與
 `set_services()` 接收既有 Town/Inventory `RefCounted` services。它們目前仍直接
-呼叫 domain API 完成升級、購買、裝備或強化；`Game.close_ui()` 負責同步 Meta、
-save 與 world visual projection。UI 不應新增 domain 規則，直接 service mutation
+呼叫 domain API 完成建築／裝備升級；材料、圖紙、鍛造與販售 intent 交給
+`Game` 透過 `ForgeService` 驗證，成功後立即同步 Meta/save。`Game.close_ui()`
+仍負責最終同步與 world visual projection。UI 不應新增 domain 規則，直接 service mutation
 仍是 Known Risk；舊的通用 Town progression screen 已退役。
 
 ## 6. Signal 與跨系統資料流

@@ -15,14 +15,14 @@ const UI_LAYOUTS := [
 		"name": "MaterialYardUI",
 		"path": "res://scenes/ui/town/MaterialYardUI.tscn",
 		"window": "Window",
-		"terms": ["MATERIAL", "UPGRADE"],
+		"terms": ["MATERIAL", "FORGE TOOLS", "BUY"],
 		"minimum_icons": 3,
 	},
 	{
 		"name": "PlayerBlacksmithUI",
 		"path": "res://scenes/ui/town/PlayerBlacksmithUI.tscn",
 		"window": "PlayerBlacksmithWindow",
-		"terms": ["FORGE", "DESIGN RESEARCH", "SOUL REFINERY"],
+		"terms": ["FORGE", "WORKSHOP", "SALES TABLE"],
 		"minimum_icons": 3,
 	},
 	{
@@ -36,7 +36,7 @@ const UI_LAYOUTS := [
 		"name": "ShopUI",
 		"path": "res://scenes/ui/shop/ShopUI.tscn",
 		"window": "ShopWindow",
-		"terms": ["BUY", "SELL", "GOLD"],
+		"terms": ["BUY", "BLUEPRINT", "GOLD"],
 		"minimum_icons": 4,
 	},
 ]
@@ -216,9 +216,9 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 			String(descriptor["name"]).to_snake_case()
 		)
 		if descriptor["name"] == "PlayerBlacksmithUI":
-			ui.call("select_blacksmith_service", &"soul_refinery")
+			ui.call("select_blacksmith_service", &"sales_table")
 			await process_frame
-			await _capture_viewport(viewport, "player_blacksmith_soul_refinery")
+			await _capture_viewport(viewport, "player_blacksmith_sales_table")
 
 	viewport.queue_free()
 	await process_frame
@@ -285,6 +285,27 @@ func _configure_ui(ui: Control, ui_name: String) -> bool:
 		inventory.call("set_resource_amount", resource_id, 5000)
 	var town: RefCounted = TOWN_SCRIPT.new(inventory)
 	ui.call("set_services", town, inventory)
+	if ui_name == "MaterialYardUI":
+		ui.call("set_offers", [
+			{
+				"id": "material_wood_bundle",
+				"name": "Autumn Wood Bundle",
+				"description": "Forge stock.",
+				"product_kind": "resource",
+				"product_id": "autumn_wood",
+				"price": 18,
+				"required_flame_tier": 0,
+			},
+			{
+				"id": "tool_forging_hammer",
+				"name": "Forging Hammer",
+				"description": "Permanent forge tool.",
+				"product_kind": "tool",
+				"product_id": "forging_hammer",
+				"price": 60,
+				"required_flame_tier": 0,
+			},
+		])
 	return true
 
 

@@ -26,7 +26,7 @@ const EXPECTED_PROPS: Array[StringName] = [
 const EXPECTED_VISUAL_NPCS: Array[StringName] = [
 	&"Mayor",
 	&"VillagerMale",
-	&"VillagerFemale",
+	&"EquipmentBlueprintMerchant",
 	&"Guard",
 ]
 
