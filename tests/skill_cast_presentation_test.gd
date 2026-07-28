@@ -35,6 +35,7 @@ func _run() -> void:
 	await process_frame
 	await _test_scene_contract()
 	await _test_responsive_centering()
+	await _test_combo_cast_keeps_normal_time()
 	await _test_fire_cast_uses_real_time()
 	await _test_repeated_ice_cast_restores_original_scale()
 	await _test_tree_exit_restores_original_scale()
@@ -105,6 +106,25 @@ func _test_fire_cast_uses_real_time() -> void:
 	state = _presentation.call("get_cast_state") as Dictionary
 	_expect(not bool(state.get("active", true)), "Cast must finish using unscaled real time.")
 	_expect(is_equal_approx(Engine.time_scale, 1.0), "Finished cast must restore normal time.")
+
+
+func _test_combo_cast_keeps_normal_time() -> void:
+	Engine.time_scale = 1.0
+	_presentation.call("play_cast", "FLAME IMBUE", &"fire", 0.85, false)
+	await process_frame
+	var state := _presentation.call("get_cast_state") as Dictionary
+	var title := _presentation.get_node("Overlay/SafeMargin/Center/SkillName") as Label
+	_expect(bool(state.get("active", false)), "Combo cast presentation must still become active.")
+	_expect(title.visible, "Combo cast must retain its visual title.")
+	_expect(
+		is_equal_approx(Engine.time_scale, 1.0),
+		"Combo cast presentation must not slow Engine.time_scale."
+	)
+	await create_timer(0.8, true, false, true).timeout
+	_expect(
+		is_equal_approx(Engine.time_scale, 1.0),
+		"Finished Combo presentation must preserve normal time."
+	)
 
 
 func _test_repeated_ice_cast_restores_original_scale() -> void:

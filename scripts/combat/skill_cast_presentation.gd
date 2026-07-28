@@ -39,7 +39,8 @@ func _exit_tree() -> void:
 func play_cast(
 	cast_name: String,
 	element: StringName = &"neutral",
-	importance: float = 1.0
+	importance: float = 1.0,
+	use_slow_motion: bool = true
 ) -> void:
 	if not is_inside_tree():
 		push_warning("SkillCastPresentation.play_cast() requires an active SceneTree.")
@@ -56,7 +57,8 @@ func play_cast(
 	_importance = clampf(importance, MIN_IMPORTANCE, MAX_IMPORTANCE)
 
 	_cancel_tween()
-	_apply_slow_motion()
+	if use_slow_motion:
+		_apply_slow_motion()
 	_prepare_title()
 	_play_title_tween(_generation)
 	cast_started.emit(_cast_name, _element, _importance)

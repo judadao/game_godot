@@ -19,11 +19,10 @@ config/icon="res://icon.svg"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
-window/size/window_width_override=784
-window/size/window_height_override=441
+window/size/window_width_override=1280
+window/size/window_height_override=720
 window/size/mode=0
-window/size/initial_position_type=0
-window/size/initial_position=Vector2i(3056, 639)
+window/size/initial_position_type=1
 window/stretch/mode="canvas_items"
 
 [input]

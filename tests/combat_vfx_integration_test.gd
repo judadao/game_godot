@@ -42,6 +42,7 @@ func _run() -> void:
 		_expect(
 			String(frost.get("element", "")) == "frost"
 				and bool(frost.get("ultimate", false))
+				and bool(frost.get("slow_motion", false))
 				and float(frost.get("radius", 0.0)) >= 220.0,
 			"Frost Bind must map to a player-centered radial freeze ultimate."
 		)
@@ -53,8 +54,10 @@ func _run() -> void:
 		_expect(
 			String(flame_imbue.get("element", "")) == "flame"
 				and bool(flame_imbue.get("attack_aura", false))
-				and not bool(flame_imbue.get("ultimate", false)),
-			"Flame Imbue must wrap attacks without masquerading as an ultimate."
+				and not bool(flame_imbue.get("ultimate", false))
+				and not bool(flame_imbue.get("slow_motion", true))
+				and not bool(flame_imbue.get("screen_title", true)),
+			"Flame Imbue must use compact player feedback without screen title or slow motion."
 		)
 
 	var instance := game_scene.instantiate()

@@ -822,6 +822,11 @@ window 內暫時強化固有 Dash；Combo 本身不直接移動玩家。
 
 The combat hand is one fixed four-card Combo/Healing row. Q/W/E/R reuse those cards.
 Basic Attack fires automatically; there is no vertical attack or group-toggle input.
+Playing a Combo or Healing card keeps normal gameplay speed and uses one compact
+18px world-space label above the player instead of the centered cast title. Elemental
+feedback remains active. Slow motion is reserved for triggered named skills,
+elemental ultimates, and queued formula Finishers; a queued Finisher starts its
+presentation only after a legal horizontal target confirms that the shot will fire.
 
 ### Persistent Combo formula
 

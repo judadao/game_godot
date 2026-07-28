@@ -1438,7 +1438,6 @@ func _try_basic_attack() -> bool:
 			card,
 			finisher_queue[0] as Dictionary
 		)
-		_play_combat_vfx(card)
 	var targets := _get_combat_targets()
 	var attack_range := maxf(1.0, float(card.get("auto_attack_range", 220.0)))
 	targets = targets.filter(func(target: Variant) -> bool:
@@ -1454,6 +1453,8 @@ func _try_basic_attack() -> bool:
 	)
 	if targets.is_empty():
 		return false
+	if is_finisher:
+		_play_combat_vfx(card)
 	var effect := card.get("effect", {}) as Dictionary
 	var direction_count := maxi(1, int(effect.get("direction_count", 1)))
 	var spread_degrees := clampf(float(effect.get("spread_degrees", 0.0)), 0.0, 360.0)
@@ -2750,6 +2751,8 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 	return {
 		"element": primary_element,
 		"elements": elements,
+		"slow_motion": card_type in ["skill", "ultimate"] or is_finisher,
+		"screen_title": card_type in ["skill", "ultimate"] or is_finisher,
 		"attack_aura": (
 			card_type == "combo"
 			and effect_kind == "infusion"
@@ -2789,12 +2792,16 @@ func _play_combat_vfx(card: Dictionary) -> void:
 		&"fire" if element == "flame"
 		else (&"ice" if element == "frost" else &"neutral")
 	)
-	if skill_cast_presentation != null:
+	var cast_name := String(card.get("name", card.get("id", "Skill")))
+	if bool(profile.get("screen_title", false)) and skill_cast_presentation != null:
 		skill_cast_presentation.play_cast(
-			String(card.get("name", card.get("id", "Skill"))),
+			cast_name,
 			presentation_element,
-			float(profile.get("importance", 0.85))
+			float(profile.get("importance", 0.85)),
+			bool(profile.get("slow_motion", false))
 		)
+	elif not cast_name.is_empty():
+		_show_compact_cast_label(cast_name, presentation_element)
 	if bool(profile.get("attack_aura", false)) and player is Node2D:
 		_spawn_elemental_aura(
 			player as Node2D,
@@ -2803,6 +2810,35 @@ func _play_combat_vfx(card: Dictionary) -> void:
 		)
 	if bool(profile.get("ultimate", false)):
 		_spawn_elemental_ultimate(profile)
+
+
+func _show_compact_cast_label(cast_name: String, element: StringName) -> void:
+	if current_map == null or not player is Node2D:
+		return
+	var label := Label.new()
+	label.name = "CompactCastLabel"
+	label.add_to_group("ComboCastLabels")
+	label.text = cast_name
+	label.custom_minimum_size = Vector2(180.0, 28.0)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.position = (player as Node2D).global_position + Vector2(-90.0, -104.0)
+	label.z_index = 110
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_font_size_override("font_size", 18)
+	label.add_theme_constant_override("outline_size", 4)
+	label.add_theme_color_override("font_outline_color", Color(0.03, 0.04, 0.05, 0.95))
+	label.add_theme_color_override(
+		"font_color",
+		Color(1.0, 0.52, 0.22) if element == &"fire"
+		else (Color(0.42, 0.86, 1.0) if element == &"ice" else Color(1.0, 0.9, 0.55))
+	)
+	current_map.add_child(label)
+	var tween := label.create_tween()
+	tween.set_ignore_time_scale(true)
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 22.0, 0.55)
+	tween.tween_property(label, "modulate:a", 0.0, 0.30).set_delay(0.30)
+	tween.chain().tween_callback(label.queue_free)
 
 
 func _spawn_elemental_aura(host: Node2D, elements: Array, intensity: int) -> void:

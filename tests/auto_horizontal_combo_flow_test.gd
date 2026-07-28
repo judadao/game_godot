@@ -95,8 +95,30 @@ func _run() -> void:
 		"The next automatic horizontal shot must release and consume the queued Finisher."
 	)
 
+	for enemy in get_nodes_in_group("Enemies"):
+		if is_instance_valid(enemy):
+			enemy.queue_free()
+	await process_frame
+	for card_id in ["echo_volley", "echo_volley", "echo_volley"]:
+		game.call("_record_combo_formula", database.get_card(card_id))
+	_expect(
+		bool(run.temporary_buffs.get("finisher_pending", false)),
+		"A second Finisher must queue for no-target retry coverage."
+	)
+	Engine.time_scale = 1.0
+	game.set("_auto_attack_remaining", 0.0)
+	var fired_without_target := bool(game.call("_try_basic_attack"))
+	var presentation := game.get_node("SkillCastPresentation") as CanvasLayer
+	_expect(
+		not fired_without_target
+			and not bool(presentation.call("is_cast_active"))
+			and is_equal_approx(Engine.time_scale, 1.0),
+		"A queued Finisher with no legal target must not start or restart presentation slow motion."
+	)
+
 	game.queue_free()
 	await process_frame
+	Engine.time_scale = 1.0
 	if _failures == 0:
 		print("PASS: automatic horizontal attack and formula Finisher flow")
 	quit(1 if _failures > 0 else 0)
