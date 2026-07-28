@@ -188,9 +188,12 @@ X/Y scale 拉寬圖中物件；`TownEternalForgeIdentity.tscn` 持有八個
 `Buildings`、`Ground`、`Props` linked scenes 保留作為 gameplay／progression
 identity，但初版 runtime 不與烘焙背景重複顯示。角色、NPC、Portal 與地面碰撞
 統一使用新圖道路的 `y=672` baseline。
-Town 的六個建築 UI 觸發由 `BuildingEntrances` 獨立擁有；NPC 僅保留角色視覺與
-body collision，不得加入 `Interactives` 或持有 `InteractionArea`。入口透過
+Town 的六個建築 UI 觸發由 `BuildingEntrances` 獨立擁有；每個 Area 橫向覆蓋
+該建築完整地基，交界處由 Game 選擇距離 Player 最近的 candidate。NPC 僅保留角色
+視覺與 body collision，不得加入 `Interactives` 或持有 `InteractionArea`。入口透過
 `building_ui_requested` 將 `building_id`、`ui_route` 與 `service_id` 交給 Game。
+東側原設計稿研究室與劍魂精煉工房改為普通民宅，只開啟無服務的住宅資訊 UI；
+Design Research 與 Soul Refinery 服務統一由 Player Blacksmith UI 提供。
 
 `res://scenes/maps/battle_portal_hub.tscn` 是獨立可玩 map。Town 的唯一
 `BattleGateway` 先進入此大廳；大廳的 `RegionPortals` 固定有四個入口槽位：

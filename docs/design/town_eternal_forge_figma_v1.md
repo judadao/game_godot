@@ -60,8 +60,8 @@
 - 戰鬥傳送門
 - 村長家／委託所
 - 劍魂商
-- 設計稿研究室
-- 劍魂精煉工房
+- 東側民宅
+- 東郊民宅
 
 Do not bake these labels into raster building art. Keep gold-framed plaques blank
 and render text as Figma/Godot UI so localization remains editable.
@@ -72,5 +72,7 @@ and render text as Figma/Godot UI so localization remains editable.
   rare materials, and Sword Soul refinement caps.
 - Forging level unlocks equipment quality, affix count, resource efficiency,
   advanced refinement methods, order difficulty, and sale value.
+- Design Research and Sword Soul refinement are Player Blacksmith services;
+  the two east-side buildings are ordinary residences.
 - Weapons define the base attack; Sword Souls modify attacks and form named
   three-Soul Finishers. The healing Sword Soul does not enter Finisher recipes.

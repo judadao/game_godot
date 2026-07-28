@@ -55,9 +55,11 @@ contracts remain compatible while camera and collision bounds match that segment
 ## Interaction preservation
 
 - NPC roles are display-only and own no interaction area.
-- Material Yard, Player Blacksmith, Town Hall, Sword Soul Shop, Blueprint
-  Research, and Soul Refinery each own an independent building entrance trigger.
-- Building entrances route directly to Town Progress, Shop, or Deck Builder UI.
+- Material Yard, Player Blacksmith, Town Hall, and Sword Soul Shop each own a
+  full-foundation interaction trigger.
+- Design Research and Soul Refinery are services inside Player Blacksmith.
+- The two east-side buildings have full-foundation residence information
+  triggers but no public services.
 - Forest portal: `forest_portal`
 - Caves portal: `caves_portal`
 - Graveyard portal: `graveyard_portal`

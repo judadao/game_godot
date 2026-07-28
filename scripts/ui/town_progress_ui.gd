@@ -2,10 +2,12 @@ class_name TownProgressUI
 extends Control
 
 signal closed
+signal blueprint_research_requested
 
 var _town: RefCounted
 var _inventory: RefCounted
 var _context_id: StringName
+var _blacksmith_service: StringName = &"forge"
 var _title_label: Label
 var _resource_label: Label
 var _stage_label: Label
@@ -15,6 +17,7 @@ var _detail_label: Label
 var _building_column: VBoxContainer
 var _equipment_column: VBoxContainer
 var _detail_panel: VBoxContainer
+var _blacksmith_service_row: HBoxContainer
 var _building_buttons: Array[Button] = []
 var _equipment_buttons: Array[Button] = []
 var _selected_equipment: StringName
@@ -52,6 +55,24 @@ func set_context(context_id: StringName) -> void:
 
 func get_context_id() -> StringName:
 	return _context_id
+
+
+func select_blacksmith_service(service_id: StringName) -> void:
+	if service_id not in [&"forge", &"soul_refinery"]:
+		return
+	_blacksmith_service = service_id
+	if is_node_ready():
+		_apply_context()
+		_refresh()
+
+
+func get_blacksmith_service() -> StringName:
+	return _blacksmith_service
+
+
+func request_blueprint_research() -> void:
+	if _context_id == &"player_blacksmith":
+		blueprint_research_requested.emit()
 
 
 func get_building_button_count() -> int:
@@ -105,6 +126,14 @@ func _build_layout() -> void:
 	_resource_label = Label.new()
 	_resource_label.add_theme_color_override("font_color", Color(0.88, 0.92, 0.72))
 	main.add_child(_resource_label)
+	_blacksmith_service_row = HBoxContainer.new()
+	_blacksmith_service_row.name = "BlacksmithServices"
+	_blacksmith_service_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_blacksmith_service_row.add_theme_constant_override("separation", 8)
+	main.add_child(_blacksmith_service_row)
+	_add_service_button("Forge", select_blacksmith_service.bind(&"forge"))
+	_add_service_button("Design Research", request_blueprint_research)
+	_add_service_button("Soul Refinery", select_blacksmith_service.bind(&"soul_refinery"))
 	var columns := HBoxContainer.new()
 	columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	columns.add_theme_constant_override("separation", 16)
@@ -130,6 +159,14 @@ func _build_layout() -> void:
 	upgrade.pressed.connect(_upgrade_selected_equipment)
 	_detail_panel.add_child(upgrade)
 	_apply_context()
+
+
+func _add_service_button(label: String, action: Callable) -> void:
+	var button := Button.new()
+	button.text = label
+	button.custom_minimum_size = Vector2(150, 38)
+	button.pressed.connect(action)
+	_blacksmith_service_row.add_child(button)
 
 
 func _make_scroll_column(parent: Container, title_text: String) -> VBoxContainer:
@@ -198,12 +235,19 @@ func _apply_context() -> void:
 		return
 	var titles := {
 		&"material_yard": "MATERIAL YARD",
-		&"player_blacksmith": "PLAYER BLACKSMITH",
 		&"town_hall": "TOWN HALL",
-		&"soul_refinery": "SOUL REFINERY",
 	}
-	_title_label.text = String(titles.get(_context_id, "TOWN DEVELOPMENT"))
-	var uses_workbench := _context_id in [&"player_blacksmith", &"soul_refinery"]
+	if _context_id == &"player_blacksmith":
+		_title_label.text = (
+			"PLAYER BLACKSMITH · SOUL REFINERY"
+			if _blacksmith_service == &"soul_refinery"
+			else "PLAYER BLACKSMITH"
+		)
+	else:
+		_title_label.text = String(titles.get(_context_id, "TOWN DEVELOPMENT"))
+	var uses_workbench := _context_id == &"player_blacksmith"
+	if _blacksmith_service_row != null:
+		_blacksmith_service_row.visible = uses_workbench
 	if _building_column != null:
 		_building_column.visible = true
 	if _equipment_column != null:
@@ -217,11 +261,9 @@ func _focused_building_id() -> StringName:
 		&"material_yard":
 			return &"workshop"
 		&"player_blacksmith":
-			return &"blacksmith"
+			return &"memory_library" if _blacksmith_service == &"soul_refinery" else &"blacksmith"
 		&"town_hall":
 			return &"town_hall"
-		&"soul_refinery":
-			return &"memory_library"
 		_:
 			return StringName()
 

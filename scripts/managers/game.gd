@@ -86,6 +86,7 @@ const COMBO_EVOLUTIONS := [
 @export var dialogue_scene: PackedScene = preload("res://scenes/ui/dialogue/DialogueUI.tscn")
 @export var shop_scene: PackedScene = preload("res://scenes/ui/shop/ShopUI.tscn")
 @export var town_progress_scene: PackedScene = preload("res://scenes/ui/town/TownProgressUI.tscn")
+@export var town_residence_scene: PackedScene = preload("res://scenes/ui/town/TownResidenceUI.tscn")
 @export var run_result_scene: PackedScene = preload("res://scenes/ui/results/RunResultUI.tscn")
 @export var deck_builder_scene: PackedScene = preload("res://scenes/ui/cards/DeckBuilderUI.tscn")
 @export var card_discard_scene: PackedScene = preload("res://scenes/ui/cards/CardDiscardUI.tscn")
@@ -3166,7 +3167,7 @@ func _on_interaction_available(interactive: Node, interactor: Node) -> void:
 		return
 	if not _interaction_candidates.has(interactive):
 		_interaction_candidates.append(interactive)
-	current_interactive = interactive
+	current_interactive = _nearest_interaction_candidate()
 	_update_interaction_prompt()
 
 
@@ -3174,14 +3175,45 @@ func _on_interaction_unavailable(interactive: Node, interactor: Node) -> void:
 	if interactor != player:
 		return
 	_interaction_candidates.erase(interactive)
-	current_interactive = _interaction_candidates[_interaction_candidates.size() - 1] if not _interaction_candidates.is_empty() else null
+	current_interactive = _nearest_interaction_candidate()
 	_update_interaction_prompt()
 
 
 func _try_interact() -> void:
+	current_interactive = _nearest_interaction_candidate()
 	if current_interactive == null or not current_interactive.has_method("interact"):
 		return
 	current_interactive.call("interact", player)
+
+
+func _nearest_interaction_candidate() -> Node:
+	if player == null:
+		return null
+	var reference_position := _interaction_reference_position(player)
+	var nearest: Node
+	var nearest_distance := INF
+	for candidate in _interaction_candidates:
+		if not is_instance_valid(candidate):
+			continue
+		var distance := reference_position.distance_squared_to(
+			_interaction_reference_position(candidate)
+		)
+		if distance < nearest_distance:
+			nearest = candidate
+			nearest_distance = distance
+	return nearest
+
+
+func _interaction_reference_position(node: Node) -> Vector2:
+	for collision_path in [
+		"CollisionShape2D",
+		"InteractionArea/InteractionCollision",
+		"InteractionArea/CollisionShape2D",
+	]:
+		var collision := node.get_node_or_null(collision_path) as Node2D
+		if collision != null:
+			return collision.global_position
+	return (node as Node2D).global_position if node is Node2D else Vector2.ZERO
 
 
 func _on_dialogue_requested(npc: Node, dialogue_id: StringName, interactor: Node) -> void:
@@ -3222,6 +3254,12 @@ func _on_building_ui_requested(
 			if town_ui != null:
 				town_ui.call("set_context", service_id)
 				town_ui.call("set_services", town_manager, inventory_manager)
+				if service_id == &"player_blacksmith":
+					_connect_if_present(
+						town_ui,
+						&"blueprint_research_requested",
+						&"_on_blacksmith_blueprint_research_requested"
+					)
 		&"shop":
 			_on_shop_requested(entrance, service_id, interactor)
 		&"deck_builder":
@@ -3229,8 +3267,22 @@ func _on_building_ui_requested(
 			var deck_ui := get_open_ui("DeckBuilderUI")
 			if deck_ui != null:
 				deck_ui.call("set_context", service_id)
+		&"residence":
+			var residence_ui := open_ui("TownResidenceUI", town_residence_scene, true)
+			if residence_ui != null:
+				residence_ui.call("set_context", service_id)
 		_:
 			push_warning("Unknown Town building UI route: %s" % ui_route)
+
+
+func _on_blacksmith_blueprint_research_requested() -> void:
+	var town_ui := get_open_ui("TownProgressUI")
+	if town_ui != null:
+		close_ui(town_ui)
+	_open_deck_builder("", &"")
+	var deck_ui := get_open_ui("DeckBuilderUI")
+	if deck_ui != null:
+		deck_ui.call("set_context", &"blueprint_research")
 
 
 func _sync_progression_to_meta() -> void:
@@ -3263,7 +3315,7 @@ func _apply_town_visual_progress() -> void:
 	var buildings := current_map.get_node_or_null("Buildings")
 	if buildings == null:
 		return
-	var market := buildings.get_node_or_null("MarketStall") as CanvasItem
+	var market := buildings.get_node_or_null("ItemShop") as CanvasItem
 	var residence := buildings.get_node_or_null("EmptyResidence") as CanvasItem
 	var tower := buildings.get_node_or_null("EmptyTowerHouse") as CanvasItem
 	var blacksmith := buildings.get_node_or_null("Blacksmith") as CanvasItem

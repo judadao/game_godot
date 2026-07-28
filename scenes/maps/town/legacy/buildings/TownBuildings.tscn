@@ -27,7 +27,7 @@ metadata/location_id = &"player_blacksmith"
 [node name="MarketStall" parent="." unique_id=29367277 instance=ExtResource("4_market")]
 position = Vector2(1800, 613)
 scale = Vector2(0.82, 0.82)
-metadata/location_id = &"soul_refinery"
+metadata/location_id = &"far_east_residence"
 
 [node name="EmptyResidence" parent="." unique_id=1515707324 instance=ExtResource("5_house")]
 position = Vector2(1100, 620)
@@ -37,4 +37,4 @@ metadata/location_id = &"town_hall"
 [node name="EmptyTowerHouse" parent="." unique_id=1823551390 instance=ExtResource("6_tower")]
 position = Vector2(1590, 609)
 scale = Vector2(0.82, 0.82)
-metadata/location_id = &"blueprint_research"
+metadata/location_id = &"east_residence"

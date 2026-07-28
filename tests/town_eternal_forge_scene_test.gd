@@ -72,8 +72,8 @@ func _run() -> void:
 			"BattlePortal",
 			"TownHall",
 			"SwordSoulShop",
-			"BlueprintResearch",
-			"SoulRefinery",
+			"EastResidence",
+			"FarEastResidence",
 		]:
 			_expect(
 				identity.has_node("LocationLabels/%s" % location_name),
@@ -84,8 +84,8 @@ func _run() -> void:
 			"PlayerBlacksmith",
 			"TownHall",
 			"SwordSoulShop",
-			"BlueprintResearch",
-			"SoulRefinery",
+			"EastResidence",
+			"FarEastResidence",
 		]:
 			var building_label := identity.get_node("LocationLabels/%s" % location_name) as Label
 			var plaque := building_label.get_theme_stylebox("normal") as StyleBoxFlat
@@ -101,8 +101,8 @@ func _run() -> void:
 		["Blacksmith", &"player_blacksmith"],
 		["EmptyResidence", &"town_hall"],
 		["ItemShop", &"sword_soul_shop"],
-		["EmptyTowerHouse", &"blueprint_research"],
-		["MarketStall", &"soul_refinery"],
+		["EmptyTowerHouse", &"east_residence"],
+		["MarketStall", &"far_east_residence"],
 	]
 	var previous_x := -INF
 	for contract in expected_building_order:

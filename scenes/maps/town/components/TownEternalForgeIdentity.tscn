@@ -301,34 +301,34 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/location_id = "sword_soul_shop"
 
-[node name="BlueprintResearch" type="Label" parent="LocationLabels"]
+[node name="EastResidence" type="Label" parent="LocationLabels"]
 offset_left = 1485.0
 offset_top = 496.0
 offset_right = 1675.0
 offset_bottom = 530.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.866667, 0.705882, 1, 1)
-theme_override_colors/font_outline_color = Color(0.101961, 0.027451, 0.164706, 1)
+theme_override_colors/font_color = Color(1, 0.901961, 0.658824, 1)
+theme_override_colors/font_outline_color = Color(0.0627451, 0.0823529, 0.113725, 1)
 theme_override_constants/outline_size = 1
 theme_override_font_sizes/font_size = 15
-theme_override_styles/normal = SubResource("StyleBox_soul_plaque")
-text = "設計稿研究室"
+theme_override_styles/normal = SubResource("StyleBox_location_plaque")
+text = "東側民宅"
 horizontal_alignment = 1
 vertical_alignment = 1
-metadata/location_id = "blueprint_research"
+metadata/location_id = "east_residence"
 
-[node name="SoulRefinery" type="Label" parent="LocationLabels"]
+[node name="FarEastResidence" type="Label" parent="LocationLabels"]
 offset_left = 1725.0
 offset_top = 496.0
 offset_right = 1915.0
 offset_bottom = 530.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.866667, 0.705882, 1, 1)
-theme_override_colors/font_outline_color = Color(0.101961, 0.027451, 0.164706, 1)
+theme_override_colors/font_color = Color(1, 0.901961, 0.658824, 1)
+theme_override_colors/font_outline_color = Color(0.0627451, 0.0823529, 0.113725, 1)
 theme_override_constants/outline_size = 1
 theme_override_font_sizes/font_size = 15
-theme_override_styles/normal = SubResource("StyleBox_soul_plaque")
-text = "劍魂精煉工房"
+theme_override_styles/normal = SubResource("StyleBox_location_plaque")
+text = "東郊民宅"
 horizontal_alignment = 1
 vertical_alignment = 1
-metadata/location_id = "soul_refinery"
+metadata/location_id = "far_east_residence"

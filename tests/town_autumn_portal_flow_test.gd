@@ -14,6 +14,7 @@ func _run() -> void:
 	await process_frame
 	var player := game.get("player") as Node
 	var portal := game.get("current_map").get_node("Portals/BattleGateway") as Node
+	(player as Node2D).global_position = (portal as Node2D).global_position
 	game.call("_on_interaction_available", portal, player)
 	game.call("_try_interact")
 	await process_frame
@@ -24,6 +25,7 @@ func _run() -> void:
 	)
 	player = game.get("player") as Node
 	portal = game.get("current_map").get_node("RegionPortals/AutumnPortal") as Node
+	(player as Node2D).global_position = (portal as Node2D).global_position
 	game.call("_on_interaction_available", portal, player)
 	game.call("_try_interact")
 	await process_frame

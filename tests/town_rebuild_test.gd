@@ -42,8 +42,8 @@ func _run() -> void:
 		"BuildingEntrances/PlayerBlacksmith",
 		"BuildingEntrances/TownHall",
 		"BuildingEntrances/SwordSoulShop",
-		"BuildingEntrances/BlueprintResearch",
-		"BuildingEntrances/SoulRefinery",
+		"BuildingEntrances/EastResidence",
+		"BuildingEntrances/FarEastResidence",
 		"Portals/BattleGateway/TownVisual",
 	]:
 		_expect(town.has_node(node_path), "Town rebuild node missing: %s" % node_path)
@@ -101,6 +101,14 @@ func _run() -> void:
 			_expect(not npc_regions.has(region), "%s must use a unique atlas region." % npc_name)
 			npc_regions.append(region)
 	_assert_town_building_entrances(town)
+	_expect(
+		not town.has_node("BuildingEntrances/BlueprintResearch"),
+		"The former Blueprint Research house must not own a functional entrance."
+	)
+	_expect(
+		not town.has_node("BuildingEntrances/SoulRefinery"),
+		"The former Soul Refinery house must not own a functional entrance."
+	)
 
 	_expect(
 		not town.has_node("ParallaxBackground/ParallaxBackground"),
@@ -255,32 +263,38 @@ func _assert_town_building_entrances(town: Node) -> void:
 		"BuildingEntrances/MaterialYard": {
 			"building_id": &"material_yard",
 			"ui_route": &"town_progress",
-			"position": Vector2(118, 614),
+			"position": Vector2(170, 614),
+			"size": Vector2(280, 116),
 		},
 		"BuildingEntrances/PlayerBlacksmith": {
 			"building_id": &"player_blacksmith",
 			"ui_route": &"town_progress",
-			"position": Vector2(332, 614),
+			"position": Vector2(475, 614),
+			"size": Vector2(350, 116),
 		},
 		"BuildingEntrances/TownHall": {
 			"building_id": &"town_hall",
 			"ui_route": &"town_progress",
-			"position": Vector2(1024, 614),
+			"position": Vector2(1120, 614),
+			"size": Vector2(260, 116),
 		},
 		"BuildingEntrances/SwordSoulShop": {
 			"building_id": &"sword_soul_shop",
 			"ui_route": &"shop",
-			"position": Vector2(1286, 614),
+			"position": Vector2(1370, 614),
+			"size": Vector2(240, 116),
 		},
-		"BuildingEntrances/BlueprintResearch": {
-			"building_id": &"blueprint_research",
-			"ui_route": &"deck_builder",
-			"position": Vector2(1500, 614),
+		"BuildingEntrances/EastResidence": {
+			"building_id": &"east_residence",
+			"ui_route": &"residence",
+			"position": Vector2(1595, 614),
+			"size": Vector2(210, 116),
 		},
-		"BuildingEntrances/SoulRefinery": {
-			"building_id": &"soul_refinery",
-			"ui_route": &"town_progress",
-			"position": Vector2(1716, 614),
+		"BuildingEntrances/FarEastResidence": {
+			"building_id": &"far_east_residence",
+			"ui_route": &"residence",
+			"position": Vector2(1817, 614),
+			"size": Vector2(234, 116),
 		},
 	}
 	for entrance_path in expected_anchors:
@@ -301,8 +315,8 @@ func _assert_town_building_entrances(town: Node) -> void:
 		var collision := entrance.get_node("InteractionArea/InteractionCollision") as CollisionShape2D
 		var shape := collision.shape as RectangleShape2D
 		_expect(
-			shape != null and shape.size == Vector2(92, 116),
-			"%s must use the shared compact door shape." % entrance_path
+			shape != null and shape.size == contract["size"],
+			"%s must cover the complete building foundation." % entrance_path
 		)
 		_expect(
 			collision.global_position.is_equal_approx(contract["position"]),

@@ -16,6 +16,7 @@ const FEATURE_SCENES := [
 	"res://scenes/ui/shop/ShopUI.tscn",
 	"res://scenes/ui/system/PauseMenu.tscn",
 	"res://scenes/ui/town/TownProgressUI.tscn",
+	"res://scenes/ui/town/TownResidenceUI.tscn",
 	"res://tests/fixtures/scenes/AutumnSlime.tscn",
 	"res://tests/fixtures/scenes/NPC.tscn",
 ]

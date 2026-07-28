@@ -1,53 +1,89 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/props/BuildingEntrance.tscn" id="1_entrance"]
+
+[sub_resource type="RectangleShape2D" id="MaterialFoundationShape"]
+size = Vector2(280, 116)
+
+[sub_resource type="RectangleShape2D" id="BlacksmithFoundationShape"]
+size = Vector2(350, 116)
+
+[sub_resource type="RectangleShape2D" id="TownHallFoundationShape"]
+size = Vector2(260, 116)
+
+[sub_resource type="RectangleShape2D" id="SwordSoulShopFoundationShape"]
+size = Vector2(240, 116)
+
+[sub_resource type="RectangleShape2D" id="EastResidenceFoundationShape"]
+size = Vector2(210, 116)
+
+[sub_resource type="RectangleShape2D" id="FarEastResidenceFoundationShape"]
+size = Vector2(234, 116)
 
 [node name="TownBuildingEntrances" type="Node2D"]
 
 [node name="MaterialYard" parent="." instance=ExtResource("1_entrance")]
-position = Vector2(118, 614)
+position = Vector2(170, 614)
 interaction_id = &"material_yard_entrance"
 display_name = "Material Yard"
 building_id = &"material_yard"
 ui_route = &"town_progress"
 service_id = &"material_yard"
 
+[node name="InteractionCollision" parent="MaterialYard/InteractionArea" index="0"]
+shape = SubResource("MaterialFoundationShape")
+
 [node name="PlayerBlacksmith" parent="." instance=ExtResource("1_entrance")]
-position = Vector2(332, 614)
+position = Vector2(475, 614)
 interaction_id = &"player_blacksmith_entrance"
 display_name = "Player Blacksmith"
 building_id = &"player_blacksmith"
 ui_route = &"town_progress"
 service_id = &"player_blacksmith"
 
+[node name="InteractionCollision" parent="PlayerBlacksmith/InteractionArea" index="0"]
+shape = SubResource("BlacksmithFoundationShape")
+
 [node name="TownHall" parent="." instance=ExtResource("1_entrance")]
-position = Vector2(1024, 614)
+position = Vector2(1120, 614)
 interaction_id = &"town_hall_entrance"
 display_name = "Town Hall"
 building_id = &"town_hall"
 ui_route = &"town_progress"
 service_id = &"town_hall"
 
+[node name="InteractionCollision" parent="TownHall/InteractionArea" index="0"]
+shape = SubResource("TownHallFoundationShape")
+
 [node name="SwordSoulShop" parent="." instance=ExtResource("1_entrance")]
-position = Vector2(1286, 614)
+position = Vector2(1370, 614)
 interaction_id = &"sword_soul_shop_entrance"
 display_name = "Sword Soul Shop"
 building_id = &"sword_soul_shop"
 ui_route = &"shop"
 service_id = &"sword_soul_shop"
 
-[node name="BlueprintResearch" parent="." instance=ExtResource("1_entrance")]
-position = Vector2(1500, 614)
-interaction_id = &"blueprint_research_entrance"
-display_name = "Blueprint Research"
-building_id = &"blueprint_research"
-ui_route = &"deck_builder"
-service_id = &"blueprint_research"
+[node name="InteractionCollision" parent="SwordSoulShop/InteractionArea" index="0"]
+shape = SubResource("SwordSoulShopFoundationShape")
 
-[node name="SoulRefinery" parent="." instance=ExtResource("1_entrance")]
-position = Vector2(1716, 614)
-interaction_id = &"soul_refinery_entrance"
-display_name = "Soul Refinery"
-building_id = &"soul_refinery"
-ui_route = &"town_progress"
-service_id = &"soul_refinery"
+[node name="EastResidence" parent="." instance=ExtResource("1_entrance")]
+position = Vector2(1595, 614)
+interaction_id = &"east_residence_entrance"
+display_name = "East Residence"
+building_id = &"east_residence"
+ui_route = &"residence"
+service_id = &"east_residence"
+
+[node name="InteractionCollision" parent="EastResidence/InteractionArea" index="0"]
+shape = SubResource("EastResidenceFoundationShape")
+
+[node name="FarEastResidence" parent="." instance=ExtResource("1_entrance")]
+position = Vector2(1817, 614)
+interaction_id = &"far_east_residence_entrance"
+display_name = "Far East Residence"
+building_id = &"far_east_residence"
+ui_route = &"residence"
+service_id = &"far_east_residence"
+
+[node name="InteractionCollision" parent="FarEastResidence/InteractionArea" index="0"]
+shape = SubResource("FarEastResidenceFoundationShape")

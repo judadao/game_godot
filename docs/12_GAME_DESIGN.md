@@ -515,15 +515,15 @@ magic_shard = 2 × current_level
 - memory library。
 
 除 memory library 有四級外，其餘建築最多三級。Village stage 的
-total-building-level threshold 為 0、3、7。Town 建築服務由六個門口 trigger
-開啟：材料行、主角鐵匠鋪、村長家與劍魂精煉所使用具 context 的 Town Progress
-UI，劍魂商使用 Shop UI，圖紙研究室使用只儲存配置、不開始出征的 Deck Builder。
-NPC 不觸發這些建築 UI。
+total-building-level threshold 為 0、3、7。Town 六棟建築的互動範圍皆覆蓋各自
+完整地基；材料行、主角鐵匠鋪、村長家與劍魂商提供服務，兩棟東側民宅只顯示
+住宅資訊。主角鐵匠鋪聚合 Forge、Design Research 與 Soul Refinery；Design
+Research 的 Deck Builder 只儲存配置、不開始出征。NPC 不觸發這些建築 UI。
 
-目前場景只直接改變 MarketStall、EmptyResidence、EmptyTowerHouse 與 Blacksmith 的部分視覺。Manager 產生的其他 visual flag 尚未完整投影，不得宣稱所有升級都有對應外觀。
+目前場景只直接改變 ItemShop、EmptyResidence、EmptyTowerHouse 與 Blacksmith 的部分視覺。Manager 產生的其他 visual flag 尚未完整投影，不得宣稱所有升級都有對應外觀。
 
 Town presentation 已替換為單一 `1942 × 720` Eternal Forge v1，地點由左至右為材料行、
-主角鐵匠鋪、不滅火炬、戰鬥傳送門、村長家、劍魂商、圖紙研究室與劍魂精煉所。
+主角鐵匠鋪、不滅火炬、戰鬥傳送門、村長家、劍魂商、東側民宅與東郊民宅。
 背景只顯示一次，因此中央不滅火炬也只有一座。NPC、Portal、碰撞與 progression
 仍是獨立 scene authority，
 建築與 landmark 的逐物件精修列為後續 presentation 工作，不代表新增玩法。

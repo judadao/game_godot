@@ -1,0 +1,82 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/town_residence_ui.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="ResidencePanelStyle"]
+bg_color = Color(0.075, 0.055, 0.05, 0.98)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.72, 0.54, 0.32, 0.95)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="TownResidenceUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Shade" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.01, 0.012, 0.018, 0.82)
+
+[node name="Center" type="CenterContainer" parent="Shade"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ResidencePanel" type="PanelContainer" parent="Shade/Center"]
+custom_minimum_size = Vector2(560, 280)
+layout_mode = 2
+theme_override_styles/panel = SubResource("ResidencePanelStyle")
+
+[node name="PanelMargin" type="MarginContainer" parent="Shade/Center/ResidencePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="Content" type="VBoxContainer" parent="Shade/Center/ResidencePanel/PanelMargin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="ResidenceName" type="Label" parent="Shade/Center/ResidencePanel/PanelMargin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.62, 1)
+theme_override_font_sizes/font_size = 26
+text = "RESIDENCE"
+horizontal_alignment = 1
+
+[node name="Message" type="Label" parent="Shade/Center/ResidencePanel/PanelMargin/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.84, 0.82, 0.78, 1)
+theme_override_font_sizes/font_size = 17
+text = "Private residence
+No public services are available here."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Shade/Center/ResidencePanel/PanelMargin/Content"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Close"
+
+[connection signal="pressed" from="Shade/Center/ResidencePanel/PanelMargin/Content/CloseButton" to="." method="close"]

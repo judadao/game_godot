@@ -191,6 +191,7 @@ Scene directory changes must run these permanent contracts:
 
 - `tests/scene_cleanup_contract_test.gd`：retired zero-reference scenes stay absent.
 - `tests/scene_feature_directory_test.gd`：UI/dev/test fixtures remain in their owner folders.
+- `tests/town_residence_ui_layout_test.gd`：住宅資訊 UI 在六個基準解析度內不裁切。
 - `tests/town_scene_path_structure_test.gd`：Town active and legacy linked scenes keep their classified paths.
 - `tests/map_registry_test.gd` and `tests/quick_save_migration_test.gd`：stable and legacy map paths remain loadable.
 

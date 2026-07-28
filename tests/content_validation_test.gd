@@ -96,6 +96,7 @@ func _run() -> void:
 		"res://scenes/maps/town/portals/TownBattleGateway.tscn",
 		"res://scenes/maps/town/editor/TownEternalForgeEditorHUDReference.tscn",
 		"res://scenes/ui/town/TownProgressUI.tscn",
+		"res://scenes/ui/town/TownResidenceUI.tscn",
 		"res://scenes/ui/results/RunResultUI.tscn",
 		"res://scenes/ui/cards/DeckBuilderUI.tscn",
 		"res://scenes/ui/cards/CardDiscardUI.tscn",

@@ -192,9 +192,10 @@ Player 與 progression identity 仍由 linked scenes 管理；烘焙圖不是 ga
 authority。背景以一個 1:1 等比例 Sprite 覆蓋世界，只顯示一座中央火炬，
 禁止重複貼圖或非等比例縮放建築。
 `EternalForgeIdentity` 提供八個精簡地點標籤與後續物件精修入口。
-六個建築門口由 `TownBuildingEntrances` 擁有互動 Area 與 UI route；NPC 不再是
-Town 建築服務的互動 authority。Game 接收 `building_ui_requested` 後開啟既有
-TownProgressUI、ShopUI 或不啟動出征的 DeckBuilderUI。
+六棟建築由 `TownBuildingEntrances` 擁有覆蓋完整地基的互動 Area 與 UI route；
+其中四棟提供服務，兩棟東側民宅只開啟資訊 UI。NPC 不再是 Town 建築服務的互動
+authority。相鄰 Area 同時候選時，Game 在互動當下選擇距離 Player 最近者。
+Design Research 與 Soul Refinery 由 Player Blacksmith UI 聚合。
 
 Town portal ownership 已收斂為 `TownPortalSet/BattleGateway`。它只前往
 `res://scenes/maps/battle_portal_hub.tscn`；區域目的地由 hub 的四個 region
