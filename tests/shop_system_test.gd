@@ -39,7 +39,7 @@ func _run() -> void:
 	_expect(int((after_sell_catalog[0] as Dictionary).get("stock", 0)) == starting_stock - 1, "Sell must return stock.")
 
 	var first_row := shop.get_node(
-		"CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/Row01"
+		"CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows/Row01"
 	) as Button
 	_expect(not first_row.focus_neighbor_right.is_empty(), "Item rows need directional focus navigation.")
 	game.queue_free()

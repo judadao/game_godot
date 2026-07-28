@@ -101,6 +101,11 @@ func _test_player_blacksmith() -> void:
 		"PlayerBlacksmithUI must preserve its building routing context."
 	)
 	_expect(
+		String(ui.call("get_resource_text")).contains("Gold 5,000")
+			and String(ui.call("get_resource_text")).contains("Shards 5,000"),
+		"PlayerBlacksmithUI must project current persistent resource amounts."
+	)
+	_expect(
 		StringName(ui.call("get_blacksmith_service")) == &"forge",
 		"PlayerBlacksmithUI must open on Forge."
 	)
@@ -206,6 +211,7 @@ func _test_shop() -> void:
 		[
 			"open",
 			"set_merchant_name",
+			"set_shop_context",
 			"set_wallet",
 			"set_mode",
 			"set_items",
@@ -247,6 +253,7 @@ func _test_shop() -> void:
 			})
 	)
 	ui.call("set_merchant_name", "Sword Soul Merchant")
+	ui.call("set_shop_context", &"sword_soul_shop")
 	ui.call("set_wallet", 999)
 	ui.call("set_items", [item])
 	ui.call("open")
@@ -282,9 +289,42 @@ func _test_shop() -> void:
 		"ShopUI must preserve the sell transaction intent contract."
 	)
 	_expect(
-		_visible_text(ui).contains("Sword Soul Merchant")
+		_visible_text(ui).contains("SWORD SOUL SHOP")
+			and _visible_text(ui).contains("Sword Soul Merchant")
 			and _visible_text(ui).contains("999"),
-		"ShopUI must project merchant identity and wallet balance."
+		"ShopUI must project building identity, merchant identity, and wallet balance."
+	)
+	var long_catalog: Array[Dictionary] = []
+	for index in 10:
+		var catalog_item := item.duplicate(true)
+		catalog_item["id"] = "catalog_%d" % index
+		catalog_item["name"] = "Catalog Item %d" % (index + 1)
+		long_catalog.append(catalog_item)
+	ui.call("set_items", long_catalog)
+	ui.call("set_selected_item", 9)
+	var item_rows := ui.find_child("ItemRows", true, false) as VBoxContainer
+	_expect(
+		item_rows != null and item_rows.get_child_count() >= 10,
+		"ShopUI must create reachable rows for catalogs larger than eight items."
+	)
+	_expect(
+		int(ui.get("selected_index")) == 9
+			and _visible_text(ui).contains("Catalog Item 10"),
+		"ShopUI must allow selecting the tenth catalog item."
+	)
+	await process_frame
+	var tenth_row := item_rows.get_child(9) as Button if item_rows != null else null
+	if tenth_row != null:
+		tenth_row.grab_focus()
+		await process_frame
+		await process_frame
+	var item_scroll := ui.find_child("ItemScroll", true, false) as ScrollContainer
+	_expect(
+		tenth_row != null
+			and tenth_row.has_focus()
+			and item_scroll != null
+			and item_scroll.scroll_vertical > 0,
+		"Keyboard focus must scroll a catalog row beyond the initial viewport into view."
 	)
 	await _free_ui(ui)
 

@@ -71,7 +71,7 @@
 
 ```text
 Town
-  → 與 NPC、商店、裝備／城鎮進度互動
+  → 從建築地基開啟材料行、主角鐵匠鋪、村長家、劍魂商服務
   → 進入 Autumn portal
   → Deck Builder 選擇 1–16 張普通遠征牌與一個獨立 auto attack
   → 開始 Autumn Run
@@ -127,7 +127,7 @@ Town 是起始 Hub，現有內容包括：
 
 - Player、地形與碰撞；
 - Mayor、村民、守衛、藥水商人、鐵匠與旅店角色；
-- 建築進度與裝備進度 UI；
+- Material Yard、Player Blacksmith、Town Hall 專用建築 UI；
 - Town 商品買賣；
 - Autumn、Crystal Caves、Forbidden Graveyard portal；
 - Town 內部的入口／尾端 fast travel。
@@ -519,6 +519,20 @@ total-building-level threshold 為 0、3、7。Town 六棟建築的互動範圍�
 完整地基；材料行、主角鐵匠鋪、村長家與劍魂商提供服務，兩棟東側民宅只顯示
 住宅資訊。主角鐵匠鋪聚合 Forge、Design Research 與 Soul Refinery；Design
 Research 的 Deck Builder 只儲存配置、不開始出征。NPC 不觸發這些建築 UI。
+
+功能建築 UI 的玩家可見責任：
+
+- Material Yard：查看五種 persistent resources、workshop 等級、下一級成本並強化
+  workshop。
+- Player Blacksmith：Forge 購買／裝備／強化 equipment 與升級 blacksmith；
+  Design Research 開啟不開始 Run 的 Deck Builder；Soul Refinery 查看 memory
+  capacity 並升級 memory library。
+- Town Hall：查看 village stage、總建築等級、資源與 Town Hall 升級成本。
+- Sword Soul Shop：以圖示化商品列查看 item、stock/owned、unit price、quantity
+  與 total，交易規則仍由 Game 驗證。
+
+舊通用 Town progression UI 已退役；三個 dedicated screen 關閉時由 Game
+同步 Meta save、Town visual 與 equipment stats。
 
 目前場景只直接改變 ItemShop、EmptyResidence、EmptyTowerHouse 與 Blacksmith 的部分視覺。Manager 產生的其他 visual flag 尚未完整投影，不得宣稱所有升級都有對應外觀。
 

@@ -146,7 +146,8 @@ Game
 - Encounter director 擁有 runtime-spawned enemy、guardian 與 experience gem。
 - `HUDLayer` 擁有 current HUD；Autumn 的手牌是 `AutumnHUD` 內嵌 presentation，
   不得再作為與 HUD 並列的第二個 runtime root。換圖時釋放舊 HUD instance。
-- `MenuLayer` 擁有 Inventory、Pause、Dialogue、Shop、TownProgress 等 runtime UI。
+- `MenuLayer` 擁有 Inventory、Pause、Dialogue、Shop、MaterialYard、
+  PlayerBlacksmith、TownHall 等 runtime UI。
 - Dynamic damage number、summon visual、boss telegraph 使用短生命週期 Node/Tween，
   建立端同時負責 cleanup。
 
@@ -298,13 +299,21 @@ UI 對上層提供 setter/configure API與 typed signals：
 - `HUD`：player/resource/area/objective/prompt projection。
 - `CardHandUI`：cards/AP/combo/boss presentation；emit selection。
 - `DialogueUI`：speaker/text/choices；emit choice/advanced/canceled。
-- `ShopUI`：catalog projection；emit mode/quantity/confirmed。
+- `ShopUI`：圖示化 catalog projection 與結構化商品列；emit
+  mode/quantity/confirmed。
 - `InventoryUI`：prototype inventory projection。
-- `TownProgressUI`：目前直接接收 Town/Inventory `RefCounted` services。
+- `MaterialYardUI`：材料庫存、workshop 等級、升級成本與強化操作。
+- `PlayerBlacksmithUI`：Forge 裝備操作、Design Research 路由與 Soul Refinery
+  progression。
+- `TownHallUI`：village stage、總建築等級、Town Hall 成本與升級操作。
 - `PauseMenu`：emit save/load/settings/quit 等 intent。
 
-UI 不應新增戰鬥、存檔或經濟規則。`TownProgressUI` 直接 mutation 與 runtime layout
-是 Known Risk，不是可複製的新模式。
+三個功能建築 UI 都是 editor-authored Full Rect Scene，由
+`Game._open_town_service_ui()` 依 `service_id` 選擇，並透過 `set_context()` 與
+`set_services()` 接收既有 Town/Inventory `RefCounted` services。它們目前仍直接
+呼叫 domain API 完成升級、購買、裝備或強化；`Game.close_ui()` 負責同步 Meta、
+save 與 world visual projection。UI 不應新增 domain 規則，直接 service mutation
+仍是 Known Risk；舊的通用 Town progression screen 已退役。
 
 ## 6. Signal 與跨系統資料流
 
@@ -367,7 +376,7 @@ combat reward
 → InventoryManager resources
 → Game._sync_progression_to_meta()
 → SaveService.save_meta()
-→ HUD / TownProgressUI projection
+→ HUD / dedicated town building UI projection
 ```
 
 任何直接改 `MetaState.resources` 而未同步 InventoryManager，或只改
@@ -409,8 +418,9 @@ Validated static JSON
    prototype merchant/inventory projection。
 
 `Game._sync_progression_to_meta()` 是主要同步點。一般 `InventoryUI` 使用
-`player_inventory`；`TownProgressUI` 操作 InventoryManager equipment。治理與 review
-必須把它們視為 Known Risk，不得宣稱已是 single source of truth。
+`player_inventory`；`MaterialYardUI`、`PlayerBlacksmithUI` 與 `TownHallUI`
+操作 InventoryManager/TownManager。治理與 review 必須把它們視為 Known Risk，
+不得宣稱已是 single source of truth。
 
 ### 7.4 Save pipelines
 
@@ -445,7 +455,9 @@ Quick save：
 - 呼叫 UI `open()`，設定 focus。
 - 依 stack更新 `SceneTree.paused` 與 Player input。
 
-`close_ui()` 負責同步 TownProgress、emit lifecycle signal、queue_free與更新 pause。
+`close_ui()` 對三個專用功能建築 UI 同步 town/inventory progression、寫入 meta
+save、更新 town visual 與 equipment stats；之後 emit lifecycle signal、
+`queue_free()` 並更新 pause。
 
 ### 8.2 Pause
 
@@ -577,7 +589,7 @@ Scene/UI input
 | Medium | HUD adoption identity | reparent exact instance | identity/layout snapshot tests |
 | Medium | Dialogue/Quest命名誤導 | UI存在但domain不完整 | TODO標記、禁止虛構manager |
 | Medium | Input overlap | A movement/card group | run-level input validation |
-| Medium | UI/domain混合 | TownProgressUI直接mutate services | 不複製此模式，未來抽Presenter |
+| Medium | UI/domain混合 | 三個專用功能建築 UI 直接 mutate services | 保持 domain API 邊界，未來抽 coordinator/presenter |
 
 ## 12. Code Examples
 

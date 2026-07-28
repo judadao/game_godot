@@ -10,10 +10,21 @@ func _init() -> void:
 func _run() -> void:
 	var inventory_script := load("res://scripts/systems/inventory_manager.gd")
 	var town_script := load("res://scripts/systems/town_manager.gd")
-	var ui_scene := load("res://scenes/ui/town/TownProgressUI.tscn") as PackedScene
+	var ui_scenes := {
+		"MaterialYardUI": load("res://scenes/ui/town/MaterialYardUI.tscn") as PackedScene,
+		"PlayerBlacksmithUI": load(
+			"res://scenes/ui/town/PlayerBlacksmithUI.tscn"
+		) as PackedScene,
+		"TownHallUI": load("res://scenes/ui/town/TownHallUI.tscn") as PackedScene,
+	}
 	_expect(inventory_script != null and town_script != null, "Town runtime services must load.")
-	_expect(ui_scene != null, "Town progression UI must load.")
-	if inventory_script == null or town_script == null or ui_scene == null:
+	for ui_name in ui_scenes:
+		_expect(ui_scenes[ui_name] != null, "%s must load." % ui_name)
+	if (
+		inventory_script == null
+		or town_script == null
+		or ui_scenes.values().has(null)
+	):
 		quit(1)
 		return
 	var inventory: RefCounted = inventory_script.new()
@@ -49,15 +60,26 @@ func _run() -> void:
 		town_copy.call("apply_dict", town.call("to_dict"))
 		_expect(int(town_copy.call("get_building_level", &"blacksmith")) == 1, "Building levels must survive serialization.")
 
-	var ui := ui_scene.instantiate()
-	root.add_child(ui)
-	ui.call("set_services", town, inventory)
-	await process_frame
-	_expect(int(ui.call("get_building_button_count")) == 5, "Town UI must show all five buildings including the Memory Library.")
-	_expect(int(ui.call("get_equipment_button_count")) == 10, "Town UI must show all ten fixed equipment items.")
-	_expect(not String(ui.call("get_resource_text")).is_empty(), "Town UI must visibly show permanent resources.")
-	ui.queue_free()
-	await process_frame
+	for ui_name in ui_scenes:
+		var ui := (ui_scenes[ui_name] as PackedScene).instantiate()
+		root.add_child(ui)
+		ui.call("set_services", town, inventory)
+		await process_frame
+		_expect(
+			int(ui.call("get_building_button_count")) == 1,
+			"%s must expose its own building upgrade action." % ui_name
+		)
+		_expect(
+			not String(ui.call("get_resource_text")).is_empty(),
+			"%s must visibly show permanent resources." % ui_name
+		)
+		if ui_name == "PlayerBlacksmithUI":
+			_expect(
+				int(ui.call("get_equipment_button_count")) == 10,
+				"Player Blacksmith must show all ten fixed equipment items."
+			)
+		ui.queue_free()
+		await process_frame
 	quit(0 if _failures == 0 else 1)
 
 

@@ -85,7 +85,11 @@ const COMBO_EVOLUTIONS := [
 @export var pause_menu_scene: PackedScene = preload("res://scenes/ui/system/PauseMenu.tscn")
 @export var dialogue_scene: PackedScene = preload("res://scenes/ui/dialogue/DialogueUI.tscn")
 @export var shop_scene: PackedScene = preload("res://scenes/ui/shop/ShopUI.tscn")
-@export var town_progress_scene: PackedScene = preload("res://scenes/ui/town/TownProgressUI.tscn")
+@export var material_yard_scene: PackedScene = preload("res://scenes/ui/town/MaterialYardUI.tscn")
+@export var player_blacksmith_scene: PackedScene = preload(
+	"res://scenes/ui/town/PlayerBlacksmithUI.tscn"
+)
+@export var town_hall_scene: PackedScene = preload("res://scenes/ui/town/TownHallUI.tscn")
 @export var town_residence_scene: PackedScene = preload("res://scenes/ui/town/TownResidenceUI.tscn")
 @export var run_result_scene: PackedScene = preload("res://scenes/ui/results/RunResultUI.tscn")
 @export var deck_builder_scene: PackedScene = preload("res://scenes/ui/cards/DeckBuilderUI.tscn")
@@ -248,7 +252,13 @@ func _input(event: InputEvent) -> void:
 		var top_name := String(_ui_names.get(top_ui, top_ui.name))
 		if top_name in ["CardDiscardUI", "CardGrowthUI"]:
 			return
-		if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
+		if event.is_action_pressed("ui_cancel"):
+			if top_ui.has_signal("canceled"):
+				top_ui.emit_signal("canceled")
+			else:
+				close_top_ui()
+			get_viewport().set_input_as_handled()
+		elif event.is_action_pressed("pause"):
 			close_top_ui()
 			get_viewport().set_input_as_handled()
 		elif event.is_action_pressed("inventory") and top_name == "InventoryUI":
@@ -477,7 +487,7 @@ func close_ui(ui: Variant) -> void:
 		return
 
 	var ui_name := String(_ui_names.get(ui_control, ui_control.name))
-	if ui_name == "TownProgressUI":
+	if ui_name in ["MaterialYardUI", "PlayerBlacksmithUI", "TownHallUI"]:
 		_sync_progression_to_meta()
 		save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
 		_apply_town_visual_progress()
@@ -3219,11 +3229,6 @@ func _interaction_reference_position(node: Node) -> Vector2:
 func _on_dialogue_requested(npc: Node, dialogue_id: StringName, interactor: Node) -> void:
 	if interactor != null and interactor != player:
 		return
-	if dialogue_id == &"town_mayor":
-		var town_ui := open_ui("TownProgressUI", town_progress_scene, true)
-		if town_ui != null:
-			town_ui.call("set_services", town_manager, inventory_manager)
-		return
 
 	var ui_control := open_ui("DialogueUI", dialogue_scene)
 	if ui_control == null:
@@ -3249,17 +3254,8 @@ func _on_building_ui_requested(
 	if interactor != null and interactor != player:
 		return
 	match ui_route:
-		&"town_progress":
-			var town_ui := open_ui("TownProgressUI", town_progress_scene, true)
-			if town_ui != null:
-				town_ui.call("set_context", service_id)
-				town_ui.call("set_services", town_manager, inventory_manager)
-				if service_id == &"player_blacksmith":
-					_connect_if_present(
-						town_ui,
-						&"blueprint_research_requested",
-						&"_on_blacksmith_blueprint_research_requested"
-					)
+		&"town_service":
+			_open_town_service_ui(service_id)
 		&"shop":
 			_on_shop_requested(entrance, service_id, interactor)
 		&"deck_builder":
@@ -3275,8 +3271,37 @@ func _on_building_ui_requested(
 			push_warning("Unknown Town building UI route: %s" % ui_route)
 
 
+func _open_town_service_ui(service_id: StringName) -> void:
+	var ui_name := ""
+	var ui_scene: PackedScene
+	match service_id:
+		&"material_yard":
+			ui_name = "MaterialYardUI"
+			ui_scene = material_yard_scene
+		&"player_blacksmith":
+			ui_name = "PlayerBlacksmithUI"
+			ui_scene = player_blacksmith_scene
+		&"town_hall":
+			ui_name = "TownHallUI"
+			ui_scene = town_hall_scene
+		_:
+			push_warning("Unknown Town service UI: %s" % service_id)
+			return
+	var town_ui := open_ui(ui_name, ui_scene, true)
+	if town_ui == null:
+		return
+	town_ui.call("set_context", service_id)
+	town_ui.call("set_services", town_manager, inventory_manager)
+	if service_id == &"player_blacksmith":
+		_connect_if_present(
+			town_ui,
+			&"blueprint_research_requested",
+			&"_on_blacksmith_blueprint_research_requested"
+		)
+
+
 func _on_blacksmith_blueprint_research_requested() -> void:
-	var town_ui := get_open_ui("TownProgressUI")
+	var town_ui := get_open_ui("PlayerBlacksmithUI")
 	if town_ui != null:
 		close_ui(town_ui)
 	_open_deck_builder("", &"")
@@ -3365,6 +3390,8 @@ func _on_shop_requested(merchant: Node, shop_id: StringName, interactor: Node) -
 	var raw_display_name: Variant = merchant.get("display_name")
 	var display_name := String(raw_display_name) if raw_display_name != null else "Merchant"
 	ui_control.call("set_merchant_name", display_name)
+	if ui_control.has_method("set_shop_context"):
+		ui_control.call("set_shop_context", shop_id)
 	ui_control.call("set_wallet", wallet_gold)
 	if ui_control.has_signal("mode_changed"):
 		ui_control.connect("mode_changed", _on_shop_mode_changed.bind(ui_control, shop_id))

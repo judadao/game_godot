@@ -2,6 +2,16 @@ extends SceneTree
 
 const GAME_SCENE := preload("res://scenes/game/game.tscn")
 
+class InMemorySaveService:
+	extends SaveService
+
+	var saved_payload: Dictionary = {}
+
+	func save_meta(_path: String, data: Dictionary) -> bool:
+		saved_payload = data.duplicate(true)
+		return true
+
+
 var _failures := 0
 
 
@@ -17,10 +27,12 @@ func _run() -> void:
 
 	var town := game.get("current_map") as Node
 	var player := game.get("player") as Node
+	var save_spy := InMemorySaveService.new()
+	game.set("save_service", save_spy)
 	var contracts := {
-		"MaterialYard": {"ui": "TownProgressUI", "context": &"material_yard"},
-		"PlayerBlacksmith": {"ui": "TownProgressUI", "context": &"player_blacksmith"},
-		"TownHall": {"ui": "TownProgressUI", "context": &"town_hall"},
+		"MaterialYard": {"ui": "MaterialYardUI", "context": &"material_yard"},
+		"PlayerBlacksmith": {"ui": "PlayerBlacksmithUI", "context": &"player_blacksmith"},
+		"TownHall": {"ui": "TownHallUI", "context": &"town_hall"},
 		"SwordSoulShop": {"ui": "ShopUI", "context": &"sword_soul_shop"},
 		"EastResidence": {"ui": "TownResidenceUI", "context": &"east_residence"},
 		"FarEastResidence": {"ui": "TownResidenceUI", "context": &"far_east_residence"},
@@ -66,11 +78,47 @@ func _run() -> void:
 				String(ui.call("get_context_id")) == String(contract["context"]),
 				"%s UI must receive its building context." % entrance_name
 			)
-		if ui_name == "TownProgressUI" and ui != null:
+		if ui_name in ["MaterialYardUI", "PlayerBlacksmithUI", "TownHallUI"] and ui != null:
 			_expect(
 				int(ui.call("get_building_button_count")) == 1,
 				"%s must focus its own building upgrade controls." % entrance_name
 			)
+		if entrance_name == "MaterialYard" and ui != null:
+			var inventory_manager: RefCounted = game.get("inventory_manager")
+			var town_manager: RefCounted = game.get("town_manager")
+			for resource_id in inventory_manager.call("get_resource_ids"):
+				inventory_manager.call("set_resource_amount", resource_id, 5000)
+			_expect(
+				bool(ui.call("request_upgrade")),
+				"Material Yard fixture must change progression before the production close path."
+			)
+			var upgraded_level := int(town_manager.call("get_building_level", &"workshop"))
+			var cancel_event := InputEventAction.new()
+			cancel_event.action = &"ui_cancel"
+			cancel_event.pressed = true
+			game.call("_input", cancel_event)
+			await process_frame
+			await process_frame
+			var meta_state: RefCounted = game.get("meta_state")
+			var saved_town := meta_state.get("town_state") as Dictionary
+			var saved_levels := saved_town.get("building_levels", {}) as Dictionary
+			_expect(
+				game.call("get_open_ui", "MaterialYardUI") == null,
+				"Game ui_cancel must close the active building screen."
+			)
+			_expect(
+				int(saved_levels.get("workshop", -1)) == upgraded_level,
+				"Game ui_cancel must synchronize changed building progression to meta state."
+			)
+			_expect(
+				not save_spy.saved_payload.is_empty(),
+				"Game ui_cancel must request a meta save without touching developer user data."
+			)
+			_expect(
+				not paused,
+				"Game ui_cancel must restore gameplay pause state after closing a building screen."
+			)
+			ui = null
 		if entrance_name == "SwordSoulShop":
 			var catalog := game.call("_catalog_for_shop", &"sword_soul_shop") as Array
 			_expect(
@@ -95,6 +143,15 @@ func _run() -> void:
 			_expect(
 				deck_ui != null and String(deck_ui.call("get_context_id")) == "blueprint_research",
 				"Blacksmith Blueprint Research must preserve its UI context."
+			)
+			_expect(
+				deck_ui != null
+					and (deck_ui.find_child("Title", true, false) as Label).text
+						== "DESIGN RESEARCH"
+					and (deck_ui.find_child("Footer", true, false) as Container)
+						.find_children("*", "Button", true, false)
+						.any(func(button: Button) -> bool: return button.text == "SAVE DESIGN"),
+				"Blacksmith research must use save-design language instead of expedition language."
 			)
 			if deck_ui != null:
 				deck_ui.emit_signal(

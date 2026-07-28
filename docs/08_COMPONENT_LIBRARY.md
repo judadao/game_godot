@@ -925,15 +925,25 @@ func set_close_visible(is_visible: bool) -> void
 實際 path：
 
 - `scenes/ui/shop/ShopItemRow.tscn`
-- 引用者：`ShopUI.tscn` 固定8 instances
+- 引用者：`ShopUI.tscn` 內 8 個 authored instances，長清單由 controller 動態補列
 
 ### 17.2 Current Scene Tree
 
 ```text
 ShopItemRow (Button)
+└── RowMargin (MarginContainer, mouse ignore)
+    └── RowLayout (HBoxContainer)
+        ├── ItemIcon (TextureRect)
+        ├── ItemText (VBoxContainer, Expand)
+        │   ├── ItemName
+        │   └── Stock
+        └── PriceGroup (HBoxContainer)
+            ├── CoinIcon
+            └── Price
 ```
 
-只有單一 Button，name/stock/price都寫入同一 `text`。
+Button root 是唯一 input/focus owner；icon、name、stock/owned 與 price 已是獨立
+semantic children，不再以空白字元拼成單一 `text`。
 
 ### 17.3 Script/API
 
@@ -941,7 +951,8 @@ ShopItemRow (Button)
 
 - cache rows
 - bind index
-- 更新 text/tooltip/style
+- 依 catalog 長度 instantiate 缺少的 rows
+- 更新 icon、name、stock/owned、price、tooltip與style
 - 建 focus graph
 
 ### 17.4 Signals
@@ -950,14 +961,14 @@ ShopItemRow (Button)
 
 ### 17.5 Theme
 
-2 個 scene-local StyleBoxFlat，無 ListRow variation。
+4 個 scene-local StyleBoxFlat，分別提供 normal、hover、pressed/selected 與 focus；
+仍無 generic ListRow variation。
 
 ### 17.6 Current limits
 
-- 固定8 rows。
-- 無scroll。
-- 單一字串欄位。
+- 尚未 virtualize 大型 catalog。
 - 無empty/loading/error。
+- 無獨立 component script/configure API；資料綁定仍由父 `ShopUI` controller 擁有。
 
 ### 17.7 TODO generic contract
 
@@ -1192,6 +1203,21 @@ signal back_requested
 - `ShopItemRow.tscn`
 
 皆由 ShopUI 使用，無獨立 script/API；interaction由父controller管理。
+`ShopItemRow` 已是 icon/name/stock/price 的結構化 row；`ShopDetailPanel` 提供
+preview、可捲動描述、quantity 與 total；`ShopMerchantPanel` 提供 merchant
+portrait、dialogue 與操作提示。
+
+### 21.7 Town building service screens
+
+- `scenes/ui/town/MaterialYardUI.tscn`
+- `scenes/ui/town/PlayerBlacksmithUI.tscn`
+- `scenes/ui/town/TownHallUI.tscn`
+
+三者是 domain screen，不是 generic component。它們共用 Full Rect modal、
+safe-margin centered window、圖示化 header/resource/status/action pattern，但各自
+保留獨立 script/API 與 service semantics。穩定 controls 在 Scene author；
+PlayerBlacksmithUI 只動態建立 equipment row。不得抽成一個以 mode Dictionary
+重建所有 layout 的通用 screen。
 
 ## 22. Unused / Prototype / Disabled Legacy Components
 
@@ -1367,7 +1393,7 @@ func _emit_selection() -> void:
 1. Theme導入後先建立Primary/Secondary/Danger variations，不急著建立薄scene。
 2. 將InventorySlot由visual-only提升為有typed API的component。
 3. 將HUD三條duplicated bar收斂為StatusBar base + semantic variations。
-4. Shop改為scrollable dynamic ListRow，移除固定8 rows與空白對齊。
+4. 為 Shop dynamic ListRow 補上 generic configure API 與 empty/loading/error states。
 5. 正式Quest model完成後建立QuestRow。
 6. 建立通用Empty/Loading/Error states並在Inventory/Shop導入。
 7. 建立custom Tooltip，支援focus與viewport clamp。

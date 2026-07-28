@@ -10,7 +10,7 @@ signal building_ui_requested(
 
 @export var display_name := "Building"
 @export var building_id: StringName
-@export var ui_route: StringName = &"town_progress"
+@export var ui_route: StringName = &"town_service"
 @export var service_id: StringName
 
 

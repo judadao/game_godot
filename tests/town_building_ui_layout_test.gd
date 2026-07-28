@@ -42,6 +42,7 @@ const UI_LAYOUTS := [
 ]
 
 var _failures := 0
+var _capture_directory := ""
 
 
 func _initialize() -> void:
@@ -49,6 +50,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	_capture_directory = OS.get_environment("TOWN_BUILDING_UI_CAPTURE_DIR")
 	var available_layouts: Array[Dictionary] = []
 	for descriptor in UI_LAYOUTS:
 		var path := String(descriptor["path"])
@@ -69,7 +71,13 @@ func _run() -> void:
 func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 	var viewport := SubViewport.new()
 	viewport.size = viewport_size
-	viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	var should_capture := (
+		not _capture_directory.is_empty()
+		and viewport_size == Vector2i(1280, 720)
+	)
+	viewport.render_target_update_mode = (
+		SubViewport.UPDATE_ONCE if should_capture else SubViewport.UPDATE_DISABLED
+	)
 	root.add_child(viewport)
 	var ui := (
 		load(String(descriptor["path"])) as PackedScene
@@ -202,13 +210,40 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 		% [descriptor["name"], viewport_size]
 	)
 
+	if should_capture:
+		await _capture_viewport(
+			viewport,
+			String(descriptor["name"]).to_snake_case()
+		)
+		if descriptor["name"] == "PlayerBlacksmithUI":
+			ui.call("select_blacksmith_service", &"soul_refinery")
+			await process_frame
+			await _capture_viewport(viewport, "player_blacksmith_soul_refinery")
+
 	viewport.queue_free()
 	await process_frame
 
 
+func _capture_viewport(viewport: SubViewport, file_stem: String) -> void:
+	DirAccess.make_dir_recursive_absolute(_capture_directory)
+	viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+	await process_frame
+	await RenderingServer.frame_post_draw
+	var capture_path := _capture_directory.path_join("%s_1280x720.png" % file_stem)
+	_expect(
+		viewport.get_texture().get_image().save_png(capture_path) == OK,
+		"Visual capture must save to %s." % capture_path
+	)
+
+
 func _configure_ui(ui: Control, ui_name: String) -> bool:
 	if ui_name == "ShopUI":
-		var required_methods := ["set_merchant_name", "set_wallet", "set_items"]
+		var required_methods := [
+			"set_merchant_name",
+			"set_shop_context",
+			"set_wallet",
+			"set_items",
+		]
 		for method_name in required_methods:
 			_expect(
 				ui.has_method(StringName(method_name)),
@@ -223,7 +258,7 @@ func _configure_ui(ui: Control, ui_name: String) -> bool:
 			"res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
 		]
 		var items: Array[Dictionary] = []
-		for index in 8:
+		for index in 10:
 			items.append({
 				"id": "fixture_%d" % index,
 				"name": "Sword Soul Item %d" % (index + 1),
@@ -234,6 +269,7 @@ func _configure_ui(ui: Control, ui_name: String) -> bool:
 				"texture": load(icon_paths[index % icon_paths.size()]),
 			})
 		ui.call("set_merchant_name", "Sword Soul Merchant")
+		ui.call("set_shop_context", &"sword_soul_shop")
 		ui.call("set_wallet", 123456)
 		ui.call("set_items", items)
 		return true

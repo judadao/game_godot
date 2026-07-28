@@ -96,6 +96,7 @@ const UI_CONTRACTS := [
 			"close",
 			"toggle",
 			"set_merchant_name",
+			"set_shop_context",
 			"set_wallet",
 			"set_mode",
 			"set_items",

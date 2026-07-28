@@ -1,0 +1,779 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="Script" uid="uid://cwu22yr2mlhlj" path="res://scripts/ui/material_yard_ui.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Ore_01.png" id="2_ore"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png" id="3_wood"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Stone.png" id="4_stone"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png" id="5_shard"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_01.png" id="6_core"]
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_forest/png/Collectable Object/Autumn_Forest_2D_Platformer_Tileset_Collectable Object - Coin 01.png" id="7_gold"]
+
+[sub_resource type="StyleBoxFlat" id="StyleWindow"]
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+bg_color = Color(0.055, 0.047, 0.041, 0.985)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.72, 0.5, 0.22, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.62)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleHeader"]
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+bg_color = Color(0.13, 0.095, 0.065, 1)
+border_width_bottom = 2
+border_color = Color(0.55, 0.37, 0.16, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleResourceBar"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.085, 0.072, 0.061, 1)
+border_width_bottom = 1
+border_color = Color(0.34, 0.27, 0.19, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleResourceCard"]
+content_margin_left = 9.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+bg_color = Color(0.145, 0.116, 0.084, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.39, 0.3, 0.18, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleSitePanel"]
+content_margin_left = 18.0
+content_margin_top = 18.0
+content_margin_right = 18.0
+content_margin_bottom = 18.0
+bg_color = Color(0.105, 0.086, 0.071, 1)
+border_width_right = 1
+border_color = Color(0.34, 0.26, 0.17, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleEmblem"]
+content_margin_left = 14.0
+content_margin_top = 14.0
+content_margin_right = 14.0
+content_margin_bottom = 14.0
+bg_color = Color(0.19, 0.135, 0.075, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.76, 0.51, 0.2, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleDetailPanel"]
+content_margin_left = 22.0
+content_margin_top = 18.0
+content_margin_right = 22.0
+content_margin_bottom = 18.0
+bg_color = Color(0.078, 0.066, 0.058, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleLevelTrack"]
+bg_color = Color(0.19, 0.16, 0.13, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.38, 0.3, 0.2, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleLevelFill"]
+bg_color = Color(0.86, 0.52, 0.16, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.76, 0.3, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleCostCard"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.13, 0.105, 0.083, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.31, 0.19, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleButton"]
+content_margin_left = 18.0
+content_margin_top = 11.0
+content_margin_right = 18.0
+content_margin_bottom = 11.0
+bg_color = Color(0.29, 0.19, 0.085, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.68, 0.46, 0.19, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+content_margin_left = 18.0
+content_margin_top = 11.0
+content_margin_right = 18.0
+content_margin_bottom = 11.0
+bg_color = Color(0.47, 0.29, 0.1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.73, 0.28, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+bg_color = Color(0.64, 0.38, 0.1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.83, 0.42, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonDisabled"]
+content_margin_left = 18.0
+content_margin_top = 11.0
+content_margin_right = 18.0
+content_margin_bottom = 11.0
+bg_color = Color(0.115, 0.1, 0.086, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.31, 0.27, 0.22, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="MaterialYardUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="DimBackground" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.008, 0.006, 0.005, 0.78)
+
+[node name="SafeMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="CenterContainer" type="CenterContainer" parent="SafeMargin"]
+layout_mode = 2
+
+[node name="MaterialYardWindow" type="MarginContainer" parent="SafeMargin/CenterContainer"]
+custom_minimum_size = Vector2(1024, 620)
+layout_mode = 2
+
+[node name="Window" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleWindow")
+
+[node name="WindowLayout" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Header" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout"]
+custom_minimum_size = Vector2(0, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleHeader")
+
+[node name="HeaderRow" type="HBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Header"]
+layout_mode = 2
+theme_override_constants/separation = 13
+
+[node name="HeaderIcon" type="TextureRect" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Header/HeaderRow"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("2_ore")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleStack" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Header/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 1
+
+[node name="Title" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Header/HeaderRow/TitleStack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.83, 0.43, 1)
+theme_override_font_sizes/font_size = 29
+text = "MATERIAL YARD"
+
+[node name="Subtitle" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Header/HeaderRow/TitleStack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.66, 0.57, 1)
+theme_override_font_sizes/font_size = 14
+text = "WORKSHOP REINFORCEMENT  /  STOCKPILE LEDGER"
+
+[node name="StageLabel" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Header/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.73, 0.42, 1)
+theme_override_font_sizes/font_size = 14
+text = "TOWN STAGE 1 / 3"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Header/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 44)
+layout_mode = 2
+tooltip_text = "Close Material Yard"
+theme_override_colors/font_color = Color(0.91, 0.79, 0.59, 1)
+theme_override_colors/font_hover_color = Color(1, 0.88, 0.56, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleButton")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+text = "×"
+
+[node name="ResourceBar" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleResourceBar")
+
+[node name="ResourceLayout" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="ResourceCards" type="GridContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout"]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 5
+columns = 5
+
+[node name="GoldCard" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards"]
+custom_minimum_size = Vector2(176, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleResourceCard")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/GoldCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/GoldCard/Row"]
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("7_gold")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/GoldCard/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = -2
+
+[node name="Name" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/GoldCard/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.61, 0.53, 1)
+theme_override_font_sizes/font_size = 11
+text = "GOLD"
+
+[node name="GoldValue" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/GoldCard/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "0"
+
+[node name="WoodCard" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards"]
+custom_minimum_size = Vector2(176, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleResourceCard")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/WoodCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/WoodCard/Row"]
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("3_wood")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/WoodCard/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = -2
+
+[node name="Name" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/WoodCard/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.61, 0.53, 1)
+theme_override_font_sizes/font_size = 11
+text = "AUTUMN WOOD"
+
+[node name="WoodValue" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/WoodCard/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.93, 0.71, 0.39, 1)
+theme_override_font_sizes/font_size = 18
+text = "0"
+
+[node name="StoneCard" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards"]
+custom_minimum_size = Vector2(176, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleResourceCard")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/StoneCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/StoneCard/Row"]
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("4_stone")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/StoneCard/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = -2
+
+[node name="Name" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/StoneCard/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.61, 0.53, 1)
+theme_override_font_sizes/font_size = 11
+text = "STONE"
+
+[node name="StoneValue" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/StoneCard/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.8, 0.82, 1)
+theme_override_font_sizes/font_size = 18
+text = "0"
+
+[node name="ShardCard" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards"]
+custom_minimum_size = Vector2(176, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleResourceCard")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/ShardCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/ShardCard/Row"]
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("5_shard")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/ShardCard/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = -2
+
+[node name="Name" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/ShardCard/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.61, 0.53, 1)
+theme_override_font_sizes/font_size = 11
+text = "MAGIC SHARD"
+
+[node name="ShardValue" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/ShardCard/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "0"
+
+[node name="CoreCard" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards"]
+custom_minimum_size = Vector2(176, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleResourceCard")
+
+[node name="Row" type="HBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/CoreCard"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/CoreCard/Row"]
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("6_core")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/CoreCard/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = -2
+
+[node name="Name" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/CoreCard/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.61, 0.53, 1)
+theme_override_font_sizes/font_size = 11
+text = "AUTUMN CORE"
+
+[node name="CoreValue" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout/ResourceCards/CoreCard/Row/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.52, 0.29, 1)
+theme_override_font_sizes/font_size = 18
+text = "0"
+
+[node name="ResourceSummary" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/ResourceBar/ResourceLayout"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53, 0.49, 0.43, 1)
+theme_override_font_sizes/font_size = 11
+text = "Gold 0   •   Autumn Wood 0   •   Stone 0   •   Magic Shard 0   •   Autumn Core 0"
+horizontal_alignment = 1
+text_overrun_behavior = 3
+
+[node name="Content" type="HBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="SitePanel" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleSitePanel")
+
+[node name="SiteLayout" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/SitePanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EmblemFrame" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/SitePanel/SiteLayout"]
+custom_minimum_size = Vector2(0, 132)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleEmblem")
+
+[node name="EmblemIcon" type="TextureRect" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/SitePanel/SiteLayout/EmblemFrame"]
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("2_ore")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="FacilityLabel" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/SitePanel/SiteLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.79, 0.46, 1)
+theme_override_font_sizes/font_size = 18
+text = "WORKSHOP FACILITY"
+horizontal_alignment = 1
+
+[node name="CurrentLevelLabel" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/SitePanel/SiteLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.58, 1)
+theme_override_font_sizes/font_size = 22
+text = "WORKSHOP  LV.0 / 3"
+horizontal_alignment = 1
+
+[node name="LevelProgress" type="ProgressBar" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/SitePanel/SiteLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleLevelTrack")
+theme_override_styles/fill = SubResource("StyleLevelFill")
+max_value = 3.0
+show_percentage = false
+
+[node name="LevelMarkers" type="HBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/SitePanel/SiteLayout"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 18
+
+[node name="LevelOne" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/SitePanel/SiteLayout/LevelMarkers"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "◇"
+
+[node name="LevelTwo" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/SitePanel/SiteLayout/LevelMarkers"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "◇"
+
+[node name="LevelThree" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/SitePanel/SiteLayout/LevelMarkers"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "◇"
+
+[node name="SiteDescription" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/SitePanel/SiteLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.68, 0.64, 0.58, 1)
+theme_override_font_sizes/font_size = 14
+text = "Reinforce the town workshop with gathered supplies. Each completed tier updates the Material Yard's town projection."
+autowrap_mode = 2
+vertical_alignment = 1
+
+[node name="DetailPanel" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleDetailPanel")
+
+[node name="DetailsScroll" type="ScrollContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="DetailLayout" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="SectionEyebrow" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.51, 0.24, 1)
+theme_override_font_sizes/font_size = 12
+text = "UPGRADE PLAN"
+
+[node name="NextLevelLabel" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0.48, 1)
+theme_override_font_sizes/font_size = 25
+text = "NEXT: WORKSHOP LV.1"
+
+[node name="Rule" type="HSeparator" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout"]
+layout_mode = 2
+
+[node name="CostHeading" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.77, 0.62, 1)
+theme_override_font_sizes/font_size = 15
+text = "REQUIRED STOCKPILE"
+
+[node name="CostGrid" type="GridContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout"]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 3
+
+[node name="CostCardOne" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(185, 66)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleCostCard")
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardOne"]
+layout_mode = 2
+
+[node name="CostNameOne" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardOne/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.67, 0.61, 0.52, 1)
+theme_override_font_sizes/font_size = 11
+text = "AUTUMN WOOD"
+
+[node name="CostValueOne" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardOne/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "0 / 12"
+
+[node name="CostCardTwo" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(185, 66)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleCostCard")
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardTwo"]
+layout_mode = 2
+
+[node name="CostNameTwo" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardTwo/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.67, 0.61, 0.52, 1)
+theme_override_font_sizes/font_size = 11
+text = "STONE"
+
+[node name="CostValueTwo" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardTwo/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "0 / 4"
+
+[node name="CostCardThree" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(185, 66)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleCostCard")
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardThree"]
+layout_mode = 2
+
+[node name="CostNameThree" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardThree/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.67, 0.61, 0.52, 1)
+theme_override_font_sizes/font_size = 11
+text = "AUTUMN CORE"
+
+[node name="CostValueThree" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardThree/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "0 / 2"
+
+[node name="CostCardFour" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(185, 66)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleCostCard")
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardFour"]
+layout_mode = 2
+
+[node name="CostNameFour" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardFour/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.67, 0.61, 0.52, 1)
+theme_override_font_sizes/font_size = 11
+text = "MAGIC SHARD"
+
+[node name="CostValueFour" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardFour/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "0 / 0"
+
+[node name="CostCardFive" type="PanelContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(185, 66)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleCostCard")
+
+[node name="Text" type="VBoxContainer" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardFive"]
+layout_mode = 2
+
+[node name="CostNameFive" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardFive/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.67, 0.61, 0.52, 1)
+theme_override_font_sizes/font_size = 11
+text = "GOLD"
+
+[node name="CostValueFive" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout/CostGrid/CostCardFive/Text"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "0 / 0"
+
+[node name="UpgradeStatus" type="Label" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.78, 0.44, 1)
+theme_override_font_sizes/font_size = 14
+text = "Gather the highlighted materials before reinforcing the workshop."
+autowrap_mode = 2
+vertical_alignment = 1
+
+[node name="ActionSpacer" type="Control" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="WorkshopUpgradeButton" type="Button" parent="SafeMargin/CenterContainer/MaterialYardWindow/Window/WindowLayout/Content/DetailPanel/DetailsScroll/DetailLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+tooltip_text = "Spend the listed resources and upgrade the Material Yard workshop"
+theme_override_colors/font_color = Color(1, 0.88, 0.6, 1)
+theme_override_colors/font_hover_color = Color(1, 0.94, 0.72, 1)
+theme_override_colors/font_disabled_color = Color(0.47, 0.43, 0.38, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleButton")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonHover")
+theme_override_styles/disabled = SubResource("StyleButtonDisabled")
+text = "MATERIALS REQUIRED"
+icon = ExtResource("2_ore")
+expand_icon = true
+icon_max_width = 30

@@ -75,7 +75,9 @@ Roadmap item 的建立與關閉依序使用：
 - Wandering merchant 使用 run gold；
 - Guardian 後可透過 portal 完成 Run Result；
 - Meta save 與 quick save 是兩條不同 pipeline；
-- Town building、resource 與 equipment progression 已存在。
+- Town building、resource 與 equipment progression 已存在；
+- Material Yard、Player Blacksmith、Town Hall 已有各自 editor-authored UI；
+  Shop 已有圖示化 action、structured item row 與明確 focus state。
 
 ### 2.2 驗證基線
 
@@ -84,7 +86,7 @@ Roadmap item 的建立與關閉依序使用：
 
 | Check | Baseline |
 |---|---|
-| Total standalone test scripts | 88/88 passed（全部符合 `*_test.gd`） |
+| Total standalone test scripts | 94/94 passed（全部符合 `*_test.gd`） |
 | Six-resolution geometry suite | 6/6 passed |
 | Godot error markers | 0 |
 | Editor parse | exit 0，0 markers |
@@ -96,7 +98,7 @@ Roadmap item 的建立與關閉依序使用：
 
 - `scripts/managers/game.gd` 仍是 central coordinator；map path registry 與跨
   Meta／Run／Deck 的 card collection mutation 已抽成獨立純邏輯 services；
-- 無 central test runner；
+- 已有 central test runner；
 - 無 CI；
 - 無 performance/memory budget；
 - `tools/run_godot_tests.sh` 可發現全部 `*_test.gd`，並支援 suite、pattern、
@@ -375,15 +377,19 @@ Game composition root
 
 **Evidence**
 
-- 2026-07-28 audit 掃描 94 個 `scenes/**/*.tscn`，未發現可安全刪除的
+- 2026-07-28 audit 掃描 99 個 `scenes/**/*.tscn`，未發現可安全刪除的
   zero-reference scene；stable map path、classified Town legacy scenes 與 editor HUD
   reference scenes 均由 code、scene、test 或 save/path contract 引用。
 - `scenes/ui/hud/HUD.tscn` 與 `scenes/maps/crystal_caves.tscn` 曾含 stale
   `ext_resource uid`，Godot 需 fallback 到文字 path，已改為直接使用 path，降低
   scene registry 與 smoke log noise。
 - 高複雜度 scene 目前集中在 `AutumnHUD.tscn`、`TownEternalForgeHUD.tscn`、
-  `HUD.tscn`、`InventoryUI.tscn`、`ShopUI.tscn` 與 `CardGrowthUI.tscn`；它們多數
+  `HUD.tscn`、`InventoryUI.tscn`、`ShopUI.tscn`、`MaterialYardUI.tscn`、
+  `PlayerBlacksmithUI.tscn`、`TownHallUI.tscn` 與 `CardGrowthUI.tscn`；它們多數
   已用 Container，但深度與局部 StyleBox duplication 仍提高修改成本。
+- 三個現役功能建築 route 已由舊通用 runtime layout 移至專用
+  editor-authored Scene；contract、behavior、layout、lifecycle tests 已存在。
+- Shop row 已結構化並加入圖示/focus state，長 catalog 會動態補列並可捲動。
 - `crystal_caves.tscn`、`forbidden_graveyard.tscn` 與 legacy `autumn_forest.tscn`
   仍是大量 inline Sprite2D 的 canonical map content；現有 public path 不應直接搬移。
 
@@ -395,8 +401,10 @@ Game composition root
   background、terrain、props、collision、portals 與 editor reference component scenes。
 - [ ] UI 高複雜度 scene 先抽共用 Theme／StyleBox 或 feature component，不移動
   public UI scene path。
-- [ ] 動態建構為主的 `CardDiscardUI`、`DeckBuilderUI`、`RunResultUI`、
-  `TownProgressUI` 若改為 editor-authored layout，需加對應 layout/behavior tests。
+- [x] 功能建築 UI 已拆為 MaterialYardUI、PlayerBlacksmithUI、TownHallUI，
+  並加入 contract/behavior/layout/lifecycle tests。
+- [ ] 動態建構為主的 `CardDiscardUI`、`DeckBuilderUI`、`RunResultUI` 若改為
+  editor-authored layout，需加對應 layout/behavior tests。
 - [ ] Scene registry、content validation、map path、UI layout、editor smoke 與 main
   smoke 在每次拆分後均通過且無新增 Godot warning。
 
@@ -414,7 +422,7 @@ Game composition root
   `APPDATA`／`XDG_*` user data，掃描 Godot error markers，並可選擇
   `--suite`、`--pattern`、`--fail-fast`、`--smoke` 與 `--strict-warnings`。
 - 2026-07-28 以 `tools/run_godot_tests.sh --suite all --smoke --strict-warnings`
-  驗證 88/88 tests、editor smoke 與 main smoke 全部通過。
+  驗證 94/94 tests、editor smoke 與 main smoke 全部通過。
 
 **Acceptance Criteria**
 

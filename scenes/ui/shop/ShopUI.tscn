@@ -244,7 +244,17 @@ theme_override_font_sizes/font_size = 14
 text = "UNIT PRICE"
 horizontal_alignment = 2
 
-[node name="Row01" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1450596409 instance=ExtResource("9_shop_item_row")]
+[node name="ItemScroll" type="ScrollContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ItemRows" type="VBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="Row01" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows" unique_id=1450596409 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row_selected")
 metadata/preview_name = "Iron Longsword"
@@ -252,7 +262,7 @@ metadata/preview_price = 120
 metadata/preview_stock = 5
 metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png"
 
-[node name="Row02" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=2105509603 instance=ExtResource("9_shop_item_row")]
+[node name="Row02" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows" unique_id=2105509603 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 metadata/preview_name = "Oak Shield"
@@ -260,7 +270,7 @@ metadata/preview_price = 90
 metadata/preview_stock = 5
 metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0001_Shield.png"
 
-[node name="Row03" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1807439933 instance=ExtResource("9_shop_item_row")]
+[node name="Row03" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows" unique_id=1807439933 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 metadata/preview_name = "Traveler's Cloak"
@@ -268,7 +278,7 @@ metadata/preview_price = 75
 metadata/preview_stock = 5
 metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0003_Chest.png"
 
-[node name="Row04" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=973364717 instance=ExtResource("9_shop_item_row")]
+[node name="Row04" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows" unique_id=973364717 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 metadata/preview_name = "Health Potion"
@@ -276,7 +286,7 @@ metadata/preview_price = 25
 metadata/preview_stock = 5
 metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionHp_Small.png"
 
-[node name="Row05" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=934604875 instance=ExtResource("9_shop_item_row")]
+[node name="Row05" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows" unique_id=934604875 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 metadata/preview_name = "Mana Tonic"
@@ -284,7 +294,7 @@ metadata/preview_price = 30
 metadata/preview_stock = 5
 metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionSp_Small.png"
 
-[node name="Row06" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=491868519 instance=ExtResource("9_shop_item_row")]
+[node name="Row06" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows" unique_id=491868519 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 metadata/preview_name = "Torch Bundle"
@@ -292,7 +302,7 @@ metadata/preview_price = 12
 metadata/preview_stock = 5
 metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png"
 
-[node name="Row07" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=514508573 instance=ExtResource("9_shop_item_row")]
+[node name="Row07" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows" unique_id=514508573 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 metadata/preview_name = "Antidote"
@@ -300,7 +310,7 @@ metadata/preview_price = 18
 metadata/preview_stock = 5
 metadata/preview_icon_path = "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png"
 
-[node name="Row08" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout" unique_id=1045152025 instance=ExtResource("9_shop_item_row")]
+[node name="Row08" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows" unique_id=1045152025 instance=ExtResource("9_shop_item_row")]
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_row")
 metadata/preview_name = "Town Map"

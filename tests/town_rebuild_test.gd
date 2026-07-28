@@ -262,19 +262,19 @@ func _assert_town_building_entrances(town: Node) -> void:
 	var expected_anchors := {
 		"BuildingEntrances/MaterialYard": {
 			"building_id": &"material_yard",
-			"ui_route": &"town_progress",
+			"ui_route": &"town_service",
 			"position": Vector2(170, 614),
 			"size": Vector2(280, 116),
 		},
 		"BuildingEntrances/PlayerBlacksmith": {
 			"building_id": &"player_blacksmith",
-			"ui_route": &"town_progress",
+			"ui_route": &"town_service",
 			"position": Vector2(475, 614),
 			"size": Vector2(350, 116),
 		},
 		"BuildingEntrances/TownHall": {
 			"building_id": &"town_hall",
-			"ui_route": &"town_progress",
+			"ui_route": &"town_service",
 			"position": Vector2(1120, 614),
 			"size": Vector2(260, 116),
 		},

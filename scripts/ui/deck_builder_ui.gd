@@ -19,6 +19,8 @@ var _finisher_catalog := ComboFinisherCatalog.new()
 var _context_id: StringName
 
 var _slot_buttons: Array[Button] = []
+var _title_label: Label
+var _hint_label: Label
 var _choice_grid: GridContainer
 var _choice_header: Label
 var _detail_label: Label
@@ -63,6 +65,8 @@ func configure(
 
 func set_context(context_id: StringName) -> void:
 	_context_id = context_id
+	if is_node_ready():
+		_apply_context()
 
 
 func get_context_id() -> StringName:
@@ -211,19 +215,17 @@ func _build_layout() -> void:
 	column.add_theme_constant_override("separation", 8)
 	margin.add_child(column)
 
-	var title := Label.new()
-	title.name = "Title"
-	title.text = "出戰技能"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 24)
-	column.add_child(title)
+	_title_label = Label.new()
+	_title_label.name = "Title"
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_label.add_theme_font_size_override("font_size", 24)
+	column.add_child(_title_label)
 
-	var hint := Label.new()
-	hint.name = "Hint"
-	hint.text = "先點技能槽，再從下方選牌；治療有獨立欄位。"
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.add_theme_color_override("font_color", Color(0.72, 0.78, 0.82))
-	column.add_child(hint)
+	_hint_label = Label.new()
+	_hint_label.name = "Hint"
+	_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint_label.add_theme_color_override("font_color", Color(0.72, 0.78, 0.82))
+	column.add_child(_hint_label)
 
 	_auto_attack_selector = OptionButton.new()
 	_auto_attack_selector.name = "BasicAttackSelector"
@@ -304,6 +306,20 @@ func _build_layout() -> void:
 		loadout_confirmed.emit(get_selected_deck(), _auto_attack_card_id)
 	)
 	footer.add_child(_confirm_button)
+	_apply_context()
+
+
+func _apply_context() -> void:
+	if _title_label == null or _hint_label == null or _confirm_button == null:
+		return
+	if _context_id == &"blueprint_research":
+		_title_label.text = "DESIGN RESEARCH"
+		_hint_label.text = "Review the healing and combo blueprint slots, then save the design."
+		_confirm_button.text = "SAVE DESIGN"
+	else:
+		_title_label.text = "EXPEDITION LOADOUT"
+		_hint_label.text = "Choose a slot, then select a card below. Healing has a dedicated slot."
+		_confirm_button.text = "ENTER FOREST"
 
 
 func _refresh_all() -> void:

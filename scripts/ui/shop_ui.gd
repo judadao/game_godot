@@ -10,7 +10,8 @@ signal quantity_changed(quantity: int)
 signal confirmed(item_data: Dictionary, quantity: int, mode: String)
 signal canceled
 
-const ROW_CONTAINER_PATH := "CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout"
+const ROW_CONTAINER_PATH := "CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows"
+const SHOP_ITEM_ROW_SCENE := preload("res://scenes/ui/shop/ShopItemRow.tscn")
 const ITEM_ICON_SWORD := preload("res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png")
 const ITEM_ICON_BOOTS := preload("res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0006_Boots.png")
 const ITEM_ICON_GEM := preload("res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png")
@@ -19,8 +20,10 @@ const ITEM_ICON_MAP := preload("res://assets/ui/fantasy_icons_16x16/png/Separate
 
 @onready var buy_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/BuyButton
 @onready var sell_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/SellButton
+@onready var title_text: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title/TitleText
 @onready var merchant_name: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/MerchantName
 @onready var item_header: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemListHeader/ItemHeader
+@onready var item_scroll: ScrollContainer = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll
 @onready var preview_icon: TextureRect = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/PreviewFrame/PreviewLayout/PreviewIcon
 @onready var item_name: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/ItemName
 @onready var item_description: RichTextLabel = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/ItemDescription
@@ -76,8 +79,21 @@ func toggle() -> void:
 	else:
 		open()
 
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible or not event.is_action_pressed(&"ui_cancel"):
+		return
+	get_viewport().set_input_as_handled()
+	_cancel()
+
+
 func set_merchant_name(display_name: String) -> void:
 	merchant_name.text = display_name
+
+
+func set_shop_context(shop_id: StringName) -> void:
+	title_text.text = "SWORD SOUL SHOP" if shop_id == &"sword_soul_shop" else "TRADE COUNTER"
+
 
 func set_wallet(amount: int) -> void:
 	wallet_balance = maxi(0, amount)
@@ -91,10 +107,12 @@ func set_mode(new_mode: String) -> void:
 	buy_button.add_theme_stylebox_override("normal", _mode_selected_style if mode == "buy" else _mode_normal_style)
 	sell_button.add_theme_stylebox_override("normal", _mode_selected_style if mode == "sell" else _mode_normal_style)
 	mode_changed.emit(mode)
+	_refresh_rows()
 	_refresh_details()
 
 func set_items(new_items: Array) -> void:
 	items = _to_dictionary_array(new_items)
+	_ensure_row_capacity(items.size())
 	if selected_index >= items.size():
 		selected_index = -1
 	_refresh_rows()
@@ -129,15 +147,28 @@ func _cache_rows() -> void:
 	_row_prices.clear()
 	for child in row_container.get_children():
 		if child is Button:
-			var button := child as Button
-			_row_buttons.append(button)
-			_row_icons.append(button.get_node("RowMargin/RowLayout/ItemIcon") as TextureRect)
-			_row_names.append(button.get_node("RowMargin/RowLayout/ItemText/ItemName") as Label)
-			_row_stock_labels.append(button.get_node("RowMargin/RowLayout/ItemText/Stock") as Label)
-			_row_prices.append(button.get_node("RowMargin/RowLayout/PriceGroup/Price") as Label)
-			var index := _row_buttons.size() - 1
-			button.pressed.connect(set_selected_item.bind(index))
-			button.focus_entered.connect(_on_row_focused.bind(index))
+			_register_row(child as Button)
+
+func _register_row(button: Button) -> void:
+	var index := _row_buttons.size()
+	_row_buttons.append(button)
+	_row_icons.append(button.get_node("RowMargin/RowLayout/ItemIcon") as TextureRect)
+	_row_names.append(button.get_node("RowMargin/RowLayout/ItemText/ItemName") as Label)
+	_row_stock_labels.append(button.get_node("RowMargin/RowLayout/ItemText/Stock") as Label)
+	_row_prices.append(button.get_node("RowMargin/RowLayout/PriceGroup/Price") as Label)
+	button.pressed.connect(set_selected_item.bind(index))
+	button.focus_entered.connect(_on_row_focused.bind(index))
+
+func _ensure_row_capacity(required: int) -> void:
+	while _row_buttons.size() < required:
+		var button := SHOP_ITEM_ROW_SCENE.instantiate() as Button
+		if button == null:
+			push_error("ShopItemRow must instantiate as Button.")
+			return
+		button.name = "Row%02d" % (_row_buttons.size() + 1)
+		row_container.add_child(button)
+		_register_row(button)
+	_configure_focus_navigation()
 
 func _cache_styles() -> void:
 	if _row_buttons.size() > 0:
@@ -176,6 +207,7 @@ func _configure_focus_navigation() -> void:
 func _on_row_focused(index: int) -> void:
 	if index < items.size():
 		set_selected_item(index)
+		item_scroll.call_deferred("ensure_control_visible", _row_buttons[index])
 
 func _set_open(is_open: bool, should_emit: bool) -> void:
 	visible = is_open

@@ -27,7 +27,7 @@ position = Vector2(170, 614)
 interaction_id = &"material_yard_entrance"
 display_name = "Material Yard"
 building_id = &"material_yard"
-ui_route = &"town_progress"
+ui_route = &"town_service"
 service_id = &"material_yard"
 
 [node name="InteractionCollision" parent="MaterialYard/InteractionArea" index="0"]
@@ -38,7 +38,7 @@ position = Vector2(475, 614)
 interaction_id = &"player_blacksmith_entrance"
 display_name = "Player Blacksmith"
 building_id = &"player_blacksmith"
-ui_route = &"town_progress"
+ui_route = &"town_service"
 service_id = &"player_blacksmith"
 
 [node name="InteractionCollision" parent="PlayerBlacksmith/InteractionArea" index="0"]
@@ -49,7 +49,7 @@ position = Vector2(1120, 614)
 interaction_id = &"town_hall_entrance"
 display_name = "Town Hall"
 building_id = &"town_hall"
-ui_route = &"town_progress"
+ui_route = &"town_service"
 service_id = &"town_hall"
 
 [node name="InteractionCollision" parent="TownHall/InteractionArea" index="0"]

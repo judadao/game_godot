@@ -88,11 +88,20 @@ var _row_normal_style: StyleBox
 var _row_selected_style: StyleBox
 var _service_normal_style: StyleBox
 var _service_selected_style: StyleBox
+var _resource_value_labels: Dictionary
+var _has_action_feedback := false
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	_resource_value_labels = {
+		&"gold": %GoldAmount,
+		&"autumn_wood": %WoodAmount,
+		&"stone": %StoneAmount,
+		&"magic_shard": %ShardAmount,
+		&"autumn_core": %CoreAmount,
+	}
 	_cache_authored_styles()
 	_connect_controls()
 	visible = false
@@ -103,6 +112,7 @@ func _ready() -> void:
 func open() -> void:
 	var was_visible := visible
 	_blacksmith_service = &"forge"
+	_has_action_feedback = false
 	visible = true
 	_apply_service()
 	_refresh()
@@ -195,6 +205,7 @@ func select_equipment(item_id: StringName) -> void:
 	if not _equipment_by_id.has(item_id):
 		return
 	_selected_equipment = item_id
+	_has_action_feedback = false
 	_refresh_equipment_rows()
 	_refresh_equipment_detail()
 
@@ -312,9 +323,7 @@ func _refresh_resources() -> void:
 	var summary_parts: Array[String] = []
 	for resource_id in RESOURCE_ORDER:
 		var amount := int(resources.get(String(resource_id), 0))
-		var amount_label := get_node_or_null(
-			"%sAmount" % _resource_node_prefix(resource_id)
-		) as Label
+		var amount_label := _resource_value_labels.get(resource_id) as Label
 		if amount_label != null:
 			amount_label.text = _format_number(amount)
 		summary_parts.append("%s %s" % [RESOURCE_LABELS[resource_id], _format_number(amount)])
@@ -435,6 +444,8 @@ func _refresh_equipment_detail() -> void:
 		"Max Level" if owned and level >= 3
 		else "Strengthen  ·  %s" % _format_cost(upgrade_cost)
 	)
+	if not _has_action_feedback:
+		_show_selection_guidance(owned, equipped, level)
 
 
 func _show_empty_equipment_detail() -> void:
@@ -448,6 +459,9 @@ func _show_empty_equipment_detail() -> void:
 	purchase_button.disabled = true
 	equip_button.visible = false
 	strengthen_button.visible = false
+	_has_action_feedback = false
+	action_feedback.text = "Select an equipment design to inspect its forge options."
+	action_feedback.modulate = Color(0.54, 0.64, 0.65)
 
 
 func _refresh_facility() -> void:
@@ -463,9 +477,9 @@ func _refresh_facility() -> void:
 		forge_level_label.text = "Forge Facility  ·  Level %d / %d" % [level, max_level]
 		forge_upgrade_cost_label.text = (
 			"All forge improvements complete." if cost.is_empty()
-			else "Next facility tier  ·  %s" % _format_cost(cost)
+			else "Next facility tier\n%s" % _format_cost_rows(cost, 2)
 		)
-		forge_upgrade_button.text = "Max Level" if cost.is_empty() else "Upgrade Forge"
+		forge_upgrade_button.text = "Max Level" if cost.is_empty() else "Upgrade"
 		forge_upgrade_button.disabled = not can_upgrade
 	else:
 		soul_level_label.text = "Soul Refinery  ·  Level %d / %d" % [level, max_level]
@@ -474,7 +488,7 @@ func _refresh_facility() -> void:
 		)
 		soul_upgrade_cost_label.text = (
 			"Refinery resonance is fully stabilized." if cost.is_empty()
-			else "Next resonance tier  ·  %s" % _format_cost(cost)
+			else "UPGRADE REQUIREMENTS\n%s" % _format_cost_status(cost)
 		)
 		soul_upgrade_button.text = "Max Level" if cost.is_empty() else "Upgrade Refinery"
 		soul_upgrade_button.disabled = not can_upgrade
@@ -492,10 +506,26 @@ func _set_facility_unavailable() -> void:
 
 func _configure_focus_navigation() -> void:
 	forge_service_button.focus_neighbor_bottom = forge_service_button.get_path_to(
+		research_service_button
+	)
+	forge_service_button.focus_neighbor_right = forge_service_button.get_path_to(
 		_equipment_buttons[0] if not _equipment_buttons.is_empty() else close_button
 	)
-	research_service_button.focus_neighbor_bottom = research_service_button.get_path_to(close_button)
-	soul_service_button.focus_neighbor_bottom = soul_service_button.get_path_to(soul_upgrade_button)
+	research_service_button.focus_neighbor_top = research_service_button.get_path_to(
+		forge_service_button
+	)
+	research_service_button.focus_neighbor_bottom = research_service_button.get_path_to(
+		soul_service_button
+	)
+	research_service_button.focus_neighbor_right = research_service_button.get_path_to(
+		close_button
+	)
+	soul_service_button.focus_neighbor_top = soul_service_button.get_path_to(
+		research_service_button
+	)
+	soul_service_button.focus_neighbor_right = soul_service_button.get_path_to(
+		soul_upgrade_button
+	)
 	for index in _equipment_buttons.size():
 		var button := _equipment_buttons[index]
 		button.focus_neighbor_top = button.get_path_to(
@@ -590,7 +620,63 @@ func _format_cost(cost: Dictionary) -> String:
 	return "  ·  ".join(parts)
 
 
+func _format_cost_rows(cost: Dictionary, columns: int) -> String:
+	var parts: Array[String] = []
+	for resource_id in RESOURCE_ORDER:
+		if cost.has(String(resource_id)):
+			parts.append("%s %s" % [
+				RESOURCE_LABELS[resource_id],
+				_format_number(int(cost[String(resource_id)])),
+			])
+	var rows: Array[String] = []
+	var row: Array[String] = []
+	for part in parts:
+		row.append(part)
+		if row.size() == columns:
+			rows.append("  ·  ".join(row))
+			row.clear()
+	if not row.is_empty():
+		rows.append("  ·  ".join(row))
+	return "\n".join(rows)
+
+
+func _format_cost_status(cost: Dictionary) -> String:
+	var resources: Dictionary = {}
+	if _can_use_inventory():
+		resources = _inventory.call("get_resources") as Dictionary
+	var lines: Array[String] = []
+	for resource_id in RESOURCE_ORDER:
+		var key := String(resource_id)
+		if not cost.has(key):
+			continue
+		var available := int(resources.get(key, 0))
+		var required := int(cost[key])
+		var status := "READY" if available >= required else "NEED %s" % _format_number(
+			required - available
+		)
+		lines.append("%s  ·  %s  ·  %s available / %s required" % [
+			status,
+			RESOURCE_LABELS[resource_id],
+			_format_number(available),
+			_format_number(required),
+		])
+	return "\n".join(lines)
+
+
+func _show_selection_guidance(owned: bool, equipped: bool, level: int) -> void:
+	if not owned:
+		action_feedback.text = "Design selected. Review the cost, then purchase it."
+	elif equipped and level >= 3:
+		action_feedback.text = "This equipped design is fully strengthened."
+	elif equipped:
+		action_feedback.text = "Equipped. Strengthen it to improve its effects."
+	else:
+		action_feedback.text = "Owned. Equip it or strengthen it before your next run."
+	action_feedback.modulate = Color(0.54, 0.64, 0.65)
+
+
 func _set_feedback(message: String, successful: bool) -> void:
+	_has_action_feedback = true
 	action_feedback.text = message
 	action_feedback.modulate = Color(0.52, 0.94, 0.70) if successful else Color(1.0, 0.60, 0.46)
 
@@ -613,21 +699,6 @@ func _can_use_town() -> bool:
 		and _town.has_method("get_building_level")
 		and _town.has_method("get_next_upgrade_cost")
 	)
-
-
-func _resource_node_prefix(resource_id: StringName) -> String:
-	match resource_id:
-		&"gold":
-			return "Gold"
-		&"autumn_wood":
-			return "Wood"
-		&"stone":
-			return "Stone"
-		&"magic_shard":
-			return "Shard"
-		&"autumn_core":
-			return "Core"
-	return ""
 
 
 func _format_number(value: int) -> String:

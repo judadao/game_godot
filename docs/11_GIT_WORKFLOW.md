@@ -19,7 +19,8 @@
 ## 1. Repository 現況
 
 Repository 使用 Git，已有長期提交歷史、`main` 分支、遠端 `origin` 與
-`v0.1.0` tag。現階段沒有 repository 內 CI workflow，也沒有單一測試 runner。
+`v0.1.0` tag。現階段沒有 repository 內 CI workflow；本機統一使用
+`tools/run_godot_tests.sh`。
 因此本機／代理在 push 前負責完整驗證。
 
 ## 2. 分支與工作區
@@ -178,7 +179,7 @@ git commit -m "Extract map scene registry"
 
 ## 12. Future Extension
 
-- 建立 CI 執行目前 58 個 headless tests、editor smoke、Markdown/path check；
+- 建立 CI 執行目前 94 個 headless tests、editor smoke、Markdown/path check；
   test 數量改變時由 runner 自動發現，不硬編碼清單。
 - 增加 PR template 與 required checks。
 - 定義 release branch、semantic version 與 changelog 流程。

@@ -485,9 +485,12 @@ Town prop/building多為`Sprite2D` scene，groups如`TownProp`、`TownBuilding`�
 | `scenes/ui/cards/CardHandUI.tscn` | `Control` | card fan/AP/combo/boss |
 | `scenes/ui/inventory/InventoryUI.tscn` | `Control` | prototype inventory projection |
 | `scenes/ui/dialogue/DialogueUI.tscn` | `Control` | speaker/text/choice interaction |
-| `scenes/ui/shop/ShopUI.tscn` | `Control` | merchant catalog transaction intent |
+| `scenes/ui/shop/ShopUI.tscn` | `Control` | icon-based merchant catalog transaction intent |
 | `scenes/ui/system/PauseMenu.tscn` | `Control` | pause/settings/save/load intent |
-| `scenes/ui/town/TownProgressUI.tscn` | `Control` | current town/equipment service UI |
+| `scenes/ui/town/MaterialYardUI.tscn` | `Control` | workshop stockpile and reinforcement |
+| `scenes/ui/town/PlayerBlacksmithUI.tscn` | `Control` | Forge, Design Research, Soul Refinery |
+| `scenes/ui/town/TownHallUI.tscn` | `Control` | village stage and Town Hall upgrade |
+| `scenes/ui/town/TownResidenceUI.tscn` | `Control` | information-only residence screen |
 
 ### 9.3 Reusable UI child scenes
 
@@ -501,11 +504,32 @@ Existing examples：
 同型元件應instance共享Scene，不複製StyleBox與Node Tree。Theme與元件詳細規範
 見`docs/07_THEME_GUIDE.md`、`docs/08_COMPONENT_LIBRARY.md`。
 
-### 9.4 Known exception
+### 9.4 Town building service Scene contract
 
-`TownProgressUI`目前在script中runtime建立多數layout並使用fixed panel
-position/size。這是Known Risk，與`docs/rule_1.md`偏好的authored/container layout
-不一致。不得以此當成新UI範本；未來修正需另開UI任務並做多解析度驗證。
+三個現役功能建築 screen 都在 `.tscn` author 穩定 layout，script 只建立真正的
+資料驅動內容，例如 Player Blacksmith equipment rows：
+
+```text
+MenuLayer
+└── DedicatedTownBuildingUI (Control, Full Rect)
+    ├── DimBackground
+    └── SafeMargin
+        └── CenterContainer
+            └── SemanticWindow (PanelContainer)
+                └── Container-authored header/resources/workspace/actions
+```
+
+- `MaterialYardUI` 的穩定 window 內容包含 resource cards、level progress、
+  cost grid、`DetailsScroll` 與 `WorkshopUpgradeButton`。
+- `PlayerBlacksmithUI` 以 service rail 切換 Forge／Design Research／Soul Refinery；
+  Forge 的 equipment rows 可動態建立於 `EquipmentScroll/EquipmentList`。
+- `TownHallUI` author village overview、resource row、`ContentScroll`、cost grid、
+  council record 與 `UpgradeButton`。
+- 三者的 Full Rect root、semantic window、public API、focus、重開與六解析度
+  geometry 由 dedicated tests 保護。
+
+舊通用 Town progression scene/script 已退役；功能建築不得再建立第二套通用
+runtime layout authority。
 
 ## 10. Instance、Editable Children、Owner 與 Runtime Node
 

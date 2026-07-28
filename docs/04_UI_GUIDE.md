@@ -89,8 +89,9 @@ Current ownership：
 
 - `HUDLayer`：持有一個 `HUD` authority；Town 的 `CardHandUI` 是相鄰 root，
   Autumn hand 則內嵌在 AutumnHUD。
-- `MenuLayer`：持有 `ui_stack` 中的 Inventory、Pause、Dialogue、Shop、TownProgress、
-  DeckBuilder、CardDiscard、LevelUp、RunResult 等 screen。
+- `MenuLayer`：持有 `ui_stack` 中的 Inventory、Pause、Dialogue、Shop、
+  MaterialYard、PlayerBlacksmith、TownHall、DeckBuilder、CardDiscard、LevelUp、
+  RunResult 等 screen。
 - `Game.open_ui()`：instantiate、加入 stack、設定 pause flag、連 lifecycle、呼叫
   `open()`、設定 focus。
 - `Game.close_ui()`：呼叫 `close()`、移除 stack、更新 pause、emit lifecycle、
@@ -119,11 +120,11 @@ position 或 scale，否則會破壞 map-authored override。
 
 ### 2.3 現況數量
 
-- `scenes/ui/**`：30 個 `.tscn`
-- `scripts/ui/**`：11 個 `.gd`
+- `scenes/ui/**`：33 個 `.tscn`
+- `scripts/ui/**`：18 個 `.gd`
 - `scenes/ui/` root scene：0 個；screen 全部位於 feature folders
-- authored UI `ScrollContainer`：0
-- runtime `ScrollContainer`：DeckBuilder 1 個、TownProgress 1 個
+- authored UI `ScrollContainer`：5 個
+- runtime-created `ScrollContainer`：DeckBuilder 1 個
 
 ## 3. CanvasLayer 與 Control
 
@@ -197,7 +198,8 @@ Current：
 - Pause button stack
 - Dialogue choices
 - HUD progress/quest rows
-- runtime DeckBuilder/TownProgress lists
+- runtime DeckBuilder list
+- MaterialYard、PlayerBlacksmith、TownHall 的 authored workspace/list containers
 
 規則：
 
@@ -242,11 +244,10 @@ Current `InventoryUI.tscn`：5 columns、20 authored slots。
 Current：
 
 - `deck_builder_ui.gd` runtime card list。
-- `town_progress_ui.gd` runtime building/equipment list。
 
 Known Risk：
 
-- Shop、Inventory、Dialogue choices、CardDiscard、RunResult 沒有 scroll policy。
+- Inventory、Dialogue choices、CardDiscard、RunResult 沒有 scroll policy。
 
 規則：
 
@@ -357,9 +358,12 @@ Minimum size 用來保證可讀/可操作，不是畫布尺寸。
 
 Current Known Risks：
 
-- `ShopWindow` minimum 1180×650。
+- `ShopWindow` minimum 1040×640。
+- `PlayerBlacksmithWindow` minimum 1080×650。
+- `TownHallWindow` minimum 1060×650。
+- `MaterialYardWindow` 的 authored wrapper minimum 1024×620。
 - Pause Menu minimum 320×590。
-- 多個 script-built modal 使用固定 660–1040 寬與 460–620 高。
+- 其餘 script-built modal 仍有固定 660–1040 寬與 460–620 高。
 
 規則：
 
@@ -398,7 +402,7 @@ Current assets：
 Current：
 
 - 沒有 project Theme、Font resource、Theme Variation、`.tres` 或 `.res`。
-- 39 個 StyleBoxFlat 與大量 font/color override 散落。
+- 122 個 StyleBoxFlat 與大量 font/color override 散落。
 - 詳細現況與未來 token contract 見 `docs/07_THEME_GUIDE.md`。
 
 修改現有 UI 時：
@@ -571,20 +575,22 @@ HUDLayer
 
 `ShopUI.tscn`：
 
-- `ShopWindow.custom_minimum_size = Vector2(1180, 650)`
-- 固定 8 個 `ShopItemRow.tscn`
-- 無 ScrollContainer
-- buy/sell、quantity、confirm/cancel
-- explicit focus navigation
+- `ShopWindow.custom_minimum_size = Vector2(1040, 640)`
+- 8 個 authored `ShopItemRow.tscn` 作為初始列，較長 catalog 會動態補列
+- 商品列位於 `ScrollContainer`，鍵盤 focus 會將選取列捲入可視區
+- Buy/Sell、quantity、Confirm/Close 都有圖示、文字與 tooltip
+- `set_shop_context()` 讓劍魂商使用 `SWORD SOUL SHOP` 建築標題，其餘商店保留
+  `TRADE COUNTER`
+- 商品列使用 icon、name、stock/owned 與 unit price 的獨立欄位
+- detail panel 使用 96px preview、可捲動 RichTextLabel、quantity/total icons
+- explicit focus navigation，以及 selected／hover／focus 分離的視覺狀態
 
 `shop_ui.gd` emit `mode_changed`、`confirmed` 等 intent；交易由 Game 處理。
 
 ### 13.2 Current gaps
 
-- 1180 width 大於既有 1152×720 narrow fixture。
-- 第 9 筆以上 item 沒有 row。
-- placeholder 與 runtime row 用單一 Button text 拼 name/stock/price。
 - item list 無 empty state、loading state、error state component。
+- 動態列目前沿用 `ShopItemRow.tscn`，尚未加入 virtualized list。
 
 ### 13.3 Shop rules
 
@@ -594,6 +600,23 @@ HUDLayer
 - list 必須 scroll，focus 移動時保持 selected row 可見。
 - buy/sell mode 切換後重建 projection、價格、庫存與 focus。
 - feedback 不能只用顏色，需有文字。
+
+### 13.4 Dedicated Town building screens
+
+`MaterialYardUI`、`PlayerBlacksmithUI`、`TownHallUI` 共用 Shop 的深色鍛造介面語言，
+但各自擁有功能專屬資訊架構：
+
+- Material Yard：礦石 emblem、五種資源 cards、workshop level、cost cards 與單一
+  reinforcement action。
+- Player Blacksmith：圖示化 service rail；Forge 提供 equipment catalog、
+  preview、purchase/equip/strengthen，Design Research emit 路由 intent，
+  Soul Refinery 顯示 memory capacity 與升級。
+- Town Hall：village stage、總建築等級、五種資源、升級成本狀態與 council record。
+
+三者均使用 Full Rect root、dim backdrop、safe margin、center container、semantic
+window 與 authored ScrollContainer；動態 equipment row 必須只放在既定
+`EquipmentList`。開啟後 focus 落在可用 action，`ui_cancel` 關閉並釋放 focus，
+重開不得重複 controls 或 signals。
 
 ## 14. Quest UI
 
@@ -987,7 +1010,8 @@ Godot 4 使用 typed signals、`Control.PRESET_*`、`size_flags_*` 與
 
 1. 建立全域 Theme、semantic variations 與 typography/color/spacing tokens。
 2. 將 script-built modal 的穩定 layout 搬回 scene，保留 data row runtime build。
-3. 為 Inventory/Shop/Dialogue/Result 增加 responsive scroll/empty/error states。
+3. 為 Inventory/Dialogue/Result 增加 responsive scroll/empty/error states，並為 Shop
+   補上 empty/loading/error states。
 4. 建立 Input Hint resolver，支援 remap 與 device switching。
 5. 建立 UI scale、high contrast、reduced motion。
 6. 將 HUD duplicated bars 收斂為 reusable status bar。

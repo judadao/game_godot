@@ -374,8 +374,9 @@ UI不得直接改以上private dictionaries。
 - `MetaState.resources/equipment/equipment_levels/inventory_state`
 - `Game.wallet_gold/player_inventory/_merchant_catalogs`
 
-一般InventoryUI顯示prototype `player_inventory`；TownProgressUI操作InventoryManager。
-這不是已統一的Inventory architecture。任何transaction都要追蹤所有同步點。
+一般 InventoryUI 顯示 prototype `player_inventory`；MaterialYardUI、
+PlayerBlacksmithUI 與 TownHallUI 操作 InventoryManager/TownManager。
+這不是已統一的 Inventory architecture。任何 transaction 都要追蹤所有同步點。
 
 ## 7. Town Upgrade Data 與 Town Runtime State
 
@@ -673,7 +674,9 @@ backup。修改其中一條pipeline時不可假定另一條自動同步。
 | HUD | Player、RunState、wallet與objective setters |
 | InventoryUI | Game prototype `_inventory_projection()` |
 | ShopUI | Game catalog/owned count projection |
-| TownProgressUI | Current exception：直接接Town/Inventory services |
+| MaterialYardUI | TownManager workshop + InventoryManager resources |
+| PlayerBlacksmithUI | TownManager blacksmith/memory library + InventoryManager equipment/resources |
+| TownHallUI | TownManager village/town hall + InventoryManager resources |
 
 UI可以：
 
@@ -689,11 +692,22 @@ UI不可以：
 - 決定reward/economy規則
 - 自行提升building/equipment而不經domain API
 
-### 11.2 TownProgressUI exception
+### 11.2 Dedicated Town building UI boundary
 
-Current `TownProgressUI`透過`RefCounted.call()`直接呼叫upgrade/equip/purchase。
-這是Known Risk，不是推薦pattern。新增UI優先emit typed intent，由Game或coordinator
-呼叫domain service，再把result投影回UI。
+Current `Game._open_town_service_ui()` 將相同的 TownManager/InventoryManager
+instances 注入 `MaterialYardUI`、`PlayerBlacksmithUI` 與 `TownHallUI`。三者透過
+`RefCounted.call()` 呼叫既有 domain API：
+
+- Material Yard：`upgrade_building("workshop")`。
+- Player Blacksmith：equipment purchase/equip/upgrade，以及
+  `blacksmith`／`memory_library` building upgrade。
+- Town Hall：`upgrade_building("town_hall")`。
+
+Design Research 是例外路由：PlayerBlacksmithUI emit
+`blueprint_research_requested`，由 Game 關閉鐵匠 UI 並開啟 DeckBuilder context。
+關閉三個功能建築 UI 時，Game 同步 manager DTO 至 Meta、儲存並重投影世界。
+直接 service mutation 仍是 Known Risk；新增 screen 優先 emit typed intent，由
+Game 或 coordinator 呼叫 domain service，再把結果投影回 UI。
 
 ### 11.3 Projection copy
 
@@ -851,7 +865,7 @@ Game
 │   ├── HUD
 │   └── CardHandUI
 └── MenuLayer
-    └── TownProgressUI
+    └── MaterialYardUI / PlayerBlacksmithUI / TownHallUI
 
 Game-owned RefCounted state (not Scene children)
 ├── CardDatabase

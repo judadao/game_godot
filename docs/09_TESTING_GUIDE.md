@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-現有 88 個測試腳本涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 94 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -77,6 +77,7 @@ tools/run_godot_tests.sh --suite ui
 tools/run_godot_tests.sh --suite cards --fail-fast
 tools/run_godot_tests.sh --suite scene --strict-warnings
 tools/run_godot_tests.sh --pattern 'map_registry|quick_save'
+tools/run_godot_tests.sh --pattern 'town_building_ui_(contract|behavior|layout|lifecycle)'
 ```
 
 ### 5.2 Full regression
@@ -161,6 +162,19 @@ StyleBox 與所有互動狀態可解析；本專案尚無共用 Theme resource�
 scene-local override 與未來 Theme migration 必須分開驗證。Animation 修改需
 檢查 AnimationPlayer/AnimatedSprite2D 的 library、track target、loop 與完成狀態，
 並實際跑過進入、中斷、重播與場景切換。
+
+Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
+
+| Test | Contract |
+|---|---|
+| `town_building_ui_contract_test.gd` | 四個 screen 可載入；Full Rect、PROCESS_MODE_ALWAYS、class/API/signal/semantic nodes |
+| `town_building_ui_behavior_test.gd` | workshop/town hall 精確升級；Forge 購買/裝備/強化；Design Research intent；Soul Refinery progression；Shop buy/sell quantity |
+| `town_building_ui_layout_test.gd` | 1152×720、1280×720、1600×900、1920×1080、2560×1080、2560×1440 的 window/controls/text/icon 邊界 |
+| `town_building_ui_lifecycle_test.gd` | open/close/ui_cancel signals、focus release/restore、重開不重複 controls |
+| `shop_system_test.gd` / `ui_keyboard_test.gd` | 交易 ownership、方向 focus、quantity controls 與 player input lock |
+
+Layout test 另外要求每個 screen 顯示至少三種 distinct functional icon；Button
+必須有文字、icon 或 tooltip，且可見 hit target 不小於 32×32。
 
 ## 7. Scene 與資料契約
 

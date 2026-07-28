@@ -76,28 +76,31 @@ production path 搜尋結果：
 
 `scenes/ui/**` 實際有：
 
-- 39 × `StyleBoxFlat`
+- 122 × `StyleBoxFlat`
 - 1 × `StyleBoxTexture`
 - 1 × `StyleBoxEmpty`
-- 8 × `LabelSettings`
-- 67 × `theme_override_font_sizes/font_size`
-- 55 × `theme_override_colors/font_color`
-- 42 × panel style assignment
-- 32 × normal style assignment
-- 26 × 一般 `separation` override，另有 1 × `h_separation` 與
-  1 × `v_separation`（廣義 spacing override 合計 28）
+- 14 × `LabelSettings`
+- 240 × `theme_override_font_sizes/*`
+- 237 × `theme_override_colors/font_color`
+- 116 × panel style assignment
+- 51 × normal style assignment
+- 158 × 一般 `separation` override，另有 7 × `h_separation` 與
+  7 × `v_separation`（廣義 spacing override 合計 172）
 
 另有 runtime `StyleBoxFlat.new()`：
 
 - `scripts/ui/card_hand_ui.gd`
 - `scripts/ui/run_result_ui.gd`
-- `scripts/ui/town_progress_ui.gd`
 
 ### 2.3 Current reuse
 
-- Inventory/Shop 會從 author node 讀取 StyleBox，再套到 selected/normal state。
+- Inventory、Shop 與 PlayerBlacksmithUI 會從 author node 讀取 StyleBox，再套到
+  selected/normal state。
 - 同一 scene 內可共用 subresource。
 - HUD 子場景有各自 LabelSettings/StyleBox。
+- MaterialYardUI、PlayerBlacksmithUI、TownHallUI 與 ShopUI 共用「深色鍛造底、
+  金色主框、冷藍資訊區、語意資源色」的視覺語言，但目前仍以 scene-local
+  StyleBox 實作。
 
 這是 local reuse，不是全域 Theme layer。
 
@@ -244,7 +247,7 @@ Theme Variation 讓語意元件繼承 Godot base type，同時集中差異。例
 - 使用 Godot default font。
 - 無專案 Font resource。
 - 無 fallback chain。
-- 字級透過 67 個 scene override 及多個 runtime override 設定。
+- 字級透過 240 個 scene override 及多個 runtime override 設定。
 
 ### 6.2 TODO — Not Implemented type scale
 
@@ -294,6 +297,16 @@ Theme Variation 讓語意元件繼承 Godot base type，同時集中差異。例
 - `shop/generated`：7 PNG
 
 總計 301 PNG、14 PSD。301 PNG 均已有 import metadata。
+
+現役 Town building/Shop screen 直接重用 curated runtime icon：
+
+- resource cards：coin、wood、stone、gem/core；
+- building/service：ore、forge equipment、research gem、soul gem、Town Hall；
+- Shop actions：Buy、Sell、Confirm、Close、quantity、currency；
+- Shop item rows：explicit item texture，缺少時由 `shop_ui.gd` 依 identity 選擇
+  sword、boots、gem、map 或 supply fallback。
+
+圖示是掃描與辨識輔助，不取代 button text、tooltip、stock/cost/state label。
 
 ### 7.2 Icon rules
 
