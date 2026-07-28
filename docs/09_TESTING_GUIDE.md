@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 100 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 104 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -174,6 +174,12 @@ resolved window StyleBox 與各功能替代狀態；其餘 scene-local override 
 驗證。Animation 修改需
 檢查 AnimationPlayer/AnimatedSprite2D 的 library、track target、loop 與完成狀態，
 並實際跑過進入、中斷、重播與場景切換。
+
+Combat VFX 修改至少執行
+`skill_cast_presentation_test.gd`、`elemental_attack_aura_test.gd`、
+`fire_ultimate_vfx_test.gd`、`ice_ultimate_vfx_test.gd` 與
+`combat_vfx_integration_test.gd`。另以 graphical Forward+ renderer 確認火／冰
+粒子、環線、標題層級、世界中心與自動 cleanup；標題 layout 需跑六解析度矩陣。
 
 Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
 

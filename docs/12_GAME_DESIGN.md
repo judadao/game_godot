@@ -337,9 +337,12 @@ cooldown、redraw 或 overflow。舊 pile API 只保留資料相容性，不是�
 - 沒有 redraw、discard、replacement、overflow 或 Auto Use；
 - Basic Attack 不在 hand。
 
-### 6.6 Card focus
+### 6.6 Card focus 與施法節奏
 
-Card focus 會把 `Engine.time_scale` 設為 0.22，hit stop 也會短暫改變全域 time scale。正常路徑會恢復，但節點中途離開時缺少統一 teardown 保證，列入 TODO。
+Card focus 會把 `Engine.time_scale` 設為 0.22。成功出牌後先結束 focus，再由
+`SkillCastPresentation` 以 unscaled time 顯示放大招式名稱與短暫慢動作；連續施放
+使用 generation 防止舊 callback 覆寫，離開 SceneTree 時恢復進入前倍率。普通
+Basic Attack 不反覆顯示名稱；只有實際造成傷害且沒有施法演出時才使用短 hit stop。
 
 ## 7. Combo、Skill 與 Fusion
 
@@ -361,7 +364,10 @@ recipe Finisher base + matched three-Combo combination + every Divine Gift effec
 （Quickened Cadence）、攻擊力（Crushing Momentum）、爆擊率／倍率
 （Keen Focus）、彈體數量與展開角度（Echo Volley）與雷屬性硬直
 （Storm Charge）；Flame／Frost infusion
-則繼續提供火焰與冰霜附加屬性。這些卡都只消耗 AP，不使用 card cooldown。
+則繼續提供火焰與冰霜附加屬性，並讓後續 projectile 分別帶火舌／火星或霜晶／
+冷霧纏繞；雙元素可同時顯示。這些卡都只消耗 AP，不使用 card cooldown。
+Combo chain 到 3／6／9 時，projectile presentation 分別加入環繞刃光、雙重殘影
+與爆發星芒；這些層級只改視覺，不額外建立隱藏傷害。
 沒有 Echo Volley 時，Basic Attack 固定為單方向、單發、單目標基本型態。
 Echo Volley 增加同一輪的彈體數與可命中目標數，但所有彈體仍沿角色面向的水平
 戰鬥走廊前進。攻擊不向最近敵人重新瞄準，也不在飛行途中追蹤；走廊外與角色
@@ -392,7 +398,14 @@ attack card 只產生一個 skill event；multi-hit 仍算一個。active skills
 level 的 capacity 是 10/14/18/24/30。初始 `Iron Momentum` 使用 1 memory，五次
 attack 觸發三秒弱霸體，cooldown 十秒。
 
-### 7.4 Meta card upgrade 與 fusion
+### 7.4 火／冰範圍技能
+
+`Crimson Caldera`（stable ID `concussive_shout`）以玩家為中心在 420px 半徑造成大範圍火焰傷害
+與 Burn，使用多圈火浪、焦土、火柱和火星。`Glacial Dominion`（stable ID
+`frost_bind`）從玩家向外擴散 460px 結冰領域，對範圍內多個敵人施加 Slow，使用冰環、裂紋、
+冰晶和冷霧。VFX 半徑取自同一 card effect radius，但不自行判定傷害。
+
+### 7.5 Meta card upgrade 與 fusion
 
 EXP growth 對個別 `CardInstance` 升級，最高 Lv.3；同 card ID 的兩張卡可有不同
 level。fusion 必須明確選兩張不同的 Lv.3 instances，消耗兩張材料並建立一張
@@ -402,7 +415,7 @@ Lv.1 結果，牌組淨減一：
 |---|---|---|
 | Iron Will (`guard`) | Stone Form (`iron_skin`) | Unbreakable Stance (`fortress_stance`) |
 | Dash Edge (`dash_strike`) | Cleave | Gale Drive (`gale_lunge`) |
-| Frost Bind | Energy Surge | Time Snare |
+| Glacial Dominion | Energy Surge | Time Snare |
 | Healing Light | Blood Pact | Renewal |
 | Battle Focus | Flame Aura | Overdrive |
 | Cleave | Flame Aura | Inferno Orb |
@@ -412,7 +425,7 @@ contract。Dash Edge 與 Gale Drive 標記為 `combat_hand = false`，不再由�
 獎勵特別提供；其 legacy infusion 仍以
 `target_action = dash` 暫時強化玩家固有 Dash，不指向或建立 Dash 卡。
 
-### 7.4 效果語意限制
+### 7.6 效果語意限制
 
 目前 effect runner 支援 damage、area damage、block、heal、dash、status、power、aura、summon、overdrive 與 infusion。
 

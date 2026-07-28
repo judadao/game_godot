@@ -101,11 +101,21 @@ const COMBO_EVOLUTIONS := [
 @export var auto_attack_feedback_scene: PackedScene = preload(
 	"res://scenes/combat/AutoAttackFeedback.tscn"
 )
+@export var elemental_attack_aura_scene: PackedScene = preload(
+	"res://scenes/combat/vfx/ElementalAttackAura.tscn"
+)
+@export var fire_ultimate_vfx_scene: PackedScene = preload(
+	"res://scenes/combat/vfx/FireUltimateVFX.tscn"
+)
+@export var ice_ultimate_vfx_scene: PackedScene = preload(
+	"res://scenes/combat/vfx/IceUltimateVFX.tscn"
+)
 
 @onready var map_root: Node = $MapRoot
 @onready var hud_root: CanvasLayer = $HUDLayer
 @onready var ui_root: CanvasLayer = $MenuLayer
 @onready var card_effect_runner: CardEffectRunner = $CardEffectRunner
+@onready var skill_cast_presentation: SkillCastPresentation = $SkillCastPresentation
 
 var current_map: Node
 var player: Node
@@ -1304,6 +1314,8 @@ func _on_card_selected(index: int) -> void:
 		_resolve_combo_card(card)
 	else:
 		card = _apply_combo_infusions_to_card(card)
+	_set_tactical_slowdown(false)
+	_play_combat_vfx(card)
 	var targets := _get_combat_targets()
 	card_effect_runner.cast(card, player, targets)
 	var gift_effects := divine_gift_manager.call("get_global_effects") as Dictionary
@@ -1315,7 +1327,6 @@ func _on_card_selected(index: int) -> void:
 		_resolve_energy_cycle(card)
 	_resolve_skill_triggers(skill_recipe_manager.record_card(card))
 	run_state.energy = deck_manager.energy
-	_set_tactical_slowdown(false)
 	_refresh_card_hand()
 	_refresh_combo_display()
 
@@ -1427,6 +1438,7 @@ func _try_basic_attack() -> bool:
 			card,
 			finisher_queue[0] as Dictionary
 		)
+		_play_combat_vfx(card)
 	var targets := _get_combat_targets()
 	var attack_range := maxf(1.0, float(card.get("auto_attack_range", 220.0)))
 	targets = targets.filter(func(target: Variant) -> bool:
@@ -1748,6 +1760,15 @@ func _spawn_auto_attack_feedback(
 		float(card.get("attack_size_multiplier", 1.0)),
 		card.get("combo_visual_profile", {}) as Dictionary
 	)
+	var profile := _resolve_combat_vfx_profile(card)
+	var elements := profile.get("elements", []) as Array
+	if not elements.is_empty() and feedback.has_method("attach_elemental_aura"):
+		feedback.call(
+			"attach_elemental_aura",
+			elemental_attack_aura_scene,
+			elements,
+			clampi(1 + int(profile.get("intensity", 1)), 1, 5)
+		)
 
 
 func _get_auto_attack_card() -> Dictionary:
@@ -1813,6 +1834,8 @@ func _resolve_skill_triggers(triggered: Array[Dictionary]) -> void:
 		run_state.combo_count += 1
 		if hud != null and hud.has_method("show_skill_toast"):
 			hud.call("show_skill_toast", skill_id, skill_name)
+		if skill_cast_presentation != null:
+			skill_cast_presentation.play_cast(skill_name, &"neutral", 0.8)
 
 
 func _open_hand_overflow_discard(required_count: int) -> void:
@@ -2695,6 +2718,141 @@ func _redraw_current_hand() -> bool:
 	return true
 
 
+func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
+	if card.is_empty():
+		return {}
+	var elements: Array[String] = []
+	var visual_profile := card.get("combo_visual_profile", {}) as Dictionary
+	for element_variant in visual_profile.get("elements", []) as Array:
+		_append_vfx_element(elements, String(element_variant))
+	for tag_variant in card.get("tags", []) as Array:
+		_append_vfx_element(elements, String(tag_variant))
+	var effect := card.get("effect", {}) as Dictionary
+	var infusion_id := String(effect.get("infusion_id", ""))
+	_append_vfx_element(elements, infusion_id)
+	if effect.has("burn_duration") or effect.has("burn_damage"):
+		_append_vfx_element(elements, "flame")
+	if effect.has("frost_duration") or effect.has("frost_ratio"):
+		_append_vfx_element(elements, "frost")
+
+	var effect_kind := String(effect.get("kind", ""))
+	var card_type := String(card.get("type", ""))
+	var is_area := effect_kind in ["area_damage", "area_slow", "damage_aura"]
+	var is_finisher := bool(visual_profile.get("finisher", false))
+	var is_elemental_skill := (
+		not elements.is_empty()
+		and (card_type in ["skill", "ultimate"] or is_finisher)
+		and is_area
+	)
+	if String(card.get("id", "")) == "inferno_orb":
+		is_elemental_skill = true
+	var primary_element := elements[0] if not elements.is_empty() else ""
+	return {
+		"element": primary_element,
+		"elements": elements,
+		"attack_aura": (
+			card_type == "combo"
+			and effect_kind == "infusion"
+			and not elements.is_empty()
+		),
+		"ultimate": is_elemental_skill,
+		"radius": maxf(96.0, float(effect.get("radius", 180.0))),
+		"intensity": clampi(
+			1
+			+ int(card.get("card_level", card.get("level", 1)))
+			+ int(visual_profile.get("stack_count", 0)) / 3,
+			1,
+			5
+		),
+		"importance": 1.45 if is_elemental_skill or is_finisher else 0.85,
+	}
+
+
+func _append_vfx_element(elements: Array[String], candidate: String) -> void:
+	var normalized := candidate.strip_edges().to_lower()
+	if normalized in ["fire", "flame"]:
+		normalized = "flame"
+	elif normalized in ["ice", "frost"]:
+		normalized = "frost"
+	else:
+		return
+	if not elements.has(normalized):
+		elements.append(normalized)
+
+
+func _play_combat_vfx(card: Dictionary) -> void:
+	if card.is_empty() or player == null:
+		return
+	var profile := _resolve_combat_vfx_profile(card)
+	var element := String(profile.get("element", ""))
+	var presentation_element := (
+		&"fire" if element == "flame"
+		else (&"ice" if element == "frost" else &"neutral")
+	)
+	if skill_cast_presentation != null:
+		skill_cast_presentation.play_cast(
+			String(card.get("name", card.get("id", "Skill"))),
+			presentation_element,
+			float(profile.get("importance", 0.85))
+		)
+	if bool(profile.get("attack_aura", false)) and player is Node2D:
+		_spawn_elemental_aura(
+			player as Node2D,
+			profile.get("elements", []) as Array,
+			int(profile.get("intensity", 1))
+		)
+	if bool(profile.get("ultimate", false)):
+		_spawn_elemental_ultimate(profile)
+
+
+func _spawn_elemental_aura(host: Node2D, elements: Array, intensity: int) -> void:
+	if elemental_attack_aura_scene == null or elements.is_empty():
+		return
+	var aura := elemental_attack_aura_scene.instantiate() as Node2D
+	if aura == null:
+		return
+	host.add_child(aura)
+	if aura.has_method("set_lifetime"):
+		aura.call("set_lifetime", 0.72)
+	if aura.has_method("configure"):
+		aura.call("configure", elements, clampi(intensity, 1, 5))
+	var cleanup := aura.create_tween()
+	cleanup.set_ignore_time_scale(true)
+	cleanup.tween_interval(1.1)
+	cleanup.tween_callback(aura.queue_free)
+
+
+func _spawn_elemental_ultimate(profile: Dictionary) -> void:
+	if current_map == null or not player is Node2D:
+		return
+	var element := String(profile.get("element", ""))
+	var effect_scene := (
+		fire_ultimate_vfx_scene if element == "flame"
+		else ice_ultimate_vfx_scene
+	)
+	if effect_scene == null:
+		return
+	var effect := effect_scene.instantiate() as Node2D
+	if effect == null:
+		return
+	current_map.add_child(effect)
+	effect.global_position = (player as Node2D).global_position
+	effect.set("radius", float(profile.get("radius", 180.0)))
+	effect.set(
+		"intensity",
+		(
+			clampf(float(profile.get("intensity", 1)) * 0.42, 0.35, 2.5)
+			if element == "flame"
+			else clampf(float(profile.get("intensity", 1)) * 0.25, 0.1, 1.0)
+		)
+	)
+	if effect.has_method("play"):
+		if element == "flame":
+			effect.call("play", player)
+		else:
+			effect.call("play")
+
+
 func _on_card_effect_resolved(_card_id: String, result: Dictionary) -> void:
 	var total := int(result.get("total", 0))
 	if total > 0 and current_map != null and player is Node2D:
@@ -2716,6 +2874,14 @@ func _on_card_effect_resolved(_card_id: String, result: Dictionary) -> void:
 		var strength := 4.0 * float(meta_state.settings.get("camera_shake", 0.65))
 		camera.offset = Vector2(strength, -strength * 0.5)
 		camera.create_tween().tween_property(camera, "offset", Vector2.ZERO, 0.12)
+	if (
+		total <= 0
+		or (
+			skill_cast_presentation != null
+			and skill_cast_presentation.is_cast_active()
+		)
+	):
+		return
 	Engine.time_scale = 0.08
 	await get_tree().create_timer(0.035, true, false, true).timeout
 	Engine.time_scale = 0.22 if _tactical_slowdown else 1.0

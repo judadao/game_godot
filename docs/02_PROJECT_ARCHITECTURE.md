@@ -76,6 +76,7 @@ Game (Node, scripts/managers/game.gd)
 ├── MapRoot (Node)
 ├── HUDLayer (CanvasLayer)
 ├── MenuLayer (CanvasLayer)
+├── SkillCastPresentation (CanvasLayer)
 └── CardEffectRunner (Node, CardEffectRunner)
 ```
 
@@ -295,6 +296,8 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 |---|---|---|
 | `CardEffectRunner` | `scripts/combat/card_effect_runner.gd` | `cast()` 修改 caster/targets，emit `effect_resolved` |
 | `AutoAttackFeedback` | `scripts/combat/auto_attack_feedback.gd` | 投影自動普攻彈道、命中、實際傷害與 Combo power；不處理傷害規則 |
+| `SkillCastPresentation` | `scripts/combat/skill_cast_presentation.gd` | 以 unscaled Tween 顯示放大招式名稱並管理短暫施法慢動作 |
+| Elemental combat VFX | `scenes/combat/vfx/*.tscn` | 火／冰攻擊纏繞與範圍大招的純 presentation；不擁有傷害判定 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
 | `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | timed phases、boss stage、XP gem |
@@ -502,6 +505,10 @@ service；修改 mappings或處理順序時須用實際 run驗證。
 - `Enemies`、`EncounterDirectors` groups用於 target與wiring。
 - card effect透過 capability methods，例如 `take_hit()`、`add_block()`、
   `restore_health()`、`apply_status()`。
+- `Game._resolve_combat_vfx_profile()` 是卡牌 tags、Combo elements 與 VFX 的單一
+  mapping authority。`CardEffectRunner` 仍是傷害／狀態 authority。
+- 手動施放顯示中央招式名稱並短暫慢動作；普通自動攻擊不反覆觸發標題。火／冰
+  projectile 使用 `ElementalAttackAura`，範圍技使用自動清理的 Fire／Ice VFX。
 - Enemy archetype是 runtime-created `Resource`，不是 `.tres` catalog。
 
 ### 9.2 NPC — Current

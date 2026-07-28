@@ -96,7 +96,13 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 		"slow":
 			_apply_status(_nearest_targets(caster, targets, 1), kind, effect, result)
 		"area_slow", "stun":
-			_apply_status(_targets_in_radius(caster, targets, float(effect.get("radius", 170.0))), kind, effect, result)
+			var status_id := "slow" if kind == "area_slow" else kind
+			_apply_status(
+				_targets_in_radius(caster, targets, float(effect.get("radius", 170.0))),
+				status_id,
+				effect,
+				result
+			)
 		"attack_power":
 			var current: Variant = caster.get("attack_power")
 			if current != null:

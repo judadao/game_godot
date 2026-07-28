@@ -82,6 +82,7 @@ Game (Node, scripts/managers/game.gd)
 ├── MapRoot (Node)
 ├── HUDLayer (CanvasLayer, layer = 10)
 ├── MenuLayer (CanvasLayer, layer = 20)
+├── SkillCastPresentation (CanvasLayer, layer = 40)
 └── CardEffectRunner (Node)
 ```
 
@@ -92,6 +93,8 @@ Current ownership：
 - `MenuLayer`：持有 `ui_stack` 中的 Inventory、Pause、Dialogue、Shop、
   MaterialYard、PlayerBlacksmith、TownHall、DeckBuilder、CardDiscard、LevelUp、
   RunResult 等 screen。
+- `SkillCastPresentation`：不攔截輸入的全螢幕招式名稱層，以 Container 保持六種
+  基準解析度置中。
 - `Game.open_ui()`：instantiate、加入 stack、設定 pause flag、連 lifecycle、呼叫
   `open()`、設定 focus。
 - `Game.close_ui()`：呼叫 `close()`、移除 stack、更新 pause、emit lifecycle、

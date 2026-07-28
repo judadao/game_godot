@@ -1513,6 +1513,18 @@ Required semantic children:
 - Rule: same source refreshes, strongest armor tier wins, reduction caps at
   60%, and timer pause must follow the growth modal pause token
 
+### Elemental combat VFX
+
+- Scenes: `res://scenes/combat/vfx/ElementalAttackAura.tscn`,
+  `FireUltimateVFX.tscn`, `IceUltimateVFX.tscn` and
+  `SkillCastPresentation.tscn`
+- Status: Current — Used
+- Owner: `Game` maps card data to VFX; `CardEffectRunner` retains damage authority
+- Contract: fire/frost aura layers stack, ultimate radius mirrors gameplay radius,
+  screen title ignores time scale, and short-lived world effects clean themselves up
+- Rule: callers configure reusable APIs; they do not duplicate particles or infer
+  gameplay damage from visual geometry
+
 ### CardGrowthUI
 
 - Scene: `res://scenes/ui/cards/CardGrowthUI.tscn`

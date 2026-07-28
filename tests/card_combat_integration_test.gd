@@ -68,6 +68,10 @@ func _run() -> void:
 			and critical_health_before - int(second_enemy.get("health")) > 12,
 		"Guaranteed critical projection must deal the configured doubled damage."
 	)
+	_expect(
+		float((second_enemy.call("get_status_snapshot") as Dictionary).get("burn_remaining", 0.0)) > 0.0,
+		"Fire attacks must apply the configured Burn instead of only describing it."
+	)
 
 	var guard_index := deck.hand.find("guard")
 	var guard_card := deck.play_from_hand(guard_index)
@@ -87,11 +91,15 @@ func _run() -> void:
 	)
 
 	var frost_card := database.get_card("frost_bind")
-	runner.call("cast", frost_card, player, [second_enemy])
+	runner.call("cast", frost_card, player, [enemy, second_enemy])
 	_expect(
 		second_enemy.has_method("get_status_snapshot")
-		and float((second_enemy.call("get_status_snapshot") as Dictionary).get("slow_remaining", 0.0)) > 0.0,
-		"Slow cards must apply a real timed status to modern enemies."
+			and float((second_enemy.call("get_status_snapshot") as Dictionary).get("slow_remaining", 0.0)) > 0.0,
+		"Glacial Dominion must apply a real timed slow to nearby enemies."
+	)
+	_expect(
+		String(enemy.get_meta("card_status", "")) == "slow",
+		"Glacial Dominion must affect multiple enemies inside its gameplay radius."
 	)
 
 	var skills := SkillRecipeManager.new()

@@ -21,6 +21,8 @@ var _direction_index := 0
 var _direction_count := 1
 var _spread_degrees := 0.0
 var _did_hit := false
+var _elemental_aura: Node2D
+var _combo_tier := 0
 
 
 func play(
@@ -46,6 +48,7 @@ func play(
 	)
 	_spread_degrees = clampf(float(visual_profile.get("spread_degrees", 0.0)), 0.0, 360.0)
 	_did_hit = damage > 0
+	_combo_tier = clampi(combo_count / 3, 0, 3)
 	_visual_colors = _colors_for_elements(visual_profile.get("elements", []) as Array)
 	_accent = _blended_accent(_visual_colors, _accent_for_combo(combo_count))
 	_attack_size_multiplier = clampf(
@@ -109,12 +112,34 @@ func get_spread_degrees() -> float:
 	return _spread_degrees
 
 
+func get_combo_visual_tier() -> int:
+	return _combo_tier
+
+
 func get_direction_angle_degrees() -> float:
 	return _direction_angle_degrees()
 
 
 func get_travel_offset() -> Vector2:
 	return _target_offset
+
+
+func attach_elemental_aura(
+	aura_scene: PackedScene,
+	elements: Array,
+	intensity: int
+) -> void:
+	if aura_scene == null or elements.is_empty():
+		return
+	if _elemental_aura != null and is_instance_valid(_elemental_aura):
+		_elemental_aura.queue_free()
+	_elemental_aura = aura_scene.instantiate() as Node2D
+	if _elemental_aura == null:
+		return
+	add_child(_elemental_aura)
+	_elemental_aura.position = _travel_point(_travel_progress)
+	if _elemental_aura.has_method("configure"):
+		_elemental_aura.call("configure", elements, intensity)
 
 
 func _draw() -> void:
@@ -138,6 +163,7 @@ func _draw() -> void:
 			)
 		draw_circle(tip, 7.0 * _attack_size_multiplier, _accent)
 		draw_circle(tip, 3.0 * _attack_size_multiplier, Color.WHITE)
+		_draw_combo_projectile_layers(tip, tail)
 		var mote_count := mini(10, _stack_count)
 		for mote_index in mote_count:
 			var angle := TAU * float(mote_index) / float(maxi(1, mote_count)) + _travel_progress * TAU
@@ -183,6 +209,79 @@ func _draw() -> void:
 				3.0,
 				true
 			)
+		_draw_combo_impact_layers(alpha, radius)
+
+
+func _draw_combo_projectile_layers(tip: Vector2, tail: Vector2) -> void:
+	if _combo_tier <= 0:
+		return
+	var direction := _target_offset.normalized()
+	var normal := direction.orthogonal()
+	var travel_phase := _travel_progress * TAU * (1.0 + float(_combo_tier) * 0.35)
+	var orbit_radius := (10.0 + float(_combo_tier) * 3.0) * _attack_size_multiplier
+	for side in [-1.0, 1.0]:
+		var orbit_offset := (
+			normal * cos(travel_phase + side * 1.2) * orbit_radius
+			+ direction * sin(travel_phase + side) * 5.0
+		)
+		draw_line(
+			tail + orbit_offset * 0.35,
+			tip + orbit_offset,
+			Color(_accent.lightened(0.25), 0.44 + float(_combo_tier) * 0.10),
+			1.2 + float(_combo_tier) * 0.65,
+			true
+		)
+	if _combo_tier >= 2:
+		for echo_index in 2:
+			var echo_offset := normal * (float(echo_index) * 2.0 - 1.0) * orbit_radius * 0.55
+			draw_line(
+				tail - direction * (8.0 + float(echo_index) * 8.0) + echo_offset,
+				tip - direction * (16.0 + float(echo_index) * 10.0) + echo_offset,
+				Color(_accent, 0.24),
+				3.0 * _attack_size_multiplier,
+				true
+			)
+	if _combo_tier >= 3:
+		for ray_index in 6:
+			var ray := Vector2.from_angle(
+				TAU * float(ray_index) / 6.0 + travel_phase * 0.35
+			)
+			draw_line(
+				tip + ray * orbit_radius * 0.55,
+				tip + ray * orbit_radius,
+				Color(1.0, 0.94, 0.66, 0.72),
+				1.5,
+				true
+			)
+
+
+func _draw_combo_impact_layers(alpha: float, radius: float) -> void:
+	if _combo_tier <= 0:
+		return
+	for tier_index in _combo_tier:
+		var tier_radius := radius * (0.72 + float(tier_index) * 0.22)
+		var start_angle := _impact_progress * TAU * (1.0 if tier_index % 2 == 0 else -1.0)
+		draw_arc(
+			_target_offset,
+			tier_radius,
+			start_angle,
+			start_angle + PI * (0.82 + float(tier_index) * 0.18),
+			18,
+			Color(_accent.lightened(0.16), alpha * (0.72 - float(tier_index) * 0.12)),
+			maxf(1.0, 3.2 - float(tier_index) * 0.55),
+			true
+		)
+	if _combo_tier < 3:
+		return
+	for ray_index in 10:
+		var ray := Vector2.from_angle(TAU * float(ray_index) / 10.0)
+		draw_line(
+			_target_offset + ray * radius * 0.42,
+			_target_offset + ray * radius * 1.18,
+			Color(1.0, 0.92, 0.62, alpha * 0.80),
+			1.8,
+			true
+		)
 
 
 func _travel_point(progress: float) -> Vector2:
@@ -203,6 +302,8 @@ func _direction_angle_degrees() -> float:
 
 func _set_travel_progress(value: float) -> void:
 	_travel_progress = clampf(value, 0.0, 1.0)
+	if _elemental_aura != null and is_instance_valid(_elemental_aura):
+		_elemental_aura.position = _travel_point(_travel_progress)
 	queue_redraw()
 
 
@@ -212,6 +313,8 @@ func _set_impact_progress(value: float) -> void:
 
 
 func _show_impact() -> void:
+	if _elemental_aura != null and is_instance_valid(_elemental_aura):
+		_elemental_aura.position = _target_offset
 	damage_label.visible = _did_hit
 	combo_label.visible = _did_hit
 	if not _did_hit:

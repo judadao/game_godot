@@ -122,6 +122,7 @@ Game (Node, scripts/managers/game.gd)
 ├── MapRoot (Node)
 ├── HUDLayer (CanvasLayer)
 ├── MenuLayer (CanvasLayer)
+├── SkillCastPresentation (CanvasLayer)
 └── CardEffectRunner (Node, scripts/combat/card_effect_runner.gd)
 ```
 
@@ -130,6 +131,7 @@ Game (Node, scripts/managers/game.gd)
 - `MapRoot`：一次一個current map。
 - `HUDLayer`：一次一個 adopted HUD；AutumnCardHandUI 是 AutumnHUD 的 child。
 - `MenuLayer`：runtime menus/modal UI stack。
+- `SkillCastPresentation`：唯一的全螢幕施法名稱與慢動作 presentation owner。
 - `CardEffectRunner`：解析卡牌effect，不擁有地圖或UI。
 
 禁止將Player、NPC、固定地圖物件直接放入Game entry；它們由map擁有。
@@ -349,6 +351,16 @@ func _ready() -> void:
 靜態Scene nodes。Editor helper不可在runtime啟動gameplay。
 
 ## 7. Player、Monster 與 Combat Scene
+
+`scenes/combat/vfx/` 保存可重用、無傷害權威的短生命週期特效：
+
+- `ElementalAttackAura.tscn`：掛在玩家或 projectile feedback 下的火／冰纏繞。
+- `FireUltimateVFX.tscn`：多圈火浪、焦土、火柱與火星。
+- `IceUltimateVFX.tscn`：擴張冰環、結冰地表、裂紋、冰晶與冷霧。
+- `SkillCastPresentation.tscn`：常駐 Game 的 CanvasLayer，不攔截輸入。
+
+前三者由建立端掛到當前 map 或 feedback，播放後停止或釋放；不得放入 map 作為
+固定傷害節點。實際命中半徑仍由 card effect 與 `CardEffectRunner` 決定。
 
 ### 7.1 Player contract
 

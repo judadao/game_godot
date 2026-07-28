@@ -1,0 +1,79 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/ice_ultimate_vfx.gd" id="1_script"]
+
+[sub_resource type="Gradient" id="Gradient_mist_alpha"]
+offsets = PackedFloat32Array(0, 0.38, 1)
+colors = PackedColorArray(0.82, 0.98, 1, 0, 0.58, 0.9, 1, 0.5, 0.28, 0.72, 0.94, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_mist"]
+gradient = SubResource("Gradient_mist_alpha")
+width = 32
+height = 32
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[sub_resource type="Gradient" id="Gradient_mist_color"]
+offsets = PackedFloat32Array(0, 0.55, 1)
+colors = PackedColorArray(0.76, 0.96, 1, 0, 0.56, 0.88, 1, 0.52, 0.9, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_mist_color"]
+gradient = SubResource("Gradient_mist_color")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_mist"]
+emission_shape = 1
+emission_sphere_radius = 280.0
+direction = Vector3(0, -1, 0)
+spread = 180.0
+gravity = Vector3(0, -10, 0)
+initial_velocity_min = 24.0
+initial_velocity_max = 54.0
+scale_min = 0.45
+scale_max = 1.35
+color_ramp = SubResource("GradientTexture1D_mist_color")
+
+[node name="IceUltimateVFX" type="Node2D" groups=["CombatVFX", "IceUltimateVFX"]]
+z_index = 48
+script = ExtResource("1_script")
+
+[node name="GroundFrost" type="Polygon2D" parent="."]
+z_index = -2
+polygon = PackedVector2Array(-64, -64, 64, -64, 64, 64, -64, 64)
+color = Color(0.24, 0.76, 0.92, 0.16)
+
+[node name="FrostRings" type="Node2D" parent="."]
+z_index = 2
+
+[node name="OuterRing" type="Line2D" parent="FrostRings"]
+points = PackedVector2Array(-64, 0, 0, -64, 64, 0, 0, 64, -64, 0)
+width = 6.0
+default_color = Color(0.54, 0.94, 1, 0.94)
+joint_mode = 1
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="InnerRing" type="Line2D" parent="FrostRings"]
+points = PackedVector2Array(-48, 0, 0, -48, 48, 0, 0, 48, -48, 0)
+width = 3.0
+default_color = Color(0.9, 0.99, 1, 0.8)
+joint_mode = 1
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Crystals" type="Node2D" parent="."]
+z_index = 4
+
+[node name="ColdMist" type="GPUParticles2D" parent="."]
+z_index = 6
+emitting = false
+amount = 72
+texture = SubResource("GradientTexture2D_mist")
+lifetime = 0.7
+one_shot = true
+explosiveness = 0.74
+randomness = 0.62
+visibility_rect = Rect2(-760, -760, 1520, 1520)
+process_material = SubResource("ParticleProcessMaterial_mist")

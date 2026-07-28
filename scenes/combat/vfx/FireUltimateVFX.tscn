@@ -1,0 +1,145 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/fire_ultimate_vfx.gd" id="1_script"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_flame"]
+offsets = PackedFloat32Array(0, 0.28, 0.72, 1)
+colors = PackedColorArray(1, 0.96, 0.7, 1, 1, 0.58, 0.04, 1, 0.95, 0.12, 0.01, 0.78, 0.12, 0.01, 0, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture_flame"]
+gradient = SubResource("Gradient_flame")
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_flame"]
+gradient = SubResource("Gradient_flame")
+width = 9
+height = 42
+fill = 1
+fill_from = Vector2(0.5, 1)
+fill_to = Vector2(0.5, 0)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_pillars"]
+resource_local_to_scene = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 4.0
+emission_ring_radius = 300.0
+emission_ring_inner_radius = 76.0
+direction = Vector3(0, -1, 0)
+spread = 24.0
+gravity = Vector3(0, -42, 0)
+initial_velocity_min = 70.0
+initial_velocity_max = 145.0
+scale_min = 0.55
+scale_max = 1.45
+color_ramp = SubResource("GradientTexture_flame")
+
+[sub_resource type="Gradient" id="Gradient_sparks"]
+offsets = PackedFloat32Array(0, 0.35, 1)
+colors = PackedColorArray(1, 1, 0.72, 1, 1, 0.32, 0.015, 0.92, 0.45, 0.015, 0, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture_sparks"]
+gradient = SubResource("Gradient_sparks")
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_sparks"]
+gradient = SubResource("Gradient_sparks")
+width = 3
+height = 12
+fill = 1
+fill_from = Vector2(0.5, 1)
+fill_to = Vector2(0.5, 0)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_sparks"]
+resource_local_to_scene = true
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 3.0
+emission_ring_radius = 360.0
+emission_ring_inner_radius = 52.0
+direction = Vector3(0, -1, 0)
+spread = 68.0
+gravity = Vector3(0, 78, 0)
+initial_velocity_min = 105.0
+initial_velocity_max = 225.0
+scale_min = 0.45
+scale_max = 1.15
+color_ramp = SubResource("GradientTexture_sparks")
+
+[node name="FireUltimateVFX" type="Node2D" groups=["CombatVFX", "FireUltimateVFX"]]
+z_index = 70
+script = ExtResource("1_script")
+
+[node name="ScorchedGround" type="Polygon2D" parent="."]
+z_index = -2
+polygon = PackedVector2Array(0, -64, 45, -45, 64, 0, 45, 45, 0, 64, -45, 45, -64, 0, -45, -45)
+color = Color(0.11, 0.025, 0.008, 0)
+
+[node name="FireWaves" type="Node2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+
+[node name="InnerWave" type="Line2D" parent="FireWaves"]
+modulate = Color(1, 0.96, 0.72, 0)
+points = PackedVector2Array(0, -46, 32, -32, 46, 0, 32, 32, 0, 46, -32, 32, -46, 0, -32, -32, 0, -46)
+width = 11.0
+default_color = Color(1, 0.94, 0.58, 1)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="MiddleWave" type="Line2D" parent="FireWaves"]
+modulate = Color(1, 0.48, 0.035, 0)
+points = PackedVector2Array(0, -64, 45, -45, 64, 0, 45, 45, 0, 64, -45, 45, -64, 0, -45, -45, 0, -64)
+width = 9.5
+default_color = Color(1, 0.42, 0.025, 1)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="OuterWave" type="Line2D" parent="FireWaves"]
+modulate = Color(1, 0.16, 0.01, 0)
+points = PackedVector2Array(0, -82, 58, -58, 82, 0, 58, 58, 0, 82, -58, 58, -82, 0, -58, -58, 0, -82)
+width = 8.0
+default_color = Color(1, 0.16, 0.01, 1)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="EchoWave" type="Line2D" parent="FireWaves"]
+visible = false
+modulate = Color(1, 0.68, 0.12, 0)
+points = PackedVector2Array(0, -96, 68, -68, 96, 0, 68, 68, 0, 96, -68, 68, -96, 0, -68, -68, 0, -96)
+width = 6.5
+default_color = Color(1, 0.68, 0.12, 1)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="FlamePillars" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 42
+texture = SubResource("GradientTexture2D_flame")
+lifetime = 0.8
+one_shot = true
+explosiveness = 0.92
+randomness = 0.22
+visibility_rect = Rect2(-1000, -1000, 2000, 2000)
+process_material = SubResource("ParticleProcessMaterial_pillars")
+
+[node name="EmberSparks" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 64
+texture = SubResource("GradientTexture2D_sparks")
+lifetime = 0.95
+one_shot = true
+explosiveness = 0.82
+randomness = 0.58
+visibility_rect = Rect2(-1000, -1000, 2000, 2000)
+process_material = SubResource("ParticleProcessMaterial_sparks")

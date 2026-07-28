@@ -40,6 +40,10 @@ func _run() -> void:
 			and float(feedback.call("get_attack_scale")) > 1.4,
 		"Stacked elemental Combo effects must add visible projectile layers and scale."
 	)
+	_expect(
+		int(feedback.call("get_combo_visual_tier")) == 2,
+		"Combo x6 must use the second distinct projectile and impact spectacle tier."
+	)
 	await create_timer(0.2).timeout
 	_expect(
 		(feedback.get_node("DamageLabel") as Label).visible
