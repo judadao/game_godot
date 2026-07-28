@@ -21,9 +21,11 @@ const ACTION_ICON_CONFIRM := preload("res://assets/ui/fantasy_icons_16x16/png/Se
 const NPC_PORTRAIT_ATLAS := preload("res://assets/town/rebuild_v2/town_npcs_atlas_v2.png")
 const DEFAULT_MERCHANT_PORTRAIT := preload("res://assets/ui/shop/generated/merchant_counter.png")
 
+@onready var mode_bar: HBoxContainer = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar
 @onready var buy_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/BuyButton
 @onready var sell_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/SellButton
 @onready var title_text: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title/TitleText
+@onready var header_icon: TextureRect = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title/HeaderIcon
 @onready var merchant_name: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/MerchantName
 @onready var merchant_role: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/SectionLabel
 @onready var merchant_identity: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/IdentityLabel
@@ -44,7 +46,7 @@ const DEFAULT_MERCHANT_PORTRAIT := preload("res://assets/ui/shop/generated/merch
 @onready var currency_amount: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/TotalRow/CurrencyAmount
 @onready var gold_balance: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ActionBar/GoldBalance
 @onready var confirm_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ActionBar/ConfirmButton
-@onready var cancel_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ActionBar/CancelButton
+@onready var cancel_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title/CancelButton
 @onready var row_container: VBoxContainer = get_node(ROW_CONTAINER_PATH)
 
 var items: Array[Dictionary] = []
@@ -492,10 +494,12 @@ func _apply_shop_identity(
 
 func _apply_context_controls() -> void:
 	var blueprint_shop := _is_blueprint_shop()
+	mode_bar.visible = not blueprint_shop
 	sell_button.visible = not blueprint_shop
 	sell_button.disabled = blueprint_shop
 	blueprint_icon.visible = blueprint_shop
 	blueprint_icon.texture = ITEM_ICON_MAP if blueprint_shop else ITEM_ICON_SUPPLY
+	header_icon.texture = ITEM_ICON_MAP if blueprint_shop else ITEM_ICON_SUPPLY
 	details_header.text = "BLUEPRINT DETAILS" if blueprint_shop else "ITEM DETAILS"
 	quantity_label.text = "Unique Blueprint" if blueprint_shop else "Quantity"
 	minus_button.tooltip_text = (

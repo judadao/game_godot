@@ -197,9 +197,9 @@ theme_override_styles/panel = SubResource("WindowStyle")
 
 [node name="WindowMargin" type="MarginContainer" parent="SafeMargin/CenterContainer/Window"]
 layout_mode = 2
-theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 14
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 14
 
 [node name="WindowLayout" type="VBoxContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin"]
@@ -207,7 +207,7 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="Header" type="PanelContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout"]
-custom_minimum_size = Vector2(0, 62)
+custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 theme_override_styles/panel = SubResource("HeaderStyle")
 
@@ -281,7 +281,7 @@ theme_override_font_sizes/font_size = 12
 text = "YARD KEEPER"
 
 [node name="PortraitFrame" type="PanelContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content/ShopkeeperPanel"]
-custom_minimum_size = Vector2(218, 250)
+custom_minimum_size = Vector2(218, 252)
 layout_mode = 2
 theme_override_styles/panel = SubResource("PortraitStyle")
 
@@ -308,7 +308,7 @@ horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="DialoguePanel" type="PanelContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content/ShopkeeperPanel"]
-custom_minimum_size = Vector2(0, 104)
+custom_minimum_size = Vector2(0, 112)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("DialogueStyle")
@@ -322,7 +322,7 @@ autowrap_mode = 2
 vertical_alignment = 1
 
 [node name="CatalogPanel" type="PanelContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content"]
-custom_minimum_size = Vector2(346, 0)
+custom_minimum_size = Vector2(270, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -417,7 +417,7 @@ text = "No offers in this category."
 horizontal_alignment = 1
 
 [node name="DetailPanel" type="PanelContainer" parent="SafeMargin/CenterContainer/Window/WindowMargin/WindowLayout/Content"]
-custom_minimum_size = Vector2(408, 0)
+custom_minimum_size = Vector2(460, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

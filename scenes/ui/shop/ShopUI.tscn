@@ -142,19 +142,23 @@ theme_override_constants/margin_bottom = 14
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Control" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=2094390937]
-custom_minimum_size = Vector2(0, 48)
+[node name="Title" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=2094390937]
+custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderIcon" type="TextureRect" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+texture = ExtResource("13_buy")
+expand_mode = 3
+stretch_mode = 5
 
 [node name="TitleText" type="Label" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title" unique_id=898097820]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.86, 0.48, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 26
 text = "TRADE COUNTER"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -213,7 +217,7 @@ theme_override_constants/separation = 12
 layout_mode = 2
 
 [node name="ItemListPanel" type="PanelContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" unique_id=857394039]
-custom_minimum_size = Vector2(366, 0)
+custom_minimum_size = Vector2(270, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -326,6 +330,7 @@ metadata/preview_price = 40
 metadata/preview_stock = 5
 
 [node name="DetailsPanel" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content" unique_id=2129227490 instance=ExtResource("10_shop_detail")]
+custom_minimum_size = Vector2(460, 0)
 layout_mode = 2
 
 [node name="ActionBar" type="HBoxContainer" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout" unique_id=215793521]
@@ -362,8 +367,9 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
 theme_override_styles/focus = SubResource("StyleBoxFlat_focus")
 text = "Confirm"
 
-[node name="CancelButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/ActionBar" unique_id=1882606986]
-custom_minimum_size = Vector2(132, 42)
+[node name="CancelButton" type="Button" parent="CenterContainer/ShopWindow/WindowMargin/WindowLayout/Title" unique_id=1882606986]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(104, 42)
 layout_mode = 2
 tooltip_text = "Close the shop"
 icon = ExtResource("17_close")

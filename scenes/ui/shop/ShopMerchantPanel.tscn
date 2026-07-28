@@ -50,7 +50,7 @@ text_overrun_behavior = 3
 tooltip_text = "Shop host"
 
 [node name="PortraitFrame" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(218, 180)
+custom_minimum_size = Vector2(218, 252)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_portrait")
 
@@ -61,7 +61,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="DialoguePanel" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(0, 102)
+custom_minimum_size = Vector2(0, 112)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_dialogue")
 

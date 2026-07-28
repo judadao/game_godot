@@ -36,7 +36,7 @@ const UI_LAYOUTS := [
 		"name": "ShopUI",
 		"path": "res://scenes/ui/shop/ShopUI.tscn",
 		"window": "ShopWindow",
-		"terms": ["BUY", "BLUEPRINT", "GOLD"],
+		"terms": ["BLUEPRINT", "GOLD"],
 		"minimum_icons": 4,
 	},
 ]
@@ -126,6 +126,7 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 		"%s window must preserve an 8px viewport margin at %s."
 		% [descriptor["name"], viewport_size]
 	)
+	_check_unified_building_frame(ui, String(descriptor["name"]), viewport_size)
 
 	var all_text := _visible_text(ui).to_upper()
 	for required_term in descriptor["terms"]:
@@ -219,9 +220,45 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 			ui.call("select_blacksmith_service", &"sales_table")
 			await process_frame
 			await _capture_viewport(viewport, "player_blacksmith_sales_table")
+		elif descriptor["name"] == "ShopUI":
+			ui.call("set_shop_context", &"equipment_blueprint_shop")
+			await process_frame
+			await _capture_viewport(viewport, "equipment_blueprint_shop")
 
 	viewport.queue_free()
 	await process_frame
+
+
+func _check_unified_building_frame(
+	ui: Control,
+	ui_name: String,
+	viewport_size: Vector2i
+) -> void:
+	var header_name := "Title" if ui_name == "ShopUI" else "Header"
+	var header := ui.find_child(header_name, true, false) as Control
+	var portrait := ui.find_child("PortraitFrame", true, false) as Control
+	var middle_name: String = {
+		"MaterialYardUI": "CatalogPanel",
+		"PlayerBlacksmithUI": "RecipePanel",
+		"TownHallUI": "AgendaPanel",
+		"ShopUI": "ItemListPanel",
+	}.get(ui_name, "")
+	var middle := ui.find_child(String(middle_name), true, false) as Control
+	_expect(
+		header != null and header.custom_minimum_size.y == 58.0,
+		"%s must use the shared 58px building header at %s."
+		% [ui_name, viewport_size]
+	)
+	_expect(
+		portrait != null and portrait.custom_minimum_size.y >= 250.0,
+		"%s must use the large Town Hall portrait format at %s."
+		% [ui_name, viewport_size]
+	)
+	_expect(
+		middle != null and middle.custom_minimum_size.x == 270.0,
+		"%s must use the shared 270px middle column at %s."
+		% [ui_name, viewport_size]
+	)
 
 
 func _capture_viewport(viewport: SubViewport, file_stem: String) -> void:
@@ -257,11 +294,23 @@ func _configure_ui(ui: Control, ui_name: String) -> bool:
 			"res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionHp_Small.png",
 			"res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
 		]
+		var blueprint_names := [
+			"Flame Imbue Blueprint",
+			"Frostburst Imbue Blueprint",
+			"Storm Charge Blueprint",
+			"Venom Edge Blueprint",
+			"Iron Sword Blueprint",
+			"Hunter Bow Blueprint",
+			"Leather Armor Blueprint",
+			"Vitality Charm Blueprint",
+			"Apprentice Staff Blueprint",
+			"Chain Armor Blueprint",
+		]
 		var items: Array[Dictionary] = []
 		for index in 10:
 			items.append({
 				"id": "fixture_%d" % index,
-				"name": "Sword Soul Item %d" % (index + 1),
+				"name": blueprint_names[index],
 				"description": "Readable transaction fixture with a useful item icon.",
 				"price": 25 + index,
 				"stock": 9,

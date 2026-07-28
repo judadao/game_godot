@@ -286,17 +286,17 @@ theme_override_styles/panel = SubResource("WindowStyle")
 
 [node name="WindowMargin" type="MarginContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow"]
 layout_mode = 2
-theme_override_constants/margin_left = 14
+theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
 
 [node name="WindowLayout" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="Header" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout"]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 theme_override_constants/separation = 10
 
@@ -459,7 +459,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 10
 
 [node name="ServiceRail" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent"]
-custom_minimum_size = Vector2(220, 0)
+custom_minimum_size = Vector2(218, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("RailStyle")
 
@@ -468,7 +468,7 @@ layout_mode = 2
 theme_override_constants/separation = 7
 
 [node name="PortraitFrame" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
-custom_minimum_size = Vector2(0, 188)
+custom_minimum_size = Vector2(0, 252)
 layout_mode = 2
 theme_override_styles/panel = SubResource("PortraitStyle")
 
@@ -476,7 +476,7 @@ theme_override_styles/panel = SubResource("PortraitStyle")
 layout_mode = 2
 
 [node name="ProtagonistPortrait" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout/PortraitFrame/PortraitCenter"]
-custom_minimum_size = Vector2(144, 180)
+custom_minimum_size = Vector2(196, 245)
 layout_mode = 2
 texture_filter = 1
 texture = SubResource("PlayerPortrait")
@@ -563,7 +563,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 10
 
 [node name="RecipePanel" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace"]
-custom_minimum_size = Vector2(310, 0)
+custom_minimum_size = Vector2(270, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("PanelStyle")
 

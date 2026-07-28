@@ -618,6 +618,13 @@ window 與 authored ScrollContainer；動態 equipment row 必須只放在既定
 `EquipmentList`。開啟後 focus 落在可用 action，`ui_cancel` 關閉並釋放 focus，
 重開不得重複 controls 或 signals。
 
+Town Hall、Material Yard、Player Blacksmith、Sword Soul Blueprint Shop 與
+Equipment Blueprint Shop 使用同一套功能建築大框架：`1040×640` window、
+`58px` header、`218px` 左側人物欄、至少 `250px` 高人物框與 `270px` 中間
+功能／catalog 欄；剩餘寬度由右側 detail/action 欄使用。Blueprint Shop 的
+buy-only mode 不顯示額外模式列，Close 固定於右上 header。各 screen 可依功能
+調整中欄內容，但不得另建較小 modal 或縮小人物層級。
+
 ## 14. Quest UI
 
 ### 14.1 Current
