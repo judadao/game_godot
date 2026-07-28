@@ -17,7 +17,7 @@ visible = false
 position = Vector2(640, 360)
 limit_left = 0
 limit_top = 0
-limit_right = 2600
+limit_right = 10560
 limit_bottom = 724
 editor_draw_limits = true
 

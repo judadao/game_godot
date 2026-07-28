@@ -576,35 +576,17 @@ Rest 每個 Run 只能成功使用一次，會把 health 與 mana 恢復到上�
 舊營火 merge/upgrade private method 與直接呼叫它們的測試已移除；所有卡牌成長
 只經由 `GrowthChoiceQueue` 與 `CardGrowthUI`。
 
-### 10.2 Wandering merchant
+### 10.2 Autumn survival route
 
-Wandering merchant 使用本次 Run 的 `gold_earned`，不是 Town persistent gold。現有 offer：
+秋林戰鬥 route 不放置固定商人、寶箱或捷徑開關。既有存檔中的
+`forest_gate` 相容旗標仍可讀取，但不再改變新 route 的出生點。
 
-| Offer | Cost |
-|---|---:|
-| Health restore | 25 run gold |
-| Mana restore | 20 run gold |
-| Ordinary card | 35 run gold |
-| Rare/combo card | 70 run gold |
-| Purge one removable card | 45 run gold |
+地板輪廓與平台組件由獨立 catalog 拼裝；每次進場 seed 不同，但所有 chunk 接縫
+保持連續，平台垂直階差受可通行限制約束。怪物從玩家視野外持續補入，遠離玩家的
+一般怪會回收到新視野外位置，避免舊怪占滿密度預算。
 
-Stock 存在 `RunState.temporary_buffs` 中，只對本次 Run 有效。
-Wandering merchant 位於程序戰鬥路線中段，body 不參與地形碰撞。
-
-### 10.3 Hidden cache
-
-`HiddenBranchCache` 目前給予：
-
-- 45 run gold；
-- 12 autumn wood。
-
-獎勵先保留在 Run，之後由 finish summary 套用。
-
-### 10.4 Shortcut
-
-已解鎖的既有 `forest_gate` 相容旗標會使用 battle route 的
-`ForestShortcutSpawn`，目前位於 route 尾段附近。ShortcutLever 保留為非阻擋
-互動物件，供新玩家取得該永久旗標。
+階段只依累積存活秒數推進，擊殺數與場上存活數不參與階段判斷。`density_cap`
+只用於效能與畫面密度控制；最終 Guardian 擊敗後才完成戰鬥。
 
 ## 11. Run 結算、Meta Progression 與存檔
 
@@ -798,8 +780,8 @@ func _on_survival_phase_time_changed(
 	cap: int
 ) -> void:
 	hud.set_objective(
-		"SURVIVAL PHASE %d" % phase,
-		"%ds   Enemies %d / %d" % [ceili(remaining), alive, cap]
+		"SURVIVE / PHASE %d" % phase,
+		"%ds   THREAT %d / %d" % [ceili(remaining), alive, cap]
 	)
 ```
 

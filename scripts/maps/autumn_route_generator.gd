@@ -1,17 +1,12 @@
 class_name AutumnRouteGenerator
 extends Node2D
 
+const CATALOG := preload("res://scripts/maps/autumn_route_catalog.gd")
 const CHUNK_WIDTH := AutumnRouteChunk.CHUNK_WIDTH
-const VARIANT_IDS: Array[String] = [
-	"flat",
-	"twin_ledges",
-	"high_bridge",
-	"stepping_stones",
-	"canopy_walk",
-	"crossing",
-	"upper_canopy",
-	"broken_crown",
-]
+const FLOOR_SEGMENT_WIDTH := AutumnRouteChunk.FLOOR_SEGMENT_WIDTH
+const BASE_FLOOR_TOP := 460.0
+const MIN_FLOOR_TOP := 390.0
+const MAX_FLOOR_TOP := 470.0
 const PANORAMA := preload(
 	"res://assets/environments/autumn_town_style/generated/autumn_forest_background.png"
 )
@@ -49,50 +44,77 @@ func regenerate(seed_value: int) -> void:
 	_manifest.clear()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
-	var rest_offset := rng.randi_range(0, 3)
-	var upper_chunk_index := rng.randi_range(5, chunk_count - 6)
-	var raised_streak := 0
+	var floor_order := CATALOG.FLOOR_PROFILE_ORDER.duplicate()
+	var platform_order := CATALOG.PLATFORM_ASSEMBLY_ORDER.duplicate()
+	_shuffle_strings(floor_order, rng)
+	_shuffle_strings(platform_order, rng)
+	var current_floor_top := BASE_FLOOR_TOP
+	var floor_offset := rng.randi_range(0, floor_order.size() - 1)
+	var platform_offset := rng.randi_range(0, platform_order.size() - 1)
 	for chunk_index in chunk_count:
-		var variant_id := "gateway"
-		if chunk_index > 0 and chunk_index < chunk_count - 1:
-			if chunk_index == upper_chunk_index:
-				variant_id = "upper_canopy"
-				raised_streak += 1
-			elif raised_streak >= 1 or chunk_index % 4 == rest_offset or rng.randf() < 0.24:
-				variant_id = "flat"
-				raised_streak = 0
-			else:
-				variant_id = VARIANT_IDS[rng.randi_range(0, VARIANT_IDS.size() - 1)]
-				raised_streak += 1
+		var gateway := chunk_index == 0 or chunk_index == chunk_count - 1
+		var floor_profile_id := (
+			"level"
+			if gateway
+			else _pick_floor_profile(
+				floor_order,
+				chunk_index + floor_offset,
+				current_floor_top
+			)
+		)
+		var floor_offsets := CATALOG.floor_profile(floor_profile_id)
+		var floor_segments := _build_floor_segments(
+			floor_offsets,
+			current_floor_top,
+			chunk_index,
+			rng
+		)
+		var floor_exit_y := float(floor_segments[-1]["top_y"])
+		var floor_range := _floor_range(floor_segments)
+		var assembly_id := "open"
+		if not gateway and chunk_index % 6 != 0:
+			assembly_id = platform_order[
+				(chunk_index - 1 + platform_offset) % platform_order.size()
+			]
+		var platforms := _build_platforms(
+			CATALOG.platform_assembly(assembly_id),
+			floor_segments,
+			rng
+		)
+		var layout := {
+			"floor_profile": floor_profile_id,
+			"floor_segments": floor_segments,
+			"platform_assembly": assembly_id,
+			"platforms": platforms,
+		}
 		var chunk := chunk_scene.instantiate() as Node2D
-		chunk.name = "RouteChunk%02d_%s" % [chunk_index, variant_id]
+		chunk.name = "RouteChunk%02d_%s_%s" % [
+			chunk_index,
+			floor_profile_id,
+			assembly_id,
+		]
 		chunk.position = Vector2(float(chunk_index) * CHUNK_WIDTH, 0)
 		add_child(chunk)
-		if chunk.has_method("configure"):
-			chunk.call("configure", variant_id, chunk_index, rng.randi())
+		chunk.call("configure_layout", layout, chunk_index)
 		var left := float(chunk_index) * CHUNK_WIDTH
 		_manifest.append({
 			"index": chunk_index,
-			"variant": variant_id,
+			"variant": assembly_id,
+			"floor_profile": floor_profile_id,
 			"left": left,
 			"right": left + CHUNK_WIDTH,
 			"continuous_floor": true,
-			"platform_signature": (
-				String(chunk.call("get_platform_signature"))
-				if chunk.has_method("get_platform_signature")
-				else ""
-			),
-			"platform_count": (
-				int(chunk.call("get_platform_count"))
-				if chunk.has_method("get_platform_count")
-				else 0
-			),
-			"minimum_platform_y": (
-				float(chunk.call("get_minimum_platform_y"))
-				if chunk.has_method("get_minimum_platform_y")
-				else 999.0
-			),
+			"floor_entry_y": current_floor_top,
+			"floor_exit_y": floor_exit_y,
+			"minimum_floor_y": floor_range.x,
+			"maximum_floor_y": floor_range.y,
+			"floor_segment_count": int(chunk.call("get_floor_segment_count")),
+			"floor_signature": String(chunk.call("get_floor_signature")),
+			"platform_signature": String(chunk.call("get_platform_signature")),
+			"platform_count": int(chunk.call("get_platform_count")),
+			"minimum_platform_y": float(chunk.call("get_minimum_platform_y")),
 		})
+		current_floor_top = floor_exit_y
 	_rebuild_backdrop()
 
 
@@ -104,8 +126,12 @@ func get_route_fingerprint() -> String:
 	var parts: Array[String] = []
 	for entry in _manifest:
 		parts.append(
-			"%s[%s]"
-			% [String(entry["variant"]), String(entry["platform_signature"])]
+			"%s[%s](%s)"
+			% [
+				String(entry["floor_profile"]),
+				String(entry["floor_signature"]),
+				String(entry["platform_signature"]),
+			]
 		)
 	return "|".join(parts)
 
@@ -118,11 +144,108 @@ func get_active_seed() -> int:
 	return _active_seed
 
 
+func get_floor_y_at(world_x: float) -> float:
+	if _manifest.is_empty():
+		return BASE_FLOOR_TOP
+	var chunk_index := clampi(floori(world_x / CHUNK_WIDTH), 0, _manifest.size() - 1)
+	var chunk := get_child(chunk_index) as Node
+	return float(chunk.call("get_floor_y_at", world_x - float(chunk_index) * CHUNK_WIDTH))
+
+
 func get_enemy_spawn_positions() -> Array[Vector2]:
 	var positions: Array[Vector2] = []
 	for chunk_index in range(2, chunk_count - 2):
-		positions.append(Vector2((float(chunk_index) + 0.5) * CHUNK_WIDTH, 452))
+		var x := (float(chunk_index) + 0.5) * CHUNK_WIDTH
+		positions.append(Vector2(x, get_floor_y_at(x) + 10.0))
 	return positions
+
+
+func _pick_floor_profile(
+	order: Array[String],
+	start_index: int,
+	current_floor_top: float
+) -> String:
+	for candidate_offset in order.size():
+		var profile_id := order[(start_index + candidate_offset) % order.size()]
+		var offsets := CATALOG.floor_profile(profile_id)
+		var profile_is_safe := true
+		for offset in offsets:
+			var segment_y := current_floor_top + offset
+			if segment_y < MIN_FLOOR_TOP or segment_y > MAX_FLOOR_TOP:
+				profile_is_safe = false
+				break
+		if profile_is_safe:
+			return profile_id
+	return "level"
+
+
+func _build_floor_segments(
+	offsets: PackedFloat32Array,
+	entry_y: float,
+	chunk_index: int,
+	rng: RandomNumberGenerator
+) -> Array[Dictionary]:
+	var segments: Array[Dictionary] = []
+	var material_seed := rng.randi_range(0, 1)
+	for segment_index in offsets.size():
+		segments.append({
+			"top_y": entry_y + offsets[segment_index],
+			"material": (
+				"stone"
+				if (chunk_index + segment_index + material_seed) % 5 == 0
+				else "earth"
+			),
+		})
+	return segments
+
+
+func _floor_range(floor_segments: Array[Dictionary]) -> Vector2:
+	var minimum_y := MAX_FLOOR_TOP
+	var maximum_y := MIN_FLOOR_TOP
+	for segment in floor_segments:
+		var top_y := float(segment["top_y"])
+		minimum_y = minf(minimum_y, top_y)
+		maximum_y = maxf(maximum_y, top_y)
+	return Vector2(minimum_y, maximum_y)
+
+
+func _build_platforms(
+	templates: Array[Dictionary],
+	floor_segments: Array[Dictionary],
+	rng: RandomNumberGenerator
+) -> Array[Dictionary]:
+	var platforms: Array[Dictionary] = []
+	var mirror := rng.randi_range(0, 1) == 1
+	for template in templates:
+		var x := float(template["x"])
+		if mirror:
+			x = CHUNK_WIDTH - x
+		x = clampf(x + rng.randf_range(-12.0, 12.0), 66.0, CHUNK_WIDTH - 66.0)
+		var floor_index := clampi(
+			floori(x / FLOOR_SEGMENT_WIDTH),
+			0,
+			floor_segments.size() - 1
+		)
+		var platform_top := (
+			float(floor_segments[floor_index]["top_y"])
+			- float(template["lift"])
+		)
+		platforms.append({
+			"position": Vector2(x, platform_top + 24.0 + rng.randf_range(-4.0, 4.0)),
+			"kind": String(template["kind"]),
+		})
+	platforms.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return (a["position"] as Vector2).x < (b["position"] as Vector2).x
+	)
+	return platforms
+
+
+func _shuffle_strings(values: Array[String], rng: RandomNumberGenerator) -> void:
+	for index in range(values.size() - 1, 0, -1):
+		var swap_index := rng.randi_range(0, index)
+		var temporary := values[index]
+		values[index] = values[swap_index]
+		values[swap_index] = temporary
 
 
 func _clear_generated_children() -> void:

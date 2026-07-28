@@ -15,17 +15,21 @@ func _run() -> void:
 		return
 	var director: Node = script.new()
 	var test_phases: Array[Dictionary] = [
-		{"duration": 0.2, "spawn_interval": 0.05, "alive_cap": 2, "pool": [&"sprout"]},
-		{"duration": 0.2, "spawn_interval": 0.05, "alive_cap": 4, "pool": [&"hopper"]},
-		{"duration": -1.0, "spawn_interval": 0.05, "alive_cap": 6, "pool": [&"sprout"]},
+		{"duration": 0.2, "spawn_interval": 0.05, "density_cap": 2, "pool": [&"sprout"]},
+		{"duration": 0.2, "spawn_interval": 0.05, "density_cap": 4, "pool": [&"hopper"]},
+		{"duration": -1.0, "spawn_interval": 0.05, "density_cap": 6, "pool": [&"sprout"]},
 	]
 	director.set("survival_phases", test_phases)
 	root.add_child(director)
 	_expect(bool(director.call("start_encounter")), "Survival encounter must start.")
-	_expect(int(director.call("get_current_alive_cap")) == 2, "Phase one must use its configured alive cap.")
+	_expect(int(director.call("get_current_density_cap")) == 2, "Phase one must use its configured density cap.")
 	director.call("advance_survival", 0.21)
 	_expect(int(director.call("get_wave_number")) == 2, "Elapsed phase time must advance without clearing every enemy.")
-	_expect(int(director.call("get_current_alive_cap")) == 4, "Later phases must raise the alive cap.")
+	_expect(
+		float(director.call("get_survival_elapsed")) >= 0.21,
+		"Director must expose elapsed survival time as the phase authority."
+	)
+	_expect(int(director.call("get_current_density_cap")) == 4, "Later phases must raise the density cap.")
 	director.call("advance_survival", 0.21)
 	_expect(int(director.call("get_wave_number")) == 3, "Final timed phase must enter the boss phase.")
 	_expect(int(director.call("get_guardian_spawn_count")) == 1, "Boss phase must spawn the guardian exactly once.")

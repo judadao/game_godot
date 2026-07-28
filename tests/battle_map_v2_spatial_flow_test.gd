@@ -2,13 +2,6 @@ extends SceneTree
 
 const BATTLE_MAP_PATH := "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn"
 const WORLD_BOTTOM := 540.0
-const ROUTE_ZONES: Array[String] = [
-	"GameplayZones/RouteHead",
-	"GameplayZones/FirstEncounter",
-	"GameplayZones/MidpointEncounter",
-	"GameplayZones/GuardianEncounter",
-	"GameplayZones/RouteTail",
-]
 
 var _failures := 0
 
@@ -22,26 +15,16 @@ func _run() -> void:
 	root.add_child(map)
 	await process_frame
 
-	var previous_x := -1.0
-	for zone_path in ROUTE_ZONES:
-		var zone := map.get_node_or_null(zone_path) as Node2D
-		_expect(zone != null, "Route must contain %s." % zone_path)
-		if zone != null:
-			_expect(zone.position.x > previous_x, "Route zones must progress left-to-right.")
-			previous_x = zone.position.x
-
 	var west := map.get_node_or_null("WestSafePortal") as Node2D
 	var spawn := map.get_node_or_null("PlayerSpawn") as Node2D
-	var shortcut := map.get_node_or_null("ForestShortcutSpawn") as Node2D
 	var east := map.get_node_or_null("EastSafePortal") as Node2D
 	_expect(
-		west != null and spawn != null and shortcut != null and east != null
+		west != null and spawn != null and east != null
 			and west.position.x < spawn.position.x
-			and spawn.position.x < shortcut.position.x
-			and shortcut.position.x < east.position.x,
+			and spawn.position.x < east.position.x,
 		"Battle landmarks must span the complete route in traversal order."
 	)
-	for world_path in ["WestSafePortal", "PlayerSpawn", "ForestShortcutSpawn", "EastSafePortal"]:
+	for world_path in ["WestSafePortal", "PlayerSpawn", "EastSafePortal"]:
 		var world_node := map.get_node_or_null(world_path) as Node2D
 		if world_node != null:
 			_expect(world_node.position.y <= WORLD_BOTTOM, "%s must stay above the HUD." % world_path)

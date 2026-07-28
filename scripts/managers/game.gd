@@ -331,7 +331,6 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 	load_card_hand()
 	_register_player(spawn_name)
 	_apply_transferred_player_state()
-	_apply_shortcut_spawn()
 	_apply_equipment_stats()
 	_wire_interactives()
 	_wire_encounter_directors()
@@ -738,7 +737,11 @@ func _on_run_progress_changed(remaining: int, total: int) -> void:
 func _on_survival_phase_time_changed(phase: int, remaining: float, alive: int, cap: int) -> void:
 	if hud != null and hud.has_method("set_objective"):
 		var time_text := "BOSS" if remaining < 0.0 else "%ds" % int(ceil(remaining))
-		hud.call("set_objective", "SURVIVAL PHASE %d" % phase, "%s   Enemies %d / %d" % [time_text, alive, cap])
+		hud.call(
+			"set_objective",
+			"SURVIVE / PHASE %d" % phase,
+			"%s   THREAT %d / %d" % [time_text, alive, cap]
+		)
 
 
 func _on_boss_stage_completed() -> void:
@@ -2916,18 +2919,6 @@ func _apply_transferred_player_state() -> void:
 	_update_hud_resources()
 
 
-func _apply_shortcut_spawn() -> void:
-	if (
-		player is Node2D
-		and current_map != null
-		and _current_map_matches(AUTUMN_FOREST_SCENE_PATH)
-		and bool(meta_state.shortcuts.get("forest_gate", false))
-	):
-		var shortcut_spawn := current_map.get_node_or_null("ForestShortcutSpawn") as Node2D
-		if shortcut_spawn != null:
-			(player as Node2D).global_position = shortcut_spawn.global_position
-
-
 func _connect_if_present(node: Node, signal_name: StringName, method_name: StringName) -> void:
 	if not node.has_signal(signal_name):
 		return
@@ -3674,10 +3665,6 @@ func _apply_equipment_stats() -> void:
 func _on_shop_requested(merchant: Node, shop_id: StringName, interactor: Node) -> void:
 	if interactor != null and interactor != player:
 		return
-	if shop_id == &"wandering_cards":
-		_open_wandering_card_merchant(merchant)
-		return
-
 	var ui_control := open_ui("ShopUI", shop_scene)
 	if ui_control == null:
 		return
@@ -3693,71 +3680,6 @@ func _on_shop_requested(merchant: Node, shop_id: StringName, interactor: Node) -
 	if ui_control.has_signal("confirmed"):
 		ui_control.connect("confirmed", _on_shop_transaction_confirmed.bind(ui_control, shop_id))
 	_refresh_shop_projection(ui_control, shop_id, "buy")
-
-
-func _open_wandering_card_merchant(merchant: Node) -> void:
-	if not run_state.active:
-		return
-	var ui_control := open_ui("WanderingCardMerchant", dialogue_scene, true)
-	if ui_control == null:
-		return
-	var display_name := String(merchant.get("display_name")) if merchant != null else "Wandering Cardwright"
-	ui_control.call("set_speaker_name", display_name)
-	ui_control.call("set_dialogue_text", "Supplies affect this expedition only. Run gold: %d" % run_state.gold_earned)
-	var choices: Array[Dictionary] = []
-	for offer in _build_wandering_stock():
-		var choice := offer.duplicate(true)
-		choice["text"] = "%s — %d gold" % [String(offer.get("name", "Offer")), int(offer.get("price", 0))]
-		choice["merchant_action"] = "purchase"
-		choices.append(choice)
-	choices.append({"text": "Leave", "merchant_action": "leave", "action": "close"})
-	ui_control.call("set_choices", choices)
-	ui_control.connect("choice_selected", _on_wandering_card_choice.bind(ui_control))
-
-
-func _on_wandering_card_choice(_index: int, _text: String, metadata: Dictionary, ui_control: Control) -> void:
-	if not is_instance_valid(ui_control):
-		return
-	match String(metadata.get("merchant_action", "")):
-		"purchase":
-			var success := _purchase_wandering_offer(metadata)
-			ui_control.call("set_dialogue_text", "Purchase complete. Run gold: %d" % run_state.gold_earned if success else "That purchase is not available.")
-			_refresh_card_hand()
-
-
-func _build_wandering_stock() -> Array[Dictionary]:
-	var saved: Variant = run_state.temporary_buffs.get("wandering_stock", [])
-	if saved is Array and not (saved as Array).is_empty():
-		return (saved as Array).duplicate(true)
-	var stock: Array[Dictionary] = [
-		{"kind": "health_potion", "name": "Health Potion (+40 HP)", "price": 25},
-		{"kind": "mana_potion", "name": "Mana Potion (+30 MP)", "price": 20},
-	]
-	run_state.temporary_buffs["wandering_stock"] = stock.duplicate(true)
-	return stock
-
-
-func _purchase_wandering_offer(offer: Dictionary) -> bool:
-	if not run_state.active or player == null:
-		return false
-	var kind := String(offer.get("kind", ""))
-	var prices := {"health_potion": 25, "mana_potion": 20}
-	if not prices.has(kind):
-		return false
-	var price := int(prices[kind])
-	if run_state.gold_earned < price:
-		return false
-	match kind:
-		"health_potion":
-			if int(player.get("health")) >= int(player.get("max_health")):
-				return false
-			player.call("restore_health", 40)
-		"mana_potion":
-			if int(player.get("mana")) >= int(player.get("max_mana")):
-				return false
-			player.call("restore_mana", 30)
-	run_state.gold_earned -= price
-	return true
 
 
 func _remove_card_instance(instance_id: String) -> bool:
@@ -3936,16 +3858,6 @@ func _on_chest_opened(_chest: Node, loot_table_id: StringName, interactor: Node)
 		_open_campfire_menu()
 		return
 	var message := "You found supplies from %s." % String(loot_table_id)
-	match loot_table_id:
-		&"forest_hidden_cache":
-			if run_state.active:
-				run_state.add_reward("gold", 45)
-				run_state.add_reward("autumn_wood", 12)
-			message = "Hidden cache found: +45 Gold and +12 Autumn Wood retained for this run."
-		&"forest_shortcut":
-			meta_state.shortcuts["forest_gate"] = true
-			save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
-			message = "Forest shortcut unlocked permanently."
 
 	var ui_control := open_ui("DialogueUI", dialogue_scene)
 	if ui_control == null:

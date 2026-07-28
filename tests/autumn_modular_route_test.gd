@@ -4,7 +4,8 @@ const BATTLE_MAP_PATH := "res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn
 const SAFE_CANONICAL_PATH := "res://scenes/maps/autumn_safe_zone.tscn"
 const LEGACY_WIDTH := 2600
 const MINIMUM_CHUNKS := 24
-const MINIMUM_VARIANTS := 4
+const MINIMUM_FLOOR_PROFILES := 5
+const MINIMUM_PLATFORM_VARIANTS := 6
 
 var _failures := 0
 
@@ -102,10 +103,13 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 		"Generated route must contain at least %d modules." % MINIMUM_CHUNKS
 	)
 	var variant_ids: Dictionary = {}
+	var floor_profiles: Dictionary = {}
+	var platform_variants: Dictionary = {}
 	var expected_left := 0.0
-	var flat_chunks := 0
-	var consecutive_raised := 0
-	var maximum_consecutive_raised := 0
+	var previous_floor_exit := -1.0
+	var platform_chunks := 0
+	var empty_platform_streak := 0
+	var maximum_empty_platform_streak := 0
 	var has_high_route := false
 	for entry_variant in manifest:
 		_expect(entry_variant is Dictionary, "Every route manifest entry must be structured.")
@@ -123,16 +127,42 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 			bool(entry.get("continuous_floor", false)),
 			"Every module must preserve a continuous ground route."
 		)
+		var floor_entry_y := float(entry.get("floor_entry_y", -1.0))
+		var floor_exit_y := float(entry.get("floor_exit_y", -1.0))
+		_expect(
+			int(entry.get("floor_segment_count", 0)) >= 4,
+			"Every module must assemble its floor from reusable terrain segments."
+		)
+		_expect(
+			not String(entry.get("floor_signature", "")).is_empty(),
+			"Every module must expose its generated floor signature."
+		)
+		_expect(
+			float(entry.get("minimum_floor_y", 0.0)) >= 390.0
+				and float(entry.get("maximum_floor_y", 999.0)) <= 470.0,
+			"Every floor segment must remain visible above the combat HUD."
+		)
+		if previous_floor_exit >= 0.0:
+			_expect(
+				is_equal_approx(floor_entry_y, previous_floor_exit),
+				"Adjacent floor modules must connect without a vertical seam."
+			)
+		previous_floor_exit = floor_exit_y
+		floor_profiles[String(entry.get("floor_profile", ""))] = true
+		platform_variants[String(entry.get("variant", ""))] = true
 		expected_left = right
 		var variant_id := String(entry.get("variant", ""))
 		variant_ids[variant_id] = true
 		var platform_count := int(entry.get("platform_count", -1))
 		if platform_count == 0:
-			flat_chunks += 1
-			consecutive_raised = 0
+			empty_platform_streak += 1
+			maximum_empty_platform_streak = maxi(
+				maximum_empty_platform_streak,
+				empty_platform_streak
+			)
 		else:
-			consecutive_raised += 1
-			maximum_consecutive_raised = maxi(maximum_consecutive_raised, consecutive_raised)
+			platform_chunks += 1
+			empty_platform_streak = 0
 		if float(entry.get("minimum_platform_y", 999.0)) <= 300.0:
 			has_high_route = true
 	_expect(
@@ -140,13 +170,22 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 		"Route manifest must cover the complete battle width."
 	)
 	_expect(
-		variant_ids.size() >= MINIMUM_VARIANTS,
-		"Generated route must use at least %d distinct module variants." % MINIMUM_VARIANTS
+		floor_profiles.size() >= MINIMUM_FLOOR_PROFILES,
+		"Generated route must use at least %d distinct floor profiles."
+		% MINIMUM_FLOOR_PROFILES
 	)
-	_expect(flat_chunks >= 6, "Generated route must include breathing-room chunks between platform clusters.")
 	_expect(
-		maximum_consecutive_raised <= 1,
-		"Generated route must not form a repetitive wall of raised platforms."
+		platform_variants.size() >= MINIMUM_PLATFORM_VARIANTS,
+		"Generated route must use at least %d distinct platform assemblies."
+		% MINIMUM_PLATFORM_VARIANTS
+	)
+	_expect(
+		platform_chunks >= 16,
+		"At least two thirds of the route must provide useful raised traversal."
+	)
+	_expect(
+		maximum_empty_platform_streak <= 2,
+		"Generated route must not leave large consecutive areas without platforms."
 	)
 	_expect(has_high_route, "Generated route must include at least one reachable upper-canopy sequence.")
 
@@ -171,9 +210,23 @@ func _assert_route_wide_spawning(map: Node) -> void:
 			"Route-wide enemy spawn must remain inside battle bounds."
 		)
 		_expect(
-			distance_from_player >= 340.0 and distance_from_player <= 650.0,
-			"Route-head enemies must keep safe distance instead of clamping onto the player."
+			distance_from_player >= 720.0 and distance_from_player <= 1040.0,
+			"Enemies must enter from outside the camera perimeter instead of appearing onscreen."
 		)
+	var recycled_enemy := enemies[0] as Node2D
+	recycled_enemy.global_position = player.global_position + Vector2(1800.0, 0.0)
+	director.advance_survival(0.51)
+	var recycled_distance := absf(
+		recycled_enemy.global_position.x - player.global_position.x
+	)
+	_expect(
+		recycled_distance >= 720.0 and recycled_distance <= 1040.0,
+		"Distant enemies must recycle to the offscreen perimeter so nearby pressure continues."
+	)
+	_expect(
+		bool(recycled_enemy.get_meta("persistent_pursuit", false)),
+		"Survival enemies must pursue the player beyond ordinary detection range."
+	)
 
 
 func _expect(condition: bool, message: String) -> void:

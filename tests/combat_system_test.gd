@@ -25,15 +25,35 @@ func _run() -> void:
 	var one_way_platform_count := 0
 	for chunk_index in route.get_child_count():
 		var chunk := route.get_child(chunk_index) as Node2D
-		var floor_collision := chunk.get_node("ContinuousFloorCollision/FloorShape") as CollisionShape2D
-		var floor_rectangle := floor_collision.shape as RectangleShape2D
-		var floor_left := chunk.position.x + floor_collision.position.x - floor_rectangle.size.x * 0.5
-		var floor_right := chunk.position.x + floor_collision.position.x + floor_rectangle.size.x * 0.5
-		_expect(
-			floor_left <= previous_floor_right + 1.0,
-			"Generated floor chunks must overlap instead of exposing a fall-through seam."
+		var modular_floor := chunk.get_node("ModularFloor")
+		var floor_bodies := modular_floor.find_children(
+			"FloorCollision*",
+			"StaticBody2D",
+			false,
+			false
 		)
-		previous_floor_right = floor_right
+		_expect(
+			floor_bodies.size() == 4,
+			"Every generated chunk must assemble four reusable floor collisions."
+		)
+		for floor_body in floor_bodies:
+			var floor_collision := floor_body.get_node("FloorShape") as CollisionShape2D
+			var floor_rectangle := floor_collision.shape as RectangleShape2D
+			var floor_left := (
+				chunk.position.x
+				+ floor_collision.position.x
+				- floor_rectangle.size.x * 0.5
+			)
+			var floor_right := (
+				chunk.position.x
+				+ floor_collision.position.x
+				+ floor_rectangle.size.x * 0.5
+			)
+			_expect(
+				floor_left <= previous_floor_right + 1.0,
+				"Generated floor segments must overlap instead of exposing a fall-through seam."
+			)
+			previous_floor_right = floor_right
 		for platform in chunk.get_node("OneWayPlatforms").get_children():
 			if not platform is StaticBody2D:
 				continue

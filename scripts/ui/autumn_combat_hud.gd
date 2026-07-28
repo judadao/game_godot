@@ -192,8 +192,8 @@ func set_objective(text: String, progress: String = "") -> void:
 	quest_progress.text = progress
 	quest_progress.visible = not progress.is_empty()
 	var normalized := text.strip_edges().to_upper()
-	if normalized.begins_with("SURVIVAL PHASE"):
-		_phase_label.text = normalized.replace("SURVIVAL ", "") + " / 3"
+	if normalized.begins_with("SURVIVE / PHASE"):
+		_phase_label.text = normalized.replace("SURVIVE / ", "") + " / 5"
 
 
 func set_active_statuses(_statuses: Array) -> void:

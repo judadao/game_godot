@@ -161,8 +161,9 @@ AutumnHUD（含內嵌 CardHandUI）至少驗證以下視窗尺寸：
 Autumn map 變更至少需執行 `autumn_safe_zone_contract_test.gd`、
 `autumn_modular_route_test.gd`、`battle_map_v2_scene_contract_test.gd`、
 `battle_map_v2_spatial_flow_test.gd` 與 `town_autumn_portal_flow_test.gd`。程序路線
-必須驗證同 seed 重現、不同 seed 變化、24 個以上 chunks、完整寬度覆蓋、連續地面、
-raised/flat 交錯、高層樹冠路線及兩端 portal 都回安全區。
+必須驗證同 seed 重現、不同 seed 變化、24 個以上 chunks、完整寬度覆蓋、四段式
+地板接縫、至少五種 floor profiles、至少六種 platform assemblies、平台密度、
+高層樹冠路線、視野外生怪及兩端 portal 都回安全區。
 
 Theme 修改需載入受影響 scene，確認 theme、theme variation、font、
 StyleBox 與所有互動狀態可解析；Town 功能建築與 Shop frame 共用

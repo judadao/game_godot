@@ -58,8 +58,8 @@ func _run() -> void:
 		for archetype_id in phase.get("pool", []) as Array:
 			unique_archetypes[String(archetype_id)] = true
 	_expect(
-		int(phases[0].get("alive_cap", 0)) >= 12
-			and int(phases[3].get("alive_cap", 0)) >= 40
+		int(phases[0].get("density_cap", 0)) >= 12
+			and int(phases[3].get("density_cap", 0)) >= 40
 			and int(phases[0].get("spawn_batch", 0)) >= 2,
 		"Survival phases must begin dense and grow toward forty simultaneous enemies."
 	)

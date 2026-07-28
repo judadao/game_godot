@@ -5,18 +5,9 @@ const SAFE_PATH := "res://scenes/maps/autumn_safe_zone.tscn"
 const REQUIRED_NODE_PATHS: Array[String] = [
 	"GeneratedBackdrop",
 	"GeneratedRoute",
-	"GameplayZones/RouteHead",
-	"GameplayZones/FirstEncounter",
-	"GameplayZones/MidpointEncounter",
-	"GameplayZones/GuardianEncounter",
-	"GameplayZones/RouteTail",
 	"PlayerSpawn",
-	"ForestShortcutSpawn",
 	"Player",
 	"AutumnRunDirector",
-	"HiddenBranchCache",
-	"WanderingCardMerchant",
-	"ShortcutLever",
 	"WorldBounds/LeftWall",
 	"WorldBounds/RightWall",
 	"WestSafePortal",
@@ -63,11 +54,21 @@ func _run() -> void:
 		if portal != null:
 			_expect(String(portal.get("target_scene_path")) == SAFE_PATH, "%s must return to the safe zone." % portal_path)
 			_expect(not bool(portal.get("locked")), "%s must always remain usable." % portal_path)
-	for interaction_path in ["HiddenBranchCache", "WanderingCardMerchant", "ShortcutLever"]:
-		var interaction := map.get_node_or_null(interaction_path) as CollisionObject2D
-		_expect(interaction != null, "%s must preserve its run interaction." % interaction_path)
-		if interaction != null:
-			_expect(interaction.collision_layer == 0, "%s must not block the continuous route." % interaction_path)
+	for retired_path in [
+		"GameplayZones",
+		"ForestShortcutSpawn",
+		"HiddenBranchCache",
+		"WanderingCardMerchant",
+		"ShortcutLever",
+	]:
+		_expect(
+			not map.has_node(retired_path),
+			"Regenerated battle map must not retain old-map node %s." % retired_path
+		)
+	_expect(
+		map.find_children("Dressing", "Node2D", true, false).is_empty(),
+		"Generated route must not reintroduce old fence, sign, or prop dressing."
+	)
 
 	map.queue_free()
 	await process_frame

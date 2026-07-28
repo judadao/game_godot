@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/chunks/AutumnRouteChunk.tscn" id="1_chunk"]
 [ext_resource type="Script" path="res://scripts/maps/autumn_route_generator.gd" id="2_generator"]
@@ -7,8 +7,6 @@
 [ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="5_portal"]
 [ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn" id="6_hud"]
 [ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnBattleMapV2EditorHelpers.tscn" id="7_helpers"]
-[ext_resource type="PackedScene" path="res://scenes/props/Chest.tscn" id="8_chest"]
-[ext_resource type="PackedScene" path="res://scenes/npc/Merchant.tscn" id="9_merchant"]
 
 [sub_resource type="RectangleShape2D" id="WallShape"]
 size = Vector2(32, 720)
@@ -31,33 +29,8 @@ chunk_scene = ExtResource("1_chunk")
 chunk_count = 24
 preview_seed = 20260728
 
-[node name="GameplayZones" type="Node2D" parent="."]
-
-[node name="RouteHead" type="Marker2D" parent="GameplayZones"]
-position = Vector2(300, 452)
-metadata/route_label = "WEST GATE / ENTRY"
-
-[node name="FirstEncounter" type="Marker2D" parent="GameplayZones"]
-position = Vector2(2640, 452)
-metadata/route_label = "ROAMING ENCOUNTER"
-
-[node name="MidpointEncounter" type="Marker2D" parent="GameplayZones"]
-position = Vector2(5280, 452)
-metadata/route_label = "SURVIVAL MIDPOINT"
-
-[node name="GuardianEncounter" type="Marker2D" parent="GameplayZones"]
-position = Vector2(7920, 452)
-metadata/route_label = "GUARDIAN APPROACH"
-
-[node name="RouteTail" type="Marker2D" parent="GameplayZones"]
-position = Vector2(10260, 452)
-metadata/route_label = "EAST GATE / RETURN"
-
 [node name="PlayerSpawn" type="Marker2D" parent="."]
 position = Vector2(300, 470)
-
-[node name="ForestShortcutSpawn" type="Marker2D" parent="."]
-position = Vector2(9240, 470)
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 position = Vector2(300, 470)
@@ -74,35 +47,6 @@ route_wide_encounter = true
 spawn_around_player = true
 spawn_route_left = 260.0
 spawn_route_right = 10300.0
-
-[node name="HiddenBranchCache" parent="." instance=ExtResource("8_chest")]
-position = Vector2(3300, 492)
-z_index = 24
-collision_layer = 0
-collision_mask = 0
-interaction_id = &"forest_hidden_cache"
-prompt_text = "Open hidden cache"
-loot_table_id = &"forest_hidden_cache"
-
-[node name="WanderingCardMerchant" parent="." instance=ExtResource("9_merchant")]
-position = Vector2(6600, 492)
-z_index = 24
-collision_layer = 0
-collision_mask = 0
-interaction_id = &"wandering_card_merchant"
-prompt_text = "Trade Cards"
-display_name = "Wandering Cardwright"
-dialogue_id = &"wandering_card_greeting"
-shop_id = &"wandering_cards"
-
-[node name="ShortcutLever" parent="." instance=ExtResource("8_chest")]
-position = Vector2(9000, 492)
-z_index = 24
-collision_layer = 0
-collision_mask = 0
-interaction_id = &"forest_shortcut"
-prompt_text = "Unlock forest shortcut"
-loot_table_id = &"forest_shortcut"
 
 [node name="WestSafePortal" parent="." instance=ExtResource("5_portal")]
 position = Vector2(150, 500)
@@ -146,9 +90,3 @@ shape = SubResource("WallShape")
 [editable path="EastSafePortal/InteractionArea"]
 [editable path="EditorHUDReference"]
 [editable path="EditorHUDReference/HUD"]
-[editable path="HiddenBranchCache"]
-[editable path="HiddenBranchCache/InteractionArea"]
-[editable path="WanderingCardMerchant"]
-[editable path="WanderingCardMerchant/InteractionArea"]
-[editable path="ShortcutLever"]
-[editable path="ShortcutLever/InteractionArea"]

@@ -2,6 +2,7 @@ extends Node2D
 
 const CAPTURE_PATH_ENV := "AUTUMN_HUD_CAPTURE_PATH"
 const CAPTURE_SIZE_ENV := "AUTUMN_HUD_CAPTURE_SIZE"
+const CAPTURE_ROUTE_X_ENV := "AUTUMN_ROUTE_CAPTURE_X"
 
 @onready var preview_camera: Camera2D = $PreviewCamera
 @onready var hud: AutumnCombatHUD = $HUDLayer/HUD
@@ -14,6 +15,12 @@ func _ready() -> void:
 	if gameplay_camera != null:
 		gameplay_camera.enabled = false
 	preview_camera.enabled = true
+	if OS.has_environment(CAPTURE_ROUTE_X_ENV):
+		preview_camera.position.x = clampf(
+			float(OS.get_environment(CAPTURE_ROUTE_X_ENV)),
+			640.0,
+			9920.0
+		)
 	_apply_preview_camera_scale()
 	if not get_viewport().size_changed.is_connected(_apply_preview_camera_scale):
 		get_viewport().size_changed.connect(_apply_preview_camera_scale)
@@ -27,7 +34,7 @@ func _ready() -> void:
 	hud.set_experience(0, 40)
 	hud.set_material_count(98)
 	hud.set_action_point_regen(0.8)
-	hud.set_objective("SURVIVAL PHASE 1", "36s   Enemies 7 / 8")
+	hud.set_objective("SURVIVE / PHASE 1", "36s   THREAT 7 / 14")
 	hud.set_active_statuses([
 		{"id": "iron_momentum", "name": "Iron Momentum", "icon": "◆", "remaining_seconds": 2.8},
 		{"id": "renewal", "name": "Verdant Renewal", "icon": "+", "remaining_seconds": 4.1},

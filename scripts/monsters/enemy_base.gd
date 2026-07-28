@@ -90,7 +90,7 @@ func _update_behavior() -> void:
 	if distance <= attack_range and _cooldown <= 0.0:
 		_begin_attack()
 		return
-	if distance > detection_range:
+	if distance > detection_range and not bool(get_meta("persistent_pursuit", false)):
 		velocity.x = 0.0
 		return
 
