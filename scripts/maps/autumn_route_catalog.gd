@@ -3,13 +3,15 @@ extends RefCounted
 
 const FLOOR_PROFILE_ORDER: Array[String] = [
 	"level",
-	"mound",
-	"soft_rise",
+	"grand_hill",
+	"grand_basin",
+	"high_plateau",
 	"rolling",
-	"basin",
-	"soft_fall",
-	"terrace_up",
-	"terrace_down",
+	"double_ridge",
+	"broken_steps",
+	"long_climb",
+	"long_descent",
+	"high_terrace",
 ]
 
 const PLATFORM_ASSEMBLY_ORDER: Array[String] = [
@@ -26,22 +28,56 @@ const PLATFORM_ASSEMBLY_ORDER: Array[String] = [
 
 static func floor_profile(profile_id: String) -> PackedFloat32Array:
 	match profile_id:
-		"mound":
-			return PackedFloat32Array([0.0, -20.0, -36.0, 0.0])
-		"soft_rise":
-			return PackedFloat32Array([0.0, -12.0, -24.0, -36.0])
+		"grand_hill":
+			return PackedFloat32Array([
+				0.0, -24.0, -48.0, -72.0, -96.0,
+				-96.0, -72.0, -48.0, -24.0, 0.0,
+			])
+		"grand_basin":
+			return PackedFloat32Array([
+				0.0, 12.0, 24.0, 36.0, 48.0,
+				48.0, 36.0, 24.0, 12.0, 0.0,
+			])
+		"high_plateau":
+			return PackedFloat32Array([
+				0.0, -20.0, -40.0, -64.0, -64.0,
+				-64.0, -64.0, -40.0, -20.0, 0.0,
+			])
 		"rolling":
-			return PackedFloat32Array([0.0, -18.0, 14.0, 0.0])
-		"basin":
-			return PackedFloat32Array([0.0, 18.0, 32.0, 0.0])
-		"soft_fall":
-			return PackedFloat32Array([0.0, 12.0, 24.0, 36.0])
-		"terrace_up":
-			return PackedFloat32Array([0.0, -24.0, -48.0, -48.0])
-		"terrace_down":
-			return PackedFloat32Array([0.0, 24.0, 48.0, 48.0])
+			return PackedFloat32Array([
+				0.0, -16.0, -32.0, -16.0, 0.0,
+				16.0, 32.0, 16.0, 0.0, 0.0,
+			])
+		"double_ridge":
+			return PackedFloat32Array([
+				0.0, -24.0, -48.0, -24.0, 0.0,
+				-24.0, -48.0, -24.0, 0.0, 0.0,
+			])
+		"broken_steps":
+			return PackedFloat32Array([
+				0.0, -16.0, -16.0, -32.0, -32.0,
+				-48.0, -48.0, -24.0, -24.0, 0.0,
+			])
+		"long_climb":
+			return PackedFloat32Array([
+				0.0, -12.0, -24.0, -36.0, -48.0,
+				-60.0, -72.0, -84.0, -96.0, -96.0,
+			])
+		"long_descent":
+			return PackedFloat32Array([
+				0.0, 12.0, 24.0, 36.0, 48.0,
+				60.0, 72.0, 84.0, 96.0, 96.0,
+			])
+		"high_terrace":
+			return PackedFloat32Array([
+				0.0, -16.0, -32.0, -48.0, -64.0,
+				-64.0, -64.0, -64.0, -64.0, -64.0,
+			])
 		_:
-			return PackedFloat32Array([0.0, 0.0, 0.0, 0.0])
+			return PackedFloat32Array([
+				0.0, 0.0, 0.0, 0.0, 0.0,
+				0.0, 0.0, 0.0, 0.0, 0.0,
+			])
 
 
 static func platform_assembly(assembly_id: String) -> Array[Dictionary]:

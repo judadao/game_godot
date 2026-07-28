@@ -6,6 +6,8 @@ const LEGACY_WIDTH := 2600
 const MINIMUM_CHUNKS := 24
 const MINIMUM_FLOOR_PROFILES := 5
 const MINIMUM_PLATFORM_VARIANTS := 6
+const MINIMUM_FLOOR_SEGMENTS := 8
+const MINIMUM_ROUTE_RELIEF := 96.0
 
 var _failures := 0
 
@@ -107,7 +109,10 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 	var platform_variants: Dictionary = {}
 	var expected_left := 0.0
 	var previous_floor_exit := -1.0
+	var route_minimum_floor_y := 999.0
+	var route_maximum_floor_y := 0.0
 	var platform_chunks := 0
+	var relief_chunks := 0
 	var empty_platform_streak := 0
 	var maximum_empty_platform_streak := 0
 	var has_high_route := false
@@ -130,17 +135,34 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 		var floor_entry_y := float(entry.get("floor_entry_y", -1.0))
 		var floor_exit_y := float(entry.get("floor_exit_y", -1.0))
 		_expect(
-			int(entry.get("floor_segment_count", 0)) >= 4,
-			"Every module must assemble its floor from reusable terrain segments."
+			int(entry.get("floor_segment_count", 0)) >= MINIMUM_FLOOR_SEGMENTS,
+			"Every module must assemble at least %d terrain segments for detailed relief."
+			% MINIMUM_FLOOR_SEGMENTS
 		)
 		_expect(
 			not String(entry.get("floor_signature", "")).is_empty(),
 			"Every module must expose its generated floor signature."
 		)
 		_expect(
-			float(entry.get("minimum_floor_y", 0.0)) >= 390.0
+			float(entry.get("minimum_floor_y", 0.0)) >= 360.0
 				and float(entry.get("maximum_floor_y", 999.0)) <= 470.0,
 			"Every floor segment must remain visible above the combat HUD."
+		)
+		route_minimum_floor_y = minf(
+			route_minimum_floor_y,
+			float(entry.get("minimum_floor_y", 999.0))
+		)
+		route_maximum_floor_y = maxf(
+			route_maximum_floor_y,
+			float(entry.get("maximum_floor_y", 0.0))
+		)
+		_expect(
+			float(entry.get("visual_fill_bottom", 0.0)) >= 620.0,
+			"Every terrain column must extend below the visible world without gaps."
+		)
+		_expect(
+			float(entry.get("maximum_floor_step", 999.0)) <= 24.0,
+			"Adjacent terrain columns must remain traversable without a blocking wall."
 		)
 		if previous_floor_exit >= 0.0:
 			_expect(
@@ -149,6 +171,11 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 			)
 		previous_floor_exit = floor_exit_y
 		floor_profiles[String(entry.get("floor_profile", ""))] = true
+		if (
+			float(entry.get("maximum_floor_y", 0.0))
+			- float(entry.get("minimum_floor_y", 0.0))
+		) >= 16.0:
+			relief_chunks += 1
 		platform_variants[String(entry.get("variant", ""))] = true
 		expected_left = right
 		var variant_id := String(entry.get("variant", ""))
@@ -184,10 +211,19 @@ func _assert_manifest(manifest: Array, map_width: int) -> void:
 		"At least two thirds of the route must provide useful raised traversal."
 	)
 	_expect(
+		relief_chunks >= manifest.size() - 2,
+		"Every interior route module must contribute a visible terrain silhouette."
+	)
+	_expect(
 		maximum_empty_platform_streak <= 2,
 		"Generated route must not leave large consecutive areas without platforms."
 	)
 	_expect(has_high_route, "Generated route must include at least one reachable upper-canopy sequence.")
+	_expect(
+		route_maximum_floor_y - route_minimum_floor_y >= MINIMUM_ROUTE_RELIEF,
+		"Generated floor must use at least %d pixels of vertical relief."
+		% int(MINIMUM_ROUTE_RELIEF)
+	)
 
 
 func _assert_route_wide_spawning(map: Node) -> void:

@@ -5,7 +5,7 @@ const CATALOG := preload("res://scripts/maps/autumn_route_catalog.gd")
 const CHUNK_WIDTH := AutumnRouteChunk.CHUNK_WIDTH
 const FLOOR_SEGMENT_WIDTH := AutumnRouteChunk.FLOOR_SEGMENT_WIDTH
 const BASE_FLOOR_TOP := 460.0
-const MIN_FLOOR_TOP := 390.0
+const MIN_FLOOR_TOP := 360.0
 const MAX_FLOOR_TOP := 470.0
 const PANORAMA := preload(
 	"res://assets/environments/autumn_town_style/generated/autumn_forest_background.png"
@@ -108,6 +108,8 @@ func regenerate(seed_value: int) -> void:
 			"floor_exit_y": floor_exit_y,
 			"minimum_floor_y": floor_range.x,
 			"maximum_floor_y": floor_range.y,
+			"maximum_floor_step": _maximum_floor_step(floor_segments),
+			"visual_fill_bottom": AutumnRouteChunk.FLOOR_FILL_BOTTOM,
 			"floor_segment_count": int(chunk.call("get_floor_segment_count")),
 			"floor_signature": String(chunk.call("get_floor_signature")),
 			"platform_signature": String(chunk.call("get_platform_signature")),
@@ -167,6 +169,8 @@ func _pick_floor_profile(
 ) -> String:
 	for candidate_offset in order.size():
 		var profile_id := order[(start_index + candidate_offset) % order.size()]
+		if profile_id == "level":
+			continue
 		var offsets := CATALOG.floor_profile(profile_id)
 		var profile_is_safe := true
 		for offset in offsets:
@@ -186,15 +190,12 @@ func _build_floor_segments(
 	rng: RandomNumberGenerator
 ) -> Array[Dictionary]:
 	var segments: Array[Dictionary] = []
-	var material_seed := rng.randi_range(0, 1)
+	var material_seed := rng.randi_range(0, 2)
 	for segment_index in offsets.size():
 		segments.append({
 			"top_y": entry_y + offsets[segment_index],
-			"material": (
-				"stone"
-				if (chunk_index + segment_index + material_seed) % 5 == 0
-				else "earth"
-			),
+			"material": "autumn_earth",
+			"material_variant": (chunk_index + material_seed) % 3,
 		})
 	return segments
 
@@ -207,6 +208,19 @@ func _floor_range(floor_segments: Array[Dictionary]) -> Vector2:
 		minimum_y = minf(minimum_y, top_y)
 		maximum_y = maxf(maximum_y, top_y)
 	return Vector2(minimum_y, maximum_y)
+
+
+func _maximum_floor_step(floor_segments: Array[Dictionary]) -> float:
+	var maximum_step := 0.0
+	for segment_index in range(1, floor_segments.size()):
+		maximum_step = maxf(
+			maximum_step,
+			absf(
+				float(floor_segments[segment_index]["top_y"])
+				- float(floor_segments[segment_index - 1]["top_y"])
+			)
+		)
+	return maximum_step
 
 
 func _build_platforms(

@@ -4,7 +4,9 @@
 
 [node name="AutumnRouteChunk" type="Node2D"]
 script = ExtResource("1_script")
-metadata/connection_left = Vector2(0, 500)
-metadata/connection_right = Vector2(440, 500)
-metadata/clearance_height = 128
+metadata/connection_left = Vector2(0, 460)
+metadata/connection_right = Vector2(440, 460)
+metadata/clearance_height = 160
 metadata/continuous_floor = true
+metadata/floor_segment_count = 10
+metadata/floor_fill_bottom = 720

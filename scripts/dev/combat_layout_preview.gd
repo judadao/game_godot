@@ -3,6 +3,7 @@ extends Node2D
 const CAPTURE_PATH_ENV := "AUTUMN_HUD_CAPTURE_PATH"
 const CAPTURE_SIZE_ENV := "AUTUMN_HUD_CAPTURE_SIZE"
 const CAPTURE_ROUTE_X_ENV := "AUTUMN_ROUTE_CAPTURE_X"
+const CAPTURE_ROUTE_SEED_ENV := "AUTUMN_ROUTE_CAPTURE_SEED"
 
 @onready var preview_camera: Camera2D = $PreviewCamera
 @onready var hud: AutumnCombatHUD = $HUDLayer/HUD
@@ -14,6 +15,9 @@ func _ready() -> void:
 	var gameplay_camera := get_node_or_null("AutumnBattleMapV2/Player/Camera2D") as Camera2D
 	if gameplay_camera != null:
 		gameplay_camera.enabled = false
+	var route := get_node_or_null("AutumnBattleMapV2/GeneratedRoute")
+	if route != null and OS.has_environment(CAPTURE_ROUTE_SEED_ENV):
+		route.call("regenerate", int(OS.get_environment(CAPTURE_ROUTE_SEED_ENV)))
 	preview_camera.enabled = true
 	if OS.has_environment(CAPTURE_ROUTE_X_ENV):
 		preview_camera.position.x = clampf(

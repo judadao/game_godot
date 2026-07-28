@@ -33,8 +33,18 @@ func _run() -> void:
 			false
 		)
 		_expect(
-			floor_bodies.size() == 4,
-			"Every generated chunk must assemble four reusable floor collisions."
+			floor_bodies.size() >= 8,
+			"Every generated chunk must assemble detailed reusable floor collisions."
+		)
+		_expect(
+			modular_floor.find_children("TerrainCap*", "Sprite2D", false, false).size()
+				== floor_bodies.size(),
+			"Every floor collision must have a seamless terrain cap."
+		)
+		_expect(
+			modular_floor.find_children("TerrainFill*", "Node2D", false, false).size()
+				== floor_bodies.size(),
+			"Every floor collision must have a vertical fill module."
 		)
 		for floor_body in floor_bodies:
 			var floor_collision := floor_body.get_node("FloorShape") as CollisionShape2D
