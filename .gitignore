@@ -4,6 +4,8 @@
 *.import
 
 # Repository-local test and review artifacts
+/.godot_test_appdata/
+/.godot_test_localappdata/
 /.codex_test_*/
 /.debug*/
 /.final_*/
