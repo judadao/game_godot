@@ -62,10 +62,12 @@ Generated combat presentation：
 - `assets/generated/vfx/parts/basic_attack_*_sheet_v2.png` 是可檢查、可替換的
   模組化部件素材；`basic_attack_*_sheet_v2.png` 與對應 mask 是 runtime 合成輸出。
   普通劍氣 runtime 不再依賴整張來源圖裁切。
-- `AutoAttackFeedback` 以三組八幀 sheet 交疊完成近身上挑弧、水平飛行切割波與
+- `AutoAttackFeedback` 以三組八幀 sheet 交疊完成近身水平月牙預備、水平飛行切割波與
   方向性命中楔形。中性普通攻擊不帶 Flame/Frost/Storm/Venom 層；火焰感只在對應
   火系 Combo infusion 後由元素 mask pass 加上。texture 本身不擁有 gameplay hitbox
   或 damage。
+- 普通劍氣 release、travel、impact 三段都必須維持水平月牙 silhouette；預備動作
+  不得退回直立上挑弧或火焰 plume。
 
 ### 1.2 術語
 

@@ -36,6 +36,7 @@ export_credentials.cfg
 
 # Temporary files and image-generation intermediates
 /tmp/
+assets/generated/vfx/source/
 *.tmp
 *.temp
 *.log

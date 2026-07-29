@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from typing import Callable
 
@@ -94,46 +95,139 @@ def _shard(
     _rotated_polygon(draw, points, fill)
 
 
+def _crescent_curve_points(
+    center_x: float,
+    center_y: float,
+    length: float,
+    height: float,
+    bend: float,
+    samples: int = 30,
+) -> list[tuple[float, float]]:
+    points: list[tuple[float, float]] = []
+    for index in range(samples + 1):
+        ratio = index / float(samples)
+        arc = math.sin(ratio * math.pi)
+        x = center_x - length * 0.48 + length * 0.96 * ratio
+        y = (
+            center_y
+            - height * bend * 0.42 * (arc ** 0.78)
+            + height * 0.13 * (ratio - 0.5)
+        )
+        points.append((x, y))
+    return points
+
+
+def _crescent_mask(
+    center_x: float,
+    center_y: float,
+    length: float,
+    height: float,
+    alpha: int,
+    bend: float,
+    thickness: float,
+    inner_bite: float,
+) -> Image.Image:
+    mask = Image.new("L", FRAME_SIZE, 0)
+    draw = ImageDraw.Draw(mask)
+    upper: list[tuple[float, float]] = []
+    lower: list[tuple[float, float]] = []
+    samples = 34
+    for index in range(samples + 1):
+        ratio = index / float(samples)
+        arc = math.sin(ratio * math.pi)
+        crest = arc ** 0.64
+        tail_open = min(1.0, ratio / 0.16)
+        nose_taper = max(0.0, 1.0 - max(0.0, ratio - 0.82) / 0.18)
+        envelope = tail_open * (0.22 + 0.78 * nose_taper)
+        x = center_x - length * 0.50 + length * ratio
+        centerline = center_y - height * bend * 0.16 * crest + height * 0.045 * (ratio - 0.5)
+        top_y = centerline - height * (0.06 + 0.58 * crest * thickness) * envelope
+        bottom_y = centerline + height * (0.05 + 0.22 * crest * thickness) * envelope
+        if index == samples:
+            top_y = center_y
+            bottom_y = center_y
+        upper.append((x, top_y))
+        lower.append((x, bottom_y))
+    draw.polygon([(round(x), round(y)) for x, y in upper + list(reversed(lower))], fill=alpha)
+
+    cut_upper: list[tuple[float, float]] = []
+    cut_lower: list[tuple[float, float]] = []
+    for index in range(24):
+        ratio = index / 23.0
+        arc = math.sin(ratio * math.pi)
+        x = center_x - length * 0.42 + length * 0.70 * ratio
+        y = (
+            center_y
+            - height * (bend * 0.08) * (arc ** 0.82)
+            + height * (0.11 + ratio * 0.055)
+        )
+        cut = height * (0.035 + (arc ** 0.78) * inner_bite)
+        cut_upper.append((x, y - cut * 0.82))
+        cut_lower.append((x, y + cut * 0.96))
+    draw.polygon(
+        [(round(x), round(y)) for x, y in cut_upper + list(reversed(cut_lower))],
+        fill=0,
+    )
+    return mask
+
+
+def _colored_mask(
+    mask: Image.Image,
+    fill: tuple[int, int, int, int],
+    blur: float = 0.0,
+) -> Image.Image:
+    alpha = mask
+    if blur > 0.0:
+        alpha = alpha.filter(ImageFilter.GaussianBlur(blur))
+    image = Image.new("RGBA", FRAME_SIZE, fill)
+    image.putalpha(alpha)
+    return image
+
+
 def _slash_core(
     center_x: float,
     center_y: float,
     length: float,
     height: float,
     alpha: int,
+    bend: float = 0.52,
 ) -> Image.Image:
-    image, draw = _layer()
-    nose = center_x + length * 0.48
-    tail = center_x - length * 0.48
-    body = [
-        (nose, center_y),
-        (center_x + length * 0.16, center_y - height * 0.24),
-        (center_x - length * 0.18, center_y - height * 0.33),
-        (tail, center_y - height * 0.10),
-        (tail + length * 0.08, center_y + height * 0.08),
-        (center_x - length * 0.10, center_y + height * 0.28),
-        (center_x + length * 0.20, center_y + height * 0.18),
+    image = _blank()
+    body_mask = _crescent_mask(
+        center_x,
+        center_y,
+        length,
+        height,
+        int(alpha * 0.58),
+        bend,
+        0.74,
+        0.31,
+    )
+    hot_mask = _crescent_mask(
+        center_x + length * 0.03,
+        center_y - height * 0.01,
+        length * 0.90,
+        height * 0.74,
+        alpha,
+        bend * 0.98,
+        0.43,
+        0.21,
+    )
+    image.alpha_composite(_colored_mask(body_mask, (58, 224, 255, 255), 0.45))
+    image.alpha_composite(_colored_mask(hot_mask, (242, 255, 255, 255), 0.18))
+    draw = ImageDraw.Draw(image, "RGBA")
+    centerline = _crescent_curve_points(center_x, center_y, length * 0.88, height * 0.86, bend)
+    upper_ridge = [
+        (x, y - height * (0.13 + math.sin(i / 30.0 * math.pi) * 0.22))
+        for i, (x, y) in enumerate(centerline)
     ]
-    _rotated_polygon(draw, body, (30, 168, 255, int(alpha * 0.46)))
-    highlight = [
-        (nose - length * 0.05, center_y - height * 0.02),
-        (center_x + length * 0.08, center_y - height * 0.11),
-        (center_x - length * 0.25, center_y - height * 0.08),
-        (tail + length * 0.18, center_y + height * 0.02),
-        (center_x - length * 0.16, center_y + height * 0.07),
-        (center_x + length * 0.20, center_y + height * 0.06),
-    ]
-    _rotated_polygon(draw, highlight, (235, 255, 255, alpha))
     _line(
         draw,
-        [
-            (tail + length * 0.12, center_y + height * 0.10),
-            (center_x + length * 0.14, center_y + height * 0.02),
-            (nose - length * 0.02, center_y - height * 0.03),
-        ],
+        upper_ridge[2:],
         (255, 255, 255, alpha),
-        max(2, round(height * 0.08)),
+        max(2, round(height * 0.052)),
     )
-    return image.filter(ImageFilter.GaussianBlur(0.25))
+    return image.filter(ImageFilter.GaussianBlur(0.18))
 
 
 def _crescent_edge(
@@ -145,21 +239,21 @@ def _crescent_edge(
     bend: float,
 ) -> Image.Image:
     image, draw = _layer()
-    top: list[tuple[float, float]] = []
-    bottom: list[tuple[float, float]] = []
-    import math
-
-    for index in range(18):
-        ratio = index / 17.0
-        x = center_x - length * 0.42 + length * 0.86 * ratio
-        arc = math.sin(ratio * math.pi)
-        y = center_y - height * (0.46 * arc + bend * (ratio - 0.5))
-        thickness = height * (0.045 + 0.12 * arc)
-        top.append((x, y - thickness))
-        bottom.append((x, y + thickness * 0.45))
-    _rotated_polygon(draw, top + list(reversed(bottom)), (140, 255, 190, int(alpha * 0.86)))
-    _line(draw, top[2:16], (246, 255, 220, alpha), max(2, round(height * 0.045)))
-    return image.filter(ImageFilter.GaussianBlur(0.35))
+    glow_mask = _crescent_mask(center_x, center_y, length, height, int(alpha * 0.72), bend, 0.86, 0.38)
+    image.alpha_composite(_colored_mask(glow_mask, (104, 255, 124, 255), 0.82))
+    draw = ImageDraw.Draw(image, "RGBA")
+    outer = []
+    for index, (x, y) in enumerate(_crescent_curve_points(center_x, center_y, length, height, bend)):
+        ratio = index / 30.0
+        outer.append((x, y - height * (0.14 + math.sin(ratio * math.pi) * 0.30)))
+    _line(draw, outer[1:], (226, 255, 156, alpha), max(2, round(height * 0.060)))
+    _line(
+        draw,
+        _crescent_curve_points(center_x + length * 0.03, center_y + height * 0.18, length * 0.68, height * 0.56, bend * 0.34)[1:24],
+        (128, 255, 104, int(alpha * 0.66)),
+        max(1, round(height * 0.032)),
+    )
+    return image.filter(ImageFilter.GaussianBlur(0.24))
 
 
 def _afterimage(
@@ -172,17 +266,25 @@ def _afterimage(
 ) -> Image.Image:
     image, draw = _layer()
     for index in range(count):
-        offset = index * 18.0
-        lane = (index - (count - 1) * 0.5) * height * 0.18
+        offset = index * 15.0
+        lane = (index - (count - 1) * 0.5) * height * 0.095
+        curve = 0.34 + float(index % 3) * 0.05
+        points = [
+            (x - offset, y + lane)
+            for x, y in _crescent_curve_points(
+                center_x - length * 0.11,
+                center_y + height * 0.10,
+                length * (0.58 - float(index) * 0.030),
+                height * (0.58 - float(index) * 0.018),
+                curve,
+                16,
+            )
+        ]
         _line(
             draw,
-            [
-                (center_x - length * 0.56 - offset, center_y + lane),
-                (center_x - length * 0.22 - offset * 0.45, center_y + lane * 0.6),
-                (center_x + length * 0.20 - offset * 0.12, center_y - lane * 0.15),
-            ],
+            points,
             (58, 210, 255, int(alpha * (0.36 - index * 0.05))),
-            max(1, round(height * (0.09 - index * 0.01))),
+            max(1, round(height * (0.070 - index * 0.008))),
         )
     return image.filter(ImageFilter.GaussianBlur(0.55))
 
@@ -196,15 +298,18 @@ def _shards(
     count: int,
 ) -> Image.Image:
     image, draw = _layer()
-    import math
 
     for index in range(count):
         seed = index * 1.618
         ratio = (index + 1) / (count + 1)
-        x = center_x - length * (0.55 + 0.22 * math.sin(seed)) + length * ratio * 0.45
+        x = center_x - length * (0.48 + 0.18 * math.sin(seed)) + length * ratio * 0.54
         side = -1.0 if index % 2 == 0 else 1.0
-        y = center_y + side * height * (0.22 + 0.48 * ((index * 37) % 100) / 100.0)
-        angle = -0.10 + side * (0.12 + 0.22 * math.sin(seed * 0.7))
+        y = (
+            center_y
+            - height * 0.16
+            + side * height * (0.14 + 0.30 * ((index * 37) % 100) / 100.0)
+        )
+        angle = -0.03 + side * (0.08 + 0.18 * math.sin(seed * 0.7))
         _shard(
             draw,
             (x, y),
@@ -218,19 +323,19 @@ def _shards(
 
 def _release_parts(frame_index: int) -> dict[str, Image.Image]:
     t = frame_index / (FRAME_COUNT - 1)
-    rise = max(0.16, 1.0 - abs(t - 0.50) / 0.50)
-    alpha = round(255 * max(0.0, rise) ** 0.72)
-    length = 72.0 + rise * 112.0
-    height = 34.0 + rise * 56.0
-    center_x = 138.0 + t * 28.0
-    center_y = 124.0 - rise * 30.0
-    fade = 1.0 - max(0.0, t - 0.62) / 0.38
+    rise = max(0.18, 1.0 - abs(t - 0.48) / 0.52)
+    alpha = round(255 * max(0.0, rise) ** 0.66)
+    length = 84.0 + rise * 128.0
+    height = 38.0 + rise * 70.0
+    center_x = 128.0 + t * 38.0
+    center_y = 113.0 - rise * 7.0
+    fade = 1.0 - max(0.0, t - 0.68) / 0.32
     alpha = max(22, round(alpha * max(0.12, fade)))
     return {
-        "afterimage": _afterimage(center_x - 10.0, center_y + 18.0, length, height, alpha, 3),
-        "core_blade": _slash_core(center_x, center_y, length, height, alpha),
-        "crescent_edge": _crescent_edge(center_x, center_y, length, height, alpha, 0.42),
-        "shards": _shards(center_x - 4.0, center_y + 6.0, length, height, alpha, 10),
+        "afterimage": _afterimage(center_x - 16.0, center_y + 10.0, length, height, alpha, 3),
+        "core_blade": _slash_core(center_x, center_y, length, height, alpha, 0.58),
+        "crescent_edge": _crescent_edge(center_x, center_y, length, height, alpha, 0.58),
+        "shards": _shards(center_x - 8.0, center_y + 3.0, length, height, alpha, 9),
     }
 
 
@@ -239,15 +344,15 @@ def _travel_parts(frame_index: int) -> dict[str, Image.Image]:
     ease = min(1.0, t * 1.25)
     fade = 1.0 - max(0.0, t - 0.64) / 0.36
     alpha = max(20, round(245 * max(0.10, fade)))
-    length = 96.0 + 142.0 * (1.0 - abs(ease - 0.45) * 0.45)
-    height = 32.0 + 34.0 * (1.0 - abs(ease - 0.45))
-    center_x = 116.0 + t * 88.0
-    center_y = 100.0 - 8.0 * (1.0 - abs(t - 0.5) * 2.0)
+    length = 132.0 + 118.0 * (1.0 - abs(ease - 0.48) * 0.28)
+    height = 54.0 + 54.0 * (1.0 - abs(ease - 0.48) * 0.42)
+    center_x = 112.0 + t * 82.0
+    center_y = 108.0 - 4.0 * (1.0 - abs(t - 0.5) * 2.0)
     return {
-        "afterimage": _afterimage(center_x - 22.0, center_y + 2.0, length, height, alpha, 4),
-        "core_blade": _slash_core(center_x, center_y, length, height, alpha),
-        "crescent_edge": _crescent_edge(center_x, center_y, length, height, alpha, 0.12),
-        "shards": _shards(center_x - 10.0, center_y, length, height, alpha, 14),
+        "afterimage": _afterimage(center_x - 28.0, center_y + 4.0, length, height, alpha, 4),
+        "core_blade": _slash_core(center_x, center_y, length, height, alpha, 0.50),
+        "crescent_edge": _crescent_edge(center_x, center_y, length, height, alpha, 0.50),
+        "shards": _shards(center_x - 12.0, center_y + 2.0, length, height, alpha, 12),
     }
 
 
@@ -256,37 +361,25 @@ def _impact_parts(frame_index: int) -> dict[str, Image.Image]:
     bloom = min(1.0, t * 1.45)
     fade = 1.0 - max(0.0, t - 0.56) / 0.44
     alpha = max(20, round(255 * max(0.10, fade)))
-    length = 128.0 + bloom * 112.0
-    height = 34.0 + bloom * 88.0
+    length = 154.0 + bloom * 96.0
+    height = 60.0 + bloom * 78.0
     center_x = 128.0 + bloom * 34.0
-    center_y = 112.0 - bloom * 22.0
+    center_y = 109.0 - bloom * 7.0
     image, draw = _layer()
-    nose = center_x + length * 0.52
-    tail = center_x - length * 0.28
-    _rotated_polygon(
-        draw,
-        [
-            (tail, center_y + height * 0.16),
-            (center_x + length * 0.12, center_y - height * 0.08),
-            (nose, center_y - height * 0.50),
-            (center_x + length * 0.30, center_y + height * 0.05),
-            (nose - length * 0.08, center_y + height * 0.28),
-            (center_x + length * 0.04, center_y + height * 0.20),
-        ],
-        (42, 178, 255, int(alpha * 0.42)),
-    )
+    wedge_mask = _crescent_mask(center_x + 8.0, center_y, length, height, int(alpha * 0.46), 0.46, 0.82, 0.30)
+    image.alpha_composite(_colored_mask(wedge_mask, (42, 178, 255, 255), 0.58))
     _line(
         draw,
-        [(tail, center_y + height * 0.08), (center_x + length * 0.24, center_y), (nose, center_y - height * 0.20)],
+        _crescent_curve_points(center_x + 8.0, center_y - height * 0.03, length * 0.90, height * 0.82, 0.46)[3:],
         (250, 255, 255, alpha),
-        max(2, round(height * 0.055)),
+        max(2, round(height * 0.052)),
     )
     impact_wedge = image.filter(ImageFilter.GaussianBlur(0.35))
     return {
         "impact_wedge": impact_wedge,
-        "core_blade": _slash_core(center_x - 12.0, center_y, length * 0.74, height * 0.70, alpha),
-        "crescent_edge": _crescent_edge(center_x - 16.0, center_y + height * 0.04, length * 0.72, height * 0.70, alpha, -0.22),
-        "shards": _shards(center_x + 4.0, center_y - 4.0, length * (0.8 + bloom * 0.3), height, alpha, 18),
+        "core_blade": _slash_core(center_x - 10.0, center_y, length * 0.82, height * 0.72, alpha, 0.46),
+        "crescent_edge": _crescent_edge(center_x - 8.0, center_y + height * 0.01, length * 0.84, height * 0.76, alpha, 0.46),
+        "shards": _shards(center_x + 4.0, center_y - 2.0, length * (0.80 + bloom * 0.22), height, alpha, 16),
     }
 
 

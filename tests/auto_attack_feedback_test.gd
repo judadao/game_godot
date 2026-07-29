@@ -38,6 +38,18 @@ func _run() -> void:
 			"Every generated Basic Attack stage sheet and mask must remain available: %s."
 				% asset_path
 		)
+	_expect(
+		_frame_alpha_aspect("res://assets/generated/vfx/basic_attack_release_sheet_v2.png", 3) >= 2.20,
+		"Basic Attack release anticipation must read as a horizontal crescent sword wave."
+	)
+	_expect(
+		_frame_alpha_aspect("res://assets/generated/vfx/basic_attack_travel_sheet_v2.png", 3) >= 2.70,
+		"Basic Attack travel silhouette must stay long and crescent-shaped, not a vertical flame plume."
+	)
+	_expect(
+		_frame_alpha_aspect("res://assets/generated/vfx/basic_attack_impact_sheet_v2.png", 4) >= 2.10,
+		"Basic Attack impact must preserve the crescent slash silhouette."
+	)
 	for asset_path in MODULAR_PART_ASSETS:
 		_expect(
 			FileAccess.file_exists(asset_path),
@@ -209,3 +221,26 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _frame_alpha_aspect(asset_path: String, frame_index: int) -> float:
+	var image := Image.load_from_file(ProjectSettings.globalize_path(asset_path))
+	if image == null or image.is_empty():
+		return 0.0
+	var frame_width := int(image.get_width() / 8)
+	var start_x := clampi(frame_index, 0, 7) * frame_width
+	var min_x := frame_width
+	var min_y := image.get_height()
+	var max_x := -1
+	var max_y := -1
+	for y in image.get_height():
+		for x in frame_width:
+			if image.get_pixel(start_x + x, y).a <= 0.03:
+				continue
+			min_x = mini(min_x, x)
+			min_y = mini(min_y, y)
+			max_x = maxi(max_x, x)
+			max_y = maxi(max_y, y)
+	if max_x < min_x or max_y < min_y:
+		return 0.0
+	return float(max_x - min_x + 1) / maxf(1.0, float(max_y - min_y + 1))
