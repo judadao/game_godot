@@ -34,6 +34,9 @@ const DIVINE_GIFT_MANAGER_SCRIPT := preload(
 const COMBO_FINISHER_CATALOG_SCRIPT := preload(
 	"res://scripts/systems/combo_finisher_catalog.gd"
 )
+const NAMED_SKILL_VFX_CATALOG_SCRIPT := preload(
+	"res://scripts/systems/named_skill_vfx_catalog.gd"
+)
 const BASE_AP_REGEN := 0.95
 const CARD_TEMPO_DURATION := 6.0
 const CARD_TEMPO_MAX_STACKS := 8
@@ -110,6 +113,9 @@ const COMBO_EVOLUTIONS := [
 @export var ice_ultimate_vfx_scene: PackedScene = preload(
 	"res://scenes/combat/vfx/IceUltimateVFX.tscn"
 )
+@export var named_skill_vfx_scene: PackedScene = preload(
+	"res://scenes/combat/vfx/NamedSkillVFX.tscn"
+)
 
 @onready var map_root: Node = $MapRoot
 @onready var hud_root: CanvasLayer = $HUDLayer
@@ -145,6 +151,7 @@ var skill_recipe_manager := SkillRecipeManager.new()
 var growth_choice_queue := GrowthChoiceQueue.new()
 var divine_gift_manager: RefCounted = DIVINE_GIFT_MANAGER_SCRIPT.new()
 var combo_finisher_catalog: RefCounted = COMBO_FINISHER_CATALOG_SCRIPT.new()
+var named_skill_vfx_catalog: RefCounted = NAMED_SKILL_VFX_CATALOG_SCRIPT.new()
 var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
 var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
 var forge_catalog: RefCounted = FORGE_CATALOG_SCRIPT.new()
@@ -165,6 +172,8 @@ var _run_auto_attack_card_id := DEFAULT_AUTO_ATTACK_CARD_ID
 var _auto_attack_remaining := 0.0
 var _resolving_auto_attack_effect := false
 var _auto_attack_hit_stop_generation := 0
+var _named_skill_hit_stop_generation := 0
+var _named_skill_vfx_catalog_loaded := false
 var _tracked_survival_boss: Node
 var wallet_gold: int = 250
 var player_inventory: Dictionary = {
@@ -183,6 +192,8 @@ func _ready() -> void:
 		push_error("Divine Gift catalog failed to load.")
 	if not bool(combo_finisher_catalog.call("load_catalog")):
 		push_error("Combo Finisher catalog failed to load.")
+	if not _ensure_named_skill_vfx_catalog():
+		push_error("Named skill VFX catalog failed to load.")
 	meta_state.apply_dict(save_service.load_meta(META_SAVE_PATH))
 	inventory_manager.call("set_progression_unlocks", {
 		"dash_upgrade_unlocked": meta_state.dash_upgrade_unlocked,
@@ -1960,6 +1971,7 @@ func _resolve_skill_triggers(triggered: Array[Dictionary]) -> void:
 			hud.call("show_skill_toast", skill_id, skill_name)
 		if skill_cast_presentation != null:
 			skill_cast_presentation.play_cast(skill_name, &"neutral", 0.8)
+		_spawn_named_skill_vfx(skill_id, 1.0)
 
 
 func _open_hand_overflow_discard(required_count: int) -> void:
@@ -2845,6 +2857,13 @@ func _redraw_current_hand() -> bool:
 func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 	if card.is_empty():
 		return {}
+	var card_id := String(card.get("id", ""))
+	var named_vfx_id := (
+		card_id
+		if _ensure_named_skill_vfx_catalog()
+			and bool(named_skill_vfx_catalog.call("has_profile", card_id))
+		else ""
+	)
 	var elements: Array[String] = []
 	var visual_profile := card.get("combo_visual_profile", {}) as Dictionary
 	for element_variant in visual_profile.get("elements", []) as Array:
@@ -2881,7 +2900,8 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 			and effect_kind == "infusion"
 			and not elements.is_empty()
 		),
-		"ultimate": is_elemental_skill,
+		"ultimate": is_elemental_skill and named_vfx_id.is_empty(),
+		"named_vfx_id": named_vfx_id,
 		"radius": maxf(96.0, float(effect.get("radius", 180.0))),
 		"intensity": clampi(
 			1
@@ -2931,6 +2951,11 @@ func _play_combat_vfx(card: Dictionary) -> void:
 		_show_compact_cast_label(cast_name, presentation_element)
 	if bool(profile.get("ultimate", false)):
 		_spawn_elemental_ultimate(profile)
+	elif not String(profile.get("named_vfx_id", "")).is_empty():
+		_spawn_named_skill_vfx(
+			String(profile.get("named_vfx_id", "")),
+			clampf(float(profile.get("intensity", 1)) * 0.24 + 0.84, 0.9, 1.45)
+		)
 
 
 func _show_compact_cast_label(cast_name: String, element: StringName) -> void:
@@ -3008,6 +3033,64 @@ func _spawn_elemental_ultimate(profile: Dictionary) -> void:
 			effect.call("play", player)
 		else:
 			effect.call("play")
+
+
+func _ensure_named_skill_vfx_catalog() -> bool:
+	if _named_skill_vfx_catalog_loaded:
+		return true
+	_named_skill_vfx_catalog_loaded = bool(named_skill_vfx_catalog.call("load_catalog"))
+	return _named_skill_vfx_catalog_loaded
+
+
+func _spawn_named_skill_vfx(profile_id: String, intensity: float = 1.0) -> void:
+	if (
+		profile_id.is_empty()
+		or current_map == null
+		or not player is Node2D
+		or named_skill_vfx_scene == null
+		or not _ensure_named_skill_vfx_catalog()
+		or not bool(named_skill_vfx_catalog.call("has_profile", profile_id))
+	):
+		return
+	var effect := named_skill_vfx_scene.instantiate() as Node2D
+	if effect == null:
+		return
+	current_map.add_child(effect)
+	effect.global_position = (player as Node2D).global_position
+	var direction := int(player.get("facing_direction"))
+	if direction == 0:
+		direction = 1
+	if effect.has_signal("impact"):
+		effect.connect("impact", _on_named_skill_vfx_impact)
+	effect.call_deferred("play", profile_id, direction, intensity, false)
+
+
+func _on_named_skill_vfx_impact(
+	_profile_id: String,
+	shake_strength: float,
+	hit_stop: float
+) -> void:
+	var camera := (
+		player.find_child("Camera2D", true, false) as Camera2D
+		if player != null
+		else null
+	)
+	var shake_scale := float(meta_state.settings.get("camera_shake", 0.65))
+	if camera != null and shake_scale > 0.0 and shake_strength > 0.0:
+		var strength := shake_strength * shake_scale
+		camera.offset = Vector2(strength, -strength * 0.48)
+		var shake_tween := camera.create_tween()
+		shake_tween.set_ignore_time_scale(true)
+		shake_tween.tween_property(camera, "offset", Vector2.ZERO, 0.12)
+	if hit_stop <= 0.0:
+		return
+	_named_skill_hit_stop_generation += 1
+	var generation := _named_skill_hit_stop_generation
+	var restore_scale := Engine.time_scale
+	Engine.time_scale = minf(Engine.time_scale, 0.045)
+	await get_tree().create_timer(hit_stop, true, false, true).timeout
+	if generation == _named_skill_hit_stop_generation and Engine.time_scale <= 0.046:
+		Engine.time_scale = restore_scale
 
 
 func _on_card_effect_resolved(_card_id: String, result: Dictionary) -> void:
@@ -3396,6 +3479,7 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"effect_summary": _card_effect_summary(recipe.get("effect", {}) as Dictionary),
 			"trigger_summary": _skill_trigger_summary(recipe),
 			"preview_kind": "passive_skill",
+			"named_vfx_id": skill_id,
 			"visual_family": _codex_visual_family_for_effect(
 				recipe.get("effect", {}) as Dictionary,
 				"passive"
@@ -3428,6 +3512,7 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"trigger_summary": "Formula: %s" % " > ".join(sequence_names),
 			"icon_path": icon_path,
 			"preview_kind": "finisher",
+			"named_vfx_id": String(recipe.get("id", "")),
 			"elements": elements,
 			"element": elements[0] if not elements.is_empty() else "",
 			"intensity": 5,

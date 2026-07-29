@@ -60,6 +60,22 @@ func _run() -> void:
 			"Flame Imbue must use compact player feedback without screen title or slow motion."
 		)
 
+		var thousand_blade := game.call(
+			"_resolve_combat_vfx_profile",
+			{
+				"id": "thousand_blade_kill",
+				"name": "千刃殺",
+				"type": "attack",
+				"effect": {"kind": "damage"},
+				"combo_visual_profile": {"finisher": true},
+			}
+		) as Dictionary
+		_expect(
+			String(thousand_blade.get("named_vfx_id", "")) == "thousand_blade_kill"
+				and not bool(thousand_blade.get("ultimate", false)),
+			"Named Finishers must route to their exact modular VFX instead of a generic elemental ultimate."
+		)
+
 	var instance := game_scene.instantiate()
 	_expect(
 		instance.has_node("SkillCastPresentation"),

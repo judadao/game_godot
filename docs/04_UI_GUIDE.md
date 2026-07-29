@@ -559,6 +559,9 @@ HUDLayer
   Finisher，stable id 不得重複
 - 治療、防禦、能量、移動、控制及強化技使用對應的 code-native `technique`
   preview；不能因為沒有火／冰專屬 VFX 而從列表消失
+- 四個已學命名觸發技與五個 Combo Finisher 必須投影精確 `named_vfx_id`；
+  Discovery Codex 與戰鬥共用 `NamedSkillVFX.tscn` 及同一份 profile，不能退回
+  泛用 technique 圈或放大版普通劍氣
 
 `inventory_ui.gd`：
 

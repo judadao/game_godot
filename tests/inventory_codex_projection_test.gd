@@ -50,6 +50,11 @@ func _run() -> void:
 			entries_by_id.has(skill_id),
 			"Every learned passive skill must appear in the discovery codex: %s." % skill_id
 		)
+		if entries_by_id.has(skill_id):
+			_expect(
+				String((entries_by_id[skill_id] as Dictionary).get("named_vfx_id", "")) == skill_id,
+				"Learned named skills must keep their exact preview identity: %s." % skill_id
+			)
 
 	_expect(
 		String((entries_by_id.get("ember_bolt", {}) as Dictionary).get("category", "")) == "attacks",

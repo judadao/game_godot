@@ -24,7 +24,11 @@ func _run() -> void:
 		{"id": "frost_bind", "name": "Glacial Dominion", "category": "skills", "preview_kind": "ice_ultimate", "radius": 460},
 		{"id": "guard", "name": "Iron Will", "category": "skills", "preview_kind": "technique", "visual_family": "defense"},
 		{"id": "healing_light", "name": "Healing Light", "category": "skills", "preview_kind": "technique", "visual_family": "healing"},
-		{"id": "inferno_cremation", "name": "Inferno Cremation", "category": "finishers", "preview_kind": "finisher", "elements": ["flame"]},
+		{
+			"id": "inferno_cremation", "name": "Inferno Cremation",
+			"category": "finishers", "preview_kind": "finisher",
+			"named_vfx_id": "inferno_cremation", "elements": ["flame"],
+		},
 	])
 	ui.call("set_mode", &"codex")
 	ui.call("open")
@@ -62,6 +66,10 @@ func _run() -> void:
 	_expect(preview.call("get_preview_kind") == "technique", "Defense and support skills must use the reusable technique preview.")
 	ui.call("select_codex_entry", "inferno_cremation")
 	_expect(preview.call("get_preview_kind") == "finisher", "Finishers must use the amplified sword-wave preview.")
+	_expect(
+		preview.call("get_active_named_vfx_id") == "inferno_cremation",
+		"Finisher previews must preserve the exact named VFX identity."
+	)
 	ui.queue_free()
 	viewport.queue_free()
 	await process_frame

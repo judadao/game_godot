@@ -6,6 +6,7 @@ const PLAYER_ATTACK_TEXTURE := preload("res://assets/curated/game_own/world/lega
 const AUTO_ATTACK_SCENE := preload("res://scenes/combat/AutoAttackFeedback.tscn")
 const FIRE_SCENE := preload("res://scenes/combat/vfx/FireUltimateVFX.tscn")
 const ICE_SCENE := preload("res://scenes/combat/vfx/IceUltimateVFX.tscn")
+const NAMED_SKILL_SCENE := preload("res://scenes/combat/vfx/NamedSkillVFX.tscn")
 const SWORD_WAVE_SPEED_MULTIPLIER := 1.10
 
 var _entry: Dictionary = {}
@@ -28,12 +29,16 @@ func _process(delta: float) -> void:
 	var kind := String(_entry.get("preview_kind", ""))
 	if (
 		is_instance_valid(_effect)
-		and kind in ["basic_attack", "attack_aura", "finisher"]
+		and (
+			kind in ["basic_attack", "attack_aura", "finisher", "passive_skill"]
+			or not String(_entry.get("named_vfx_id", "")).is_empty()
+		)
 		and not _effect_preview_size.is_equal_approx(size)
 	):
 		_spawn_effect()
 	if kind in [
-		"basic_attack", "attack_aura", "technique", "finisher", "fire_ultimate", "ice_ultimate",
+		"basic_attack", "attack_aura", "technique", "passive_skill", "finisher",
+		"fire_ultimate", "ice_ultimate",
 	]:
 		_replay_remaining -= delta
 		if _replay_remaining <= 0.0:
@@ -46,7 +51,7 @@ func show_entry(entry: Dictionary) -> void:
 	_replay_remaining = 0.0
 	_clear_effect()
 	if String(_entry.get("preview_kind", "")) in [
-		"basic_attack", "attack_aura", "technique", "finisher",
+		"basic_attack", "attack_aura", "technique", "passive_skill", "finisher",
 	]:
 		_spawn_effect()
 	queue_redraw()
@@ -74,6 +79,12 @@ func get_effect_origin_offset_from_preview_center() -> Vector2:
 	return _effect.position - _preview_effect_center()
 
 
+func get_active_named_vfx_id() -> String:
+	if not is_instance_valid(_effect) or not _effect.has_method("get_profile_id"):
+		return ""
+	return String(_effect.call("get_profile_id"))
+
+
 func get_effect_travel_offset() -> Vector2:
 	if not is_instance_valid(_effect) or not _effect.has_method("get_travel_offset"):
 		return Vector2.ZERO
@@ -95,7 +106,7 @@ func _draw() -> void:
 	draw_line(Vector2(0, floor_y), Vector2(size.x, floor_y), Color("#96743d"), 2.0)
 	var center := Vector2(size.x * 0.5, floor_y - 39.0)
 	var kind := String(_entry.get("preview_kind", ""))
-	if kind == "passive_skill":
+	if kind == "passive_skill" and String(_entry.get("named_vfx_id", "")).is_empty():
 		var pulse := 38.0 + sin(_phase * 2.4) * 8.0
 		draw_arc(center, pulse, 0, TAU, 40, Color(0.35, 0.85, 0.65, 0.62), 3.0)
 		draw_arc(center, pulse + 13.0, 0, TAU, 40, Color(0.92, 0.78, 0.34, 0.26), 2.0)
@@ -133,6 +144,10 @@ func _spawn_effect() -> void:
 		_replay_remaining = 0.0
 		return
 	var kind := String(_entry.get("preview_kind", ""))
+	var named_vfx_id := String(_entry.get("named_vfx_id", ""))
+	if not named_vfx_id.is_empty():
+		_spawn_named_skill(named_vfx_id)
+		return
 	if kind in ["basic_attack", "attack_aura", "finisher"]:
 		_spawn_sword_wave(kind)
 		return
@@ -185,6 +200,19 @@ func _spawn_sword_wave(kind: String) -> void:
 	)
 	_effect_preview_size = size
 	_replay_remaining = 1.0 if kind != "finisher" else 1.3
+
+
+func _spawn_named_skill(profile_id: String) -> void:
+	_effect = NAMED_SKILL_SCENE.instantiate() as Node2D
+	if _effect == null:
+		return
+	_effect.set("auto_free", false)
+	add_child(_effect)
+	_effect.z_index = 6
+	_effect.position = _preview_effect_center()
+	_effect.call("play", profile_id, 1, 1.0, true)
+	_effect_preview_size = size
+	_replay_remaining = 1.5
 
 
 func _preview_effect_center() -> Vector2:

@@ -189,7 +189,10 @@ resolved window StyleBox 與各功能替代狀態；其餘 scene-local override 
 Combat VFX 修改至少執行
 `skill_cast_presentation_test.gd`、`elemental_attack_aura_test.gd`、
 `fire_ultimate_vfx_test.gd`、`ice_ultimate_vfx_test.gd` 與
-`combat_vfx_integration_test.gd`。另以 graphical Forward+ renderer 確認火／冰
+`combat_vfx_integration_test.gd`。命名技能另執行
+`named_skill_vfx_test.gd`，驗證五個終結技、四個觸發技各自擁有唯一 atlas row、
+五個可拼裝部件、精確 ID 與 anticipation／impact／decay 時序。另以 graphical
+Forward+ renderer 確認火／冰
 粒子、環線、標題層級、世界中心與自動 cleanup；標題 layout 需跑六解析度矩陣。
 火系可用 `FIRE_ULTIMATE_VFX_CAPTURE_PATH` 擷取 impact crown，冰系可用
 `ICE_ULTIMATE_CAPTURE_PATH` 與 `ICE_ULTIMATE_CAPTURE_PROGRESS` 分階段擷取；

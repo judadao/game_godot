@@ -7,8 +7,10 @@ const VIEWPORT_SIZES := [
 
 var _failures := 0
 var _capture_path := ""
+var _capture_dir := ""
 var _capture_size := Vector2i.ZERO
 var _capture_entry_id := ""
+var _capture_delay := 0.12
 
 
 func _initialize() -> void:
@@ -17,8 +19,15 @@ func _initialize() -> void:
 
 func _run() -> void:
 	_capture_path = OS.get_environment("INVENTORY_CODEX_CAPTURE_PATH")
+	_capture_dir = OS.get_environment("INVENTORY_CODEX_CAPTURE_DIR")
 	_capture_size = _parse_size(OS.get_environment("INVENTORY_CODEX_CAPTURE_SIZE"))
 	_capture_entry_id = OS.get_environment("INVENTORY_CODEX_CAPTURE_ENTRY")
+	_capture_delay = maxf(
+		0.0,
+		float(OS.get_environment("INVENTORY_CODEX_CAPTURE_DELAY"))
+		if not OS.get_environment("INVENTORY_CODEX_CAPTURE_DELAY").is_empty()
+		else 0.12
+	)
 	for viewport_size in VIEWPORT_SIZES:
 		await _check_size(viewport_size)
 	if _failures == 0:
@@ -63,6 +72,7 @@ func _check_size(viewport_size: Vector2i) -> void:
 			"effect_summary": "+44 attack damage, 2.00x effect size",
 			"trigger_summary": "Formula: Flame Imbue > Flame Imbue > Flame Imbue",
 			"preview_kind": "finisher", "elements": ["flame"], "intensity": 5,
+			"named_vfx_id": "inferno_cremation",
 			"attack_size_multiplier": 2.0, "stack_count": 3,
 		},
 	])
@@ -70,7 +80,10 @@ func _check_size(viewport_size: Vector2i) -> void:
 	ui.call("open")
 	var selected_entry_id := (
 		_capture_entry_id
-		if viewport_size == _capture_size and not _capture_entry_id.is_empty()
+		if (
+			not _capture_entry_id.is_empty()
+			and (not _capture_dir.is_empty() or viewport_size == _capture_size)
+		)
 		else "ember_bolt"
 	)
 	ui.call("select_codex_entry", selected_entry_id)
@@ -88,22 +101,45 @@ func _check_size(viewport_size: Vector2i) -> void:
 		preview.call("get_effect_origin_offset_from_preview_center") as Vector2
 	)
 	var effect_travel_offset := preview.call("get_effect_travel_offset") as Vector2
-	_expect(
-		effect_origin_offset.is_equal_approx(Vector2(34.0, 7.0)),
-		"Basic Attack VFX origin must remain beside the preview character at %s; got %s."
-			% [viewport_size, effect_origin_offset]
-	)
-	_expect(
-		effect_travel_offset.x > 0.0 and absf(effect_travel_offset.y) <= 0.01,
-		"Basic Attack VFX must travel horizontally to the character's right at %s; got %s."
-			% [viewport_size, effect_travel_offset]
-	)
-	if viewport_size == _capture_size and not _capture_path.is_empty():
+	if selected_entry_id == "ember_bolt":
+		_expect(
+			effect_origin_offset.is_equal_approx(Vector2(34.0, 7.0)),
+			"Basic Attack VFX origin must remain beside the preview character at %s; got %s."
+				% [viewport_size, effect_origin_offset]
+		)
+		_expect(
+			effect_travel_offset.x > 0.0 and absf(effect_travel_offset.y) <= 0.01,
+			"Basic Attack VFX must travel horizontally to the character's right at %s; got %s."
+				% [viewport_size, effect_travel_offset]
+		)
+	elif selected_entry_id == "inferno_cremation":
+		_expect(
+			preview.call("get_active_named_vfx_id") == "inferno_cremation",
+			"Named Finisher preview must keep its exact identity at %s." % viewport_size
+		)
+		_expect(
+			int(preview.call("get_effect_node_count")) == 1
+				and not bool(preview.call("is_effect_top_level")),
+			"Named Finisher preview must stay singly owned and clipped at %s." % viewport_size
+		)
+	var capture_path := _capture_path
+	if not _capture_dir.is_empty():
+		capture_path = _capture_dir.path_join(
+			"%s_%dx%d.png" % [
+				selected_entry_id,
+				viewport_size.x,
+				viewport_size.y,
+			]
+		)
+	if (
+		not capture_path.is_empty()
+		and (not _capture_dir.is_empty() or viewport_size == _capture_size)
+	):
 		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
-		await create_timer(0.12).timeout
+		await create_timer(_capture_delay).timeout
 		await process_frame
 		await RenderingServer.frame_post_draw
-		_expect(viewport.get_texture().get_image().save_png(_capture_path) == OK, "Visual capture must save.")
+		_expect(viewport.get_texture().get_image().save_png(capture_path) == OK, "Visual capture must save.")
 	ui.queue_free()
 	viewport.queue_free()
 	await process_frame
