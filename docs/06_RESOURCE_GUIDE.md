@@ -57,7 +57,8 @@ pipeline描述成Current。
 
 Generated combat presentation：
 
-- `tools/build_basic_attack_vfx_sheets.py` 是普通劍氣素材 authority。它以
+- `tools/build_basic_attack_vfx_sheets.py` 是普通劍氣 deterministic silhouette
+  authority。它以
   code-native 2D parts 產生 core blade、crescent edge、afterimage、shards 與
   impact wedge，再拼成 weapon release、blade travel、directional impact 三組
   runtime sheet。
@@ -71,6 +72,12 @@ Generated combat presentation：
   silhouette mask；中性普通攻擊不帶 Flame/Frost/Storm/Venom 層，火焰感只在對應
   火系 Combo infusion 後由元素 mask pass 加上。texture 本身不擁有 gameplay hitbox
   或 damage。
+- `basic_attack_crescent_quality_atlas_v3.png` 是參考概念圖生成後保存的 4×2
+  additive parts atlas；`PremiumCrescentLayer` 將 outer glow、moon core、
+  inner current、flow ribbons、ground cut、spark debris、contact bloom 與
+  decay fragments 分開控制。三個流動歷史 sample 與三層非同步形變只強化材質與
+  動勢，不改變 v2 sheet 的前向空心月牙 authority。素材格位與 generation prompt
+  記錄於 `docs/art_concepts/basic_attack_crescent_v3.md`。
 - 普通劍氣 release、travel、impact 三段都必須維持朝移動方向凸出的 `)` 型空心月牙
   silhouette；「水平」指旅行方向，不是把月牙壓成扁長箭頭。預備動作不得退回
   直立上挑弧、火焰 plume 或有長尾的 projectile。

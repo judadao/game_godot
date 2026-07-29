@@ -1475,6 +1475,17 @@ Required semantic children:
 - Rule: callers configure reusable APIs; they do not duplicate particles or infer
   gameplay damage from visual geometry
 
+### PremiumCrescentLayer
+
+- Scene owner: `res://scenes/combat/AutoAttackFeedback.tscn`
+- Script: `res://scripts/combat/premium_crescent_layer.gd`
+- Texture: `res://assets/generated/vfx/basic_attack_crescent_quality_atlas_v3.png`
+- Status: Current — Used
+- Responsibility: 以 additive blend 拼裝普通劍氣的外光、白核、內流、三重拖尾、
+  貼地切線、碎光、接觸爆點與破碎消散
+- Boundary: 只讀 parent 提供的 travel／impact progress、方向、scale 與 Combo tier；
+  不擁有 hitbox、damage、target 或元素規則
+
 ### CardGrowthUI
 
 - Scene: `res://scenes/ui/cards/CardGrowthUI.tscn`

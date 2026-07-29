@@ -296,7 +296,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | Class | Source | Contract |
 |---|---|---|
 | `CardEffectRunner` | `scripts/combat/card_effect_runner.gd` | `cast()` 修改 caster/targets，emit `effect_resolved` |
-| `AutoAttackFeedback` | `scripts/combat/auto_attack_feedback.gd` | 投影自動普攻彈道、命中、實際傷害與 Combo power；不處理傷害規則 |
+| `AutoAttackFeedback` | `scripts/combat/auto_attack_feedback.gd`、`scripts/combat/premium_crescent_layer.gd` | 以 deterministic 月牙 sheet 加上分層 additive atlas 投影普攻蓄勢、流動劍氣、命中、實際傷害與 Combo power；不處理傷害規則 |
 | `SkillCastPresentation` | `scripts/combat/skill_cast_presentation.gd` | 以 unscaled Tween 顯示放大招式名稱並管理短暫施法慢動作 |
 | Elemental combat VFX | `scenes/combat/vfx/*.tscn` | 火／冰攻擊纏繞與範圍大招的純 presentation；不擁有傷害判定 |
 | `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json` | 依精確 Skill／Finisher id、唯一 archetype 與 beat pattern 組合五種圖集部件；`play()` 另接收 evolution level 與 buff stacks 以增加結構層，不擁有傷害判定 |

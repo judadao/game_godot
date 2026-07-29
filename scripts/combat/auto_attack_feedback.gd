@@ -53,9 +53,19 @@ const MODULAR_PARTS: Array[StringName] = [
 	&"shards",
 	&"impact_wedge",
 ]
+const PREMIUM_CRESCENT_LAYERS: Array[StringName] = [
+	&"outer_glow",
+	&"moon_core",
+	&"inner_current",
+	&"flow_ribbons",
+	&"ground_cut",
+	&"spark_debris",
+	&"contact_bloom",
+]
 
 @onready var damage_label: Label = $DamageLabel
 @onready var combo_label: Label = $ComboLabel
+@onready var premium_crescent_layer: Node2D = $PremiumCrescentLayer
 
 var _target_offset := Vector2.ZERO
 var _travel_progress := 0.0
@@ -110,6 +120,13 @@ func play(
 		1.0,
 		3.0
 	)
+	premium_crescent_layer.call(
+		"configure",
+		_target_offset,
+		_attack_size_multiplier,
+		_combo_tier
+	)
+	premium_crescent_layer.call("set_progress", _travel_progress, _impact_progress)
 	damage_label.text = "%s%d" % ["CRIT  -" if critical else "-", maxi(0, damage)]
 	damage_label.add_theme_color_override("font_color", _accent)
 	combo_label.text = (
@@ -229,7 +246,19 @@ func get_motion_profile() -> StringName:
 
 
 func get_animation_quality_profile() -> StringName:
-	return &"layered_slash_cascade"
+	return &"premium_flowing_crescent"
+
+
+func get_premium_crescent_layer_names() -> Array[StringName]:
+	return PREMIUM_CRESCENT_LAYERS.duplicate()
+
+
+func get_flow_ribbon_sample_count() -> int:
+	return int(premium_crescent_layer.call("get_flow_ribbon_sample_count"))
+
+
+func get_crescent_deformation_sample_count() -> int:
+	return int(premium_crescent_layer.call("get_deformation_sample_count"))
 
 
 func get_temporal_afterimage_sample_count() -> int:
@@ -1727,11 +1756,13 @@ func _set_travel_progress(value: float) -> void:
 	_travel_progress = clampf(value, 0.0, 1.0)
 	if _elemental_aura != null and is_instance_valid(_elemental_aura):
 		_elemental_aura.position = _travel_point(_travel_progress)
+	premium_crescent_layer.call("set_progress", _travel_progress, _impact_progress)
 	queue_redraw()
 
 
 func _set_impact_progress(value: float) -> void:
 	_impact_progress = clampf(value, 0.0, 1.0)
+	premium_crescent_layer.call("set_progress", _travel_progress, _impact_progress)
 	queue_redraw()
 
 

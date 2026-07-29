@@ -8,6 +8,7 @@ const GENERATED_STAGE_ASSETS := [
 	"res://assets/generated/vfx/basic_attack_travel_mask_v2.png",
 	"res://assets/generated/vfx/basic_attack_impact_sheet_v2.png",
 	"res://assets/generated/vfx/basic_attack_impact_mask_v2.png",
+	"res://assets/generated/vfx/basic_attack_crescent_quality_atlas_v3.png",
 ]
 const MODULAR_PART_ASSETS := [
 	"res://assets/generated/vfx/parts/basic_attack_release_core_blade_sheet_v2.png",
@@ -104,8 +105,28 @@ func _run() -> void:
 	)
 	_expect(
 		feedback.has_method("get_animation_quality_profile")
-			and feedback.call("get_animation_quality_profile") == &"layered_slash_cascade",
-		"Basic Attack animation must use the layered slash-cascade timing profile."
+			and feedback.call("get_animation_quality_profile") == &"premium_flowing_crescent",
+		"Basic Attack animation must use the premium flowing-crescent timing profile."
+	)
+	_expect(
+		feedback.has_method("get_premium_crescent_layer_names")
+			and (feedback.call("get_premium_crescent_layer_names") as Array) == [
+				&"outer_glow",
+				&"moon_core",
+				&"inner_current",
+				&"flow_ribbons",
+				&"ground_cut",
+				&"spark_debris",
+				&"contact_bloom",
+			],
+		"Premium sword waves must assemble distinct generated layers instead of moving one flat frame."
+	)
+	_expect(
+		feedback.has_method("get_flow_ribbon_sample_count")
+			and int(feedback.call("get_flow_ribbon_sample_count")) >= 3
+			and feedback.has_method("get_crescent_deformation_sample_count")
+			and int(feedback.call("get_crescent_deformation_sample_count")) >= 3,
+		"Premium crescent animation needs independently timed flow ribbons and silhouette deformation."
 	)
 	_expect(
 		feedback.has_method("get_temporal_afterimage_sample_count")

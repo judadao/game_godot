@@ -1079,6 +1079,8 @@ Shaman adds long-range support. Elite is never part of the random normal pool.
 中性普通攻擊的主形狀是朝前方凸出的白青色 `)` 型空心月牙劍氣，由 core blade、
 crescent edge、afterimage、shards 與 impact wedge 等 2D 部件拼裝。它在短蓄勢後
 瞬間掠過大部分射程，命中月牙放大並在 `impact_reached` 時同步短 hit stop 與鏡頭
-震動；不得表現成慢速飛彈。Flame/Frost/Storm/Venom 視覺層只能由對應 Combo
+震動；premium atlas 另以非同步 outer glow／moon core／inner current、三重 flow
+ribbon、地面切線與 contact bloom 補足流體分層，不能退化成整張貼圖平移。不得
+表現成慢速飛彈。Flame/Frost/Storm/Venom 視覺層只能由對應 Combo
 infusion 或 Finisher profile 額外套上，不得因 Basic Attack 卡片本身的元素 tag
 成為預設外觀。
