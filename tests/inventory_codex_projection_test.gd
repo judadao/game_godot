@@ -56,6 +56,10 @@ func _run() -> void:
 		"Equipped attack techniques must remain in Basic Attacks."
 	)
 	_expect(
+		((entries_by_id.get("ember_bolt", {}) as Dictionary).get("elements", []) as Array).is_empty(),
+		"Basic Attack codex previews must stay neutral until a Combo infusion adds an element."
+	)
+	_expect(
 		String((entries_by_id.get("battle_rhythm", {}) as Dictionary).get("category", "")) == "infusions",
 		"Non-elemental attack infusions must no longer disappear from the codex."
 	)

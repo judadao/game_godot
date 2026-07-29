@@ -2,9 +2,11 @@ class_name AutoAttackFeedback
 extends Node2D
 
 signal finished
+signal impact_reached(did_hit: bool, combo_tier: int)
 
-const TRAVEL_DURATION := 0.22
-const IMPACT_DURATION := 0.24
+const ANTICIPATION_DURATION := 0.042
+const TRAVEL_DURATION := 0.105
+const IMPACT_DURATION := 0.18
 const RELEASE_TEXTURE: Texture2D = preload(
 	"res://assets/generated/vfx/basic_attack_release_sheet_v2.png"
 )
@@ -25,8 +27,9 @@ const IMPACT_MASK: Texture2D = preload(
 )
 const GENERATED_FRAME_COUNT := 8
 const GENERATED_FRAME_SIZE := Vector2(320.0, 192.0)
-const RELEASE_TRAVEL_END := 0.42
-const TRAVEL_VISUAL_START := 0.12
+const LAUNCH_PROGRESS := 0.18
+const RELEASE_TRAVEL_END := 0.38
+const TRAVEL_VISUAL_START := LAUNCH_PROGRESS
 # Compatibility aliases for retired helpers kept below the active generated path.
 const ENERGY_BLADE_TEXTURE := TRAVEL_TEXTURE
 const ENERGY_BLADE_AURA_TEXTURE := TRAVEL_MASK
@@ -77,7 +80,10 @@ func play(
 	attack_size_multiplier: float = 1.0,
 	visual_profile: Dictionary = {}
 ) -> void:
-	global_position = origin
+	if bool(visual_profile.get("local_coordinates", false)):
+		position = origin
+	else:
+		global_position = origin
 	_target_offset = target_position - origin
 	_stack_count = maxi(0, int(visual_profile.get("stack_count", 0)))
 	_lifesteal = bool(visual_profile.get("lifesteal", false))
@@ -117,15 +123,27 @@ func play(
 	combo_label.visible = false
 	queue_redraw()
 
+	var speed_scale := maxf(0.80, projectile_speed_multiplier)
 	var travel_tween := create_tween()
 	travel_tween.tween_method(
 		_set_travel_progress,
 		0.0,
+		LAUNCH_PROGRESS,
+		ANTICIPATION_DURATION / speed_scale
+	)
+	travel_tween.tween_method(
+		_set_travel_progress,
+		LAUNCH_PROGRESS,
 		1.0,
-		TRAVEL_DURATION / maxf(0.25, projectile_speed_multiplier)
+		TRAVEL_DURATION / speed_scale
 	)
 	travel_tween.tween_callback(_show_impact)
-	travel_tween.tween_method(_set_impact_progress, 0.0, 1.0, IMPACT_DURATION)
+	travel_tween.tween_method(
+		_set_impact_progress,
+		0.0,
+		1.0,
+		IMPACT_DURATION
+	)
 	travel_tween.tween_callback(_finish)
 
 
@@ -194,11 +212,21 @@ func get_modular_part_names() -> Array[StringName]:
 
 
 func get_travel_duration() -> float:
-	return TRAVEL_DURATION
+	return ANTICIPATION_DURATION + TRAVEL_DURATION
 
 
 func get_impact_duration() -> float:
 	return IMPACT_DURATION
+
+
+func get_motion_profile() -> StringName:
+	return &"slash_shockwave"
+
+
+func get_travel_distance_ratio_at_progress(progress: float) -> float:
+	if _target_offset.is_zero_approx():
+		return 0.0
+	return _travel_point(progress).length() / _target_offset.length()
 
 
 func get_generated_stage_frame_count(stage: StringName) -> int:
@@ -252,7 +280,7 @@ func _draw() -> void:
 				_generated_frame(release_progress),
 				direction * 42.0,
 				direction,
-				Vector2(218.0, 131.0),
+				Vector2(180.0, 154.0),
 				1.0,
 				&"weapon_release"
 			)
@@ -269,18 +297,23 @@ func _draw() -> void:
 				_generated_frame(visual_progress),
 				tip,
 				direction,
-				Vector2(204.0, 122.0),
+				Vector2(182.0, 146.0),
 				1.0,
 				&"blade_travel"
 			)
 	if _impact_progress > 0.0:
+		var impact_snap := direction * lerpf(
+			-18.0,
+			6.0,
+			1.0 - pow(1.0 - minf(1.0, _impact_progress * 4.0), 3.0)
+		)
 		_draw_generated_stage(
 			IMPACT_TEXTURE,
 			IMPACT_MASK,
 			_generated_frame(_impact_progress),
-			_target_offset,
+			_target_offset + impact_snap,
 			direction,
-			Vector2(268.0, 161.0),
+			Vector2(252.0, 198.0),
 			1.0,
 			&"directional_impact"
 		)
@@ -374,8 +407,15 @@ func _draw_combo_impact_layers(alpha: float, radius: float) -> void:
 
 
 func _travel_point(progress: float) -> Vector2:
-	var accelerated_progress := progress * progress
-	return Vector2.ZERO.lerp(_target_offset, accelerated_progress)
+	if progress <= LAUNCH_PROGRESS:
+		return Vector2.ZERO
+	var travel_progress := clampf(
+		(progress - LAUNCH_PROGRESS) / (1.0 - LAUNCH_PROGRESS),
+		0.0,
+		1.0
+	)
+	var shockwave_progress := 1.0 - pow(1.0 - travel_progress, 4.0)
+	return _target_offset * shockwave_progress
 
 
 func _generated_frame(progress: float) -> int:
@@ -1445,6 +1485,7 @@ func _set_impact_progress(value: float) -> void:
 func _show_impact() -> void:
 	if _elemental_aura != null and is_instance_valid(_elemental_aura):
 		_elemental_aura.position = _target_offset
+	impact_reached.emit(_did_hit, _combo_tier)
 	damage_label.visible = _did_hit
 	combo_label.visible = _did_hit
 	if not _did_hit:

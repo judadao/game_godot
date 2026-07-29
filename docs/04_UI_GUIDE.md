@@ -550,6 +550,11 @@ HUDLayer
 - 可篩選、可捲動的 item/discovery lists
 - Codex 左側 basic attacks／skills／infusions／finishers 列表、右上角色與 production VFX
   預覽、右下效果／觸發說明
+- `InventoryCodexPreview` 等待 Container 提供有效尺寸後才生成 production VFX；
+  劍氣使用 preview-local 起點／終點，resize 時重建，不能混入 viewport stretch
+  座標或逃出 `clip_contents`
+- Basic Attack 預覽維持白青中性月牙；卡片本身的 fire／ice tag 不等同已啟用
+  Combo infusion，只有 infusion／Finisher preview 能傳入元素層
 - discovery projection 包含每張已解鎖 card、每個已學 passive Skill 與每個已解鎖
   Finisher，stable id 不得重複
 - 治療、防禦、能量、移動、控制及強化技使用對應的 code-native `technique`

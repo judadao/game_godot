@@ -27,6 +27,9 @@ func _run() -> void:
 		{"id": "inferno_cremation", "name": "Inferno Cremation", "category": "finishers", "preview_kind": "finisher", "elements": ["flame"]},
 	])
 	ui.call("set_mode", &"codex")
+	ui.call("open")
+	await process_frame
+	await process_frame
 	ui.call("select_codex_entry", "flame_imbue")
 	await process_frame
 	_expect(ui.call("get_mode") == &"codex", "Codex mode must be selectable.")
@@ -41,6 +44,16 @@ func _run() -> void:
 	)
 	ui.call("select_codex_entry", "ember_bolt")
 	_expect(preview.call("get_preview_kind") == "basic_attack", "Basic attacks must use the directional strike preview.")
+	_expect(
+		float(preview.call("get_sword_wave_speed_multiplier")) >= 1.0,
+		"Codex Basic Attack previews must retain the slash-shockwave speed."
+	)
+	_expect(
+		(preview.call("get_effect_origin_offset_from_preview_center") as Vector2).is_equal_approx(
+			Vector2(34.0, 7.0)
+		),
+		"Codex sword waves must launch beside the character in preview-local coordinates at every viewport stretch."
+	)
 	_expect(
 		not bool(preview.call("is_effect_top_level")),
 		"Basic Attack preview must not escape the codex panel as a top-level world effect."

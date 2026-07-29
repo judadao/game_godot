@@ -35,6 +35,15 @@ func _check_size(viewport_size: Vector2i) -> void:
 	await process_frame
 	ui.call("set_codex_entries", [
 		{
+			"id": "ember_bolt", "name": "Ember Bolt", "category": "attacks",
+			"kind_label": "BASIC ATTACK",
+			"description": "Deal 16 damage and apply burn.",
+			"effect_summary": "16 damage, 2 burn damage, 260 attack range",
+			"trigger_summary": "Fires automatically toward enemies in front of the player.",
+			"preview_kind": "basic_attack", "elements": [],
+			"icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
+		},
+		{
 			"id": "flame_imbue", "name": "Flame Imbue", "category": "infusions",
 			"kind_label": "FLAME ATTACK INFUSION",
 			"description": "Wrap every weapon strike in fire and inflict Burn.",
@@ -59,8 +68,13 @@ func _check_size(viewport_size: Vector2i) -> void:
 	])
 	ui.call("set_mode", &"codex")
 	ui.call("open")
-	if viewport_size == _capture_size and not _capture_entry_id.is_empty():
-		ui.call("select_codex_entry", _capture_entry_id)
+	var selected_entry_id := (
+		_capture_entry_id
+		if viewport_size == _capture_size and not _capture_entry_id.is_empty()
+		else "ember_bolt"
+	)
+	ui.call("select_codex_entry", selected_entry_id)
+	await process_frame
 	await process_frame
 	var panel := ui.get_node("Center/MainPanel") as Control
 	var browser := panel.get_node("Margin/Layout/Pages/CodexPage/Browser") as Control
@@ -70,6 +84,20 @@ func _check_size(viewport_size: Vector2i) -> void:
 	_expect(screen.encloses(_rect(panel)), "Panel must remain on-screen at %s." % viewport_size)
 	_expect(not _rect(browser).intersects(_rect(preview)), "Discovery list must not overlap preview at %s." % viewport_size)
 	_expect(_rect(preview).end.y <= _rect(info).position.y, "Preview must remain above explanation at %s." % viewport_size)
+	var effect_origin_offset := (
+		preview.call("get_effect_origin_offset_from_preview_center") as Vector2
+	)
+	var effect_travel_offset := preview.call("get_effect_travel_offset") as Vector2
+	_expect(
+		effect_origin_offset.is_equal_approx(Vector2(34.0, 7.0)),
+		"Basic Attack VFX origin must remain beside the preview character at %s; got %s."
+			% [viewport_size, effect_origin_offset]
+	)
+	_expect(
+		effect_travel_offset.x > 0.0 and absf(effect_travel_offset.y) <= 0.01,
+		"Basic Attack VFX must travel horizontally to the character's right at %s; got %s."
+			% [viewport_size, effect_travel_offset]
+	)
 	if viewport_size == _capture_size and not _capture_path.is_empty():
 		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 		await create_timer(0.12).timeout

@@ -39,16 +39,25 @@ func _run() -> void:
 				% asset_path
 		)
 	_expect(
-		_frame_alpha_aspect("res://assets/generated/vfx/basic_attack_release_sheet_v2.png", 3) >= 2.20,
-		"Basic Attack release anticipation must read as a horizontal crescent sword wave."
+		_frame_reads_as_forward_crescent(
+			"res://assets/generated/vfx/parts/basic_attack_release_core_blade_sheet_v2.png",
+			3
+		),
+		"Basic Attack release anticipation must open as a forward-facing crescent."
 	)
 	_expect(
-		_frame_alpha_aspect("res://assets/generated/vfx/basic_attack_travel_sheet_v2.png", 3) >= 2.70,
-		"Basic Attack travel silhouette must stay long and crescent-shaped, not a vertical flame plume."
+		_frame_reads_as_forward_crescent(
+			"res://assets/generated/vfx/parts/basic_attack_travel_core_blade_sheet_v2.png",
+			3
+		),
+		"Basic Attack travel must preserve a hollow moon-crescent silhouette instead of an arrow or flame tail."
 	)
 	_expect(
-		_frame_alpha_aspect("res://assets/generated/vfx/basic_attack_impact_sheet_v2.png", 4) >= 2.10,
-		"Basic Attack impact must preserve the crescent slash silhouette."
+		_frame_reads_as_forward_crescent(
+			"res://assets/generated/vfx/parts/basic_attack_impact_core_blade_sheet_v2.png",
+			4
+		),
+		"Basic Attack impact must bloom as the same forward-facing crescent."
 	)
 	for asset_path in MODULAR_PART_ASSETS:
 		_expect(
@@ -59,6 +68,14 @@ func _run() -> void:
 	var feedback := FEEDBACK_SCENE.instantiate()
 	root.add_child(feedback)
 	await process_frame
+	var impact_events: Array[Dictionary] = []
+	feedback.impact_reached.connect(
+		func(did_hit: bool, combo_tier: int) -> void:
+			impact_events.append({
+				"did_hit": did_hit,
+				"combo_tier": combo_tier,
+			})
+	)
 	feedback.play(Vector2(40.0, 40.0), Vector2(240.0, 40.0), 10, 0)
 	_expect(
 		(feedback.call("get_active_elements") as Array).is_empty()
@@ -76,11 +93,20 @@ func _run() -> void:
 		"Basic Attack sheets must be assembled from named 2D VFX parts."
 	)
 	_expect(
-		float(feedback.call("get_travel_duration")) <= 0.23
-			and float(feedback.call("get_impact_duration")) <= 0.25,
-		"Basic Attack presentation must stay fast enough to read as a sharp sword wave."
+		float(feedback.call("get_travel_duration")) <= 0.16
+			and float(feedback.call("get_impact_duration")) <= 0.20,
+		"Basic Attack presentation must stay fast enough to read as a slash shockwave."
+	)
+	_expect(
+		String(feedback.call("get_motion_profile")) == "slash_shockwave"
+			and float(feedback.call("get_travel_distance_ratio_at_progress", 0.50)) >= 0.78,
+		"Basic Attack must burst across most of its range immediately instead of accelerating like a missile."
 	)
 	await create_timer(0.55).timeout
+	_expect(
+		impact_events == [{"did_hit": true, "combo_tier": 0}],
+		"Basic Attack must expose exactly one impact timing event for synchronized hit stop and camera shake."
+	)
 	_expect(not is_instance_valid(feedback), "Neutral Basic Attack feedback must clean itself up.")
 	feedback = FEEDBACK_SCENE.instantiate()
 	root.add_child(feedback)
@@ -193,7 +219,7 @@ func _run() -> void:
 			capture_combo,
 			0,
 			false,
-			0.22,
+			1.0,
 			2.0,
 			{"elements": capture_elements}
 		)
@@ -244,3 +270,89 @@ func _frame_alpha_aspect(asset_path: String, frame_index: int) -> float:
 	if max_x < min_x or max_y < min_y:
 		return 0.0
 	return float(max_x - min_x + 1) / maxf(1.0, float(max_y - min_y + 1))
+
+
+func _frame_reads_as_forward_crescent(asset_path: String, frame_index: int) -> bool:
+	var image := Image.load_from_file(ProjectSettings.globalize_path(asset_path))
+	if image == null or image.is_empty():
+		return false
+	var frame_width := int(image.get_width() / 8)
+	var start_x := clampi(frame_index, 0, 7) * frame_width
+	var bounds := _frame_alpha_bounds(image, start_x, frame_width)
+	if bounds.size.x < 40.0 or bounds.size.y < 40.0:
+		return false
+	var aspect := bounds.size.x / bounds.size.y
+	if aspect < 0.90 or aspect > 2.20:
+		return false
+	var leading_center := _alpha_coverage(
+		image,
+		start_x,
+		bounds,
+		Rect2(0.66, 0.36, 0.30, 0.28)
+	)
+	var hollow_center := _alpha_coverage(
+		image,
+		start_x,
+		bounds,
+		Rect2(0.18, 0.36, 0.30, 0.28)
+	)
+	var upper_arm := _alpha_coverage(
+		image,
+		start_x,
+		bounds,
+		Rect2(0.06, 0.02, 0.52, 0.28)
+	)
+	var lower_arm := _alpha_coverage(
+		image,
+		start_x,
+		bounds,
+		Rect2(0.06, 0.70, 0.52, 0.28)
+	)
+	return (
+		leading_center >= 0.18
+		and hollow_center <= leading_center * 0.46
+		and upper_arm >= 0.025
+		and lower_arm >= 0.025
+	)
+
+
+func _frame_alpha_bounds(image: Image, start_x: int, frame_width: int) -> Rect2:
+	var min_x := frame_width
+	var min_y := image.get_height()
+	var max_x := -1
+	var max_y := -1
+	for y in image.get_height():
+		for x in frame_width:
+			if image.get_pixel(start_x + x, y).a <= 0.08:
+				continue
+			min_x = mini(min_x, x)
+			min_y = mini(min_y, y)
+			max_x = maxi(max_x, x)
+			max_y = maxi(max_y, y)
+	if max_x < min_x or max_y < min_y:
+		return Rect2()
+	return Rect2(
+		Vector2(min_x, min_y),
+		Vector2(max_x - min_x + 1, max_y - min_y + 1)
+	)
+
+
+func _alpha_coverage(
+	image: Image,
+	start_x: int,
+	bounds: Rect2,
+	normalized_zone: Rect2
+) -> float:
+	var zone_start := bounds.position + bounds.size * normalized_zone.position
+	var zone_size := bounds.size * normalized_zone.size
+	var min_x := clampi(floori(zone_start.x), 0, int(bounds.end.x) - 1)
+	var min_y := clampi(floori(zone_start.y), 0, int(bounds.end.y) - 1)
+	var max_x := clampi(ceili(zone_start.x + zone_size.x), min_x + 1, int(bounds.end.x))
+	var max_y := clampi(ceili(zone_start.y + zone_size.y), min_y + 1, int(bounds.end.y))
+	var visible := 0
+	var total := maxi(1, (max_x - min_x) * (max_y - min_y))
+	for y in range(min_y, max_y):
+		for x in range(min_x, max_x):
+			if image.get_pixel(start_x + x, y).a > 0.08:
+				visible += 1
+	return float(visible) / float(total)

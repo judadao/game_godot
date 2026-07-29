@@ -62,13 +62,16 @@ Generated combat presentation：
 - `assets/generated/vfx/parts/basic_attack_*_sheet_v2.png` 是可檢查、可替換的
   模組化部件素材；`basic_attack_*_sheet_v2.png` 與對應 mask 是 runtime 合成輸出。
   普通劍氣 runtime 不再依賴整張來源圖裁切。
-- `AutoAttackFeedback` 以三組八幀 sheet 交疊完成近身水平月牙預備、水平飛行切割波與
-  方向性命中楔形。前幀殘像、元素雙輪廓、Lifesteal 與 Combo 疊層全部使用同幀
+- `AutoAttackFeedback` 以三組八幀 sheet 交疊完成近身前向空心月牙預備、水平高速
+  切割波與放大的方向性命中月牙。基準節奏為 42 ms 蓄勢、105 ms shockwave travel
+  與 180 ms impact；旅行使用前重後輕的 ease-out 位移，不能用飛彈式慢起步。前幀
+  殘像、元素雙輪廓、Lifesteal 與 Combo 疊層全部使用同幀
   silhouette mask；中性普通攻擊不帶 Flame/Frost/Storm/Venom 層，火焰感只在對應
   火系 Combo infusion 後由元素 mask pass 加上。texture 本身不擁有 gameplay hitbox
   或 damage。
-- 普通劍氣 release、travel、impact 三段都必須維持水平月牙 silhouette；預備動作
-  不得退回直立上挑弧或火焰 plume。
+- 普通劍氣 release、travel、impact 三段都必須維持朝移動方向凸出的 `)` 型空心月牙
+  silhouette；「水平」指旅行方向，不是把月牙壓成扁長箭頭。預備動作不得退回
+  直立上挑弧、火焰 plume 或有長尾的 projectile。
 - `FireUltimateVFX` 與 `IceUltimateVFX` 使用 editor-authored scene 加上
   Godot 原生 drawing、Line2D、Polygon2D 與 bounded GPUParticles2D，不依賴
   一次性影片。兩者都採五段演出、限制 visual bounds／particle budget，並在

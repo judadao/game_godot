@@ -6,12 +6,14 @@ const PLAYER_ATTACK_TEXTURE := preload("res://assets/curated/game_own/world/lega
 const AUTO_ATTACK_SCENE := preload("res://scenes/combat/AutoAttackFeedback.tscn")
 const FIRE_SCENE := preload("res://scenes/combat/vfx/FireUltimateVFX.tscn")
 const ICE_SCENE := preload("res://scenes/combat/vfx/IceUltimateVFX.tscn")
+const SWORD_WAVE_SPEED_MULTIPLIER := 1.10
 
 var _entry: Dictionary = {}
 var _effect: Node2D
 var _phase := 0.0
 var _replay_remaining := 0.0
 var _action_elapsed := 1.0
+var _effect_preview_size := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -23,7 +25,14 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_phase = fmod(_phase + delta, TAU)
 	_action_elapsed += delta
-	if String(_entry.get("preview_kind", "")) in [
+	var kind := String(_entry.get("preview_kind", ""))
+	if (
+		is_instance_valid(_effect)
+		and kind in ["basic_attack", "attack_aura", "finisher"]
+		and not _effect_preview_size.is_equal_approx(size)
+	):
+		_spawn_effect()
+	if kind in [
 		"basic_attack", "attack_aura", "technique", "finisher", "fire_ultimate", "ice_ultimate",
 	]:
 		_replay_remaining -= delta
@@ -53,6 +62,22 @@ func get_preview_kind() -> String:
 
 func get_effect_node_count() -> int:
 	return 1 if is_instance_valid(_effect) else 0
+
+
+func get_sword_wave_speed_multiplier() -> float:
+	return SWORD_WAVE_SPEED_MULTIPLIER
+
+
+func get_effect_origin_offset_from_preview_center() -> Vector2:
+	if not is_instance_valid(_effect):
+		return Vector2.ZERO
+	return _effect.position - _preview_effect_center()
+
+
+func get_effect_travel_offset() -> Vector2:
+	if not is_instance_valid(_effect) or not _effect.has_method("get_travel_offset"):
+		return Vector2.ZERO
+	return _effect.call("get_travel_offset") as Vector2
 
 
 func is_effect_top_level() -> bool:
@@ -104,6 +129,9 @@ func _draw_character(center: Vector2) -> void:
 func _spawn_effect() -> void:
 	_clear_effect()
 	_action_elapsed = 0.0
+	if size.x < 64.0 or size.y < 64.0:
+		_replay_remaining = 0.0
+		return
 	var kind := String(_entry.get("preview_kind", ""))
 	if kind in ["basic_attack", "attack_aura", "finisher"]:
 		_spawn_sword_wave(kind)
@@ -123,6 +151,7 @@ func _spawn_effect() -> void:
 	_effect.set("intensity", 0.85)
 	_effect.set("duration", 1.0)
 	_effect.call_deferred("play")
+	_effect_preview_size = size
 	_replay_remaining = 2.25
 
 
@@ -134,27 +163,27 @@ func _spawn_sword_wave(kind: String) -> void:
 	_effect.z_index = 6
 	var local_origin := _preview_effect_center() + Vector2(34.0, 7.0)
 	var local_target := local_origin + Vector2(minf(210.0, size.x * 0.32), 0.0)
-	var origin := get_global_transform_with_canvas() * local_origin
-	var target := get_global_transform_with_canvas() * local_target
 	var elements: Array = _entry.get("elements", []) as Array
 	var profile := {
 		"elements": elements,
 		"stack_count": int(_entry.get("stack_count", 3 if kind == "finisher" else 0)),
 		"finisher": kind == "finisher",
 		"finisher_name": String(_entry.get("name", "FINISHER")),
+		"local_coordinates": true,
 	}
 	_effect.call(
 		"play",
-		origin,
-		target,
+		local_origin,
+		local_target,
 		0,
 		9 if kind == "finisher" else (3 if kind == "attack_aura" else 0),
 		0,
 		false,
-		0.45,
+		SWORD_WAVE_SPEED_MULTIPLIER,
 		float(_entry.get("attack_size_multiplier", 1.0)),
 		profile
 	)
+	_effect_preview_size = size
 	_replay_remaining = 1.0 if kind != "finisher" else 1.3
 
 

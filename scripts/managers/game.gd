@@ -163,6 +163,8 @@ var _pending_reward_instance_ids: Array[String] = []
 var _tactical_slowdown := false
 var _run_auto_attack_card_id := DEFAULT_AUTO_ATTACK_CARD_ID
 var _auto_attack_remaining := 0.0
+var _resolving_auto_attack_effect := false
+var _auto_attack_hit_stop_generation := 0
 var _tracked_survival_boss: Node
 var wallet_gold: int = 250
 var player_inventory: Dictionary = {
@@ -1566,7 +1568,7 @@ func _try_basic_attack() -> bool:
 		if assigned_target is Node2D and is_instance_valid(assigned_target):
 			health_before[assigned_target.get_instance_id()] = _read_health(assigned_target)
 	card["cost"] = 0
-	var result := card_effect_runner.cast(card, player, cast_targets)
+	var result := _cast_auto_attack_effect(card, cast_targets)
 	if is_finisher:
 		var finisher_effect := card.get("effect", {}) as Dictionary
 		var finisher_heal := maxi(0, int(finisher_effect.get("finisher_heal", 0)))
@@ -1586,7 +1588,7 @@ func _try_basic_attack() -> bool:
 			)
 		var echo_count := maxi(0, int(finisher_effect.get("finisher_echoes", 0)))
 		for _echo in echo_count:
-			var echo_result := card_effect_runner.cast(card, player, cast_targets)
+			var echo_result := _cast_auto_attack_effect(card, cast_targets)
 			result["total"] = int(result.get("total", 0)) + int(echo_result.get("total", 0))
 			result["affected"] = maxi(
 				int(result.get("affected", 0)),
@@ -1828,6 +1830,12 @@ func _spawn_auto_attack_feedback(
 	if not feedback.has_method("play"):
 		feedback.queue_free()
 		return
+	if feedback.has_signal("impact_reached"):
+		feedback.connect(
+			"impact_reached",
+			_on_auto_attack_impact_reached,
+			CONNECT_ONE_SHOT
+		)
 	var effect := card.get("effect", {}) as Dictionary
 	var base_effect := base_card.get("effect", {}) as Dictionary
 	var power_bonus := maxi(
@@ -1846,6 +1854,45 @@ func _spawn_auto_attack_feedback(
 		float(card.get("attack_size_multiplier", 1.0)),
 		card.get("combo_visual_profile", {}) as Dictionary
 	)
+
+
+func _cast_auto_attack_effect(card: Dictionary, targets: Array) -> Dictionary:
+	_resolving_auto_attack_effect = true
+	var result := card_effect_runner.cast(card, player, targets)
+	_resolving_auto_attack_effect = false
+	return result
+
+
+func _on_auto_attack_impact_reached(did_hit: bool, combo_tier: int) -> void:
+	if not did_hit:
+		return
+	var camera := (
+		player.find_child("Camera2D", true, false) as Camera2D
+		if player != null
+		else null
+	)
+	if camera != null and float(meta_state.settings.get("camera_shake", 0.65)) > 0.0:
+		var shake_scale := float(meta_state.settings.get("camera_shake", 0.65))
+		var strength := (4.5 + float(combo_tier) * 1.5) * shake_scale
+		camera.offset = Vector2(strength, -strength * 0.55)
+		camera.create_tween().tween_property(camera, "offset", Vector2.ZERO, 0.10)
+	if (
+		skill_cast_presentation != null
+		and skill_cast_presentation.is_cast_active()
+	):
+		return
+	_auto_attack_hit_stop_generation += 1
+	var generation := _auto_attack_hit_stop_generation
+	Engine.time_scale = minf(Engine.time_scale, 0.08)
+	await get_tree().create_timer(0.030, true, false, true).timeout
+	if generation != _auto_attack_hit_stop_generation:
+		return
+	if (
+		skill_cast_presentation != null
+		and skill_cast_presentation.is_cast_active()
+	):
+		return
+	Engine.time_scale = 0.22 if _tactical_slowdown else 1.0
 
 
 func _get_auto_attack_card() -> Dictionary:
@@ -2964,6 +3011,8 @@ func _spawn_elemental_ultimate(profile: Dictionary) -> void:
 
 
 func _on_card_effect_resolved(_card_id: String, result: Dictionary) -> void:
+	if _resolving_auto_attack_effect:
+		return
 	var total := int(result.get("total", 0))
 	if total > 0 and current_map != null and player is Node2D:
 		var number := Label.new()
@@ -3303,7 +3352,14 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 		var effect := card.get("effect", {}) as Dictionary
 		var category := _codex_category_for_card(card)
 		var preview_kind := _codex_preview_kind_for_card(card, profile)
-		var element := String(profile.get("element", ""))
+		var preview_elements: Array = (
+			[] if category == "attacks"
+			else (profile.get("elements", []) as Array).duplicate()
+		)
+		var element := (
+			"" if category == "attacks"
+			else String(profile.get("element", ""))
+		)
 		projection.append({
 			"id": card_id,
 			"name": String(card.get("name", card_id.capitalize())),
@@ -3323,7 +3379,7 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"preview_kind": preview_kind,
 			"visual_family": _codex_visual_family_for_card(card),
 			"element": element,
-			"elements": profile.get("elements", []),
+			"elements": preview_elements,
 			"intensity": int(profile.get("intensity", 2)),
 			"radius": float(profile.get("radius", 180.0)),
 		})
