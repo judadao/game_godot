@@ -212,8 +212,8 @@ route bounds 的位置生成。距離玩家超過 1500px 的一般怪會回收�
 ### 5.1 生存倒數
 
 `SurvivalWaveDirector` 使用單一 600 秒倒數，不再公開或依賴 survival phase。
-普通敵人的 alive cap 由 18 連續提高到 72，spawn batch 由 3 提高到 8，
-spawn interval 由 0.9 秒連續縮短到 0.24 秒。Enemy role 依經過時間逐步加入
+普通敵人的 alive cap 由 30 連續提高到 120，spawn batch 由 5 提高到 12，
+spawn interval 由 0.55 秒連續縮短到 0.12 秒。Enemy role 依經過時間逐步加入
 pool，但 HUD 只投影剩餘時間、威脅數與 Final Rush，不顯示隱藏的 unlock threshold。
 
 | 經過時間 | 排程事件 |
@@ -224,7 +224,7 @@ pool，但 HUD 只投影剩餘時間、威脅數與 Final Rush，不顯示隱藏
 | Final Rush | 每 15 秒追加 Elite；每 30 秒追加 Harbinger |
 | 00:00 | 停止一般排程並生成唯一 completion Guardian |
 
-Final Rush 額外增加 24 alive cap、縮短普通 spawn interval 並提高 batch。
+Final Rush 額外增加 40 alive cap、縮短普通 spawn interval 並提高 batch。
 中途 Boss 與 Final Rush Boss 死亡不會提前結算；只有帶
 `completion_boss` metadata 的 00:00 Guardian 死亡會完成關卡。
 
@@ -241,7 +241,10 @@ Final Rush 額外增加 24 alive cap、縮短普通 spawn interval 並提高 bat
 - 撞牆或水平停滯時自動跳躍脫困；
 - slow、stun、burn 狀態。
 
-一般敵人死亡會產生實體 `ExperienceGem`。Gem 在 180 像素內吸引玩家、30 像素內收集，移動速度由 180 加速至 520。
+每隻一般敵人死亡都會產生一顆實體 `ExperienceGem`，依 role 僅值 1–3 XP。
+Gem 生成時先向外短暫散射，讓範圍技清場直接形成可見的經驗雨；之後在 180
+像素內吸引玩家、30 像素內收集，移動速度由 180 加速至 520。大量低價 Gem
+的總和才是 Run 經驗成長來源，不得改回少量高價獎勵。
 每隻 Elite 死亡都會遞增獨立 reward event，並開啟一次 Divine Gift 選擇；
 同一倒數內的後續 Elite 不會再被舊 wave／stage key 誤判成重複獎勵。
 六種普通敵人維持低生命、零防禦的 horde contract；火焰與冰霜基礎大招在範圍內
@@ -1090,8 +1093,8 @@ Combo 的攻擊提高採每三層一階：每階增加當前基礎攻擊 amount 
 ### Horde-first difficulty
 
 Autumn survival uses enemy density and mixed roles instead of weakening the
-player. The ten-minute countdown continuously grows concurrent caps `18 → 72`
-and spawn batches `3 → 8`; Final Rush adds another 24 cap plus scheduled Elites and
+player. The ten-minute countdown continuously grows concurrent caps `30 → 120`
+and spawn batches `5 → 12`; Final Rush adds another 40 cap plus scheduled Elites and
 Harbingers. Amber Moth Swarm adds fragile high-speed pressure while Grove
 Shaman adds long-range support. Normal roles stay low-health and defense-free so
 area ultimates erase a crowd at once. Elite is never part of the random normal pool.

@@ -23,14 +23,14 @@ signal survival_pickup_collected(item_id: StringName)
 @export var scheduled_boss_times: Array[float] = [300.0, 480.0]
 @export_range(2.0, 60.0, 0.5) var final_rush_elite_interval := 15.0
 @export_range(5.0, 60.0, 0.5) var final_rush_boss_interval := 30.0
-@export_range(1, 100, 1) var base_density_cap := 18
-@export_range(1, 120, 1) var maximum_density_cap := 72
-@export_range(0, 60, 1) var final_rush_density_bonus := 24
-@export_range(0.05, 5.0, 0.05) var base_spawn_interval := 0.9
-@export_range(0.05, 5.0, 0.05) var minimum_spawn_interval := 0.24
+@export_range(1, 120, 1) var base_density_cap := 30
+@export_range(1, 160, 1) var maximum_density_cap := 120
+@export_range(0, 80, 1) var final_rush_density_bonus := 40
+@export_range(0.05, 5.0, 0.05) var base_spawn_interval := 0.55
+@export_range(0.05, 5.0, 0.01) var minimum_spawn_interval := 0.12
 @export_range(0.1, 1.0, 0.05) var final_rush_spawn_interval_multiplier := 0.5
-@export_range(1, 12, 1) var base_spawn_batch := 3
-@export_range(1, 16, 1) var maximum_spawn_batch := 8
+@export_range(1, 16, 1) var base_spawn_batch := 5
+@export_range(1, 20, 1) var maximum_spawn_batch := 12
 @export var normal_enemy_unlocks: Dictionary = {
 	"sprout": 0.0,
 	"hopper": 0.0,
@@ -105,7 +105,7 @@ func start_encounter() -> bool:
 	_disengage_remaining = -1.0
 	_spawn_positions.clear()
 	_rng.seed = int(Time.get_ticks_usec() ^ get_instance_id())
-	_spawn_until_cap(mini(8, get_current_density_cap()))
+	_spawn_until_cap(mini(16, get_current_density_cap()))
 	encounter_started.emit(1)
 	_emit_survival_time()
 	return true
@@ -433,6 +433,15 @@ func _spawn_experience_gem(at_position: Vector2, value: int) -> void:
 		(gem as Node2D).global_position = at_position
 	if gem.has_method("configure"):
 		gem.call("configure", value, get_tree().get_first_node_in_group("Player") as Node2D)
+	if gem.has_method("launch"):
+		gem.call(
+			"launch",
+			Vector2(
+				_rng.randf_range(-160.0, 160.0),
+				_rng.randf_range(-210.0, -120.0)
+			),
+			_rng.randf_range(0.2, 0.34)
+		)
 	experience_gem_spawned.emit(gem, value)
 
 

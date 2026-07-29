@@ -63,11 +63,13 @@ func _run() -> void:
 		"The first Elite blessing opportunity must arrive at about ninety seconds."
 	)
 	_expect(
-		director.base_density_cap >= 18
-			and director.maximum_density_cap >= 72
-			and director.base_spawn_batch >= 3
-			and director.maximum_spawn_batch >= 8
-			and director.final_rush_density_bonus >= 24,
+		director.base_density_cap >= 30
+			and director.maximum_density_cap >= 120
+			and director.base_spawn_batch >= 5
+			and director.maximum_spawn_batch >= 12
+			and director.final_rush_density_bonus >= 40
+			and director.base_spawn_interval <= 0.55
+			and director.minimum_spawn_interval <= 0.15,
 		"Survival countdown must begin dense, grow continuously, and spike during Final Rush."
 	)
 	_expect(
@@ -88,6 +90,11 @@ func _run() -> void:
 		_expect(
 			normal_archetype.defense == 0,
 			"Normal horde enemies must not pad their low health with defense."
+		)
+		_expect(
+			normal_archetype.experience_reward >= 1
+				and normal_archetype.experience_reward <= 3,
+			"Every normal enemy must drop one low-value gem so crowd kills create the XP payoff."
 		)
 	var fire_ultimate := database.get_card("concussive_shout")
 	var frost_ultimate := database.get_card("frost_bind")

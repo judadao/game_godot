@@ -59,12 +59,13 @@ func _test_archetype_catalog() -> void:
 			ceili(float(early_enemy.max_health) / float(damage_after_defense)) <= 2,
 			"%s must die within two default Ember Bolt hits." % early_id
 		)
-	_expect(
-		int((catalog[&"sprout"] as EnemyArchetype).experience_reward)
-			+ int((catalog[&"hopper"] as EnemyArchetype).experience_reward)
-			>= 30,
-		"The first two enemy types must fund the first fast level-up."
-	)
+	for normal_id in expected_ids.slice(0, 6):
+		var normal_enemy := catalog[normal_id] as EnemyArchetype
+		_expect(
+			normal_enemy.experience_reward >= 1
+				and normal_enemy.experience_reward <= 3,
+			"%s must contribute one small XP gem to the crowd-kill pile." % normal_id
+		)
 
 
 func _test_enemy_and_elite_contract() -> void:

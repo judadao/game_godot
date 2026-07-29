@@ -11,6 +11,8 @@ signal collected(value: int)
 var _value := 1
 var _target: Node2D
 var _collected := false
+var _launch_velocity := Vector2.ZERO
+var _launch_remaining := 0.0
 
 
 func _ready() -> void:
@@ -26,9 +28,25 @@ func configure(value: int, target: Node2D = null) -> void:
 	_target = target
 
 
+func launch(initial_velocity: Vector2, duration: float = 0.25) -> void:
+	_launch_velocity = initial_velocity
+	_launch_remaining = maxf(0.0, duration)
+
+
 func advance_pickup(delta: float) -> void:
 	if _collected:
 		return
+	var safe_delta := maxf(0.0, delta)
+	if _launch_remaining > 0.0:
+		var launch_step := minf(safe_delta, _launch_remaining)
+		global_position += _launch_velocity * launch_step
+		_launch_velocity = _launch_velocity.move_toward(
+			Vector2.ZERO,
+			520.0 * launch_step
+		)
+		_launch_remaining = maxf(0.0, _launch_remaining - launch_step)
+		if _launch_remaining > 0.0:
+			return
 	if _target == null or not is_instance_valid(_target):
 		_target = get_tree().get_first_node_in_group("Player") as Node2D
 	if _target == null:
@@ -41,7 +59,7 @@ func advance_pickup(delta: float) -> void:
 		return
 	var pull := 1.0 - distance / attraction_radius
 	var speed := lerpf(minimum_speed, maximum_speed, pull)
-	global_position = global_position.move_toward(_target.global_position, speed * maxf(0.0, delta))
+	global_position = global_position.move_toward(_target.global_position, speed * safe_delta)
 
 
 func collect() -> void:

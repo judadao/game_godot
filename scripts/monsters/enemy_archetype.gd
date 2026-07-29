@@ -23,37 +23,37 @@ static func autumn_catalog() -> Dictionary:
 	return {
 		&"sprout": _make(
 			&"sprout", "Autumn Sprout", &"chase",
-			18, 9, 0, 75.0, 320.0, 60.0, 1.1, 0.35, 16, 5,
+			18, 9, 0, 75.0, 320.0, 60.0, 1.1, 0.35, 1, 5,
 			[&"jab"], Color(0.78, 0.32, 0.12), Vector2(0.86, 0.86)
 		),
 		&"hopper": _make(
 			&"hopper", "Leaf Hopper", &"leap",
-			16, 10, 0, 110.0, 400.0, 72.0, 0.9, 0.42, 18, 6,
+			16, 10, 0, 110.0, 400.0, 72.0, 0.9, 0.42, 1, 6,
 			[&"leap"], Color(0.94, 0.58, 0.12), Vector2(0.78, 0.78)
 		),
 		&"moth_swarm": _make(
 			&"moth_swarm", "Amber Moth Swarm", &"chase",
-			10, 6, 0, 145.0, 460.0, 52.0, 0.72, 0.28, 10, 3,
+			10, 6, 0, 145.0, 460.0, 52.0, 0.72, 0.28, 1, 3,
 			[&"jab"], Color(1.0, 0.72, 0.16), Vector2(0.58, 0.58)
 		),
 		&"thornling": _make(
 			&"thornling", "Thornling", &"ranged",
-			18, 9, 0, 62.0, 520.0, 240.0, 1.35, 0.55, 22, 7,
+			18, 9, 0, 62.0, 520.0, 240.0, 1.35, 0.55, 2, 7,
 			[&"thorn_volley"], Color(0.42, 0.62, 0.18), Vector2(0.82, 0.82)
 		),
 		&"charger": _make(
 			&"charger", "Bark Charger", &"charge",
-			30, 14, 0, 135.0, 500.0, 82.0, 1.8, 0.7, 32, 10,
+			30, 14, 0, 135.0, 500.0, 82.0, 1.8, 0.7, 3, 10,
 			[&"rush"], Color(0.55, 0.25, 0.1), Vector2(1.12, 1.05)
 		),
 		&"grove_shaman": _make(
 			&"grove_shaman", "Grove Shaman", &"ranged",
-			24, 12, 0, 58.0, 580.0, 300.0, 1.55, 0.62, 30, 9,
+			24, 12, 0, 58.0, 580.0, 300.0, 1.55, 0.62, 3, 9,
 			[&"thorn_volley"], Color(0.38, 0.82, 0.34), Vector2(0.96, 1.08)
 		),
 		&"elite": _make(
 			&"elite", "Crimson Grove Elite", &"elite",
-			125, 18, 3, 95.0, 520.0, 110.0, 1.25, 0.65, 80, 30,
+			125, 18, 3, 95.0, 520.0, 110.0, 1.25, 0.65, 12, 30,
 			[&"cleave", &"shockwave"], Color(0.75, 0.1, 0.12), Vector2(1.35, 1.3)
 		),
 	}

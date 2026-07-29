@@ -30,6 +30,24 @@ func _run() -> void:
 	_expect(collected == [37], "Experience gem must emit its exact value only once.")
 	gem.queue_free()
 
+	var burst_gem := scene.instantiate()
+	root.add_child(burst_gem)
+	burst_gem.call("configure", 2, player)
+	_expect(
+		burst_gem.has_method("launch"),
+		"Experience gems need a short launch burst so area kills visibly spill many rewards."
+	)
+	if burst_gem.has_method("launch"):
+		burst_gem.call("launch", Vector2(-120.0, -160.0), 0.25)
+		var burst_start := (burst_gem as Node2D).position
+		burst_gem.call("advance_pickup", 0.1)
+		_expect(
+			(burst_gem as Node2D).position.x < burst_start.x
+				and (burst_gem as Node2D).position.y < burst_start.y,
+			"A launched XP gem must scatter before attraction takes over."
+		)
+	burst_gem.queue_free()
+
 	var collision_player := CharacterBody2D.new()
 	collision_player.add_to_group("Player")
 	collision_player.collision_layer = 1

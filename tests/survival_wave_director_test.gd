@@ -42,6 +42,7 @@ func _run() -> void:
 	director.set("final_rush_boss_interval", 0.15)
 	var time_events: Array[Dictionary] = []
 	var elite_reward_events: Array[Vector2] = []
+	var experience_drop_values: Array[int] = []
 	director.connect(
 		"elite_defeated",
 		func(world_position: Vector2) -> void: elite_reward_events.append(world_position)
@@ -56,6 +57,10 @@ func _run() -> void:
 				"cap": cap,
 				"final_rush": final_rush,
 			})
+	)
+	director.connect(
+		"experience_gem_spawned",
+		func(_gem: Node, value: int) -> void: experience_drop_values.append(value)
 	)
 	root.add_child(director)
 	_expect(
@@ -85,6 +90,28 @@ func _run() -> void:
 	_expect(
 		is_equal_approx(float(director.call("get_time_remaining")), 0.8),
 		"Survival encounter must begin from one authoritative countdown."
+	)
+	var first_normal: Node
+	for active_enemy in director.call("get_active_enemies") as Array:
+		if String(active_enemy.get_meta("encounter_archetype_id", "")) != "elite":
+			first_normal = active_enemy
+			break
+	_expect(first_normal != null, "Survival must begin with ordinary enemies.")
+	if first_normal != null:
+		var archetype := first_normal.get("archetype") as EnemyArchetype
+		director.call(
+			"_on_survival_enemy_defeated",
+			first_normal,
+			archetype.experience_reward,
+			archetype.gold_reward,
+			false,
+			false
+		)
+	_expect(
+		experience_drop_values.size() == 1
+			and experience_drop_values[0] >= 1
+			and experience_drop_values[0] <= 3,
+		"Every ordinary survival enemy must emit one low-value physical XP gem."
 	)
 	director.call("advance_survival", 0.21)
 	_expect(
