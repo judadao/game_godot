@@ -1,6 +1,6 @@
 [gd_scene load_steps=19 format=3]
 
-[ext_resource type="Script" uid="uid://cwu22yr2mlhlj" path="res://scripts/ui/material_yard_ui.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cwu22yr2mlhlj" path="res://scripts/ui/town/material_yard_ui.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_npcs_atlas_v2.png" id="2_npc_atlas"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Ore_01.png" id="3_ore"]
 [ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon67_1.png" id="4_materials"]

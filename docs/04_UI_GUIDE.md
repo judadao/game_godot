@@ -124,7 +124,9 @@ position 或 scale，否則會破壞 map-authored override。
 ### 2.3 現況數量
 
 - `scenes/ui/**`：33 個 `.tscn`
-- `scripts/ui/**`：18 個 `.gd`
+- `scripts/ui/**`：19 個 `.gd`
+- `scripts/ui/` mirrors `scenes/ui/` feature ownership (`autumn/`, `cards/`,
+  `dialogue/`, `hud/`, `inventory/`, `results/`, `shop/`, `system/`, `town/`)
 - `scenes/ui/` root scene：0 個；screen 全部位於 feature folders
 - authored UI `ScrollContainer`：5 個
 - runtime-created `ScrollContainer`：DeckBuilder 1 個
@@ -466,7 +468,7 @@ HUD
 └── InteractionPanel
 ```
 
-`scripts/ui/hud.gd` 提供：
+`scripts/ui/hud/hud.gd` 提供：
 
 - `set_health()` / `set_mana()` / `set_stamina()`
 - `set_player_level()` / `set_player_class()`
@@ -1114,7 +1116,7 @@ Autumn Battle V2 renders each visible card through
 interactive `Button`; its shortcut, name, type, icon stage, level, and AP
 labels use `MOUSE_FILTER_IGNORE`.
 
-`res://scripts/ui/autumn_card_hand_ui.gd` owns Autumn hand presentation within
+`res://scripts/ui/autumn/autumn_card_hand_ui.gd` owns Autumn hand presentation within
 `CardStage`。Scene 只建立單組四張 Combo／Healing card buttons，不再存在 inactive group
 或 A/S、LT/RT 切組流程。
 

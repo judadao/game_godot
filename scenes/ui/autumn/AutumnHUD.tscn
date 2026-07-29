@@ -1,6 +1,6 @@
 [gd_scene load_steps=16 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/autumn_combat_hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://scripts/ui/autumn/autumn_combat_hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnInteractionPrompt.tscn" id="2_prompt"]
 [ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnCardHandUI.tscn" id="3_hand"]
 

@@ -38,7 +38,7 @@ pipeline描述成Current。
 |---|---:|---|
 | Gameplay JSON | 9 | `res://data/*.json` |
 | Gameplay `.tres` / `.res` | 0 | 無 |
-| `resources/` content | 只有`.gitkeep` | `res://resources/.gitkeep` |
+| `resources/` content | 0；空目錄不保留 placeholder | 無 |
 | Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
 | Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
 | Generated VFX texture | 21 | `res://assets/generated/vfx/` |
@@ -557,7 +557,7 @@ Current：
 
 - gameplay `.tres`：0
 - gameplay `.res`：0
-- `resources/`：只有`.gitkeep`
+- `resources/`：目前不存在；新增第一個外部 Resource 時再建立
 
 因此：
 

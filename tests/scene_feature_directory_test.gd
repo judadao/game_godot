@@ -22,6 +22,28 @@ const FEATURE_SCENES := [
 	"res://tests/fixtures/scenes/AutumnSlime.tscn",
 	"res://tests/fixtures/scenes/NPC.tscn",
 ]
+const FEATURE_SCRIPTS := [
+	"res://scripts/dev/previews/combat_layout_preview.gd",
+	"res://scripts/ui/autumn/autumn_battle_card.gd",
+	"res://scripts/ui/autumn/autumn_card_hand_ui.gd",
+	"res://scripts/ui/autumn/autumn_combat_hud.gd",
+	"res://scripts/ui/autumn/autumn_interaction_prompt.gd",
+	"res://scripts/ui/cards/card_discard_ui.gd",
+	"res://scripts/ui/cards/card_growth_ui.gd",
+	"res://scripts/ui/cards/card_hand_ui.gd",
+	"res://scripts/ui/cards/deck_builder_ui.gd",
+	"res://scripts/ui/dialogue/dialogue_ui.gd",
+	"res://scripts/ui/hud/hud.gd",
+	"res://scripts/ui/inventory/inventory_codex_preview.gd",
+	"res://scripts/ui/inventory/inventory_ui.gd",
+	"res://scripts/ui/results/run_result_ui.gd",
+	"res://scripts/ui/shop/shop_ui.gd",
+	"res://scripts/ui/system/pause_menu.gd",
+	"res://scripts/ui/town/material_yard_ui.gd",
+	"res://scripts/ui/town/player_blacksmith_ui.gd",
+	"res://scripts/ui/town/town_hall_ui.gd",
+	"res://scripts/ui/town/town_residence_ui.gd",
+]
 const RETIRED_PATHS := [
 	"res://scenes/dev/CombatLayoutPreview.tscn",
 	"res://scenes/dev/AutumnEditorHUDReference.tscn",
@@ -41,6 +63,28 @@ const RETIRED_PATHS := [
 	"res://scenes/ui/themes/CardGrowthTheme.tres",
 	"res://scenes/monsters/AutumnSlime.tscn",
 	"res://scenes/npc/NPC.tscn",
+]
+const RETIRED_SCRIPT_PATHS := [
+	"res://scripts/dev/combat_layout_preview.gd",
+	"res://scripts/ui/autumn_battle_card.gd",
+	"res://scripts/ui/autumn_card_hand_ui.gd",
+	"res://scripts/ui/autumn_combat_hud.gd",
+	"res://scripts/ui/autumn_interaction_prompt.gd",
+	"res://scripts/ui/card_discard_ui.gd",
+	"res://scripts/ui/card_growth_ui.gd",
+	"res://scripts/ui/card_hand_ui.gd",
+	"res://scripts/ui/deck_builder_ui.gd",
+	"res://scripts/ui/dialogue_ui.gd",
+	"res://scripts/ui/hud.gd",
+	"res://scripts/ui/inventory_codex_preview.gd",
+	"res://scripts/ui/inventory_ui.gd",
+	"res://scripts/ui/material_yard_ui.gd",
+	"res://scripts/ui/pause_menu.gd",
+	"res://scripts/ui/player_blacksmith_ui.gd",
+	"res://scripts/ui/run_result_ui.gd",
+	"res://scripts/ui/shop_ui.gd",
+	"res://scripts/ui/town_hall_ui.gd",
+	"res://scripts/ui/town_residence_ui.gd",
 ]
 const STABLE_MAP_PATHS := [
 	"res://scenes/maps/town.tscn",
@@ -64,8 +108,12 @@ func _init() -> void:
 func _run() -> void:
 	for path in FEATURE_SCENES:
 		_expect(ResourceLoader.exists(path), "Feature-owned scene path must exist: %s" % path)
+	for path in FEATURE_SCRIPTS:
+		_expect(ResourceLoader.exists(path), "Feature-owned script path must exist: %s" % path)
 	for path in RETIRED_PATHS:
 		_expect(not ResourceLoader.exists(path), "Loose legacy scene path must be absent: %s" % path)
+	for path in RETIRED_SCRIPT_PATHS:
+		_expect(not ResourceLoader.exists(path), "Loose legacy script path must be absent: %s" % path)
 	for path in STABLE_MAP_PATHS:
 		_expect(ResourceLoader.exists(path), "Public map/save identity must remain stable: %s" % path)
 	quit(0 if _failures == 0 else 1)

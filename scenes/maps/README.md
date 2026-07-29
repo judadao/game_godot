@@ -90,7 +90,7 @@ inside the bottom HUD.
 
 Autumn cards are authored through
 `res://scenes/ui/autumn/AutumnBattleCard.tscn` and rendered by
-`res://scripts/ui/autumn_card_hand_ui.gd`. Edit the card's internal information
+`res://scripts/ui/autumn/autumn_card_hand_ui.gd`. Edit the card's internal information
 zones in the component scene. Edit row spacing and the six-column reservation
 in `AutumnCardHandUI.tscn`. Do not move individual runtime cards in the map
 scene: their responsive size and front/back overlap are renderer-owned.

@@ -93,8 +93,8 @@ variations。
 
 另有 runtime `StyleBoxFlat.new()`：
 
-- `scripts/ui/card_hand_ui.gd`
-- `scripts/ui/run_result_ui.gd`
+- `scripts/ui/cards/card_hand_ui.gd`
+- `scripts/ui/results/run_result_ui.gd`
 
 ### 2.3 Current reuse
 

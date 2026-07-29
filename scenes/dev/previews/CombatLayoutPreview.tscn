@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dnjjnaifkyhj7"]
 
-[ext_resource type="Script" uid="uid://c0kqkskf8c18n" path="res://scripts/dev/combat_layout_preview.gd" id="1_preview"]
+[ext_resource type="Script" uid="uid://c0kqkskf8c18n" path="res://scripts/dev/previews/combat_layout_preview.gd" id="1_preview"]
 [ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn" id="2_map"]
 [ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnHUD.tscn" id="4_hud"]
 

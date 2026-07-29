@@ -3,9 +3,9 @@ extends SceneTree
 const AUTUMN_HAND_PATH := "res://scenes/ui/autumn/AutumnCardHandUI.tscn"
 const AUTUMN_HUD_PATH := "res://scenes/ui/autumn/AutumnHUD.tscn"
 const AUTUMN_CARD_PATH := "res://scenes/ui/autumn/AutumnBattleCard.tscn"
-const AUTUMN_RENDERER_PATH := "res://scripts/ui/autumn_card_hand_ui.gd"
+const AUTUMN_RENDERER_PATH := "res://scripts/ui/autumn/autumn_card_hand_ui.gd"
 const TOWN_HAND_PATH := "res://scenes/ui/town/TownCardHandUI.tscn"
-const TOWN_RENDERER_PATH := "res://scripts/ui/card_hand_ui.gd"
+const TOWN_RENDERER_PATH := "res://scripts/ui/cards/card_hand_ui.gd"
 const REQUIRED_CARD_NODES := [
 	"CardContent/Shortcut",
 	"CardContent/CardName",

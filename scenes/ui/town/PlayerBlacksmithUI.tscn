@@ -1,6 +1,6 @@
 [gd_scene load_steps=23 format=3]
 
-[ext_resource type="Script" uid="uid://bl4jfw2re34g3" path="res://scripts/ui/player_blacksmith_ui.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://bl4jfw2re34g3" path="res://scripts/ui/town/player_blacksmith_ui.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/world/legacy_fantasy/Character/Idle/Idle-Sheet.png" id="2_player"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png" id="3_forge"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Ore_04.png" id="4_upgrade"]

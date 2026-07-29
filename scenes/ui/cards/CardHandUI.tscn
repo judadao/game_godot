@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://b3ovey2nso03h"]
 
-[ext_resource type="Script" uid="uid://8ehx37yx6mwo" path="res://scripts/ui/card_hand_ui.gd" id="1"]
+[ext_resource type="Script" uid="uid://8ehx37yx6mwo" path="res://scripts/ui/cards/card_hand_ui.gd" id="1"]
 
 [sub_resource type="StyleBoxFlat" id="EnergyBadgeStyle"]
 bg_color = Color(0.08, 0.05, 0.025, 0.9)

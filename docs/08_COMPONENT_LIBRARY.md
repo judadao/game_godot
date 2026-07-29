@@ -114,7 +114,7 @@ Component 不得直接找 `/root/Game`、修改 save、扣款、造成傷害或�
 | SkillCard | Partial | CardHand runtime Button，非 scene component |
 | QuestRow | TODO | 無；只有 HUD quest tracker |
 | Tooltip | TODO | 只有 `tooltip_text` |
-| InventoryCodexPreview | Current — Presentation | `scripts/ui/inventory_codex_preview.gd` |
+| InventoryCodexPreview | Current — Presentation | `scripts/ui/inventory/inventory_codex_preview.gd` |
 | HealthBar | TODO | 舊 `HUDStatusBar.tscn` prototype 已移除；現役 HUD 有內嵌 HP bar |
 | ManaBar | Partial subtree | `HUDStatus.tscn/MPBar`，無獨立 scene |
 | StatusRow | TODO | 無 |
@@ -281,7 +281,7 @@ DangerButton (Button, variation = DangerButton)
 實際 path：
 
 - scene：`scenes/ui/dialogue/DialogueUI.tscn`
-- script：`scripts/ui/dialogue_ui.gd`
+- script：`scripts/ui/dialogue/dialogue_ui.gd`
 - class：`DialogueUI`
 
 它是 NPC/campfire/card reward 共用的 dialogue screen，不是通用 confirmation Dialog，
@@ -440,7 +440,7 @@ signal item_selected(item_id: StringName)
 
 **Partial — Runtime presentation，不是 component。**
 
-`scripts/ui/card_hand_ui.gd` 在 runtime 建 Button，包含 name/type/level/description/cost，
+`scripts/ui/cards/card_hand_ui.gd` 在 runtime 建 Button，包含 name/type/level/description/cost，
 但 repository 沒有 `SkillCard.tscn` 或 `SkillCard` class。
 
 ### 9.2 Current runtime contract
@@ -618,7 +618,7 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
 
 **Current — Domain-specific presentation component。**
 
-- script：`scripts/ui/inventory_codex_preview.gd`
+- script：`scripts/ui/inventory/inventory_codex_preview.gd`
 - owner：`scenes/ui/inventory/InventoryUI.tscn`
 - API：`show_entry()`、`get_active_entry_id()`、`get_preview_kind()`
 - reuse：`ElementalAttackAura`、`FireUltimateVFX`、`IceUltimateVFX`
@@ -648,7 +648,7 @@ HealthBar scene，production HUD 仍使用內嵌 subtree。
 現役 health bar：
 
 - `scenes/ui/hud/HUDStatus.tscn` 的 `HPBar`
-- 由 `scripts/ui/hud.gd::set_health()` 更新
+- 由 `scripts/ui/hud/hud.gd::set_health()` 更新
 
 ### 13.2 Candidate Scene Tree
 
@@ -707,7 +707,7 @@ func set_preview(delta: int) -> void
 實際位置：
 
 - `scenes/ui/hud/HUDStatus.tscn` → `MPBar`
-- `scripts/ui/hud.gd::set_mana()`
+- `scripts/ui/hud/hud.gd::set_mana()`
 
 ### 14.2 Current Scene Tree
 
@@ -1112,7 +1112,7 @@ signal back_requested
 
 - path：`scenes/ui/hud/HUDStatus.tscn`
 - used by：`scenes/ui/hud/HUD.tscn`
-- script：無；由 `scripts/ui/hud.gd` 操作
+- script：無；由 `scripts/ui/hud/hud.gd` 操作
 - content：portrait、level/class、HP/MP/Stamina bars
 - status：Current — Visual Only
 
@@ -1373,7 +1373,7 @@ func _emit_selection() -> void:
 ### AutumnHUD
 
 - Scene: `res://scenes/ui/autumn/AutumnHUD.tscn`
-- Script contract: `res://scripts/ui/autumn_combat_hud.gd`
+- Script contract: `res://scripts/ui/autumn/autumn_combat_hud.gd`
 - Owner: Autumn Battle V2 only
 - Responsibility: the sole Autumn combat HUD authority. It owns
   `TopLeftStack`, `TopRightMeta`, `TopCenterStack`, `BottomStage`, `FooterRail`,
@@ -1400,7 +1400,7 @@ Required semantic children:
 ### AutumnInteractionPrompt
 
 - Scene: `res://scenes/ui/autumn/AutumnInteractionPrompt.tscn`
-- Script: `res://scripts/ui/autumn_interaction_prompt.gd`
+- Script: `res://scripts/ui/autumn/autumn_interaction_prompt.gd`
 - Owner: the Autumn HUD
 - Responsibility: display the F interaction affordance near the active
   `CanvasItem`, follow moving targets, clamp to horizontal margins, and remain
@@ -1417,7 +1417,7 @@ Required semantic children:
 ### AutumnBattleCard
 
 - Scene: `res://scenes/ui/autumn/AutumnBattleCard.tscn`
-- Script: `res://scripts/ui/autumn_battle_card.gd`
+- Script: `res://scripts/ui/autumn/autumn_battle_card.gd`
 - Owner: `AutumnCardHandUI`
 - Public methods:
   - `configure(card: Dictionary, shortcut: String, affordable: bool)`
@@ -1429,7 +1429,7 @@ Required semantic children:
 
 ### AutumnCardHandUI renderer
 
-- Script: `res://scripts/ui/autumn_card_hand_ui.gd`
+- Script: `res://scripts/ui/autumn/autumn_card_hand_ui.gd`
 - Owner: `AutumnHUD/BottomStage/CardStage`
 - Responsibility: create AutumnBattleCard instances, keep card groups in
   two stable scene-authored rows of four, calculate responsive card dimensions,
@@ -1438,13 +1438,13 @@ Required semantic children:
 - Exclusion: auto attack is not a card button and has no hand/global index
 - Exclusion: intrinsic Space Dash is not a card button；`quickstep` is absent
   from the catalog and hand
-- Isolation: Town continues to use `res://scripts/ui/card_hand_ui.gd`; Autumn
+- Isolation: Town continues to use `res://scripts/ui/cards/card_hand_ui.gd`; Autumn
   visual changes must not be added to the shared renderer
 
 ### DeckBuilderUI loadout
 
 - Scene: `res://scenes/ui/cards/DeckBuilderUI.tscn`
-- Script: `res://scripts/ui/deck_builder_ui.gd`
+- Script: `res://scripts/ui/cards/deck_builder_ui.gd`
 - Signals:
   - `loadout_confirmed(deck_ids: Array[String], auto_attack_card_id: String)`
   - legacy `deck_confirmed` remains compatibility-only
@@ -1489,7 +1489,7 @@ Required semantic children:
 ### CardGrowthUI
 
 - Scene: `res://scenes/ui/cards/CardGrowthUI.tscn`
-- Script: `res://scripts/ui/card_growth_ui.gd`
+- Script: `res://scripts/ui/cards/card_growth_ui.gd`
 - Owner: `Game/MenuLayer` while the growth queue is non-empty
 - Signal: `choice_confirmed(choice_id: String)`
 - Responsibility: render one `GrowthChoiceQueue` page and expose a single
@@ -1511,7 +1511,7 @@ Required semantic children:
 ### TownEternalForgeHUD
 
 - Scene: `res://scenes/ui/town/TownEternalForgeHUD.tscn`
-- Script contract: `res://scripts/ui/hud.gd`
+- Script contract: `res://scripts/ui/hud/hud.gd`
 - Owner: Town only
 - Responsibility: display only the compact Eternal Forge area title and active
   interaction affordance in Town. The unused Flame Keeper, Soul Network,
@@ -1527,7 +1527,7 @@ Required semantic children:
 
 - Scene: `res://scenes/ui/town/TownCardHandUI.tscn`
 - Base: `res://scenes/ui/cards/CardHandUI.tscn`
-- Script contract: `res://scripts/ui/card_hand_ui.gd`
+- Script contract: `res://scripts/ui/cards/card_hand_ui.gd`
 - Owner: Town's sibling card-hand authority
 - Responsibility: preserve CardHandUI signals, methods, NodePaths, and fan
   layout while applying the Eternal Forge iron/ember/gold presentation.

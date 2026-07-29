@@ -1,6 +1,6 @@
 [gd_scene load_steps=17 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/town_hall_ui.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/ui/town/town_hall_ui.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/ui/shop/generated/shop_sign.png" id="2_sign"]
 [ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_npcs_atlas_v2.png" id="3_npc_atlas"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Storage Icon.png" id="4_overview"]

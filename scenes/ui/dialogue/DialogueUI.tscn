@@ -1,7 +1,7 @@
 [gd_scene load_steps=10 format=3]
 
 [ext_resource type="Texture2D" path="res://concept/town/can_use/ui/ui_ui_ui_component_017.png" id="1_next_arrow"]
-[ext_resource type="Script" path="res://scripts/ui/dialogue_ui.gd" id="2_dialogue_ui"]
+[ext_resource type="Script" path="res://scripts/ui/dialogue/dialogue_ui.gd" id="2_dialogue_ui"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialogue_panel"]
 bg_color = Color(0.09, 0.08, 0.1, 0.92)

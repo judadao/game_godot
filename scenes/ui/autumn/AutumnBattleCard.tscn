@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/autumn_battle_card.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/ui/autumn/autumn_battle_card.gd" id="1_script"]
 
 [node name="AutumnBattleCard" type="Button"]
 custom_minimum_size = Vector2(84, 116)
