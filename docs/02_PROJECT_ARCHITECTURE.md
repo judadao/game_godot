@@ -315,7 +315,10 @@ UI 對上層提供 setter/configure API與 typed signals：
 - `DialogueUI`：speaker/text/choices；emit choice/advanced/canceled。
 - `ShopUI`：圖示化 catalog projection 與結構化商品列；emit
   mode/quantity/confirmed。
-- `InventoryUI`：prototype inventory projection。
+- `InventoryUI`：消耗品、永久材料、持有裝備 projection，以及只讀 discovery
+  codex。Codex 由 `MetaState.unlocked_cards`／`learned_skill_ids` 投影普通攻擊、
+  skills 與 infusions，預覽重用
+  production elemental VFX，不擁有戰鬥規則。
 - `MaterialYardUI`：依 Eternal Torch／village stage 解鎖的鍛造材料與永久工具。
 - `PlayerBlacksmithUI`：圖紙鍛造、blacksmith 等級、Sword Soul 升級與裝備販售桌。
 - `TownHallUI`：village stage、總建築等級、Town Hall 成本與升級操作。
@@ -429,12 +432,12 @@ Validated static JSON
 1. `inventory_manager.gd`：permanent resources/equipment model。
 2. `MetaState`：save fields與 legacy compatibility。
 3. `Game.wallet_gold`、`Game.player_inventory`、`_merchant_catalogs`：
-   prototype merchant/inventory projection。
+   consumable/merchant compatibility state。
 
-`Game._sync_progression_to_meta()` 是主要同步點。一般 `InventoryUI` 使用
-`player_inventory`；`MaterialYardUI`、`PlayerBlacksmithUI` 與 `TownHallUI`
-操作 InventoryManager/TownManager。治理與 review 必須把它們視為 Known Risk，
-不得宣稱已是 single source of truth。
+`Game._sync_progression_to_meta()` 是主要同步點。`InventoryUI` 合併只讀
+`player_inventory` 與 InventoryManager projection；交易仍由
+`MaterialYardUI`、`PlayerBlacksmithUI` 與 service layer 處理。治理與 review
+必須把 compatibility consumables 視為 Known Risk，不得由 UI 直接 mutation。
 
 ### 7.4 Save pipelines
 

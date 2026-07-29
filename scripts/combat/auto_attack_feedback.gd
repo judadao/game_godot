@@ -12,7 +12,7 @@ const IMPACT_DURATION := 0.34
 var _target_offset := Vector2.ZERO
 var _travel_progress := 0.0
 var _impact_progress := 0.0
-var _accent := Color(1.0, 0.56, 0.18, 1.0)
+var _accent := Color.WHITE
 var _attack_size_multiplier := 1.0
 var _visual_colors: Array[Color] = []
 var _stack_count := 0
@@ -50,7 +50,8 @@ func play(
 	_did_hit = damage > 0
 	_combo_tier = clampi(combo_count / 3, 0, 3)
 	_visual_colors = _colors_for_elements(visual_profile.get("elements", []) as Array)
-	_accent = _blended_accent(_visual_colors, _accent_for_combo(combo_count))
+	# Sword energy keeps a white core. Elements remain independent wrapping layers.
+	_accent = Color.WHITE
 	_attack_size_multiplier = clampf(
 		attack_size_multiplier * (1.0 + minf(10.0, float(_stack_count)) * 0.035),
 		1.0,
@@ -124,6 +125,10 @@ func get_travel_offset() -> Vector2:
 	return _target_offset
 
 
+func get_sword_wave_core_color() -> Color:
+	return _accent
+
+
 func attach_elemental_aura(
 	aura_scene: PackedScene,
 	elements: Array,
@@ -145,25 +150,45 @@ func attach_elemental_aura(
 func _draw() -> void:
 	if _travel_progress < 1.0:
 		var tip := _travel_point(_travel_progress)
-		var tail := _travel_point(maxf(0.0, _travel_progress - 0.24))
-		draw_line(tail, tip, Color(_accent, 0.46), 8.0 * _attack_size_multiplier, true)
-		draw_line(tail, tip, _accent, 3.0 * _attack_size_multiplier, true)
-		var normal := _target_offset.normalized().orthogonal()
-		for layer_index in _visual_colors.size():
-			var layer_offset := (
-				float(layer_index) - float(_visual_colors.size() - 1) * 0.5
-			) * 4.0 * _attack_size_multiplier
-			var layer_color := _visual_colors[layer_index]
-			draw_line(
-				tail + normal * layer_offset,
-				tip + normal * layer_offset,
-				Color(layer_color, 0.82),
-				maxf(1.5, 2.4 * _attack_size_multiplier),
+		var direction := _target_offset.normalized()
+		var normal := direction.orthogonal()
+		var wave_height := 34.0 * _attack_size_multiplier
+		var wave_depth := 24.0 * _attack_size_multiplier
+		var core_wave := _sword_wave_points(tip, direction, normal, wave_height, wave_depth)
+		draw_polyline(core_wave, Color(0.65, 0.84, 1.0, 0.28), 9.0 * _attack_size_multiplier, true)
+		for echo_index in 2:
+			var echo_origin := tip - direction * (12.0 + float(echo_index) * 11.0) * _attack_size_multiplier
+			var echo_wave := _sword_wave_points(
+				echo_origin,
+				direction,
+				normal,
+				wave_height * (0.88 - float(echo_index) * 0.12),
+				wave_depth * 0.72
+			)
+			draw_polyline(
+				echo_wave,
+				Color(0.72, 0.88, 1.0, 0.18 - float(echo_index) * 0.05),
+				2.5 * _attack_size_multiplier,
 				true
 			)
-		draw_circle(tip, 7.0 * _attack_size_multiplier, _accent)
-		draw_circle(tip, 3.0 * _attack_size_multiplier, Color.WHITE)
-		_draw_combo_projectile_layers(tip, tail)
+		for layer_index in _visual_colors.size():
+			var wrap_phase := _travel_progress * TAU * 3.0 + float(layer_index) * PI
+			var layer_color := _visual_colors[layer_index]
+			var wrapped_wave := PackedVector2Array()
+			for point_index in core_wave.size():
+				var ratio := float(point_index) / float(maxi(1, core_wave.size() - 1))
+				var wrap_offset := sin(ratio * TAU * 2.0 + wrap_phase) * 5.0 * _attack_size_multiplier
+				wrapped_wave.append(core_wave[point_index] + direction * wrap_offset)
+			draw_polyline(
+				wrapped_wave,
+				Color(layer_color, 0.9),
+				maxf(1.8, 2.8 * _attack_size_multiplier),
+				true
+			)
+		draw_polyline(core_wave, Color.WHITE, 3.8 * _attack_size_multiplier, true)
+		var pressure_radius := lerpf(10.0, 22.0, _travel_progress) * _attack_size_multiplier
+		draw_arc(tip + direction * wave_depth * 0.7, pressure_radius, 0.0, TAU, 24, Color(0.8, 0.93, 1.0, 0.18), 2.0, true)
+		_draw_combo_projectile_layers(tip, tip - direction * wave_depth)
 		var mote_count := mini(10, _stack_count)
 		for mote_index in mote_count:
 			var angle := TAU * float(mote_index) / float(maxi(1, mote_count)) + _travel_progress * TAU
@@ -286,6 +311,22 @@ func _draw_combo_impact_layers(alpha: float, radius: float) -> void:
 
 func _travel_point(progress: float) -> Vector2:
 	return Vector2.ZERO.lerp(_target_offset, progress)
+
+
+func _sword_wave_points(
+	center: Vector2,
+	direction: Vector2,
+	normal: Vector2,
+	half_height: float,
+	depth: float
+) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for index in 21:
+		var ratio := float(index) / 20.0
+		var vertical := lerpf(-half_height, half_height, ratio)
+		var forward := sin(ratio * PI) * depth
+		points.append(center + normal * vertical + direction * forward)
+	return points
 
 
 func _direction_angle_degrees() -> float:

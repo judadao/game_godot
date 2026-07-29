@@ -15,10 +15,15 @@ const FALLBACK_MOVE_DOWN: StringName = &"ui_down"
 const STATE_IDLE: StringName = &"idle"
 const STATE_WALK: StringName = &"walk"
 const STATE_JUMP: StringName = &"jump"
+const STATE_ATTACK: StringName = &"attack"
 
 const IDLE_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/legacy_fantasy/Character/Idle/Idle-Sheet.png")
 const RUN_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/legacy_fantasy/Character/Run/Run-Sheet.png")
 const JUMP_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/legacy_fantasy/Character/Jumlp-All/Jump-All-Sheet.png")
+const ATTACK_TEXTURE: Texture2D = preload("res://assets/curated/game_own/world/legacy_fantasy/Character/Attack-01/Attack-01-Sheet.png")
+const ATTACK_FRAME_COUNT := 8
+const ATTACK_FPS := 16.0
+const ATTACK_DURATION := float(ATTACK_FRAME_COUNT) / ATTACK_FPS
 
 @export var speed: float = 260.0
 @export var gravity: float = 980.0
@@ -56,6 +61,7 @@ var _dash_collision_layer: int = 0
 var _air_jumps_remaining: int = 0
 var _animation_name: StringName = &""
 var _animation_elapsed: float = 0.0
+var _attack_animation_remaining := 0.0
 var input_enabled: bool = true
 var _invulnerability_remaining := 0.0
 var _block := 0
@@ -158,6 +164,18 @@ func set_facing_direction(direction: int) -> void:
 		visual.scale.x = float(facing_direction)
 	if interaction_detector != null:
 		interaction_detector.position.x = absf(interaction_detector.position.x) * float(facing_direction)
+
+
+func play_attack_animation() -> bool:
+	if character_sprite == null or health <= 0:
+		return false
+	_attack_animation_remaining = ATTACK_DURATION
+	_play_animation(STATE_ATTACK)
+	return true
+
+
+func get_active_animation() -> StringName:
+	return _animation_name
 
 func take_hit(
 	raw_damage: int,
@@ -350,6 +368,18 @@ func _update_character_animation(delta: float) -> void:
 	if character_sprite == null:
 		return
 
+	if _attack_animation_remaining > 0.0:
+		_attack_animation_remaining = maxf(0.0, _attack_animation_remaining - maxf(delta, 0.0))
+		_play_animation(STATE_ATTACK)
+		_animation_elapsed += delta
+		character_sprite.frame = mini(
+			ATTACK_FRAME_COUNT - 1,
+			int(_animation_elapsed * ATTACK_FPS)
+		)
+		if _attack_animation_remaining <= 0.0:
+			_play_animation(current_state)
+		return
+
 	_play_animation(current_state)
 	_animation_elapsed += delta
 
@@ -368,6 +398,9 @@ func _play_animation(animation_name: StringName) -> void:
 	character_sprite.frame = 0
 
 	match animation_name:
+		STATE_ATTACK:
+			character_sprite.texture = ATTACK_TEXTURE
+			character_sprite.hframes = ATTACK_FRAME_COUNT
 		STATE_WALK:
 			character_sprite.texture = RUN_TEXTURE
 			character_sprite.hframes = 8
@@ -380,6 +413,8 @@ func _play_animation(animation_name: StringName) -> void:
 
 func _get_animation_fps(animation_name: StringName) -> float:
 	match animation_name:
+		STATE_ATTACK:
+			return ATTACK_FPS
 		STATE_WALK:
 			return 12.0
 		STATE_JUMP:

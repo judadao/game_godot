@@ -384,7 +384,7 @@ Game composition root
   `ext_resource uid`，Godot 需 fallback 到文字 path，已改為直接使用 path，降低
   scene registry 與 smoke log noise。
 - 高複雜度 scene 目前集中在 `AutumnHUD.tscn`、`TownEternalForgeHUD.tscn`、
-  `HUD.tscn`、`InventoryUI.tscn`、`ShopUI.tscn`、`MaterialYardUI.tscn`、
+  `HUD.tscn`、`ShopUI.tscn`、`MaterialYardUI.tscn`、
   `PlayerBlacksmithUI.tscn`、`TownHallUI.tscn` 與 `CardGrowthUI.tscn`；它們多數
   已用 Container，但深度與局部 StyleBox duplication 仍提高修改成本。
 - 三個現役功能建築 route 已由舊通用 runtime layout 移至專用

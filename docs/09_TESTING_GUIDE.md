@@ -31,10 +31,17 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 104 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 106 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
+
+Inventory／Codex focused coverage：
+
+- `inventory_codex_ui_test.gd`：分頁、projection、selection 與 production VFX preview ownership。
+- `inventory_codex_layout_test.gd`：六解析度 panel/list/preview/explanation geometry。
+  可用 `INVENTORY_CODEX_CAPTURE_ENTRY` 指定普通攻擊、Combo、Skill 或 Finisher，
+  搭配 capture path/size 產生 Vulkan 視覺比較基準。
 
 ## 3. 測試分層
 

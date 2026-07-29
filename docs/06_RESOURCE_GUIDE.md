@@ -374,9 +374,10 @@ UI不得直接改以上private dictionaries。
 - `MetaState.resources/equipment/equipment_levels/inventory_state`
 - `Game.wallet_gold/player_inventory/_merchant_catalogs`
 
-一般 InventoryUI 顯示 prototype `player_inventory`；MaterialYardUI、
-PlayerBlacksmithUI 與 TownHallUI 操作 InventoryManager/TownManager。
-這不是已統一的 Inventory architecture。任何 transaction 都要追蹤所有同步點。
+InventoryUI 以只讀 projection 合併 `player_inventory` consumables、
+InventoryManager resources/equipment，以及 MetaState discovery fields；
+MaterialYardUI、PlayerBlacksmithUI 與 TownHallUI 操作
+InventoryManager/TownManager。任何 transaction 仍要追蹤所有同步點。
 
 ## 7. Town Upgrade Data 與 Town Runtime State
 
@@ -672,7 +673,7 @@ backup。修改其中一條pipeline時不可假定另一條自動同步。
 |---|---|
 | CardHandUI | Game從CardDatabase + RunState產生card copies |
 | HUD | Player、RunState、wallet與objective setters |
-| InventoryUI | Game prototype `_inventory_projection()` |
+| InventoryUI | Game `_inventory_projection()` + `_inventory_codex_projection()` |
 | ShopUI | Game catalog/owned count projection |
 | MaterialYardUI | TownManager workshop + InventoryManager resources |
 | PlayerBlacksmithUI | TownManager blacksmith/memory library + InventoryManager equipment/resources |

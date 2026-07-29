@@ -1453,6 +1453,8 @@ func _try_basic_attack() -> bool:
 	)
 	if targets.is_empty():
 		return false
+	if player.has_method("play_attack_animation"):
+		player.call("play_attack_animation")
 	if is_finisher:
 		_play_combat_vfx(card)
 	var effect := card.get("effect", {}) as Dictionary
@@ -1761,15 +1763,6 @@ func _spawn_auto_attack_feedback(
 		float(card.get("attack_size_multiplier", 1.0)),
 		card.get("combo_visual_profile", {}) as Dictionary
 	)
-	var profile := _resolve_combat_vfx_profile(card)
-	var elements := profile.get("elements", []) as Array
-	if not elements.is_empty() and feedback.has_method("attach_elemental_aura"):
-		feedback.call(
-			"attach_elemental_aura",
-			elemental_attack_aura_scene,
-			elements,
-			clampi(1 + int(profile.get("intensity", 1)), 1, 5)
-		)
 
 
 func _get_auto_attack_card() -> Dictionary:
@@ -2802,12 +2795,6 @@ func _play_combat_vfx(card: Dictionary) -> void:
 		)
 	elif not cast_name.is_empty():
 		_show_compact_cast_label(cast_name, presentation_element)
-	if bool(profile.get("attack_aura", false)) and player is Node2D:
-		_spawn_elemental_aura(
-			player as Node2D,
-			profile.get("elements", []) as Array,
-			int(profile.get("intensity", 1))
-		)
 	if bool(profile.get("ultimate", false)):
 		_spawn_elemental_ultimate(profile)
 
@@ -3159,6 +3146,7 @@ func _open_inventory() -> void:
 		return
 	inventory_ui.call("set_gold", wallet_gold)
 	inventory_ui.call("set_items", _inventory_projection())
+	inventory_ui.call("set_codex_entries", _inventory_codex_projection())
 
 
 func _inventory_projection() -> Array[Dictionary]:
@@ -3180,7 +3168,195 @@ func _inventory_projection() -> Array[Dictionary]:
 		item["id"] = String(item_id)
 		item["quantity"] = count
 		projection.append(item)
+	var resource_labels := {
+		"autumn_wood": ["Autumn Wood", "Timber gathered beneath the autumn canopy.", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png"],
+		"stone": ["Stone", "Dense stone used for forge construction and equipment.", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Stone.png"],
+		"magic_shard": ["Magic Shard", "Crystallized magic used in advanced forging.", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png"],
+		"autumn_core": ["Autumn Core", "A rare core carrying the forest's concentrated power.", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_07.png"],
+	}
+	for resource_id in inventory_manager.call("get_resource_ids") as Array:
+		var key := String(resource_id)
+		if key == "gold":
+			continue
+		var quantity := int(inventory_manager.call("get_resource_amount", StringName(key)))
+		if quantity <= 0:
+			continue
+		var label_data: Array = resource_labels.get(key, [key.capitalize(), "A forging material.", ""])
+		projection.append({
+			"id": key,
+			"name": label_data[0],
+			"description": label_data[1],
+			"category": "materials",
+			"kind_label": "FORGING MATERIAL",
+			"stats": "Stored permanently in the town workshop.",
+			"quantity": quantity,
+			"icon_path": label_data[2],
+		})
+	for equipment_variant in inventory_manager.call("get_equipment_catalog") as Array:
+		var equipment := equipment_variant as Dictionary
+		var equipment_id := String(equipment.get("id", ""))
+		if equipment_id.is_empty() or not bool(inventory_manager.call("has_equipment", StringName(equipment_id))):
+			continue
+		var owned := equipment.duplicate(true)
+		owned["category"] = "gear"
+		owned["kind_label"] = "%s EQUIPMENT" % String(equipment.get("slot", "gear")).to_upper()
+		owned["quantity"] = int(inventory_manager.call("get_equipment_count", StringName(equipment_id)))
+		owned["stats"] = "Forge level %d" % int(inventory_manager.call("get_equipment_level", StringName(equipment_id)))
+		projection.append(owned)
 	return projection
+
+
+func _inventory_codex_projection() -> Array[Dictionary]:
+	var projection: Array[Dictionary] = []
+	for card_id in meta_state.unlocked_cards:
+		var card := card_database.get_card(card_id)
+		if card.is_empty():
+			continue
+		var profile := _resolve_combat_vfx_profile(card)
+		var effect := card.get("effect", {}) as Dictionary
+		var is_basic_attack := String(card.get("type", "")) == "attack"
+		var is_infusion := String(effect.get("kind", "")) == "infusion" and bool(profile.get("attack_aura", false))
+		var is_skill := bool(profile.get("ultimate", false))
+		if not is_basic_attack and not is_infusion and not is_skill:
+			continue
+		var element := String(profile.get("element", ""))
+		var category := "attacks" if is_basic_attack else ("infusions" if is_infusion else "skills")
+		var kind_label := "BASIC ATTACK"
+		if is_infusion:
+			kind_label = "%s ATTACK INFUSION" % element.to_upper()
+		elif is_skill:
+			kind_label = "%s AREA SKILL" % element.to_upper()
+		projection.append({
+			"id": card_id,
+			"name": String(card.get("name", card_id.capitalize())),
+			"category": category,
+			"kind_label": kind_label,
+			"description": String(card.get("description", "")),
+			"effect_summary": (
+				"%s, %d attack range" % [
+					_card_effect_summary(effect),
+					int(card.get("auto_attack_range", 220)),
+				]
+				if is_basic_attack
+				else _card_effect_summary(effect)
+			),
+			"trigger_summary": (
+				"Fires automatically toward enemies in front of the player."
+				if is_basic_attack
+				else (
+					"Wraps your attacks for %.1f seconds." % float(effect.get("combo_duration", 0.0))
+					if is_infusion
+					else "Play this skill to affect enemies around the player."
+				)
+			),
+			"icon_path": String(card.get("icon_path", "")),
+			"preview_kind": (
+				"basic_attack"
+				if is_basic_attack
+				else ("attack_aura" if is_infusion else ("ice_ultimate" if element == "frost" else "fire_ultimate"))
+			),
+			"element": element,
+			"elements": profile.get("elements", []),
+			"intensity": int(profile.get("intensity", 2)),
+			"radius": float(profile.get("radius", 180.0)),
+		})
+	for skill_id in meta_state.learned_skill_ids:
+		var recipe := skill_recipe_manager.get_recipe(skill_id)
+		if recipe.is_empty():
+			continue
+		projection.append({
+			"id": skill_id,
+			"name": String(recipe.get("name", skill_id.capitalize())),
+			"category": "skills",
+			"kind_label": "LEARNED COMBAT SKILL",
+			"description": _skill_recipe_description(recipe),
+			"effect_summary": _card_effect_summary(recipe.get("effect", {}) as Dictionary),
+			"trigger_summary": _skill_trigger_summary(recipe),
+			"preview_kind": "passive_skill",
+		})
+	for recipe_variant in combo_finisher_catalog.call("get_all_recipes") as Array:
+		var recipe := recipe_variant as Dictionary
+		if not _is_finisher_recipe_learned(recipe):
+			continue
+		var elements: Array[String] = []
+		var icon_path := ""
+		var sequence_names: Array[String] = []
+		for card_id_variant in recipe.get("sequence", []) as Array:
+			var card := card_database.get_card(String(card_id_variant))
+			if card.is_empty():
+				continue
+			if icon_path.is_empty():
+				icon_path = String(card.get("icon_path", ""))
+			sequence_names.append(String(card.get("name", card_id_variant)))
+			for tag_variant in card.get("tags", []) as Array:
+				_append_vfx_element(elements, String(tag_variant))
+		var base_effect := recipe.get("base_effect", {}) as Dictionary
+		projection.append({
+			"id": String(recipe.get("id", "")),
+			"name": String(recipe.get("name", "Finisher")),
+			"category": "finishers",
+			"kind_label": "COMBO FINISHER",
+			"description": String(recipe.get("description", "")),
+			"effect_summary": _card_effect_summary(base_effect),
+			"trigger_summary": "Formula: %s" % " > ".join(sequence_names),
+			"icon_path": icon_path,
+			"preview_kind": "finisher",
+			"elements": elements,
+			"element": elements[0] if not elements.is_empty() else "",
+			"intensity": 5,
+			"attack_size_multiplier": float(base_effect.get("size_multiplier", 1.8)),
+			"stack_count": maxi(3, int(base_effect.get("projectile_bonus", 0))),
+		})
+	projection.sort_custom(
+		func(left: Dictionary, right: Dictionary) -> bool:
+			var left_key := "%s:%s" % [left.get("category", ""), left.get("name", "")]
+			var right_key := "%s:%s" % [right.get("category", ""), right.get("name", "")]
+			return left_key < right_key
+	)
+	return projection
+
+
+func _card_effect_summary(effect: Dictionary) -> String:
+	var parts: Array[String] = []
+	if effect.has("amount"):
+		parts.append("%d power" % int(effect["amount"]))
+	if effect.has("damage_bonus"):
+		parts.append("+%d attack damage" % int(effect["damage_bonus"]))
+	if effect.has("radius"):
+		parts.append("%d range" % int(effect["radius"]))
+	if effect.has("burn_damage"):
+		parts.append("%d burn damage" % int(effect["burn_damage"]))
+	if effect.has("frost_ratio"):
+		parts.append("%d%% slow" % roundi(float(effect["frost_ratio"]) * 100.0))
+	if effect.has("duration"):
+		parts.append("%.1f second duration" % float(effect["duration"]))
+	if effect.has("status_id"):
+		parts.append(String(effect["status_id"]).replace("_", " ").capitalize())
+	if effect.has("projectile_bonus"):
+		parts.append("+%d sword waves" % int(effect["projectile_bonus"]))
+	if effect.has("combo_stun"):
+		parts.append("%.2fs stun" % float(effect["combo_stun"]))
+	if effect.has("size_multiplier"):
+		parts.append("%.2fx effect size" % float(effect["size_multiplier"]))
+	return ", ".join(parts) if not parts.is_empty() else String(effect.get("kind", "Technique effect")).replace("_", " ").capitalize()
+
+
+func _skill_recipe_description(recipe: Dictionary) -> String:
+	return "A learned technique occupying %d memory. Build its pattern during combat to activate it automatically." % int(recipe.get("memory_cost", 0))
+
+
+func _skill_trigger_summary(recipe: Dictionary) -> String:
+	if String(recipe.get("match_mode", "")) == "sequence":
+		var names: Array[String] = []
+		for card_id in recipe.get("sequence", []) as Array:
+			var card := card_database.get_card(String(card_id))
+			names.append(String(card.get("name", String(card_id).capitalize())))
+		return "Sequence: %s. Cooldown %.0fs." % [" > ".join(names), float(recipe.get("cooldown_seconds", 0.0))]
+	return "Land %d attacks within %.0fs. Cooldown %.0fs." % [
+		int(recipe.get("attack_count", 0)),
+		float(recipe.get("window_seconds", 0.0)),
+		float(recipe.get("cooldown_seconds", 0.0)),
+	]
 
 
 func _save_quick_slot(menu: Control) -> void:

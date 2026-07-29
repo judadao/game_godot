@@ -229,9 +229,7 @@ Current：
 
 ### 4.5 GridContainer
 
-用途：Inventory slots、固定欄數選項。
-
-Current `InventoryUI.tscn`：5 columns、20 authored slots。
+用途：固定欄數選項；Inventory 已改用可捲動 `ItemList`，不再使用固定 slot grid。
 
 規則：
 
@@ -547,22 +545,22 @@ HUDLayer
 
 `InventoryUI.tscn`：
 
-- centered 約 904×554 panel
-- 5-column GridContainer
-- 20 個 authored `InventorySlot.tscn`
-- Header、CategoryTabs、DetailPanel 子場景
-- 無 ScrollContainer
+- centered 1040×620 responsive panel
+- Inventory／Discovery Codex 主分頁
+- 可篩選、可捲動的 item/discovery lists
+- Codex 左側 basic attacks／skills／infusions／finishers 列表、右上角色與 production VFX
+  預覽、右下效果／觸發說明
 
 `inventory_ui.gd`：
 
-- `set_gold()`、`set_items()`、`set_category()`、`set_selected_item()`
-- slot keyboard navigation
-- runtime quantity Label
+- `set_gold()`、`set_items()`、`set_codex_entries()`、`set_mode()`
+- inventory category 與 codex category 都執行實際篩選
+- `ItemList` 提供 mouse/keyboard selection
 
 ### 12.2 Current gaps
 
-- category 只改 visual 並 emit signal，沒有實際篩選 items。
-- slot 數固定 20，無 scroll/pagination。
+- consumable compatibility state 仍與 InventoryManager 分離。
+- Codex 目前只預覽已有 production fire/frost VFX；後續元素需新增相同契約。
 - component 子場景無 script/signal，父 controller 依賴 deep NodePath。
 - empty/max/long localized item 尚無 resolution test。
 

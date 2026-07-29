@@ -44,6 +44,19 @@ func _run() -> void:
 		int(feedback.call("get_combo_visual_tier")) == 2,
 		"Combo x6 must use the second distinct projectile and impact spectacle tier."
 	)
+	_expect(
+		(feedback.call("get_sword_wave_core_color") as Color).is_equal_approx(Color.WHITE),
+		"Sword-wave core must stay white while elements wrap around it."
+	)
+	var left_feedback := FEEDBACK_SCENE.instantiate()
+	root.add_child(left_feedback)
+	await process_frame
+	left_feedback.play(Vector2(240.0, 120.0), Vector2(40.0, 120.0), 0, 0)
+	_expect(
+		(left_feedback.call("get_travel_offset") as Vector2).x < 0.0,
+		"Sword waves must follow a left-facing attack target."
+	)
+	left_feedback.queue_free()
 	await create_timer(0.2).timeout
 	_expect(
 		(feedback.get_node("DamageLabel") as Label).visible

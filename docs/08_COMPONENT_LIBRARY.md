@@ -114,11 +114,11 @@ Component 不得直接找 `/root/Game`、修改 save、扣款、造成傷害或�
 | SkillCard | Partial | CardHand runtime Button，非 scene component |
 | QuestRow | TODO | 無；只有 HUD quest tracker |
 | Tooltip | TODO | 只有 `tooltip_text` |
-| InventorySlot | Current — Visual Only | `scenes/ui/inventory/InventorySlot.tscn` |
+| InventoryCodexPreview | Current — Presentation | `scripts/ui/inventory_codex_preview.gd` |
 | HealthBar | TODO | 舊 `HUDStatusBar.tscn` prototype 已移除；現役 HUD 有內嵌 HP bar |
 | ManaBar | Partial subtree | `HUDStatus.tscn/MPBar`，無獨立 scene |
 | StatusRow | TODO | 無 |
-| PanelHeader | Partial domain | `InventoryHeader.tscn`，非 generic |
+| PanelHeader | Partial domain | screens 各自 editor-authored，非 generic |
 | ListRow | Partial domain | `ShopItemRow.tscn`，無 script/API |
 | LoadingView | TODO | 無 |
 | EmptyView | TODO | 無 |
@@ -126,10 +126,6 @@ Component 不得直接找 `/root/Game`、修改 save、扣款、造成傷害或�
 
 ### 3.2 Production-used visual subscenes
 
-- `scenes/ui/inventory/InventorySlot.tscn`
-- `scenes/ui/inventory/InventoryHeader.tscn`
-- `scenes/ui/inventory/InventoryCategoryTabs.tscn`
-- `scenes/ui/inventory/InventoryDetailPanel.tscn`
 - `scenes/ui/shop/ShopItemRow.tscn`
 - `scenes/ui/shop/ShopDetailPanel.tscn`
 - `scenes/ui/shop/ShopMerchantPanel.tscn`
@@ -618,61 +614,15 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
 - 不只支援 mouse hover。
 - 不在 tooltip 放唯一可操作按鈕。
 
-## 12. InventorySlot
+## 12. InventoryCodexPreview
 
-### 12.1 狀態
+**Current — Domain-specific presentation component。**
 
-**Current — Visual Only。**
-
-實際 path：
-
-- `scenes/ui/inventory/InventorySlot.tscn`
-- 引用者：`scenes/ui/inventory/InventoryUI.tscn`，共 20 instances
-
-### 12.2 Scene Tree
-
-```text
-InventorySlot (PanelContainer)
-└── Icon (TextureRect)
-```
-
-Runtime `inventory_ui.gd` 可能加入：
-
-```text
-InventorySlot
-├── Icon
-└── Quantity (Label, runtime)
-```
-
-### 12.3 Script/API
-
-沒有 component script、`class_name` 或 public methods。父 controller：
-
-- 設 `mouse_filter = STOP`
-- 設 `focus_mode = FOCUS_ALL`
-- 連 `focus_entered` / `gui_input`
-- 套 selected/normal StyleBox
-- 設 tooltip
-- 建/更新 Quantity Label
-
-### 12.4 Signals
-
-沒有 component signal；使用 Control 既有 signals，由父 controller綁 index。
-
-### 12.5 Theme
-
-- scene-local 1 個 StyleBoxFlat。
-- icon `texture_filter = 1`。
-- selected style 來自 InventoryUI scene resource。
-- 無 `InventorySlot` Theme Variation。
-
-### 12.6 使用時機
-
-- 目前僅 Inventory 5×4 grid。
-
-### 12.7 Known limits
-
-- 行為未封裝。
+- script：`scripts/ui/inventory_codex_preview.gd`
+- owner：`scenes/ui/inventory/InventoryUI.tscn`
+- API：`show_entry()`、`get_active_entry_id()`、`get_preview_kind()`
+- reuse：`ElementalAttackAura`、`FireUltimateVFX`、`IceUltimateVFX`
+- boundary：只顯示 projection，不計算傷害、不解鎖 discovery、不 mutation save
 - tooltip/quantity/selection由父層注入。
 - 無 empty/disabled/locked state API。
 - 20 slots固定。
@@ -862,8 +812,7 @@ func set_value(value_text: String) -> void
 
 實際 candidate：
 
-- `scenes/ui/inventory/InventoryHeader.tscn`
-- 只由 `InventoryUI.tscn` 引用
+- Inventory header 已 inline 到唯一 owner `InventoryUI.tscn`；舊 domain scene 已退役。
 
 ### 16.2 Current Scene Tree
 
@@ -1190,11 +1139,9 @@ signal back_requested
 
 ### 21.5 Inventory domain components
 
-- `InventoryCategoryTabs.tscn`
-- `InventoryDetailPanel.tscn`
-- `InventoryHeader.tscn`
-
-皆由 InventoryUI 使用，無獨立 script/signal/API。
+Inventory static header、tabs、lists 與 detail panels 由唯一 owner
+`InventoryUI.tscn` editor-authored；可重複動態行為集中在
+`InventoryCodexPreview`。
 
 ### 21.6 Shop domain components
 

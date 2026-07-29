@@ -64,6 +64,15 @@ func _run() -> void:
 			and off_axis_target.health == off_axis_health,
 		"Automatic attacks must damage only targets inside the forward horizontal corridor."
 	)
+	_expect(
+		player.call("get_active_animation") == &"attack",
+		"A successful automatic attack must play the player attack animation."
+	)
+	player.call("_update_character_animation", 0.6)
+	_expect(
+		player.call("get_active_animation") != &"attack",
+		"Attack animation must return to the current movement animation after one cycle."
+	)
 	var health_after_first := forward_target.health
 	game.call("_tick_auto_attack", 0.01)
 	_expect(
@@ -105,15 +114,23 @@ func _run() -> void:
 		bool(run.temporary_buffs.get("finisher_pending", false)),
 		"A second Finisher must queue for no-target retry coverage."
 	)
+	var presentation := game.get_node("SkillCastPresentation") as CanvasLayer
+	var presentation_before := presentation.call("get_cast_state") as Dictionary
+	var animation_before_retry: StringName = player.call("get_active_animation")
 	Engine.time_scale = 1.0
 	game.set("_auto_attack_remaining", 0.0)
 	var fired_without_target := bool(game.call("_try_basic_attack"))
-	var presentation := game.get_node("SkillCastPresentation") as CanvasLayer
+	var presentation_after := presentation.call("get_cast_state") as Dictionary
 	_expect(
 		not fired_without_target
-			and not bool(presentation.call("is_cast_active"))
+			and int(presentation_after.get("generation", -1))
+				== int(presentation_before.get("generation", -2))
 			and is_equal_approx(Engine.time_scale, 1.0),
 		"A queued Finisher with no legal target must not start or restart presentation slow motion."
+	)
+	_expect(
+		player.call("get_active_animation") == animation_before_retry,
+		"An automatic attack retry with no legal target must not start an attack animation."
 	)
 
 	game.queue_free()
