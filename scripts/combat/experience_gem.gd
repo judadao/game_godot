@@ -14,6 +14,11 @@ var _collected := false
 var _launch_velocity := Vector2.ZERO
 var _launch_remaining := 0.0
 var _launch_ground_y := 0.0
+var _visual_time := 0.0
+
+@onready var back_glow: Polygon2D = $BackGlow
+@onready var visual: Polygon2D = $Visual
+@onready var sparkle: Polygon2D = $Sparkle
 
 
 func _ready() -> void:
@@ -22,6 +27,16 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	advance_pickup(delta)
+
+
+func _process(delta: float) -> void:
+	_visual_time += maxf(0.0, delta)
+	var pulse := 1.0 + sin(_visual_time * 7.0) * 0.12
+	back_glow.scale = Vector2.ONE * pulse
+	back_glow.rotation = -_visual_time * 0.9
+	visual.scale = Vector2.ONE * lerpf(0.96, 1.06, (pulse - 0.88) / 0.24)
+	sparkle.rotation = _visual_time * 1.8
+	sparkle.modulate.a = 0.72 + sin(_visual_time * 9.0) * 0.24
 
 
 func configure(value: int, target: Node2D = null) -> void:

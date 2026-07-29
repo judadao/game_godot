@@ -49,6 +49,37 @@ position = Vector2(0, -30)
 z_index = 4
 script = ExtResource("3_feedback")
 
+[node name="DamageNumber" type="Label" parent="."]
+visible = false
+z_index = 14
+offset_left = -46.0
+offset_top = -112.0
+offset_right = 46.0
+offset_bottom = -76.0
+theme_override_colors/font_color = Color(1, 0.97, 0.88, 1)
+theme_override_colors/font_outline_color = Color(0.12, 0.035, 0.01, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 28
+text = "-0"
+horizontal_alignment = 1
+
+[node name="DeathBurst" type="CPUParticles2D" parent="."]
+position = Vector2(0, -38)
+z_index = 13
+emitting = false
+amount = 18
+lifetime = 0.34
+one_shot = true
+explosiveness = 1.0
+direction = Vector2(0, -1)
+spread = 180.0
+gravity = Vector2(0, 320)
+initial_velocity_min = 130.0
+initial_velocity_max = 280.0
+scale_amount_min = 3.0
+scale_amount_max = 7.0
+color = Color(1, 0.72, 0.16, 1)
+
 [node name="HealthBar" type="Node2D" parent="."]
 position = Vector2(-36, -92)
 

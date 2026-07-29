@@ -61,6 +61,10 @@ func _run() -> void:
 	critical_effect["critical_chance"] = 1.0
 	critical_effect["critical_multiplier"] = 2.0
 	critical_card["effect"] = critical_effect
+	_expect(
+		second_enemy.call("configure_archetype", &"elite"),
+		"Critical damage projection must use a durable elite target."
+	)
 	var critical_health_before := int(second_enemy.get("health"))
 	var critical_result := runner.call("cast", critical_card, player, [second_enemy]) as Dictionary
 	_expect(

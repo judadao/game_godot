@@ -3,6 +3,7 @@ extends CharacterBody2D
 
 signal defeated(enemy: Node, experience: int, gold: int)
 signal health_changed(current: int, maximum: int)
+signal hit_confirmed(damage: int, lethal: bool)
 signal attack_telegraphed(pattern: StringName, duration: float)
 signal attack_performed(pattern: StringName)
 
@@ -23,6 +24,8 @@ const ARCHETYPE_DATA := preload("res://scripts/monsters/enemy_archetype.gd")
 @onready var health_fill: ColorRect = get_node_or_null("HealthBar/Fill") as ColorRect
 @onready var hurtbox: Area2D = get_node_or_null("Hurtbox") as Area2D
 @onready var attack_feedback: EnemyAttackFeedback = get_node_or_null("AttackFeedback") as EnemyAttackFeedback
+@onready var damage_number: Label = get_node_or_null("DamageNumber") as Label
+@onready var death_burst: CPUParticles2D = get_node_or_null("DeathBurst") as CPUParticles2D
 
 var archetype: Resource
 var health: int = 1
@@ -47,6 +50,8 @@ var _navigation_jump_remaining := 0.0
 var _navigation_stalled_seconds := 0.0
 var _separation_refresh_remaining := 0.0
 var _cached_separation_bias := 0.0
+var _hit_tween: Tween
+var _damage_number_tween: Tween
 
 
 func _ready() -> void:
@@ -330,6 +335,7 @@ func take_hit(raw_damage: int, source_position: Vector2, knockback: float = 180.
 	velocity.x = signf(global_position.x - source_position.x) * knockback
 	health_changed.emit(health, int(archetype.get("max_health")))
 	_update_health_bar()
+	_play_hit_feedback(applied, health <= 0)
 	_after_damage()
 	if health <= 0:
 		_die()
@@ -338,6 +344,70 @@ func take_hit(raw_damage: int, source_position: Vector2, knockback: float = 180.
 
 func _after_damage() -> void:
 	pass
+
+
+func _play_hit_feedback(damage: int, lethal: bool) -> void:
+	hit_confirmed.emit(damage, lethal)
+	if damage_number != null:
+		if _damage_number_tween != null and _damage_number_tween.is_valid():
+			_damage_number_tween.kill()
+		damage_number.text = "-%d" % damage
+		damage_number.position = Vector2(-46.0, -112.0)
+		damage_number.modulate = Color.WHITE
+		damage_number.visible = true
+		damage_number.add_theme_color_override(
+			"font_color",
+			Color(1.0, 0.82, 0.2) if lethal else Color(1.0, 0.97, 0.88)
+		)
+		_damage_number_tween = create_tween()
+		_damage_number_tween.set_parallel(true)
+		_damage_number_tween.tween_property(
+			damage_number,
+			"position:y",
+			-148.0 if lethal else -136.0,
+			0.28
+		).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_damage_number_tween.tween_property(
+			damage_number,
+			"modulate:a",
+			0.0,
+			0.22
+		).set_delay(0.12)
+	if visual == null or archetype == null:
+		return
+	if _hit_tween != null and _hit_tween.is_valid():
+		_hit_tween.kill()
+	var base_color := archetype.get("visual_color") as Color
+	var base_scale := archetype.get("visual_scale") as Vector2
+	visual.modulate = Color(2.4, 2.4, 2.4, 1.0)
+	visual.scale = base_scale * (Vector2(1.28, 0.78) if lethal else Vector2(1.18, 0.86))
+	_hit_tween = create_tween()
+	_hit_tween.set_parallel(true)
+	if lethal:
+		if death_burst != null:
+			death_burst.restart()
+			death_burst.emitting = true
+		_hit_tween.tween_property(visual, "scale", base_scale * 1.55, 0.22)
+		_hit_tween.tween_property(visual, "rotation", 0.16 * signf(velocity.x), 0.22)
+		_hit_tween.tween_property(
+			visual,
+			"modulate",
+			Color(base_color.r, base_color.g, base_color.b, 0.0),
+			0.22
+		)
+	else:
+		_hit_tween.tween_property(
+			visual,
+			"modulate",
+			base_color,
+			0.14
+		).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_hit_tween.tween_property(
+			visual,
+			"scale",
+			base_scale,
+			0.14
+		).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func apply_status(status_id: String, effect: Dictionary) -> void:

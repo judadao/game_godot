@@ -78,6 +78,10 @@ func _run() -> void:
 	_expect(map.get_node_or_null("Barriers") == null, "Forest must not contain invisible barrier bodies.")
 	_expect(map.get_node_or_null("Collectibles") == null, "Legacy floating collectible art must be removed.")
 
+	_expect(
+		enemy.call("configure_archetype", &"elite"),
+		"Defense verification must use a durable elite target."
+	)
 	var enemy_start_health := int(enemy.get("health"))
 	var defense := int((enemy.get("archetype") as Resource).get("defense"))
 	var applied := int(enemy.call("take_hit", 16, player.global_position, 0.0))

@@ -99,8 +99,14 @@ func _run() -> void:
 		)
 	var fire_ultimate := database.get_card("concussive_shout")
 	var frost_ultimate := database.get_card("frost_bind")
+	var baseline_attack := database.get_card("ember_bolt")
 	var fire_effect := fire_ultimate.get("effect", {}) as Dictionary
 	var frost_effect := frost_ultimate.get("effect", {}) as Dictionary
+	var baseline_effect := baseline_attack.get("effect", {}) as Dictionary
+	_expect(
+		maximum_normal_health <= int(baseline_effect.get("amount", 0)),
+		"Every normal horde enemy must die to one unupgraded basic attack."
+	)
 	_expect(
 		int(fire_effect.get("amount", 0)) >= maximum_normal_health
 			and int(frost_effect.get("amount", 0)) >= maximum_normal_health,

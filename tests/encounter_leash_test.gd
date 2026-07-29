@@ -36,7 +36,7 @@ func _run() -> void:
 	_expect(director.get_disengage_remaining() < 0.0, "Returning inside the leash must cancel countdown.")
 	_expect(cancel_events.size() == 1, "Countdown cancellation must emit once.")
 
-	enemy.call("take_hit", 12, Vector2.ZERO, 0.0)
+	enemy.call("take_hit", 1, Vector2.ZERO, 0.0)
 	enemy.call("apply_status", "slow", {"ratio": 0.5, "duration": 4.0})
 	enemy.position += Vector2(180, -40)
 	var maximum := int((enemy.get("archetype") as Resource).get("max_health"))

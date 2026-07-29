@@ -21,6 +21,12 @@ func _run() -> void:
 	root.add_child(gem)
 	gem.call("configure", 37, player)
 	_expect(
+		(gem as CanvasItem).z_index >= 6
+			and gem.get_node_or_null("BackGlow") != null
+			and gem.get_node_or_null("Sparkle") != null,
+		"XP gems must render brightly above the horde and terrain."
+	)
+	_expect(
 		float(gem.get("attraction_radius")) <= 72.0,
 		"XP gems must remain on the ground until the player walks close to them."
 	)

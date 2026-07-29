@@ -42,7 +42,7 @@ signal survival_pickup_collected(item_id: StringName)
 }
 @export var experience_gem_scene: PackedScene = preload("res://scenes/combat/ExperienceGem.tscn")
 @export var survival_pickup_scene: PackedScene = preload("res://scenes/combat/SurvivalPickup.tscn")
-@export_range(0.0, 1.0, 0.005) var normal_pickup_drop_chance := 0.08
+@export_range(0.0, 1.0, 0.005) var normal_pickup_drop_chance := 0.16
 @export var spawn_around_player := false
 @export var spawn_route_left := 0.0
 @export var spawn_route_right := 0.0
@@ -372,14 +372,19 @@ func _on_survival_enemy_defeated(
 		return
 	var reward_position := (enemy as Node2D).global_position if enemy is Node2D else global_position
 	_active_enemies.erase(enemy)
-	if String(enemy.get_meta("encounter_archetype_id", "")) == "elite":
+	var is_elite := String(enemy.get_meta("encounter_archetype_id", "")) == "elite"
+	if is_elite:
 		_elite_defeat_count += 1
 		elite_defeated.emit(reward_position)
 	elif not is_boss:
 		_try_spawn_survival_pickup(reward_position)
 	_gold += maxi(0, gold)
 	if not completion_boss:
-		_spawn_experience_gem(reward_position, maxi(1, experience))
+		_spawn_experience_burst(
+			reward_position,
+			maxi(1, experience),
+			6 if is_elite or is_boss else 2
+		)
 	if is_boss and not completion_boss:
 		_experience += maxi(0, experience)
 	if completion_boss:
@@ -438,12 +443,29 @@ func _spawn_experience_gem(at_position: Vector2, value: int) -> void:
 		gem.call(
 			"launch",
 			Vector2(
-				_rng.randf_range(-280.0, 280.0),
-				_rng.randf_range(-210.0, -120.0)
+				_rng.randf_range(-360.0, 360.0),
+				_rng.randf_range(-300.0, -150.0)
 			),
-			_rng.randf_range(0.2, 0.34)
+			_rng.randf_range(0.26, 0.42)
 		)
 	experience_gem_spawned.emit(gem, value)
+
+
+func _spawn_experience_burst(
+	at_position: Vector2,
+	total_value: int,
+	minimum_shards: int = 1
+) -> void:
+	var safe_minimum := maxi(1, minimum_shards)
+	var distributed_total := maxi(safe_minimum, total_value)
+	var shard_count := clampi(distributed_total, safe_minimum, 12)
+	var base_value := distributed_total / shard_count
+	var remainder := distributed_total % shard_count
+	for shard_index in shard_count:
+		_spawn_experience_gem(
+			at_position,
+			base_value + (1 if shard_index < remainder else 0)
+		)
 
 
 func roll_survival_pickup(roll: float) -> StringName:

@@ -52,12 +52,12 @@ func _test_archetype_catalog() -> void:
 	_expect(database.load_catalog(), "Early-game balance test must load the card catalog.")
 	var ember := database.get_card("ember_bolt")
 	var ember_damage := int((ember.get("effect", {}) as Dictionary).get("amount", 0))
-	for early_id in [&"sprout", &"hopper"]:
-		var early_enemy := catalog[early_id] as EnemyArchetype
-		var damage_after_defense := maxi(1, ember_damage - early_enemy.defense)
+	for normal_id in expected_ids.slice(0, 6):
+		var normal_enemy := catalog[normal_id] as EnemyArchetype
+		var damage_after_defense := maxi(1, ember_damage - normal_enemy.defense)
 		_expect(
-			ceili(float(early_enemy.max_health) / float(damage_after_defense)) <= 2,
-			"%s must die within two default Ember Bolt hits." % early_id
+			normal_enemy.max_health <= damage_after_defense,
+			"%s must die to one default Ember Bolt hit." % normal_id
 		)
 	for normal_id in expected_ids.slice(0, 6):
 		var normal_enemy := catalog[normal_id] as EnemyArchetype
@@ -80,11 +80,32 @@ func _test_enemy_and_elite_contract() -> void:
 	_expect(enemy.is_in_group("Enemies"), "AutumnEnemy must be discoverable as an enemy.")
 	_expect(enemy.call("configure_archetype", &"sprout"), "Enemy must accept a known archetype.")
 	_expect(not enemy.call("configure_archetype", &"unknown"), "Enemy must reject an unknown archetype.")
+	_expect(
+		enemy.has_signal("hit_confirmed")
+			and enemy.get_node_or_null("DamageNumber") != null
+			and enemy.get_node_or_null("DeathBurst") != null,
+		"Every enemy must expose per-target damage text and a visible defeat burst."
+	)
 
+	var hit_events: Array[Vector2i] = []
+	if enemy.has_signal("hit_confirmed"):
+		enemy.connect(
+			"hit_confirmed",
+			func(damage: int, lethal: bool) -> void:
+				hit_events.append(Vector2i(damage, 1 if lethal else 0))
+		)
 	var health_before := int(enemy.get("health"))
-	var applied := int(enemy.call("take_hit", 12, Vector2.ZERO, 0.0))
-	_expect(applied == 12, "The early Sprout must take the full 12 raw test damage.")
-	_expect(int(enemy.get("health")) == health_before - 12, "Enemy damage must reduce health.")
+	var applied := int(enemy.call("take_hit", 6, Vector2.ZERO, 0.0))
+	_expect(applied == 6, "The early Sprout must take the full 6 raw test damage.")
+	_expect(int(enemy.get("health")) == health_before - 6, "Enemy damage must reduce health.")
+	var damage_number := enemy.get_node_or_null("DamageNumber") as Label
+	_expect(
+		hit_events == [Vector2i(6, 0)]
+			and damage_number != null
+			and damage_number.visible
+			and damage_number.text == "-6",
+		"Taking damage must immediately show a readable per-enemy hit confirmation."
+	)
 
 	_expect(enemy.call("configure_archetype", &"elite"), "Enemy must configure the elite archetype.")
 	var first_pattern: StringName = enemy.call("perform_next_attack")
@@ -93,6 +114,22 @@ func _test_enemy_and_elite_contract() -> void:
 	_expect(second_pattern == &"shockwave", "Elite second attack must be shockwave.")
 
 	enemy.queue_free()
+	var death_enemy := packed.instantiate()
+	root.add_child(death_enemy)
+	await process_frame
+	var lethal_events: Array[Vector2i] = []
+	death_enemy.connect(
+		"hit_confirmed",
+		func(damage: int, lethal: bool) -> void:
+			lethal_events.append(Vector2i(damage, 1 if lethal else 0))
+	)
+	death_enemy.call("take_hit", 999, Vector2.ZERO, 0.0)
+	var death_particles := death_enemy.get_node("DeathBurst") as CPUParticles2D
+	_expect(
+		lethal_events == [Vector2i(999, 1)] and death_particles.emitting,
+		"A lethal hit must immediately trigger a per-enemy defeat burst."
+	)
+	death_enemy.queue_free()
 	await process_frame
 
 

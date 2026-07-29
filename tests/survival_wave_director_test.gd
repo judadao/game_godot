@@ -76,6 +76,10 @@ func _run() -> void:
 	if director.has_method("roll_survival_pickup"):
 		var drop_chance := float(director.get("normal_pickup_drop_chance"))
 		_expect(
+			drop_chance >= 0.12,
+			"Normal horde enemies must drop temporary pickups often enough to notice during a run."
+		)
+		_expect(
 			director.call("roll_survival_pickup", drop_chance * 0.10) == &"healing_fruit"
 				and director.call("roll_survival_pickup", drop_chance * 0.55) == &"experience_magnet"
 				and director.call("roll_survival_pickup", drop_chance * 0.85) == &"swift_fruit"
@@ -92,6 +96,7 @@ func _run() -> void:
 		"Survival encounter must begin from one authoritative countdown."
 	)
 	var first_normal: Node
+	var expected_normal_shards := 0
 	for active_enemy in director.call("get_active_enemies") as Array:
 		if String(active_enemy.get_meta("encounter_archetype_id", "")) != "elite":
 			first_normal = active_enemy
@@ -99,6 +104,7 @@ func _run() -> void:
 	_expect(first_normal != null, "Survival must begin with ordinary enemies.")
 	if first_normal != null:
 		var archetype := first_normal.get("archetype") as EnemyArchetype
+		expected_normal_shards = maxi(2, archetype.experience_reward)
 		director.call(
 			"_on_survival_enemy_defeated",
 			first_normal,
@@ -108,10 +114,9 @@ func _run() -> void:
 			false
 		)
 	_expect(
-		experience_drop_values.size() == 1
-			and experience_drop_values[0] >= 1
-			and experience_drop_values[0] <= 3,
-		"Every ordinary survival enemy must emit one low-value physical XP gem."
+		experience_drop_values.size() == expected_normal_shards
+			and experience_drop_values.all(func(value: int) -> bool: return value == 1),
+		"Every ordinary enemy must burst into multiple one-XP gems."
 	)
 	director.call("advance_survival", 0.21)
 	_expect(
