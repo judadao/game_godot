@@ -3,6 +3,7 @@ extends RefCounted
 const DEFAULT_DATA_PATH := "res://data/equipment.json"
 const SAVE_SCHEMA_VERSION := 2
 const VALID_SLOTS: Array[StringName] = [&"weapon", &"armor", &"accessory"]
+const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
 
 var _loaded := false
 var _resource_ids: Array[StringName] = []
@@ -21,6 +22,7 @@ var _equipped: Dictionary = {
 	"armor": StringName(),
 	"accessory": StringName(),
 }
+var _element_taxonomy: RefCounted = ELEMENT_TAXONOMY_SCRIPT.new()
 
 
 func _init(data_path: String = DEFAULT_DATA_PATH) -> void:
@@ -212,6 +214,14 @@ func get_equipped(slot: StringName) -> StringName:
 	if not VALID_SLOTS.has(slot):
 		return StringName()
 	return StringName(_equipped.get(String(slot), StringName()))
+
+
+func get_equipped_weapon_element() -> String:
+	var weapon_id := get_equipped(&"weapon")
+	if weapon_id.is_empty():
+		return "normal"
+	var weapon := _equipment_by_id.get(String(weapon_id), {}) as Dictionary
+	return String(weapon.get("primal_element", "normal"))
 
 
 func get_effect_totals() -> Dictionary:
@@ -435,6 +445,16 @@ func _load_data(data_path: String) -> void:
 		if item_id.is_empty() or _equipment_by_id.has(item_id):
 			return
 		if not VALID_SLOTS.has(slot) or effects.is_empty() or purchase_cost.is_empty():
+			return
+		if (
+			slot == &"weapon"
+			and not bool(
+				_element_taxonomy.call(
+					"is_valid",
+					String(item.get("primal_element", ""))
+				)
+			)
+		):
 			return
 		for cost_value in purchase_cost.values():
 			if not _is_positive_whole_number(cost_value):

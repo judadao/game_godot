@@ -390,6 +390,11 @@ Combo 組合效果」。相同神賜重複取得時升級，最高 Lv.3；兩個
 為 evolved gift。融合材料 ascended 後不再進獎勵池，同一融合不能反覆發生；
 fusion-only 頁可略過，因此不會形成無限 modal loop。
 
+正式元素只有 water／fire／wind／lightning／ice／poison／light／dark／normal，
+由 `ElementTaxonomy` 統一命名。每個 base 神賜保留一個 canonical `element`；
+融合神賜同時保留兩個材料的 canonical `elements`，不會把屬性改名成
+`evolved`。Flame、Storm、Frost、Venom 等舊稱只作輸入相容 alias。
+
 ### 7.3 Passive attack Skill
 
 Skill recipe 不是卡牌類型，也不由 non-attack card 推進。每次成功且正傷害的
@@ -404,6 +409,13 @@ attack card 只產生一個 skill event；multi-hit 仍算一個。active skills
 學會的 skill 永久保留，出發前在安全區/Town 編輯 active loadout。Memory Library
 level 的 capacity 是 10/14/18/24/30。初始 `Iron Momentum` 使用 1 memory，五次
 attack 觸發三秒弱霸體，cooldown 十秒。
+
+五個 Combo Finisher 與四個 named trigger 不共用同一 motion 模板。九招分別具有
+獨立 archetype 與 3–5 段 beat pattern；Skill 的 Lv.1／2／3 會依
+`evolution_layers` 定義逐步增加新部件的身份，永久 Combo／Buff 疊層則依各招
+`stack_milestones` 增加結構層，並保留對齊的 `stack_traits` 成長語彙。Runtime 將實際
+`evolution_level` 與最強相關 `buff_stacks` 傳給演出，因此成長會改變剪影、
+路徑或節拍，而不只是整體縮放與亮度。
 
 ### 7.4 火／冰範圍技能
 
@@ -499,6 +511,11 @@ icon、短名稱、等級與最多三點效果呈現；可融合時同頁列出�
 - weapon；
 - armor；
 - accessory。
+
+每把 weapon 另有一個 canonical `primal_element`，目前 Iron Sword／Hunter Bow／
+Apprentice Staff 分別為 normal／wind／water。InventoryManager 驗證其屬於正式
+九元素並可投影目前裝備武器的原初屬性；目前沒有證據表示此欄位會自行轉換傷害，
+因此不得把武器身份資料描述成額外 elemental damage。
 
 裝備可購買、裝備、卸下，最高升到 level 3。升級成本由目前 level 計算：
 

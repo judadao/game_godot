@@ -37,6 +37,7 @@ const COMBO_FINISHER_CATALOG_SCRIPT := preload(
 const NAMED_SKILL_VFX_CATALOG_SCRIPT := preload(
 	"res://scripts/systems/named_skill_vfx_catalog.gd"
 )
+const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
 const BASE_AP_REGEN := 0.95
 const CARD_TEMPO_DURATION := 6.0
 const CARD_TEMPO_MAX_STACKS := 8
@@ -152,6 +153,7 @@ var growth_choice_queue := GrowthChoiceQueue.new()
 var divine_gift_manager: RefCounted = DIVINE_GIFT_MANAGER_SCRIPT.new()
 var combo_finisher_catalog: RefCounted = COMBO_FINISHER_CATALOG_SCRIPT.new()
 var named_skill_vfx_catalog: RefCounted = NAMED_SKILL_VFX_CATALOG_SCRIPT.new()
+var element_taxonomy: RefCounted = ELEMENT_TAXONOMY_SCRIPT.new()
 var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
 var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
 var forge_catalog: RefCounted = FORGE_CATALOG_SCRIPT.new()
@@ -1971,7 +1973,13 @@ func _resolve_skill_triggers(triggered: Array[Dictionary]) -> void:
 			hud.call("show_skill_toast", skill_id, skill_name)
 		if skill_cast_presentation != null:
 			skill_cast_presentation.play_cast(skill_name, &"neutral", 0.8)
-		_spawn_named_skill_vfx(skill_id, 1.0)
+		var progression := _named_skill_vfx_progression(skill)
+		_spawn_named_skill_vfx(
+			skill_id,
+			1.0,
+			int(progression.get("evolution_level", 1)),
+			int(progression.get("buff_stacks", 0))
+		)
 
 
 func _open_hand_overflow_discard(required_count: int) -> void:
@@ -2242,7 +2250,7 @@ func _build_formula_finisher(
 						)
 				var infusion_id := String(formula_effect.get("infusion_id", ""))
 				if infusion_id in ["flame", "frost", "storm", "venom"]:
-					elements.append(infusion_id)
+					_append_vfx_element(elements, infusion_id)
 			"heal", "regeneration", "healing_pulses":
 				finisher_heal += maxi(
 					1,
@@ -2311,9 +2319,11 @@ func _build_formula_finisher(
 	if bool(effect.get("piercing", false)):
 		effect["target_count"] = maxi(6, int(effect.get("target_count", 1)))
 	var primary_gift := divine_gift_manager.call("get_primary_gift") as Dictionary
-	var primary_element := String(primary_gift.get("element", ""))
-	if not primary_element.is_empty() and not elements.has(primary_element):
-		elements.append(primary_element)
+	for gift_element_variant in primary_gift.get(
+		"elements",
+		[primary_gift.get("element", "normal")]
+	) as Array:
+		_append_vfx_element(elements, String(gift_element_variant))
 	var recipe_name := String(recipe.get("name", "Finisher"))
 	var epithet := String(divine_gift_manager.call("get_epithet_prefix"))
 	finisher["id"] = String(recipe.get("id", "divine_finale"))
@@ -2884,12 +2894,13 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 	var is_area := effect_kind in ["area_damage", "area_slow", "damage_aura"]
 	var is_finisher := bool(visual_profile.get("finisher", false))
 	var is_elemental_skill := (
-		primary_element in ["flame", "frost"]
+		primary_element in ["fire", "ice"]
 		and (card_type in ["skill", "ultimate"] or is_finisher)
 		and is_area
 	)
 	if String(card.get("id", "")) == "inferno_orb":
 		is_elemental_skill = true
+	var progression := _named_skill_vfx_progression(card)
 	return {
 		"element": primary_element,
 		"elements": elements,
@@ -2911,20 +2922,47 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 			5
 		),
 		"importance": 1.45 if is_elemental_skill or is_finisher else 0.85,
+		"evolution_level": int(progression.get("evolution_level", 1)),
+		"buff_stacks": int(progression.get("buff_stacks", 0)),
+	}
+
+
+func _named_skill_vfx_progression(card: Dictionary) -> Dictionary:
+	var evolution_level := clampi(
+		int(card.get("card_level", card.get("level", 1))),
+		1,
+		3
+	)
+	var progression_tags: Array = []
+	var tags_variant: Variant = card.get("combo_tags", card.get("tags", []))
+	if tags_variant is Array:
+		progression_tags.append_array(tags_variant as Array)
+	for card_id_variant in card.get("sequence", []) as Array:
+		var source_id := String(card_id_variant)
+		var source_card := card_database.get_card(source_id)
+		if source_card.is_empty():
+			continue
+		var source_tags: Variant = source_card.get(
+			"combo_tags",
+			source_card.get("tags", [])
+		)
+		if source_tags is Array:
+			progression_tags.append_array(source_tags as Array)
+		evolution_level = maxi(
+			evolution_level,
+			int(_sword_soul_progress(StringName(source_id)).get("level", 0))
+		)
+	return {
+		"evolution_level": clampi(evolution_level, 1, 3),
+		"buff_stacks": maxi(0, _combo_stack_for_card({
+			"combo_tags": progression_tags,
+		})),
 	}
 
 
 func _append_vfx_element(elements: Array[String], candidate: String) -> void:
-	var normalized := candidate.strip_edges().to_lower()
-	if normalized in ["fire", "flame"]:
-		normalized = "flame"
-	elif normalized in ["ice", "frost"]:
-		normalized = "frost"
-	elif normalized in ["lightning", "storm"]:
-		normalized = "storm"
-	elif normalized in ["poison", "venom"]:
-		normalized = "venom"
-	else:
+	var normalized := String(element_taxonomy.call("normalize", candidate))
+	if normalized.is_empty():
 		return
 	if not elements.has(normalized):
 		elements.append(normalized)
@@ -2936,8 +2974,8 @@ func _play_combat_vfx(card: Dictionary) -> void:
 	var profile := _resolve_combat_vfx_profile(card)
 	var element := String(profile.get("element", ""))
 	var presentation_element := (
-		&"fire" if element == "flame"
-		else (&"ice" if element == "frost" else &"neutral")
+		&"fire" if element == "fire"
+		else (&"ice" if element == "ice" else &"neutral")
 	)
 	var cast_name := String(card.get("name", card.get("id", "Skill")))
 	if bool(profile.get("screen_title", false)) and skill_cast_presentation != null:
@@ -2954,7 +2992,9 @@ func _play_combat_vfx(card: Dictionary) -> void:
 	elif not String(profile.get("named_vfx_id", "")).is_empty():
 		_spawn_named_skill_vfx(
 			String(profile.get("named_vfx_id", "")),
-			clampf(float(profile.get("intensity", 1)) * 0.24 + 0.84, 0.9, 1.45)
+			clampf(float(profile.get("intensity", 1)) * 0.24 + 0.84, 0.9, 1.45),
+			int(profile.get("evolution_level", 1)),
+			int(profile.get("buff_stacks", 0))
 		)
 
 
@@ -3009,7 +3049,7 @@ func _spawn_elemental_ultimate(profile: Dictionary) -> void:
 		return
 	var element := String(profile.get("element", ""))
 	var effect_scene := (
-		fire_ultimate_vfx_scene if element == "flame"
+		fire_ultimate_vfx_scene if element == "fire"
 		else ice_ultimate_vfx_scene
 	)
 	if effect_scene == null:
@@ -3024,12 +3064,12 @@ func _spawn_elemental_ultimate(profile: Dictionary) -> void:
 		"intensity",
 		(
 			clampf(float(profile.get("intensity", 1)) * 0.42, 0.35, 2.5)
-			if element == "flame"
+			if element == "fire"
 			else clampf(float(profile.get("intensity", 1)) * 0.25, 0.1, 1.0)
 		)
 	)
 	if effect.has_method("play"):
-		if element == "flame":
+		if element == "fire":
 			effect.call("play", player)
 		else:
 			effect.call("play")
@@ -3042,7 +3082,12 @@ func _ensure_named_skill_vfx_catalog() -> bool:
 	return _named_skill_vfx_catalog_loaded
 
 
-func _spawn_named_skill_vfx(profile_id: String, intensity: float = 1.0) -> void:
+func _spawn_named_skill_vfx(
+	profile_id: String,
+	intensity: float = 1.0,
+	evolution_level: int = 1,
+	buff_stacks: int = 0
+) -> void:
 	if (
 		profile_id.is_empty()
 		or current_map == null
@@ -3062,7 +3107,15 @@ func _spawn_named_skill_vfx(profile_id: String, intensity: float = 1.0) -> void:
 		direction = 1
 	if effect.has_signal("impact"):
 		effect.connect("impact", _on_named_skill_vfx_impact)
-	effect.call_deferred("play", profile_id, direction, intensity, false)
+	effect.call_deferred(
+		"play",
+		profile_id,
+		direction,
+		intensity,
+		false,
+		clampi(evolution_level, 1, 3),
+		maxi(0, buff_stacks)
+	)
 
 
 func _on_named_skill_vfx_impact(
@@ -3431,7 +3484,14 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 		var card := card_database.get_card(card_id)
 		if card.is_empty():
 			continue
+		var owned_level := maxi(
+			1,
+			int(_sword_soul_progress(StringName(card_id)).get("level", 0))
+		)
+		card["level"] = owned_level
+		card["card_level"] = owned_level
 		var profile := _resolve_combat_vfx_profile(card)
+		var progression := _named_skill_vfx_progression(card)
 		var effect := card.get("effect", {}) as Dictionary
 		var category := _codex_category_for_card(card)
 		var preview_kind := _codex_preview_kind_for_card(card, profile)
@@ -3465,11 +3525,14 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"elements": preview_elements,
 			"intensity": int(profile.get("intensity", 2)),
 			"radius": float(profile.get("radius", 180.0)),
+			"level": int(progression.get("evolution_level", 1)),
+			"combo_stack": int(progression.get("buff_stacks", 0)),
 		})
 	for skill_id in meta_state.learned_skill_ids:
 		var recipe := skill_recipe_manager.get_recipe(skill_id)
 		if recipe.is_empty():
 			continue
+		var progression := _named_skill_vfx_progression(recipe)
 		projection.append({
 			"id": skill_id,
 			"name": String(recipe.get("name", skill_id.capitalize())),
@@ -3484,6 +3547,8 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 				recipe.get("effect", {}) as Dictionary,
 				"passive"
 			),
+			"level": int(progression.get("evolution_level", 1)),
+			"combo_stack": int(progression.get("buff_stacks", 0)),
 		})
 	for recipe_variant in combo_finisher_catalog.call("get_all_recipes") as Array:
 		var recipe := recipe_variant as Dictionary
@@ -3502,6 +3567,7 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			for tag_variant in card.get("tags", []) as Array:
 				_append_vfx_element(elements, String(tag_variant))
 		var base_effect := recipe.get("base_effect", {}) as Dictionary
+		var progression := _named_skill_vfx_progression(recipe)
 		projection.append({
 			"id": String(recipe.get("id", "")),
 			"name": String(recipe.get("name", "Finisher")),
@@ -3518,6 +3584,8 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"intensity": 5,
 			"attack_size_multiplier": float(base_effect.get("size_multiplier", 1.8)),
 			"stack_count": maxi(3, int(base_effect.get("projectile_bonus", 0))),
+			"level": int(progression.get("evolution_level", 1)),
+			"combo_stack": int(progression.get("buff_stacks", 0)),
 		})
 	projection.sort_custom(
 		func(left: Dictionary, right: Dictionary) -> bool:
@@ -3542,7 +3610,7 @@ func _codex_preview_kind_for_card(card: Dictionary, profile: Dictionary) -> Stri
 	if category == "infusions":
 		return "attack_aura"
 	if bool(profile.get("ultimate", false)):
-		return "ice_ultimate" if String(profile.get("element", "")) == "frost" else "fire_ultimate"
+		return "ice_ultimate" if String(profile.get("element", "")) == "ice" else "fire_ultimate"
 	return "technique"
 
 

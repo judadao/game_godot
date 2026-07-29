@@ -85,6 +85,18 @@ func get_active_named_vfx_id() -> String:
 	return String(_effect.call("get_profile_id"))
 
 
+func get_active_effect_evolution_level() -> int:
+	if not is_instance_valid(_effect) or not _effect.has_method("get_evolution_level"):
+		return 0
+	return int(_effect.call("get_evolution_level"))
+
+
+func get_active_effect_buff_stacks() -> int:
+	if not is_instance_valid(_effect) or not _effect.has_method("get_buff_stack_count"):
+		return 0
+	return int(_effect.call("get_buff_stack_count"))
+
+
 func get_effect_travel_offset() -> Vector2:
 	if not is_instance_valid(_effect) or not _effect.has_method("get_travel_offset"):
 		return Vector2.ZERO
@@ -210,7 +222,15 @@ func _spawn_named_skill(profile_id: String) -> void:
 	add_child(_effect)
 	_effect.z_index = 6
 	_effect.position = _preview_effect_center()
-	_effect.call("play", profile_id, 1, 1.0, true)
+	_effect.call(
+		"play",
+		profile_id,
+		1,
+		1.0,
+		true,
+		clampi(int(_entry.get("level", 1)), 1, 3),
+		maxi(0, int(_entry.get("combo_stack", 0)))
+	)
 	_effect_preview_size = size
 	_replay_remaining = 1.5
 

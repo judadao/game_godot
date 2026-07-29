@@ -102,6 +102,32 @@ func _run() -> void:
 			and float(feedback.call("get_travel_distance_ratio_at_progress", 0.50)) >= 0.78,
 		"Basic Attack must burst across most of its range immediately instead of accelerating like a missile."
 	)
+	_expect(
+		feedback.has_method("get_animation_quality_profile")
+			and feedback.call("get_animation_quality_profile") == &"layered_slash_cascade",
+		"Basic Attack animation must use the layered slash-cascade timing profile."
+	)
+	_expect(
+		feedback.has_method("get_temporal_afterimage_sample_count")
+			and int(feedback.call("get_temporal_afterimage_sample_count")) >= 4
+			and int(feedback.call("get_frame_interpolation_sample_count")) == 2,
+		"Sword-wave travel needs at least four historical-position afterimages instead of one moving sticker."
+	)
+	_expect(
+		feedback.has_method("get_travel_pose_scale")
+			and (feedback.call("get_travel_pose_scale", 0.04) as Vector2).x < 0.90
+			and (feedback.call("get_travel_pose_scale", 0.30) as Vector2).x > 1.0
+			and not (feedback.call("get_travel_pose_scale", 0.04) as Vector2).is_equal_approx(
+				feedback.call("get_travel_pose_scale", 0.30) as Vector2
+			),
+		"Sword-wave launch must visibly compress and snap open before settling."
+	)
+	_expect(
+		feedback.has_method("get_impact_echo_count")
+			and int(feedback.call("get_impact_echo_count")) >= 2
+			and float(feedback.call("get_contact_flash_window")) <= 0.06,
+		"Impact needs delayed sprite echoes and a short contact flash for a decisive hit."
+	)
 	await create_timer(0.55).timeout
 	_expect(
 		impact_events == [{"did_hit": true, "combo_tier": 0}],
@@ -122,7 +148,7 @@ func _run() -> void:
 		1.4,
 		{
 			"stack_count": 6,
-			"elements": ["flame", "frost", "storm", "venom"],
+			"elements": ["fire", "ice", "lightning", "poison"],
 			"lifesteal": true,
 		}
 	)
@@ -146,8 +172,10 @@ func _run() -> void:
 	_expect(
 		active_elements.has(&"flame")
 			and active_elements.has(&"frost")
+			and active_elements.has(&"storm")
+			and active_elements.has(&"venom")
 			and int(feedback.call("get_element_emphasis_pass_count")) == 8,
-		"Each elemental infusion must receive two explicit silhouette emphasis passes."
+		"Formal fire, ice, lightning, and poison IDs must retain their internal silhouette emphasis layers."
 	)
 	_expect(
 		int(feedback.call("get_combo_emphasis_pass_count")) >= 4,

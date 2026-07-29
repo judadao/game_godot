@@ -4,6 +4,21 @@
       "id": "thousand_blade_kill",
       "display_name": "千刃殺",
       "kind": "finisher",
+      "element": "normal",
+      "archetype": "blade_storm_lane",
+      "beat_pattern": [0.08, 0.22, 0.36, 0.62, 0.88],
+      "evolution_layers": [
+        "cross_cut_seed",
+        "orbiting_blade_ring",
+        "thousand_edge_execution"
+      ],
+      "stack_milestones": [0, 3, 6, 9],
+      "stack_traits": [
+        "single_execution_arc",
+        "triple_afterimage_fan",
+        "six_blade_crossfire",
+        "nine_blade_storm_crown"
+      ],
       "atlas_path": "res://assets/generated/vfx/named_skills/finisher_parts_atlas_v1.png",
       "rows": 5,
       "columns": 5,
@@ -24,6 +39,21 @@
       "id": "inferno_cremation",
       "display_name": "焚天滅",
       "kind": "finisher",
+      "element": "fire",
+      "archetype": "compression_detonation",
+      "beat_pattern": [0.12, 0.34, 0.68, 0.82, 0.96],
+      "evolution_layers": [
+        "ember_core",
+        "caldera_ring",
+        "cremation_pillar"
+      ],
+      "stack_milestones": [0, 3, 6, 9],
+      "stack_traits": [
+        "sealed_ember",
+        "three_flame_satellites",
+        "sixfold_magma_fissure",
+        "ninefold_sunburst"
+      ],
       "atlas_path": "res://assets/generated/vfx/named_skills/finisher_parts_atlas_v1.png",
       "rows": 5,
       "columns": 5,
@@ -44,6 +74,21 @@
       "id": "thunder_prison_pierce",
       "display_name": "雷獄穿心",
       "kind": "finisher",
+      "element": "lightning",
+      "archetype": "rail_prison",
+      "beat_pattern": [0.07, 0.18, 0.54, 0.66, 0.9],
+      "evolution_layers": [
+        "prison_lance",
+        "lightning_bar_cells",
+        "judgement_thunder_gate"
+      ],
+      "stack_milestones": [0, 3, 6, 9],
+      "stack_traits": [
+        "single_charge_spear",
+        "three_locking_sigils",
+        "six_chain_crossbars",
+        "ninefold_prison_break"
+      ],
       "atlas_path": "res://assets/generated/vfx/named_skills/finisher_parts_atlas_v1.png",
       "rows": 5,
       "columns": 5,
@@ -64,6 +109,21 @@
       "id": "heavenly_wheel_sever",
       "display_name": "天輪斷",
       "kind": "finisher",
+      "element": "normal",
+      "archetype": "orbiting_wheel",
+      "beat_pattern": [0.16, 0.38, 0.58, 0.76, 0.94],
+      "evolution_layers": [
+        "half_wheel",
+        "dual_orbit_wheels",
+        "celestial_guillotine_halo"
+      ],
+      "stack_milestones": [0, 3, 6, 9],
+      "stack_traits": [
+        "single_wheel_cut",
+        "three_orbit_marks",
+        "six_spoke_halo",
+        "nine_heavenly_wheels"
+      ],
       "atlas_path": "res://assets/generated/vfx/named_skills/finisher_parts_atlas_v1.png",
       "rows": 5,
       "columns": 5,
@@ -84,6 +144,21 @@
       "id": "frozen_burial",
       "display_name": "霜葬",
       "kind": "finisher",
+      "element": "ice",
+      "archetype": "descending_tomb",
+      "beat_pattern": [0.14, 0.42, 0.7, 0.86],
+      "evolution_layers": [
+        "frost_coffin",
+        "burial_spikes",
+        "glacial_mausoleum"
+      ],
+      "stack_milestones": [0, 3, 6, 9],
+      "stack_traits": [
+        "single_frost_seal",
+        "three_coffin_runes",
+        "six_grave_spikes",
+        "ninefold_whiteout_tomb"
+      ],
       "atlas_path": "res://assets/generated/vfx/named_skills/finisher_parts_atlas_v1.png",
       "rows": 5,
       "columns": 5,
@@ -104,6 +179,21 @@
       "id": "iron_momentum",
       "display_name": "Iron Momentum",
       "kind": "trigger",
+      "element": "wind",
+      "archetype": "armor_lock",
+      "beat_pattern": [0.09, 0.28, 0.61, 0.88],
+      "evolution_layers": [
+        "iron_guard_plate",
+        "tempered_counter_ring",
+        "fortress_lock"
+      ],
+      "stack_milestones": [0, 2, 4, 5],
+      "stack_traits": [
+        "single_guard_flash",
+        "double_temper_band",
+        "four_plate_bastion",
+        "five_hit_fortress_lock"
+      ],
       "atlas_path": "res://assets/generated/vfx/named_skills/passive_parts_atlas_v1.png",
       "rows": 4,
       "columns": 5,
@@ -124,6 +214,21 @@
       "id": "ember_reprise",
       "display_name": "Ember Reprise",
       "kind": "trigger",
+      "element": "fire",
+      "archetype": "returning_arc",
+      "beat_pattern": [0.06, 0.24, 0.48, 0.73, 0.91],
+      "evolution_layers": [
+        "returning_ember",
+        "echo_flame_arc",
+        "phoenix_reprise"
+      ],
+      "stack_milestones": [0, 2, 4, 6],
+      "stack_traits": [
+        "single_return_spark",
+        "double_echo_orbit",
+        "fourfold_rekindle",
+        "sixfold_phoenix_reprise"
+      ],
       "atlas_path": "res://assets/generated/vfx/named_skills/passive_parts_atlas_v1.png",
       "rows": 4,
       "columns": 5,
@@ -144,6 +249,21 @@
       "id": "battle_tempo",
       "display_name": "Battle Tempo",
       "kind": "trigger",
+      "element": "lightning",
+      "archetype": "rhythm_pulse",
+      "beat_pattern": [0.05, 0.21, 0.43, 0.64, 0.85],
+      "evolution_layers": [
+        "tempo_tick",
+        "syncopated_rhythm_ring",
+        "war_cadence_overdrive"
+      ],
+      "stack_milestones": [0, 2, 5, 8],
+      "stack_traits": [
+        "single_tempo_tick",
+        "double_offbeat_echo",
+        "five_note_acceleration",
+        "eight_beat_overdrive"
+      ],
       "atlas_path": "res://assets/generated/vfx/named_skills/passive_parts_atlas_v1.png",
       "rows": 4,
       "columns": 5,
@@ -164,6 +284,21 @@
       "id": "grand_strategy",
       "display_name": "Grand Strategy",
       "kind": "trigger",
+      "element": "water",
+      "archetype": "tactical_ward",
+      "beat_pattern": [0.18, 0.45, 0.72, 0.93],
+      "evolution_layers": [
+        "tactical_node",
+        "linked_command_grid",
+        "grand_constellation"
+      ],
+      "stack_milestones": [0, 3, 6, 9],
+      "stack_traits": [
+        "single_command_node",
+        "three_linked_orders",
+        "six_point_control_grid",
+        "ninefold_strategy_constellation"
+      ],
       "atlas_path": "res://assets/generated/vfx/named_skills/passive_parts_atlas_v1.png",
       "rows": 4,
       "columns": 5,

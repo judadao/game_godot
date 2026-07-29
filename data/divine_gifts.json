@@ -19,7 +19,7 @@
       "name": "Echoing Will",
       "description": "Every Combo becomes stronger; named Finishers gain an echo.",
       "prefix": "無盡迴響的",
-      "element": "echo",
+      "element": "dark",
       "finisher_mutations": {"finisher_echoes": 1, "echo_decay": 0.7},
       "icon": "↻",
       "effects_by_level": [
@@ -33,7 +33,7 @@
       "name": "Venomous Font",
       "description": "Every Combo refunds AP; named Finishers restore health.",
       "prefix": "萬毒蝕心的",
-      "element": "venom",
+      "element": "poison",
       "finisher_mutations": {"poison_damage": 3, "poison_duration": 5.0, "death_spread": true},
       "icon": "◆",
       "effects_by_level": [
@@ -47,7 +47,7 @@
       "name": "Thunder Oath",
       "description": "Every Combo carries elemental force; named Finishers spread every element.",
       "prefix": "天罰雷霆的",
-      "element": "thunder",
+      "element": "lightning",
       "finisher_mutations": {"combo_stun": 0.6, "chain_lightning": true},
       "icon": "◇",
       "effects_by_level": [
@@ -61,7 +61,7 @@
       "name": "Celestial Momentum",
       "description": "Every Combo accelerates combat; named Finishers become larger and faster.",
       "prefix": "天穹神速的",
-      "element": "celestial",
+      "element": "wind",
       "finisher_mutations": {"piercing": true, "speed_multiplier": 1.5},
       "icon": "»",
       "effects_by_level": [

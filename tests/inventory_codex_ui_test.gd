@@ -27,7 +27,8 @@ func _run() -> void:
 		{
 			"id": "inferno_cremation", "name": "Inferno Cremation",
 			"category": "finishers", "preview_kind": "finisher",
-			"named_vfx_id": "inferno_cremation", "elements": ["flame"],
+			"named_vfx_id": "inferno_cremation", "elements": ["fire"],
+			"level": 3, "combo_stack": 7,
 		},
 	])
 	ui.call("set_mode", &"codex")
@@ -69,6 +70,11 @@ func _run() -> void:
 	_expect(
 		preview.call("get_active_named_vfx_id") == "inferno_cremation",
 		"Finisher previews must preserve the exact named VFX identity."
+	)
+	_expect(
+		int(preview.call("get_active_effect_evolution_level")) == 3
+			and int(preview.call("get_active_effect_buff_stacks")) == 7,
+		"Codex named VFX previews must preserve entry evolution level and persistent buff stacks."
 	)
 	ui.queue_free()
 	viewport.queue_free()

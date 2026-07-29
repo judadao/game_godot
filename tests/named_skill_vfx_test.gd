@@ -13,6 +13,28 @@ const EXPECTED_TRIGGERS := [
 	"battle_tempo",
 	"grand_strategy",
 ]
+const VALID_ELEMENTS := [
+	"water",
+	"fire",
+	"wind",
+	"lightning",
+	"ice",
+	"poison",
+	"light",
+	"dark",
+	"normal",
+]
+const EXPECTED_ARCHETYPES := {
+	"thousand_blade_kill": "blade_storm_lane",
+	"inferno_cremation": "compression_detonation",
+	"thunder_prison_pierce": "rail_prison",
+	"heavenly_wheel_sever": "orbiting_wheel",
+	"frozen_burial": "descending_tomb",
+	"iron_momentum": "armor_lock",
+	"ember_reprise": "returning_arc",
+	"battle_tempo": "rhythm_pulse",
+	"grand_strategy": "tactical_ward",
+}
 
 var _failures := 0
 
@@ -36,6 +58,10 @@ func _run() -> void:
 	_expect(profiles.size() == 9, "All five finishers and four named triggers need profiles.")
 
 	var atlas_rows: Dictionary = {}
+	var archetypes: Dictionary = {}
+	var beat_patterns: Dictionary = {}
+	var evolution_signatures: Dictionary = {}
+	var stack_trait_signatures: Dictionary = {}
 	for profile_id in EXPECTED_FINISHERS + EXPECTED_TRIGGERS:
 		_expect(bool(catalog.call("has_profile", profile_id)), "Missing named VFX profile: %s." % profile_id)
 		var profile := catalog.call("get_profile", profile_id) as Dictionary
@@ -58,6 +84,67 @@ func _run() -> void:
 			float(profile.get("duration", 0.0)) > float(profile.get("impact_time", 0.0)),
 			"Named VFX must retain a post-impact decay for %s." % profile_id
 		)
+		var element := String(profile.get("element", ""))
+		_expect(
+			element in VALID_ELEMENTS,
+			"Named VFX element must use the weapon/blessing taxonomy: %s." % profile_id
+		)
+		if profile_id == "thunder_prison_pierce":
+			_expect(
+				element == "lightning",
+				"Thunder Prison must use the formal lightning element."
+			)
+		var archetype := String(profile.get("archetype", ""))
+		_expect(not archetype.is_empty(), "Named VFX needs a visual archetype: %s." % profile_id)
+		_expect(
+			archetype == String(EXPECTED_ARCHETYPES.get(profile_id, "")),
+			"Named VFX must use its supported identity archetype: %s." % profile_id
+		)
+		_expect(
+			not archetypes.has(archetype),
+			"Named VFX archetypes must be unique instead of template aliases: %s." % archetype
+		)
+		archetypes[archetype] = profile_id
+		var beat_pattern := profile.get("beat_pattern", []) as Array
+		var beat_signature := JSON.stringify(beat_pattern)
+		_expect(
+			beat_pattern.size() >= 3
+				and beat_pattern.size() <= 5
+				and _is_strictly_increasing_unit_sequence(beat_pattern),
+			"Named VFX needs three to five authored, ordered beats: %s." % profile_id
+		)
+		_expect(
+			not beat_patterns.has(beat_signature),
+			"Named VFX beat patterns must differ by identity: %s." % profile_id
+		)
+		beat_patterns[beat_signature] = profile_id
+		var evolution_layers := profile.get("evolution_layers", []) as Array
+		var evolution_signature := JSON.stringify(evolution_layers)
+		_expect(
+			evolution_layers.size() == 3 and _all_non_empty_unique_strings(evolution_layers),
+			"Named VFX must add a distinct structure at levels one, two, and three: %s." % profile_id
+		)
+		_expect(
+			not evolution_signatures.has(evolution_signature),
+			"Named VFX level evolution must not share one template: %s." % profile_id
+		)
+		evolution_signatures[evolution_signature] = profile_id
+		var stack_milestones := profile.get("stack_milestones", []) as Array
+		var stack_traits := profile.get("stack_traits", []) as Array
+		var stack_trait_signature := JSON.stringify(stack_traits)
+		_expect(
+			stack_milestones.size() == stack_traits.size()
+				and stack_milestones.size() >= 3
+				and int(stack_milestones[0]) == 0
+				and _is_strictly_increasing_integer_sequence(stack_milestones)
+				and _all_non_empty_unique_strings(stack_traits),
+			"Named VFX needs aligned stack milestones and escalating visual traits: %s." % profile_id
+		)
+		_expect(
+			not stack_trait_signatures.has(stack_trait_signature),
+			"Named VFX stack traits must communicate its own buff identity: %s." % profile_id
+		)
+		stack_trait_signatures[stack_trait_signature] = profile_id
 
 	var viewport := SubViewport.new()
 	viewport.size = Vector2i(640, 360)
@@ -102,6 +189,15 @@ func _capture_contact_sheet(
 	catalog: RefCounted,
 	capture_path: String
 ) -> void:
+	var capture_level := clampi(
+		int(OS.get_environment("NAMED_SKILL_VFX_CAPTURE_LEVEL")),
+		1,
+		3
+	)
+	var capture_stacks := maxi(
+		0,
+		int(OS.get_environment("NAMED_SKILL_VFX_CAPTURE_STACKS"))
+	)
 	var viewport := SubViewport.new()
 	viewport.size = Vector2i(1440, 840)
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -141,7 +237,15 @@ func _capture_contact_sheet(
 			if String(profile.get("kind", "")) == "finisher"
 			else cell_origin + Vector2(232.0, 178.0)
 		)
-		effect.call("play", profile_id, 1, 1.0, true)
+		effect.call(
+			"play",
+			profile_id,
+			1,
+			1.0,
+			true,
+			capture_level,
+			capture_stacks
+		)
 		var action_progress := clampf(
 			float(profile.get("impact_time", 0.5))
 				/ maxf(0.1, float(profile.get("duration", 1.0)))
@@ -165,6 +269,42 @@ func _finish() -> void:
 	if _failures == 0:
 		print("PASS: nine named skills use unique modular VFX profiles")
 	quit(1 if _failures > 0 else 0)
+
+
+func _is_strictly_increasing_unit_sequence(values: Array) -> bool:
+	var previous := -1.0
+	for value in values:
+		if not value is float and not value is int:
+			return false
+		var current := float(value)
+		if current < 0.0 or current > 1.0 or current <= previous:
+			return false
+		previous = current
+	return true
+
+
+func _is_strictly_increasing_integer_sequence(values: Array) -> bool:
+	var previous := -1
+	for value in values:
+		if not value is int and not (value is float and is_equal_approx(value, round(value))):
+			return false
+		var current := int(value)
+		if current < 0 or current <= previous:
+			return false
+		previous = current
+	return true
+
+
+func _all_non_empty_unique_strings(values: Array) -> bool:
+	var seen: Dictionary = {}
+	for value in values:
+		if not value is String:
+			return false
+		var text := String(value).strip_edges()
+		if text.is_empty() or seen.has(text):
+			return false
+		seen[text] = true
+	return true
 
 
 func _expect(condition: bool, message: String) -> void:

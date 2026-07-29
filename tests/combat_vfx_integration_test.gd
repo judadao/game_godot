@@ -29,7 +29,7 @@ func _run() -> void:
 			database.get_card("inferno_orb")
 		) as Dictionary
 		_expect(
-			String(inferno.get("element", "")) == "flame"
+			String(inferno.get("element", "")) == "fire"
 				and bool(inferno.get("ultimate", false))
 				and float(inferno.get("radius", 0.0)) >= 180.0,
 			"Inferno Orb must map to a reusable wide fire ultimate."
@@ -40,7 +40,7 @@ func _run() -> void:
 			database.get_card("frost_bind")
 		) as Dictionary
 		_expect(
-			String(frost.get("element", "")) == "frost"
+			String(frost.get("element", "")) == "ice"
 				and bool(frost.get("ultimate", false))
 				and bool(frost.get("slow_motion", false))
 				and float(frost.get("radius", 0.0)) >= 220.0,
@@ -52,7 +52,7 @@ func _run() -> void:
 			database.get_card("flame_imbue")
 		) as Dictionary
 		_expect(
-			String(flame_imbue.get("element", "")) == "flame"
+			String(flame_imbue.get("element", "")) == "fire"
 				and bool(flame_imbue.get("attack_aura", false))
 				and not bool(flame_imbue.get("ultimate", false))
 				and not bool(flame_imbue.get("slow_motion", true))
@@ -74,6 +74,49 @@ func _run() -> void:
 			String(thousand_blade.get("named_vfx_id", "")) == "thousand_blade_kill"
 				and not bool(thousand_blade.get("ultimate", false)),
 			"Named Finishers must route to their exact modular VFX instead of a generic elemental ultimate."
+		)
+
+		var run_state: RunState = game.get("run_state") as RunState
+		run_state.temporary_buffs["persistent_combo_stacks"] = {
+			"fire": 7,
+			"power": 4,
+		}
+		var evolved_named_skill := game.call(
+			"_resolve_combat_vfx_profile",
+			{
+				"id": "inferno_cremation",
+				"name": "Inferno Cremation",
+				"type": "skill",
+				"card_level": 9,
+				"tags": ["skill", "fire"],
+				"combo_tags": ["combo", "fire", "power"],
+				"effect": {"kind": "area_damage", "radius": 260},
+			}
+		) as Dictionary
+		_expect(
+			int(evolved_named_skill.get("evolution_level", 0)) == 3
+				and int(evolved_named_skill.get("buff_stacks", -1)) == 7,
+			"Named skill VFX must receive a clamped card evolution level and the strongest persistent tagged buff stack."
+		)
+
+		var taxonomy_profile := game.call(
+			"_resolve_combat_vfx_profile",
+			{
+				"id": "taxonomy_probe",
+				"type": "skill",
+				"tags": [
+					"water", "flame", "earth", "wood", "frost",
+					"venom", "storm", "light", "dark", "neutral",
+				],
+				"effect": {"kind": "area_damage"},
+			}
+		) as Dictionary
+		_expect(
+			taxonomy_profile.get("elements", []) == [
+				"water", "fire", "wind", "lightning", "ice",
+				"poison", "light", "dark", "normal",
+			],
+			"Combat VFX must normalize compatibility aliases into the formal nine-element taxonomy."
 		)
 
 	var instance := game_scene.instantiate()

@@ -30,6 +30,11 @@ const GENERATED_FRAME_SIZE := Vector2(320.0, 192.0)
 const LAUNCH_PROGRESS := 0.18
 const RELEASE_TRAVEL_END := 0.38
 const TRAVEL_VISUAL_START := LAUNCH_PROGRESS
+const TEMPORAL_AFTERIMAGE_SAMPLE_COUNT := 4
+const RELEASE_SHEAR_SAMPLE_COUNT := 3
+const IMPACT_ECHO_COUNT := 2
+const CONTACT_FLASH_WINDOW := 0.045
+const TRAVEL_HISTORY_LAGS := [0.026, 0.052, 0.084, 0.122]
 # Compatibility aliases for retired helpers kept below the active generated path.
 const ENERGY_BLADE_TEXTURE := TRAVEL_TEXTURE
 const ENERGY_BLADE_AURA_TEXTURE := TRAVEL_MASK
@@ -223,6 +228,30 @@ func get_motion_profile() -> StringName:
 	return &"slash_shockwave"
 
 
+func get_animation_quality_profile() -> StringName:
+	return &"layered_slash_cascade"
+
+
+func get_temporal_afterimage_sample_count() -> int:
+	return TEMPORAL_AFTERIMAGE_SAMPLE_COUNT
+
+
+func get_frame_interpolation_sample_count() -> int:
+	return 2
+
+
+func get_travel_pose_scale(progress: float) -> Vector2:
+	return _travel_pose_scale(clampf(progress, 0.0, 1.0))
+
+
+func get_impact_echo_count() -> int:
+	return IMPACT_ECHO_COUNT
+
+
+func get_contact_flash_window() -> float:
+	return CONTACT_FLASH_WINDOW
+
+
 func get_travel_distance_ratio_at_progress(progress: float) -> float:
 	if _target_offset.is_zero_approx():
 		return 0.0
@@ -274,13 +303,15 @@ func _draw() -> void:
 				0.0,
 				0.9999
 			)
+			var release_pose := _release_pose_scale(release_progress)
+			var release_direction := direction.rotated(_release_rotation(release_progress))
 			_draw_generated_stage(
 				RELEASE_TEXTURE,
 				RELEASE_MASK,
-				_generated_frame(release_progress),
+				_generated_stage_frame(release_progress, &"weapon_release"),
 				direction * 42.0,
-				direction,
-				Vector2(180.0, 154.0),
+				release_direction,
+				Vector2(180.0, 154.0) * release_pose,
 				1.0,
 				&"weapon_release"
 			)
@@ -291,29 +322,35 @@ func _draw() -> void:
 				0.0,
 				0.9999
 			)
+			var travel_pose := _travel_pose_scale(visual_progress)
+			var travel_direction := direction.rotated(_travel_rotation(visual_progress))
 			_draw_generated_stage(
 				TRAVEL_TEXTURE,
 				TRAVEL_MASK,
-				_generated_frame(visual_progress),
+				_generated_stage_frame(visual_progress, &"blade_travel"),
 				tip,
-				direction,
-				Vector2(182.0, 146.0),
+				travel_direction,
+				Vector2(182.0, 146.0) * travel_pose,
 				1.0,
 				&"blade_travel"
 			)
 	if _impact_progress > 0.0:
+		var impact_pose := _impact_pose_scale(_impact_progress)
 		var impact_snap := direction * lerpf(
 			-18.0,
 			6.0,
 			1.0 - pow(1.0 - minf(1.0, _impact_progress * 4.0), 3.0)
 		)
+		impact_snap += direction.orthogonal() * sin(_impact_progress * PI * 2.0) * (
+			3.5 * pow(1.0 - _impact_progress, 2.0)
+		)
 		_draw_generated_stage(
 			IMPACT_TEXTURE,
 			IMPACT_MASK,
-			_generated_frame(_impact_progress),
+			_generated_stage_frame(_impact_progress, &"directional_impact"),
 			_target_offset + impact_snap,
-			direction,
-			Vector2(252.0, 198.0),
+			direction.rotated(_impact_rotation(_impact_progress)),
+			Vector2(252.0, 198.0) * impact_pose,
 			1.0,
 			&"directional_impact"
 		)
@@ -425,6 +462,123 @@ func _generated_frame(progress: float) -> int:
 	)
 
 
+func _generated_stage_frame(progress: float, stage: StringName) -> int:
+	return _generated_frame(_curved_stage_progress(progress, stage))
+
+
+func _curved_stage_progress(progress: float, stage: StringName) -> float:
+	var curved_progress := clampf(progress, 0.0, 0.9999)
+	match stage:
+		&"weapon_release":
+			curved_progress = pow(curved_progress, 0.72)
+		&"blade_travel":
+			curved_progress = smoothstep(0.0, 0.92, curved_progress)
+		&"directional_impact":
+			curved_progress = pow(curved_progress, 0.58)
+	return clampf(curved_progress, 0.0, 0.9999)
+
+
+func _current_stage_progress(stage: StringName) -> float:
+	match stage:
+		&"weapon_release":
+			return clampf(_travel_progress / RELEASE_TRAVEL_END, 0.0, 0.9999)
+		&"blade_travel":
+			return clampf(
+				(_travel_progress - TRAVEL_VISUAL_START)
+					/ (1.0 - TRAVEL_VISUAL_START),
+				0.0,
+				0.9999
+			)
+		&"directional_impact":
+			return clampf(_impact_progress, 0.0, 0.9999)
+	return 0.0
+
+
+func _generated_frame_mix(stage: StringName) -> Vector3:
+	var curved_progress := _curved_stage_progress(
+		_current_stage_progress(stage),
+		stage
+	)
+	var frame_position := curved_progress * float(GENERATED_FRAME_COUNT - 1)
+	var lower_frame := clampi(floori(frame_position), 0, GENERATED_FRAME_COUNT - 1)
+	var upper_frame := clampi(ceili(frame_position), lower_frame, GENERATED_FRAME_COUNT - 1)
+	return Vector3(
+		float(lower_frame),
+		float(upper_frame),
+		frame_position - float(lower_frame)
+	)
+
+
+func _release_pose_scale(progress: float) -> Vector2:
+	if progress < 0.28:
+		var gather := smoothstep(0.0, 0.28, progress)
+		return Vector2(
+			lerpf(0.64, 0.78, gather),
+			lerpf(1.08, 1.24, gather)
+		)
+	if progress < 0.62:
+		var snap := ease(_range_progress(progress, 0.28, 0.62), 0.30)
+		return Vector2(
+			lerpf(0.78, 1.13, snap),
+			lerpf(1.24, 0.94, snap)
+		)
+	var settle := smoothstep(0.62, 1.0, progress)
+	return Vector2(
+		lerpf(1.13, 1.0, settle),
+		lerpf(0.94, 1.0, settle)
+	)
+
+
+func _travel_pose_scale(progress: float) -> Vector2:
+	if progress < 0.14:
+		var release := smoothstep(0.0, 0.14, progress)
+		return Vector2(
+			lerpf(0.72, 1.10, release),
+			lerpf(1.18, 0.92, release)
+		)
+	if progress < 0.42:
+		var settle := smoothstep(0.14, 0.42, progress)
+		return Vector2(
+			lerpf(1.10, 1.02, settle),
+			lerpf(0.92, 1.0, settle)
+		)
+	var decay := smoothstep(0.42, 1.0, progress)
+	return Vector2(
+		lerpf(1.02, 0.96, decay),
+		lerpf(1.0, 1.06, decay)
+	)
+
+
+func _impact_pose_scale(progress: float) -> Vector2:
+	if progress < 0.20:
+		var contact := ease(_range_progress(progress, 0.0, 0.20), 0.26)
+		return Vector2(
+			lerpf(0.68, 1.14, contact),
+			lerpf(1.22, 0.94, contact)
+		)
+	var release := smoothstep(0.20, 1.0, progress)
+	return Vector2(
+		lerpf(1.14, 1.04, release),
+		lerpf(0.94, 1.08, release)
+	)
+
+
+func _release_rotation(progress: float) -> float:
+	return deg_to_rad(lerpf(-4.5, 1.2, ease(progress, 0.45)))
+
+
+func _travel_rotation(progress: float) -> float:
+	return deg_to_rad(sin(progress * PI) * -1.8 + (1.0 - progress) * 0.8)
+
+
+func _impact_rotation(progress: float) -> float:
+	return deg_to_rad(lerpf(-3.2, 0.0, ease(minf(1.0, progress * 3.5), 0.32)))
+
+
+func _range_progress(value: float, start: float, finish: float) -> float:
+	return clampf((value - start) / maxf(0.001, finish - start), 0.0, 1.0)
+
+
 func _draw_generated_stage(
 	texture: Texture2D,
 	mask: Texture2D,
@@ -493,26 +647,125 @@ func _draw_generated_stage(
 			Color(0.94, 0.08, 0.30, alpha * 0.48)
 		)
 
+	if stage == &"weapon_release":
+		for shear_index in RELEASE_SHEAR_SAMPLE_COUNT:
+			var sample_number := float(shear_index + 1)
+			var shear_frame := maxi(0, frame_index - shear_index - 1)
+			var shear_direction := direction.rotated(
+				deg_to_rad((-2.4 + float(shear_index) * 2.2) * (1.0 - _travel_progress))
+			)
+			_draw_generated_frame(
+				texture,
+				_generated_source_rect(shear_frame),
+				center - direction * (4.0 + sample_number * 3.5)
+					+ normal * (-1.0 if shear_index % 2 == 0 else 1.0) * sample_number * 1.8,
+				shear_direction,
+				size * Vector2(1.0 + sample_number * 0.026, 1.0 + sample_number * 0.045),
+				Color(0.54, 0.88, 1.0, alpha * (0.19 - float(shear_index) * 0.045))
+			)
+
 	if stage == &"blade_travel":
-		for ghost_offset in range(2, 0, -1):
-			var ghost_frame := maxi(0, frame_index - ghost_offset)
+		for ghost_index in range(TEMPORAL_AFTERIMAGE_SAMPLE_COUNT - 1, -1, -1):
+			var lag: float = TRAVEL_HISTORY_LAGS[ghost_index]
+			var historical_progress := maxf(
+				TRAVEL_VISUAL_START,
+				_travel_progress - lag
+			)
+			var historical_visual_progress := clampf(
+				(historical_progress - TRAVEL_VISUAL_START)
+					/ (1.0 - TRAVEL_VISUAL_START),
+				0.0,
+				0.9999
+			)
+			var ghost_frame := _generated_stage_frame(
+				historical_visual_progress,
+				&"blade_travel"
+			)
+			var sample_number := float(ghost_index + 1)
+			var ghost_alpha := alpha * (0.20 - float(ghost_index) * 0.032)
 			_draw_generated_frame(
 				texture,
 				_generated_source_rect(ghost_frame),
-				center - direction * (12.0 + float(ghost_offset) * 9.0),
+				_travel_point(historical_progress)
+					+ normal
+						* sin(
+							historical_visual_progress * PI * 2.0
+								+ sample_number * 1.7
+						)
+						* sample_number
+						* 1.4,
 				direction,
-				size * (1.0 + float(ghost_offset) * 0.025),
-				Color(0.42, 0.82, 1.0, alpha * 0.13 / float(ghost_offset))
+				size * Vector2(
+					1.0 + sample_number * 0.018,
+					1.0 + sample_number * 0.032
+				),
+				Color(0.38, 0.78, 1.0, ghost_alpha)
 			)
 
+	if stage == &"directional_impact":
+		for echo_index in range(IMPACT_ECHO_COUNT - 1, -1, -1):
+			var sample_number := float(echo_index + 1)
+			var delayed_progress := maxf(
+				0.0,
+				_impact_progress - 0.085 * sample_number
+			)
+			var echo_frame := _generated_stage_frame(
+				delayed_progress,
+				&"directional_impact"
+			)
+			var echo_fade := (
+				1.0 - smoothstep(0.46 + float(echo_index) * 0.10, 1.0, _impact_progress)
+			)
+			_draw_generated_frame(
+				texture,
+				_generated_source_rect(echo_frame),
+				center - direction * sample_number * 5.0
+					+ normal * (-1.0 if echo_index % 2 == 0 else 1.0) * sample_number * 2.4,
+				direction.rotated(deg_to_rad((-1.4 + float(echo_index) * 2.8) * echo_fade)),
+				size * Vector2(
+					1.0 + sample_number * 0.055,
+					1.0 + sample_number * 0.075
+				),
+				Color(0.40, 0.82, 1.0, alpha * (0.22 - float(echo_index) * 0.045) * echo_fade)
+			)
+
+	var frame_mix := _generated_frame_mix(stage)
+	var lower_frame := int(frame_mix.x)
+	var upper_frame := int(frame_mix.y)
+	var frame_blend := frame_mix.z
 	_draw_generated_frame(
 		texture,
-		source_rect,
+		_generated_source_rect(lower_frame),
 		center,
 		direction,
 		size,
-		Color(1.0, 1.0, 1.0, alpha)
+		Color(1.0, 1.0, 1.0, alpha * (1.0 - frame_blend))
 	)
+	if upper_frame != lower_frame and frame_blend > 0.001:
+		_draw_generated_frame(
+			texture,
+			_generated_source_rect(upper_frame),
+			center,
+			direction,
+			size,
+			Color(1.0, 1.0, 1.0, alpha * frame_blend)
+		)
+	if stage == &"directional_impact":
+		var flash_progress := clampf(
+			_impact_progress / maxf(0.001, CONTACT_FLASH_WINDOW / IMPACT_DURATION),
+			0.0,
+			1.0
+		)
+		var flash_alpha := sin(flash_progress * PI) * (1.0 - flash_progress) * 0.92
+		if flash_alpha > 0.001:
+			_draw_generated_frame(
+				mask,
+				source_rect,
+				center + direction * 2.0,
+				direction,
+				size * lerpf(0.78, 1.03, ease(flash_progress, 0.34)),
+				Color(0.92, 0.99, 1.0, flash_alpha)
+			)
 
 
 func _draw_generated_frame(
@@ -1532,7 +1785,11 @@ func _normalize_elements(elements: Array) -> Array[StringName]:
 				element = &"flame"
 			&"ice", &"frost":
 				element = &"frost"
-			&"storm", &"venom":
+			&"lightning", &"storm", &"thunder":
+				element = &"storm"
+			&"poison", &"venom":
+				element = &"venom"
+			&"water", &"wind", &"light", &"dark", &"normal":
 				pass
 			_:
 				continue

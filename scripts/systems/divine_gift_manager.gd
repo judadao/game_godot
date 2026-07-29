@@ -3,6 +3,7 @@ extends RefCounted
 
 const DEFAULT_CATALOG_PATH := "res://data/divine_gifts.json"
 const MAX_LEVEL := 3
+const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
 
 var _catalog: Dictionary = {}
 var _inventory: Dictionary = {}
@@ -10,6 +11,7 @@ var _next_evolution_id := 1
 var _primary_gift_id := ""
 var _ascended_base_ids: Dictionary = {}
 var _completed_fusions: Dictionary = {}
+var _element_taxonomy: RefCounted = ELEMENT_TAXONOMY_SCRIPT.new()
 
 
 func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
@@ -31,15 +33,20 @@ func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
 			return false
 		var gift := (gift_variant as Dictionary).duplicate(true)
 		var gift_id := String(gift.get("id", "")).strip_edges()
+		var element := String(
+			_element_taxonomy.call("normalize", String(gift.get("element", "")))
+		)
 		var levels_variant: Variant = gift.get("effects_by_level", [])
 		if (
 			gift_id.is_empty()
 			or _catalog.has(gift_id)
+			or not bool(_element_taxonomy.call("is_valid", element))
 			or not levels_variant is Array
 			or (levels_variant as Array).size() != MAX_LEVEL
 		):
 			_catalog.clear()
 			return false
+		gift["element"] = element
 		_catalog[gift_id] = gift
 	return not _catalog.is_empty()
 
@@ -95,6 +102,7 @@ func add_or_upgrade(gift_id: String) -> bool:
 		"icon": String(definition.get("icon", "✦")),
 		"prefix": String(definition.get("prefix", "")),
 		"element": String(definition.get("element", "")),
+		"elements": [String(definition.get("element", "normal"))],
 		"finisher_mutations": (
 			definition.get("finisher_mutations", {}) as Dictionary
 		).duplicate(true),
@@ -124,6 +132,7 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 			"name": String(definition.get("name", gift_id)),
 			"description": String(definition.get("description", "")),
 			"icon": String(definition.get("icon", "✦")),
+			"element": String(definition.get("element", "normal")),
 			"level": current_level,
 			"next_level": current_level + 1,
 			"action": "divine_gift",
@@ -189,6 +198,12 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 		right_id,
 	]
 	_next_evolution_id += 1
+	var evolved_elements := _canonical_gift_elements(left, right)
+	var primary_element := (
+		String(evolved_elements[0])
+		if not evolved_elements.is_empty()
+		else "normal"
+	)
 	var evolved := {
 		"id": evolution_id,
 		"name": "Apotheosis: %s / %s" % [
@@ -198,7 +213,8 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 		"description": "An evolved Divine Gift affecting Combo skills and named Finishers.",
 		"icon": "✺",
 		"prefix": _evolved_prefix(left, right),
-		"element": "evolved",
+		"element": primary_element,
+		"elements": evolved_elements,
 		"finisher_mutations": _merge_mutations([
 			left.get("finisher_mutations", {}) as Dictionary,
 			right.get("finisher_mutations", {}) as Dictionary,
@@ -217,6 +233,19 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 	_completed_fusions[fusion_key] = true
 	_primary_gift_id = evolution_id
 	return evolved.duplicate(true)
+
+
+func _canonical_gift_elements(left: Dictionary, right: Dictionary) -> Array[String]:
+	var result: Array[String] = []
+	for gift in [left, right]:
+		var candidates := gift.get("elements", [gift.get("element", "normal")]) as Array
+		for candidate_variant in candidates:
+			var element := String(
+				_element_taxonomy.call("normalize", String(candidate_variant), "normal")
+			)
+			if not result.has(element):
+				result.append(element)
+	return result
 
 
 func get_global_effects() -> Dictionary:
@@ -327,8 +356,8 @@ func _evolved_prefix(left: Dictionary, right: Dictionary) -> String:
 		String(right.get("element", "")),
 	]
 	elements.sort()
-	if elements == ["echo", "ice"]:
+	if elements == ["dark", "ice"]:
 		return "永劫冰獄的"
-	if elements == ["fire", "thunder"]:
+	if elements == ["fire", "lightning"]:
 		return "天火雷劫的"
 	return "神域昇華的"

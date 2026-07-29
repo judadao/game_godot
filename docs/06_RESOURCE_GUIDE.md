@@ -9,7 +9,7 @@ pipeline描述成Current。
 
 1. [目的、現況與術語](#1-目的現況與術語)
 2. [資料分層與 Ownership](#2-資料分層與-ownership)
-3. [現有七個 JSON Catalog](#3-現有七個-json-catalog)
+3. [現有九個 JSON Catalog](#3-現有九個-json-catalog)
 4. [Card Data 與 CardDatabase](#4-card-data-與-carddatabase)
 5. [Fusion Recipe 與 EvolutionManager](#5-fusion-recipe-與-evolutionmanager)
 6. [Equipment Data 與 Inventory Runtime State](#6-equipment-data-與-inventory-runtime-state)
@@ -36,14 +36,14 @@ pipeline描述成Current。
 
 | 類型 | 數量 | Path |
 |---|---:|---|
-| Gameplay JSON | 7 | `res://data/*.json` |
+| Gameplay JSON | 9 | `res://data/*.json` |
 | Gameplay `.tres` / `.res` | 0 | 無 |
 | `resources/` content | 只有`.gitkeep` | `res://resources/.gitkeep` |
 | Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
 | Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
 | Generated VFX texture | 21 | `res://assets/generated/vfx/` |
 
-七個 JSON：
+九個 JSON：
 
 - `res://data/cards.json`
 - `res://data/evolutions.json`
@@ -52,6 +52,8 @@ pipeline描述成Current。
 - `res://data/town_upgrades.json`
 - `res://data/divine_gifts.json`
 - `res://data/combo_finishers.json`
+- `res://data/forge_catalog.json`
+- `res://data/named_skill_vfx_profiles.json`
 
 Generated combat presentation：
 
@@ -80,6 +82,10 @@ Generated combat presentation：
 - `SkillCastPresentation` 只以透明元素洗色、短促 impact flash、能量導線與
   可換行大字表現出招，不使用實心中央 UI 卡片。Major cast 才啟用邊緣壓暗，
   一般 Combo 維持正常時間流速。
+- `NamedSkillVFXCatalog` 驗證五個 Finisher 與四個 trigger 的獨立資料身份。
+  每招由 anticipation、attack、trail、impact、debris 五個 atlas parts 拼裝，
+  並以唯一 archetype、beat pattern、三級 evolution layers 與 stack traits
+  控制動畫拓樸和成長，不以單一模板只換 motion 名稱。
 
 ### 1.2 術語
 
@@ -154,7 +160,7 @@ UI setter/configure API
 如果getter回傳catalog內部reference，consumer可能污染所有後續讀取。Current
 `CardDatabase.get_card()`與`get_all_cards()`已回傳deep copies。
 
-## 3. 現有七個 JSON Catalog
+## 3. 現有九個 JSON Catalog
 
 | JSON | Loader | Root field | Current validated content |
 |---|---|---|---|
@@ -165,6 +171,8 @@ UI setter/configure API
 | `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 4 buildings × 3 levels, 3 stages |
 | `divine_gifts.json` | `DivineGiftManager` | `gifts` | 6 個三級 Run-local 神賜 |
 | `combo_finishers.json` | `ComboFinisherCatalog` | `recipes` | 5 個精確三招終結技配方 |
+| `forge_catalog.json` | `ForgeCatalog` | `material_offers`, `equipment_recipes`, `sword_soul_recipes` | Town 鍛造 offer 與 recipe |
+| `named_skill_vfx_profiles.json` | `NamedSkillVFXCatalog` | `profiles` | 5 個 Finisher＋4 個 trigger 的差異化模組 VFX |
 
 數量與重要cross-reference由`tests/content_validation_test.gd`驗證。新增內容時，
 測試中的固定數量若代表產品contract需一起更新；不得只為通過測試放寬assertion。
@@ -191,6 +199,63 @@ UI setter/configure API
 
 Loader目前不以schema version分派migration。新增／更改schema前，必須先建立version
 policy與old fixture，不能只提高number。
+
+### 3.3 Formal element taxonomy
+
+`scripts/systems/element_taxonomy.gd` 的 `ElementTaxonomy` 是武器、神賜與戰鬥 VFX
+共用的唯一正式元素權威，canonical IDs 固定為：
+
+```text
+water
+fire
+wind
+lightning
+ice
+poison
+light
+dark
+normal
+```
+
+Compatibility aliases 只在 `normalize()` 邊界轉換，例如 flame→fire、
+earth→wind、storm／thunder／wood→lightning、frost→ice、venom→poison、
+neutral→normal。新 catalog 不得保存 alias。`equipment.json` 的每個 weapon
+必須提供一個有效 `primal_element`；`divine_gifts.json` 的 base gift `element`
+也必須是 canonical ID。兩個 Lv.3 神賜融合後，dynamic entry 的 `elements`
+陣列保留去重後的 canonical component elements，`element` 只投影第一個 primary
+element；不得用 `evolved` 等新字串取代材料屬性。
+
+### 3.4 Named Skill VFX profile contract
+
+`data/named_skill_vfx_profiles.json` 的每筆 profile 除 atlas、crop、motion 與 timing
+外，必須包含：
+
+- `element`：正式 ElementTaxonomy ID。
+- `archetype`：九招之一的唯一動畫拓樸；catalog 不接受重複或未支援值。
+- `beat_pattern`：3–5 個介於 0..1 且嚴格遞增的節拍。
+- `evolution_layers`：恰好三個不重複字串，依 Lv.1／2／3 逐步解鎖。
+- `stack_milestones`：由 0 開始、嚴格遞增的非負整數。
+- `stack_traits`：與 milestones 等長的獨立視覺語彙。
+
+九種 supported archetypes 依五個 Finisher、四個 trigger 的 catalog 順序為：
+
+```text
+blade_storm_lane
+compression_detonation
+rail_prison
+orbiting_wheel
+descending_tomb
+armor_lock
+returning_arc
+rhythm_pulse
+tactical_ward
+```
+
+Catalog 採 all-or-nothing validation，getter 回傳 deep copy。Runtime
+`NamedSkillVFX.play()` 接收 `evolution_level` 與 `buff_stacks`，再以 profile 的
+archetype、beat pattern 與 milestone tier 增加 presentation parts、節拍與拓樸；
+`evolution_layers`／`stack_traits` 同時提供經 validation 的招式成長 identity
+signature。這些資料不修改 gameplay damage/status authority。
 
 ## 4. Card Data 與 CardDatabase
 
@@ -353,6 +418,7 @@ Current fields：
 - `id`
 - `name`
 - `slot`
+- weapon 專用 `primal_element`
 - `purchase_cost`
 - `effects`
 - `special_ability`
@@ -364,6 +430,7 @@ Loader validation：
 - starting amount是非負整數值。
 - equipment ID非空且唯一。
 - slot在`VALID_SLOTS`。
+- weapon 的 `primal_element` 必須通過 `ElementTaxonomy.is_valid()`。
 - effects與purchase cost非空。
 - cost是正整數值。
 - effect value是int或float。
@@ -580,7 +647,9 @@ instance。Basic Attack 只以 `MetaState.auto_attack_card_id` 與 run-local loc
 必須對 Combo 或終結技有可觀察影響；主神賜的稱號前綴與原終結技名稱組合，所有
 持有神賜的 mechanics 則合併套用。Manager inventory 只存在於 Run，重複 ID 升級
 至 Lv.3。兩個不同 Lv.3 融合後建立 dynamic evolved entry；材料標記 ascended，
-不再回到本 Run 的一般獎勵池，同一融合配方也不能重複建立。
+不再回到本 Run 的一般獎勵池，同一融合配方也不能重複建立。Base `element` 必須是
+canonical ElementTaxonomy ID；融合結果的 `elements` 陣列保留兩個材料的 canonical
+元素，並以第一項投影相容的 primary `element`。
 
 `data/combo_finishers.json` 每筆 recipe 包含 `id`、`name`、精確三項 `sequence`、
 `required_skills` 與 `base_effect`。`ComboFinisherCatalog` 只匹配相同順序的完整
@@ -990,7 +1059,7 @@ func read_dictionary(path: String) -> Dictionary:
 
 ## 20. Review Checklist
 
-- [ ] 七個 JSON 仍可由 current loader 成功載入。
+- [ ] 九個 JSON 仍可由 current loader 成功載入。
 - [ ] Catalog count與ID contract符合產品需求。
 - [ ] Card icon與cross-reference paths存在。
 - [ ] Equipment cost/effect/special ability consumer一致。

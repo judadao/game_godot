@@ -12,6 +12,7 @@
       "id": "iron_sword",
       "name": "Iron Sword",
       "slot": "weapon",
+      "primal_element": "normal",
       "purchase_cost": {"gold": 60, "autumn_wood": 5},
       "effects": {"attack": 4},
       "special_ability": {"id": "tempered_edge", "description": "Attack cards deal +2 damage.", "card_damage_bonus": 2}
@@ -20,6 +21,7 @@
       "id": "hunter_bow",
       "name": "Hunter Bow",
       "slot": "weapon",
+      "primal_element": "wind",
       "purchase_cost": {"gold": 70, "autumn_wood": 6},
       "effects": {"attack": 3, "critical_chance": 0.05},
       "special_ability": {"id": "keen_draw", "description": "Attack cards deal +1 damage and critical chance rises.", "card_damage_bonus": 1}
@@ -28,6 +30,7 @@
       "id": "apprentice_staff",
       "name": "Apprentice Staff",
       "slot": "weapon",
+      "primal_element": "water",
       "purchase_cost": {"gold": 80, "magic_shard": 5},
       "effects": {"magic_power": 3, "max_mana": 10},
       "special_ability": {"id": "mana_current", "description": "AP regenerates 0.10 faster per second and Energy Cycle restores +2 AP.", "ap_regen": 0.10, "energy_card_bonus": 2}
