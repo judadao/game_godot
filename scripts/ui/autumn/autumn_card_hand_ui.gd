@@ -185,8 +185,8 @@ func _responsive_card_size() -> Vector2:
 	var viewport_size := get_viewport_rect().size
 	var safe_height := maxf(112.0, viewport_size.y * 0.28 - 45.0)
 	var hand_width := maxf(360.0, viewport_size.x * 0.50 - 30.0)
-	var height_from_hud := safe_height * 0.86
+	var height_from_hud := safe_height * 0.94
 	var width_limit := (hand_width - 18.0) / float(CARDS_PER_GROUP)
 	var height_from_width := width_limit / AUTUMN_CARD_ASPECT
-	var card_height := clampf(minf(height_from_hud, height_from_width), 112.0, 170.0)
+	var card_height := clampf(minf(height_from_hud, height_from_width), 148.0, 196.0)
 	return Vector2(roundf(card_height * AUTUMN_CARD_ASPECT), roundf(card_height))

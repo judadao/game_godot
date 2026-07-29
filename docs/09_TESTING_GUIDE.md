@@ -170,7 +170,16 @@ AutumnHUD（含內嵌 CardHandUI）至少驗證以下視窗尺寸：
 - 1152×720（較窄比例；現有 guardrail suite）
 - 2560×1080（較寬比例）
 
-自動測試應檢查安全區、地圖 viewport、卡牌操作區、焦點、遮擋與螢幕邊界。人工驗證則確認字體清楚、卡牌可讀、HUD 不阻擋玩法資訊，以及編輯器所見與執行結果一致。
+自動測試應檢查安全區、地圖 viewport、卡牌操作區、焦點、遮擋與螢幕邊界。Autumn
+HUD 還要檢查 XP 的 current／required／NEXT remaining projection、HP／AP／XP／level
+短暫 emphasis 會回復穩定狀態，以及四張 fixed cards 都有至少 48px 的不同 semantic
+icon、12px 以上招式名與 Healing／Flame／Volley／Storm visual family。人工驗證則確認
+字體清楚、卡牌能先靠 icon/色族判讀、HUD 不阻擋玩法資訊、動畫沒有引發 layout
+跳位，以及編輯器所見與執行結果一致。
+
+設定 `AUTUMN_HUD_CAPTURE_DIR` 後執行 `autumn_hud_v3_layout_test.gd`，會由六個
+exact-size `SubViewport` 輸出 `autumn_hud_<width>x<height>.png`，不受桌面工作區
+最大視窗尺寸限制。
 
 Autumn map 變更至少需執行 `autumn_safe_zone_contract_test.gd`、
 `autumn_modular_route_test.gd`、`battle_map_v2_scene_contract_test.gd`、
@@ -424,7 +433,8 @@ instance.queue_free()
 - semantic node rect 在 viewport 內；
 - top-left 與 top-center 不互蓋；
 - bottom stage 不蓋 world interaction prompt；
-- 四張 Combo／Healing cards、AP、Combo Chain 清單與 resources 不裁切；
+- 四張 Combo／Healing cards、large semantic icons、XP、AP、Combo Chain 清單與
+  resources 不裁切；
 - 1152×720 與 2560×1080 仍保持相同 ownership，不生成替代 layout；
 - modal choice grid、繁中/英文長字、focus navigation 與 confirm button 可用。
 

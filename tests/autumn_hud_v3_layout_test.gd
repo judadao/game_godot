@@ -16,6 +16,7 @@ const BOTTOM_REGIONS := [
 ]
 
 var _failures := 0
+var _capture_directory := ""
 
 
 func _initialize() -> void:
@@ -23,6 +24,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	_capture_directory = OS.get_environment("AUTUMN_HUD_CAPTURE_DIR")
 	_expect(ResourceLoader.exists(HUD_PATH), "AutumnHUD must exist for layout verification.")
 	if _failures > 0:
 		quit(1)
@@ -47,6 +49,7 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	])
 	hud.call("set_cards", _sample_cards(), 5.0)
 	hud.call("set_action_points", 5.0, 5.0)
+	hud.call("set_experience", 18, 48)
 	hud.call("set_combo_chain", [
 		{"name": "Iron Will", "count": 2},
 		{"name": "Flame Imbue", "count": 3},
@@ -57,6 +60,24 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	var screen := Rect2(Vector2.ZERO, Vector2(viewport_size))
 	var bottom_stage := hud.get_node("BottomStage") as HBoxContainer
 	var bottom_rect := _canvas_rect(bottom_stage)
+	var player_vitals := hud.get_node("BottomStage/PlayerVitals") as Control
+	var xp_progress := hud.get_node(
+		"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/XPProgress"
+	) as ProgressBar
+	var xp_value := hud.get_node(
+		"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/ExperienceHeader/XPValue"
+	) as Label
+	_expect(
+		is_equal_approx(xp_progress.max_value, 48.0)
+			and is_equal_approx(xp_progress.value, 18.0)
+			and xp_value.text.contains("NEXT 30"),
+		"XP bar must show current progress and remaining XP at %s." % viewport_size
+	)
+	_expect(
+		_canvas_rect(player_vitals).encloses(_canvas_rect(xp_progress))
+			and _canvas_rect(player_vitals).encloses(_canvas_rect(xp_value)),
+		"XP projection must remain inside PlayerVitals at %s." % viewport_size
+	)
 	var activity_feed := hud.get_node("BottomStage/ActivityFeed") as Control
 	var activity_rect_before_dense_combo := _canvas_rect(activity_feed)
 	var dense_combo_skills: Array[Dictionary] = []
@@ -159,6 +180,19 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 				]
 			)
 
+	if not _capture_directory.is_empty():
+		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+		await create_timer(0.05).timeout
+		await process_frame
+		await RenderingServer.frame_post_draw
+		var capture_path := _capture_directory.path_join(
+			"autumn_hud_%dx%d.png" % [viewport_size.x, viewport_size.y]
+		)
+		_expect(
+			viewport.get_texture().get_image().save_png(capture_path) == OK,
+			"Autumn HUD visual capture must save at %s." % viewport_size
+		)
+
 	viewport.queue_free()
 	await process_frame
 
@@ -209,8 +243,16 @@ func _check_projection_behavior() -> void:
 	await create_timer(1.3).timeout
 	_expect(toast_stack.get_child_count() == 0, "Refreshed Skill toast must still expire after its restarted lifetime.")
 
+	hud.call("set_health", 100, 100)
+	hud.call("set_health", 88, 100)
+	hud.call("set_action_points", 3.0, 5.0)
 	hud.call("set_action_points", 3.7, 5.0)
+	hud.call("set_experience", 18, 48)
+	hud.call("set_experience", 19, 48)
 	hud.call("set_material_count", 98)
+	var hp_value := hud.get_node(
+		"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow/HPBar/HPValue"
+	) as Label
 	var ap_value := hud.get_node(
 		"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader/APValue"
 	) as Label
@@ -219,6 +261,39 @@ func _check_projection_behavior() -> void:
 	) as ProgressBar
 	_expect(ap_value.text == "3.7 / 5.0", "AP must use the approved decimal real-time projection.")
 	_expect(is_equal_approx(ap_progress.value, 3.7), "AP progress must track the decimal value.")
+	_expect(
+		hp_value.scale.x > 1.0 and ap_value.scale.x > 1.0,
+		"Damage and AP recovery must immediately emphasize their changed values."
+	)
+	var xp_progress := hud.get_node(
+		"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/XPProgress"
+	) as ProgressBar
+	var xp_value := hud.get_node(
+		"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/ExperienceHeader/XPValue"
+	) as Label
+	_expect(
+		is_equal_approx(xp_progress.value, 19.0)
+			and xp_value.text.contains("NEXT 29")
+			and xp_value.scale.x > 1.0,
+		"Collecting XP must update the remaining amount and trigger immediate cyan emphasis."
+	)
+	hud.call("set_player_level", 7)
+	hud.call("set_player_level", 8)
+	var level_label := hud.get_node(
+		"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/LevelLabel"
+	) as Label
+	_expect(
+		level_label.scale.x > 1.0,
+		"Level gain must immediately emphasize the new level."
+	)
+	await create_timer(0.55).timeout
+	_expect(
+		xp_value.scale.is_equal_approx(Vector2.ONE)
+			and level_label.scale.is_equal_approx(Vector2.ONE)
+			and hp_value.scale.is_equal_approx(Vector2.ONE)
+			and ap_value.scale.is_equal_approx(Vector2.ONE),
+		"Vitals emphasis must settle back to a stable readable layout."
+	)
 	_expect(
 		(hud.get_node("TopRightMeta/MetaRow/MaterialValue") as Label).text == "98",
 		"Top-right economy strip must project upgrade material."
@@ -230,11 +305,10 @@ func _check_projection_behavior() -> void:
 
 func _sample_cards() -> Array[Dictionary]:
 	return [
-		{"id": "ember_bolt", "name": "Ember Bolt", "type": "attack", "description": "Deal damage.", "cost": 1, "level": 1},
-		{"id": "shockwave", "name": "Shockwave", "type": "status", "description": "Stun nearby enemies.", "cost": 2, "level": 1},
-		{"id": "guard", "name": "Iron Will", "type": "combo", "description": "Gain armor.", "cost": 1, "level": 1},
-		{"id": "cleave", "name": "Cleave", "type": "attack", "description": "Arc strike.", "cost": 2, "level": 1},
-		{"id": "flame_imbue", "name": "Flame Infusion", "type": "utility", "description": "Gain flame.", "cost": 2, "level": 1},
+		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Recover.", "cost": 1, "level": 1, "fixed": true},
+		{"id": "flame_imbue", "name": "Flame Imbue", "type": "combo", "description": "Gain flame.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 3},
+		{"id": "echo_volley", "name": "Echo Volley", "type": "combo", "description": "Add projectiles.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 2},
+		{"id": "storm_charge", "name": "Storm Charge", "type": "combo", "description": "Add storm.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 1},
 		{"id": "gale_lunge", "name": "Gale Lunge", "type": "attack", "description": "Dash.", "cost": 2, "level": 3},
 		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Recover.", "cost": 2, "level": 1},
 		{"id": "meteor", "name": "Meteor", "type": "ultimate", "description": "Heavy damage.", "cost": 5, "level": 1},

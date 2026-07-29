@@ -526,9 +526,12 @@ HUDLayer
 修改時必須保留：
 
 - 每組最多 4 張 visible cards。
-- compact card minimum 為 `82×78`。
+- shared Town compact card minimum 為 `82×78`；Autumn fixed hand 使用
+  `148–196px` 高的 tall cards 與 `0.72` width-to-height ratio。
 - bottom safe area 為 viewport 高度的 25%。
 - 四張 Combo／Healing 手牌固定放在 `FrontRow` 並接收 Q/W/E/R；`BackRow` 保持空白。
+- Autumn 每張 card 使用至少 `48×48` 的 semantic spell icon；名稱不得小於
+  12px，Healing／Flame／Volley／Storm 必須有可掃讀的獨立色族。
 - hover 仍在 viewport 內。
 - cards 不遮 HUD status/quest/progress。
 - viewport size change 重新 layout。
@@ -1103,7 +1106,8 @@ AutumnHUD
 ```
 
 目前目標固定在左上，金錢與 magic shard 位於右上，Boss health 使用上方中央的暫時空間。
-底部從 viewport 的 66% 開始，依序放玩家狀態與即時小數 AP、目前四張牌及右側
+底部從 viewport 的 66% 開始，依序放玩家狀態、目前／門檻／距離下一級的 XP、
+即時小數 AP、目前四張牌及右側
 activity feed，最下方保留 survival countdown/navigation rail。倒數使用 `MM:SS`，
 最後 30 秒切換紅橙色 `FINAL RUSH`，00:00 顯示 `FINAL BOSS`。不可恢復常駐 combo/recipe 或
 status progress panel。skill toast 最多三筆、約 1.5 秒淡出；相同技能重複觸發
@@ -1122,8 +1126,17 @@ labels use `MOUSE_FILTER_IGNORE`.
 
 Card height is derived from the lower-HUD height and hand-column width. The
 renderer preserves a `0.72` width-to-height ratio and updates the negative
-card dimensions on viewport resize. Do not add per-resolution card
+card dimensions on viewport resize. Autumn cards are `148–196px` high, reserve
+a `48px` semantic icon, and use Healing／Flame／Volley／Storm color families so
+the player can identify the action before reading its name. Do not add per-resolution card
 positions or resize these cards from gameplay code.
+
+`PlayerVitals` owns the always-visible XP projection. `set_experience(current,
+required)` must show both values plus `NEXT <remaining>` and update the cyan
+bar without querying `RunState` from the HUD. Damage pulses HP red, AP recovery
+pulses AP green, XP gain pulses the remaining value cyan, and level-up pulses
+the new level gold. Each scale/color emphasis settles to the stable layout in
+about 0.38 seconds and must be safe while the SceneTree is paused.
 
 ### Combo／Healing hand input contract
 
@@ -1167,7 +1180,7 @@ Divine Gift，不是卡牌升級：顯示 icon、短名稱、等級、最多三�
 - 2560×1080
 - 2560×1440
 
-每個尺寸都要確認 top-left stack、top-center stack、bottom stage、兩列 cards、
+每個尺寸都要確認 top-left stack、top-center stack、bottom stage、單列四張 cards、
 Combo Chain 清單、四格 Deck Builder、interaction prompt 與 world-safe area
 不重疊、不裁切、不超界。
 禁止用 gameplay script 為單一解析度寫絕對位置。

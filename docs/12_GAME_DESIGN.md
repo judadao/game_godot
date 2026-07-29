@@ -506,6 +506,10 @@ next_required = ceil(previous_required * 1.25 + 10)
 
 一次取得大量經驗可跨多級，每一級加入 `pending_level_ups`，不會只保留一次升級。
 
+Autumn combat HUD 必須持續顯示目前 XP、下一級門檻與 `NEXT` 尚缺數量。收集 XP
+時以短暫青色脈衝回饋，升級時以金色脈衝突出新等級；這些 presentation 不改變
+`RunState` 的門檻計算或 level-up queue。
+
 ### 8.2 In-run choices
 
 一般 EXP 與 wave 開始不提供新卡、卡牌升級或卡牌融合。唯一的戰鬥內 build
@@ -748,14 +752,18 @@ S／↓ 不負責攻擊；`card_group_1` 與 `card_group_2` InputMap actions 已
 - health、mana 與玩家資訊；
 - 區域、目標、`MM:SS` survival countdown 與 Final Rush 狀態；
 - enemy alive/cap；
+- 目前／門檻／距離下一級的 XP bar；
 - AP；
-- 單組四張 Combo／Healing 手牌；
+- 單組四張 Combo／Healing 手牌；每張以大型 semantic icon、招式名與
+  Healing／Flame／Volley／Storm 色族協助即時辨識；
 - 持續顯示總層數、剩餘時間與技能分項的 Combo Chain 清單；
 - Guardian health；
 - interaction prompt；
 - Run Result、Level Up、Discard、Deck Builder modal。
 
 UI 顯示不得宣告 backend 尚未提供的能力。
+HP loss、AP recovery、XP gain 與 level gain 可使用短暫 scale/color emphasis，
+但必須回到穩定排版，不能使 `BottomStage` 越過 66% gameplay boundary。
 
 ## 13. Scene Tree Example
 

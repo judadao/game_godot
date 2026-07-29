@@ -11,6 +11,7 @@ const REQUIRED_CARD_NODES := [
 	"CardContent/CardName",
 	"CardContent/CardType",
 	"CardContent/IconStage",
+	"CardContent/IconStage/IconFrame",
 	"CardContent/Level",
 	"CardContent/CostRow/CostLabel",
 	"CardContent/CostRow/CostValue",
@@ -126,16 +127,31 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 		)
 		var card_name := card.get_node("CardContent/CardName") as Label
 		var role_label := card.get_node("CardContent/CardType") as Label
+		var icon := card.get_node("CardContent/IconStage/Icon") as TextureRect
 		_expect(
-			card_name.get_theme_font_size("font_size") >= 10,
-			"Card %d name must use at least 10px text at %s." % [index, viewport_size]
+			card_name.get_theme_font_size("font_size") >= 12,
+			"Card %d name must use at least 12px text at %s." % [index, viewport_size]
 		)
 		_expect(
-			role_label.text.begins_with("COMBO")
-				or role_label.text.begins_with("HEALING"),
-			"Card %d must show its compact persistent skill type at %s." % [index, viewport_size]
+			icon.visible
+				and icon.texture != null
+				and icon.size.x >= 46.0
+				and icon.size.y >= 46.0,
+			"Card %d must show a dominant generated skill icon at %s." % [index, viewport_size]
 		)
+		_expect(
+			role_label.text.contains("COMBO") or role_label.text.contains("HEALING"),
+			"Card %d must preserve its gameplay type beside the visual family at %s." % [index, viewport_size]
+		)
+		_expect(card.has_method("get_visual_family"), "Autumn cards must expose their visual family.")
 		_expect(_inside_lower_hud(card, viewport_size), "Card %d must remain inside the lower HUD at %s." % [index, viewport_size])
+	var families: Array[String] = []
+	for index in 4:
+		families.append(String(hand.get_card_button(index).call("get_visual_family")))
+	_expect(
+		families == ["FLAME", "VOLLEY", "STORM", "HEALING"],
+		"Fixed cards must use four instantly distinguishable visual families at %s." % viewport_size
+	)
 	_verify_group_states(hand, 0, viewport_size)
 	for index in 4:
 		_expect(

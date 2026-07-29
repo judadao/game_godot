@@ -29,13 +29,13 @@ func _ready() -> void:
 	if not get_viewport().size_changed.is_connected(_apply_preview_camera_scale):
 		get_viewport().size_changed.connect(_apply_preview_camera_scale)
 
-	hud.set_health(43, 100)
+	hud.set_health(88, 100)
 	hud.set_mana(31, 50)
 	hud.set_stamina(100, 100)
-	hud.set_player_level(1)
+	hud.set_player_level(8)
 	hud.set_player_class("Adventurer")
 	hud.set_currency(45)
-	hud.set_experience(0, 40)
+	hud.set_experience(27, 40)
 	hud.set_material_count(98)
 	hud.set_action_point_regen(0.8)
 	hud.set_objective("FINAL RUSH — SURVIVE", "THREAT 37 / 60")
@@ -69,8 +69,8 @@ func _ready() -> void:
 	)
 	hud.show_skill_toast("iron_momentum", "IRON MOMENTUM")
 
-	card_hand.set_cards(_sample_cards(), 3.7)
-	card_hand.set_action_points(3.7, 5.0)
+	card_hand.set_cards(_sample_cards(), 5.0)
+	card_hand.set_action_points(5.0, 5.0)
 	if OS.has_environment(CAPTURE_PATH_ENV):
 		call_deferred("_capture_preview")
 
@@ -115,10 +115,10 @@ func _preview_zoom_for_size(viewport_size: Vector2) -> Vector2:
 
 func _sample_cards() -> Array[Dictionary]:
 	return [
-		_card("Healing Light", "healing", "Restore health.", 1, "healing_light"),
-		_card("Flame Imbue", "combo", "Attacks gain flame.", 3, "flame_imbue"),
-		_card("Echo Volley", "combo", "Add one horizontal projectile.", 2, "echo_volley"),
-		_card("Storm Charge", "combo", "Attacks gain thunder.", 2, "storm_charge"),
+		_card("Healing Light", "healing", "Restore health.", 1, "healing_light", true),
+		_card("Flame Imbue", "combo", "Attacks gain flame.", 3, "flame_imbue", true),
+		_card("Echo Volley", "combo", "Add one horizontal projectile.", 2, "echo_volley", true),
+		_card("Storm Charge", "combo", "Attacks gain thunder.", 2, "storm_charge", true),
 	]
 
 

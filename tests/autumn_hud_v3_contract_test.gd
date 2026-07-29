@@ -55,6 +55,8 @@ func _run() -> void:
 			"TopRightMeta",
 			"TopCenterStack/BossHealth",
 			"BottomStage/PlayerVitals",
+			"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/ExperienceHeader",
+			"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/XPProgress",
 			"BottomStage/CardStage/ActionStrip/RedrawHand",
 			"BottomStage/CardStage/AutumnCardHandUI",
 			"BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows",
@@ -74,6 +76,7 @@ func _run() -> void:
 			"set_combo_chain",
 			"set_material_count",
 			"set_survival_timer",
+			"set_experience",
 		]:
 			_expect(
 				autumn_hud.has_method(method_name),

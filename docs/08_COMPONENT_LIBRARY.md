@@ -1385,6 +1385,8 @@ Required semantic children:
 - `TopRightMeta`
 - `TopCenterStack/BossHealth`
 - `BottomStage/PlayerVitals`
+- `BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/ExperienceHeader`
+- `BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/XPProgress`
 - `BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows`
 - `BottomStage/CardStage/ActionStrip/RedrawHand`
 - `BottomStage/CardStage/AutumnCardHandUI`
@@ -1396,6 +1398,11 @@ Required semantic children:
 
 `AutumnCardHandUI` 是 HUD 內的 presentation subtree，不是可被 map 或 `Game`
 另外 adopt 的 sibling authority。
+
+`PlayerVitals` projects HP, AP, level, and XP supplied by `Game`. XP displays
+`current / required · NEXT remaining` with a cyan progress bar. HP loss, AP
+recovery, XP gain, and level gain use short restartable scale/color emphasis;
+the HUD never reads gameplay state directly.
 
 ### AutumnInteractionPrompt
 
@@ -1424,16 +1431,22 @@ Required semantic children:
   - `set_row_active(active: bool, affordable: bool)`
   - `set_affordable(affordable: bool)`
   - `set_hovered(hovered: bool)`
+  - `get_visual_family() -> String`
 - Responsibility: present a tall, structured dark-fantasy card while keeping
-  the root `Button` as the single input and focus owner
+  the root `Button` as the single input and focus owner. The fixed Autumn hand
+  maps to generated 256×256 text-free source art under
+  `res://assets/ui/autumn/cards/generated/`, displays at least a 48px semantic
+  icon, keeps the action name at 12px or larger, and exposes
+  Healing／Flame／Volley／Storm visual families.
 
 ### AutumnCardHandUI renderer
 
 - Script: `res://scripts/ui/autumn/autumn_card_hand_ui.gd`
 - Owner: `AutumnHUD/BottomStage/CardStage`
-- Responsibility: create AutumnBattleCard instances, keep card groups in
-  two stable scene-authored rows of four, calculate responsive card dimensions,
-  overlap the rows, and apply active/inactive group presentation
+- Responsibility: create AutumnBattleCard instances in the single active
+  scene-authored `FrontRow`, keep the compatibility `BackRow` empty, calculate
+  responsive `148–196px` card heights with a `0.72` aspect ratio, and apply
+  affordability/hover presentation
 - Input contract: Q/W/E/R play the single four-card Combo／Healing hand；no group-toggle input
 - Exclusion: auto attack is not a card button and has no hand/global index
 - Exclusion: intrinsic Space Dash is not a card button；`quickstep` is absent

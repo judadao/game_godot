@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/autumn/autumn_combat_hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/autumn/AutumnInteractionPrompt.tscn" id="2_prompt"]
@@ -20,11 +20,27 @@ corner_radius_top_right = 7
 corner_radius_bottom_right = 7
 corner_radius_bottom_left = 7
 
+[sub_resource type="StyleBoxFlat" id="VitalsPanel"]
+content_margin_left = 10.0
+content_margin_top = 2.0
+content_margin_right = 10.0
+content_margin_bottom = 2.0
+bg_color = Color(0.035, 0.055, 0.065, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.66, 0.48, 0.24, 0.96)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
 [sub_resource type="StyleBoxFlat" id="InnerPanel"]
 content_margin_left = 8.0
-content_margin_top = 6.0
+content_margin_top = 4.0
 content_margin_right = 8.0
-content_margin_bottom = 6.0
+content_margin_bottom = 4.0
 bg_color = Color(0.055, 0.085, 0.095, 0.94)
 border_width_left = 1
 border_width_top = 1
@@ -74,6 +90,25 @@ corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="APFill"]
 bg_color = Color(0.38, 0.72, 0.29, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="XPBackground"]
+bg_color = Color(0.025, 0.08, 0.11, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12, 0.58, 0.76, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="XPFill"]
+bg_color = Color(0.1, 0.76, 0.96, 1)
 corner_radius_top_left = 3
 corner_radius_top_right = 3
 corner_radius_bottom_right = 3
@@ -342,7 +377,7 @@ custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 22.0
-theme_override_styles/panel = SubResource("BronzePanel")
+theme_override_styles/panel = SubResource("VitalsPanel")
 mouse_filter = 2
 
 [node name="VitalsMargin" type="MarginContainer" parent="BottomStage/PlayerVitals"]
@@ -355,10 +390,11 @@ mouse_filter = 2
 
 [node name="VitalsRows" type="VBoxContainer" parent="BottomStage/PlayerVitals/VitalsMargin"]
 layout_mode = 2
-theme_override_constants/separation = 5
+theme_override_constants/separation = 4
 mouse_filter = 2
 
 [node name="IdentityRow" type="HBoxContainer" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows"]
+custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 theme_override_constants/separation = 8
 mouse_filter = 2
@@ -393,6 +429,39 @@ theme_override_font_sizes/font_size = 12
 text = "ADVENTURER"
 text_overrun_behavior = 3
 
+[node name="ExperienceHeader" type="HBoxContainer" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity"]
+custom_minimum_size = Vector2(0, 13)
+layout_mode = 2
+theme_override_constants/separation = 4
+mouse_filter = 2
+
+[node name="XPLabel" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/ExperienceHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.86, 1, 1)
+theme_override_colors/font_outline_color = Color(0.015, 0.08, 0.12, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+text = "XP"
+
+[node name="XPValue" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/ExperienceHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.72, 0.95, 1, 1)
+theme_override_colors/font_outline_color = Color(0.015, 0.08, 0.12, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 9
+text = "0 / 100 · NEXT 100"
+horizontal_alignment = 2
+text_overrun_behavior = 3
+
+[node name="XPProgress" type="ProgressBar" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity"]
+custom_minimum_size = Vector2(0, 9)
+layout_mode = 2
+theme_override_styles/background = SubResource("XPBackground")
+theme_override_styles/fill = SubResource("XPFill")
+value = 0.0
+show_percentage = false
+
 [node name="HPRow" type="HBoxContainer" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows"]
 layout_mode = 2
 theme_override_constants/separation = 6
@@ -400,8 +469,10 @@ mouse_filter = 2
 
 [node name="Label" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.82, 0.6, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(1, 0.4, 0.3, 1)
+theme_override_colors/font_outline_color = Color(0.12, 0.025, 0.015, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 14
 text = "HP"
 
 [node name="HPBar" type="ProgressBar" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow"]
@@ -445,8 +516,8 @@ mouse_filter = 2
 [node name="APRate" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.66, 0.78, 0.52, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.55, 0.94, 0.39, 1)
+theme_override_font_sizes/font_size = 11
 text = "AP  +0.7 / sec"
 
 [node name="APValue" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader"]
@@ -470,10 +541,10 @@ layout_mode = 2
 mouse_filter = 2
 
 [node name="AutoAttackCount" type="Label" parent="BottomStage/PlayerVitals/VitalsMargin/VitalsRows/AutoAttackRow"]
-custom_minimum_size = Vector2(42, 30)
+custom_minimum_size = Vector2(42, 20)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.78, 0.31, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 13
 text = "11"
 horizontal_alignment = 1
 vertical_alignment = 1

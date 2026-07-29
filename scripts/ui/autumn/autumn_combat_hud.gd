@@ -35,6 +35,8 @@ const SKILL_TOAST_LIFETIME := 1.5
 @onready var _action_points_label: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader/APValue
 @onready var _action_points_rate: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APHeader/APRate
 @onready var _action_points_progress: ProgressBar = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/APPanel/APRows/APProgress
+@onready var _experience_value: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/ExperienceHeader/XPValue
+@onready var _experience_progress: ProgressBar = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/XPProgress
 @onready var _auto_attack_name: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/AutoAttackRow/AutoAttackName
 @onready var _redraw_button: Button = $BottomStage/CardStage/ActionStrip/RedrawHand
 @onready var _auto_use_toggle: CheckButton = $BottomStage/CardStage/ActionStrip/AutoUse
@@ -48,6 +50,17 @@ var _toast_tween_by_key: Dictionary = {}
 var _combo_skills_signature := ""
 var _health_potions := 0
 var _mana_potions := 0
+var _has_health_projection := false
+var _has_level_projection := false
+var _has_experience_projection := false
+var _has_action_points_projection := false
+var _projected_health := 0
+var _projected_level := 0
+var _projected_experience := 0
+var _projected_experience_required := 1
+var _projected_action_points := 0.0
+var _last_emphasized_action_points := 0.0
+var _vitals_tweens: Dictionary = {}
 
 
 func _ready() -> void:
@@ -77,6 +90,10 @@ func toggle() -> void:
 
 func set_health(current: int, maximum: int) -> void:
 	_set_bar(hp_bar, hp_value, current, maximum)
+	if _has_health_projection and current < _projected_health:
+		_pulse_vital("health", hp_value, Color(1.0, 0.42, 0.30), 1.10)
+	_projected_health = current
+	_has_health_projection = true
 
 
 func set_mana(_current: int, _maximum: int) -> void:
@@ -88,7 +105,12 @@ func set_stamina(_current: int, _maximum: int) -> void:
 
 
 func set_player_level(level: int) -> void:
-	level_label.text = "Lv. %d" % maxi(1, level)
+	var safe_level := maxi(1, level)
+	level_label.text = "Lv. %d" % safe_level
+	if _has_level_projection and safe_level > _projected_level:
+		_pulse_vital("level", level_label, Color(1.0, 0.94, 0.58), 1.18)
+	_projected_level = safe_level
+	_has_level_projection = true
 
 
 func set_player_class(player_class_name: String) -> void:
@@ -100,8 +122,27 @@ func set_currency(amount: int) -> void:
 	currency_value.text = _format_number(maxi(0, amount))
 
 
-func set_experience(_current: int, _required: int) -> void:
-	pass
+func set_experience(current: int, required: int) -> void:
+	var safe_required := maxi(1, required)
+	var safe_current := clampi(current, 0, safe_required)
+	_experience_progress.max_value = safe_required
+	_experience_progress.value = safe_current
+	_experience_value.text = "%d / %d · NEXT %d" % [
+		safe_current,
+		safe_required,
+		maxi(0, safe_required - safe_current),
+	]
+	if (
+		_has_experience_projection
+		and (
+			safe_current != _projected_experience
+			or safe_required != _projected_experience_required
+		)
+	):
+		_pulse_vital("experience", _experience_value, Color(0.24, 0.91, 1.0), 1.10)
+	_projected_experience = safe_current
+	_projected_experience_required = safe_required
+	_has_experience_projection = true
 
 
 func set_material_count(amount: int) -> void:
@@ -140,7 +181,45 @@ func _set_action_points_projection(current: float, maximum: float) -> void:
 	_action_points_label.text = "%.1f / %.1f" % [safe_current, safe_maximum]
 	_action_points_progress.max_value = maxf(0.1, safe_maximum)
 	_action_points_progress.value = safe_current
+	if _has_action_points_projection:
+		if safe_current < _projected_action_points:
+			_last_emphasized_action_points = safe_current
+		elif (
+			safe_current >= _last_emphasized_action_points + 0.5
+			or (
+				is_equal_approx(safe_current, safe_maximum)
+				and _projected_action_points < safe_maximum
+			)
+		):
+			_pulse_vital("action_points", _action_points_label, Color(0.58, 1.0, 0.42), 1.08)
+			_last_emphasized_action_points = safe_current
+	else:
+		_last_emphasized_action_points = safe_current
+	_projected_action_points = safe_current
+	_has_action_points_projection = true
 	_redraw_button.disabled = false
+
+
+func _pulse_vital(
+	key: String,
+	control: Control,
+	accent: Color,
+	peak_scale: float
+) -> void:
+	var existing := _vitals_tweens.get(key) as Tween
+	if existing != null and existing.is_valid():
+		existing.kill()
+	control.pivot_offset = control.size * 0.5
+	control.scale = Vector2.ONE * peak_scale
+	control.modulate = accent
+	var tween := control.create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_BACK)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "scale", Vector2.ONE, 0.38)
+	tween.tween_property(control, "modulate", Color.WHITE, 0.38)
+	_vitals_tweens[key] = tween
 
 
 func set_action_point_regen(rate: float) -> void:
