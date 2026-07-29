@@ -226,12 +226,41 @@ same_column_width = true
 [node name="Details" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
+
+[node name="ViewTabs" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="LiveVFX" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/ViewTabs"]
+custom_minimum_size = Vector2(128, 30)
+layout_mode = 2
+toggle_mode = true
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "LIVE VFX"
+
+[node name="ConceptArt" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/ViewTabs"]
+custom_minimum_size = Vector2(148, 30)
+layout_mode = 2
+toggle_mode = true
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "CONCEPT ART"
 
 [node name="Preview" type="Control" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
-custom_minimum_size = Vector2(0, 278)
+custom_minimum_size = Vector2(0, 210)
 layout_mode = 2
 script = ExtResource("2")
+
+[node name="ConceptView" type="TextureRect" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
+visible = false
+custom_minimum_size = Vector2(0, 210)
+layout_mode = 2
+mouse_filter = 2
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Info" type="PanelContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
 layout_mode = 2
@@ -251,6 +280,17 @@ text = "No discoveries"
 [node name="Kind" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.78, 0.7, 1)
+
+[node name="Meta" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.86, 0.94, 1)
+theme_override_font_sizes/font_size = 13
+
+[node name="Growth" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.76, 0.48, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 2
 
 [node name="Description" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content"]
 layout_mode = 2

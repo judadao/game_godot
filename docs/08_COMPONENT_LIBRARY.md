@@ -623,6 +623,9 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
 - API：`show_entry()`、`get_active_entry_id()`、`get_preview_kind()`
 - reuse：`ElementalAttackAura`、`FireUltimateVFX`、`IceUltimateVFX`
 - boundary：只顯示 projection，不計算傷害、不解鎖 discovery、不 mutation save
+- sibling presentation：owner 以 `LIVE VFX／CONCEPT ART` tabs 切換此 component 與
+  stable-id／element 對應的 cropped `AtlasTexture`；元素、進化層與 Buff milestone
+  一律來自 Game projection
 - tooltip/quantity/selection由父層注入。
 - 無 empty/disabled/locked state API。
 - 20 slots固定。

@@ -548,8 +548,12 @@ HUDLayer
 - centered 1040×620 responsive panel
 - Inventory／Discovery Codex 主分頁
 - 可篩選、可捲動的 item/discovery lists
-- Codex 左側 basic attacks／skills／infusions／finishers 列表、右上角色與 production VFX
-  預覽、右下效果／觸發說明
+- Codex 左側 basic attacks／skills／infusions／finishers 列表；右上可在 `LIVE VFX`
+  與 `CONCEPT ART` 間切換，右下顯示效果／觸發說明
+- 命名 Skill／Finisher 的 concept view 依 stable id 裁切專屬概念列；其他條目依
+  `water/fire/wind/lightning/ice/poison/light/dark/normal` 正式元素裁切九宮格素材
+- 詳情區必須投影目前元素、`LV 1–3` 進化層、Buff stack 與下一個 stack milestone，
+  不得在 UI 內另行推算技能規則
 - `InventoryCodexPreview` 等待 Container 提供有效尺寸後才生成 production VFX；
   劍氣使用 preview-local 起點／終點，resize 時重建，不能混入 viewport stretch
   座標或逃出 `clip_contents`
@@ -566,6 +570,8 @@ HUDLayer
 `inventory_ui.gd`：
 
 - `set_gold()`、`set_items()`、`set_codex_entries()`、`set_mode()`
+- `set_codex_view_mode()` 在 production VFX 與 concept art 間切換；沒有可用素材時
+  必須安全退回 live view
 - inventory category 與 codex category 都執行實際篩選
 - `ItemList` 提供 mouse/keyboard selection
 

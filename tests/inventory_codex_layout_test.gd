@@ -10,6 +10,7 @@ var _capture_path := ""
 var _capture_dir := ""
 var _capture_size := Vector2i.ZERO
 var _capture_entry_id := ""
+var _capture_view := &"live"
 var _capture_delay := 0.12
 
 
@@ -22,6 +23,9 @@ func _run() -> void:
 	_capture_dir = OS.get_environment("INVENTORY_CODEX_CAPTURE_DIR")
 	_capture_size = _parse_size(OS.get_environment("INVENTORY_CODEX_CAPTURE_SIZE"))
 	_capture_entry_id = OS.get_environment("INVENTORY_CODEX_CAPTURE_ENTRY")
+	_capture_view = StringName(OS.get_environment("INVENTORY_CODEX_CAPTURE_VIEW"))
+	if _capture_view != &"concept":
+		_capture_view = &"live"
 	_capture_delay = maxf(
 		0.0,
 		float(OS.get_environment("INVENTORY_CODEX_CAPTURE_DELAY"))
@@ -74,6 +78,13 @@ func _check_size(viewport_size: Vector2i) -> void:
 			"preview_kind": "finisher", "elements": ["flame"], "intensity": 5,
 			"named_vfx_id": "inferno_cremation",
 			"attack_size_multiplier": 2.0, "stack_count": 3,
+			"element": "fire", "level": 3, "combo_stack": 7,
+			"evolution_layers": ["ember_core", "caldera_ring", "cremation_pillar"],
+			"stack_milestones": [0, 3, 6, 9],
+			"stack_traits": [
+				"sealed_ember", "three_flame_satellites",
+				"sixfold_magma_fissure", "ninefold_sunburst",
+			],
 		},
 	])
 	ui.call("set_mode", &"codex")
@@ -87,16 +98,30 @@ func _check_size(viewport_size: Vector2i) -> void:
 		else "ember_bolt"
 	)
 	ui.call("select_codex_entry", selected_entry_id)
+	ui.call("set_codex_view_mode", _capture_view)
 	await process_frame
 	await process_frame
 	var panel := ui.get_node("Center/MainPanel") as Control
 	var browser := panel.get_node("Margin/Layout/Pages/CodexPage/Browser") as Control
+	var view_tabs := panel.get_node("Margin/Layout/Pages/CodexPage/Details/ViewTabs") as Control
 	var preview := panel.get_node("Margin/Layout/Pages/CodexPage/Details/Preview") as Control
+	var concept := panel.get_node("Margin/Layout/Pages/CodexPage/Details/ConceptView") as Control
 	var info := panel.get_node("Margin/Layout/Pages/CodexPage/Details/Info") as Control
+	var active_view := concept if _capture_view == &"concept" else preview
 	var screen := Rect2(Vector2.ZERO, Vector2(viewport_size))
 	_expect(screen.encloses(_rect(panel)), "Panel must remain on-screen at %s." % viewport_size)
-	_expect(not _rect(browser).intersects(_rect(preview)), "Discovery list must not overlap preview at %s." % viewport_size)
-	_expect(_rect(preview).end.y <= _rect(info).position.y, "Preview must remain above explanation at %s." % viewport_size)
+	_expect(
+		not _rect(browser).intersects(_rect(active_view)),
+		"Discovery list must not overlap the active visual at %s." % viewport_size
+	)
+	_expect(
+		_rect(view_tabs).end.y <= _rect(active_view).position.y,
+		"View tabs must remain above the active visual at %s." % viewport_size
+	)
+	_expect(
+		_rect(active_view).end.y <= _rect(info).position.y,
+		"Active visual must remain above explanation at %s." % viewport_size
+	)
 	var effect_origin_offset := (
 		preview.call("get_effect_origin_offset_from_preview_center") as Vector2
 	)
@@ -112,7 +137,7 @@ func _check_size(viewport_size: Vector2i) -> void:
 			"Basic Attack VFX must travel horizontally to the character's right at %s; got %s."
 				% [viewport_size, effect_travel_offset]
 		)
-	elif selected_entry_id == "inferno_cremation":
+	elif selected_entry_id == "inferno_cremation" and _capture_view == &"live":
 		_expect(
 			preview.call("get_active_named_vfx_id") == "inferno_cremation",
 			"Named Finisher preview must keep its exact identity at %s." % viewport_size
@@ -125,8 +150,9 @@ func _check_size(viewport_size: Vector2i) -> void:
 	var capture_path := _capture_path
 	if not _capture_dir.is_empty():
 		capture_path = _capture_dir.path_join(
-			"%s_%dx%d.png" % [
+			"%s_%s_%dx%d.png" % [
 				selected_entry_id,
+				String(_capture_view),
 				viewport_size.x,
 				viewport_size.y,
 			]

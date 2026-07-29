@@ -29,6 +29,13 @@ func _run() -> void:
 			"category": "finishers", "preview_kind": "finisher",
 			"named_vfx_id": "inferno_cremation", "elements": ["fire"],
 			"level": 3, "combo_stack": 7,
+			"element": "fire",
+			"evolution_layers": ["ember_core", "caldera_ring", "cremation_pillar"],
+			"stack_milestones": [0, 3, 6, 9],
+			"stack_traits": [
+				"sealed_ember", "three_flame_satellites",
+				"sixfold_magma_fissure", "ninefold_sunburst",
+			],
 		},
 	])
 	ui.call("set_mode", &"codex")
@@ -75,6 +82,46 @@ func _run() -> void:
 		int(preview.call("get_active_effect_evolution_level")) == 3
 			and int(preview.call("get_active_effect_buff_stacks")) == 7,
 		"Codex named VFX previews must preserve entry evolution level and persistent buff stacks."
+	)
+	_expect(
+		ui.has_method("set_codex_view_mode")
+			and ui.has_method("get_codex_view_mode")
+			and ui.has_method("get_active_concept_region"),
+		"Discovery Codex must expose live-VFX and concept-art view modes."
+	)
+	if ui.has_method("set_codex_view_mode"):
+		ui.call("set_codex_view_mode", &"concept")
+		await process_frame
+		var concept := ui.get_node_or_null(
+			"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/ConceptView"
+		) as TextureRect
+		_expect(
+			ui.call("get_codex_view_mode") == &"concept"
+				and concept != null
+				and concept.visible
+				and not preview.visible
+				and (ui.call("get_active_concept_region") as Rect2).has_area(),
+			"Concept mode must replace the live preview with the selected skill's cropped concept art."
+		)
+	var meta := ui.get_node_or_null(
+		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content/Meta"
+	) as Label
+	var growth := ui.get_node_or_null(
+		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content/Growth"
+	) as Label
+	_expect(
+		meta != null
+			and meta.text.contains("FIRE")
+			and meta.text.contains("LV 3/3")
+			and meta.text.contains("BUFF ×7"),
+		"Codex details must show canonical element, evolution level, and current Buff stacks."
+	)
+	_expect(
+		growth != null
+			and growth.text.contains("Cremation Pillar")
+			and growth.text.contains("×9")
+			and growth.text.contains("Ninefold Sunburst"),
+		"Codex details must show the active evolution structure and next stack milestone."
 	)
 	ui.queue_free()
 	viewport.queue_free()

@@ -3533,7 +3533,7 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 		if recipe.is_empty():
 			continue
 		var progression := _named_skill_vfx_progression(recipe)
-		projection.append({
+		var skill_entry := {
 			"id": skill_id,
 			"name": String(recipe.get("name", skill_id.capitalize())),
 			"category": "skills",
@@ -3549,7 +3549,9 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			),
 			"level": int(progression.get("evolution_level", 1)),
 			"combo_stack": int(progression.get("buff_stacks", 0)),
-		})
+		}
+		skill_entry.merge(_named_skill_codex_metadata(skill_id), true)
+		projection.append(skill_entry)
 	for recipe_variant in combo_finisher_catalog.call("get_all_recipes") as Array:
 		var recipe := recipe_variant as Dictionary
 		if not _is_finisher_recipe_learned(recipe):
@@ -3568,8 +3570,9 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 				_append_vfx_element(elements, String(tag_variant))
 		var base_effect := recipe.get("base_effect", {}) as Dictionary
 		var progression := _named_skill_vfx_progression(recipe)
-		projection.append({
-			"id": String(recipe.get("id", "")),
+		var finisher_id := String(recipe.get("id", ""))
+		var finisher_entry := {
+			"id": finisher_id,
 			"name": String(recipe.get("name", "Finisher")),
 			"category": "finishers",
 			"kind_label": "COMBO FINISHER",
@@ -3578,15 +3581,16 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"trigger_summary": "Formula: %s" % " > ".join(sequence_names),
 			"icon_path": icon_path,
 			"preview_kind": "finisher",
-			"named_vfx_id": String(recipe.get("id", "")),
+			"named_vfx_id": finisher_id,
 			"elements": elements,
-			"element": elements[0] if not elements.is_empty() else "",
 			"intensity": 5,
 			"attack_size_multiplier": float(base_effect.get("size_multiplier", 1.8)),
 			"stack_count": maxi(3, int(base_effect.get("projectile_bonus", 0))),
 			"level": int(progression.get("evolution_level", 1)),
 			"combo_stack": int(progression.get("buff_stacks", 0)),
-		})
+		}
+		finisher_entry.merge(_named_skill_codex_metadata(finisher_id), true)
+		projection.append(finisher_entry)
 	projection.sort_custom(
 		func(left: Dictionary, right: Dictionary) -> bool:
 			var left_key := "%s:%s" % [left.get("category", ""), left.get("name", "")]
@@ -3594,6 +3598,23 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			return left_key < right_key
 	)
 	return projection
+
+
+func _named_skill_codex_metadata(profile_id: String) -> Dictionary:
+	if (
+		profile_id.is_empty()
+		or not _ensure_named_skill_vfx_catalog()
+		or not bool(named_skill_vfx_catalog.call("has_profile", profile_id))
+	):
+		return {}
+	var profile := named_skill_vfx_catalog.call("get_profile", profile_id) as Dictionary
+	return {
+		"element": String(profile.get("element", "normal")),
+		"archetype": String(profile.get("archetype", "")),
+		"evolution_layers": (profile.get("evolution_layers", []) as Array).duplicate(),
+		"stack_milestones": (profile.get("stack_milestones", []) as Array).duplicate(),
+		"stack_traits": (profile.get("stack_traits", []) as Array).duplicate(),
+	}
 
 
 func _codex_category_for_card(card: Dictionary) -> String:

@@ -514,7 +514,7 @@ Town prop/building多為`Sprite2D` scene，groups如`TownProp`、`TownBuilding`�
 |---|---|---|
 | `scenes/ui/hud/HUD.tscn` | `Control` | status/area/objective/prompt |
 | `scenes/ui/cards/CardHandUI.tscn` | `Control` | card fan/AP/combo/boss |
-| `scenes/ui/inventory/InventoryUI.tscn` | `Control` | inventory browser and discovery codex |
+| `scenes/ui/inventory/InventoryUI.tscn` | `Control` | inventory browser；discovery codex 的 live VFX／concept art、元素與成長資訊 |
 | `scenes/ui/dialogue/DialogueUI.tscn` | `Control` | speaker/text/choice interaction |
 | `scenes/ui/shop/ShopUI.tscn` | `Control` | icon-based merchant catalog transaction intent |
 | `scenes/ui/system/PauseMenu.tscn` | `Control` | pause/settings/save/load intent |

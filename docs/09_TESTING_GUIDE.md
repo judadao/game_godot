@@ -39,11 +39,14 @@ repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user dat
 Inventory／Codex focused coverage：
 
 - `inventory_codex_projection_test.gd`：所有已解鎖 card、已學 passive Skill 與
-  Finisher 的唯一 projection、完整說明與 preview kind。
-- `inventory_codex_ui_test.gd`：分頁、projection、selection 與 production VFX preview ownership。
-- `inventory_codex_layout_test.gd`：六解析度 panel/list/preview/explanation geometry。
+  Finisher 的唯一 projection、完整說明、preview kind，以及命名技能的元素／進化／
+  Buff milestone metadata。
+- `inventory_codex_ui_test.gd`：分頁、projection、selection、production VFX preview
+  ownership、live/concept 切換與 concept crop。
+- `inventory_codex_layout_test.gd`：六解析度 panel/list/active visual/explanation geometry。
   可用 `INVENTORY_CODEX_CAPTURE_ENTRY` 指定普通攻擊、Combo、Skill 或 Finisher，
-  搭配 capture path/size 產生 Vulkan 視覺比較基準。
+  `INVENTORY_CODEX_CAPTURE_VIEW=live|concept` 選擇展示模式，再搭配 capture path/size
+  產生 Vulkan 視覺比較基準。
   實際 Game projection 可用 `INVENTORY_CODEX_PROJECTION_CAPTURE_PATH` 擷取，
   不得只驗證手寫 UI fixture。
 

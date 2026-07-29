@@ -55,6 +55,18 @@ func _run() -> void:
 				String((entries_by_id[skill_id] as Dictionary).get("named_vfx_id", "")) == skill_id,
 				"Learned named skills must keep their exact preview identity: %s." % skill_id
 			)
+			var skill_entry := entries_by_id[skill_id] as Dictionary
+			_expect(
+				not String(skill_entry.get("element", "")).is_empty()
+					and (skill_entry.get("evolution_layers", []) as Array).size() == 3
+					and (skill_entry.get("stack_milestones", []) as Array).size() >= 3
+					and (
+						(skill_entry.get("stack_milestones", []) as Array).size()
+						== (skill_entry.get("stack_traits", []) as Array).size()
+					),
+				"Learned named skills must project element, evolution, and Buff milestone data: %s."
+					% skill_id
+			)
 
 	_expect(
 		String((entries_by_id.get("ember_bolt", {}) as Dictionary).get("category", "")) == "attacks",
