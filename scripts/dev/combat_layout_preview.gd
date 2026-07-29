@@ -38,7 +38,8 @@ func _ready() -> void:
 	hud.set_experience(0, 40)
 	hud.set_material_count(98)
 	hud.set_action_point_regen(0.8)
-	hud.set_objective("SURVIVE / PHASE 1", "36s   THREAT 7 / 14")
+	hud.set_objective("FINAL RUSH — SURVIVE", "THREAT 37 / 60")
+	hud.set_survival_timer(29.4, 180.0, true)
 	hud.set_active_statuses([
 		{"id": "iron_momentum", "name": "Iron Momentum", "icon": "◆", "remaining_seconds": 2.8},
 		{"id": "renewal", "name": "Verdant Renewal", "icon": "+", "remaining_seconds": 4.1},

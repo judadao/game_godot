@@ -300,7 +300,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | Elemental combat VFX | `scenes/combat/vfx/*.tscn` | 火／冰攻擊纏繞與範圍大招的純 presentation；不擁有傷害判定 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
-| `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | timed phases、boss stage、XP gem |
+| `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | single countdown、scheduled Elite/Boss、Final Rush、XP gem |
 | `EnemyBase` | `scripts/monsters/enemy_base.gd` | archetype、attack、damage、status、reset |
 | `AutumnGuardian` | `scripts/monsters/autumn_guardian.gd` | boss phases/pattern profiles |
 | `Hurtbox` | `scripts/combat/hurtbox.gd` | `receive_hit()` adapter |
@@ -505,6 +505,8 @@ service；修改 mappings或處理順序時須用實際 run驗證。
 - 程序平台段與 flat breathing-room chunk 必須交錯；Player 按 ↓ 時只可穿越
   `one_way_collision` 平台，不得穿越 continuous floor。
 - director runtime-spawn enemy/guardian/experience gem。
+- `SurvivalWaveDirector` 是 180 秒倒數、連續 density curve、定時 Elite／Boss 與
+  Final Rush 的唯一 authority；只有 00:00 completion Guardian 可完成 Run。
 - `Enemies`、`EncounterDirectors` groups用於 target與wiring。
 - card effect透過 capability methods，例如 `take_hit()`、`add_block()`、
   `restore_health()`、`apply_status()`。
@@ -856,8 +858,9 @@ active skill 必須是 learned 的子集。`RunState.card_instances` 是 expedit
 
 ### 21.3 成長與 UI ownership
 
-`GrowthChoiceQueue` 將 wave blessing 與 EXP level-up 排成單一 FIFO。wave 只提供
-new card；EXP 優先隨機抽最多五張未滿級 instance 形成 upgrade page，全部滿級後
+`GrowthChoiceQueue` 將 Elite Divine Gift 與其他 growth event 排成單一 FIFO。
+每次 Elite defeat 使用遞增 event key，只能 enqueue 一頁 mandatory Divine Gift；
+EXP 優先隨機抽最多五張未滿級 instance 形成 upgrade page，全部滿級後
 才提供獨立 fusion page。fusion 消耗兩張材料並加入一張 Lv.1 結果，牌組淨減一。
 wave reward page 可由玩家直接 Skip 以維持精簡牌組；選牌後若遇到 16 張上限，
 由 `Game` 開啟 replacement modal，原子執行 remove-one/add-one，或再次 Skip。

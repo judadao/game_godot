@@ -41,7 +41,7 @@ pipeline描述成Current。
 | `resources/` content | 只有`.gitkeep` | `res://resources/.gitkeep` |
 | Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
 | Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
-| Generated VFX texture | 18 | `res://assets/generated/vfx/` |
+| Generated VFX texture | 21 | `res://assets/generated/vfx/` |
 
 七個 JSON：
 
@@ -63,11 +63,20 @@ Generated combat presentation：
   模組化部件素材；`basic_attack_*_sheet_v2.png` 與對應 mask 是 runtime 合成輸出。
   普通劍氣 runtime 不再依賴整張來源圖裁切。
 - `AutoAttackFeedback` 以三組八幀 sheet 交疊完成近身水平月牙預備、水平飛行切割波與
-  方向性命中楔形。中性普通攻擊不帶 Flame/Frost/Storm/Venom 層；火焰感只在對應
+  方向性命中楔形。前幀殘像、元素雙輪廓、Lifesteal 與 Combo 疊層全部使用同幀
+  silhouette mask；中性普通攻擊不帶 Flame/Frost/Storm/Venom 層，火焰感只在對應
   火系 Combo infusion 後由元素 mask pass 加上。texture 本身不擁有 gameplay hitbox
   或 damage。
 - 普通劍氣 release、travel、impact 三段都必須維持水平月牙 silhouette；預備動作
   不得退回直立上挑弧或火焰 plume。
+- `FireUltimateVFX` 與 `IceUltimateVFX` 使用 editor-authored scene 加上
+  Godot 原生 drawing、Line2D、Polygon2D 與 bounded GPUParticles2D，不依賴
+  一次性影片。兩者都採五段演出、限制 visual bounds／particle budget，並在
+  玩家中心保留 readability hole；火系由聚火、點燃、擴散、火冠至餘燼，冰系
+  由蓄勢、徑向凍結、晶柱爆發、碎裂亮邊至冷霧消散。
+- `SkillCastPresentation` 只以透明元素洗色、短促 impact flash、能量導線與
+  可換行大字表現出招，不使用實心中央 UI 卡片。Major cast 才啟用邊緣壓暗，
+  一般 Combo 維持正常時間流速。
 
 ### 1.2 術語
 

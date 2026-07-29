@@ -39,7 +39,18 @@ func _run() -> void:
 	var run := game.get("run_state") as RunState
 	_expect(run.active, "Entering Autumn Forest must start transient run state.")
 	var director := game.get("current_map").get_node("AutumnRunDirector") as EncounterDirector
-	_expect(director.get_wave_number() == 1, "Autumn run must begin with the first encounter wave.")
+	_expect(
+		director.has_method("get_time_remaining")
+			and float(director.call("get_time_remaining")) > 0.0,
+		"Autumn run must begin with one visible survival countdown."
+	)
+	var objective_text := game.get("hud").get_node(
+		"TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows/ObjectiveText"
+	) as Label
+	_expect(
+		objective_text.text == "SURVIVE UNTIL DAWN",
+		"Generic enemy progress must not overwrite the survival countdown objective."
+	)
 
 	var deck := game.get("deck_manager") as DeckManager
 	var energy_before := deck.energy
@@ -81,14 +92,13 @@ func _run() -> void:
 		"In-run progression must award a Divine Gift instead of upgrading fixed cards."
 	)
 
-	for _phase in 4:
-		director.call("advance_survival", 999.0)
+	director.call("advance_survival", float(director.get("survival_duration")) + 1.0)
 	var guardian: Node
 	for enemy in director.get_active_enemies():
-		if enemy.is_in_group("Bosses"):
+		if enemy.is_in_group("Bosses") and bool(enemy.get_meta("completion_boss", false)):
 			guardian = enemy
 			break
-	_expect(guardian != null, "Timed survival phases must culminate in a guardian boss.")
+	_expect(guardian != null, "The survival countdown must culminate in a completion Guardian.")
 	if guardian != null:
 		guardian.call("take_hit", 99999, Vector2.ZERO, 0.0)
 	await process_frame

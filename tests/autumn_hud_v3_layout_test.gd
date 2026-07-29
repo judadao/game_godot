@@ -178,6 +178,14 @@ func _check_projection_behavior() -> void:
 	_expect(boss.visible, "Boss panel must become visible when a Boss is projected.")
 	hud.call("hide_boss_health")
 	_expect(not boss.visible, "Boss panel must release its space when the Boss is gone.")
+	hud.call("set_survival_timer", 29.4, 180.0, true)
+	var survival_timer := hud.get_node(
+		"FooterRail/FooterRow/SurvivalTimerLabel"
+	) as Label
+	_expect(
+		survival_timer.text == "00:30  FINAL RUSH",
+		"Autumn footer must project a rounded-up countdown and explicit Final Rush state."
+	)
 
 	for skill_id in ["one", "two", "three", "four"]:
 		hud.call("show_skill_toast", skill_id, skill_id.to_upper())

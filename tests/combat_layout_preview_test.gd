@@ -60,7 +60,7 @@ func _run() -> void:
 					"TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows/ObjectiveText"
 				) as Label
 			).text
-			== "SURVIVE / PHASE 1",
+			== "FINAL RUSH — SURVIVE",
 			"Preview must populate stable sample objective text."
 		)
 	if hud != null and hand != null:

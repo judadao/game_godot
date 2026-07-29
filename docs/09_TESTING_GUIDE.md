@@ -31,17 +31,21 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 106 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 107 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
 
 Inventory／Codex focused coverage：
 
+- `inventory_codex_projection_test.gd`：所有已解鎖 card、已學 passive Skill 與
+  Finisher 的唯一 projection、完整說明與 preview kind。
 - `inventory_codex_ui_test.gd`：分頁、projection、selection 與 production VFX preview ownership。
 - `inventory_codex_layout_test.gd`：六解析度 panel/list/preview/explanation geometry。
   可用 `INVENTORY_CODEX_CAPTURE_ENTRY` 指定普通攻擊、Combo、Skill 或 Finisher，
   搭配 capture path/size 產生 Vulkan 視覺比較基準。
+  實際 Game projection 可用 `INVENTORY_CODEX_PROJECTION_CAPTURE_PATH` 擷取，
+  不得只驗證手寫 UI fixture。
 
 ## 3. 測試分層
 
@@ -187,6 +191,9 @@ Combat VFX 修改至少執行
 `fire_ultimate_vfx_test.gd`、`ice_ultimate_vfx_test.gd` 與
 `combat_vfx_integration_test.gd`。另以 graphical Forward+ renderer 確認火／冰
 粒子、環線、標題層級、世界中心與自動 cleanup；標題 layout 需跑六解析度矩陣。
+火系可用 `FIRE_ULTIMATE_VFX_CAPTURE_PATH` 擷取 impact crown，冰系可用
+`ICE_ULTIMATE_CAPTURE_PATH` 與 `ICE_ULTIMATE_CAPTURE_PROGRESS` 分階段擷取；
+截圖必須同時確認滿版覆蓋與玩家中心可讀性。
 普通劍氣另執行 `auto_attack_feedback_test.gd`；可用
 `AUTO_ATTACK_FEEDBACK_CAPTURE_ELEMENT=flame|frost` 與
 `AUTO_ATTACK_FEEDBACK_CAPTURE_COMBO=0|3|6|9` 分離擷取屬性及 Combo 疊層，

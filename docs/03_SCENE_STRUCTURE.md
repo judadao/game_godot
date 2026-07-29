@@ -420,7 +420,8 @@ Boss另有`Bosses` group、phase/drop signals。HealthBar是world-space display�
 - instantiate enemy/guardian
 - add children under director
 - instantiate ExperienceGem
-- cleanup/reset active wave
+- advance one survival countdown and schedule Elite/Boss/Final Rush events
+- cleanup/reset active encounter enemies
 
 靜態地形、Portal、campfire、chest不得由director重建。
 

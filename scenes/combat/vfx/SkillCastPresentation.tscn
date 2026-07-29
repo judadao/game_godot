@@ -1,6 +1,18 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/skill_cast_presentation.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_cast_band"]
+bg_color = Color(0, 0, 0, 0)
+border_width_top = 2
+border_width_bottom = 2
+border_color = Color(0.9, 0.96, 1, 0.78)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_major_frame"]
+bg_color = Color(0, 0, 0, 0)
+border_width_top = 1
+border_width_bottom = 1
+border_color = Color(0.95, 0.98, 1, 0.34)
 
 [node name="SkillCastPresentation" type="CanvasLayer"]
 layer = 40
@@ -15,6 +27,51 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="ScreenWash" type="ColorRect" parent="Overlay"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.08, 0.1, 0.14, 1)
+
+[node name="ImpactFlash" type="ColorRect" parent="Overlay"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="TopBar" type="ColorRect" parent="Overlay"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 42.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(0.01, 0.012, 0.018, 0.96)
+
+[node name="BottomBar" type="ColorRect" parent="Overlay"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -42.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.01, 0.012, 0.018, 0.96)
 
 [node name="SafeMargin" type="MarginContainer" parent="Overlay"]
 layout_mode = 1
@@ -35,19 +92,35 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
 
+[node name="MajorFrame" type="Panel" parent="Overlay/SafeMargin/Center"]
+visible = false
+modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(920, 194)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBox_major_frame")
+
+[node name="CastBand" type="Panel" parent="Overlay/SafeMargin/Center"]
+visible = false
+modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(820, 160)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBox_cast_band")
+
 [node name="SkillName" type="Label" parent="Overlay/SafeMargin/Center"]
-custom_minimum_size = Vector2(640, 86)
+custom_minimum_size = Vector2(700, 120)
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.82)
-theme_override_colors/font_outline_color = Color(0.035, 0.045, 0.055, 0.96)
-theme_override_constants/shadow_offset_x = 4
-theme_override_constants/shadow_offset_y = 5
-theme_override_constants/outline_size = 10
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_colors/font_outline_color = Color(0.02, 0.026, 0.035, 0.98)
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 4
+theme_override_constants/outline_size = 8
 theme_override_font_sizes/font_size = 52
 text = "SKILL NAME"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
-text_overrun_behavior = 3
+text_overrun_behavior = 0

@@ -60,6 +60,7 @@ func _run() -> void:
 			"BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSkillRows",
 			"BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack",
 			"FooterRail",
+			"FooterRail/FooterRow/SurvivalTimerLabel",
 		]:
 			_expect(
 				autumn_hud.has_node(node_path),
@@ -72,6 +73,7 @@ func _run() -> void:
 			"show_skill_toast",
 			"set_combo_chain",
 			"set_material_count",
+			"set_survival_timer",
 		]:
 			_expect(
 				autumn_hud.has_method(method_name),

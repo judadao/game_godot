@@ -209,19 +209,24 @@ route bounds 的位置生成。距離玩家超過 1500px 的一般怪會回收�
 
 ## 5. 秋季生存關卡與 Guardian
 
-### 5.1 生存階段
+### 5.1 生存倒數
 
-`SurvivalWaveDirector` 依時間推進，不要求先清空上一階段敵人。
+`SurvivalWaveDirector` 使用單一 180 秒倒數，不再公開或依賴 survival phase。
+普通敵人的 alive cap 由 14 連續提高到 44，spawn batch 由 2 提高到 5，
+spawn interval 由 1.15 秒連續縮短到 0.38 秒。Enemy role 依經過時間逐步加入
+pool，但 HUD 只投影剩餘時間、威脅數與 Final Rush，不顯示隱藏的 unlock threshold。
 
-| 階段 | 時間 | Spawn interval | Alive cap | Enemy pool |
-|---|---:|---:|---:|---|
-| 1 | 45 秒 | 2.40 秒 | 8 | sprout、hopper |
-| 2 | 45 秒 | 1.80 秒 | 12 | sprout、hopper、thornling |
-| 3 | 50 秒 | 1.35 秒 | 17 | hopper、thornling、charger |
-| 4 | 55 秒 | 1.00 秒 | 22 | sprout、thornling、charger、elite |
-| Guardian | 無固定結束時間 | 3.00 秒 | 16 | thornling、charger，加一隻 Guardian |
+| 經過時間 | 排程事件 |
+|---:|---|
+| 35、80、125 秒 | 各生成一隻 Crimson Grove Elite |
+| 90 秒 | 生成一隻不負責結算的 Heartwood Harbinger |
+| 剩餘 30 秒 | 進入 Final Rush，立即追加 Elite 與 Harbinger |
+| Final Rush | 每 10 秒追加 Elite；每 15 秒追加 Harbinger |
+| 00:00 | 停止一般排程並生成唯一 completion Guardian |
 
-每次 spawn interval 最多生成一隻一般敵人，直到 alive cap。進入新階段時可先生成最多三隻。
+Final Rush 額外增加 16 alive cap、縮短普通 spawn interval 並提高 batch。
+中途 Boss 與 Final Rush Boss 死亡不會提前結算；只有帶
+`completion_boss` metadata 的 00:00 Guardian 死亡會完成關卡。
 
 ### 5.2 敵人行為
 
@@ -235,6 +240,8 @@ route bounds 的位置生成。距離玩家超過 1500px 的一般怪會回收�
 - slow、stun、burn 狀態。
 
 一般敵人死亡會產生實體 `ExperienceGem`。Gem 在 180 像素內吸引玩家、30 像素內收集，移動速度由 180 加速至 520。
+每隻 Elite 死亡都會遞增獨立 reward event，並開啟一次 Divine Gift 選擇；
+同一倒數內的後續 Elite 不會再被舊 wave／stage key 誤判成重複獎勵。
 
 ### 5.3 Guardian
 
@@ -661,7 +668,7 @@ user://saves/quick_save.json
 
 - deck piles；
 - AP 與 active card effects；
-- wave timer 與 living enemies；
+- survival countdown 與 living enemies；
 - Guardian phase；
 - pending level-ups；
 - Run merchant/buff state。
@@ -692,7 +699,7 @@ S／↓ 不負責攻擊；`card_group_1` 與 `card_group_2` InputMap actions 已
 現有 HUD／Card Hand 提供：
 
 - health、mana 與玩家資訊；
-- 區域、目標與 survival phase；
+- 區域、目標、`MM:SS` survival countdown 與 Final Rush 狀態；
 - enemy alive/cap；
 - AP；
 - 單組四張 Combo／Healing 手牌；
@@ -773,11 +780,11 @@ Gameplay orchestration 應以 typed signal 連接，而不是讓 director 直接
 
 ```gdscript
 func wire_survival_director(director: SurvivalWaveDirector) -> void:
-	if not director.phase_time_changed.is_connected(
-		_on_survival_phase_time_changed
+	if not director.survival_time_changed.is_connected(
+		_on_survival_time_changed
 	):
-		director.phase_time_changed.connect(
-			_on_survival_phase_time_changed
+		director.survival_time_changed.connect(
+			_on_survival_time_changed
 		)
 
 	if not director.boss_stage_completed.is_connected(
@@ -788,16 +795,18 @@ func wire_survival_director(director: SurvivalWaveDirector) -> void:
 		)
 
 
-func _on_survival_phase_time_changed(
-	phase: int,
+func _on_survival_time_changed(
 	remaining: float,
+	total: float,
 	alive: int,
-	cap: int
+	cap: int,
+	final_rush: bool
 ) -> void:
 	hud.set_objective(
-		"SURVIVE / PHASE %d" % phase,
-		"%ds   THREAT %d / %d" % [ceili(remaining), alive, cap]
+		"FINAL RUSH — SURVIVE" if final_rush else "SURVIVE UNTIL DAWN",
+		"THREAT %d / %d" % [alive, cap]
 	)
+	hud.set_survival_timer(remaining, total, final_rush)
 ```
 
 這是 Godot 4 signal 語法示例；實際專案由 `Game` 的既有 wiring method 管理連接。
@@ -1044,10 +1053,10 @@ Combo 的攻擊提高採每三層一階：每階增加當前基礎攻擊 amount 
 ### Horde-first difficulty
 
 Autumn survival uses enemy density and mixed roles instead of weakening the
-player. Concurrent caps grow `14 → 22 → 32 → 44`, spawn batches grow from two
-to four, and the boss stage maintains up to thirty supporting enemies. Amber
-Moth Swarm adds fragile high-speed pressure while Grove Shaman adds long-range
-support, bringing the phase pools to seven archetypes.
+player. The single countdown continuously grows concurrent caps `14 → 44` and
+spawn batches `2 → 5`; Final Rush adds another 16 cap plus scheduled Elites and
+Harbingers. Amber Moth Swarm adds fragile high-speed pressure while Grove
+Shaman adds long-range support. Elite is never part of the random normal pool.
 自動普攻命中時以世界空間短彈道、命中環、實際傷害數字與 `COMBO ×N / POWER +N`
 直接呈現本次強化，讓玩家不必只靠 HUD 判斷是否生效。
 中性普通攻擊的主形狀是白青色水平劍氣，由 core blade、crescent edge、afterimage、

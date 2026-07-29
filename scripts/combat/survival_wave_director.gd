@@ -1,17 +1,40 @@
 class_name SurvivalWaveDirector
 extends EncounterDirector
 
-signal phase_time_changed(phase: int, remaining: float, alive: int, cap: int)
+signal survival_time_changed(
+	remaining: float,
+	total: float,
+	alive: int,
+	cap: int,
+	final_rush: bool
+)
+signal elite_spawned(elite: Node, remaining: float)
+signal boss_spawned(boss: Node, completion_boss: bool, remaining: float)
 signal boss_stage_completed
 signal experience_gem_spawned(gem: Node, value: int)
 
-@export var survival_phases: Array[Dictionary] = [
-	{"duration": 40.0, "spawn_interval": 1.15, "spawn_batch": 2, "density_cap": 14, "pool": [&"sprout", &"hopper", &"moth_swarm"]},
-	{"duration": 42.0, "spawn_interval": 0.80, "spawn_batch": 3, "density_cap": 22, "pool": [&"sprout", &"hopper", &"moth_swarm", &"thornling"]},
-	{"duration": 45.0, "spawn_interval": 0.58, "spawn_batch": 3, "density_cap": 32, "pool": [&"hopper", &"moth_swarm", &"thornling", &"charger", &"grove_shaman"]},
-	{"duration": 48.0, "spawn_interval": 0.42, "spawn_batch": 4, "density_cap": 44, "pool": [&"sprout", &"moth_swarm", &"thornling", &"charger", &"grove_shaman", &"elite"]},
-	{"duration": -1.0, "spawn_interval": 0.72, "spawn_batch": 3, "density_cap": 30, "pool": [&"moth_swarm", &"thornling", &"charger", &"grove_shaman"]},
-]
+@export_range(30.0, 1800.0, 1.0) var survival_duration := 180.0
+@export_range(10.0, 120.0, 1.0) var final_rush_duration := 30.0
+@export var scheduled_elite_times: Array[float] = [35.0, 80.0, 125.0]
+@export var scheduled_boss_times: Array[float] = [90.0]
+@export_range(2.0, 60.0, 0.5) var final_rush_elite_interval := 10.0
+@export_range(5.0, 60.0, 0.5) var final_rush_boss_interval := 15.0
+@export_range(1, 100, 1) var base_density_cap := 14
+@export_range(1, 120, 1) var maximum_density_cap := 44
+@export_range(0, 60, 1) var final_rush_density_bonus := 16
+@export_range(0.05, 5.0, 0.05) var base_spawn_interval := 1.15
+@export_range(0.05, 5.0, 0.05) var minimum_spawn_interval := 0.38
+@export_range(0.1, 1.0, 0.05) var final_rush_spawn_interval_multiplier := 0.55
+@export_range(1, 12, 1) var base_spawn_batch := 2
+@export_range(1, 16, 1) var maximum_spawn_batch := 5
+@export var normal_enemy_unlocks: Dictionary = {
+	"sprout": 0.0,
+	"hopper": 0.0,
+	"moth_swarm": 0.0,
+	"thornling": 30.0,
+	"charger": 65.0,
+	"grove_shaman": 95.0,
+}
 @export var experience_gem_scene: PackedScene = preload("res://scenes/combat/ExperienceGem.tscn")
 @export var spawn_around_player := false
 @export var spawn_route_left := 0.0
@@ -22,11 +45,21 @@ signal experience_gem_spawned(gem: Node, value: int)
 @export var recycle_distance := 1500.0
 @export var recycle_interval := 0.5
 
-var _phase_remaining := 0.0
+var _time_remaining := 0.0
 var _spawn_remaining := 0.0
 var _recycle_remaining := 0.0
 var _survival_elapsed := 0.0
-var _guardian_spawn_count := 0
+var _spawned_elite_count := 0
+var _spawned_boss_count := 0
+var _completion_boss_spawn_count := 0
+var _elite_defeat_count := 0
+var _scheduled_elite_index := 0
+var _scheduled_boss_index := 0
+var _elite_schedule: Array[float] = []
+var _boss_schedule: Array[float] = []
+var _next_final_rush_elite_time := INF
+var _next_final_rush_boss_time := INF
+var _final_rush_started := false
 var _exit_unlocked := false
 var _rng := RandomNumberGenerator.new()
 
@@ -38,54 +71,81 @@ func _process(delta: float) -> void:
 
 
 func start_encounter() -> bool:
-	if _running or survival_phases.is_empty():
+	if _running or survival_duration <= 0.0:
 		return false
 	_running = true
 	_wave_index = 0
 	_experience = 0
 	_gold = 0
-	_guardian_spawn_count = 0
+	_spawned_elite_count = 0
+	_spawned_boss_count = 0
+	_completion_boss_spawn_count = 0
+	_elite_defeat_count = 0
+	_scheduled_elite_index = 0
+	_scheduled_boss_index = 0
+	_elite_schedule = scheduled_elite_times.duplicate()
+	_boss_schedule = scheduled_boss_times.duplicate()
+	_elite_schedule.sort()
+	_boss_schedule.sort()
+	_next_final_rush_elite_time = INF
+	_next_final_rush_boss_time = INF
+	_final_rush_started = false
 	_exit_unlocked = false
 	_survival_elapsed = 0.0
+	_time_remaining = survival_duration
+	_spawn_remaining = 0.0
 	_recycle_remaining = 0.0
+	_engaged = false
+	_disengage_remaining = -1.0
+	_spawn_positions.clear()
 	_rng.seed = int(Time.get_ticks_usec() ^ get_instance_id())
-	_begin_phase()
-	encounter_started.emit(survival_phases.size())
+	_spawn_until_cap(mini(6, get_current_density_cap()))
+	encounter_started.emit(1)
+	_emit_survival_time()
 	return true
 
 
 func advance_survival(delta: float) -> void:
-	if not _running or survival_phases.is_empty():
+	if not _running:
 		return
 	var safe_delta := maxf(0.0, delta)
-	_survival_elapsed += safe_delta
+	var previous_elapsed := _survival_elapsed
+	_survival_elapsed = minf(survival_duration, _survival_elapsed + safe_delta)
+	_time_remaining = maxf(0.0, survival_duration - _survival_elapsed)
 	_recycle_remaining -= safe_delta
 	if _recycle_remaining <= 0.0:
 		_recycle_remaining = maxf(0.1, recycle_interval)
 		_recycle_distant_enemies()
-	var phase := survival_phases[_wave_index]
-	var duration := float(phase.get("duration", -1.0))
-	if duration > 0.0:
-		_phase_remaining = maxf(0.0, _phase_remaining - safe_delta)
-		if _phase_remaining <= 0.0:
-			_wave_index = mini(_wave_index + 1, survival_phases.size() - 1)
-			_begin_phase()
-			return
-	_spawn_remaining -= safe_delta
-	if _spawn_remaining <= 0.0:
-		_spawn_remaining = maxf(0.05, float(phase.get("spawn_interval", 1.0)))
-		_spawn_until_cap(maxi(1, int(phase.get("spawn_batch", 1))))
-	phase_time_changed.emit(get_wave_number(), _phase_remaining, get_active_enemies().size(), get_current_density_cap())
+	_spawn_scheduled_events(previous_elapsed, _survival_elapsed)
+	_spawn_final_rush_events(previous_elapsed, _survival_elapsed)
+	if _time_remaining <= 0.0:
+		_spawn_completion_boss()
+	else:
+		_spawn_remaining -= safe_delta
+		var spawn_passes := 0
+		while _spawn_remaining <= 0.0 and spawn_passes < 8:
+			_spawn_remaining += _current_spawn_interval()
+			_spawn_until_cap(_current_spawn_batch())
+			spawn_passes += 1
+			if get_active_enemies().size() >= get_current_density_cap():
+				break
+	_emit_survival_time()
 
 
-func get_phase_remaining() -> float:
-	return _phase_remaining
+func get_time_remaining() -> float:
+	return _time_remaining
 
 
 func get_current_density_cap() -> int:
-	if survival_phases.is_empty() or _wave_index < 0:
-		return 0
-	return maxi(1, int(survival_phases[_wave_index].get("density_cap", 1)))
+	var progress := _timeline_progress()
+	var cap := roundi(lerpf(
+		float(base_density_cap),
+		float(maxi(base_density_cap, maximum_density_cap)),
+		pow(progress, 0.78)
+	))
+	if is_final_rush():
+		cap += final_rush_density_bonus
+	return maxi(1, cap)
 
 
 func get_current_alive_cap() -> int:
@@ -96,51 +156,164 @@ func get_survival_elapsed() -> float:
 	return _survival_elapsed
 
 
-func get_guardian_spawn_count() -> int:
-	return _guardian_spawn_count
+func get_spawned_elite_count() -> int:
+	return _spawned_elite_count
+
+
+func get_spawned_boss_count() -> int:
+	return _spawned_boss_count
+
+
+func get_completion_boss_spawn_count() -> int:
+	return _completion_boss_spawn_count
+
+
+func get_elite_defeat_count() -> int:
+	return _elite_defeat_count
+
+
+func is_final_rush() -> bool:
+	return (
+		_running
+		and _time_remaining > 0.0
+		and _time_remaining <= minf(final_rush_duration, survival_duration)
+	)
 
 
 func is_exit_unlocked() -> bool:
 	return _exit_unlocked
 
 
-func _begin_phase() -> void:
-	var phase := survival_phases[_wave_index]
-	_phase_remaining = float(phase.get("duration", -1.0))
-	_spawn_remaining = 0.0
-	_engaged = false
-	_disengage_remaining = -1.0
-	if _wave_index == survival_phases.size() - 1:
-		_spawn_guardian()
-	_spawn_until_cap(mini(maxi(6, int(phase.get("spawn_batch", 1)) * 2), get_current_density_cap()))
-	wave_started.emit(get_wave_number(), survival_phases.size(), get_active_enemies().size())
-	progress_changed.emit(get_active_enemies().size(), get_current_density_cap())
-
-
 func _spawn_until_cap(maximum_new: int) -> void:
 	var available := maxi(0, get_current_density_cap() - get_active_enemies().size())
 	for _spawn_index in mini(maximum_new, available):
-		var pool := survival_phases[_wave_index].get("pool", []) as Array
+		var pool := _available_normal_pool()
 		if pool.is_empty():
 			return
 		_spawn_survival_enemy(StringName(pool[_rng.randi_range(0, pool.size() - 1)]), false)
 
 
-func _spawn_guardian() -> void:
-	if _guardian_spawn_count > 0:
+func _spawn_scheduled_events(previous_elapsed: float, current_elapsed: float) -> void:
+	while _scheduled_elite_index < _elite_schedule.size():
+		var event_time := maxf(0.0, _elite_schedule[_scheduled_elite_index])
+		if event_time > current_elapsed:
+			break
+		_scheduled_elite_index += 1
+		if event_time > previous_elapsed and event_time < survival_duration:
+			_spawn_elite()
+	while _scheduled_boss_index < _boss_schedule.size():
+		var event_time := maxf(0.0, _boss_schedule[_scheduled_boss_index])
+		if event_time > current_elapsed:
+			break
+		_scheduled_boss_index += 1
+		if event_time > previous_elapsed and event_time < survival_duration:
+			_spawn_boss(false)
+
+
+func _spawn_final_rush_events(_previous_elapsed: float, current_elapsed: float) -> void:
+	var rush_start := maxf(0.0, survival_duration - final_rush_duration)
+	if not _final_rush_started and current_elapsed >= rush_start:
+		_final_rush_started = true
+		_next_final_rush_elite_time = rush_start
+		_next_final_rush_boss_time = rush_start
+	if not _final_rush_started:
 		return
-	_guardian_spawn_count += 1
-	_spawn_survival_enemy(&"guardian", true)
+	while (
+		_next_final_rush_elite_time <= current_elapsed
+		and _next_final_rush_elite_time < survival_duration
+	):
+		_spawn_elite()
+		_next_final_rush_elite_time += maxf(0.1, final_rush_elite_interval)
+	while (
+		_next_final_rush_boss_time <= current_elapsed
+		and _next_final_rush_boss_time < survival_duration
+	):
+		_spawn_boss(false)
+		_next_final_rush_boss_time += maxf(0.1, final_rush_boss_interval)
 
 
-func _spawn_survival_enemy(archetype_id: StringName, is_guardian: bool) -> void:
-	var packed := guardian_scene if is_guardian else enemy_scene
+func _spawn_elite() -> void:
+	_spawned_elite_count += 1
+	var elite := _spawn_survival_enemy(&"elite", false)
+	if elite != null:
+		elite_spawned.emit(elite, _time_remaining)
+
+
+func _spawn_boss(completion_boss: bool) -> void:
+	_spawned_boss_count += 1
+	if completion_boss:
+		_completion_boss_spawn_count += 1
+	var boss := _spawn_survival_enemy(&"guardian", true, completion_boss)
+	if boss != null:
+		boss_spawned.emit(boss, completion_boss, _time_remaining)
+
+
+func _spawn_completion_boss() -> void:
+	if _completion_boss_spawn_count > 0:
+		return
+	_spawn_boss(true)
+
+
+func _timeline_progress() -> float:
+	return clampf(_survival_elapsed / maxf(0.001, survival_duration), 0.0, 1.0)
+
+
+func _current_spawn_interval() -> float:
+	var interval := lerpf(
+		base_spawn_interval,
+		minf(base_spawn_interval, minimum_spawn_interval),
+		pow(_timeline_progress(), 0.82)
+	)
+	if is_final_rush():
+		interval *= final_rush_spawn_interval_multiplier
+	return maxf(0.05, interval)
+
+
+func _current_spawn_batch() -> int:
+	var batch := roundi(lerpf(
+		float(base_spawn_batch),
+		float(maxi(base_spawn_batch, maximum_spawn_batch)),
+		_timeline_progress()
+	))
+	if is_final_rush():
+		batch += 2
+	return maxi(1, batch)
+
+
+func _available_normal_pool() -> Array[StringName]:
+	var pool: Array[StringName] = []
+	for archetype_variant in normal_enemy_unlocks:
+		var archetype_id := StringName(archetype_variant)
+		if _survival_elapsed >= maxf(0.0, float(normal_enemy_unlocks[archetype_variant])):
+			pool.append(archetype_id)
+	if pool.is_empty():
+		pool.append(&"sprout")
+	return pool
+
+
+func _emit_survival_time() -> void:
+	survival_time_changed.emit(
+		_time_remaining,
+		survival_duration,
+		get_active_enemies().size(),
+		get_current_density_cap(),
+		is_final_rush()
+	)
+
+
+func _spawn_survival_enemy(
+	archetype_id: StringName,
+	is_boss: bool,
+	completion_boss: bool = false
+) -> Node:
+	var packed := guardian_scene if is_boss else enemy_scene
 	if packed == null:
-		return
+		return null
 	var enemy := packed.instantiate()
 	add_child(enemy)
 	enemy.set_meta("encounter_archetype_id", String(archetype_id))
 	enemy.set_meta("persistent_pursuit", true)
+	enemy.set_meta("completion_boss", completion_boss)
 	if enemy is Node2D:
 		var slot := _active_enemies.size()
 		var side := -1.0 if (slot % 2 == 0) else 1.0
@@ -170,24 +343,37 @@ func _spawn_survival_enemy(archetype_id: StringName, is_guardian: bool) -> void:
 			local_spawn = to_local(global_spawn)
 		(enemy as Node2D).position = local_spawn
 		_spawn_positions[enemy.get_instance_id()] = (enemy as Node2D).position
-	if not is_guardian and enemy.has_method("configure_archetype"):
+	if not is_boss and enemy.has_method("configure_archetype"):
 		enemy.call("configure_archetype", archetype_id)
 	if enemy.has_signal("defeated"):
-		enemy.connect("defeated", _on_survival_enemy_defeated.bind(is_guardian))
+		enemy.connect(
+			"defeated",
+			_on_survival_enemy_defeated.bind(is_boss, completion_boss)
+		)
 	_active_enemies.append(enemy)
+	return enemy
 
 
-func _on_survival_enemy_defeated(enemy: Node, experience: int, gold: int, is_guardian: bool) -> void:
+func _on_survival_enemy_defeated(
+	enemy: Node,
+	experience: int,
+	gold: int,
+	is_boss: bool,
+	completion_boss: bool
+) -> void:
 	if not _active_enemies.has(enemy):
 		return
 	var reward_position := (enemy as Node2D).global_position if enemy is Node2D else global_position
 	_active_enemies.erase(enemy)
 	if String(enemy.get_meta("encounter_archetype_id", "")) == "elite":
+		_elite_defeat_count += 1
 		elite_defeated.emit(reward_position)
 	_gold += maxi(0, gold)
-	if not is_guardian:
+	if not completion_boss:
 		_spawn_experience_gem(reward_position, maxi(1, experience))
-	if is_guardian:
+	if is_boss and not completion_boss:
+		_experience += maxi(0, experience)
+	if completion_boss:
 		_running = false
 		_exit_unlocked = true
 		boss_stage_completed.emit()

@@ -163,6 +163,7 @@ var _pending_reward_instance_ids: Array[String] = []
 var _tactical_slowdown := false
 var _run_auto_attack_card_id := DEFAULT_AUTO_ATTACK_CARD_ID
 var _auto_attack_remaining := 0.0
+var _tracked_survival_boss: Node
 var wallet_gold: int = 250
 var player_inventory: Dictionary = {
 	"travel_bread": 3,
@@ -330,6 +331,7 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 
 	current_map = null
 	player = null
+	_tracked_survival_boss = null
 
 	if map_scene == null:
 		push_error("Game entry has no map scene assigned.")
@@ -713,15 +715,18 @@ func _wire_encounter_directors() -> void:
 	for director in current_map.get_tree().get_nodes_in_group("EncounterDirectors"):
 		if not current_map.is_ancestor_of(director):
 			continue
-		_connect_if_present(director, &"wave_started", &"_on_run_wave_started")
-		_connect_if_present(director, &"progress_changed", &"_on_run_progress_changed")
-		_connect_if_present(director, &"encounter_cleared", &"_on_run_encounter_cleared")
+		var is_survival_timeline := director.has_signal("survival_time_changed")
+		if not is_survival_timeline:
+			_connect_if_present(director, &"wave_started", &"_on_run_wave_started")
+			_connect_if_present(director, &"progress_changed", &"_on_run_progress_changed")
+			_connect_if_present(director, &"encounter_cleared", &"_on_run_encounter_cleared")
 		_connect_if_present(director, &"combat_engaged", &"_on_combat_engaged")
 		_connect_if_present(director, &"disengage_warning", &"_on_disengage_warning")
 		_connect_if_present(director, &"disengage_cancelled", &"_on_disengage_cancelled")
 		_connect_if_present(director, &"combat_reset", &"_on_combat_reset")
 		_connect_if_present(director, &"experience_gem_spawned", &"_on_experience_gem_spawned")
-		_connect_if_present(director, &"phase_time_changed", &"_on_survival_phase_time_changed")
+		_connect_if_present(director, &"survival_time_changed", &"_on_survival_time_changed")
+		_connect_if_present(director, &"boss_spawned", &"_on_survival_boss_spawned")
 		_connect_if_present(director, &"boss_stage_completed", &"_on_boss_stage_completed")
 		_connect_if_present(director, &"elite_defeated", &"_on_elite_defeated")
 		if director.has_method("start_encounter") and not bool(director.get("_running")):
@@ -744,14 +749,34 @@ func _on_run_progress_changed(remaining: int, total: int) -> void:
 		hud.call("set_objective", "Autumn Tree Expedition", "Enemies remaining: %d / %d" % [remaining, total])
 
 
-func _on_survival_phase_time_changed(phase: int, remaining: float, alive: int, cap: int) -> void:
+func _on_survival_time_changed(
+	remaining: float,
+	total: float,
+	alive: int,
+	cap: int,
+	final_rush: bool
+) -> void:
 	if hud != null and hud.has_method("set_objective"):
-		var time_text := "BOSS" if remaining < 0.0 else "%ds" % int(ceil(remaining))
+		var objective := (
+			"DEFEAT THE HEARTWOOD GUARDIAN"
+			if remaining <= 0.0
+			else ("FINAL RUSH — SURVIVE" if final_rush else "SURVIVE UNTIL DAWN")
+		)
 		hud.call(
 			"set_objective",
-			"SURVIVE / PHASE %d" % phase,
-			"%s   THREAT %d / %d" % [time_text, alive, cap]
+			objective,
+			"THREAT %d / %d" % [alive, cap]
 		)
+	if hud != null and hud.has_method("set_survival_timer"):
+		hud.call("set_survival_timer", remaining, total, final_rush)
+
+
+func _on_survival_boss_spawned(
+	_boss: Node,
+	_completion_boss: bool,
+	_remaining: float
+) -> void:
+	_wire_boss_hud()
 
 
 func _on_boss_stage_completed() -> void:
@@ -806,12 +831,14 @@ func _on_elite_defeated(_world_position: Vector2) -> void:
 
 func _current_divine_stage_key() -> String:
 	var map_path := current_map.scene_file_path if current_map != null else "run"
-	var wave_number := 0
+	var event_number := 0
 	if current_map != null:
 		var director := current_map.get_node_or_null("AutumnRunDirector")
-		if director != null and director.has_method("get_wave_number"):
-			wave_number = int(director.call("get_wave_number"))
-	return "%s:%d" % [map_path, wave_number]
+		if director != null and director.has_method("get_elite_defeat_count"):
+			event_number = int(director.call("get_elite_defeat_count"))
+		elif director != null and director.has_method("get_wave_number"):
+			event_number = int(director.call("get_wave_number"))
+	return "%s:%d" % [map_path, event_number]
 
 
 func _show_divine_gift_choices() -> void:
@@ -1127,20 +1154,76 @@ func _on_combat_reset() -> void:
 func _wire_boss_hud() -> void:
 	if current_map == null:
 		return
+	var selected_boss: Node
 	for boss in get_tree().get_nodes_in_group("Bosses"):
 		if not current_map.is_ancestor_of(boss):
 			continue
-		if boss.has_signal("health_changed") and not boss.is_connected("health_changed", _on_boss_health_changed):
-			boss.connect("health_changed", _on_boss_health_changed)
-		var maximum := 1
-		var archetype: Variant = boss.get("archetype")
-		if archetype is Resource:
-			maximum = int(archetype.get("max_health"))
-		card_hand_ui.call("set_boss_health", "HEARTWOOD GUARDIAN", int(boss.get("health")), maximum)
+		var health := int(boss.get("health"))
+		if health <= 0:
+			continue
+		var health_callback := _on_survival_boss_health_changed.bind(boss)
+		if boss.has_signal("health_changed") and not boss.is_connected(
+			"health_changed",
+			health_callback
+		):
+			boss.connect("health_changed", health_callback)
+		var defeated_callback := _on_survival_boss_removed.bind(boss)
+		if boss.has_signal("defeated") and not boss.is_connected(
+			"defeated",
+			defeated_callback
+		):
+			boss.connect("defeated", defeated_callback)
+		if (
+			selected_boss == null
+			or bool(boss.get_meta("completion_boss", false))
+		):
+			selected_boss = boss
+	if selected_boss == null:
+		_tracked_survival_boss = null
+		if card_hand_ui != null and card_hand_ui.has_method("hide_boss_health"):
+			card_hand_ui.call("hide_boss_health")
+		return
+	_tracked_survival_boss = selected_boss
+	var maximum := 1
+	var archetype: Variant = selected_boss.get("archetype")
+	if archetype is Resource:
+		maximum = int(archetype.get("max_health"))
+	var name_text := (
+		"HEARTWOOD GUARDIAN"
+		if bool(selected_boss.get_meta("completion_boss", false))
+		else "HEARTWOOD HARBINGER"
+	)
+	card_hand_ui.call(
+		"set_boss_health",
+		name_text,
+		int(selected_boss.get("health")),
+		maximum
+	)
 
 
-func _on_boss_health_changed(current: int, maximum: int) -> void:
-	card_hand_ui.call("set_boss_health", "HEARTWOOD GUARDIAN", current, maximum)
+func _on_survival_boss_health_changed(
+	current: int,
+	maximum: int,
+	boss: Node
+) -> void:
+	if boss != _tracked_survival_boss or card_hand_ui == null:
+		return
+	var name_text := (
+		"HEARTWOOD GUARDIAN"
+		if bool(boss.get_meta("completion_boss", false))
+		else "HEARTWOOD HARBINGER"
+	)
+	card_hand_ui.call("set_boss_health", name_text, current, maximum)
+
+
+func _on_survival_boss_removed(
+	_enemy: Node,
+	_experience: int,
+	_gold_reward: int,
+	boss: Node
+) -> void:
+	if boss == _tracked_survival_boss:
+		call_deferred("_wire_boss_hud")
 
 
 func _on_run_encounter_cleared(experience_reward: int, gold_reward: int) -> void:
@@ -2731,16 +2814,16 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 
 	var effect_kind := String(effect.get("kind", ""))
 	var card_type := String(card.get("type", ""))
+	var primary_element := elements[0] if not elements.is_empty() else ""
 	var is_area := effect_kind in ["area_damage", "area_slow", "damage_aura"]
 	var is_finisher := bool(visual_profile.get("finisher", false))
 	var is_elemental_skill := (
-		not elements.is_empty()
+		primary_element in ["flame", "frost"]
 		and (card_type in ["skill", "ultimate"] or is_finisher)
 		and is_area
 	)
 	if String(card.get("id", "")) == "inferno_orb":
 		is_elemental_skill = true
-	var primary_element := elements[0] if not elements.is_empty() else ""
 	return {
 		"element": primary_element,
 		"elements": elements,
@@ -2770,6 +2853,10 @@ func _append_vfx_element(elements: Array[String], candidate: String) -> void:
 		normalized = "flame"
 	elif normalized in ["ice", "frost"]:
 		normalized = "frost"
+	elif normalized in ["lightning", "storm"]:
+		normalized = "storm"
+	elif normalized in ["poison", "venom"]:
+		normalized = "venom"
 	else:
 		return
 	if not elements.has(normalized):
@@ -3214,47 +3301,27 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			continue
 		var profile := _resolve_combat_vfx_profile(card)
 		var effect := card.get("effect", {}) as Dictionary
-		var is_basic_attack := String(card.get("type", "")) == "attack"
-		var is_infusion := String(effect.get("kind", "")) == "infusion" and bool(profile.get("attack_aura", false))
-		var is_skill := bool(profile.get("ultimate", false))
-		if not is_basic_attack and not is_infusion and not is_skill:
-			continue
+		var category := _codex_category_for_card(card)
+		var preview_kind := _codex_preview_kind_for_card(card, profile)
 		var element := String(profile.get("element", ""))
-		var category := "attacks" if is_basic_attack else ("infusions" if is_infusion else "skills")
-		var kind_label := "BASIC ATTACK"
-		if is_infusion:
-			kind_label = "%s ATTACK INFUSION" % element.to_upper()
-		elif is_skill:
-			kind_label = "%s AREA SKILL" % element.to_upper()
 		projection.append({
 			"id": card_id,
 			"name": String(card.get("name", card_id.capitalize())),
 			"category": category,
-			"kind_label": kind_label,
+			"kind_label": _codex_kind_label_for_card(card, profile),
 			"description": String(card.get("description", "")),
 			"effect_summary": (
 				"%s, %d attack range" % [
 					_card_effect_summary(effect),
 					int(card.get("auto_attack_range", 220)),
 				]
-				if is_basic_attack
+				if category == "attacks"
 				else _card_effect_summary(effect)
 			),
-			"trigger_summary": (
-				"Fires automatically toward enemies in front of the player."
-				if is_basic_attack
-				else (
-					"Wraps your attacks for %.1f seconds." % float(effect.get("combo_duration", 0.0))
-					if is_infusion
-					else "Play this skill to affect enemies around the player."
-				)
-			),
+			"trigger_summary": _codex_trigger_summary_for_card(card),
 			"icon_path": String(card.get("icon_path", "")),
-			"preview_kind": (
-				"basic_attack"
-				if is_basic_attack
-				else ("attack_aura" if is_infusion else ("ice_ultimate" if element == "frost" else "fire_ultimate"))
-			),
+			"preview_kind": preview_kind,
+			"visual_family": _codex_visual_family_for_card(card),
 			"element": element,
 			"elements": profile.get("elements", []),
 			"intensity": int(profile.get("intensity", 2)),
@@ -3273,6 +3340,10 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"effect_summary": _card_effect_summary(recipe.get("effect", {}) as Dictionary),
 			"trigger_summary": _skill_trigger_summary(recipe),
 			"preview_kind": "passive_skill",
+			"visual_family": _codex_visual_family_for_effect(
+				recipe.get("effect", {}) as Dictionary,
+				"passive"
+			),
 		})
 	for recipe_variant in combo_finisher_catalog.call("get_all_recipes") as Array:
 		var recipe := recipe_variant as Dictionary
@@ -3316,10 +3387,123 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 	return projection
 
 
+func _codex_category_for_card(card: Dictionary) -> String:
+	if String(card.get("type", "")) == "attack":
+		return "attacks"
+	var effect := card.get("effect", {}) as Dictionary
+	return "infusions" if String(effect.get("kind", "")) == "infusion" else "skills"
+
+
+func _codex_preview_kind_for_card(card: Dictionary, profile: Dictionary) -> String:
+	var category := _codex_category_for_card(card)
+	if category == "attacks":
+		return "basic_attack"
+	if category == "infusions":
+		return "attack_aura"
+	if bool(profile.get("ultimate", false)):
+		return "ice_ultimate" if String(profile.get("element", "")) == "frost" else "fire_ultimate"
+	return "technique"
+
+
+func _codex_kind_label_for_card(card: Dictionary, profile: Dictionary) -> String:
+	var category := _codex_category_for_card(card)
+	if category == "attacks":
+		return "BASIC ATTACK"
+	var effect := card.get("effect", {}) as Dictionary
+	var card_type := String(card.get("type", ""))
+	if category == "infusions":
+		var element := String(profile.get("element", "")).to_upper()
+		if String(effect.get("target_action", "")) == "dash":
+			return "DASH INFUSION"
+		return "%s ATTACK INFUSION" % element if not element.is_empty() else "ATTACK INFUSION"
+	match card_type:
+		"healing":
+			return "HEALING TECHNIQUE"
+		"status":
+			return "CONTROL TECHNIQUE"
+		"power":
+			return "POWER TECHNIQUE"
+		"ultimate":
+			return "ULTIMATE TECHNIQUE"
+		"combo":
+			return "COMBO TECHNIQUE"
+		"skill":
+			return "AREA SKILL" if float(effect.get("radius", 0.0)) > 0.0 else "COMBAT SKILL"
+	return "%s TECHNIQUE" % card_type.to_upper()
+
+
+func _codex_trigger_summary_for_card(card: Dictionary) -> String:
+	var category := _codex_category_for_card(card)
+	var effect := card.get("effect", {}) as Dictionary
+	if category == "attacks":
+		return "Fires automatically toward enemies in front of the player."
+	if category == "infusions":
+		var target_action := String(effect.get("target_action", "attacks")).replace("_", " ")
+		return "Wraps %s for %.1f seconds when played." % [
+			target_action,
+			float(effect.get("combo_duration", 0.0)),
+		]
+	var cost := int(card.get("cost", 0))
+	var destination := String(card.get("play_destination", "discard"))
+	return "Play from the combat hand for %d AP; resolves to %s." % [cost, destination]
+
+
+func _codex_visual_family_for_card(card: Dictionary) -> String:
+	var card_type := String(card.get("type", ""))
+	var effect := card.get("effect", {}) as Dictionary
+	var tags := card.get("tags", []) as Array
+	if card_type == "healing" or tags.has("healing"):
+		return "healing"
+	if tags.has("mobility") or String(effect.get("target_action", "")) == "dash":
+		return "mobility"
+	if String(effect.get("kind", "")) in ["stun", "area_slow"]:
+		return "control"
+	if String(effect.get("kind", "")) in ["gain_energy", "action_points"]:
+		return "energy"
+	if String(effect.get("kind", "")) in ["combat_status", "regeneration"]:
+		return "defense"
+	if card_type in ["power", "ultimate"] or String(effect.get("kind", "")) in [
+		"attack_power",
+		"damage_aura",
+		"overdrive",
+	]:
+		return "power"
+	return _codex_visual_family_for_effect(effect, "attack")
+
+
+func _codex_visual_family_for_effect(effect: Dictionary, fallback: String) -> String:
+	var effect_kind := String(effect.get("kind", ""))
+	if effect_kind in ["heal", "healing_pulses", "regeneration"]:
+		return "healing"
+	if effect_kind in ["stun", "area_slow"]:
+		return "control"
+	if effect_kind in ["gain_energy", "action_points"]:
+		return "energy"
+	if effect_kind == "combat_status":
+		return "defense"
+	if effect_kind in ["damage_bonus", "attack_power", "damage_aura", "overdrive"]:
+		return "power"
+	return fallback
+
+
 func _card_effect_summary(effect: Dictionary) -> String:
 	var parts: Array[String] = []
+	var effect_kind := String(effect.get("kind", ""))
 	if effect.has("amount"):
-		parts.append("%d power" % int(effect["amount"]))
+		var amount_label := "power"
+		if effect_kind in ["heal", "regeneration"]:
+			amount_label = "health"
+		elif effect_kind in ["gain_energy", "action_points"]:
+			amount_label = "AP"
+		elif effect_kind in ["damage", "area_damage", "damage_bonus"]:
+			amount_label = "damage"
+		parts.append("%d %s" % [int(effect["amount"]), amount_label])
+	if effect.has("heal"):
+		parts.append("%d health per pulse" % int(effect["heal"]))
+	if effect.has("pulses"):
+		parts.append("%d pulses" % int(effect["pulses"]))
+	if effect.has("interval"):
+		parts.append("%.1fs interval" % float(effect["interval"]))
 	if effect.has("damage_bonus"):
 		parts.append("+%d attack damage" % int(effect["damage_bonus"]))
 	if effect.has("radius"):
@@ -3332,13 +3516,70 @@ func _card_effect_summary(effect: Dictionary) -> String:
 		parts.append("%.1f second duration" % float(effect["duration"]))
 	if effect.has("status_id"):
 		parts.append(String(effect["status_id"]).replace("_", " ").capitalize())
+	for status_variant in effect.get("statuses", []) as Array:
+		var status := status_variant as Dictionary
+		var status_parts: Array[String] = [
+			String(status.get("status_id", "status")).replace("_", " ").capitalize()
+		]
+		if status.has("tier"):
+			status_parts.append("Tier %d" % int(status["tier"]))
+		if status.has("ratio"):
+			status_parts.append("%d%%" % roundi(float(status["ratio"]) * 100.0))
+		if status.has("amount"):
+			status_parts.append("%d power" % int(status["amount"]))
+		if status.has("duration"):
+			status_parts.append("%.1fs" % float(status["duration"]))
+		parts.append(" ".join(status_parts))
 	if effect.has("projectile_bonus"):
 		parts.append("+%d sword waves" % int(effect["projectile_bonus"]))
+	if effect.has("spread_degrees"):
+		parts.append("%.0f degree spread" % float(effect["spread_degrees"]))
 	if effect.has("combo_stun"):
 		parts.append("%.2fs stun" % float(effect["combo_stun"]))
 	if effect.has("size_multiplier"):
 		parts.append("%.2fx effect size" % float(effect["size_multiplier"]))
-	return ", ".join(parts) if not parts.is_empty() else String(effect.get("kind", "Technique effect")).replace("_", " ").capitalize()
+	if effect.has("attack_range_bonus"):
+		parts.append("+%d attack range" % roundi(float(effect["attack_range_bonus"])))
+	if effect.has("attack_interval_multiplier"):
+		parts.append(
+			"%d%% faster attacks"
+				% roundi((1.0 - float(effect["attack_interval_multiplier"])) * 100.0)
+		)
+	if effect.has("projectile_speed_multiplier"):
+		parts.append(
+			"+%d%% projectile speed"
+				% roundi((float(effect["projectile_speed_multiplier"]) - 1.0) * 100.0)
+		)
+	if effect.has("attack_size_multiplier"):
+		parts.append(
+			"+%d%% attack size"
+				% roundi((float(effect["attack_size_multiplier"]) - 1.0) * 100.0)
+		)
+	if effect.has("defense_bonus"):
+		parts.append("+%d defense" % int(effect["defense_bonus"]))
+	if effect.has("move_speed_multiplier"):
+		parts.append("+%d%% move speed" % roundi(float(effect["move_speed_multiplier"]) * 100.0))
+	if effect.has("ap_regen_bonus"):
+		parts.append("+%.2f AP regeneration" % float(effect["ap_regen_bonus"]))
+	if effect.has("ap_max_bonus"):
+		parts.append("+%.0f maximum AP" % float(effect["ap_max_bonus"]))
+	if effect.has("poison_damage"):
+		parts.append("%d poison damage" % int(effect["poison_damage"]))
+	if effect.has("poison_duration"):
+		parts.append("%.1fs poison duration" % float(effect["poison_duration"]))
+	if effect.has("critical_chance"):
+		parts.append("+%d%% critical chance" % roundi(float(effect["critical_chance"]) * 100.0))
+	if effect.has("critical_multiplier"):
+		parts.append("%.2fx critical damage" % float(effect["critical_multiplier"]))
+	if effect.has("lifesteal_ratio"):
+		parts.append("%d%% lifesteal" % roundi(float(effect["lifesteal_ratio"]) * 100.0))
+	if effect.has("combo_duration"):
+		parts.append("%.1fs infusion" % float(effect["combo_duration"]))
+	return (
+		", ".join(parts)
+		if not parts.is_empty()
+		else effect_kind.replace("_", " ").capitalize()
+	)
 
 
 func _skill_recipe_description(recipe: Dictionary) -> String:

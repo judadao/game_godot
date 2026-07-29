@@ -7,7 +7,7 @@ blend_mode = 1
 
 [sub_resource type="Gradient" id="Gradient_flame"]
 offsets = PackedFloat32Array(0, 0.28, 0.72, 1)
-colors = PackedColorArray(1, 0.96, 0.7, 1, 1, 0.58, 0.04, 1, 0.95, 0.12, 0.01, 0.78, 0.12, 0.01, 0, 0)
+colors = PackedColorArray(1, 1, 0.82, 0.96, 1, 0.82, 0.18, 0.9, 1, 0.3, 0.015, 0.62, 0.82, 0.08, 0, 0)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture_flame"]
 gradient = SubResource("Gradient_flame")
@@ -32,8 +32,8 @@ spread = 24.0
 gravity = Vector3(0, -42, 0)
 initial_velocity_min = 70.0
 initial_velocity_max = 145.0
-scale_min = 0.55
-scale_max = 1.45
+scale_min = 0.42
+scale_max = 0.9
 color_ramp = SubResource("GradientTexture_flame")
 
 [sub_resource type="Gradient" id="Gradient_sparks"]
@@ -120,6 +120,30 @@ begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
 
+[node name="AnticipationGuide" type="Line2D" parent="."]
+visible = false
+modulate = Color(1, 0.4, 0.035, 0)
+material = SubResource("CanvasItemMaterial_add")
+points = PackedVector2Array(0, -64, 42, -32, 52, 16, 16, 48, -28, 32, -36, 0)
+width = 4.0
+default_color = Color(1, 0.48, 0.045, 1)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="ImpactCrown" type="Line2D" parent="."]
+visible = false
+modulate = Color(1, 0.94, 0.55, 0)
+material = SubResource("CanvasItemMaterial_add")
+points = PackedVector2Array(0, -96, 68, -68, 96, 0, 68, 68, 0, 96, -68, 68, -96, 0, -68, -68, 0, -96)
+width = 4.0
+default_color = Color(1, 0.88, 0.34, 1)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
 [node name="FlamePillars" type="GPUParticles2D" parent="."]
 material = SubResource("CanvasItemMaterial_add")
 emitting = false
@@ -129,7 +153,7 @@ lifetime = 0.8
 one_shot = true
 explosiveness = 0.92
 randomness = 0.22
-visibility_rect = Rect2(-1000, -1000, 2000, 2000)
+visibility_rect = Rect2(-1200, -1200, 2400, 2400)
 process_material = SubResource("ParticleProcessMaterial_pillars")
 
 [node name="EmberSparks" type="GPUParticles2D" parent="."]
@@ -141,5 +165,5 @@ lifetime = 0.95
 one_shot = true
 explosiveness = 0.82
 randomness = 0.58
-visibility_rect = Rect2(-1000, -1000, 2000, 2000)
+visibility_rect = Rect2(-1200, -1200, 2400, 2400)
 process_material = SubResource("ParticleProcessMaterial_sparks")

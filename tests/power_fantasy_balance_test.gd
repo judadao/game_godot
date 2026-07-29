@@ -52,18 +52,18 @@ func _run() -> void:
 	_expect(locked_fusions.is_empty(), "Energy Cycle must never enter generic or recipe fusion.")
 
 	var director := SurvivalWaveDirector.new()
-	var phases := director.survival_phases
-	var unique_archetypes: Dictionary = {}
-	for phase in phases:
-		for archetype_id in phase.get("pool", []) as Array:
-			unique_archetypes[String(archetype_id)] = true
 	_expect(
-		int(phases[0].get("density_cap", 0)) >= 12
-			and int(phases[3].get("density_cap", 0)) >= 40
-			and int(phases[0].get("spawn_batch", 0)) >= 2,
-		"Survival phases must begin dense and grow toward forty simultaneous enemies."
+		director.base_density_cap >= 12
+			and director.maximum_density_cap >= 44
+			and director.base_spawn_batch >= 2
+			and director.final_rush_density_bonus >= 12,
+		"Survival countdown must begin dense, grow continuously, and spike during Final Rush."
 	)
-	_expect(unique_archetypes.size() >= 7, "The autumn horde must mix at least seven enemy archetypes.")
+	_expect(
+		director.normal_enemy_unlocks.size() >= 6
+			and not director.normal_enemy_unlocks.has("elite"),
+		"Autumn survival must mix six normal archetypes while scheduling elites separately."
+	)
 	director.free()
 
 	var game := (load("res://scenes/game/game.tscn") as PackedScene).instantiate()

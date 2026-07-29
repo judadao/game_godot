@@ -22,13 +22,15 @@ func _run() -> void:
 		{"id": "ember_bolt", "name": "Ember Bolt", "category": "attacks", "preview_kind": "basic_attack"},
 		{"id": "flame_imbue", "name": "Flame Imbue", "category": "infusions", "preview_kind": "attack_aura", "elements": ["flame"]},
 		{"id": "frost_bind", "name": "Glacial Dominion", "category": "skills", "preview_kind": "ice_ultimate", "radius": 460},
+		{"id": "guard", "name": "Iron Will", "category": "skills", "preview_kind": "technique", "visual_family": "defense"},
+		{"id": "healing_light", "name": "Healing Light", "category": "skills", "preview_kind": "technique", "visual_family": "healing"},
 		{"id": "inferno_cremation", "name": "Inferno Cremation", "category": "finishers", "preview_kind": "finisher", "elements": ["flame"]},
 	])
 	ui.call("set_mode", &"codex")
 	ui.call("select_codex_entry", "flame_imbue")
 	await process_frame
 	_expect(ui.call("get_mode") == &"codex", "Codex mode must be selectable.")
-	_expect(ui.call("get_visible_codex_count") == 4, "Codex must list attacks, skills, infusions, and finishers.")
+	_expect(ui.call("get_visible_codex_count") == 6, "Codex must list every projected attack, skill, infusion, and finisher.")
 	_expect(ui.call("get_selected_codex_id") == "flame_imbue", "Codex selection must drive the preview.")
 	var preview := ui.get_node("Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Preview")
 	_expect(preview.call("get_preview_kind") == "attack_aura", "Attack infusion must use the aura preview.")
@@ -43,6 +45,8 @@ func _run() -> void:
 		not bool(preview.call("is_effect_top_level")),
 		"Basic Attack preview must not escape the codex panel as a top-level world effect."
 	)
+	ui.call("select_codex_entry", "guard")
+	_expect(preview.call("get_preview_kind") == "technique", "Defense and support skills must use the reusable technique preview.")
 	ui.call("select_codex_entry", "inferno_cremation")
 	_expect(preview.call("get_preview_kind") == "finisher", "Finishers must use the amplified sword-wave preview.")
 	ui.queue_free()

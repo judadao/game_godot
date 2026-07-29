@@ -550,6 +550,10 @@ HUDLayer
 - 可篩選、可捲動的 item/discovery lists
 - Codex 左側 basic attacks／skills／infusions／finishers 列表、右上角色與 production VFX
   預覽、右下效果／觸發說明
+- discovery projection 包含每張已解鎖 card、每個已學 passive Skill 與每個已解鎖
+  Finisher，stable id 不得重複
+- 治療、防禦、能量、移動、控制及強化技使用對應的 code-native `technique`
+  preview；不能因為沒有火／冰專屬 VFX 而從列表消失
 
 `inventory_ui.gd`：
 
@@ -560,7 +564,8 @@ HUDLayer
 ### 12.2 Current gaps
 
 - consumable compatibility state 仍與 InventoryManager 分離。
-- Codex 目前只預覽已有 production fire/frost VFX；後續元素需新增相同契約。
+- storm／venom infusion 已沿用 attack-bound aura contract；它們的獨立 Ultimate
+  尚未實作。
 - component 子場景無 script/signal，父 controller 依賴 deep NodePath。
 - empty/max/long localized item 尚無 resolution test。
 
@@ -1083,7 +1088,8 @@ AutumnHUD
 
 目前目標固定在左上，金錢與 magic shard 位於右上，Boss health 使用上方中央的暫時空間。
 底部從 viewport 的 66% 開始，依序放玩家狀態與即時小數 AP、目前四張牌及右側
-activity feed，最下方保留 phase/navigation rail。不可恢復常駐 combo/recipe 或
+activity feed，最下方保留 survival countdown/navigation rail。倒數使用 `MM:SS`，
+最後 30 秒切換紅橙色 `FINAL RUSH`，00:00 顯示 `FINAL BOSS`。不可恢復常駐 combo/recipe 或
 status progress panel。skill toast 最多三筆、約 1.5 秒淡出；相同技能重複觸發
 刷新既有 toast。
 

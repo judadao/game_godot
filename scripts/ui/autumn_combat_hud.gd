@@ -39,7 +39,7 @@ const SKILL_TOAST_LIFETIME := 1.5
 @onready var _redraw_button: Button = $BottomStage/CardStage/ActionStrip/RedrawHand
 @onready var _auto_use_toggle: CheckButton = $BottomStage/CardStage/ActionStrip/AutoUse
 @onready var _group_label: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/InputStrip/GroupBadge
-@onready var _phase_label: Label = $FooterRail/FooterRow/PhaseLabel
+@onready var _survival_timer_label: Label = $FooterRail/FooterRow/SurvivalTimerLabel
 
 var _toast_by_key: Dictionary = {}
 var _toast_order: Array[String] = []
@@ -191,9 +191,23 @@ func set_objective(text: String, progress: String = "") -> void:
 	quest_text.text = text
 	quest_progress.text = progress
 	quest_progress.visible = not progress.is_empty()
-	var normalized := text.strip_edges().to_upper()
-	if normalized.begins_with("SURVIVE / PHASE"):
-		_phase_label.text = normalized.replace("SURVIVE / ", "") + " / 5"
+
+
+func set_survival_timer(remaining: float, _total: float, final_rush: bool) -> void:
+	var seconds := maxi(0, int(ceil(remaining)))
+	var time_text := "%02d:%02d" % [seconds / 60, seconds % 60]
+	var state_text := (
+		"FINAL BOSS"
+		if remaining <= 0.0
+		else ("FINAL RUSH" if final_rush else "SURVIVE")
+	)
+	_survival_timer_label.text = "%s  %s" % [time_text, state_text]
+	_survival_timer_label.add_theme_color_override(
+		"font_color",
+		Color(1.0, 0.38, 0.24, 1.0)
+		if final_rush or remaining <= 0.0
+		else Color(0.96, 0.87, 0.68, 1.0)
+	)
 
 
 func set_active_statuses(_statuses: Array) -> void:

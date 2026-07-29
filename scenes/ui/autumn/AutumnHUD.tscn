@@ -651,12 +651,12 @@ layout_mode = 2
 theme_override_constants/separation = 14
 mouse_filter = 2
 
-[node name="PhaseLabel" type="Label" parent="FooterRail/FooterRow"]
+[node name="SurvivalTimerLabel" type="Label" parent="FooterRail/FooterRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.96, 0.87, 0.68, 1)
 theme_override_font_sizes/font_size = 14
-text = "PHASE 1 / 3"
+text = "03:00  SURVIVE"
 vertical_alignment = 1
 
 [node name="NavigationHints" type="Label" parent="FooterRail/FooterRow"]

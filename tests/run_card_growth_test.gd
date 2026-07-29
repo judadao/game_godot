@@ -63,6 +63,17 @@ func _run() -> void:
 		not (gifts.call("get_inventory") as Array).is_empty(),
 		"Confirming the elite reward must add one run-local Divine Gift."
 	)
+	var timeline_director := SurvivalWaveDirector.new()
+	timeline_director.name = "AutumnRunDirector"
+	game.get("current_map").add_child(timeline_director)
+	timeline_director.set("_elite_defeat_count", 1)
+	game.call("_on_elite_defeated", Vector2.ZERO)
+	await process_frame
+	await process_frame
+	_expect(
+		String(queue.peek().get("source", "")) == "divine",
+		"A later Elite event number must enqueue another Divine Gift in the same countdown."
+	)
 
 	game.queue_free()
 	await process_frame
