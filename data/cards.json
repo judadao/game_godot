@@ -174,10 +174,10 @@
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0005_Gloves.png",
       "tags": ["skill", "fire", "area", "ultimate"],
       "combo_tags": ["fire", "area"],
-      "effect": {"kind": "area_damage", "amount": 42, "radius": 420, "burn_damage": 4, "burn_duration": 4.0},
+      "effect": {"kind": "area_damage", "amount": 48, "radius": 420, "knockback": 260, "burn_damage": 4, "burn_duration": 4.0},
       "upgrade_effects": [
-        {"level": 2, "description": "The firestorm reaches farther and burns harder.", "effect": {"amount": 52, "radius": 470, "burn_damage": 5}},
-        {"level": 3, "description": "Successive flame rings leave a visible scorched field.", "mechanic_change": "caldera_afterburn", "effect": {"amount": 64, "radius": 520, "field_damage": 8, "field_duration": 4.0}}
+        {"level": 2, "description": "The firestorm reaches farther and burns harder.", "effect": {"amount": 62, "radius": 470, "knockback": 300, "burn_damage": 5}},
+        {"level": 3, "description": "Successive flame rings leave a visible scorched field.", "mechanic_change": "caldera_afterburn", "effect": {"amount": 78, "radius": 520, "knockback": 340, "field_damage": 8, "field_duration": 4.0}}
       ]
     },
     {
@@ -188,14 +188,14 @@
       "level": 1,
       "max_level": 3,
       "cost": 4,
-      "description": "Freeze the ground outward from the player and slow every enemy in a wide area.",
+      "description": "Shatter the ground outward from the player, damaging and slowing every nearby enemy.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_01.png",
       "tags": ["skill", "control", "frost", "area", "ultimate"],
       "combo_tags": ["control", "frost", "area"],
-      "effect": {"kind": "area_slow", "radius": 460, "ratio": 0.45, "duration": 4.0},
+      "effect": {"kind": "area_slow", "amount": 42, "radius": 460, "knockback": 220, "ratio": 0.45, "duration": 4.0},
       "upgrade_effects": [
-        {"level": 2, "description": "The frozen ground expands farther and lasts longer.", "effect": {"radius": 510, "duration": 5.0}},
-        {"level": 3, "description": "Ice crystals erupt across the frozen domain and briefly lock enemies in place.", "mechanic_change": "glacial_lock", "effect": {"radius": 560, "freeze_delay": 0.8, "freeze_duration": 1.0}}
+        {"level": 2, "description": "The frozen ground expands farther, shatters harder, and lasts longer.", "effect": {"amount": 56, "radius": 510, "knockback": 250, "duration": 5.0}},
+        {"level": 3, "description": "Ice crystals erupt across the frozen domain and briefly lock enemies in place.", "mechanic_change": "glacial_lock", "effect": {"amount": 70, "radius": 560, "knockback": 290, "freeze_delay": 0.8, "freeze_duration": 1.0}}
       ]
     },
     {

@@ -20,6 +20,10 @@ func _run() -> void:
 	await process_frame
 	_expect(player.has_method("try_dash"), "Player must expose dash behavior.")
 	_expect(player.has_method("try_drop_through_platform"), "Player must expose one-way platform drop behavior.")
+	_expect(
+		player.has_method("apply_temporary_move_speed"),
+		"Player must expose the survival pickup speed-boost contract."
+	)
 	if not player.has_method("try_dash"):
 		player.queue_free()
 		await process_frame
@@ -42,6 +46,20 @@ func _run() -> void:
 	player.call("_tick_dash_cooldown", float(player.get("dash_cooldown")))
 	_expect(bool(player.call("try_dash", -1)), "Dash must become available after cooldown.")
 	_expect(player.get("facing_direction") == -1, "Dash direction must update facing.")
+	player.call("apply_temporary_move_speed", 1.4, 10.0)
+	var speed_snapshot := player.call("get_temporary_move_speed_snapshot") as Dictionary
+	_expect(
+		is_equal_approx(float(speed_snapshot["multiplier"]), 1.4)
+			and is_equal_approx(float(speed_snapshot["remaining"]), 10.0),
+		"Swift fruit must project its active movement multiplier and duration."
+	)
+	player.call("_tick_temporary_move_speed", 10.0)
+	speed_snapshot = player.call("get_temporary_move_speed_snapshot") as Dictionary
+	_expect(
+		is_equal_approx(float(speed_snapshot["multiplier"]), 1.0)
+			and is_zero_approx(float(speed_snapshot["remaining"])),
+		"Temporary movement speed must return to normal when the pickup expires."
+	)
 	var defeat_events: Array[bool] = []
 	player.defeated.connect(func() -> void: defeat_events.append(true))
 	player.call("take_damage", 99999)

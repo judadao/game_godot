@@ -73,7 +73,14 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 			_apply_finisher_mutations(caster, selected, effect, result)
 		"area_damage":
 			var selected := _targets_in_radius(caster, targets, float(effect.get("radius", 150.0)))
-			_damage_targets(caster, selected, int(effect.get("amount", 0)), result)
+			_damage_targets(
+				caster,
+				selected,
+				int(effect.get("amount", 0)),
+				result,
+				1,
+				float(effect.get("knockback", 180.0))
+			)
 			_apply_infused_statuses(selected, effect)
 		"block":
 			if caster.has_method("add_block"):
@@ -97,11 +104,27 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 			_apply_status(_nearest_targets(caster, targets, 1), kind, effect, result)
 		"area_slow", "stun":
 			var status_id := "slow" if kind == "area_slow" else kind
+			var selected := _targets_in_radius(
+				caster,
+				targets,
+				float(effect.get("radius", 170.0))
+			)
+			var status_damage := int(effect.get("amount", 0)) if kind == "area_slow" else 0
+			if status_damage > 0:
+				_damage_targets(
+					caster,
+					selected,
+					status_damage,
+					result,
+					1,
+					float(effect.get("knockback", 180.0))
+				)
 			_apply_status(
-				_targets_in_radius(caster, targets, float(effect.get("radius", 170.0))),
+				selected,
 				status_id,
 				effect,
-				result
+				result,
+				status_damage <= 0
 			)
 		"attack_power":
 			var current: Variant = caster.get("attack_power")
@@ -149,7 +172,14 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 	return result
 
 
-func _damage_targets(caster: Node, targets: Array, raw_damage: int, result: Dictionary, hits: int = 1) -> void:
+func _damage_targets(
+	caster: Node,
+	targets: Array,
+	raw_damage: int,
+	result: Dictionary,
+	hits: int = 1,
+	knockback: float = 80.0
+) -> void:
 	for target in targets:
 		if not target is Node or not is_instance_valid(target):
 			continue
@@ -159,7 +189,7 @@ func _damage_targets(caster: Node, targets: Array, raw_damage: int, result: Dict
 				break
 			if target.has_method("take_hit"):
 				var source := (caster as Node2D).global_position if caster is Node2D else Vector2.ZERO
-				target_total += int(target.call("take_hit", raw_damage, source, 80.0))
+				target_total += int(target.call("take_hit", raw_damage, source, knockback))
 			elif target.has_method("take_damage"):
 				target_total += int(target.call("take_damage", raw_damage))
 		if target_total > 0:
@@ -197,7 +227,13 @@ func _damage_projectile_volley(
 	result["affected"] = int(result["affected"]) + damaged_target_ids.size()
 
 
-func _apply_status(targets: Array, status_id: String, effect: Dictionary, result: Dictionary) -> void:
+func _apply_status(
+	targets: Array,
+	status_id: String,
+	effect: Dictionary,
+	result: Dictionary,
+	count_affected: bool = true
+) -> void:
 	for target in targets:
 		if not target is Node or not is_instance_valid(target):
 			continue
@@ -206,7 +242,8 @@ func _apply_status(targets: Array, status_id: String, effect: Dictionary, result
 		else:
 			target.set_meta("card_status", status_id)
 			target.set_meta("card_status_duration", float(effect.get("duration", 0.0)))
-		result["affected"] = int(result["affected"]) + 1
+		if count_affected:
+			result["affected"] = int(result["affected"]) + 1
 
 
 func _apply_infused_statuses(targets: Array, effect: Dictionary) -> void:

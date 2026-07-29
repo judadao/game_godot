@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/survival_pickup.gd" id="1_pickup"]
+
+[sub_resource type="CircleShape2D" id="PickupShape"]
+radius = 24.0
+
+[node name="SurvivalPickup" type="Area2D" groups=["SurvivalPickups"]]
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+script = ExtResource("1_pickup")
+
+[node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, -26)
+
+[node name="Ring" type="Line2D" parent="Visual"]
+points = PackedVector2Array(0, -22, 16, -16, 22, 0, 16, 16, 0, 22, -16, 16, -22, 0, -16, -16, 0, -22)
+width = 2.5
+default_color = Color(1, 0.45, 0.22, 0.9)
+
+[node name="Core" type="Polygon2D" parent="Visual"]
+polygon = PackedVector2Array(0, -14, 13, -7, 15, 5, 7, 16, -7, 16, -15, 5, -13, -7)
+color = Color(1, 0.3, 0.18, 1)
+
+[node name="Accent" type="Polygon2D" parent="Visual"]
+position = Vector2(5, -17)
+polygon = PackedVector2Array(-5, 4, 0, -7, 9, -4, 5, 3)
+color = Color(0.5, 1, 0.32, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -26)
+shape = SubResource("PickupShape")

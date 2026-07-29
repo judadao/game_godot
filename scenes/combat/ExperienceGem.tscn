@@ -5,7 +5,7 @@
 [sub_resource type="CircleShape2D" id="1"]
 radius = 18.0
 
-[node name="ExperienceGem" type="Area2D"]
+[node name="ExperienceGem" type="Area2D" groups=["ExperienceGems"]]
 collision_layer = 0
 collision_mask = 1
 monitoring = true

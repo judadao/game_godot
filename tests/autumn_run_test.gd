@@ -15,6 +15,7 @@ func _init() -> void:
 func _run() -> void:
 	await _test_archetype_catalog()
 	await _test_enemy_and_elite_contract()
+	await _test_enemy_platform_navigation()
 	await _test_encounter_director()
 	await _test_guardian_contract()
 	quit(0 if _failures == 0 else 1)
@@ -91,6 +92,57 @@ func _test_enemy_and_elite_contract() -> void:
 	_expect(second_pattern == &"shockwave", "Elite second attack must be shockwave.")
 
 	enemy.queue_free()
+	await process_frame
+
+
+func _test_enemy_platform_navigation() -> void:
+	var packed := load(ENEMY_SCENE) as PackedScene
+	var world := Node2D.new()
+	root.add_child(world)
+
+	var floor := StaticBody2D.new()
+	floor.collision_layer = 1
+	var floor_shape := CollisionShape2D.new()
+	var floor_rectangle := RectangleShape2D.new()
+	floor_rectangle.size = Vector2(600.0, 20.0)
+	floor_shape.shape = floor_rectangle
+	floor.add_child(floor_shape)
+	floor.position = Vector2(0.0, 100.0)
+	world.add_child(floor)
+
+	var platform := StaticBody2D.new()
+	platform.collision_layer = 1
+	var platform_shape := CollisionShape2D.new()
+	var platform_rectangle := RectangleShape2D.new()
+	platform_rectangle.size = Vector2(180.0, 12.0)
+	platform_shape.shape = platform_rectangle
+	platform_shape.one_way_collision = true
+	platform.add_child(platform_shape)
+	platform.position = Vector2(120.0, -4.0)
+	world.add_child(platform)
+
+	var target := Node2D.new()
+	target.add_to_group("Player")
+	target.position = Vector2(120.0, -34.0)
+	world.add_child(target)
+
+	var enemy := packed.instantiate() as EnemyBase
+	enemy.position = Vector2(0.0, 90.0)
+	world.add_child(enemy)
+	await physics_frame
+	await physics_frame
+	enemy.target = target
+	var grounded_y := enemy.global_position.y
+	var highest_y := grounded_y
+	for _frame in 36:
+		await physics_frame
+		highest_y = minf(highest_y, enemy.global_position.y)
+	_expect(
+		highest_y <= grounded_y - 60.0,
+		"An enemy pursuing a player above it must physically jump toward the platform."
+	)
+
+	world.queue_free()
 	await process_frame
 
 

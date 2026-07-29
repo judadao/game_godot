@@ -1,5 +1,23 @@
 extends SceneTree
 
+class PickupCollector:
+	extends Node2D
+
+	var health := 20
+	var maximum_health := 100
+	var speed_multiplier := 1.0
+	var speed_duration := 0.0
+
+	func restore_health(amount: int) -> int:
+		var restored := mini(maxi(0, amount), maximum_health - health)
+		health += restored
+		return restored
+
+	func apply_temporary_move_speed(multiplier: float, duration: float) -> void:
+		speed_multiplier = multiplier
+		speed_duration = duration
+
+
 var _failures := 0
 
 
@@ -40,6 +58,25 @@ func _run() -> void:
 			})
 	)
 	root.add_child(director)
+	_expect(
+		ResourceLoader.exists("res://scenes/combat/SurvivalPickup.tscn"),
+		"Survival enemies need one reusable runtime pickup scene."
+	)
+	_expect(
+		director.has_signal("survival_pickup_spawned")
+			and director.has_method("roll_survival_pickup")
+			and director.has_method("apply_survival_pickup"),
+		"Survival pickup drops need observable spawn, deterministic roll, and effect APIs."
+	)
+	if director.has_method("roll_survival_pickup"):
+		var drop_chance := float(director.get("normal_pickup_drop_chance"))
+		_expect(
+			director.call("roll_survival_pickup", drop_chance * 0.10) == &"healing_fruit"
+				and director.call("roll_survival_pickup", drop_chance * 0.55) == &"experience_magnet"
+				and director.call("roll_survival_pickup", drop_chance * 0.85) == &"swift_fruit"
+				and director.call("roll_survival_pickup", drop_chance + 0.01) == &"",
+			"Pickup rolls must cover healing fruit, experience magnet, speed fruit, and no drop."
+		)
 	_expect(bool(director.call("start_encounter")), "Survival encounter must start.")
 	_expect(
 		not director.has_signal("phase_time_changed"),
@@ -105,6 +142,52 @@ func _run() -> void:
 		time_events.any(func(event: Dictionary) -> bool: return bool(event["final_rush"])),
 		"Countdown projection must explicitly expose the Final Rush state."
 	)
+	if director.has_method("apply_survival_pickup"):
+		var collector := PickupCollector.new()
+		root.add_child(collector)
+		var pickup_scene := load("res://scenes/combat/SurvivalPickup.tscn") as PackedScene
+		var pickup := pickup_scene.instantiate()
+		root.add_child(pickup)
+		var pickup_events: Array[StringName] = []
+		pickup.connect(
+			"collected",
+			func(item_id: StringName, _collector: Node) -> void:
+				pickup_events.append(item_id)
+		)
+		pickup.call("configure", &"healing_fruit", collector)
+		pickup.call("collect", collector)
+		pickup.call("collect", collector)
+		_expect(
+			pickup_events == [&"healing_fruit"],
+			"A runtime pickup must resolve exactly once when the player collects it."
+		)
+		director.call("apply_survival_pickup", &"healing_fruit", collector)
+		_expect(
+			collector.health == 55,
+			"Healing fruit must restore a meaningful fixed amount immediately."
+		)
+		director.call("apply_survival_pickup", &"swift_fruit", collector)
+		_expect(
+			is_equal_approx(collector.speed_multiplier, 1.4)
+				and is_equal_approx(collector.speed_duration, 10.0),
+			"Swift fruit must grant a forty-percent movement boost for ten seconds."
+		)
+		var gem_scene := load("res://scenes/combat/ExperienceGem.tscn") as PackedScene
+		var magnet_collections: Array[int] = []
+		for gem_value in [5, 8]:
+			var gem := gem_scene.instantiate()
+			director.add_child(gem)
+			gem.call("configure", gem_value, collector)
+			gem.connect(
+				"collected",
+				func(value: int) -> void: magnet_collections.append(value)
+			)
+		director.call("apply_survival_pickup", &"experience_magnet", collector)
+		_expect(
+			magnet_collections == [5, 8],
+			"Experience magnet must immediately collect every active experience gem."
+		)
+		collector.queue_free()
 	director.queue_free()
 	await process_frame
 	quit(0 if _failures == 0 else 1)

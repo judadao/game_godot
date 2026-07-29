@@ -65,6 +65,8 @@ var _attack_animation_remaining := 0.0
 var input_enabled: bool = true
 var _invulnerability_remaining := 0.0
 var _block := 0
+var _temporary_move_speed_multiplier := 1.0
+var _temporary_move_speed_remaining := 0.0
 
 func _ready() -> void:
 	health = clampi(health, 0, maxi(1, max_health))
@@ -74,6 +76,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	_tick_dash_cooldown(delta)
 	_tick_invulnerability(delta)
+	_tick_temporary_move_speed(delta)
 	if _dash_remaining > 0.0:
 		_advance_dash(delta)
 		_update_state(float(facing_direction))
@@ -84,7 +87,7 @@ func _physics_process(delta: float) -> void:
 	if direction != 0.0:
 		set_facing_direction(signi(direction))
 
-	velocity.x = direction * speed
+	velocity.x = direction * speed * _temporary_move_speed_multiplier
 
 	if is_on_floor():
 		_air_jumps_remaining = max_air_jumps
@@ -240,6 +243,8 @@ func revive(at_position: Vector2) -> void:
 		collision_layer = _dash_collision_layer
 	_dash_collision_layer = 0
 	_block = 0
+	_temporary_move_speed_multiplier = 1.0
+	_temporary_move_speed_remaining = 0.0
 	if combat_status_controller != null:
 		combat_status_controller.clear_all()
 	resources_changed.emit(health, max_health, mana, max_mana)
@@ -259,6 +264,24 @@ func restore_mana(amount: int) -> int:
 	mana += restored
 	resources_changed.emit(health, max_health, mana, max_mana)
 	return restored
+
+
+func apply_temporary_move_speed(multiplier: float, duration: float) -> void:
+	_temporary_move_speed_multiplier = maxf(
+		_temporary_move_speed_multiplier,
+		maxf(1.0, multiplier)
+	)
+	_temporary_move_speed_remaining = maxf(
+		_temporary_move_speed_remaining,
+		maxf(0.0, duration)
+	)
+
+
+func get_temporary_move_speed_snapshot() -> Dictionary:
+	return {
+		"multiplier": _temporary_move_speed_multiplier,
+		"remaining": _temporary_move_speed_remaining,
+	}
 
 func take_damage(amount: int) -> int:
 	var was_alive := health > 0
@@ -345,6 +368,18 @@ func _tick_dash_cooldown(delta: float) -> void:
 
 func _tick_invulnerability(delta: float) -> void:
 	_invulnerability_remaining = maxf(_invulnerability_remaining - maxf(delta, 0.0), 0.0)
+
+
+func _tick_temporary_move_speed(delta: float) -> void:
+	if _temporary_move_speed_remaining <= 0.0:
+		_temporary_move_speed_multiplier = 1.0
+		return
+	_temporary_move_speed_remaining = maxf(
+		0.0,
+		_temporary_move_speed_remaining - maxf(delta, 0.0)
+	)
+	if _temporary_move_speed_remaining <= 0.0:
+		_temporary_move_speed_multiplier = 1.0
 
 
 func _start_jump() -> void:

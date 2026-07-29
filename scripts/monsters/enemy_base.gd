@@ -10,6 +10,11 @@ const ARCHETYPE_DATA := preload("res://scripts/monsters/enemy_archetype.gd")
 
 @export var archetype_id: StringName = &"sprout"
 @export var gravity: float = 980.0
+@export var navigation_jump_velocity := 620.0
+@export var navigation_jump_cooldown := 0.55
+@export var navigation_stuck_seconds := 0.28
+@export var platform_target_height := 42.0
+@export var platform_target_horizontal_range := 280.0
 
 @onready var visual: CanvasItem = get_node_or_null("Visual") as CanvasItem
 @onready var health_fill: ColorRect = get_node_or_null("HealthBar/Fill") as ColorRect
@@ -35,6 +40,8 @@ var _poison_damage := 0
 var _poison_tick_remaining := 0.75
 var _attack_generation := 0
 var _telegraphed_target_position := Vector2.ZERO
+var _navigation_jump_remaining := 0.0
+var _navigation_stalled_seconds := 0.0
 
 
 func _ready() -> void:
@@ -68,6 +75,7 @@ func _physics_process(delta: float) -> void:
 	_stun_remaining = maxf(0.0, _stun_remaining - delta)
 	_update_burn(delta)
 	_update_poison(delta)
+	_navigation_jump_remaining = maxf(0.0, _navigation_jump_remaining - delta)
 	if not is_on_floor():
 		velocity.y += gravity * delta
 	_cooldown = maxf(0.0, _cooldown - delta)
@@ -78,7 +86,10 @@ func _physics_process(delta: float) -> void:
 		velocity.x = 0.0
 	else:
 		_update_behavior()
+	var previous_x := global_position.x
+	var wanted_horizontal_motion := absf(velocity.x) > 1.0
 	move_and_slide()
+	_update_navigation_recovery(delta, previous_x, wanted_horizontal_motion)
 
 
 func _update_behavior() -> void:
@@ -87,24 +98,92 @@ func _update_behavior() -> void:
 	var distance := global_position.distance_to(target.global_position)
 	var attack_range := float(archetype.get("attack_range"))
 	var detection_range := float(archetype.get("detection_range"))
-	if distance <= attack_range and _cooldown <= 0.0:
+	var target_offset := target.global_position - global_position
+	if (
+		distance <= attack_range
+		and absf(target_offset.y) <= 54.0
+		and _cooldown <= 0.0
+	):
 		_begin_attack()
 		return
 	if distance > detection_range and not bool(get_meta("persistent_pursuit", false)):
 		velocity.x = 0.0
 		return
 
-	var direction := signf(target.global_position.x - global_position.x)
+	var direction := signf(target_offset.x)
+	if is_zero_approx(direction):
+		direction = 1.0
 	var behavior := archetype.get("behavior") as StringName
-	if behavior == &"ranged" and distance < attack_range * 0.72:
+	if (
+		behavior == &"ranged"
+		and absf(target_offset.y) <= platform_target_height
+		and distance < attack_range * 0.72
+	):
 		velocity.x = -direction * float(archetype.get("speed")) * 0.65 * _movement_multiplier()
-	elif behavior == &"leap" and is_on_floor():
+	elif (
+		behavior == &"leap"
+		and is_on_floor()
+		and _navigation_jump_remaining <= 0.0
+	):
 		velocity.x = direction * float(archetype.get("speed")) * _movement_multiplier()
-		velocity.y = -290.0
+		velocity.y = -navigation_jump_velocity * 0.72
+		_navigation_jump_remaining = navigation_jump_cooldown
 	else:
 		velocity.x = direction * float(archetype.get("speed")) * _movement_multiplier()
 	if visual != null:
 		visual.scale.x = absf(visual.scale.x) * direction
+
+
+func get_navigation_jump_reason(
+	target_offset: Vector2,
+	stalled_seconds: float,
+	touching_wall: bool
+) -> StringName:
+	if touching_wall:
+		return &"obstacle"
+	if stalled_seconds >= navigation_stuck_seconds:
+		return &"stuck"
+	if (
+		target_offset.y <= -platform_target_height
+		and absf(target_offset.x) <= platform_target_horizontal_range
+	):
+		return &"platform"
+	return &""
+
+
+func _update_navigation_recovery(
+	delta: float,
+	previous_x: float,
+	wanted_horizontal_motion: bool
+) -> void:
+	if (
+		target == null
+		or not is_instance_valid(target)
+		or _attacking
+		or _stun_remaining > 0.0
+	):
+		_navigation_stalled_seconds = 0.0
+		return
+	if is_on_floor() and wanted_horizontal_motion:
+		var horizontal_progress := absf(global_position.x - previous_x)
+		if horizontal_progress < 0.5:
+			_navigation_stalled_seconds += delta
+		else:
+			_navigation_stalled_seconds = 0.0
+	elif not is_on_floor():
+		_navigation_stalled_seconds = 0.0
+	if not is_on_floor() or _navigation_jump_remaining > 0.0:
+		return
+	var reason := get_navigation_jump_reason(
+		target.global_position - global_position,
+		_navigation_stalled_seconds,
+		is_on_wall()
+	)
+	if reason == &"":
+		return
+	velocity.y = -navigation_jump_velocity
+	_navigation_jump_remaining = navigation_jump_cooldown
+	_navigation_stalled_seconds = 0.0
 
 
 func perform_next_attack() -> StringName:
@@ -259,6 +338,8 @@ func reset_encounter(spawn_position: Vector2) -> void:
 	_poison_remaining = 0.0
 	_poison_damage = 0
 	_poison_tick_remaining = 0.75
+	_navigation_jump_remaining = 0.0
+	_navigation_stalled_seconds = 0.0
 	health = int(archetype.get("max_health"))
 	position = spawn_position
 	velocity = Vector2.ZERO

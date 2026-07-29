@@ -12,30 +12,36 @@ signal elite_spawned(elite: Node, remaining: float)
 signal boss_spawned(boss: Node, completion_boss: bool, remaining: float)
 signal boss_stage_completed
 signal experience_gem_spawned(gem: Node, value: int)
+signal survival_pickup_spawned(pickup: Node, item_id: StringName)
+signal survival_pickup_collected(item_id: StringName)
 
-@export_range(30.0, 1800.0, 1.0) var survival_duration := 180.0
-@export_range(10.0, 120.0, 1.0) var final_rush_duration := 30.0
-@export var scheduled_elite_times: Array[float] = [35.0, 80.0, 125.0]
-@export var scheduled_boss_times: Array[float] = [90.0]
-@export_range(2.0, 60.0, 0.5) var final_rush_elite_interval := 10.0
-@export_range(5.0, 60.0, 0.5) var final_rush_boss_interval := 15.0
-@export_range(1, 100, 1) var base_density_cap := 14
-@export_range(1, 120, 1) var maximum_density_cap := 44
-@export_range(0, 60, 1) var final_rush_density_bonus := 16
-@export_range(0.05, 5.0, 0.05) var base_spawn_interval := 1.15
-@export_range(0.05, 5.0, 0.05) var minimum_spawn_interval := 0.38
-@export_range(0.1, 1.0, 0.05) var final_rush_spawn_interval_multiplier := 0.55
-@export_range(1, 12, 1) var base_spawn_batch := 2
-@export_range(1, 16, 1) var maximum_spawn_batch := 5
+@export_range(30.0, 1800.0, 1.0) var survival_duration := 600.0
+@export_range(10.0, 120.0, 1.0) var final_rush_duration := 60.0
+@export var scheduled_elite_times: Array[float] = [
+	90.0, 180.0, 270.0, 360.0, 450.0,
+]
+@export var scheduled_boss_times: Array[float] = [300.0, 480.0]
+@export_range(2.0, 60.0, 0.5) var final_rush_elite_interval := 15.0
+@export_range(5.0, 60.0, 0.5) var final_rush_boss_interval := 30.0
+@export_range(1, 100, 1) var base_density_cap := 18
+@export_range(1, 120, 1) var maximum_density_cap := 72
+@export_range(0, 60, 1) var final_rush_density_bonus := 24
+@export_range(0.05, 5.0, 0.05) var base_spawn_interval := 0.9
+@export_range(0.05, 5.0, 0.05) var minimum_spawn_interval := 0.24
+@export_range(0.1, 1.0, 0.05) var final_rush_spawn_interval_multiplier := 0.5
+@export_range(1, 12, 1) var base_spawn_batch := 3
+@export_range(1, 16, 1) var maximum_spawn_batch := 8
 @export var normal_enemy_unlocks: Dictionary = {
 	"sprout": 0.0,
 	"hopper": 0.0,
 	"moth_swarm": 0.0,
-	"thornling": 30.0,
-	"charger": 65.0,
-	"grove_shaman": 95.0,
+	"thornling": 90.0,
+	"charger": 210.0,
+	"grove_shaman": 330.0,
 }
 @export var experience_gem_scene: PackedScene = preload("res://scenes/combat/ExperienceGem.tscn")
+@export var survival_pickup_scene: PackedScene = preload("res://scenes/combat/SurvivalPickup.tscn")
+@export_range(0.0, 1.0, 0.005) var normal_pickup_drop_chance := 0.08
 @export var spawn_around_player := false
 @export var spawn_route_left := 0.0
 @export var spawn_route_right := 0.0
@@ -99,7 +105,7 @@ func start_encounter() -> bool:
 	_disengage_remaining = -1.0
 	_spawn_positions.clear()
 	_rng.seed = int(Time.get_ticks_usec() ^ get_instance_id())
-	_spawn_until_cap(mini(6, get_current_density_cap()))
+	_spawn_until_cap(mini(8, get_current_density_cap()))
 	encounter_started.emit(1)
 	_emit_survival_time()
 	return true
@@ -368,6 +374,8 @@ func _on_survival_enemy_defeated(
 	if String(enemy.get_meta("encounter_archetype_id", "")) == "elite":
 		_elite_defeat_count += 1
 		elite_defeated.emit(reward_position)
+	elif not is_boss:
+		_try_spawn_survival_pickup(reward_position)
 	_gold += maxi(0, gold)
 	if not completion_boss:
 		_spawn_experience_gem(reward_position, maxi(1, experience))
@@ -426,3 +434,66 @@ func _spawn_experience_gem(at_position: Vector2, value: int) -> void:
 	if gem.has_method("configure"):
 		gem.call("configure", value, get_tree().get_first_node_in_group("Player") as Node2D)
 	experience_gem_spawned.emit(gem, value)
+
+
+func roll_survival_pickup(roll: float) -> StringName:
+	var chance := clampf(normal_pickup_drop_chance, 0.0, 1.0)
+	if chance <= 0.0 or roll < 0.0 or roll >= chance:
+		return &""
+	var weighted_roll := roll / chance
+	if weighted_roll < 0.45:
+		return &"healing_fruit"
+	if weighted_roll < 0.70:
+		return &"experience_magnet"
+	return &"swift_fruit"
+
+
+func _try_spawn_survival_pickup(at_position: Vector2) -> Node:
+	var item_id := roll_survival_pickup(_rng.randf())
+	if item_id == &"":
+		return null
+	return _spawn_survival_pickup(item_id, at_position)
+
+
+func _spawn_survival_pickup(item_id: StringName, at_position: Vector2) -> Node:
+	if survival_pickup_scene == null:
+		return null
+	var pickup := survival_pickup_scene.instantiate()
+	add_child(pickup)
+	if pickup is Node2D:
+		(pickup as Node2D).global_position = at_position
+	if pickup.has_method("configure"):
+		pickup.call(
+			"configure",
+			item_id,
+			get_tree().get_first_node_in_group("Player") as Node2D
+		)
+	if pickup.has_signal("collected"):
+		pickup.connect("collected", _on_survival_pickup_collected, CONNECT_ONE_SHOT)
+	survival_pickup_spawned.emit(pickup, item_id)
+	return pickup
+
+
+func _on_survival_pickup_collected(item_id: StringName, collector: Node) -> void:
+	apply_survival_pickup(item_id, collector)
+	survival_pickup_collected.emit(item_id)
+
+
+func apply_survival_pickup(item_id: StringName, collector: Node) -> bool:
+	if collector == null or not is_instance_valid(collector):
+		return false
+	match item_id:
+		&"healing_fruit":
+			if collector.has_method("restore_health"):
+				collector.call("restore_health", 35)
+				return true
+		&"experience_magnet":
+			for gem in get_tree().get_nodes_in_group("ExperienceGems"):
+				if is_instance_valid(gem) and gem.has_method("collect"):
+					gem.call("collect")
+			return true
+		&"swift_fruit":
+			if collector.has_method("apply_temporary_move_speed"):
+				collector.call("apply_temporary_move_speed", 1.4, 10.0)
+				return true
+	return false

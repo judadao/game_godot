@@ -53,10 +53,21 @@ func _run() -> void:
 
 	var director := SurvivalWaveDirector.new()
 	_expect(
-		director.base_density_cap >= 12
-			and director.maximum_density_cap >= 44
-			and director.base_spawn_batch >= 2
-			and director.final_rush_density_bonus >= 12,
+		is_equal_approx(director.survival_duration, 600.0)
+			and is_equal_approx(director.final_rush_duration, 60.0),
+		"Autumn survival must last ten minutes with a one-minute Final Rush."
+	)
+	_expect(
+		not director.scheduled_elite_times.is_empty()
+			and is_equal_approx(director.scheduled_elite_times[0], 90.0),
+		"The first Elite blessing opportunity must arrive at about ninety seconds."
+	)
+	_expect(
+		director.base_density_cap >= 18
+			and director.maximum_density_cap >= 72
+			and director.base_spawn_batch >= 3
+			and director.maximum_spawn_batch >= 8
+			and director.final_rush_density_bonus >= 24,
 		"Survival countdown must begin dense, grow continuously, and spike during Final Rush."
 	)
 	_expect(
@@ -65,6 +76,68 @@ func _run() -> void:
 		"Autumn survival must mix six normal archetypes while scheduling elites separately."
 	)
 	director.free()
+
+	var enemy_catalog := EnemyArchetype.autumn_catalog()
+	var normal_enemy_ids: Array[StringName] = [
+		&"sprout", &"hopper", &"moth_swarm", &"thornling", &"charger", &"grove_shaman",
+	]
+	var maximum_normal_health := 0
+	for enemy_id in normal_enemy_ids:
+		var normal_archetype := enemy_catalog[enemy_id] as EnemyArchetype
+		maximum_normal_health = maxi(maximum_normal_health, normal_archetype.max_health)
+		_expect(
+			normal_archetype.defense == 0,
+			"Normal horde enemies must not pad their low health with defense."
+		)
+	var fire_ultimate := database.get_card("concussive_shout")
+	var frost_ultimate := database.get_card("frost_bind")
+	var fire_effect := fire_ultimate.get("effect", {}) as Dictionary
+	var frost_effect := frost_ultimate.get("effect", {}) as Dictionary
+	_expect(
+		int(fire_effect.get("amount", 0)) >= maximum_normal_health
+			and int(frost_effect.get("amount", 0)) >= maximum_normal_health,
+		"Every base ultimate must wipe normal horde enemies caught in its area."
+	)
+	_expect(
+		(enemy_catalog[&"elite"] as EnemyArchetype).max_health
+			> maxi(int(fire_effect.get("amount", 0)), int(frost_effect.get("amount", 0))),
+		"Elite enemies must survive one base ultimate so blessings retain a combat gate."
+	)
+
+	var navigation_enemy := EnemyBase.new()
+	_expect(
+		navigation_enemy.has_method("get_navigation_jump_reason"),
+		"Normal enemies must expose deterministic stuck and platform jump recovery."
+	)
+	if navigation_enemy.has_method("get_navigation_jump_reason"):
+		_expect(
+			navigation_enemy.call(
+				"get_navigation_jump_reason",
+				Vector2(90.0, -100.0),
+				0.0,
+				false
+			) == &"platform",
+			"Enemies pursuing a player above them must jump toward reachable platforms."
+		)
+		_expect(
+			navigation_enemy.call(
+				"get_navigation_jump_reason",
+				Vector2(180.0, 0.0),
+				0.4,
+				false
+			) == &"stuck",
+			"Enemies that stop making horizontal progress must jump free."
+		)
+		_expect(
+			navigation_enemy.call(
+				"get_navigation_jump_reason",
+				Vector2(180.0, 0.0),
+				0.0,
+				true
+			) == &"obstacle",
+			"Enemies walking into route relief must jump over the obstacle."
+		)
+	navigation_enemy.free()
 
 	var game := (load("res://scenes/game/game.tscn") as PackedScene).instantiate()
 	root.add_child(game)

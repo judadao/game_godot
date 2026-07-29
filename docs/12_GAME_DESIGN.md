@@ -211,20 +211,20 @@ route bounds 的位置生成。距離玩家超過 1500px 的一般怪會回收�
 
 ### 5.1 生存倒數
 
-`SurvivalWaveDirector` 使用單一 180 秒倒數，不再公開或依賴 survival phase。
-普通敵人的 alive cap 由 14 連續提高到 44，spawn batch 由 2 提高到 5，
-spawn interval 由 1.15 秒連續縮短到 0.38 秒。Enemy role 依經過時間逐步加入
+`SurvivalWaveDirector` 使用單一 600 秒倒數，不再公開或依賴 survival phase。
+普通敵人的 alive cap 由 18 連續提高到 72，spawn batch 由 3 提高到 8，
+spawn interval 由 0.9 秒連續縮短到 0.24 秒。Enemy role 依經過時間逐步加入
 pool，但 HUD 只投影剩餘時間、威脅數與 Final Rush，不顯示隱藏的 unlock threshold。
 
 | 經過時間 | 排程事件 |
 |---:|---|
-| 35、80、125 秒 | 各生成一隻 Crimson Grove Elite |
-| 90 秒 | 生成一隻不負責結算的 Heartwood Harbinger |
-| 剩餘 30 秒 | 進入 Final Rush，立即追加 Elite 與 Harbinger |
-| Final Rush | 每 10 秒追加 Elite；每 15 秒追加 Harbinger |
+| 90、180、270、360、450 秒 | 各生成一隻 Crimson Grove Elite；擊殺後取得 Divine Gift |
+| 300、480 秒 | 生成一隻不負責結算的 Heartwood Harbinger |
+| 剩餘 60 秒 | 進入 Final Rush，立即追加 Elite 與 Harbinger |
+| Final Rush | 每 15 秒追加 Elite；每 30 秒追加 Harbinger |
 | 00:00 | 停止一般排程並生成唯一 completion Guardian |
 
-Final Rush 額外增加 16 alive cap、縮短普通 spawn interval 並提高 batch。
+Final Rush 額外增加 24 alive cap、縮短普通 spawn interval 並提高 batch。
 中途 Boss 與 Final Rush Boss 死亡不會提前結算；只有帶
 `completion_boss` metadata 的 00:00 Guardian 死亡會完成關卡。
 
@@ -237,11 +237,26 @@ Final Rush 額外增加 16 alive cap、縮短普通 spawn interval 並提高 bat
 - ranged；
 - charge；
 - elite 行為；
+- 追擊高處玩家時主動跳上 one-way platform；
+- 撞牆或水平停滯時自動跳躍脫困；
 - slow、stun、burn 狀態。
 
 一般敵人死亡會產生實體 `ExperienceGem`。Gem 在 180 像素內吸引玩家、30 像素內收集，移動速度由 180 加速至 520。
 每隻 Elite 死亡都會遞增獨立 reward event，並開啟一次 Divine Gift 選擇；
 同一倒數內的後續 Elite 不會再被舊 wave／stage key 誤判成重複獎勵。
+六種普通敵人維持低生命、零防禦的 horde contract；火焰與冰霜基礎大招在範圍內
+都能清除普通怪群，但單次不會直接擊殺 Elite 或 Guardian。
+
+普通敵人死亡時有 8% 機率生成 `SurvivalPickup`，掉落採單一權威權重表：
+
+| 掉落 | 掉落池權重 | 效果 |
+|---|---:|---|
+| Healing Fruit | 45% | 立即恢復 35 HP |
+| Experience Magnet | 25% | 立即收集場上所有 ExperienceGem |
+| Swift Fruit | 30% | 10 秒內移動速度提高 40% |
+
+Pickup 在 180 像素內會追蹤玩家，未拾取時 18 秒後消失；Elite、Harbinger 與
+completion Guardian 不進普通掉落擲骰，保留各自既有獎勵責任。
 
 ### 5.3 Guardian
 
@@ -1075,10 +1090,11 @@ Combo 的攻擊提高採每三層一階：每階增加當前基礎攻擊 amount 
 ### Horde-first difficulty
 
 Autumn survival uses enemy density and mixed roles instead of weakening the
-player. The single countdown continuously grows concurrent caps `14 → 44` and
-spawn batches `2 → 5`; Final Rush adds another 16 cap plus scheduled Elites and
+player. The ten-minute countdown continuously grows concurrent caps `18 → 72`
+and spawn batches `3 → 8`; Final Rush adds another 24 cap plus scheduled Elites and
 Harbingers. Amber Moth Swarm adds fragile high-speed pressure while Grove
-Shaman adds long-range support. Elite is never part of the random normal pool.
+Shaman adds long-range support. Normal roles stay low-health and defense-free so
+area ultimates erase a crowd at once. Elite is never part of the random normal pool.
 自動普攻命中時以世界空間短彈道、命中環、實際傷害數字與 `COMBO ×N / POWER +N`
 直接呈現本次強化，讓玩家不必只靠 HUD 判斷是否生效。
 中性普通攻擊的主形狀是朝前方凸出的白青色 `)` 型空心月牙劍氣，由 core blade、
