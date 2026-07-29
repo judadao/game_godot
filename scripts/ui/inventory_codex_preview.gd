@@ -53,6 +53,10 @@ func get_effect_node_count() -> int:
 	return 1 if is_instance_valid(_effect) else 0
 
 
+func is_effect_top_level() -> bool:
+	return _effect.is_set_as_top_level() if is_instance_valid(_effect) else false
+
+
 func _draw() -> void:
 	var rect := Rect2(Vector2.ZERO, size)
 	draw_rect(rect, Color("#10171a"))
@@ -107,8 +111,7 @@ func _spawn_effect() -> void:
 	else:
 		return
 	add_child(_effect)
-	_effect.set_as_top_level(true)
-	_effect.global_position = global_position + Vector2(size.x * 0.5, size.y * 0.78 - 39.0)
+	_effect.position = _preview_effect_center()
 	_effect.set("radius", clampf(float(_entry.get("radius", 180.0)) * 0.42, 96.0, 190.0))
 	_effect.set("intensity", 0.85)
 	_effect.set("duration", 1.0)
@@ -121,10 +124,11 @@ func _spawn_sword_wave(kind: String) -> void:
 	if _effect == null:
 		return
 	add_child(_effect)
-	_effect.set_as_top_level(true)
 	_effect.z_index = 6
-	var origin := global_position + Vector2(size.x * 0.5 + 34.0, size.y * 0.78 - 32.0)
-	var target := origin + Vector2(minf(210.0, size.x * 0.32), -14.0)
+	var local_origin := _preview_effect_center() + Vector2(34.0, 7.0)
+	var local_target := local_origin + Vector2(minf(210.0, size.x * 0.32), 0.0)
+	var origin := get_global_transform_with_canvas() * local_origin
+	var target := get_global_transform_with_canvas() * local_target
 	var elements: Array = _entry.get("elements", []) as Array
 	var profile := {
 		"elements": elements,
@@ -145,6 +149,10 @@ func _spawn_sword_wave(kind: String) -> void:
 		profile
 	)
 	_replay_remaining = 1.0 if kind != "finisher" else 1.3
+
+
+func _preview_effect_center() -> Vector2:
+	return Vector2(size.x * 0.5, size.y * 0.78 - 39.0)
 
 
 func _clear_effect() -> void:

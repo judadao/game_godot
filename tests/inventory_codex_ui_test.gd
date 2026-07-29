@@ -33,8 +33,16 @@ func _run() -> void:
 	var preview := ui.get_node("Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Preview")
 	_expect(preview.call("get_preview_kind") == "attack_aura", "Attack infusion must use the aura preview.")
 	_expect(preview.call("get_effect_node_count") == 1, "Preview must own exactly one active reusable effect.")
+	_expect(
+		not bool(preview.call("is_effect_top_level")),
+		"Codex preview combat effects must stay clipped inside the preview panel."
+	)
 	ui.call("select_codex_entry", "ember_bolt")
 	_expect(preview.call("get_preview_kind") == "basic_attack", "Basic attacks must use the directional strike preview.")
+	_expect(
+		not bool(preview.call("is_effect_top_level")),
+		"Basic Attack preview must not escape the codex panel as a top-level world effect."
+	)
 	ui.call("select_codex_entry", "inferno_cremation")
 	_expect(preview.call("get_preview_kind") == "finisher", "Finishers must use the amplified sword-wave preview.")
 	ui.queue_free()
