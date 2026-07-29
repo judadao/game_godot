@@ -17,6 +17,22 @@ func _run() -> void:
 		card_ids[String(card["id"])] = true
 		represented_types[String(card["type"]).to_lower()] = true
 		_expect(ResourceLoader.exists(String(card["icon_path"])), "Every card icon path must resolve.")
+		if String(card.get("type", "")) == "combo":
+			var combo_effect := card.get("effect", {}) as Dictionary
+			if String(combo_effect.get("kind", "")) == "infusion":
+				_expect(
+					is_equal_approx(float(combo_effect.get("combo_duration", 0.0)), 1.5),
+					"Every timed Combo infusion must use the 1.5-second base duration."
+				)
+			for status_variant in combo_effect.get("statuses", []) as Array:
+				if status_variant is Dictionary:
+					_expect(
+						is_equal_approx(
+							float((status_variant as Dictionary).get("duration", 0.0)),
+							1.5
+						),
+						"Every timed Combo status must use the 1.5-second base duration."
+					)
 	for required_type in ["attack", "skill", "power", "healing", "status", "ultimate", "combo"]:
 		_expect(represented_types.has(required_type), "Card catalog must represent %s." % required_type)
 

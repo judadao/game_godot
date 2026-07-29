@@ -355,10 +355,13 @@ Basic Attack 不反覆顯示名稱；只有實際造成傷害且沒有施法演�
 
 ### 7.1 Combo cards
 
-`combo` 是固定技能類型。每次使用會永久增加對應 stack，infusion 持續影響之後
-所有 Basic Attack，不因時間、受傷或攻擊次數中斷。只有 Combo 會進入三格公式；
-Healing 不進入也不會中斷。三招必須精確匹配已學會的 AAA 或有順序 ABC 配方，
-才會排入對應終結技；不再以任意三招產生同一招式。效果組成為：
+`combo` 是固定技能類型。每次使用會永久增加公式用 stack，但該卡提供的 attack
+infusion／status 各自只有 1.5 秒基礎持續時間，且彼此獨立倒數。某一效果到期時
+只移除自己的修正並立即以剩餘效果重建攻擊 profile；例如 Giant Arc 到期後尺寸
+回到正常，仍在倒數的 Quickened Cadence 繼續保留攻速。攻擊次數不會消耗這些
+效果。只有 Combo 會進入三格公式；Healing 不進入也不會中斷。三招必須精確
+匹配已學會的 AAA 或有順序 ABC 配方，才會排入對應終結技；不再以任意三招
+產生同一招式。效果組成為：
 
 ```text
 recipe Finisher base + matched three-Combo combination + every Divine Gift effect
@@ -854,17 +857,19 @@ feedback remains active. Slow motion is reserved for triggered named skills,
 elemental ultimates, and queued formula Finishers; a queued Finisher starts its
 presentation only after a legal horizontal target confirms that the shot will fire.
 
-### Persistent Combo formula
+### Persistent Combo formula and timed card effects
 
-Combo cards remain in their slot after play. Their stacks and attack infusions persist
-for the entire Run. Healing does not enter or interrupt the formula. An exact learned
+Combo cards remain in their slot after play. Formula history and stacks persist for the
+entire Run, while each card's attack infusion or status has its own 1.5-second base
+timer. Expiration removes only that card's modifiers, so later overlapping effects
+continue normally. Healing does not enter or interrupt the formula. An exact learned
 three-Combo recipe queues its named Finisher for a later automatic horizontal shot;
 multiple Finishers resolve FIFO. The HUD shows formula slots, persistent stacks,
 owned Divine Gifts, Gift-modified names, and the queued ready state.
 
 `combo_cost_reduction` still applies with a minimum cost of 1 AP. Legacy
-`combo_duration_bonus` remains save/data compatible but does not extend charged
-attack effects.
+`combo_duration_bonus` extends both the separate 2.5-second Combo Chain window and
+the 1.5-second card-effect timer, capped at 3.0 and 2.0 seconds respectively.
 
 ### Card tempo and AP flow
 

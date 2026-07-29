@@ -120,19 +120,19 @@ func _run() -> void:
 	var prepared_effects := run.temporary_buffs.get("infusion_effects", []) as Array
 	_expect(
 		prepared_effects.size() == 1
-			and bool((prepared_effects[0] as Dictionary).get("persistent", false)),
-		"Combo power must remain prepared for every later automatic attack."
-	)
-	game.call("_tick_combo_effects", 3.1)
-	_expect(
-		not (run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(),
-		"Idle time must not erase prepared Combo power."
+			and not bool((prepared_effects[0] as Dictionary).get("persistent", true)),
+		"Combo power must use a finite per-card effect timer."
 	)
 	for _attack in 3:
 		game.call("_consume_combo_attack_charges")
 	_expect(
 		not (run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(),
-		"Automatic attacks must not consume persistent Combo power."
+		"Automatic attacks must not consume Combo power before its timer expires."
+	)
+	game.call("_tick_combo_effects", 1.51)
+	_expect(
+		(run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(),
+		"Idle time must remove Combo power after 1.5 seconds."
 	)
 
 	game.queue_free()

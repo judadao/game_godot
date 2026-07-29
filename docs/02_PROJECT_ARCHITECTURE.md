@@ -837,6 +837,11 @@ Combo 技能時不能形成終結技。完成的終結技進入 FIFO queue，下
 Attack 逐一施放；效果為「配方終結技基底＋該三招組合＋所有 Divine Gift 效果」。
 施放後只消耗 queue 的第一招，不消耗永久 Combo stacks。
 
+Combo 卡本身提供的 infusion／status 不屬於永久公式狀態：每張卡各自持有 1.5 秒
+基礎倒數，時間到只移除該張卡的 runtime modifier，並由剩餘效果重建攻擊 profile。
+因此尺寸、速度、射程與元素等重疊效果可在不同時間獨立恢復。技能觸發用 Combo
+Chain 仍使用獨立的 2.5 秒視窗，不受卡片效果到期影響。
+
 `DivineGiftManager` 是 Run-local 神賜權威。每個 stage/wave 最多排入一個必選
 神賜頁，避免同關多隻菁英重複開頁。神賜最高三級；最新選取的神賜提供招式稱號，
 例如 `千刃殺` 變成 `絕對零度的千刃殺`，所有持有神賜則共同加入燃燒、冰凍碎裂、

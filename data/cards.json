@@ -70,16 +70,16 @@
       "level": 1,
       "max_level": 3,
       "cost": 1,
-      "description": "Gain weak super armor for 2.5 seconds.",
+      "description": "Gain weak super armor for 1.5 seconds.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0001_Shield.png",
       "tags": ["combo", "super_armor"],
       "combo_tags": ["combo", "armor"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "combat_status", "statuses": [{"status_id": "super_armor", "tier": 1, "duration": 2.5}]},
+      "effect": {"kind": "combat_status", "statuses": [{"status_id": "super_armor", "tier": 1, "duration": 1.5}]},
       "upgrade_effects": [
-        {"level": 2, "description": "Super armor lasts 2.75 seconds.", "effect": {"statuses": [{"status_id": "super_armor", "tier": 1, "duration": 2.75}]}},
-        {"level": 3, "description": "A visible iron aura resists stronger impacts for 3 seconds.", "mechanic_change": "reinforced_super_armor", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 3.0}]}}
+        {"level": 2, "description": "Super armor stays at 1.5 seconds and gains stronger presence.", "effect": {"statuses": [{"status_id": "super_armor", "tier": 1, "duration": 1.5}]}},
+        {"level": 3, "description": "A visible iron aura resists stronger impacts for 1.5 seconds.", "mechanic_change": "reinforced_super_armor", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 1.5}]}}
       ]
     },
     {
@@ -91,16 +91,16 @@
       "level": 1,
       "max_level": 3,
       "cost": 2,
-      "description": "Reduce incoming damage by 30 percent for 2.5 seconds.",
+      "description": "Reduce incoming damage by 30 percent for 1.5 seconds.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0003_Chest.png",
       "tags": ["combo", "damage_reduction", "armor"],
       "combo_tags": ["combo", "armor"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "combat_status", "statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 2.5}]},
+      "effect": {"kind": "combat_status", "statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 1.5}]},
       "upgrade_effects": [
-        {"level": 2, "description": "Damage reduction lasts 2.75 seconds.", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 2.75}]}},
-        {"level": 3, "description": "Stone plates visibly orbit for 3 seconds.", "mechanic_change": "orbiting_stone_armor", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.35, "duration": 3.0}]}}
+        {"level": 2, "description": "Damage reduction stays at 1.5 seconds.", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 1.5}]}},
+        {"level": 3, "description": "Stone plates visibly orbit for 1.5 seconds.", "mechanic_change": "orbiting_stone_armor", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.35, "duration": 1.5}]}}
       ]
     },
     {
@@ -112,16 +112,16 @@
       "level": 1,
       "max_level": 3,
       "cost": 4,
-      "description": "Gain strong super armor and 40 percent damage reduction for 2.5 seconds.",
+      "description": "Gain strong super armor and 40 percent damage reduction for 1.5 seconds.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0001_Shield.png",
       "tags": ["combo", "super_armor", "damage_reduction", "stance"],
       "combo_tags": ["combo", "armor"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "combat_status", "statuses": [{"status_id": "super_armor", "tier": 2, "duration": 2.5}, {"status_id": "damage_reduction", "ratio": 0.40, "duration": 2.5}]},
+      "effect": {"kind": "combat_status", "statuses": [{"status_id": "super_armor", "tier": 2, "duration": 1.5}, {"status_id": "damage_reduction", "ratio": 0.40, "duration": 1.5}]},
       "upgrade_effects": [
-        {"level": 2, "description": "The stance lasts 2.75 seconds.", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 2.75}, {"status_id": "damage_reduction", "ratio": 0.40, "duration": 2.75}]}},
-        {"level": 3, "description": "Raises a visible unbreakable aura for 3 seconds.", "mechanic_change": "unbreakable_aura", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 3.0}, {"status_id": "damage_reduction", "ratio": 0.45, "duration": 3.0}]}}
+        {"level": 2, "description": "The stance stays at 1.5 seconds.", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 1.5}, {"status_id": "damage_reduction", "ratio": 0.40, "duration": 1.5}]}},
+        {"level": 3, "description": "Raises a visible unbreakable aura for 1.5 seconds.", "mechanic_change": "unbreakable_aura", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 1.5}, {"status_id": "damage_reduction", "ratio": 0.45, "duration": 1.5}]}}
       ]
     },
     {
@@ -137,7 +137,7 @@
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0006_Boots.png",
       "tags": ["mobility", "dash", "attack"],
       "combo_tags": ["mobility", "strike"],
-      "effect": {"kind": "infusion", "infusion_id": "dash_edge", "target_action": "dash", "combo_duration": 2.5, "damage_bonus": 10},
+      "effect": {"kind": "infusion", "infusion_id": "dash_edge", "target_action": "dash", "combo_duration": 1.5, "damage_bonus": 10},
       "upgrade_effects": [
         {"level": 2, "description": "Space Dash damage increases to 15.", "effect": {"damage_bonus": 15}},
         {"level": 3, "description": "Space Dash creates a return slash.", "mechanic_change": "return_slash", "effect": {"return_damage": 10}}
@@ -156,7 +156,7 @@
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png",
       "tags": ["mobility", "dash", "attack", "wind"],
       "combo_tags": ["mobility", "strike", "wind"],
-      "effect": {"kind": "infusion", "infusion_id": "gale_drive", "target_action": "dash", "combo_duration": 2.5, "damage_bonus": 20},
+      "effect": {"kind": "infusion", "infusion_id": "gale_drive", "target_action": "dash", "combo_duration": 1.5, "damage_bonus": 20},
       "upgrade_effects": [
         {"level": 2, "description": "The wind trail deals 6 damage.", "effect": {"trail_damage": 6}},
         {"level": 3, "description": "The visible wind trail pulls enemies inward.", "mechanic_change": "pulling_wind_trail", "effect": {"pull_strength": 180}}
@@ -346,7 +346,7 @@
       "combo_tags": ["combo", "fire"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "flame", "combo_duration": 2.5, "damage_bonus": 4, "burn_damage": 3, "burn_duration": 3.0},
+      "effect": {"kind": "infusion", "infusion_id": "flame", "combo_duration": 1.5, "damage_bonus": 4, "burn_damage": 3, "burn_duration": 3.0},
       "upgrade_effects": [
         {"level": 2, "description": "Fire bonus increases to six.", "effect": {"damage_bonus": 6}},
         {"level": 3, "description": "Burn lasts five seconds.", "mechanic_change": "wildfire_infusion", "effect": {"burn_duration": 5.0}}
@@ -367,7 +367,7 @@
       "combo_tags": ["combo", "frost"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "frost", "combo_duration": 2.5, "damage_bonus": 2, "frost_ratio": 0.30, "frost_duration": 2.0},
+      "effect": {"kind": "infusion", "infusion_id": "frost", "combo_duration": 1.5, "damage_bonus": 2, "frost_ratio": 0.30, "frost_duration": 2.0},
       "upgrade_effects": [
         {"level": 2, "description": "Frost bonus increases to four.", "effect": {"damage_bonus": 4}},
         {"level": 3, "description": "Slow becomes stronger.", "mechanic_change": "deep_freeze_infusion", "effect": {"frost_ratio": 0.45}}
@@ -388,7 +388,7 @@
       "combo_tags": ["combo", "power"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "rhythm", "combo_duration": 2.5, "damage_bonus": 2},
+      "effect": {"kind": "infusion", "infusion_id": "rhythm", "combo_duration": 1.5, "damage_bonus": 2},
       "upgrade_effects": [
         {"level": 2, "description": "Rhythm grants three extra damage.", "effect": {"damage_bonus": 3}},
         {"level": 3, "description": "Rhythm grants four extra damage.", "mechanic_change": "perfect_rhythm", "effect": {"damage_bonus": 4}}
@@ -409,7 +409,7 @@
       "combo_tags": ["combo", "range"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "reach", "combo_duration": 2.5, "attack_range_bonus": 70.0},
+      "effect": {"kind": "infusion", "infusion_id": "reach", "combo_duration": 1.5, "attack_range_bonus": 70.0},
       "upgrade_effects": [
         {"level": 2, "description": "Attack reach increases by 100 pixels.", "effect": {"attack_range_bonus": 100.0}},
         {"level": 3, "description": "Wide attack arcs reach 140 pixels farther.", "mechanic_change": "wide_attack_arc", "effect": {"attack_range_bonus": 140.0}}
@@ -430,7 +430,7 @@
       "combo_tags": ["combo", "speed"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "cadence", "combo_duration": 2.5, "attack_interval_multiplier": 0.82},
+      "effect": {"kind": "infusion", "infusion_id": "cadence", "combo_duration": 1.5, "attack_interval_multiplier": 0.82},
       "upgrade_effects": [
         {"level": 2, "description": "Automatic attacks occur 28 percent faster.", "effect": {"attack_interval_multiplier": 0.72}},
         {"level": 3, "description": "A rapid cadence makes automatic attacks 38 percent faster.", "mechanic_change": "rapid_cadence", "effect": {"attack_interval_multiplier": 0.62}}
@@ -451,7 +451,7 @@
       "combo_tags": ["combo", "speed"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "kinetic", "combo_duration": 2.5, "projectile_speed_multiplier": 1.35},
+      "effect": {"kind": "infusion", "infusion_id": "kinetic", "combo_duration": 1.5, "projectile_speed_multiplier": 1.35},
       "upgrade_effects": [
         {"level": 2, "description": "Attack effects travel 55 percent faster.", "effect": {"projectile_speed_multiplier": 1.55}},
         {"level": 3, "description": "Attack effects travel 80 percent faster.", "mechanic_change": "instant_impact", "effect": {"projectile_speed_multiplier": 1.80}}
@@ -472,7 +472,7 @@
       "combo_tags": ["combo", "range"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "giant_arc", "combo_duration": 2.5, "attack_size_multiplier": 1.20},
+      "effect": {"kind": "infusion", "infusion_id": "giant_arc", "combo_duration": 1.5, "attack_size_multiplier": 1.20},
       "upgrade_effects": [
         {"level": 2, "description": "Attack size increases by 35 percent.", "effect": {"attack_size_multiplier": 1.35}},
         {"level": 3, "description": "Attack size increases by 55 percent.", "mechanic_change": "colossal_arc", "effect": {"attack_size_multiplier": 1.55}}
@@ -493,7 +493,7 @@
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "iron_bone", "combo_duration": 2.5, "defense_bonus": 2},
+      "effect": {"kind": "infusion", "infusion_id": "iron_bone", "combo_duration": 1.5, "defense_bonus": 2},
       "upgrade_effects": [
         {"level": 2, "description": "Defense bonus increases to 3.", "effect": {"defense_bonus": 3}},
         {"level": 3, "description": "Defense bonus increases to 5.", "mechanic_change": "tempered_body", "effect": {"defense_bonus": 5}}
@@ -514,7 +514,7 @@
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "fleet", "combo_duration": 2.5, "move_speed_multiplier": 0.10},
+      "effect": {"kind": "infusion", "infusion_id": "fleet", "combo_duration": 1.5, "move_speed_multiplier": 0.10},
       "upgrade_effects": [
         {"level": 2, "description": "Movement speed increases by 16 percent.", "effect": {"move_speed_multiplier": 0.16}},
         {"level": 3, "description": "Movement speed increases by 24 percent.", "mechanic_change": "wind_step", "effect": {"move_speed_multiplier": 0.24}}
@@ -535,7 +535,7 @@
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "arcane_breath", "combo_duration": 2.5, "ap_regen_bonus": 0.25},
+      "effect": {"kind": "infusion", "infusion_id": "arcane_breath", "combo_duration": 1.5, "ap_regen_bonus": 0.25},
       "upgrade_effects": [
         {"level": 2, "description": "Additional AP regeneration increases to 0.4.", "effect": {"ap_regen_bonus": 0.40}},
         {"level": 3, "description": "Additional AP regeneration increases to 0.6.", "mechanic_change": "overflowing_breath", "effect": {"ap_regen_bonus": 0.60}}
@@ -556,7 +556,7 @@
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "reservoir", "combo_duration": 2.5, "ap_max_bonus": 1.0},
+      "effect": {"kind": "infusion", "infusion_id": "reservoir", "combo_duration": 1.5, "ap_max_bonus": 1.0},
       "upgrade_effects": [
         {"level": 2, "description": "Maximum AP increases by 2.", "effect": {"ap_max_bonus": 2.0}},
         {"level": 3, "description": "Maximum AP increases by 3.", "mechanic_change": "limit_break", "effect": {"ap_max_bonus": 3.0}}
@@ -577,7 +577,7 @@
       "combo_tags": ["combo", "poison"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "venom", "combo_duration": 2.5, "poison_damage": 2, "poison_duration": 4.0},
+      "effect": {"kind": "infusion", "infusion_id": "venom", "combo_duration": 1.5, "poison_damage": 2, "poison_duration": 4.0},
       "upgrade_effects": [
         {"level": 2, "description": "Poison deals 3 damage for 5 seconds.", "effect": {"poison_damage": 3, "poison_duration": 5.0}},
         {"level": 3, "description": "Poison deals 4 damage for 6 seconds.", "mechanic_change": "virulent_edge", "effect": {"poison_damage": 4, "poison_duration": 6.0}}
@@ -598,7 +598,7 @@
       "combo_tags": ["combo", "power"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "momentum", "combo_duration": 2.5, "damage_bonus": 5},
+      "effect": {"kind": "infusion", "infusion_id": "momentum", "combo_duration": 1.5, "damage_bonus": 5},
       "upgrade_effects": [
         {"level": 2, "description": "Damage bonus increases to 7.", "effect": {"damage_bonus": 7}},
         {"level": 3, "description": "Heavy impact waves add 10 damage.", "mechanic_change": "impact_wave", "effect": {"damage_bonus": 10}}
@@ -619,7 +619,7 @@
       "combo_tags": ["combo", "critical"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "precision", "combo_duration": 2.5, "critical_chance": 0.18, "critical_multiplier": 1.75},
+      "effect": {"kind": "infusion", "infusion_id": "precision", "combo_duration": 1.5, "critical_chance": 0.18, "critical_multiplier": 1.75},
       "upgrade_effects": [
         {"level": 2, "description": "Critical chance increases to 25 percent.", "effect": {"critical_chance": 0.25}},
         {"level": 3, "description": "Critical hits deal double damage.", "mechanic_change": "perfect_focus", "effect": {"critical_chance": 0.25, "critical_multiplier": 2.0}}
@@ -640,7 +640,7 @@
       "combo_tags": ["combo", "lightning"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "storm", "combo_duration": 2.5, "damage_bonus": 2, "combo_stun": 0.12},
+      "effect": {"kind": "infusion", "infusion_id": "storm", "combo_duration": 1.5, "damage_bonus": 2, "combo_stun": 0.12},
       "upgrade_effects": [
         {"level": 2, "description": "Lightning stun increases to 0.18 seconds.", "effect": {"damage_bonus": 3, "combo_stun": 0.18}},
         {"level": 3, "description": "Chain lightning briefly stuns every struck enemy.", "mechanic_change": "chain_lightning", "effect": {"damage_bonus": 4, "combo_stun": 0.25}}
@@ -661,7 +661,7 @@
       "combo_tags": ["combo", "projectile", "fan"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "echo_volley", "combo_duration": 2.5, "projectile_bonus": 1, "spread_degrees": 90.0},
+      "effect": {"kind": "infusion", "infusion_id": "echo_volley", "combo_duration": 1.5, "projectile_bonus": 1, "spread_degrees": 90.0},
       "upgrade_effects": [
         {"level": 2, "description": "Fire 4 projectiles across a 180-degree fan.", "effect": {"projectile_bonus": 3, "spread_degrees": 180.0}},
         {"level": 3, "description": "Fire 8 projectiles in a full 360-degree circle.", "mechanic_change": "circular_echo_volley", "effect": {"projectile_bonus": 7, "spread_degrees": 360.0}}
@@ -676,16 +676,16 @@
       "level": 1,
       "max_level": 3,
       "cost": 3,
-      "description": "Gain 25 percent damage reduction and retaliation for 2.5 seconds.",
+      "description": "Gain 25 percent damage reduction and retaliation for 1.5 seconds.",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
       "tags": ["combo", "damage_reduction", "retaliation"],
       "combo_tags": ["combo", "armor"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "combat_status", "statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 2.5}, {"status_id": "retaliation", "amount": 6, "duration": 2.5}]},
+      "effect": {"kind": "combat_status", "statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 1.5}, {"status_id": "retaliation", "amount": 6, "duration": 1.5}]},
       "upgrade_effects": [
-        {"level": 2, "description": "Retaliation increases to eight.", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 2.5}, {"status_id": "retaliation", "amount": 8, "duration": 2.5}]}},
-        {"level": 3, "description": "A visible stone burst answers every hit.", "mechanic_change": "living_counterguard", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 2.5}, {"status_id": "retaliation", "amount": 10, "duration": 2.5}]}}
+        {"level": 2, "description": "Retaliation increases to eight for 1.5 seconds.", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 1.5}, {"status_id": "retaliation", "amount": 8, "duration": 1.5}]}},
+        {"level": 3, "description": "A visible stone burst answers every hit for 1.5 seconds.", "mechanic_change": "living_counterguard", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 1.5}, {"status_id": "retaliation", "amount": 10, "duration": 1.5}]}}
       ]
     },
     {
@@ -747,7 +747,7 @@
       "combo_tags": ["combo", "power", "element"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
-      "effect": {"kind": "infusion", "infusion_id": "ascendant", "combo_duration": 3.0, "damage_bonus": 6, "attack_range_bonus": 50.0, "attack_interval_multiplier": 0.82, "attack_size_multiplier": 1.25, "projectile_speed_multiplier": 1.35, "critical_chance": 0.12, "critical_multiplier": 1.8, "defense_bonus": 2, "move_speed_multiplier": 0.10, "ap_regen_bonus": 0.30, "ap_max_bonus": 1.0, "lifesteal_ratio": 0.08, "burn_damage": 2, "burn_duration": 3.0, "frost_ratio": 0.20, "frost_duration": 2.0, "poison_damage": 2, "poison_duration": 3.0, "combo_stun": 0.10},
+      "effect": {"kind": "infusion", "infusion_id": "ascendant", "combo_duration": 1.5, "damage_bonus": 6, "attack_range_bonus": 50.0, "attack_interval_multiplier": 0.82, "attack_size_multiplier": 1.25, "projectile_speed_multiplier": 1.35, "critical_chance": 0.12, "critical_multiplier": 1.8, "defense_bonus": 2, "move_speed_multiplier": 0.10, "ap_regen_bonus": 0.30, "ap_max_bonus": 1.0, "lifesteal_ratio": 0.08, "burn_damage": 2, "burn_duration": 3.0, "frost_ratio": 0.20, "frost_duration": 2.0, "poison_damage": 2, "poison_duration": 3.0, "combo_stun": 0.10},
       "upgrade_effects": [
         {"level": 2, "description": "Every Ascendant bonus becomes stronger.", "effect": {"damage_bonus": 9, "attack_interval_multiplier": 0.74, "attack_size_multiplier": 1.40, "defense_bonus": 3, "ap_regen_bonus": 0.45}},
         {"level": 3, "description": "Ascendant attacks become a large multi-element storm.", "mechanic_change": "ascendant_storm", "effect": {"damage_bonus": 13, "attack_range_bonus": 90.0, "attack_interval_multiplier": 0.66, "attack_size_multiplier": 1.60, "projectile_speed_multiplier": 1.70, "critical_chance": 0.22, "defense_bonus": 4, "move_speed_multiplier": 0.18, "ap_regen_bonus": 0.65, "ap_max_bonus": 2.0}}

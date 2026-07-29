@@ -54,7 +54,8 @@ const MAX_COMBO_LEVEL := 3
 const MAX_COMBO_EFFECT_STACKS := 12
 const MAX_COMBO_CHAIN := 99
 const COMBO_CHAIN_DURATION := 2.5
-const DEFAULT_COMBO_DURATION := 2.5
+const DEFAULT_COMBO_DURATION := 1.5
+const MAX_COMBO_EFFECT_DURATION := 2.0
 const MAX_COMBO_DURATION := 3.0
 const DEFAULT_AUTO_ATTACK_CARD_ID := "ember_bolt"
 const DEFAULT_AUTO_ATTACK_INTERVAL := 1.0
@@ -2054,12 +2055,12 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 	timed_effect["remaining_seconds"] = maxf(
 		0.1,
 		minf(
-			MAX_COMBO_DURATION,
+			MAX_COMBO_EFFECT_DURATION,
 			float(effect.get("combo_duration", DEFAULT_COMBO_DURATION))
 			+ float(equipment_specials.get("combo_duration_bonus", 0.0))
 		)
 	)
-	timed_effect["persistent"] = true
+	timed_effect["persistent"] = false
 	effects.append(timed_effect)
 	run_state.temporary_buffs["infusion_effects"] = effects
 	_try_evolve_combo_abilities()
@@ -2422,7 +2423,7 @@ func _try_evolve_combo_abilities() -> bool:
 		levels[evolution_id] = 1
 		var evolved_effect := (recipe["effect"] as Dictionary).duplicate(true)
 		evolved_effect["remaining_seconds"] = maxf(0.1, evolved_remaining)
-		evolved_effect["persistent"] = true
+		evolved_effect["persistent"] = false
 		effects.append(evolved_effect)
 		run_state.temporary_buffs["active_infusions"] = active
 		run_state.temporary_buffs["combo_levels"] = levels

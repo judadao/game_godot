@@ -29,7 +29,10 @@ func _run() -> void:
 	_expect(
 		String(combo.get("type", "")) == "combo"
 			and String(combo.get("combo_family", "")) == "offense"
-			and float((combo.get("effect", {}) as Dictionary).get("combo_duration", 99.0)) <= 2.5,
+			and is_equal_approx(
+				float((combo.get("effect", {}) as Dictionary).get("combo_duration", 99.0)),
+				1.5
+			),
 		"Echo Volley must be the single short projectile-amount Combo card."
 	)
 
@@ -189,16 +192,21 @@ func _run() -> void:
 		"Empty fan directions must miss instead of multiplying damage into one isolated target."
 	)
 	_expect(
-		bool(((run.temporary_buffs.get("infusion_effects", []) as Array)[0] as Dictionary).get(
+		not bool(((run.temporary_buffs.get("infusion_effects", []) as Array)[0] as Dictionary).get(
 			"persistent",
-			false
+			true
 		)),
-		"Projectile Combo effects must persist across automatic attacks."
+		"Projectile Combo effects must use their own short timer."
 	)
-	game.call("_tick_combo_effects", 3.1)
+	game.call("_tick_combo_effects", 1.49)
 	_expect(
 		not (run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(),
-		"Prepared projectile effects must survive idle time until attacks consume them."
+		"Projectile Combo effects must remain active immediately before 1.5 seconds."
+	)
+	game.call("_tick_combo_effects", 0.02)
+	_expect(
+		(run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(),
+		"Projectile amount and spread must disappear after their own 1.5-second timer."
 	)
 
 	var feedback := (
