@@ -1050,3 +1050,6 @@ Moth Swarm adds fragile high-speed pressure while Grove Shaman adds long-range
 support, bringing the phase pools to seven archetypes.
 自動普攻命中時以世界空間短彈道、命中環、實際傷害數字與 `COMBO ×N / POWER +N`
 直接呈現本次強化，讓玩家不必只靠 HUD 判斷是否生效。
+中性普通攻擊的主形狀是白青色水平劍氣，由 core blade、crescent edge、afterimage、
+shards 與 impact wedge 等 2D 部件拼裝；Flame/Frost/Storm/Venom 視覺層只能由對應
+Combo infusion 或 Finisher profile 額外套上，不得作為普通劍氣預設外觀。

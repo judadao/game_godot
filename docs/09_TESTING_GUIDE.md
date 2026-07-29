@@ -187,6 +187,17 @@ Combat VFX 修改至少執行
 `fire_ultimate_vfx_test.gd`、`ice_ultimate_vfx_test.gd` 與
 `combat_vfx_integration_test.gd`。另以 graphical Forward+ renderer 確認火／冰
 粒子、環線、標題層級、世界中心與自動 cleanup；標題 layout 需跑六解析度矩陣。
+普通劍氣另執行 `auto_attack_feedback_test.gd`；可用
+`AUTO_ATTACK_FEEDBACK_CAPTURE_ELEMENT=flame|frost` 與
+`AUTO_ATTACK_FEEDBACK_CAPTURE_COMBO=0|3|6|9` 分離擷取屬性及 Combo 疊層，
+並以 `AUTO_ATTACK_FEEDBACK_CAPTURE_DELAY` 分別擷取 weapon release、blade
+travel 與 directional impact；不得只用多元素混合畫面或單一中間幀判定每一
+層是否清楚。測試同時要求三段各有八幀 sheet／mask，且 primary procedural
+stroke count 為零。測試也檢查 `assets/generated/vfx/parts/` 的 core blade、
+crescent edge、afterimage、shards 與 impact wedge 部件 sheet，確認普通劍氣由
+模組化 2D 素材拼裝，而不是單張火焰圖。重新生成素材時先執行
+`python tools/build_basic_attack_vfx_sheets.py`，再以 editor import 驗證 runtime
+texture。
 
 Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
 

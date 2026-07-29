@@ -41,6 +41,7 @@ pipeline描述成Current。
 | `resources/` content | 只有`.gitkeep` | `res://resources/.gitkeep` |
 | Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
 | Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
+| Generated VFX texture | 18 | `res://assets/generated/vfx/` |
 
 七個 JSON：
 
@@ -51,6 +52,20 @@ pipeline描述成Current。
 - `res://data/town_upgrades.json`
 - `res://data/divine_gifts.json`
 - `res://data/combo_finishers.json`
+
+Generated combat presentation：
+
+- `tools/build_basic_attack_vfx_sheets.py` 是普通劍氣素材 authority。它以
+  code-native 2D parts 產生 core blade、crescent edge、afterimage、shards 與
+  impact wedge，再拼成 weapon release、blade travel、directional impact 三組
+  runtime sheet。
+- `assets/generated/vfx/parts/basic_attack_*_sheet_v2.png` 是可檢查、可替換的
+  模組化部件素材；`basic_attack_*_sheet_v2.png` 與對應 mask 是 runtime 合成輸出。
+  普通劍氣 runtime 不再依賴整張來源圖裁切。
+- `AutoAttackFeedback` 以三組八幀 sheet 交疊完成近身上挑弧、水平飛行切割波與
+  方向性命中楔形。中性普通攻擊不帶 Flame/Frost/Storm/Venom 層；火焰感只在對應
+  火系 Combo infusion 後由元素 mask pass 加上。texture 本身不擁有 gameplay hitbox
+  或 damage。
 
 ### 1.2 術語
 
