@@ -218,7 +218,7 @@ pool，但 HUD 只投影剩餘時間、威脅數與 Final Rush，不顯示隱藏
 
 | 經過時間 | 排程事件 |
 |---:|---|
-| 90、180、270、360、450 秒 | 各生成一隻 Crimson Grove Elite；擊殺後取得 Divine Gift |
+| 45 秒起、每 45 秒至 495 秒 | 各生成一隻 Crimson Grove Elite；擊殺後取得 Divine Gift |
 | 300、480 秒 | 生成一隻不負責結算的 Heartwood Harbinger |
 | 剩餘 60 秒 | 進入 Final Rush，立即追加 Elite 與 Harbinger |
 | Final Rush | 每 15 秒追加 Elite；每 30 秒追加 Harbinger |
@@ -232,7 +232,7 @@ Final Rush 額外增加 40 alive cap、縮短普通 spawn interval 並提高 bat
 
 目前 archetype 可表現：
 
-- 近戰追擊；
+- 近戰追擊，並以 64 像素鄰域 separation steering 展開前後排，不疊在單一座標；
 - leap；
 - ranged；
 - charge；
@@ -242,8 +242,9 @@ Final Rush 額外增加 40 alive cap、縮短普通 spawn interval 並提高 bat
 - slow、stun、burn 狀態。
 
 每隻一般敵人死亡都會產生一顆實體 `ExperienceGem`，依 role 僅值 1–3 XP。
-Gem 生成時先向外短暫散射，讓範圍技清場直接形成可見的經驗雨；之後在 180
-像素內吸引玩家、30 像素內收集，移動速度由 180 加速至 520。大量低價 Gem
+Gem 生成時先向外短暫散射並落回地面，讓範圍技清場直接形成可見的經驗雨；
+之後只在 72 像素內吸引玩家、30 像素內收集，移動速度由 180 加速至 520。
+大量低價 Gem
 的總和才是 Run 經驗成長來源，不得改回少量高價獎勵。
 每隻 Elite 死亡都會遞增獨立 reward event，並開啟一次 Divine Gift 選擇；
 同一倒數內的後續 Elite 不會再被舊 wave／stage key 誤判成重複獎勵。
@@ -406,10 +407,14 @@ Echo Volley 增加同一輪的彈體數與可命中目標數，但所有彈體�
 
 每個 stage/wave 的首次菁英擊殺掉落一次必選神賜頁。神賜是 Run-local；最新取得
 者是主神賜並為原招式附上稱號，例如 `千刃殺` 變成 `絕對零度的千刃殺`，所有
-持有神賜共同提供 mechanics，因此公式固定為「神賜效果＋終結技效果＋前三招
-Combo 組合效果」。相同神賜重複取得時升級，最高 Lv.3；兩個不同 Lv.3 神賜可融合
-為 evolved gift。融合材料 ascended 後不再進獎勵池，同一融合不能反覆發生；
-fusion-only 頁可略過，因此不會形成無限 modal loop。
+持有神賜共同提供 mechanics，因此所有不同神賜欄位直接相加、倍率直接相乘，
+公式固定為「全部神賜效果＋終結技效果＋前三招 Combo 組合效果」。相同神賜重複
+取得時升級，最高 Lv.3；兩個不同 Lv.3 神賜可融合為 evolved gift。融合後保留
+兩個材料的部分數值與 mechanics，另依 Lv.1–3 逐步加入 `final_burst`、
+`chain_lightning`、`death_spread`、額外 echo、範圍與元素傷害。Evolved gift
+會回到後續神賜池繼續由 Lv.1 升至 Lv.3，名稱依序轉為 Awakened／Transcendent，
+並使用元素組合專屬名稱與 accent color。融合材料 ascended 後不再進獎勵池，
+同一融合不能反覆發生；fusion-only 頁可略過，因此不會形成無限 modal loop。
 
 正式元素只有 water／fire／wind／lightning／ice／poison／light／dark／normal，
 由 `ElementTaxonomy` 統一命名。每個 base 神賜保留一個 canonical `element`；

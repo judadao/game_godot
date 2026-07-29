@@ -18,7 +18,8 @@ signal survival_pickup_collected(item_id: StringName)
 @export_range(30.0, 1800.0, 1.0) var survival_duration := 600.0
 @export_range(10.0, 120.0, 1.0) var final_rush_duration := 60.0
 @export var scheduled_elite_times: Array[float] = [
-	90.0, 180.0, 270.0, 360.0, 450.0,
+	45.0, 90.0, 135.0, 180.0, 225.0, 270.0,
+	315.0, 360.0, 405.0, 450.0, 495.0,
 ]
 @export var scheduled_boss_times: Array[float] = [300.0, 480.0]
 @export_range(2.0, 60.0, 0.5) var final_rush_elite_interval := 15.0
@@ -437,7 +438,7 @@ func _spawn_experience_gem(at_position: Vector2, value: int) -> void:
 		gem.call(
 			"launch",
 			Vector2(
-				_rng.randf_range(-160.0, 160.0),
+				_rng.randf_range(-280.0, 280.0),
 				_rng.randf_range(-210.0, -120.0)
 			),
 			_rng.randf_range(0.2, 0.34)

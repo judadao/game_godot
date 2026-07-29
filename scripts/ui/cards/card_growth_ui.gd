@@ -445,9 +445,15 @@ func _compact_fusion_text(choice: Dictionary) -> String:
 
 func _compact_divine_gift_text(choice: Dictionary) -> String:
 	var current_level := maxi(0, int(choice.get("level", 0)))
-	return "%s  %s\nGIFT · LV.%d → LV.%d\n%s" % [
+	var tier_name := (
+		"EVOLVED"
+		if String(choice.get("kind", "base")) == "evolved"
+		else "GIFT"
+	)
+	return "%s  %s\n%s · LV.%d → LV.%d\n%s" % [
 		String(choice.get("icon", "✦")),
 		_choice_name(choice, "name", "gift_id", "Divine Gift"),
+		tier_name,
 		current_level,
 		int(choice.get("next_level", current_level + 1)),
 		_bullet_description(_choice_description(
@@ -505,6 +511,9 @@ func _choice_tooltip(choice: Dictionary, display_text: String) -> String:
 
 
 func _choice_accent(choice: Dictionary) -> Color:
+	var authored_accent := String(choice.get("accent_color", "")).strip_edges()
+	if not authored_accent.is_empty():
+		return Color.from_string(authored_accent, Color(0.94, 0.36, 1.0, 1.0))
 	var semantic := String(choice.get("card_color", "")).to_lower()
 	var card_type := String(choice.get("type", "")).to_lower()
 	if semantic == "green" or card_type == "healing":
@@ -513,6 +522,8 @@ func _choice_accent(choice: Dictionary) -> Color:
 		return Color(0.68, 0.48, 1.0, 1.0)
 	if card_type == "attack":
 		return Color(1.0, 0.46, 0.27, 1.0)
+	if semantic == "prismatic":
+		return Color(0.94, 0.36, 1.0, 1.0)
 	if card_type == "divine" or semantic == "gold":
 		return Color(1.0, 0.78, 0.24, 1.0)
 	return Color(0.36, 0.78, 0.96, 1.0)

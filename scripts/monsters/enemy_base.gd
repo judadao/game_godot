@@ -15,6 +15,9 @@ const ARCHETYPE_DATA := preload("res://scripts/monsters/enemy_archetype.gd")
 @export var navigation_stuck_seconds := 0.28
 @export var platform_target_height := 42.0
 @export var platform_target_horizontal_range := 280.0
+@export var horde_separation_radius := 64.0
+@export var horde_separation_weight := 1.25
+@export var horde_separation_refresh := 0.12
 
 @onready var visual: CanvasItem = get_node_or_null("Visual") as CanvasItem
 @onready var health_fill: ColorRect = get_node_or_null("HealthBar/Fill") as ColorRect
@@ -42,12 +45,17 @@ var _attack_generation := 0
 var _telegraphed_target_position := Vector2.ZERO
 var _navigation_jump_remaining := 0.0
 var _navigation_stalled_seconds := 0.0
+var _separation_refresh_remaining := 0.0
+var _cached_separation_bias := 0.0
 
 
 func _ready() -> void:
 	if archetype == null:
 		configure_archetype(archetype_id)
 	target = get_tree().get_first_node_in_group("Player") as Node2D
+	_separation_refresh_remaining = (
+		float(get_instance_id() % 12) / 12.0 * horde_separation_refresh
+	)
 
 
 func configure_archetype(id: StringName) -> bool:
@@ -76,6 +84,7 @@ func _physics_process(delta: float) -> void:
 	_update_burn(delta)
 	_update_poison(delta)
 	_navigation_jump_remaining = maxf(0.0, _navigation_jump_remaining - delta)
+	_separation_refresh_remaining = maxf(0.0, _separation_refresh_remaining - delta)
 	if not is_on_floor():
 		velocity.y += gravity * delta
 	_cooldown = maxf(0.0, _cooldown - delta)
@@ -113,25 +122,63 @@ func _update_behavior() -> void:
 	var direction := signf(target_offset.x)
 	if is_zero_approx(direction):
 		direction = 1.0
+	var separation_bias := _get_cached_horde_separation_bias()
+	var steering := clampf(
+		direction + separation_bias * horde_separation_weight,
+		-1.0,
+		1.0
+	)
 	var behavior := archetype.get("behavior") as StringName
 	if (
 		behavior == &"ranged"
 		and absf(target_offset.y) <= platform_target_height
 		and distance < attack_range * 0.72
 	):
-		velocity.x = -direction * float(archetype.get("speed")) * 0.65 * _movement_multiplier()
+		velocity.x = clampf(
+			-direction * 0.65 + separation_bias * horde_separation_weight,
+			-1.0,
+			1.0
+		) * float(archetype.get("speed")) * _movement_multiplier()
 	elif (
 		behavior == &"leap"
 		and is_on_floor()
 		and _navigation_jump_remaining <= 0.0
 	):
-		velocity.x = direction * float(archetype.get("speed")) * _movement_multiplier()
+		velocity.x = steering * float(archetype.get("speed")) * _movement_multiplier()
 		velocity.y = -navigation_jump_velocity * 0.72
 		_navigation_jump_remaining = navigation_jump_cooldown
 	else:
-		velocity.x = direction * float(archetype.get("speed")) * _movement_multiplier()
+		velocity.x = steering * float(archetype.get("speed")) * _movement_multiplier()
 	if visual != null:
 		visual.scale.x = absf(visual.scale.x) * direction
+
+
+func get_horde_separation_bias(neighbors: Array) -> float:
+	var bias := 0.0
+	for neighbor_variant in neighbors:
+		if not neighbor_variant is Node2D:
+			continue
+		var neighbor := neighbor_variant as Node2D
+		if neighbor == self or not is_instance_valid(neighbor):
+			continue
+		var offset := global_position - neighbor.global_position
+		if absf(offset.y) > 80.0 or absf(offset.x) >= horde_separation_radius:
+			continue
+		var away := signf(offset.x)
+		if is_zero_approx(away):
+			away = -1.0 if get_instance_id() < neighbor.get_instance_id() else 1.0
+		bias += away * (1.0 - absf(offset.x) / horde_separation_radius)
+	return clampf(bias, -1.0, 1.0)
+
+
+func _get_cached_horde_separation_bias() -> float:
+	if _separation_refresh_remaining > 0.0 or not is_inside_tree():
+		return _cached_separation_bias
+	_cached_separation_bias = get_horde_separation_bias(
+		get_tree().get_nodes_in_group("Enemies")
+	)
+	_separation_refresh_remaining = horde_separation_refresh
+	return _cached_separation_bias
 
 
 func get_navigation_jump_reason(
@@ -340,6 +387,8 @@ func reset_encounter(spawn_position: Vector2) -> void:
 	_poison_tick_remaining = 0.75
 	_navigation_jump_remaining = 0.0
 	_navigation_stalled_seconds = 0.0
+	_separation_refresh_remaining = 0.0
+	_cached_separation_bias = 0.0
 	health = int(archetype.get("max_health"))
 	position = spawn_position
 	velocity = Vector2.ZERO

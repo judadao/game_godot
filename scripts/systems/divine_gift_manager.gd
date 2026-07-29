@@ -3,6 +3,7 @@ extends RefCounted
 
 const DEFAULT_CATALOG_PATH := "res://data/divine_gifts.json"
 const MAX_LEVEL := 3
+const EVOLVED_MAX_LEVEL := 3
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
 
 var _catalog: Dictionary = {}
@@ -82,6 +83,10 @@ func get_inventory() -> Array[Dictionary]:
 
 
 func add_or_upgrade(gift_id: String) -> bool:
+	if _inventory.has(gift_id):
+		var owned := _inventory[gift_id] as Dictionary
+		if String(owned.get("kind", "")) == "evolved":
+			return _upgrade_evolved(gift_id)
 	if not _catalog.has(gift_id) or _ascended_base_ids.has(gift_id):
 		return false
 	if _inventory.has(gift_id):
@@ -136,6 +141,28 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 			"level": current_level,
 			"next_level": current_level + 1,
 			"action": "divine_gift",
+			"kind": "base",
+		})
+	for gift_id_variant in _inventory:
+		var gift_id := String(gift_id_variant)
+		var evolved := _inventory[gift_id] as Dictionary
+		if (
+			String(evolved.get("kind", "")) != "evolved"
+			or int(evolved.get("level", 0)) >= int(evolved.get("max_level", 0))
+		):
+			continue
+		choices.append({
+			"gift_id": gift_id,
+			"name": String(evolved.get("name", gift_id)),
+			"description": String(evolved.get("description", "")),
+			"icon": String(evolved.get("icon", "✺")),
+			"element": String(evolved.get("element", "normal")),
+			"elements": (evolved.get("elements", []) as Array).duplicate(),
+			"accent_color": String(evolved.get("accent_color", "#f05cff")),
+			"level": int(evolved.get("level", 1)),
+			"next_level": int(evolved.get("level", 1)) + 1,
+			"action": "divine_gift",
+			"kind": "evolved",
 		})
 	choices.shuffle()
 	return choices.slice(0, mini(maxi(0, maximum), choices.size()))
@@ -152,15 +179,20 @@ func get_fusion_choices() -> Array[Dictionary]:
 		for right_index in range(left_index + 1, maximum_ids.size()):
 			var left_id := maximum_ids[left_index]
 			var right_id := maximum_ids[right_index]
+			var left := _inventory[left_id] as Dictionary
+			var right := _inventory[right_id] as Dictionary
+			var identity := _evolved_identity(_canonical_gift_elements(left, right))
 			choices.append({
 				"action": "divine_fusion",
 				"left_gift_id": left_id,
 				"right_gift_id": right_id,
-				"name": "%s + %s" % [
-					String((_inventory[left_id] as Dictionary).get("name", left_id)),
-					String((_inventory[right_id] as Dictionary).get("name", right_id)),
-				],
-				"description": "Fuse both maximum-level Gifts. Their global Combo and Finale rules evolve together.",
+				"name": String(identity["name"]),
+				"description": (
+					"Fuse %s and %s. Retain their core fields, then gain new spectacle buffs."
+					% [String(left.get("name", left_id)), String(right.get("name", right_id))]
+				),
+				"accent_color": String(identity["accent_color"]),
+				"kind": "evolved",
 			})
 	return choices
 
@@ -180,18 +212,14 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 	var fusion_key := _fusion_key(left_id, right_id)
 	if _completed_fusions.has(fusion_key):
 		return {}
-	var effects := _merge_effects([
+	var inherited_effects := _merge_effects([
 		left.get("effects", {}) as Dictionary,
 		right.get("effects", {}) as Dictionary,
 	])
-	for effect_key_variant in effects.keys():
-		var effect_key := String(effect_key_variant)
-		if not effects[effect_key] is float and not effects[effect_key] is int:
-			continue
-		if effect_key.ends_with("_multiplier"):
-			effects[effect_key] = 1.0 + (float(effects[effect_key]) - 1.0) * 1.25
-		else:
-			effects[effect_key] = float(effects[effect_key]) * 1.25
+	var inherited_mutations := _merge_mutations([
+		left.get("finisher_mutations", {}) as Dictionary,
+		right.get("finisher_mutations", {}) as Dictionary,
+	])
 	var evolution_id := "evolved_%03d_%s_%s" % [
 		_next_evolution_id,
 		left_id,
@@ -204,26 +232,27 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 		if not evolved_elements.is_empty()
 		else "normal"
 	)
+	var identity := _evolved_identity(evolved_elements)
 	var evolved := {
 		"id": evolution_id,
-		"name": "Apotheosis: %s / %s" % [
-			String(left.get("name", left_id)),
-			String(right.get("name", right_id)),
-		],
-		"description": "An evolved Divine Gift affecting Combo skills and named Finishers.",
+		"name": String(identity["name"]),
+		"base_name": String(identity["name"]),
+		"description": (
+			"Retains part of both component Gifts and unlocks new effects at every evolved level."
+		),
 		"icon": "✺",
 		"prefix": _evolved_prefix(left, right),
+		"accent_color": String(identity["accent_color"]),
 		"element": primary_element,
 		"elements": evolved_elements,
-		"finisher_mutations": _merge_mutations([
-			left.get("finisher_mutations", {}) as Dictionary,
-			right.get("finisher_mutations", {}) as Dictionary,
-		]),
+		"finisher_mutations": _evolved_mutations(inherited_mutations, 1),
+		"inherited_mutations": inherited_mutations,
 		"level": 1,
-		"max_level": 1,
+		"max_level": EVOLVED_MAX_LEVEL,
 		"kind": "evolved",
 		"components": [left_id, right_id],
-		"effects": effects,
+		"inherited_effects": inherited_effects,
+		"effects": _evolved_effects(inherited_effects, 1),
 	}
 	_inventory.erase(left_id)
 	_inventory.erase(right_id)
@@ -233,6 +262,116 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 	_completed_fusions[fusion_key] = true
 	_primary_gift_id = evolution_id
 	return evolved.duplicate(true)
+
+
+func _upgrade_evolved(gift_id: String) -> bool:
+	var evolved := _inventory.get(gift_id, {}) as Dictionary
+	var level := int(evolved.get("level", 1))
+	if String(evolved.get("kind", "")) != "evolved" or level >= EVOLVED_MAX_LEVEL:
+		return false
+	level += 1
+	evolved["level"] = level
+	evolved["name"] = _evolved_level_name(
+		String(evolved.get("base_name", evolved.get("name", gift_id))),
+		level
+	)
+	evolved["effects"] = _evolved_effects(
+		evolved.get("inherited_effects", {}) as Dictionary,
+		level
+	)
+	evolved["finisher_mutations"] = _evolved_mutations(
+		evolved.get("inherited_mutations", {}) as Dictionary,
+		level
+	)
+	_inventory[gift_id] = evolved
+	_primary_gift_id = gift_id
+	return true
+
+
+func _evolved_effects(inherited: Dictionary, level: int) -> Dictionary:
+	var retained := _scale_effects(inherited, [0.8, 1.0, 1.2][clampi(level - 1, 0, 2)])
+	retained["combo_stack_bonus"] = int(retained.get("combo_stack_bonus", 0)) + level
+	retained["finisher_element_damage"] = (
+		int(retained.get("finisher_element_damage", 0)) + level * 3
+	)
+	retained["finisher_size_multiplier"] = (
+		float(retained.get("finisher_size_multiplier", 1.0))
+		* (1.0 + 0.1 * float(level))
+	)
+	if level >= 2:
+		retained["combo_ap_refund"] = float(retained.get("combo_ap_refund", 0.0)) + 0.1
+	if level >= 3:
+		retained["finisher_echoes"] = int(retained.get("finisher_echoes", 0)) + 1
+	return retained
+
+
+func _scale_effects(effects: Dictionary, scale: float) -> Dictionary:
+	var result: Dictionary = {}
+	for key_variant in effects:
+		var key := String(key_variant)
+		var value: Variant = effects[key_variant]
+		if value is bool:
+			result[key] = value
+		elif value is int:
+			result[key] = roundi(float(value) * scale)
+		elif value is float:
+			result[key] = (
+				1.0 + (float(value) - 1.0) * scale
+				if key.ends_with("_multiplier")
+				else float(value) * scale
+			)
+	return result
+
+
+func _evolved_mutations(inherited: Dictionary, level: int) -> Dictionary:
+	var result := inherited.duplicate(true)
+	result["final_burst"] = true
+	if level >= 2:
+		result["chain_lightning"] = true
+	if level >= 3:
+		result["death_spread"] = true
+		result["finisher_echoes"] = maxi(
+			int(result.get("finisher_echoes", 0)),
+			2
+		)
+	return result
+
+
+func _evolved_level_name(base_name: String, level: int) -> String:
+	match level:
+		2:
+			return "Awakened %s" % base_name
+		3:
+			return "Transcendent %s" % base_name
+		_:
+			return base_name
+
+
+func _evolved_identity(elements: Array[String]) -> Dictionary:
+	var sorted := elements.duplicate()
+	sorted.sort()
+	var key := "+".join(sorted)
+	match key:
+		"fire+lightning":
+			return {
+				"name": "Heavenfire Thunder Cataclysm",
+				"accent_color": "#ff6a24",
+			}
+		"dark+ice":
+			return {
+				"name": "Eternal Frost Abyss",
+				"accent_color": "#8b7cff",
+			}
+		"poison+wind":
+			return {
+				"name": "Tempest of the Withering Sky",
+				"accent_color": "#55e68a",
+			}
+		_:
+			return {
+				"name": "Prismatic Apotheosis",
+				"accent_color": "#f05cff",
+			}
 
 
 func _canonical_gift_elements(left: Dictionary, right: Dictionary) -> Array[String]:

@@ -59,8 +59,9 @@ func _run() -> void:
 	)
 	_expect(
 		not director.scheduled_elite_times.is_empty()
-			and is_equal_approx(director.scheduled_elite_times[0], 90.0),
-		"The first Elite blessing opportunity must arrive at about ninety seconds."
+			and is_equal_approx(director.scheduled_elite_times[0], 45.0)
+			and director.scheduled_elite_times.size() >= 10,
+		"The first in-run blessing must arrive at forty-five seconds and continue regularly."
 	)
 	_expect(
 		director.base_density_cap >= 30
@@ -144,6 +145,22 @@ func _run() -> void:
 			) == &"obstacle",
 			"Enemies walking into route relief must jump over the obstacle."
 		)
+	_expect(
+		navigation_enemy.has_method("get_horde_separation_bias"),
+		"Dense enemies need local separation steering instead of stacking on one point."
+	)
+	if navigation_enemy.has_method("get_horde_separation_bias"):
+		var nearby_enemy := EnemyBase.new()
+		navigation_enemy.position = Vector2.ZERO
+		nearby_enemy.position = Vector2(20.0, 0.0)
+		_expect(
+			float(navigation_enemy.call(
+				"get_horde_separation_bias",
+				[nearby_enemy]
+			)) < 0.0,
+			"A nearby enemy on the right must steer this enemy left to spread the horde."
+		)
+		nearby_enemy.free()
 	navigation_enemy.free()
 
 	var game := (load("res://scenes/game/game.tscn") as PackedScene).instantiate()

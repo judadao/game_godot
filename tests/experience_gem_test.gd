@@ -15,11 +15,15 @@ func _run() -> void:
 		return
 	var player := Node2D.new()
 	player.add_to_group("Player")
-	player.position = Vector2(80, 0)
+	player.position = Vector2(60, 0)
 	root.add_child(player)
 	var gem := scene.instantiate()
 	root.add_child(gem)
 	gem.call("configure", 37, player)
+	_expect(
+		float(gem.get("attraction_radius")) <= 72.0,
+		"XP gems must remain on the ground until the player walks close to them."
+	)
 	var collected: Array[int] = []
 	gem.connect("collected", func(value: int) -> void: collected.append(value))
 	var start_x := (gem as Node2D).position.x
@@ -29,6 +33,18 @@ func _run() -> void:
 	gem.call("collect")
 	_expect(collected == [37], "Experience gem must emit its exact value only once.")
 	gem.queue_free()
+
+	var distant_gem := scene.instantiate()
+	distant_gem.position = Vector2(-40.0, 0.0)
+	root.add_child(distant_gem)
+	distant_gem.call("configure", 1, player)
+	var distant_start: Vector2 = (distant_gem as Node2D).position
+	distant_gem.call("advance_pickup", 0.2)
+	_expect(
+		(distant_gem as Node2D).position == distant_start,
+		"XP outside the short attraction radius must stay scattered across the route."
+	)
+	distant_gem.queue_free()
 
 	var burst_gem := scene.instantiate()
 	root.add_child(burst_gem)

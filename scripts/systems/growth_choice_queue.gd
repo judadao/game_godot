@@ -119,7 +119,13 @@ func enqueue_divine_gifts(
 			"level": int(reward.get("level", 0)),
 			"next_level": int(reward.get("next_level", 1)),
 			"type": "divine",
-			"card_color": "gold",
+			"kind": String(reward.get("kind", "base")),
+			"accent_color": String(reward.get("accent_color", "")),
+			"card_color": (
+				"prismatic"
+				if String(reward.get("kind", "base")) == "evolved"
+				else "gold"
+			),
 		})
 	for fusion in fusions:
 		if choices.size() >= MAX_EXPERIENCE_CHOICES:
@@ -140,7 +146,9 @@ func enqueue_divine_gifts(
 			"name": String(fusion.get("name", "Divine Evolution")),
 			"description": String(fusion.get("description", "")),
 			"type": "divine",
-			"card_color": "gold",
+			"kind": String(fusion.get("kind", "evolved")),
+			"accent_color": String(fusion.get("accent_color", "#f05cff")),
+			"card_color": "prismatic",
 		})
 	if choices.is_empty():
 		return false
