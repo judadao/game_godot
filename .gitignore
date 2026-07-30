@@ -6,6 +6,8 @@
 # Repository-local test and review artifacts
 /.godot_test_appdata/
 /.godot_test_localappdata/
+/.playwright-cli/
+/output/playwright/
 /.codex_test_*/
 /.debug*/
 /.final_*/
