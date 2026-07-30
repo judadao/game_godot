@@ -335,9 +335,12 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 - `TownModularVisuals` 的 46 個來源素材遵循
   `data/town_visual_style.json`；中央古樹保有自己的 source 與 object ID，
   可獨立替換且不建立 collision。
-- 天空、古樹、不滅火炬與戰鬥傳送門固定使用 modular-v2 的 A profile；
-  runtime 可見街景只允許 modular-v2 B2 source。舊 modular-v1 街具和
-  `hanging_banner_*` 僅保留 hidden stable entries，不得出現在 runtime。
+- `background_sky` 使用 modular-v3 的 locked-A 明亮遠景 plate；舊 mountain、
+  distant-city、forest entries 保留 stable ID 但 hidden。古樹保持獨立 A 分件；
+  不滅火炬與戰鬥傳送門使用 modular-v3 B2 分件，三者縮放失真不得超過 2%。
+- runtime 可見街景只允許 modular-v2 B2 source。舊 modular-v1 街具、
+  `hanging_banner_*`，以及會遮住東側建築的 laundry／trough／woodpile／signpost／
+  shrub／ivy entries 僅保留 hidden stable entries，不得出現在 runtime。
 - 六棟建築 entry 必須保留 `b2_front_right_orthographic` metadata：正面為主、
   只露右側窄側牆、垂直線垂直、深度邊往右上後退、水平地基；背景 A 不受這個
   建築簡化規則覆寫。

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "storybook_handdrawn_pixel_v2",
-  "concept_art": "res://concept/town/main_horizontal_concept/town_handdrawn_pixel_v2.png",
+  "concept_art": "res://concept/town/main_horizontal_concept/town_style_direction_a_locked.png",
   "palette": {
     "ink_charcoal": "#292522",
     "moss_shadow": "#4c542d",
@@ -21,8 +21,8 @@
     "magic_accent_policy": "restrained_focal_only"
   },
   "variants": {
-    "background": "a_softbrush_autumn",
-    "landmarks": "a_softbrush_landmarks",
+    "background": "a_locked_autumn_panorama",
+    "landmarks": "b2_handdrawn_pixel_landmarks",
     "buildings": "b2_front_right_orthographic",
     "visible_street_props": "b2_chunky_lived_in"
   },
@@ -43,11 +43,11 @@
     "window_and_forge_glow": "localized_amber"
   },
   "asset_sources": [
-    "res://assets/town/modular_v2/background/ancient_town_tree.png",
+    "res://assets/town/modular_v3/background/ancient_town_tree.png",
     "res://assets/town/modular_v1/background/castle_layer.png",
     "res://assets/town/modular_v1/background/forest_layer.png",
     "res://assets/town/modular_v1/background/mountain_layer.png",
-    "res://assets/town/modular_v2/background/sky.png",
+    "res://assets/town/modular_v3/background/town_a_background_plate.png",
     "res://assets/town/modular_v2/buildings/blueprint_research.png",
     "res://assets/town/modular_v2/buildings/east_residence.png",
     "res://assets/town/modular_v2/buildings/material_yard.png",
@@ -56,8 +56,8 @@
     "res://assets/town/modular_v2/buildings/town_hall.png",
     "res://assets/town/modular_v1/ground/bridge_wall_tile.png",
     "res://assets/town/modular_v1/ground/stone_road_tile.png",
-    "res://assets/town/modular_v2/landmarks/battle_portal.png",
-    "res://assets/town/modular_v2/landmarks/eternal_forge_monument.png",
+    "res://assets/town/modular_v3/landmarks/battle_portal.png",
+    "res://assets/town/modular_v3/landmarks/eternal_forge_monument.png",
     "res://assets/town/modular_v1/props/civic_bench.png",
     "res://assets/town/modular_v1/props/civic_well.png",
     "res://assets/town/modular_v1/props/east_flower_bed.png",

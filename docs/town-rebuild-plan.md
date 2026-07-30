@@ -33,13 +33,15 @@ contracts remain unchanged.
 
 ## Asset batches
 
-Runtime Town presentation sources live under `assets/town/modular_v1/` and
-`assets/town/modular_v2/`. The approved A background sources and B2 foreground
+Runtime Town presentation sources live under `assets/town/modular_v1/`,
+`assets/town/modular_v2/`, and `assets/town/modular_v3/`. The locked A background
+plate, independent A ancient tree, and B2 foreground
 sources provide 46 unique PNGs reused as 72 selectable scene entries:
 
 1. `background/`
-   - `sky.png`, `mountain_layer.png`, `castle_layer.png`, `forest_layer.png`, and the
-     independently replaceable `ancient_town_tree.png`.
+   - modular-v3 `town_a_background_plate.png` and independently replaceable
+     `ancient_town_tree.png`. Legacy sky/mountain/city/forest entries retain stable IDs,
+     but all except `background_sky` are hidden.
 2. `ground/`
    - `stone_road_tile.png` and `bridge_wall_tile.png`, each instanced as eight
      independently replaceable modules.
@@ -47,15 +49,16 @@ sources provide 46 unique PNGs reused as 72 selectable scene entries:
    - Material Yard, Player Forge, Town Hall, Sword Soul Shop, Blueprint Research,
      and East Residence.
 4. `landmarks/`
-   - Eternal Forge Monument and Battle Portal; runtime uses their modular-v2 A
-     variants.
+   - Eternal Forge Monument and Battle Portal; runtime uses their aspect-locked
+     modular-v3 B2 variants.
 5. `props/`
    - street lantern, forge/soul braziers, hanging banner, west fence, notice board,
      material crates/barrels, and forge anvil. These modular-v1 entries remain hidden
      for stable-ID compatibility and do not participate in runtime composition.
 6. `modular_v2/buildings`, `modular_v2/props`, and `modular_v2/streetscape`
    - six perspective-locked B2 buildings plus 18 visual-only market, household,
-     planting, and road-dressing sources; these are the only visible street objects.
+     planting, and road-dressing sources. Twelve remain visible; six large east-side
+     facade blockers remain hidden stable entries.
 
 All buildings use the shared `b2_front_right_orthographic` profile: front face
 dominant, narrow right face, vertical uprights, upper-right depth recession, and

@@ -4,7 +4,7 @@ const LAYOUT_PATH := "res://data/town_modular_layout.json"
 const STYLE_PATH := "res://data/town_visual_style.json"
 const EXPECTED_STYLE_ID := "storybook_handdrawn_pixel_v2"
 const EXPECTED_CONCEPT_PATH := (
-	"res://concept/town/main_horizontal_concept/town_handdrawn_pixel_v2.png"
+	"res://concept/town/main_horizontal_concept/town_style_direction_a_locked.png"
 )
 const REQUIRED_PALETTE_KEYS := {
 	"ink_charcoal": true,

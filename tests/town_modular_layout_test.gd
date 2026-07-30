@@ -4,6 +4,7 @@ const LAYOUT_PATH := "res://data/town_modular_layout.json"
 const SOURCE_PREFIXES := [
 	"res://assets/town/modular_v1/",
 	"res://assets/town/modular_v2/",
+	"res://assets/town/modular_v3/",
 ]
 const EXPECTED_MAP_SIZE := Vector2i(1942, 809)
 const EXPECTED_FACILITY_IDS := {
@@ -17,16 +18,16 @@ const EXPECTED_FACILITY_IDS := {
 	"far_east_residence": true,
 }
 const EXPECTED_SOURCES := {
-	"res://assets/town/modular_v2/background/ancient_town_tree.png": true,
+	"res://assets/town/modular_v3/background/ancient_town_tree.png": true,
 	"res://assets/town/modular_v2/buildings/material_yard.png": true,
 	"res://assets/town/modular_v2/buildings/player_forge.png": true,
-	"res://assets/town/modular_v2/landmarks/eternal_forge_monument.png": true,
-	"res://assets/town/modular_v2/landmarks/battle_portal.png": true,
+	"res://assets/town/modular_v3/landmarks/eternal_forge_monument.png": true,
+	"res://assets/town/modular_v3/landmarks/battle_portal.png": true,
 	"res://assets/town/modular_v2/buildings/town_hall.png": true,
 	"res://assets/town/modular_v2/buildings/sword_soul_shop.png": true,
 	"res://assets/town/modular_v2/buildings/blueprint_research.png": true,
 	"res://assets/town/modular_v2/buildings/east_residence.png": true,
-	"res://assets/town/modular_v2/background/sky.png": true,
+	"res://assets/town/modular_v3/background/town_a_background_plate.png": true,
 	"res://assets/town/modular_v1/background/mountain_layer.png": true,
 	"res://assets/town/modular_v1/background/castle_layer.png": true,
 	"res://assets/town/modular_v1/background/forest_layer.png": true,

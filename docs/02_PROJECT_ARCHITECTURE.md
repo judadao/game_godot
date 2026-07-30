@@ -201,12 +201,17 @@ instance。舊 `assets/town/eternal_forge/town_eternal_forge_v1.png` 仍作為�
 board，避免設計稿與 runtime scene 使用不同配置。
 Town 視覺統一採用 `data/town_visual_style.json` 的
 `storybook_handdrawn_pixel_v2`：手繪不規則墨線、紙張顆粒、低飽和木石色、
-冷苔綠陰影與左上暖蜜色主光。中央古樹是獨立 background object，不烘焙進天空
-或建築。天空、古樹、不滅火炬與戰鬥傳送門使用正式
-`assets/town/modular_v2/` A 素材；六棟正式建築與 runtime 可見街景使用 B2
+冷苔綠陰影與左上暖蜜色主光。正式視覺基準是
+`concept/town/main_horizontal_concept/town_style_direction_a_locked.png`。
+runtime 以 modular-v3 的 A 明亮天空／雲／山背景 plate 重建該構圖，舊
+mountain／city／forest 疊層保持 hidden，避免混回深綠舊背景。中央 A 古樹仍是
+獨立 background object，不烘焙進天空或建築。不滅火炬與戰鬥傳送門則使用
+modular-v3 B2 手繪像素分件；三者 target size 必須保留來源比例，不得非等比拉伸。
+六棟正式建築與 runtime 可見街景使用 B2
 `b2_front_right_orthographic`：正面為主、只露右側窄面、垂直線保持垂直、
 深度邊一致往右上後退、地基維持水平。新增 18 個無碰撞生活／地面 dressing
-物件只增加街景密度，不建立新的互動或玩法權威。舊 modular-v1 街具與浮空旗幟
+物件只增加街景密度，不建立新的互動或玩法權威；其中六個會遮住東側立面的
+大型 dressing 保持 hidden。舊 modular-v1 街具與浮空旗幟
 保留 stable layout entry 供相容／替換，但 `visible=false`，不得參與 runtime
 composition 或遮住建築。
 互動、碰撞、NPC、Portal、Player 與 progression identity 仍由既有 linked scenes

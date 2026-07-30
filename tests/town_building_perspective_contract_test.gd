@@ -20,15 +20,16 @@ const BUILDING_NODE_NAMES := {
 	"far_east_residence": "FarEastResidence",
 }
 const EXPECTED_PERSPECTIVE_PROFILE := "b2_front_right_orthographic"
-const EXPECTED_BACKGROUND_PROFILE := "a_softbrush_autumn"
-const EXPECTED_LANDMARK_PROFILE := "a_softbrush_landmarks"
-const EXPECTED_A_SOURCE_BY_ID := {
-	"background_sky": "res://assets/town/modular_v2/background/sky.png",
+const EXPECTED_BACKGROUND_PROFILE := "a_locked_autumn_panorama"
+const EXPECTED_LANDMARK_PROFILE := "b2_handdrawn_pixel_landmarks"
+const EXPECTED_COMPOSITION_SOURCE_BY_ID := {
+	"background_sky":
+		"res://assets/town/modular_v3/background/town_a_background_plate.png",
 	"background_ancient_town_tree":
-		"res://assets/town/modular_v2/background/ancient_town_tree.png",
+		"res://assets/town/modular_v3/background/ancient_town_tree.png",
 	"eternal_flame":
-		"res://assets/town/modular_v2/landmarks/eternal_forge_monument.png",
-	"battle_portal": "res://assets/town/modular_v2/landmarks/battle_portal.png",
+		"res://assets/town/modular_v3/landmarks/eternal_forge_monument.png",
+	"battle_portal": "res://assets/town/modular_v3/landmarks/battle_portal.png",
 }
 const EXPECTED_NEW_DRESSING_IDS := {
 	"market_stall": true,
@@ -77,11 +78,11 @@ func _run() -> void:
 	)
 	_expect(
 		String(layout.get("background_style_profile", "")) == EXPECTED_BACKGROUND_PROFILE,
-		"Town background must use the approved A soft-brush profile."
+		"Town background must use the locked approved A panorama profile."
 	)
 	_expect(
 		String(layout.get("landmark_style_profile", "")) == EXPECTED_LANDMARK_PROFILE,
-		"Town flame and portal must use the approved A landmark profile."
+		"Town flame and portal must use the approved B landmark profile."
 	)
 	_expect(
 		String(perspective.get("projection", "")) == "orthographic_pseudo_three_quarter",
@@ -106,7 +107,7 @@ func _run() -> void:
 
 	var seen_buildings: Dictionary = {}
 	var seen_dressing: Dictionary = {}
-	var seen_a_sources: Dictionary = {}
+	var seen_composition_sources: Dictionary = {}
 	for layer_variant in layout.get("layers", []) as Array:
 		if not layer_variant is Dictionary:
 			continue
@@ -133,11 +134,12 @@ func _run() -> void:
 				String(ownership.get("mode", "")) == "none",
 				"%s must remain visual-only and own no interaction." % layer_id
 			)
-		if EXPECTED_A_SOURCE_BY_ID.has(layer_id):
-			seen_a_sources[layer_id] = String(layer.get("source", ""))
+		if EXPECTED_COMPOSITION_SOURCE_BY_ID.has(layer_id):
+			seen_composition_sources[layer_id] = String(layer.get("source", ""))
 			_expect(
-				String(layer.get("source", "")) == String(EXPECTED_A_SOURCE_BY_ID[layer_id]),
-				"%s must use its approved A source." % layer_id
+				String(layer.get("source", ""))
+					== String(EXPECTED_COMPOSITION_SOURCE_BY_ID[layer_id]),
+				"%s must use its approved composition source." % layer_id
 			)
 		if (
 			String(layer.get("category", "")) == "street_prop"
@@ -162,8 +164,8 @@ func _run() -> void:
 		"Town layout must include every approved B2 streetscape dressing object."
 	)
 	_expect(
-		seen_a_sources == EXPECTED_A_SOURCE_BY_ID,
-		"Town must route every approved A background and landmark source."
+		seen_composition_sources == EXPECTED_COMPOSITION_SOURCE_BY_ID,
+		"Town must route the locked A background and B landmark sources."
 	)
 	_assert_generated_scene_perspective()
 	_finish()

@@ -1537,11 +1537,14 @@ the HUD never reads gameplay state directly.
   `TownPortalSet/BattleGateway` 擁有，碰撞、NPC 與 progression 不移入此 scene。
 - Visual style：`res://data/town_visual_style.json` 定義
   `storybook_handdrawn_pixel_v2` 的手繪墨線、紙張顆粒、木石色盤與統一光向；
-  `concept/town/main_horizontal_concept/town_handdrawn_pixel_v2.png` 是 repository
-  內的視覺基準。天空、古樹、不滅火炬與戰鬥傳送門使用 modular-v2 A；六棟建築以
+  `concept/town/main_horizontal_concept/town_style_direction_a_locked.png` 是
+  repository 內鎖定的 A 視覺基準。modular-v3 以單一明亮 A 遠景 plate 取代舊的
+  mountain／city／forest 混合疊層，古樹仍為 A 分件；不滅火炬與傳送門使用 B2
+  分件且保留來源比例。六棟建築以
   `b2_front_right_orthographic` metadata 共用 B2 正面＋右側窄面視角。46 個
-  unique sources 中包含 18 個 visual-only B2 街景 dressing。舊 modular-v1
-  街具與浮空旗幟只保留 hidden stable entries，不得進入 runtime composition。
+  unique sources 中包含 18 個 visual-only B2 街景 dressing；12 個顯示，六個
+  東側大型遮擋物保留 hidden。舊 modular-v1 街具與浮空旗幟只保留 hidden stable
+  entries，不得進入 runtime composition。
 - Compatibility：`TownBackdrop/EternalForgeConcept` 的舊合成圖仍保留供比對，
   但 runtime hidden，不得與 72 個分件同時顯示。
 - Design handoff：`tools/build_town_modular_figma_board.py` 讀取同一 JSON 與分件

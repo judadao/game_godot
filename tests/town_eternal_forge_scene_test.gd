@@ -70,6 +70,9 @@ func _run() -> void:
 				)
 				or String(sprite.get_meta("source_asset", "")).begins_with(
 					"res://assets/town/modular_v2/"
+				)
+				or String(sprite.get_meta("source_asset", "")).begins_with(
+					"res://assets/town/modular_v3/"
 				),
 				"Town modular sprites must use replaceable modular sources."
 			)
