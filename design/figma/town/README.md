@@ -5,6 +5,9 @@
 - `town_style_discussion_board.svg`：目前首選的一頁式討論板。直接拖進空白
   Figma page；第一區是不可變動的 Image #2 基準，第二區才是重組候選與可選取
   分件素材庫。
+- `town_b2_building_landmark_review.svg`：六棟 B2 建築、不滅火炬與戰鬥傳送門
+  的單頁審稿板。此檔只供逐件核准，未接入 runtime。
+- `b2_candidates/`：上述八個審稿物件的透明 PNG；可各自拖入 Figma 並獨立替換。
 - `CODEX_RESTART_HANDOFF.md`：重開 Codex 後的完整續作紀錄。
 - `plugin/`：在 Figma 中產生原生節點、元件和頁面的本機插件。
 - `vector_sources/`：可直接匯入和修改的 SVG 素材。
