@@ -7,7 +7,9 @@
   分件素材庫。
 - `town_b2_building_landmark_review.svg`：六棟 B2 建築、不滅火炬與戰鬥傳送門
   的單頁審稿板。此檔只供逐件核准，未接入 runtime。
-- `b2_candidates/`：上述八個審稿物件的透明 PNG；可各自拖入 Figma 並獨立替換。
+- `b2_front_candidates/`：目前八個嚴格正面朝向的透明 PNG；可各自拖入
+  Figma 並獨立替換。
+- `b2_candidates/`：保留的舊 3/4 視角候選，不再作為目前審稿來源。
 - `CODEX_RESTART_HANDOFF.md`：重開 Codex 後的完整續作紀錄。
 - `plugin/`：在 Figma 中產生原生節點、元件和頁面的本機插件。
   已匯入過插件時，直接重跑 `Town Eternal Forge Builder` 即可快速更新 B2

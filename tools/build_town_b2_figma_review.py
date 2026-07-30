@@ -35,56 +35,56 @@ CANDIDATES = [
 		"name": "材料行 / MATERIAL YARD",
 		"kind": "BUILDING",
 		"target": "300 × 240",
-		"path": "design/figma/town/b2_candidates/material_yard_b2.png",
+		"path": "design/figma/town/b2_front_candidates/material_yard_front_b2.png",
 	},
 	{
 		"id": "player_forge",
 		"name": "主角鐵匠鋪 / PLAYER FORGE",
 		"kind": "BUILDING",
 		"target": "360 × 316",
-		"path": "design/figma/town/b2_candidates/player_forge_b2.png",
+		"path": "design/figma/town/b2_front_candidates/player_forge_front_b2.png",
 	},
 	{
 		"id": "town_hall",
 		"name": "村長家 / TOWN HALL",
 		"kind": "BUILDING",
 		"target": "280 × 249",
-		"path": "design/figma/town/b2_candidates/town_hall_b2.png",
+		"path": "design/figma/town/b2_front_candidates/town_hall_front_b2.png",
 	},
 	{
 		"id": "sword_soul_shop",
 		"name": "劍魂商 / SWORD SOUL SHOP",
 		"kind": "BUILDING",
 		"target": "250 × 217",
-		"path": "design/figma/town/b2_candidates/sword_soul_shop_b2.png",
+		"path": "design/figma/town/b2_front_candidates/sword_soul_shop_front_b2.png",
 	},
 	{
 		"id": "equipment_blueprint_shop",
 		"name": "裝備圖紙商 / BLUEPRINT SHOP",
 		"kind": "BUILDING",
 		"target": "220 × 187",
-		"path": "design/figma/town/b2_candidates/equipment_blueprint_shop_b2.png",
+		"path": "design/figma/town/b2_front_candidates/equipment_blueprint_shop_front_b2.png",
 	},
 	{
 		"id": "far_east_residence",
 		"name": "東郊民宅 / EAST RESIDENCE",
 		"kind": "BUILDING",
 		"target": "234 × 204",
-		"path": "design/figma/town/b2_candidates/far_east_residence_b2.png",
+		"path": "design/figma/town/b2_front_candidates/far_east_residence_front_b2.png",
 	},
 	{
 		"id": "eternal_flame",
 		"name": "不滅火炬 / ETERNAL FLAME",
 		"kind": "LANDMARK",
 		"target": "330 × 495",
-		"path": "design/figma/town/b2_candidates/eternal_flame_b2.png",
+		"path": "design/figma/town/b2_front_candidates/eternal_flame_front_b2.png",
 	},
 	{
 		"id": "battle_portal",
 		"name": "戰鬥傳送門 / BATTLE PORTAL",
 		"kind": "LANDMARK",
 		"target": "240 × 260",
-		"path": "design/figma/town/b2_candidates/battle_portal_b2.png",
+		"path": "design/figma/town/b2_front_candidates/battle_portal_front_b2.png",
 	},
 ]
 
@@ -152,10 +152,10 @@ def _build_svg(
 		)
 	parts.append("</defs>")
 
-	_text(parts, "TOWN / B2 BUILDING + LANDMARK REVIEW", 100, 100, 54, TEXT, 700)
+	_text(parts, "TOWN / B2 STRICT FRONT ELEVATION REVIEW", 100, 100, 54, TEXT, 700)
 	_text(
 		parts,
-		"只看獨立物件｜未接 runtime｜六棟建築共用透視｜火炬與傳送門獨立審核",
+		"只看獨立物件｜未接 runtime｜六棟建築、火炬與傳送門全部正面朝向",
 		102,
 		154,
 		25,
@@ -186,7 +186,7 @@ def _build_svg(
 	rules_x = 2740
 	_text(parts, "REVIEW CHECKLIST", rules_x, 292, 34, TEXT, 700)
 	rules = [
-		"1  Front face dominant; narrow right side only",
+		"1  Strict front elevation; no side wall visible",
 		"2  Vertical posts stay vertical",
 		"3  Foundation remains horizontal",
 		"4  Warm upper-left light; cool shadow family",
@@ -204,7 +204,7 @@ def _build_svg(
 	_text(parts, "B2 SHARED PROFILE", rules_x + 36, 1018, 26, ACCENT, 700)
 	_text(
 		parts,
-		"orthographic pseudo-three-quarter / front + narrow right / upper-right recession",
+		"strict frontal elevation / centered facade / no lateral recession",
 		rules_x + 36,
 		1072,
 		25,
@@ -299,13 +299,13 @@ def _build_preview(
 		(16, 21, 26, 255),
 	)
 	draw = ImageDraw.Draw(canvas)
-	draw.text((50, 36), "TOWN / B2 BUILDING + LANDMARK REVIEW", font=_font(27), fill=TEXT)
+	draw.text((50, 36), "TOWN / B2 STRICT FRONT ELEVATION REVIEW", font=_font(27), fill=TEXT)
 	ref = reference.resize((1250, round(1250 * reference.height / reference.width)))
 	canvas.alpha_composite(ref, (50, 125))
 	draw.text((1370, 145), "B2 ISOLATED CANDIDATES", font=_font(22), fill=ACCENT)
 	draw.text(
 		(1370, 195),
-		"Front dominant / narrow right side / shared upper-left light",
+		"Strict frontal elevation / no side wall / horizontal foundation",
 		font=_font(15),
 		fill=MUTED,
 	)

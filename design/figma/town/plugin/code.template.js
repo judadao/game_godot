@@ -4,14 +4,14 @@ const B2_REVIEW_ASSETS = __TOWN_B2_REVIEW_ASSETS__;
 const B2_REFERENCE_ASSET = __TOWN_B2_REFERENCE_ASSET__;
 
 const B2_REVIEW_ITEMS = [
-  ["material_yard_b2", "材料行 / MATERIAL YARD", "BUILDING · 300 × 240"],
-  ["player_forge_b2", "主角鐵匠鋪 / PLAYER FORGE", "BUILDING · 360 × 316"],
-  ["town_hall_b2", "村長家 / TOWN HALL", "BUILDING · 280 × 249"],
-  ["sword_soul_shop_b2", "劍魂商 / SWORD SOUL SHOP", "BUILDING · 250 × 217"],
-  ["equipment_blueprint_shop_b2", "裝備圖紙商 / BLUEPRINT SHOP", "BUILDING · 220 × 187"],
-  ["far_east_residence_b2", "東郊民宅 / EAST RESIDENCE", "BUILDING · 234 × 204"],
-  ["eternal_flame_b2", "不滅火炬 / ETERNAL FLAME", "LANDMARK · 330 × 495"],
-  ["battle_portal_b2", "戰鬥傳送門 / BATTLE PORTAL", "LANDMARK · 240 × 260"]
+  ["material_yard_front_b2", "材料行 / MATERIAL YARD", "BUILDING · FRONT · 300 × 240"],
+  ["player_forge_front_b2", "主角鐵匠鋪 / PLAYER FORGE", "BUILDING · FRONT · 360 × 316"],
+  ["town_hall_front_b2", "村長家 / TOWN HALL", "BUILDING · FRONT · 280 × 249"],
+  ["sword_soul_shop_front_b2", "劍魂商 / SWORD SOUL SHOP", "BUILDING · FRONT · 250 × 217"],
+  ["equipment_blueprint_shop_front_b2", "裝備圖紙商 / BLUEPRINT SHOP", "BUILDING · FRONT · 220 × 187"],
+  ["far_east_residence_front_b2", "東郊民宅 / EAST RESIDENCE", "BUILDING · FRONT · 234 × 204"],
+  ["eternal_flame_front_b2", "不滅火炬 / ETERNAL FLAME", "LANDMARK · FRONT · 330 × 495"],
+  ["battle_portal_front_b2", "戰鬥傳送門 / BATTLE PORTAL", "LANDMARK · FRONT · 240 × 260"]
 ];
 
 const C = {
@@ -457,14 +457,14 @@ async function buildReferences(page) {
 async function buildB2Review(page) {
   const root = frame(
     page,
-    "Town / B2 Building + Landmark Review / FAST IMPORT",
+    "Town / B2 Strict Front Elevation Review / FAST IMPORT",
     0,
     0,
     5200,
     3740,
     "#10151A"
   );
-  await text(root, "Title", "TOWN / B2 BUILDING + LANDMARK REVIEW", 100, 56, 54);
+  await text(root, "Title", "TOWN / B2 STRICT FRONT ELEVATION REVIEW", 100, 56, 54);
   await text(
     root,
     "Subtitle",
@@ -480,7 +480,7 @@ async function buildB2Review(page) {
 
   await text(root, "ChecklistHeading", "REVIEW CHECKLIST", 2740, 250, 34, C.white);
   const rules = [
-    "1  Front face dominant; narrow right side only",
+    "1  Strict front elevation; no side wall visible",
     "2  Vertical posts stay vertical",
     "3  Foundation remains horizontal",
     "4  Warm upper-left light; cool shadow family",
@@ -555,8 +555,12 @@ async function main() {
     figma.loadFontAsync({ family: "Inter", style: "Bold" })
   ]);
   const targetPage = figma.currentPage;
-  const reviewName = "Town / B2 Building + Landmark Review / FAST IMPORT";
-  const existingReview = targetPage.findOne((node) => node.name === reviewName);
+  const reviewName = "Town / B2 Strict Front Elevation Review / FAST IMPORT";
+  const reviewAliases = new Set([
+    reviewName,
+    "Town / B2 Building + Landmark Review / FAST IMPORT"
+  ]);
+  const existingReview = targetPage.findOne((node) => reviewAliases.has(node.name));
   const preservedReviewPosition = existingReview
     ? { x: existingReview.x, y: existingReview.y }
     : null;
