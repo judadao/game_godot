@@ -1,5 +1,18 @@
 const SVG_ASSETS = __TOWN_SVG_ASSETS__;
 const REFERENCE_ASSETS = __TOWN_REFERENCE_ASSETS__;
+const B2_REVIEW_ASSETS = __TOWN_B2_REVIEW_ASSETS__;
+const B2_REFERENCE_ASSET = __TOWN_B2_REFERENCE_ASSET__;
+
+const B2_REVIEW_ITEMS = [
+  ["material_yard_b2", "材料行 / MATERIAL YARD", "BUILDING · 300 × 240"],
+  ["player_forge_b2", "主角鐵匠鋪 / PLAYER FORGE", "BUILDING · 360 × 316"],
+  ["town_hall_b2", "村長家 / TOWN HALL", "BUILDING · 280 × 249"],
+  ["sword_soul_shop_b2", "劍魂商 / SWORD SOUL SHOP", "BUILDING · 250 × 217"],
+  ["equipment_blueprint_shop_b2", "裝備圖紙商 / BLUEPRINT SHOP", "BUILDING · 220 × 187"],
+  ["far_east_residence_b2", "東郊民宅 / EAST RESIDENCE", "BUILDING · 234 × 204"],
+  ["eternal_flame_b2", "不滅火炬 / ETERNAL FLAME", "LANDMARK · 330 × 495"],
+  ["battle_portal_b2", "戰鬥傳送門 / BATTLE PORTAL", "LANDMARK · 240 × 260"]
+];
 
 const C = {
   ink: "#10151D",
@@ -121,6 +134,19 @@ function glow(node, color, radius = 26) {
     visible: true,
     blendMode: "SCREEN"
   }];
+}
+
+function raster(parent, name, base64, x, y, width, height, locked = false) {
+  const image = figma.createImage(figma.base64Decode(base64));
+  const node = figma.createRectangle();
+  node.name = name;
+  node.resize(width, height);
+  node.x = x;
+  node.y = y;
+  node.fills = [{ type: "IMAGE", imageHash: image.hash, scaleMode: "FIT" }];
+  node.locked = locked;
+  parent.appendChild(node);
+  return node;
 }
 
 function plaque(parent, name, x, y, width, value, accent = C.gold, asComponent = false) {
@@ -428,23 +454,139 @@ async function buildReferences(page) {
   return root;
 }
 
+async function buildB2Review(page) {
+  const root = frame(
+    page,
+    "Town / B2 Building + Landmark Review / FAST IMPORT",
+    0,
+    0,
+    5200,
+    3740,
+    "#10151A"
+  );
+  await text(root, "Title", "TOWN / B2 BUILDING + LANDMARK REVIEW", 100, 56, 54);
+  await text(
+    root,
+    "Subtitle",
+    "只看獨立物件｜未接 runtime｜再次執行插件只更新本區",
+    102,
+    126,
+    25,
+    "#A5B0B8",
+    "Regular"
+  );
+  await text(root, "ReferenceHeading", "01 / LOCKED A COMPOSITION REFERENCE", 100, 206, 30, C.goldLight);
+  raster(root, "_REF/Locked_A_Image_2", B2_REFERENCE_ASSET, 100, 250, 2500, 1044, true);
+
+  await text(root, "ChecklistHeading", "REVIEW CHECKLIST", 2740, 250, 34, C.white);
+  const rules = [
+    "1  Front face dominant; narrow right side only",
+    "2  Vertical posts stay vertical",
+    "3  Foundation remains horizontal",
+    "4  Warm upper-left light; cool shadow family",
+    "5  Coarse hand-painted pixel clusters",
+    "6  One clear function per silhouette",
+    "7  No background / NPC / label / floating flag",
+    "8  Approve objects individually before runtime use"
+  ];
+  for (let index = 0; index < rules.length; index += 1) {
+    await text(root, `Checklist/${index + 1}`, rules[index], 2740, 320 + index * 70, 28, "#A5B0B8", "Regular");
+  }
+  rect(root, "FastImportNote", 2740, 940, 2260, 255, "#1A2229", 22, "#40505D", 3);
+  await text(root, "FastImportTitle", "FAST IMPORT MODE", 2780, 988, 27, C.goldLight);
+  await text(
+    root,
+    "FastImportBody",
+    "同一插件重跑時會替換本審稿區，不重新生成舊 Town frames。",
+    2780,
+    1044,
+    24,
+    C.white,
+    "Regular"
+  );
+  await text(
+    root,
+    "FastImportBody2",
+    "八張圖片是獨立 Figma layers，可逐件隱藏、移動與批註。",
+    2780,
+    1096,
+    24,
+    "#A5B0B8",
+    "Regular"
+  );
+
+  await text(root, "CandidateHeading", "02 / ISOLATED B2 CANDIDATES", 100, 1372, 34, C.goldLight);
+  const cardWidth = 1220;
+  const cardHeight = 1050;
+  const gap = 40;
+  const startY = 1420;
+  for (let index = 0; index < B2_REVIEW_ITEMS.length; index += 1) {
+    const [key, label, target] = B2_REVIEW_ITEMS[index];
+    const column = index % 4;
+    const row = Math.floor(index / 4);
+    const x = 100 + column * (cardWidth + gap);
+    const y = startY + row * (cardHeight + gap);
+    const landmark = target.startsWith("LANDMARK");
+    const accent = landmark ? "#8569D8" : C.gold;
+    const card = frame(root, `Candidate/${key}`, x, y, cardWidth, cardHeight, "#222C34");
+    card.strokes = paint(accent);
+    card.strokeWeight = 3;
+    card.cornerRadius = 24;
+    await text(card, "EditableName", label, 32, 26, 28);
+    await text(card, "TargetGuide", target, 32, 68, 21, accent);
+    const preview = frame(card, "TransparentPreview", 32, 125, cardWidth - 64, cardHeight - 170, "#1A2229");
+    preview.cornerRadius = 18;
+    raster(
+      preview,
+      `Image/${key}`,
+      B2_REVIEW_ASSETS[key],
+      28,
+      28,
+      preview.width - 56,
+      preview.height - 56
+    );
+  }
+  return root;
+}
+
 async function main() {
   await Promise.all([
     figma.loadFontAsync({ family: "Inter", style: "Regular" }),
     figma.loadFontAsync({ family: "Inter", style: "Bold" })
   ]);
   const targetPage = figma.currentPage;
+  const reviewName = "Town / B2 Building + Landmark Review / FAST IMPORT";
+  const existingReview = targetPage.findOne((node) => node.name === reviewName);
+  const preservedReviewPosition = existingReview
+    ? { x: existingReview.x, y: existingReview.y }
+    : null;
+  if (existingReview) {
+    existingReview.remove();
+  }
   const existingRight = targetPage.children.reduce(
     (maximum, node) => Math.max(maximum, node.x + node.width),
     0
   );
   const baseX = existingRight + 1000;
+  const existingWorld = targetPage.findOne(
+    (node) => node.name === "Town / Eternal Forge / Editable v2 / World / 5200x720"
+  );
+  if (existingWorld) {
+    const reviewRoot = await buildB2Review(targetPage);
+    reviewRoot.x = preservedReviewPosition ? preservedReviewPosition.x : baseX;
+    reviewRoot.y = preservedReviewPosition ? preservedReviewPosition.y : 0;
+    figma.viewport.scrollAndZoomIntoView([reviewRoot]);
+    figma.notify("Town B2：審稿區已快速更新，舊 Town frames 未重建", { timeout: 5000 });
+    figma.closePlugin();
+    return;
+  }
   const coverRoot = await buildCover(targetPage);
   const buildingResult = await buildBuildings(targetPage);
   const uiResult = await buildUi(targetPage);
   const tokensRoot = await buildTokens(targetPage);
   const worldRoot = await buildWorld(targetPage, buildingResult.registry, uiResult.markers);
   const referencesRoot = await buildReferences(targetPage);
+  const reviewRoot = await buildB2Review(targetPage);
 
   coverRoot.x = baseX;
   coverRoot.y = 0;
@@ -458,9 +600,11 @@ async function main() {
   tokensRoot.y = 3800;
   referencesRoot.x = baseX + 6800;
   referencesRoot.y = 0;
+  reviewRoot.x = baseX;
+  reviewRoot.y = 6500;
 
-  figma.viewport.scrollAndZoomIntoView([worldRoot]);
-  figma.notify("Town Eternal Forge：已在目前頁面新增可編輯區域", { timeout: 5000 });
+  figma.viewport.scrollAndZoomIntoView([reviewRoot]);
+  figma.notify("Town Eternal Forge：已建立完整來源與 B2 審稿區", { timeout: 5000 });
   figma.closePlugin();
 }
 
