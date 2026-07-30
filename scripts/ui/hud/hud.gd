@@ -6,6 +6,9 @@ signal interaction_prompt_accepted
 const AREA_PANEL_MIN_WIDTH := 220.0
 const AREA_PANEL_MAX_WIDTH := 520.0
 const AREA_TEXT_HORIZONTAL_PADDING := 88.0
+const INTERACTION_PANEL_MIN_WIDTH := 180.0
+const INTERACTION_PANEL_MAX_WIDTH := 420.0
+const INTERACTION_TEXT_HORIZONTAL_PADDING := 138.0
 
 @onready var hp_fill: ColorRect = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/HPBar/Fill
 @onready var hp_value: Label = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/HPBar/Value
@@ -35,6 +38,7 @@ func _ready() -> void:
 	_make_display_only(self)
 	prompt_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_update_area_panel_width()
+	_update_interaction_panel_width()
 
 func open() -> void:
 	visible = true
@@ -131,6 +135,7 @@ func set_interaction_prompt(
 ) -> void:
 	prompt_text.text = action_text
 	key_label.text = key_text
+	_update_interaction_panel_width()
 	interaction_panel.visible = not action_text.is_empty()
 	if interaction_panel.has_method("set_target"):
 		interaction_panel.call("set_target", target)
@@ -139,6 +144,18 @@ func clear_interaction_prompt() -> void:
 	if interaction_panel.has_method("clear_target"):
 		interaction_panel.call("clear_target")
 	interaction_panel.visible = false
+
+
+func _update_interaction_panel_width() -> void:
+	if not bool(get_meta("interaction_prompt_adaptive_width", false)):
+		return
+	var panel_width := clampf(
+		ceilf(_measure_label_text_width(prompt_text) + INTERACTION_TEXT_HORIZONTAL_PADDING),
+		INTERACTION_PANEL_MIN_WIDTH,
+		INTERACTION_PANEL_MAX_WIDTH
+	)
+	interaction_panel.offset_left = -panel_width * 0.5
+	interaction_panel.offset_right = panel_width * 0.5
 
 func set_interaction_visible(is_visible: bool) -> void:
 	interaction_panel.visible = is_visible

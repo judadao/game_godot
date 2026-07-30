@@ -6,7 +6,7 @@ const REFERENCE_PATH := "res://scenes/maps/town/editor/TownEternalForgeEditorHUD
 const TOWN_MAP_PATH := "res://scenes/maps/town/TownMap.tscn"
 const GAME_PATH := "res://scenes/game/game.tscn"
 const AREA_FRAME_PATH := "res://assets/town/modular_v2/ui/town_area_frame_v3.png"
-const INTERACTION_FRAME_PATH := "res://assets/town/modular_v2/ui/town_interaction_frame_v2.png"
+const INTERACTION_FRAME_PATH := "res://assets/town/modular_v2/ui/town_interaction_frame_v3.png"
 const VIEWPORTS := [
 	Vector2i(1152, 720),
 	Vector2i(1280, 720),
@@ -79,6 +79,10 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 		bool(hud.get_meta("interaction_prompt_action_only", false)),
 		"Town HUD must request action-only interaction copy at %s." % viewport_size
 	)
+	_expect(
+		bool(hud.get_meta("interaction_prompt_adaptive_width", false)),
+		"Town HUD must resize interaction framing from action text at %s." % viewport_size
+	)
 	_expect(hud.position.is_equal_approx(Vector2.ZERO), "Town HUD must begin at viewport origin at %s." % viewport_size)
 	_expect(hud.size.is_equal_approx(Vector2(viewport_size)), "Town HUD must fill %s; got %s." % [viewport_size, hud.size])
 	for method_name in [
@@ -117,7 +121,18 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 	_expect(not (hud.get_node("LeftCrest") as Control).visible, "Unused Flame Keeper crest must stay hidden.")
 	_expect(not (hud.get_node("RightCrest") as Control).visible, "Unused Soul Network crest must stay hidden.")
 	_expect(prompt.visible, "Interaction prompt must become visible at %s." % viewport_size)
-	_expect(prompt.size.x <= 420.0, "Interaction prompt must remain compact at %s." % viewport_size)
+	var long_prompt_width := prompt.size.x
+	hud.call("set_interaction_prompt", "Open", "F")
+	await process_frame
+	var short_prompt_width := prompt.size.x
+	_expect(
+		short_prompt_width <= 240.0,
+		"Short Town actions must not retain a wide empty prompt at %s." % viewport_size
+	)
+	_expect(
+		long_prompt_width >= short_prompt_width + 100.0 and long_prompt_width <= 420.0,
+		"Town interaction prompt must expand only for longer copy at %s." % viewport_size
+	)
 	_expect(prompt.get_global_rect().position.y >= float(viewport_size.y) - 72.0, "Prompt must use the compact bottom safe area at %s." % viewport_size)
 	_expect_texture_style(area_panel, AREA_FRAME_PATH, "Town area label")
 	_expect_texture_style(interaction_panel, INTERACTION_FRAME_PATH, "Town interaction prompt")
@@ -163,15 +178,16 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 	var keycap_rect := keycap.get_global_rect()
 	var prompt_text_rect := prompt_text.get_global_rect()
 	_expect(
-		absf(keycap_rect.get_center().x - (prompt_rect.position.x + 56.0)) <= 1.0,
+		absf(keycap_rect.get_center().x - (prompt_rect.position.x + 44.0)) <= 1.0,
 		"Interaction key must remain centered in the generated left socket at %s." % viewport_size
 	)
 	_expect(
-		absf(keycap_rect.get_center().y - prompt_rect.get_center().y) <= 1.0,
-		"Interaction key must remain vertically centered at %s." % viewport_size
+		absf(keycap_rect.get_center().y - (prompt_rect.get_center().y + 2.0)) <= 1.0,
+		"Interaction key must use the optical baseline correction at %s." % viewport_size
 	)
 	_expect(
-		prompt_text_rect.position.x >= prompt_rect.position.x + 104.0,
+		prompt_text_rect.position.x >= prompt_rect.position.x + 80.0
+			and prompt_text_rect.end.x <= prompt_rect.end.x - 10.0,
 		"Interaction text must begin after the generated key socket at %s." % viewport_size
 	)
 	for node_path in ["AreaPanel", "InteractionPanel"]:
