@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "visual_style": "storybook_handdrawn_pixel_v2",
+  "building_perspective_profile": "b2_front_right_orthographic",
   "map": {
     "id": "town_eternal_forge_modular_v1",
     "width": 1942,
@@ -347,9 +348,10 @@
     {
       "id": "material_yard",
       "category": "facility",
-      "source": "res://assets/town/modular_v1/buildings/material_yard.png",
-      "position": [170, 507],
-      "target_size": [300, 330],
+      "source": "res://assets/town/modular_v2/buildings/material_yard.png",
+      "perspective_profile": "b2_front_right_orthographic",
+      "position": [170, 563],
+      "target_size": [300, 240],
       "z_index": -10,
       "visible": true,
       "interaction_ownership": {
@@ -363,9 +365,10 @@
     {
       "id": "player_blacksmith",
       "category": "facility",
-      "source": "res://assets/town/modular_v1/buildings/player_forge.png",
-      "position": [475, 472],
-      "target_size": [360, 400],
+      "source": "res://assets/town/modular_v2/buildings/player_forge.png",
+      "perspective_profile": "b2_front_right_orthographic",
+      "position": [475, 530],
+      "target_size": [360, 316],
       "z_index": -10,
       "visible": true,
       "interaction_ownership": {
@@ -411,9 +414,10 @@
     {
       "id": "town_hall",
       "category": "facility",
-      "source": "res://assets/town/modular_v1/buildings/town_hall.png",
-      "position": [1120, 497],
-      "target_size": [280, 350],
+      "source": "res://assets/town/modular_v2/buildings/town_hall.png",
+      "perspective_profile": "b2_front_right_orthographic",
+      "position": [1120, 558],
+      "target_size": [280, 249],
       "z_index": -10,
       "visible": true,
       "interaction_ownership": {
@@ -427,9 +431,10 @@
     {
       "id": "sword_soul_shop",
       "category": "facility",
-      "source": "res://assets/town/modular_v1/buildings/sword_soul_shop.png",
-      "position": [1370, 507],
-      "target_size": [250, 330],
+      "source": "res://assets/town/modular_v2/buildings/sword_soul_shop.png",
+      "perspective_profile": "b2_front_right_orthographic",
+      "position": [1370, 576],
+      "target_size": [250, 217],
       "z_index": -10,
       "visible": true,
       "interaction_ownership": {
@@ -443,9 +448,10 @@
     {
       "id": "equipment_blueprint_shop",
       "category": "facility",
-      "source": "res://assets/town/modular_v1/buildings/blueprint_research.png",
-      "position": [1595, 497],
-      "target_size": [220, 350],
+      "source": "res://assets/town/modular_v2/buildings/blueprint_research.png",
+      "perspective_profile": "b2_front_right_orthographic",
+      "position": [1595, 587],
+      "target_size": [220, 187],
       "z_index": -10,
       "visible": true,
       "interaction_ownership": {
@@ -459,9 +465,10 @@
     {
       "id": "far_east_residence",
       "category": "facility",
-      "source": "res://assets/town/modular_v1/buildings/east_residence.png",
-      "position": [1817, 507],
-      "target_size": [234, 330],
+      "source": "res://assets/town/modular_v2/buildings/east_residence.png",
+      "perspective_profile": "b2_front_right_orthographic",
+      "position": [1817, 582],
+      "target_size": [234, 204],
       "z_index": -10,
       "visible": true,
       "interaction_ownership": {
@@ -863,6 +870,294 @@
       "position": [1898, 646],
       "target_size": [84, 52],
       "z_index": -2,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "market_stall",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/props/market_stall.png",
+      "position": [92, 590],
+      "target_size": [164, 164],
+      "z_index": -3,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "produce_baskets",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/props/produce_baskets.png",
+      "position": [226, 638],
+      "target_size": [92, 68],
+      "z_index": -1,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "laundry_line",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/props/laundry_line.png",
+      "position": [1755, 530],
+      "target_size": [176, 144],
+      "z_index": -3,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "tavern_table",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/props/tavern_table.png",
+      "position": [1360, 634],
+      "target_size": [118, 76],
+      "z_index": -1,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "stacked_sacks",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/props/stacked_sacks.png",
+      "position": [394, 636],
+      "target_size": [82, 72],
+      "z_index": -1,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "tool_rack",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/props/tool_rack.png",
+      "position": [535, 614],
+      "target_size": [96, 116],
+      "z_index": -2,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "flower_planter",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/props/flower_planter.png",
+      "position": [1142, 646],
+      "target_size": [104, 52],
+      "z_index": -1,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "water_trough",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/props/water_trough.png",
+      "position": [1705, 638],
+      "target_size": [128, 68],
+      "z_index": -1,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "woodpile",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/props/woodpile.png",
+      "position": [1600, 633],
+      "target_size": [110, 78],
+      "z_index": -1,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "street_signpost",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/props/street_signpost.png",
+      "position": [1542, 604],
+      "target_size": [74, 136],
+      "z_index": -3,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "road_patch",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/streetscape/road_patch.png",
+      "position": [340, 695],
+      "target_size": [168, 34],
+      "z_index": -29,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "curb_grass",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/streetscape/curb_grass.png",
+      "position": [720, 665],
+      "target_size": [164, 42],
+      "z_index": -21,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "shrub_cluster",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/streetscape/shrub_cluster.png",
+      "position": [1845, 616],
+      "target_size": [132, 112],
+      "z_index": -6,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "small_tree",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/streetscape/small_tree.png",
+      "position": [1235, 502],
+      "target_size": [170, 340],
+      "z_index": -11,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "ivy_strip",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/streetscape/ivy_strip.png",
+      "position": [1610, 574],
+      "target_size": [174, 94],
+      "z_index": -5,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "fallen_leaves",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/streetscape/fallen_leaves.png",
+      "position": [930, 694],
+      "target_size": [146, 38],
+      "z_index": -28,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "flower_clump",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/streetscape/flower_clump.png",
+      "position": [1072, 643],
+      "target_size": [88, 58],
+      "z_index": -5,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "drain_grate",
+      "category": "street_prop",
+      "source": "res://assets/town/modular_v2/streetscape/drain_grate.png",
+      "position": [1360, 695],
+      "target_size": [92, 30],
+      "z_index": -27,
       "visible": true,
       "interaction_ownership": {
         "mode": "none",

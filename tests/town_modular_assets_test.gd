@@ -2,8 +2,8 @@ extends SceneTree
 
 const LAYOUT_PATH := "res://data/town_modular_layout.json"
 const MODULAR_SCENE_PATH := "res://scenes/maps/town/components/TownModularVisuals.tscn"
-const EXPECTED_LAYER_COUNT := 54
-const EXPECTED_SOURCE_COUNT := 28
+const EXPECTED_LAYER_COUNT := 72
+const EXPECTED_SOURCE_COUNT := 46
 const TRANSPARENT_ALPHA_MAX := 0.001
 const OPAQUE_ALPHA_MIN := 0.99
 

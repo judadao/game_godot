@@ -55,8 +55,8 @@ func _run() -> void:
 		var object_ids: Dictionary = {}
 		var modular_sprites := modular.find_children("*", "Sprite2D", true, false)
 		_expect(
-			modular_sprites.size() == 54,
-			"Town modular scene must expose all 54 independently replaceable instances."
+			modular_sprites.size() == 72,
+			"Town modular scene must expose all 72 independently replaceable instances."
 		)
 		for sprite_variant in modular_sprites:
 			var sprite := sprite_variant as Sprite2D
@@ -67,8 +67,11 @@ func _run() -> void:
 			_expect(
 				String(sprite.get_meta("source_asset", "")).begins_with(
 					"res://assets/town/modular_v1/"
+				)
+				or String(sprite.get_meta("source_asset", "")).begins_with(
+					"res://assets/town/modular_v2/"
 				),
-				"Town modular sprites must use replaceable modular_v1 sources."
+				"Town modular sprites must use replaceable modular sources."
 			)
 		var sky := modular.get_node_or_null("Background/BackgroundSky") as Sprite2D
 		_expect(sky != null, "Town modular scene must own its independent sky layer.")

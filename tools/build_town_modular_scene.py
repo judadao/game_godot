@@ -22,6 +22,15 @@ CATEGORY_NODES = {
 	"landmark": "Landmarks",
 	"street_prop": "StreetProps",
 }
+B2_PERSPECTIVE_PROFILE = "b2_front_right_orthographic"
+B2_BUILDING_IDS = {
+	"material_yard",
+	"player_blacksmith",
+	"town_hall",
+	"sword_soul_shop",
+	"equipment_blueprint_shop",
+	"far_east_residence",
+}
 
 
 def _pascal_case(value: str) -> str:
@@ -77,6 +86,13 @@ def _validate_layout(payload: dict[str, Any]) -> list[dict[str, Any]]:
 		category = str(layer.get("category", ""))
 		if category not in CATEGORY_NODES:
 			raise ValueError(f"Unsupported Town modular category: {category}")
+		if layer_id in B2_BUILDING_IDS:
+			perspective_profile = str(layer.get("perspective_profile", ""))
+			if perspective_profile != B2_PERSPECTIVE_PROFILE:
+				raise ValueError(
+					f"{layer_id} must use perspective profile "
+					f"{B2_PERSPECTIVE_PROFILE}, got {perspective_profile!r}"
+				)
 		_res_path_to_file(str(layer.get("source", "")))
 		_vector2(layer.get("position", []))
 		_texture_scale(layer)
@@ -106,6 +122,7 @@ def build_scene(layout_path: Path, scene_path: Path) -> None:
 			"texture_filter = 1",
 			f'metadata/layout_path = "res://{layout_path.relative_to(ROOT).as_posix()}"',
 			f'metadata/visual_style = "{payload.get("visual_style", "")}"',
+			f'metadata/building_perspective_profile = "{payload.get("building_perspective_profile", "")}"',
 			f'metadata/map_width = {int(payload["map"]["width"])}',
 			f'metadata/map_height = {int(payload["map"]["height"])}',
 			f'metadata/gameplay_baseline_y = {float(payload["map"]["gameplay_baseline_y"]):g}',
@@ -136,6 +153,7 @@ def build_scene(layout_path: Path, scene_path: Path) -> None:
 				f'metadata/object_id = "{layer_id}"',
 				f'metadata/category = "{category}"',
 				f'metadata/source_asset = "{source}"',
+				f'metadata/perspective_profile = "{layer.get("perspective_profile", "")}"',
 				f'metadata/interaction_mode = "{ownership.get("mode", "none")}"',
 				f'metadata/interaction_owner_scene = "{ownership.get("owner_scene", "")}"',
 				f'metadata/interaction_node_path = "{ownership.get("node_path", "")}"',

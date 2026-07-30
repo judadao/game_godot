@@ -283,6 +283,7 @@ def build_board(layout_path: Path, output_path: Path, preview_path: Path) -> Non
 		(
 			"每個畫面元素都是有 ID 的獨立物件｜"
 			f"風格：{payload.get('visual_style', 'unspecified')}｜"
+			f"建築透視：{payload.get('building_perspective_profile', 'unspecified')}｜"
 			"上方為重組地圖｜下方為可替換素材庫"
 		),
 		102,

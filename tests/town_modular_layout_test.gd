@@ -1,7 +1,10 @@
 extends SceneTree
 
 const LAYOUT_PATH := "res://data/town_modular_layout.json"
-const SOURCE_PREFIX := "res://assets/town/modular_v1/"
+const SOURCE_PREFIXES := [
+	"res://assets/town/modular_v1/",
+	"res://assets/town/modular_v2/",
+]
 const EXPECTED_MAP_SIZE := Vector2i(1942, 809)
 const EXPECTED_FACILITY_IDS := {
 	"material_yard": true,
@@ -15,14 +18,14 @@ const EXPECTED_FACILITY_IDS := {
 }
 const EXPECTED_SOURCES := {
 	"res://assets/town/modular_v1/background/ancient_town_tree.png": true,
-	"res://assets/town/modular_v1/buildings/material_yard.png": true,
-	"res://assets/town/modular_v1/buildings/player_forge.png": true,
+	"res://assets/town/modular_v2/buildings/material_yard.png": true,
+	"res://assets/town/modular_v2/buildings/player_forge.png": true,
 	"res://assets/town/modular_v1/landmarks/eternal_forge_monument.png": true,
 	"res://assets/town/modular_v1/landmarks/battle_portal.png": true,
-	"res://assets/town/modular_v1/buildings/town_hall.png": true,
-	"res://assets/town/modular_v1/buildings/sword_soul_shop.png": true,
-	"res://assets/town/modular_v1/buildings/blueprint_research.png": true,
-	"res://assets/town/modular_v1/buildings/east_residence.png": true,
+	"res://assets/town/modular_v2/buildings/town_hall.png": true,
+	"res://assets/town/modular_v2/buildings/sword_soul_shop.png": true,
+	"res://assets/town/modular_v2/buildings/blueprint_research.png": true,
+	"res://assets/town/modular_v2/buildings/east_residence.png": true,
 	"res://assets/town/modular_v1/background/sky.png": true,
 	"res://assets/town/modular_v1/background/mountain_layer.png": true,
 	"res://assets/town/modular_v1/background/castle_layer.png": true,
@@ -42,6 +45,24 @@ const EXPECTED_SOURCES := {
 	"res://assets/town/modular_v1/props/civic_well.png": true,
 	"res://assets/town/modular_v1/props/civic_bench.png": true,
 	"res://assets/town/modular_v1/props/east_flower_bed.png": true,
+	"res://assets/town/modular_v2/props/market_stall.png": true,
+	"res://assets/town/modular_v2/props/produce_baskets.png": true,
+	"res://assets/town/modular_v2/props/laundry_line.png": true,
+	"res://assets/town/modular_v2/props/tavern_table.png": true,
+	"res://assets/town/modular_v2/props/stacked_sacks.png": true,
+	"res://assets/town/modular_v2/props/tool_rack.png": true,
+	"res://assets/town/modular_v2/props/flower_planter.png": true,
+	"res://assets/town/modular_v2/props/water_trough.png": true,
+	"res://assets/town/modular_v2/props/woodpile.png": true,
+	"res://assets/town/modular_v2/props/street_signpost.png": true,
+	"res://assets/town/modular_v2/streetscape/road_patch.png": true,
+	"res://assets/town/modular_v2/streetscape/curb_grass.png": true,
+	"res://assets/town/modular_v2/streetscape/shrub_cluster.png": true,
+	"res://assets/town/modular_v2/streetscape/small_tree.png": true,
+	"res://assets/town/modular_v2/streetscape/ivy_strip.png": true,
+	"res://assets/town/modular_v2/streetscape/fallen_leaves.png": true,
+	"res://assets/town/modular_v2/streetscape/flower_clump.png": true,
+	"res://assets/town/modular_v2/streetscape/drain_grate.png": true,
 }
 const VALID_CATEGORIES := {
 	"background": true,
@@ -121,7 +142,7 @@ func _run() -> void:
 		_finish()
 		return
 	var layers := layers_variant as Array
-	_expect(layers.size() == 54, "Town modular layout must expose exactly 54 assembled objects.")
+	_expect(layers.size() == 72, "Town modular layout must expose exactly 72 assembled objects.")
 
 	var ids: Dictionary = {}
 	var sources: Dictionary = {}
@@ -181,8 +202,8 @@ func _assert_layer_entry(entry: Dictionary, ids: Dictionary) -> void:
 	_expect(VALID_CATEGORIES.has(category), "Town modular layer category must be supported: %s" % category)
 	var source := String(entry.get("source", ""))
 	_expect(
-		source.begins_with(SOURCE_PREFIX) and source.ends_with(".png"),
-		"Town modular source must use the modular_v1 PNG namespace: %s" % source
+		_source_uses_supported_namespace(source) and source.ends_with(".png"),
+		"Town modular source must use a supported modular PNG namespace: %s" % source
 	)
 	_assert_numeric_pair(entry.get("position"), "position", entry_id, false)
 	var has_target_size := entry.has("target_size")
@@ -201,6 +222,13 @@ func _assert_layer_entry(entry: Dictionary, ids: Dictionary) -> void:
 		entry.get("interaction_ownership") is Dictionary,
 		"Town modular layer interaction ownership must be structured: %s" % entry_id
 	)
+
+
+func _source_uses_supported_namespace(source: String) -> bool:
+	for prefix in SOURCE_PREFIXES:
+		if source.begins_with(prefix):
+			return true
+	return false
 
 
 func _assert_numeric_pair(value: Variant, field: String, entry_id: String, positive: bool) -> void:
