@@ -15,7 +15,7 @@ PLUGIN_DIR = Path(__file__).resolve().parent
 TOWN_DIR = PLUGIN_DIR.parent
 ROOT = TOWN_DIR.parents[2]
 VECTOR_DIR = TOWN_DIR / "vector_sources"
-B2_DIR = TOWN_DIR / "b2_front_candidates"
+B2_DIR = TOWN_DIR / "b2_front_style_candidates"
 B2_REFERENCE = (
 	ROOT / "concept/town/main_horizontal_concept/town_style_direction_a_locked.png"
 )

@@ -19,7 +19,7 @@
 
 若頁面已經有 `Town / Eternal Forge / Editable v2 / World / 5200x720`，
 再次執行插件時會進入 fast import：只替換
-`Town / B2 Strict Front Elevation Review / FAST IMPORT`，不重新建立舊 Town
+`Town / B2 Hand-Painted Front Style Review / FAST IMPORT`，不重新建立舊 Town
 frames。八個候選保持為八張獨立 Figma image layers。
 Python builder 只把降尺寸的審稿副本嵌入插件，正式透明 PNG 不降質；目前
 `code.js` 約 6.4 MB，不需經過瀏覽器上傳。

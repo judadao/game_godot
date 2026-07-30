@@ -4,14 +4,14 @@ const B2_REVIEW_ASSETS = __TOWN_B2_REVIEW_ASSETS__;
 const B2_REFERENCE_ASSET = __TOWN_B2_REFERENCE_ASSET__;
 
 const B2_REVIEW_ITEMS = [
-  ["material_yard_front_b2", "材料行 / MATERIAL YARD", "BUILDING · FRONT · 300 × 240"],
-  ["player_forge_front_b2", "主角鐵匠鋪 / PLAYER FORGE", "BUILDING · FRONT · 360 × 316"],
-  ["town_hall_front_b2", "村長家 / TOWN HALL", "BUILDING · FRONT · 280 × 249"],
-  ["sword_soul_shop_front_b2", "劍魂商 / SWORD SOUL SHOP", "BUILDING · FRONT · 250 × 217"],
-  ["equipment_blueprint_shop_front_b2", "裝備圖紙商 / BLUEPRINT SHOP", "BUILDING · FRONT · 220 × 187"],
-  ["far_east_residence_front_b2", "東郊民宅 / EAST RESIDENCE", "BUILDING · FRONT · 234 × 204"],
-  ["eternal_flame_front_b2", "不滅火炬 / ETERNAL FLAME", "LANDMARK · FRONT · 330 × 495"],
-  ["battle_portal_front_b2", "戰鬥傳送門 / BATTLE PORTAL", "LANDMARK · FRONT · 240 × 260"]
+  ["material_yard_front_style_b2", "材料行 / MATERIAL YARD", "BUILDING · FRONT STYLE · 300 × 240"],
+  ["player_forge_front_style_b2", "主角鐵匠鋪 / PLAYER FORGE", "BUILDING · FRONT STYLE · 360 × 316"],
+  ["town_hall_front_style_b2", "村長家 / TOWN HALL", "BUILDING · FRONT STYLE · 280 × 249"],
+  ["sword_soul_shop_front_style_b2", "劍魂商 / SWORD SOUL SHOP", "BUILDING · FRONT STYLE · 250 × 217"],
+  ["equipment_blueprint_shop_front_style_b2", "裝備圖紙商 / BLUEPRINT SHOP", "BUILDING · FRONT STYLE · 220 × 187"],
+  ["far_east_residence_front_style_b2", "東郊民宅 / EAST RESIDENCE", "BUILDING · FRONT STYLE · 234 × 204"],
+  ["eternal_flame_front_style_b2", "不滅火炬 / ETERNAL FLAME", "LANDMARK · FRONT STYLE · 330 × 495"],
+  ["battle_portal_front_style_b2", "戰鬥傳送門 / BATTLE PORTAL", "LANDMARK · FRONT STYLE · 240 × 260"]
 ];
 
 const C = {
@@ -457,18 +457,18 @@ async function buildReferences(page) {
 async function buildB2Review(page) {
   const root = frame(
     page,
-    "Town / B2 Strict Front Elevation Review / FAST IMPORT",
+    "Town / B2 Hand-Painted Front Style Review / FAST IMPORT",
     0,
     0,
     5200,
     3740,
     "#10151A"
   );
-  await text(root, "Title", "TOWN / B2 STRICT FRONT ELEVATION REVIEW", 100, 56, 54);
+  await text(root, "Title", "TOWN / B2 HAND-PAINTED FRONT STYLE REVIEW", 100, 56, 54);
   await text(
     root,
     "Subtitle",
-    "只看獨立物件｜未接 runtime｜再次執行插件只更新本區",
+    "只看獨立物件｜未接 runtime｜正面透視鎖定｜配色自由、手繪像素語言一致",
     102,
     126,
     25,
@@ -481,11 +481,11 @@ async function buildB2Review(page) {
   await text(root, "ChecklistHeading", "REVIEW CHECKLIST", 2740, 250, 34, C.white);
   const rules = [
     "1  Strict front elevation; no side wall visible",
-    "2  Vertical posts stay vertical",
-    "3  Foundation remains horizontal",
-    "4  Warm upper-left light; cool shadow family",
-    "5  Coarse hand-painted pixel clusters",
-    "6  One clear function per silhouette",
+    "2  Broad 3–4 step light and shadow masses",
+    "3  Coarse irregular hand-painted pixel clusters",
+    "4  Color may vary; value structure stays coherent",
+    "5  One focal detail zone; secondary planes simplify",
+    "6  No uniform outlines or repeated micro-texture",
     "7  No background / NPC / label / floating flag",
     "8  Approve objects individually before runtime use"
   ];
@@ -555,9 +555,10 @@ async function main() {
     figma.loadFontAsync({ family: "Inter", style: "Bold" })
   ]);
   const targetPage = figma.currentPage;
-  const reviewName = "Town / B2 Strict Front Elevation Review / FAST IMPORT";
+  const reviewName = "Town / B2 Hand-Painted Front Style Review / FAST IMPORT";
   const reviewAliases = new Set([
     reviewName,
+    "Town / B2 Strict Front Elevation Review / FAST IMPORT",
     "Town / B2 Building + Landmark Review / FAST IMPORT"
   ]);
   const existingReview = targetPage.findOne((node) => reviewAliases.has(node.name));
