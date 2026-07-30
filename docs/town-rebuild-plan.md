@@ -6,6 +6,9 @@
 - Native target: 1280x720, world height 724 px.
 - Active Eternal Forge road baseline: y=672 px; player, NPCs, and portals share
   this baseline. Hidden legacy props retain their original authoring baseline.
+- Visible road art begins at y=660 px and overlaps the unchanged gameplay
+  baseline by 12 px, so character feet and building foundations cannot expose
+  the background between the foreground and floor.
 - Lighting: warm daylight from upper left; shadows fall down-right.
 - Pixel density: detailed 32-bit pixel art, approximately 2 px of outline at gameplay scale.
 - Palette: warm limestone, dark oak, blue slate roofs, restrained red shop awnings, brass accents.
@@ -37,22 +40,31 @@ unchanged.
 
 Candidate Town presentation sources live under `assets/town/modular_v1/`,
 `assets/town/modular_v2/`, and `assets/town/modular_v3/`. The locked A background
-plate, independent A ancient tree, and B2 foreground
-sources provide 46 unique PNGs reused as 72 selectable scene entries:
+layers and Base foreground sources provide 46 unique PNGs reused as 72 selectable
+scene entries:
 
 1. `background/`
-   - modular-v3 `town_a_background_plate.png` and independently replaceable
-     `ancient_town_tree.png`. Legacy sky/mountain/city/forest entries retain stable IDs,
-     but all except `background_sky` are hidden.
+   - modular-v3 `town_a_background_plate.png`,
+     `autumn_forest_canopy_base_v2.png`, and
+     `autumn_ancient_tree_base_v2.png`. The generated canopy provides the missing
+     layered orange/ochre/russet foliage behind the full roofline; the isolated
+     tree provides the central focal tree without becoming a foreground close-up.
+     Green legacy and parallax forest materials are forbidden from the visible
+     composition. The legacy forest stable ID now owns the approved autumn canopy;
+     legacy mountain and city entries remain hidden.
 2. `ground/`
    - `stone_road_tile.png` and `bridge_wall_tile.png`, each instanced as eight
-     independently replaceable modules.
+     independently replaceable visible modules. Road-patch dressing remains hidden
+     so it cannot repaint the continuous stone surface.
 3. `buildings/`
    - Material Yard, Player Forge, Town Hall, Sword Soul Shop, Blueprint Research,
      and East Residence.
 4. `landmarks/`
-   - Eternal Forge Monument and Battle Portal; runtime uses their aspect-locked
-     modular-v3 B2 variants.
+   - Eternal Forge Monument and Battle Portal use aspect-locked MaterialYard-style
+     Base v3 variants. They retain the fire bowl, rune-tower silhouette, stone arch,
+     and blue-purple vortex while matching Material Yard's larger pixel clusters,
+     irregular gray-blue masonry, coarse broken linework, 2–4 shade ramps, neutral
+     base light, and structural AO.
 5. `props/`
    - street lantern, forge/soul braziers, hanging banner, west fence, notice board,
      material crates/barrels, and forge anvil. These modular-v1 entries remain hidden
@@ -65,6 +77,9 @@ sources provide 46 unique PNGs reused as 72 selectable scene entries:
 All buildings use the shared `b2_front_right_orthographic` profile: front face
 dominant, narrow right face, vertical uprights, upper-right depth recession, and
 horizontal foundations on the common gameplay baseline.
+Town Hall, Sword Soul Shop, Equipment Blueprint Shop, and Far East Residence use
+MaterialYard-style Base v2 candidates at approximately 4x source-to-display pixel
+density, so the east side does not lose scale or facade detail.
 
 ## Scene architecture
 

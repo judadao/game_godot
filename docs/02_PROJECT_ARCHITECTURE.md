@@ -200,9 +200,19 @@ authority。核准的 Image #2 保留在 hidden
 輸出完整重組預覽與可單獨選取的分件素材庫。
 Town 視覺統一採用 `data/town_visual_style.json` 的
 `storybook_handdrawn_pixel_v2`：手繪不規則墨線、紙張顆粒、低飽和木石色、
-冷苔綠陰影與左上暖蜜色主光。正式視覺基準是
+冷苔綠陰影與左上暖蜜色主光。正式排版權威是
 `concept/town/main_horizontal_concept/town_style_direction_a_locked.png`。
-modular-v3 的 A 遠景、古樹、Base 火炬與傳送門已納入目前 runtime composition；
+`town_a_background_plate.png` 提供藍天、白雲與群山；屋頂後方另疊
+`autumn_forest_canopy_base_v2.png` 的繁盛秋林與
+`autumn_ancient_tree_base_v2.png` 主樹。中央熔爐與傳送門保留既有辨識輪廓，
+但改用 MaterialYard-style Base v3 的大型灰藍石塊、粗斷裂線稿、2–4 階明暗與
+中性固有色；八塊道路與八塊橋牆組成唯一可見地板。道路視覺面從 `y=660`
+開始，與維持在 `y=672` 的角色、建築與互動基準重疊 12 px，避免腳下與地基露出
+背景縫隙。不得再以
+`town_eternal_forge_v1.png` 整張暖色城鎮合成圖作 runtime background。
+村長家、劍魂商、裝備圖紙商與東郊民宅使用以材料行為唯一 style reference 的
+`*_base_v2.png`，runtime 維持約 4× source-to-display pixel density，且
+foundation 全部對齊 `y=672`。
 六棟主建築也已統一為材料行 Base 的群塊、線稿與中性固有色語言。前景 Base
 只烘焙結構 AO 與接觸陰影，大面方向光由後續 Godot overlay 擁有。
 分件候選中的六棟正式建築與街景使用 B2

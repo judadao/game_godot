@@ -140,8 +140,8 @@ func _run() -> void:
 			_expect(building_label.size.x <= 200.0, "%s label must not dominate its building facade." % location_name)
 			_expect(building_label.get_theme_font_size("font_size") <= 16, "%s label typography must stay compact." % location_name)
 			_expect(
-				building_label.visible == (location_name == "MaterialYard"),
-				"%s label visibility must follow the default player foundation." % location_name
+				not building_label.visible,
+				"%s label must remain hidden until the Player enters its foundation." % location_name
 			)
 			_expect(plaque != null, "%s label must use the B2 wooden plaque texture." % location_name)
 			if plaque != null:

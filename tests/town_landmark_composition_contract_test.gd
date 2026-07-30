@@ -1,20 +1,53 @@
 extends SceneTree
 
 const LAYOUT_PATH := "res://data/town_modular_layout.json"
+const FORBIDDEN_VISIBLE_FOREST_SOURCES := [
+	"res://assets/town/modular_v1/background/forest_layer.png",
+	"res://concept/town/can_use/background/parallax_forest_strip_v3.png",
+]
 const EXPECTED_SOURCE_BY_ID := {
 	"background_sky":
 		"res://assets/town/modular_v3/background/town_a_background_plate.png",
+	"background_forest":
+		"res://assets/town/modular_v3/background/autumn_forest_canopy_base_v2.png",
 	"background_ancient_town_tree":
-		"res://assets/town/modular_v3/background/ancient_town_tree.png",
+		"res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png",
 	"eternal_flame":
-		"res://assets/town/modular_v3/landmarks/eternal_forge_monument.png",
+		"res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png",
 	"battle_portal":
-		"res://assets/town/modular_v3/landmarks/battle_portal.png",
+		"res://assets/town/modular_v3/landmarks/battle_portal_base_v3.png",
+}
+const EXPECTED_PLACEMENT_BY_ID := {
+	"background_forest": {
+		"position": Vector2(971, 430),
+		"target_size": Vector2(1942, 600),
+	},
+	"background_ancient_town_tree": {
+		"position": Vector2(1020, 330),
+		"target_size": Vector2(720, 573),
+	},
+	"eternal_flame": {
+		"position": Vector2(830, 392),
+		"target_size": Vector2(345, 560),
+	},
+	"battle_portal": {
+		"position": Vector2(830, 552),
+		"target_size": Vector2(200, 240),
+	},
 }
 const OLD_BACKGROUND_LAYER_IDS := [
 	"background_mountains",
 	"background_distant_city",
-	"background_forest",
+]
+const REPEATED_GROUND_PREFIXES := [
+	"ground_bridge_wall_",
+	"ground_stone_road_",
+]
+const GROUND_OVERLAY_IDS := [
+	"road_patch",
+	"curb_grass",
+	"fallen_leaves",
+	"drain_grate",
 ]
 const ASPECT_LOCKED_LANDMARK_IDS := [
 	"background_ancient_town_tree",
@@ -27,6 +60,7 @@ const RIGHT_FACADE_CLEARANCE_IDS := [
 	"woodpile",
 	"street_signpost",
 	"shrub_cluster",
+	"small_tree",
 	"ivy_strip",
 ]
 const MAX_ASPECT_DISTORTION_RATIO := 0.02
@@ -46,8 +80,13 @@ func _run() -> void:
 
 	var entries_by_id := _index_entries(layout.get("layers", []))
 	_assert_a_background_plate(entries_by_id)
+	_assert_autumn_forest_canopy(entries_by_id)
+	_assert_locked_autumn_tree_material(entries_by_id)
 	_assert_old_background_layers_hidden(entries_by_id)
+	_assert_repeated_ground_visible(entries_by_id)
+	_assert_ground_overlays_hidden(entries_by_id)
 	_assert_landmark_aspect_ratios(entries_by_id)
+	_assert_reference_placements(entries_by_id)
 	_assert_right_facade_clearance(entries_by_id)
 	_finish()
 
@@ -83,11 +122,50 @@ func _assert_a_background_plate(entries_by_id: Dictionary) -> void:
 	_expect(
 		String(background.get("source", ""))
 			== String(EXPECTED_SOURCE_BY_ID["background_sky"]),
-		"Town must use the approved A background plate as its exact sky source."
+		"Town must use the clean approved A background plate as its exact sky source."
 	)
 	_expect(
 		bool(background.get("visible", false)),
-		"The approved A background plate must remain visible."
+		"The clean approved A background plate must remain visible."
+	)
+
+
+func _assert_locked_autumn_tree_material(entries_by_id: Dictionary) -> void:
+	var ancient_tree := _require_entry(entries_by_id, "background_ancient_town_tree")
+	if not ancient_tree.is_empty():
+		_expect(
+			String(ancient_tree.get("source", ""))
+				== String(EXPECTED_SOURCE_BY_ID["background_ancient_town_tree"]),
+			"The main autumn tree must use the isolated material from the locked A reference."
+		)
+		_expect(
+			bool(ancient_tree.get("visible", false)),
+			"The locked A main autumn tree must remain visible."
+		)
+	for entry_id_variant in entries_by_id:
+		var entry_id := String(entry_id_variant)
+		var entry := entries_by_id[entry_id] as Dictionary
+		if not bool(entry.get("visible", false)):
+			continue
+		var source := String(entry.get("source", ""))
+		_expect(
+			source not in FORBIDDEN_VISIBLE_FOREST_SOURCES,
+			"Green legacy/parallax forest material must never be visible: %s" % source
+	)
+
+
+func _assert_autumn_forest_canopy(entries_by_id: Dictionary) -> void:
+	var forest := _require_entry(entries_by_id, "background_forest")
+	if forest.is_empty():
+		return
+	_expect(
+		String(forest.get("source", ""))
+			== String(EXPECTED_SOURCE_BY_ID["background_forest"]),
+		"Town midground foliage must use the generated locked-A autumn canopy material."
+	)
+	_expect(
+		bool(forest.get("visible", false)),
+		"The autumn canopy layer must fill the empty roofline background."
 	)
 
 
@@ -102,6 +180,35 @@ func _assert_old_background_layers_hidden(entries_by_id: Dictionary) -> void:
 		)
 
 
+func _assert_repeated_ground_visible(entries_by_id: Dictionary) -> void:
+	for entry_id_variant in entries_by_id:
+		var entry_id := String(entry_id_variant)
+		var is_repeated_ground := false
+		for prefix in REPEATED_GROUND_PREFIXES:
+			if entry_id.begins_with(prefix):
+				is_repeated_ground = true
+				break
+		if not is_repeated_ground:
+			continue
+		var entry := entries_by_id[entry_id] as Dictionary
+		_expect(
+			bool(entry.get("visible", false)),
+			"Selectable road and bridge modules must assemble the approved A ground: %s"
+			% entry_id
+		)
+
+
+func _assert_ground_overlays_hidden(entries_by_id: Dictionary) -> void:
+	for entry_id in GROUND_OVERLAY_IDS:
+		var entry := _require_entry(entries_by_id, entry_id)
+		if entry.is_empty():
+			continue
+		_expect(
+			not bool(entry.get("visible", true)),
+			"Ground dressing must not repaint the restored road surface: %s" % entry_id
+		)
+
+
 func _assert_landmark_aspect_ratios(entries_by_id: Dictionary) -> void:
 	for entry_id in ASPECT_LOCKED_LANDMARK_IDS:
 		var entry := _require_entry(entries_by_id, entry_id)
@@ -111,13 +218,35 @@ func _assert_landmark_aspect_ratios(entries_by_id: Dictionary) -> void:
 		var actual_source := String(entry.get("source", ""))
 		_expect(
 			actual_source == expected_source,
-			"%s must use its expected modular_v3 source." % entry_id
+			"%s must use its expected locked-reference source." % entry_id
 		)
 		_expect(
 			bool(entry.get("visible", false)),
 			"%s must remain visible in the Town composition." % entry_id
 		)
 		_assert_target_aspect(entry_id, entry, expected_source)
+
+
+func _assert_reference_placements(entries_by_id: Dictionary) -> void:
+	for entry_id in EXPECTED_PLACEMENT_BY_ID:
+		var entry := _require_entry(entries_by_id, entry_id)
+		if entry.is_empty():
+			continue
+		var expected := EXPECTED_PLACEMENT_BY_ID[entry_id] as Dictionary
+		var position := entry.get("position", []) as Array
+		var target_size := entry.get("target_size", []) as Array
+		if position.size() == 2:
+			_expect(
+				Vector2(float(position[0]), float(position[1]))
+					== (expected["position"] as Vector2),
+				"%s must match the locked A reference position." % entry_id
+			)
+		if target_size.size() == 2:
+			_expect(
+				Vector2(float(target_size[0]), float(target_size[1]))
+					== (expected["target_size"] as Vector2),
+				"%s must match the locked A reference size." % entry_id
+			)
 
 
 func _assert_target_aspect(

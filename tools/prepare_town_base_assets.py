@@ -28,23 +28,27 @@ INNER_MARGIN = 4 * RUNTIME_SCALE
 CANDIDATE_BY_ID = {
 	"material_yard": "material_yard_front_style_b2.png",
 	"player_blacksmith": "player_forge_front_style_b2.png",
-	"eternal_flame": "eternal_flame_front_style_b2.png",
-	"battle_portal": "battle_portal_front_style_b2.png",
-	"town_hall": "town_hall_front_style_b2.png",
-	"sword_soul_shop": "sword_soul_shop_front_style_b2.png",
-	"equipment_blueprint_shop": "equipment_blueprint_shop_front_style_b2.png",
-	"far_east_residence": "far_east_residence_front_style_b2.png",
+	"eternal_flame": "eternal_forge_monument_base_v3.png",
+	"battle_portal": "battle_portal_base_v3.png",
+	"town_hall": "town_hall_front_style_base_v2.png",
+	"sword_soul_shop": "sword_soul_shop_front_style_base_v2.png",
+	"equipment_blueprint_shop": "equipment_blueprint_shop_front_style_base_v2.png",
+	"far_east_residence": "far_east_residence_front_style_base_v2.png",
 }
 
 RUNTIME_BY_ID = {
 	"material_yard": ROOT / "assets/town/modular_v2/buildings/material_yard.png",
 	"player_blacksmith": ROOT / "assets/town/modular_v2/buildings/player_forge.png",
-	"eternal_flame": ROOT / "assets/town/modular_v3/landmarks/eternal_forge_monument.png",
-	"battle_portal": ROOT / "assets/town/modular_v3/landmarks/battle_portal.png",
-	"town_hall": ROOT / "assets/town/modular_v2/buildings/town_hall.png",
-	"sword_soul_shop": ROOT / "assets/town/modular_v2/buildings/sword_soul_shop.png",
-	"equipment_blueprint_shop": ROOT / "assets/town/modular_v2/buildings/blueprint_research.png",
-	"far_east_residence": ROOT / "assets/town/modular_v2/buildings/east_residence.png",
+	"eternal_flame":
+		ROOT / "assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png",
+	"battle_portal":
+		ROOT / "assets/town/modular_v3/landmarks/battle_portal_base_v3.png",
+	"town_hall": ROOT / "assets/town/modular_v2/buildings/town_hall_base_v2.png",
+	"sword_soul_shop": ROOT / "assets/town/modular_v2/buildings/sword_soul_shop_base_v2.png",
+	"equipment_blueprint_shop":
+		ROOT / "assets/town/modular_v2/buildings/blueprint_research_base_v2.png",
+	"far_east_residence":
+		ROOT / "assets/town/modular_v2/buildings/east_residence_base_v2.png",
 }
 
 
@@ -98,6 +102,14 @@ def _prepare_candidate(
 		canvas.putpixel(corner, (0, 0, 0, 0))
 
 	target_path.parent.mkdir(parents=True, exist_ok=True)
+	if target_path.exists():
+		existing = Image.open(target_path).convert("RGBA")
+		if existing.size == canvas.size and existing.tobytes() == canvas.tobytes():
+			print(
+				f"{source_path.relative_to(ROOT)} -> "
+				f"{target_path.relative_to(ROOT)} unchanged"
+			)
+			return
 	canvas.save(target_path, "PNG", optimize=True)
 	print(
 		f"{source_path.relative_to(ROOT)} -> {target_path.relative_to(ROOT)} "

@@ -1527,27 +1527,36 @@ the HUD never reads gameplay state directly.
 - Owner：`TownBackdrop`
 - Data contract：`res://data/town_modular_layout.json`
 - Generator：`tools/build_town_modular_scene.py`
-- Status：Current — Hidden Design Component
+- Status：Current — Active Runtime Presentation
 - Responsibility：將同一個 `1942 × 809` source canvas 上的 72 個 background、
   ground、facility、landmark 與 street-prop entries 組成 editor-visible 的
   `Sprite2D` children。每個 child 保留穩定 object ID、source path、position、
   target size、z-index 與 interaction-owner metadata，方便逐件替換。
-- Runtime boundary：畫風 review 期間此 component hidden，不是 runtime
+- Runtime boundary：此 component 是 runtime
   presentation authority；六個建築入口仍由
   `TownBuildingEntrances.tscn` 擁有，戰鬥門仍由
   `TownPortalSet/BattleGateway` 擁有，碰撞、NPC 與 progression 不移入此 scene。
 - Visual style：`res://data/town_visual_style.json` 定義
   `storybook_handdrawn_pixel_v2` 的手繪墨線、紙張顆粒、木石色盤與統一光向；
-  `concept/town/main_horizontal_concept/town_style_direction_a_locked.png` 是
-  repository 內鎖定的 A 視覺基準。modular-v3 以單一明亮 A 遠景 plate 取代舊的
-  mountain／city／forest 混合疊層，古樹仍為 A 分件；不滅火炬與傳送門使用 B2
-  分件且保留來源比例。六棟建築以
+  `town_style_direction_a_locked.png` 是正式構圖基準。藍天山景 plate、
+  生成的繁盛秋林 canopy 與中央秋樹，共用
+  `a_locked_generated_autumn_layers_v2` 素材規則；綠色 legacy/parallax
+  forest 不得顯示。不滅熔爐與旋渦門改用
+  `base_material_yard_landmarks_v3`，保留火盆、符文塔與旋渦門辨識輪廓，但使用
+  與材料行一致的大型灰藍石塊、粗斷裂線稿、2–4 階明暗、中性 Base 光與結構
+  AO，禁止密集規整磚列與微小紋理噪點。上述分件與 16 塊道路／橋牆
+  各自可見，禁止再以
+  `town_eternal_forge_v1.png` 暖色整張城鎮圖充當背景。東側四棟建築使用以
+  材料行為 style reference 的 Base v2
+  source，以約 4× source-to-display pixel density 保留相同細節密度。六棟建築以
   `b2_front_right_orthographic` metadata 共用 B2 正面＋右側窄面視角。46 個
-  unique sources 中包含 18 個 visual-only B2 街景 dressing；12 個顯示，六個
-  東側大型遮擋物保留 hidden。舊 modular-v1 街具與浮空旗幟只保留 hidden stable
-  entries，不得進入 runtime composition。
-- Runtime authority：`TownBackdrop/EternalForgeConcept` 顯示 exact
-  `town_style_direction_a_locked.png`。它與 72 個分件不得同時顯示。
+  unique sources 中包含 18 個 visual-only B2 街景 dressing；道路頂緣固定
+  `y=660`，與 `y=672` gameplay baseline 重疊 12 px；會重畫地面的
+  `road_patch`、`curb_grass`、`fallen_leaves`、`drain_grate`、亮綠
+  `small_tree` 與六個東側大型遮擋物保留 hidden。舊 modular-v1 街具與浮空
+  旗幟只保留 hidden stable entries，不得進入 runtime composition。
+- Runtime authority：`TownBackdrop/ModularVisuals` 顯示 72 個核准分件；
+  `TownBackdrop/EternalForgeConcept` 保持 hidden，不得與分件同時顯示。
 - Design handoff：`tools/build_town_modular_figma_board.py` 讀取同一 JSON 與分件
   source，產生單頁 board；第一區鎖定 Image #2，第二區才放重組候選及可選取
   素材庫。候選未經核准不得切回 runtime。

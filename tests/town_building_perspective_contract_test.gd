@@ -19,17 +19,32 @@ const BUILDING_NODE_NAMES := {
 	"equipment_blueprint_shop": "EquipmentBlueprintShop",
 	"far_east_residence": "FarEastResidence",
 }
+const EXPECTED_BUILDING_SOURCE_BY_ID := {
+	"material_yard": "res://assets/town/modular_v2/buildings/material_yard.png",
+	"player_blacksmith": "res://assets/town/modular_v2/buildings/player_forge.png",
+	"town_hall": "res://assets/town/modular_v2/buildings/town_hall_base_v2.png",
+	"sword_soul_shop":
+		"res://assets/town/modular_v2/buildings/sword_soul_shop_base_v2.png",
+	"equipment_blueprint_shop":
+		"res://assets/town/modular_v2/buildings/blueprint_research_base_v2.png",
+	"far_east_residence":
+		"res://assets/town/modular_v2/buildings/east_residence_base_v2.png",
+}
 const EXPECTED_PERSPECTIVE_PROFILE := "b2_front_right_orthographic"
 const EXPECTED_BACKGROUND_PROFILE := "a_locked_autumn_panorama"
-const EXPECTED_LANDMARK_PROFILE := "b2_handdrawn_pixel_landmarks"
+const EXPECTED_BACKGROUND_TREE_PROFILE := "a_locked_generated_autumn_layers_v2"
+const EXPECTED_LANDMARK_PROFILE := "base_material_yard_landmarks_v3"
 const EXPECTED_COMPOSITION_SOURCE_BY_ID := {
 	"background_sky":
 		"res://assets/town/modular_v3/background/town_a_background_plate.png",
+	"background_forest":
+		"res://assets/town/modular_v3/background/autumn_forest_canopy_base_v2.png",
 	"background_ancient_town_tree":
-		"res://assets/town/modular_v3/background/ancient_town_tree.png",
+		"res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png",
 	"eternal_flame":
-		"res://assets/town/modular_v3/landmarks/eternal_forge_monument.png",
-	"battle_portal": "res://assets/town/modular_v3/landmarks/battle_portal.png",
+		"res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png",
+	"battle_portal":
+		"res://assets/town/modular_v3/landmarks/battle_portal_base_v3.png",
 }
 const EXPECTED_NEW_DRESSING_IDS := {
 	"market_stall": true,
@@ -81,8 +96,18 @@ func _run() -> void:
 		"Town background must use the locked approved A panorama profile."
 	)
 	_expect(
+		String(layout.get("background_tree_material_profile", ""))
+			== EXPECTED_BACKGROUND_TREE_PROFILE,
+		"Town background forest and main autumn tree must come from the locked A reference materials."
+	)
+	var variants := style.get("variants", {}) as Dictionary
+	_expect(
+		String(variants.get("background_trees", "")) == EXPECTED_BACKGROUND_TREE_PROFILE,
+		"Town visual style must lock the background forest and main autumn tree to the A reference materials."
+	)
+	_expect(
 		String(layout.get("landmark_style_profile", "")) == EXPECTED_LANDMARK_PROFILE,
-		"Town flame and portal must use the approved B landmark profile."
+		"Town flame and portal must use the locked A landmark profile."
 	)
 	_expect(
 		String(perspective.get("projection", "")) == "orthographic_pseudo_three_quarter",
@@ -125,6 +150,11 @@ func _run() -> void:
 					"res://assets/town/modular_v2/buildings/"
 				),
 				"%s must use a B2 modular building source." % layer_id
+			)
+			_expect(
+				String(layer.get("source", ""))
+					== String(EXPECTED_BUILDING_SOURCE_BY_ID[layer_id]),
+				"%s must use its approved MaterialYard-style Base source." % layer_id
 			)
 			_assert_building_aspect_ratio(layer_id, layer)
 		if EXPECTED_NEW_DRESSING_IDS.has(layer_id):

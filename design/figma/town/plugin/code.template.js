@@ -11,8 +11,8 @@ const B2_REVIEW_ITEMS = [
   ["sword_soul_shop_front_style_b2", "劍魂商 / SWORD SOUL SHOP", "BUILDING · FRONT STYLE · 250 × 217"],
   ["equipment_blueprint_shop_front_style_b2", "裝備圖紙商 / BLUEPRINT SHOP", "BUILDING · FRONT STYLE · 220 × 187"],
   ["far_east_residence_front_style_b2", "東郊民宅 / EAST RESIDENCE", "BUILDING · FRONT STYLE · 234 × 204"],
-  ["eternal_flame_front_style_b2", "不滅火炬 / ETERNAL FLAME", "LANDMARK · FRONT STYLE · 330 × 495"],
-  ["battle_portal_front_style_b2", "戰鬥傳送門 / BATTLE PORTAL", "LANDMARK · FRONT STYLE · 240 × 260"]
+  ["eternal_forge_monument_base_v3", "不滅火炬 / ETERNAL FLAME", "LANDMARK · MATERIAL-YARD BASE V3 · 345 × 560"],
+  ["battle_portal_base_v3", "戰鬥傳送門 / BATTLE PORTAL", "LANDMARK · MATERIAL-YARD BASE V3 · 200 × 240"]
 ];
 
 const C = {
@@ -469,7 +469,7 @@ async function buildB2Review(page) {
   await text(
     root,
     "Subtitle",
-    "Runtime composition｜背景維持 A｜八個 Base 主物件可獨立替換｜y=672 共用基線",
+    "Runtime composition｜Locked A 背景排版｜Base 前景可替換｜y=672 共用基線",
     102,
     126,
     25,

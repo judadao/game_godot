@@ -123,6 +123,7 @@ def build_scene(layout_path: Path, scene_path: Path) -> None:
 			f'metadata/layout_path = "res://{layout_path.relative_to(ROOT).as_posix()}"',
 			f'metadata/visual_style = "{payload.get("visual_style", "")}"',
 			f'metadata/building_perspective_profile = "{payload.get("building_perspective_profile", "")}"',
+			f'metadata/background_tree_material_profile = "{payload.get("background_tree_material_profile", "")}"',
 			f'metadata/map_width = {int(payload["map"]["width"])}',
 			f'metadata/map_height = {int(payload["map"]["height"])}',
 			f'metadata/gameplay_baseline_y = {float(payload["map"]["gameplay_baseline_y"]):g}',

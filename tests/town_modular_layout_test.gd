@@ -7,6 +7,8 @@ const SOURCE_PREFIXES := [
 	"res://assets/town/modular_v3/",
 ]
 const EXPECTED_MAP_SIZE := Vector2i(1942, 809)
+const EXPECTED_GAMEPLAY_BASELINE_Y := 672.0
+const EXPECTED_VISIBLE_ROAD_TOP_Y := 660.0
 const EXPECTED_FACILITY_IDS := {
 	"material_yard": true,
 	"player_blacksmith": true,
@@ -18,19 +20,19 @@ const EXPECTED_FACILITY_IDS := {
 	"far_east_residence": true,
 }
 const EXPECTED_SOURCES := {
-	"res://assets/town/modular_v3/background/ancient_town_tree.png": true,
+	"res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png": true,
+	"res://assets/town/modular_v3/background/autumn_forest_canopy_base_v2.png": true,
 	"res://assets/town/modular_v2/buildings/material_yard.png": true,
 	"res://assets/town/modular_v2/buildings/player_forge.png": true,
-	"res://assets/town/modular_v3/landmarks/eternal_forge_monument.png": true,
-	"res://assets/town/modular_v3/landmarks/battle_portal.png": true,
-	"res://assets/town/modular_v2/buildings/town_hall.png": true,
-	"res://assets/town/modular_v2/buildings/sword_soul_shop.png": true,
-	"res://assets/town/modular_v2/buildings/blueprint_research.png": true,
-	"res://assets/town/modular_v2/buildings/east_residence.png": true,
+	"res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png": true,
+	"res://assets/town/modular_v3/landmarks/battle_portal_base_v3.png": true,
+	"res://assets/town/modular_v2/buildings/town_hall_base_v2.png": true,
+	"res://assets/town/modular_v2/buildings/sword_soul_shop_base_v2.png": true,
+	"res://assets/town/modular_v2/buildings/blueprint_research_base_v2.png": true,
+	"res://assets/town/modular_v2/buildings/east_residence_base_v2.png": true,
 	"res://assets/town/modular_v3/background/town_a_background_plate.png": true,
 	"res://assets/town/modular_v1/background/mountain_layer.png": true,
 	"res://assets/town/modular_v1/background/castle_layer.png": true,
-	"res://assets/town/modular_v1/background/forest_layer.png": true,
 	"res://assets/town/modular_v1/ground/stone_road_tile.png": true,
 	"res://assets/town/modular_v1/ground/bridge_wall_tile.png": true,
 	"res://assets/town/modular_v1/props/street_lantern.png": true,
@@ -133,7 +135,7 @@ func _run() -> void:
 		"Town modular layout must preserve the 1942x809 source canvas."
 	)
 	_expect(
-		int(map_data.get("gameplay_baseline_y", -1)) == 672,
+		float(map_data.get("gameplay_baseline_y", -1)) == EXPECTED_GAMEPLAY_BASELINE_Y,
 		"Town modular layout must preserve the existing y=672 gameplay baseline."
 	)
 
@@ -181,6 +183,7 @@ func _run() -> void:
 
 	_assert_interaction_owners(entries_by_id)
 	_assert_repeated_ground_modules(layers)
+	_assert_visible_ground_overlap(layers)
 	_finish()
 
 
@@ -293,6 +296,7 @@ func _assert_interaction_owners(entries_by_id: Dictionary) -> void:
 func _assert_repeated_ground_modules(layers: Array) -> void:
 	var road_ids: Dictionary = {}
 	var bridge_ids: Dictionary = {}
+	var visible_ground_ids: Dictionary = {}
 	for entry_variant in layers:
 		if not entry_variant is Dictionary:
 			continue
@@ -300,10 +304,51 @@ func _assert_repeated_ground_modules(layers: Array) -> void:
 		var source := String(entry.get("source", ""))
 		if source.ends_with("/ground/stone_road_tile.png"):
 			road_ids[String(entry.get("id", ""))] = true
+			if bool(entry.get("visible", false)):
+				visible_ground_ids[String(entry.get("id", ""))] = true
 		elif source.ends_with("/ground/bridge_wall_tile.png"):
 			bridge_ids[String(entry.get("id", ""))] = true
+			if bool(entry.get("visible", false)):
+				visible_ground_ids[String(entry.get("id", ""))] = true
 	_expect(road_ids.size() >= 8, "Town road must be assembled from at least eight selectable modules.")
 	_expect(bridge_ids.size() >= 8, "Town bridge wall must be assembled from at least eight selectable modules.")
+	_expect(
+		visible_ground_ids.size() == road_ids.size() + bridge_ids.size(),
+		"Every selectable road and bridge module must remain visible in the approved A layout."
+	)
+
+
+func _assert_visible_ground_overlap(layers: Array) -> void:
+	for entry_variant in layers:
+		if not entry_variant is Dictionary:
+			continue
+		var entry := entry_variant as Dictionary
+		var source := String(entry.get("source", ""))
+		var position := entry.get("position", []) as Array
+		var target_size := entry.get("target_size", []) as Array
+		if position.size() != 2 or target_size.size() != 2:
+			continue
+		var top_y := float(position[1]) - float(target_size[1]) * 0.5
+		var bottom_y := float(position[1]) + float(target_size[1]) * 0.5
+		if source.ends_with("/ground/stone_road_tile.png"):
+			_expect(
+				is_equal_approx(top_y, EXPECTED_VISIBLE_ROAD_TOP_Y),
+				(
+					"Visible road must begin 12 px above the gameplay baseline so "
+					+ "building and character feet overlap the floor instead of exposing a gap: %s"
+				)
+				% String(entry.get("id", ""))
+			)
+			_expect(
+				is_equal_approx(bottom_y, EXPECTED_VISIBLE_ROAD_TOP_Y + 48.0),
+				"Raised road height must remain 48 px: %s" % String(entry.get("id", ""))
+			)
+		elif source.ends_with("/ground/bridge_wall_tile.png"):
+			_expect(
+				is_equal_approx(top_y, EXPECTED_VISIBLE_ROAD_TOP_Y + 48.0),
+				"Bridge wall must join the raised road without a horizontal seam: %s"
+				% String(entry.get("id", ""))
+			)
 
 
 func _finish() -> void:

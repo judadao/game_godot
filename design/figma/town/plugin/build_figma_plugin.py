@@ -20,10 +20,20 @@ B2_REFERENCE = (
 	ROOT / "concept/town/main_horizontal_concept/town_style_direction_a_locked.png"
 )
 BASE_MAP_PREVIEW = (
-	ROOT / "output/playwright/town_objects/town_base_reconstructed_map.png"
+	ROOT / "output/playwright/town_objects/town_modular_reconstructed_map.png"
 )
 TEMPLATE_PATH = PLUGIN_DIR / "code.template.js"
 OUTPUT_PATH = PLUGIN_DIR / "code.js"
+B2_REVIEW_STEMS = [
+	"material_yard_front_style_b2",
+	"player_forge_front_style_b2",
+	"town_hall_front_style_base_v2",
+	"sword_soul_shop_front_style_base_v2",
+	"equipment_blueprint_shop_front_style_base_v2",
+	"far_east_residence_front_style_base_v2",
+	"eternal_forge_monument_base_v3",
+	"battle_portal_base_v3",
+]
 
 
 def _base64_review_png(path: Path, max_size: tuple[int, int]) -> str:
@@ -56,8 +66,8 @@ def main() -> None:
 		for path in sorted(TOWN_DIR.glob("*.png"))
 	}
 	b2_assets = {
-		path.stem: _base64_review_png(path, (760, 760))
-		for path in sorted(B2_DIR.glob("*.png"))
+		stem: _base64_review_png(B2_DIR / f"{stem}.png", (760, 760))
+		for stem in B2_REVIEW_STEMS
 	}
 	if len(b2_assets) != 8:
 		raise ValueError(f"Expected 8 Town B2 candidates, found {len(b2_assets)}")

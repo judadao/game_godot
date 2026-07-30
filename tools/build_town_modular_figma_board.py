@@ -297,11 +297,11 @@ def build_board(
 		f'height="{reference.height}" href="{_png_data_uri(reference)}"/>'
 	)
 	parts.append("</defs>")
-	_svg_text(parts, "TOWN / A BACKGROUND + OBJECT REVIEW", 100, 102, 54, TEXT, 700)
+	_svg_text(parts, "TOWN / LOCKED A + BASE OBJECT REVIEW", 100, 102, 54, TEXT, 700)
 	_svg_text(
 		parts,
 		(
-			"01 鎖定 Image #2 為唯一畫風基準｜"
+			"01 鎖定 Image #2 藍天秋樹排版｜"
 			"02 分件候選不再直接進 runtime｜"
 			f"風格：{payload.get('visual_style', 'unspecified')}｜"
 			"下方素材皆可在 Figma 單獨選取與討論"
@@ -311,7 +311,7 @@ def build_board(
 		24,
 		MUTED,
 	)
-	_svg_text(parts, "01 / LOCKED A BASELINE — IMAGE #2", reference_x, reference_y - 34, 32, ACCENT, 700)
+	_svg_text(parts, "01 / LOCKED A BACKGROUND + GROUND", reference_x, reference_y - 34, 32, ACCENT, 700)
 	parts.append(
 		f'<rect x="{reference_x:g}" y="{reference_y:g}" '
 		f'width="{reference_width:g}" height="{reference_height:g}" '

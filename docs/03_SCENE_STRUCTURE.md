@@ -337,8 +337,22 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 - `TownModularVisuals` 的 46 個來源素材遵循
   `data/town_visual_style.json`；中央古樹保有自己的 source 與 object ID，
   可獨立替換且不建立 collision。
-- `background_sky`、古樹、火炬與傳送門保留 stable ID 與比例 contract，並
-  參與 runtime composition；背景來源未在本輪重繪。
+- `background_sky` 使用
+  `assets/town/modular_v3/background/town_a_background_plate.png`，提供
+  locked A 的藍天、白雲與群山；`background_forest` 改用生成的
+  `autumn_forest_canopy_base_v2.png` 填滿屋頂後方空隙，中央大秋樹使用
+  `autumn_ancient_tree_base_v2.png`。兩層只允許金黃、橘、赭紅與深褐，
+  綠色 `forest_layer.png` 與
+  `parallax_forest_strip_v3.png` 不得顯示。古樹、Base v3 熔爐、旋渦門、八塊
+  道路與八塊橋牆各自是可見獨立 layer；熔爐與旋渦門實際 source 必須是
+  MaterialYard-style Base v3 版本；地標必須使用與材料行相同大小的像素群塊、
+  大型不規則石塊、粗斷線與 2–4 階明暗，不得使用細密規整磚紋。道路視覺頂緣
+  固定為 `y=660`，在不改 `y=672` gameplay baseline 的情況下提供 12 px 貼地
+  重疊。不得使用整張暖色城鎮 composite，
+  也不得讓同一地標或地板同時由兩個 layer 繪製。
+- 村長家、劍魂商、裝備圖紙商與東郊民宅使用 MaterialYard-style
+  `*_base_v2.png`，以約 4× source-to-display pixel density 顯示並共同落在
+  `y=672` foundation；不得為塞入東側而縮成低精細度小屋。
 - 分件候選街景只允許 modular-v2 B2 source。舊 modular-v1 街具、
   `hanging_banner_*`，以及會遮住東側建築的 laundry／trough／woodpile／signpost／
   shrub／ivy entries 僅保留 hidden stable entries，不得出現在 runtime。
@@ -348,6 +362,9 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 - 新增的市場攤、籃筐、曬衣線、桌椅、麻袋、工具架、花槽、水槽、木柴、
   路牌與八個地面／植栽 dressing 都屬 visual-only，不得加入 `Interactives`、
   collision 或 service metadata。
+- `road_patch`、`curb_grass`、`fallen_leaves` 與 `drain_grate` 必須 hidden，
+  避免在連續石橋道路上再畫第二種地面材質；亮綠 `small_tree` 也必須 hidden，
+  避免破壞 locked A 的秋季古樹色盤。
 - `TownBackdrop` 只 instance 視覺 layer；modular Base runtime visible，
   locked A 概念圖 hidden，不處理經濟或 Portal。
 - ground/collision分開，視覺改動不得隱式改physics。

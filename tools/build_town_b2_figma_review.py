@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCE_PATH = (
-	ROOT / "output/playwright/town_objects/town_base_reconstructed_map.png"
+	ROOT / "output/playwright/town_objects/town_modular_reconstructed_map.png"
 )
 LAYOUT_PATH = ROOT / "data/town_modular_layout.json"
 OUTPUT_PATH = ROOT / "design/figma/town/town_base_building_landmark_map_review.svg"
@@ -54,48 +54,48 @@ CANDIDATES = [
 		"layout_id": "town_hall",
 		"name": "村長家 / TOWN HALL",
 		"kind": "BUILDING",
-		"target": "280 × 249",
-		"path": "design/figma/town/b2_front_style_candidates/town_hall_front_style_b2.png",
+		"target": "342 × 288",
+		"path": "design/figma/town/b2_front_style_candidates/town_hall_front_style_base_v2.png",
 	},
 	{
 		"id": "sword_soul_shop",
 		"layout_id": "sword_soul_shop",
 		"name": "劍魂商 / SWORD SOUL SHOP",
 		"kind": "BUILDING",
-		"target": "250 × 217",
-		"path": "design/figma/town/b2_front_style_candidates/sword_soul_shop_front_style_b2.png",
+		"target": "334 × 295",
+		"path": "design/figma/town/b2_front_style_candidates/sword_soul_shop_front_style_base_v2.png",
 	},
 	{
 		"id": "equipment_blueprint_shop",
 		"layout_id": "equipment_blueprint_shop",
 		"name": "裝備圖紙商 / BLUEPRINT SHOP",
 		"kind": "BUILDING",
-		"target": "220 × 187",
-		"path": "design/figma/town/b2_front_style_candidates/equipment_blueprint_shop_front_style_b2.png",
+		"target": "334 × 295",
+		"path": "design/figma/town/b2_front_style_candidates/equipment_blueprint_shop_front_style_base_v2.png",
 	},
 	{
 		"id": "far_east_residence",
 		"layout_id": "far_east_residence",
 		"name": "東郊民宅 / EAST RESIDENCE",
 		"kind": "BUILDING",
-		"target": "234 × 204",
-		"path": "design/figma/town/b2_front_style_candidates/far_east_residence_front_style_b2.png",
+		"target": "298 × 331",
+		"path": "design/figma/town/b2_front_style_candidates/far_east_residence_front_style_base_v2.png",
 	},
 	{
 		"id": "eternal_flame",
 		"layout_id": "eternal_flame",
 		"name": "不滅火炬 / ETERNAL FLAME",
 		"kind": "LANDMARK",
-		"target": "330 × 495",
-		"path": "design/figma/town/b2_front_style_candidates/eternal_flame_front_style_b2.png",
+		"target": "345 × 560",
+		"path": "assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png",
 	},
 	{
 		"id": "battle_portal",
 		"layout_id": "battle_portal",
 		"name": "戰鬥傳送門 / BATTLE PORTAL",
 		"kind": "LANDMARK",
-		"target": "240 × 260",
-		"path": "design/figma/town/b2_front_style_candidates/battle_portal_front_style_b2.png",
+		"target": "200 × 240",
+		"path": "assets/town/modular_v3/landmarks/battle_portal_base_v3.png",
 	},
 ]
 
@@ -172,7 +172,7 @@ def _load_map_layers() -> tuple[
 	payload = json.loads(LAYOUT_PATH.read_text(encoding="utf-8"))
 	map_size = (int(payload["map"]["width"]), int(payload["map"]["height"]))
 	visible_layers = [layer for layer in payload["layers"] if bool(layer["visible"])]
-	layer_by_id = {str(layer["id"]): layer for layer in visible_layers}
+	layer_by_id = {str(layer["id"]): layer for layer in payload["layers"]}
 	layout_ids = {str(candidate["layout_id"]) for candidate in CANDIDATES}
 
 	missing = sorted(layout_ids - set(layer_by_id))
@@ -198,6 +198,8 @@ def _load_map_layers() -> tuple[
 	map_objects: list[tuple[dict[str, Any], Image.Image]] = []
 	for candidate in CANDIDATES:
 		layer = layer_by_id[str(candidate["layout_id"])]
+		if not bool(layer["visible"]):
+			continue
 		image = Image.open(_resource_file(str(layer["source"]))).convert("RGBA")
 		map_objects.append((layer, image))
 	map_objects.sort(key=lambda item: int(item[0]["z_index"]))
@@ -254,7 +256,7 @@ def _build_svg(
 	_text(parts, "TOWN / BASE MODULAR BUILDINGS + TOWN MAP", 100, 100, 54, TEXT, 700)
 	_text(
 		parts,
-		"Runtime composition｜背景維持 A｜八個 Base 主物件可獨立替換｜y=672 共用基線",
+		"Runtime composition｜Locked A 背景排版｜Base 前景可替換｜y=672 共用基線",
 		102,
 		154,
 		25,
