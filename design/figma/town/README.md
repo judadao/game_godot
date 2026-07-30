@@ -7,8 +7,9 @@
   分件素材庫。
 - `town_b2_building_landmark_review.svg`：六棟 B2 建築、不滅火炬與戰鬥傳送門
   的單頁審稿板。此檔只供逐件核准，未接入 runtime。
-- `b2_front_style_candidates/`：目前八個嚴格正面朝向、手繪光影與低 AI
-  痕跡的透明 PNG；配色可依功能調整，但共用同一筆觸與明度語言。
+- `b2_front_style_candidates/`：目前八個嚴格正面朝向、低 AI 痕跡的透明
+  PNG；材料行已改為可供 Godot 疊加手繪光罩的中性 Base，其餘物件會沿用相同
+  像素群塊、斷裂線稿與固有色規則重繪。
 - `b2_front_candidates/`：保留的正面透視基礎版，用於比對風格轉換是否改壞造型。
 - `b2_candidates/`：保留的舊 3/4 視角候選，不再作為目前審稿來源。
 - `CODEX_RESTART_HANDOFF.md`：重開 Codex 後的完整續作紀錄。
