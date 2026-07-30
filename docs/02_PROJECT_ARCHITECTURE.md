@@ -324,7 +324,8 @@ UI 對上層提供 setter/configure API與 typed signals：
 - `MaterialYardUI`：依 Eternal Torch／village stage 解鎖的鍛造材料與永久工具。
 - `PlayerBlacksmithUI`：圖紙鍛造、blacksmith 等級、Sword Soul 升級與裝備販售桌。
 - `TownHallUI`：village stage、總建築等級、Town Hall 成本與升級操作。
-- `PauseMenu`：emit save/load/settings/quit 等 intent。
+- `PauseMenu`：emit save/load/settings/exit-combat/quit 等 intent；Game 只在 active
+  combat Run 啟用退出戰鬥，接收 intent 後以失敗結算保留已得資源並回 Town。
 
 三個功能建築 UI 都是 editor-authored Full Rect Scene，由
 `Game._open_town_service_ui()` 依 `service_id` 選擇，並透過 `set_context()` 與

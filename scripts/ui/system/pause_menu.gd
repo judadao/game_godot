@@ -9,12 +9,14 @@ signal inventory_requested
 signal save_requested
 signal load_requested
 signal settings_requested
+signal exit_combat_requested
 signal quit_requested
 
 @onready var continue_button: Button = $MenuPanel/Content/ButtonStack/Continue
 @onready var inventory_button: Button = $MenuPanel/Content/ButtonStack/Inventory
 @onready var save_button: Button = $MenuPanel/Content/ButtonStack/Save
 @onready var load_button: Button = $MenuPanel/Content/ButtonStack/Load
+@onready var exit_combat_button: Button = $MenuPanel/Content/ButtonStack/ExitCombat
 @onready var settings_button: Button = $MenuPanel/Content/ButtonStack/Settings
 @onready var quit_button: Button = $MenuPanel/Content/ButtonStack/Quit
 @onready var button_stack: VBoxContainer = $MenuPanel/Content/ButtonStack
@@ -31,6 +33,7 @@ func _ready() -> void:
 	inventory_button.pressed.connect(inventory_requested.emit)
 	save_button.pressed.connect(save_requested.emit)
 	load_button.pressed.connect(load_requested.emit)
+	exit_combat_button.pressed.connect(exit_combat_requested.emit)
 	settings_button.pressed.connect(_open_settings)
 	settings_back.pressed.connect(_close_settings)
 	master_volume.value_changed.connect(_set_master_volume)
@@ -70,6 +73,8 @@ func set_button_enabled(button_name: String, is_enabled: bool) -> void:
 			save_button.disabled = not is_enabled
 		"load":
 			load_button.disabled = not is_enabled
+		"exit_combat", "exit combat":
+			exit_combat_button.disabled = not is_enabled
 		"settings":
 			settings_button.disabled = not is_enabled
 		"quit":

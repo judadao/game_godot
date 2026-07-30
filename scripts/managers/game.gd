@@ -669,12 +669,37 @@ func _wire_common_ui_controls(ui_control: Control) -> void:
 		ui_control.connect("save_requested", _save_quick_slot.bind(ui_control))
 	if ui_control.has_signal("load_requested"):
 		ui_control.connect("load_requested", _load_quick_slot.bind(ui_control))
+	if ui_control.has_signal("exit_combat_requested"):
+		ui_control.connect(
+			"exit_combat_requested",
+			_on_pause_exit_combat_requested.bind(ui_control)
+		)
 	if ui_control.has_method("set_button_enabled"):
 		ui_control.call("set_button_enabled", "load", FileAccess.file_exists(QUICK_SAVE_PATH))
+		ui_control.call("set_button_enabled", "exit_combat", _can_exit_active_combat())
 
 	var quit_button := ui_control.find_child("Quit", true, false)
 	if quit_button is BaseButton:
 		(quit_button as BaseButton).pressed.connect(get_tree().quit)
+
+
+func _can_exit_active_combat() -> bool:
+	return (
+		run_state.active
+		and _current_map_matches(AUTUMN_FOREST_SCENE_PATH)
+	)
+
+
+func _on_pause_exit_combat_requested(pause_ui: Control) -> void:
+	if not _can_exit_active_combat():
+		return
+	close_ui(pause_ui)
+	_finish_run(false)
+	_pending_player_state.clear()
+	player = null
+	load_current_map(
+		load(_resolve_main_scene_path(TOWN_SCENE_PATH)) as PackedScene
+	)
 
 
 func _wire_ui_lifecycle(ui_control: Control) -> void:

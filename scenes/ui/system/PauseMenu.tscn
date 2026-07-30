@@ -164,6 +164,19 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 text = "Load Game"
 
+[node name="ExitCombat" type="Button" parent="MenuPanel/Content/ButtonStack"]
+custom_minimum_size = Vector2(240, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.9, 0.8, 1)
+theme_override_colors/font_hover_color = Color(1, 0.94, 0.79, 1)
+theme_override_colors/font_disabled_color = Color(0.46, 0.43, 0.39, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+text = "Exit Combat"
+disabled = true
+
 [node name="Settings" type="Button" parent="MenuPanel/Content/ButtonStack"]
 custom_minimum_size = Vector2(240, 44)
 layout_mode = 2

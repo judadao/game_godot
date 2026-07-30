@@ -683,7 +683,7 @@ mode 不顯示額外模式列，Close 固定於右上 header。各 screen 可依
 
 Current `PauseMenu`：
 
-- Continue、Inventory、Save、Load、Settings、Quit
+- Continue、Inventory、Save、Load、Exit Combat、Settings、Quit
 - Master bus volume
 - fullscreen toggle
 - settings/button stack focus switching
@@ -694,6 +694,9 @@ Current `PauseMenu`：
 - UI root 用 `PROCESS_MODE_ALWAYS`，paused 時仍可操作。
 - nested screen 開關後 focus 回到合理 owner。
 - Save/Load feedback顯示在 footer，但不得假裝 save 成功。
+- Exit Combat 永遠保留在 ButtonStack；只有 active Run 且位於正式戰鬥地圖時
+  可操作，其他地圖使用真正的 `disabled` 狀態反灰。觸發後由 Game 以撤退結算
+  本輪並直接載入 Town，PauseMenu 不直接存取 RunState。
 - 音量目前未確認持久化，文件不得聲稱設定會跨啟動保存。
 
 ## 16. Responsive Design
