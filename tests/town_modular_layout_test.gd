@@ -14,6 +14,7 @@ const EXPECTED_FACILITY_IDS := {
 	"far_east_residence": true,
 }
 const EXPECTED_SOURCES := {
+	"res://assets/town/modular_v1/background/ancient_town_tree.png": true,
 	"res://assets/town/modular_v1/buildings/material_yard.png": true,
 	"res://assets/town/modular_v1/buildings/player_forge.png": true,
 	"res://assets/town/modular_v1/landmarks/eternal_forge_monument.png": true,
@@ -120,7 +121,7 @@ func _run() -> void:
 		_finish()
 		return
 	var layers := layers_variant as Array
-	_expect(layers.size() == 53, "Town modular layout must expose exactly 53 assembled objects.")
+	_expect(layers.size() == 54, "Town modular layout must expose exactly 54 assembled objects.")
 
 	var ids: Dictionary = {}
 	var sources: Dictionary = {}

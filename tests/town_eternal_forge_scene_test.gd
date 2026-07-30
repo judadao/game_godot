@@ -55,8 +55,8 @@ func _run() -> void:
 		var object_ids: Dictionary = {}
 		var modular_sprites := modular.find_children("*", "Sprite2D", true, false)
 		_expect(
-			modular_sprites.size() == 53,
-			"Town modular scene must expose all 53 independently replaceable instances."
+			modular_sprites.size() == 54,
+			"Town modular scene must expose all 54 independently replaceable instances."
 		)
 		for sprite_variant in modular_sprites:
 			var sprite := sprite_variant as Sprite2D

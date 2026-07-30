@@ -277,10 +277,14 @@ def build_board(layout_path: Path, output_path: Path, preview_path: Path) -> Non
 			f'href="{_png_data_uri(image)}"/>'
 		)
 	parts.append("</defs>")
-	_svg_text(parts, "TOWN / MODULAR OBJECT MAP", 100, 102, 54, TEXT, 700)
+	_svg_text(parts, "TOWN / HAND-DRAWN MODULAR OBJECT MAP", 100, 102, 54, TEXT, 700)
 	_svg_text(
 		parts,
-		"每個畫面元素都是有 ID 的獨立物件｜上方為同一批物件重組地圖｜下方為可替換素材庫",
+		(
+			"每個畫面元素都是有 ID 的獨立物件｜"
+			f"風格：{payload.get('visual_style', 'unspecified')}｜"
+			"上方為重組地圖｜下方為可替換素材庫"
+		),
 		102,
 		152,
 		24,

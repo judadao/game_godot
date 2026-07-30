@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "visual_style": "storybook_handdrawn_pixel_v2",
   "map": {
     "id": "town_eternal_forge_modular_v1",
     "width": 1942,
@@ -62,6 +63,22 @@
       "position": [971, 506],
       "target_size": [1942, 332],
       "z_index": -85,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "background_ancient_town_tree",
+      "category": "background",
+      "source": "res://assets/town/modular_v1/background/ancient_town_tree.png",
+      "position": [1030, 385],
+      "target_size": [760, 690],
+      "z_index": -84,
       "visible": true,
       "interaction_ownership": {
         "mode": "none",

@@ -186,7 +186,7 @@ Town canonical scene另有：
 
 Town gameplay world 維持 `1942 × 720` 與 `y=672` baseline。Town 視覺的
 authoring authority 是 `res://data/town_modular_layout.json`：它在
-`1942 × 809` source canvas 定義 53 個 background、ground、facility、landmark
+`1942 × 809` source canvas 定義 54 個 background、ground、facility、landmark
 與 street-prop entries，每個 entry 都有穩定 ID、source、position、尺寸與
 z-index。`tools/build_town_modular_scene.py` 將資料生成為靜態
 `TownModularVisuals.tscn`；`TownBackdrop` instance 該 scene，因此每個物件可在
@@ -328,7 +328,10 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 ### 6.2 Component responsibility
 
 - `TownModularVisuals` 是由 `data/town_modular_layout.json` 生成的靜態視覺
-  composition；53 個 Sprite entries 可分別選取，但不擁有互動、碰撞或 progression。
+  composition；54 個 Sprite entries 可分別選取，但不擁有互動、碰撞或 progression。
+- `TownModularVisuals` 的 28 個來源素材遵循
+  `data/town_visual_style.json`；中央古樹保有自己的 source 與 object ID，
+  可獨立替換且不建立 collision。
 - `TownBackdrop` 只 instance 視覺 layer；舊合成概念圖保留但 runtime hidden，
   不處理經濟或 Portal。
 - ground/collision分開，視覺改動不得隱式改physics。

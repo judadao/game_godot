@@ -15,7 +15,7 @@
 ## World layout
 
 The Eternal Forge town keeps a 1942x720 gameplay world and a y=672 baseline.
-Its visual source canvas is 1942x809 and is assembled from the 53 independently
+Its visual source canvas is 1942x809 and is assembled from the 54 independently
 replaceable entries in `data/town_modular_layout.json`. Existing canonical map
 identity, portal targets, spawn transfer, HUD adoption, camera, collision, and save
 contracts remain unchanged.
@@ -34,10 +34,11 @@ contracts remain unchanged.
 ## Asset batches
 
 All runtime Town presentation sources live under `assets/town/modular_v1/`.
-The 27 unique PNG sources are reused as 53 selectable scene entries:
+The 28 unique PNG sources are reused as 54 selectable scene entries:
 
 1. `background/`
-   - `sky.png`, `mountain_layer.png`, `castle_layer.png`, `forest_layer.png`.
+   - `sky.png`, `mountain_layer.png`, `castle_layer.png`, `forest_layer.png`, and the
+     independently replaceable `ancient_town_tree.png`.
 2. `ground/`
    - `stone_road_tile.png` and `bridge_wall_tile.png`, each instanced as eight
      independently replaceable modules.
@@ -53,7 +54,10 @@ The 27 unique PNG sources are reused as 53 selectable scene entries:
 ## Scene architecture
 
 - `town.tscn` owns zoning, spawn markers, background, ground and world collision.
-- `data/town_modular_layout.json` is the single 53-entry visual layout contract.
+- `data/town_modular_layout.json` is the single 54-entry visual layout contract.
+- `data/town_visual_style.json` defines the shared hand-inked storybook pixel-art
+  palette, lighting direction, paper-grain surface treatment, concept source, and
+  exact 28-source coverage.
 - `tools/build_town_modular_scene.py` generates the static, editor-visible
   `scenes/maps/town/components/TownModularVisuals.tscn`; runtime does not rebuild
   authored Town layout from script.
@@ -90,7 +94,7 @@ The 27 unique PNG sources are reused as 53 selectable scene entries:
 - Every shop, dialogue and portal can be reached by keyboard.
 - Town BattleGateway enters the portal hub and the hub return interaction restores Town.
 - Background and ground cover the full camera width at every supported window size.
-- The generated scene exposes exactly 53 stable object IDs across background, ground,
+- The generated scene exposes exactly 54 stable object IDs across background, ground,
   facility, landmark, and street-prop groups.
 - The Figma board and `TownModularVisuals.tscn` are regenerated from the same JSON
   instead of maintaining separate placement data.

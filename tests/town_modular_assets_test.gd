@@ -2,8 +2,8 @@ extends SceneTree
 
 const LAYOUT_PATH := "res://data/town_modular_layout.json"
 const MODULAR_SCENE_PATH := "res://scenes/maps/town/components/TownModularVisuals.tscn"
-const EXPECTED_LAYER_COUNT := 53
-const EXPECTED_SOURCE_COUNT := 27
+const EXPECTED_LAYER_COUNT := 54
+const EXPECTED_SOURCE_COUNT := 28
 const TRANSPARENT_ALPHA_MAX := 0.001
 const OPAQUE_ALPHA_MIN := 0.99
 
@@ -154,6 +154,10 @@ func _assert_generated_scene(layers: Array) -> void:
 	if packed == null:
 		return
 	var instance := packed.instantiate()
+	_expect(
+		instance.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST,
+		"TownModularVisuals must use nearest filtering so hand-drawn pixel clusters stay crisp."
+	)
 	var sprites := instance.find_children("*", "Sprite2D", true, false)
 	_expect(
 		sprites.size() == layers.size(),

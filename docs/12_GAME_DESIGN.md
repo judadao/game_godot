@@ -627,12 +627,15 @@ total-building-level threshold 為 0、3、7。Town 六棟建築的互動範圍�
 
 Town presentation 維持 `1942 × 720` gameplay world 與單一中央不滅火炬，但
 不再依賴一張 runtime baked 圖。`data/town_modular_layout.json` 以
-`1942 × 809` source canvas 定義 53 個可替換視覺物件，並生成靜態
+`1942 × 809` source canvas 定義 54 個可替換視覺物件，並生成靜態
 `TownModularVisuals.tscn` 供 `TownBackdrop` 顯示。地點由左至右仍為材料行、
 主角鐵匠鋪、不滅火炬、戰鬥傳送門、村長家、劍魂商、裝備圖紙商與東郊民宅。
 舊合成圖只作 hidden compatibility reference；NPC、建築入口、Portal、碰撞與
 progression 仍是獨立 scene authority。替換房屋、地板、火炬或街道 props
 只改變 presentation，不代表新增服務、互動或玩法。
+所有 Town 分件採 `storybook_handdrawn_pixel_v2`：低飽和苔綠、木褐、砂岩與
+陶瓦為主色，冷苔炭色作環境陰影、暖蜜色作左上主光，藍紫魔法只保留為局部功能
+焦點。中央古樹是無碰撞的獨立視覺物件，用來建立手繪村落的自然遮蔭與生活感。
 
 Town 不再直接排列各戰區傳送門，也不保留東西 fast travel。唯一的
 `BattleGateway` 進入 `battle_portal_hub.tscn`：大廳左右各兩個戰區入口，中央

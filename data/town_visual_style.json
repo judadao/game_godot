@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "id": "storybook_handdrawn_pixel_v2",
+  "concept_art": "res://concept/town/main_horizontal_concept/town_handdrawn_pixel_v2.png",
+  "palette": {
+    "ink_charcoal": "#292522",
+    "moss_shadow": "#4c542d",
+    "leaf_light": "#7e8f3f",
+    "bark_umber": "#7e5b41",
+    "sandstone": "#ad8e68",
+    "parchment": "#cac5aa",
+    "muted_teal_sky": "#2f7d86",
+    "terracotta": "#9a5e35",
+    "warm_honey_light": "#d7a85c"
+  },
+  "rendering": {
+    "linework": "hand_inked_irregular",
+    "surface_texture": "subtle_paper_grain",
+    "pixel_treatment": "painterly_clustered",
+    "shape_language": "lived_in_timber_and_stone",
+    "magic_accent_policy": "restrained_focal_only"
+  },
+  "lighting": {
+    "key_direction": "upper_left",
+    "ambient_shadow": "cool_moss_charcoal",
+    "highlight": "warm_honey",
+    "window_and_forge_glow": "localized_amber"
+  },
+  "asset_sources": [
+    "res://assets/town/modular_v1/background/ancient_town_tree.png",
+    "res://assets/town/modular_v1/background/castle_layer.png",
+    "res://assets/town/modular_v1/background/forest_layer.png",
+    "res://assets/town/modular_v1/background/mountain_layer.png",
+    "res://assets/town/modular_v1/background/sky.png",
+    "res://assets/town/modular_v1/buildings/blueprint_research.png",
+    "res://assets/town/modular_v1/buildings/east_residence.png",
+    "res://assets/town/modular_v1/buildings/material_yard.png",
+    "res://assets/town/modular_v1/buildings/player_forge.png",
+    "res://assets/town/modular_v1/buildings/sword_soul_shop.png",
+    "res://assets/town/modular_v1/buildings/town_hall.png",
+    "res://assets/town/modular_v1/ground/bridge_wall_tile.png",
+    "res://assets/town/modular_v1/ground/stone_road_tile.png",
+    "res://assets/town/modular_v1/landmarks/battle_portal.png",
+    "res://assets/town/modular_v1/landmarks/eternal_forge_monument.png",
+    "res://assets/town/modular_v1/props/civic_bench.png",
+    "res://assets/town/modular_v1/props/civic_well.png",
+    "res://assets/town/modular_v1/props/east_flower_bed.png",
+    "res://assets/town/modular_v1/props/forge_anvil.png",
+    "res://assets/town/modular_v1/props/forge_brazier.png",
+    "res://assets/town/modular_v1/props/forge_cart.png",
+    "res://assets/town/modular_v1/props/hanging_banner.png",
+    "res://assets/town/modular_v1/props/material_barrels.png",
+    "res://assets/town/modular_v1/props/material_crates.png",
+    "res://assets/town/modular_v1/props/notice_board.png",
+    "res://assets/town/modular_v1/props/soul_brazier.png",
+    "res://assets/town/modular_v1/props/street_lantern.png",
+    "res://assets/town/modular_v1/props/west_fence.png"
+  ]
+}

@@ -1,35 +1,38 @@
-[gd_scene load_steps=28 format=3]
+[gd_scene load_steps=29 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/background/castle_layer.png" id="1_castle_layer"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/background/forest_layer.png" id="2_forest_layer"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/background/mountain_layer.png" id="3_mountain_layer"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/background/sky.png" id="4_sky"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/blueprint_research.png" id="5_blueprint_research"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/east_residence.png" id="6_east_residence"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/material_yard.png" id="7_material_yard"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/player_forge.png" id="8_player_forge"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/sword_soul_shop.png" id="9_sword_soul_shop"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/town_hall.png" id="10_town_hall"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/ground/bridge_wall_tile.png" id="11_bridge_wall_tile"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/ground/stone_road_tile.png" id="12_stone_road_tile"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/landmarks/battle_portal.png" id="13_battle_portal"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/landmarks/eternal_forge_monument.png" id="14_eternal_forge_monument"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/civic_bench.png" id="15_civic_bench"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/civic_well.png" id="16_civic_well"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/east_flower_bed.png" id="17_east_flower_bed"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/forge_anvil.png" id="18_forge_anvil"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/forge_brazier.png" id="19_forge_brazier"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/forge_cart.png" id="20_forge_cart"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/hanging_banner.png" id="21_hanging_banner"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/material_barrels.png" id="22_material_barrels"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/material_crates.png" id="23_material_crates"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/notice_board.png" id="24_notice_board"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/soul_brazier.png" id="25_soul_brazier"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/street_lantern.png" id="26_street_lantern"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/west_fence.png" id="27_west_fence"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/background/ancient_town_tree.png" id="1_ancient_town_tree"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/background/castle_layer.png" id="2_castle_layer"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/background/forest_layer.png" id="3_forest_layer"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/background/mountain_layer.png" id="4_mountain_layer"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/background/sky.png" id="5_sky"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/blueprint_research.png" id="6_blueprint_research"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/east_residence.png" id="7_east_residence"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/material_yard.png" id="8_material_yard"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/player_forge.png" id="9_player_forge"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/sword_soul_shop.png" id="10_sword_soul_shop"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/buildings/town_hall.png" id="11_town_hall"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/ground/bridge_wall_tile.png" id="12_bridge_wall_tile"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/ground/stone_road_tile.png" id="13_stone_road_tile"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/landmarks/battle_portal.png" id="14_battle_portal"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/landmarks/eternal_forge_monument.png" id="15_eternal_forge_monument"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/civic_bench.png" id="16_civic_bench"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/civic_well.png" id="17_civic_well"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/east_flower_bed.png" id="18_east_flower_bed"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/forge_anvil.png" id="19_forge_anvil"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/forge_brazier.png" id="20_forge_brazier"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/forge_cart.png" id="21_forge_cart"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/hanging_banner.png" id="22_hanging_banner"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/material_barrels.png" id="23_material_barrels"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/material_crates.png" id="24_material_crates"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/notice_board.png" id="25_notice_board"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/soul_brazier.png" id="26_soul_brazier"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/street_lantern.png" id="27_street_lantern"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/west_fence.png" id="28_west_fence"]
 
 [node name="TownModularVisuals" type="Node2D"]
+texture_filter = 1
 metadata/layout_path = "res://data/town_modular_layout.json"
+metadata/visual_style = "storybook_handdrawn_pixel_v2"
 metadata/map_width = 1942
 metadata/map_height = 809
 metadata/gameplay_baseline_y = 672
@@ -51,10 +54,10 @@ metadata/layer_role = "streetprops"
 
 [node name="BackgroundSky" type="Sprite2D" parent="Background"]
 position = Vector2(971, 404.5)
-scale = Vector2(1, 1)
+scale = Vector2(1, 0.998765)
 z_index = -100
 visible = true
-texture = ExtResource("4_sky")
+texture = ExtResource("5_sky")
 metadata/object_id = "background_sky"
 metadata/category = "background"
 metadata/source_asset = "res://assets/town/modular_v1/background/sky.png"
@@ -66,10 +69,10 @@ metadata/service_id = ""
 
 [node name="BackgroundMountains" type="Sprite2D" parent="Background"]
 position = Vector2(971, 334)
-scale = Vector2(1.00155, 1.45946)
+scale = Vector2(1.01942, 2.58373)
 z_index = -95
 visible = true
-texture = ExtResource("3_mountain_layer")
+texture = ExtResource("4_mountain_layer")
 metadata/object_id = "background_mountains"
 metadata/category = "background"
 metadata/source_asset = "res://assets/town/modular_v1/background/mountain_layer.png"
@@ -81,10 +84,10 @@ metadata/service_id = ""
 
 [node name="BackgroundDistantCity" type="Sprite2D" parent="Background"]
 position = Vector2(971, 418)
-scale = Vector2(1.23616, 0.528905)
+scale = Vector2(1.22678, 0.615165)
 z_index = -90
 visible = true
-texture = ExtResource("1_castle_layer")
+texture = ExtResource("2_castle_layer")
 metadata/object_id = "background_distant_city"
 metadata/category = "background"
 metadata/source_asset = "res://assets/town/modular_v1/background/castle_layer.png"
@@ -96,10 +99,10 @@ metadata/service_id = ""
 
 [node name="BackgroundForest" type="Sprite2D" parent="Background"]
 position = Vector2(971, 506)
-scale = Vector2(1.06586, 0.726477)
+scale = Vector2(1.00518, 0.536349)
 z_index = -85
 visible = true
-texture = ExtResource("2_forest_layer")
+texture = ExtResource("3_forest_layer")
 metadata/object_id = "background_forest"
 metadata/category = "background"
 metadata/source_asset = "res://assets/town/modular_v1/background/forest_layer.png"
@@ -109,12 +112,27 @@ metadata/interaction_node_path = ""
 metadata/interaction_id = ""
 metadata/service_id = ""
 
+[node name="BackgroundAncientTownTree" type="Sprite2D" parent="Background"]
+position = Vector2(1030, 385)
+scale = Vector2(0.594679, 0.6641)
+z_index = -84
+visible = true
+texture = ExtResource("1_ancient_town_tree")
+metadata/object_id = "background_ancient_town_tree"
+metadata/category = "background"
+metadata/source_asset = "res://assets/town/modular_v1/background/ancient_town_tree.png"
+metadata/interaction_mode = "none"
+metadata/interaction_owner_scene = ""
+metadata/interaction_node_path = ""
+metadata/interaction_id = ""
+metadata/service_id = ""
+
 [node name="GroundBridgeWall01" type="Sprite2D" parent="Ground"]
 position = Vector2(122, 764.5)
-scale = Vector2(0.125838, 0.166045)
+scale = Vector2(0.112339, 0.16094)
 z_index = -31
 visible = true
-texture = ExtResource("11_bridge_wall_tile")
+texture = ExtResource("12_bridge_wall_tile")
 metadata/object_id = "ground_bridge_wall_01"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/bridge_wall_tile.png"
@@ -126,10 +144,10 @@ metadata/service_id = ""
 
 [node name="GroundBridgeWall02" type="Sprite2D" parent="Ground"]
 position = Vector2(366, 764.5)
-scale = Vector2(0.125838, 0.166045)
+scale = Vector2(0.112339, 0.16094)
 z_index = -31
 visible = true
-texture = ExtResource("11_bridge_wall_tile")
+texture = ExtResource("12_bridge_wall_tile")
 metadata/object_id = "ground_bridge_wall_02"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/bridge_wall_tile.png"
@@ -141,10 +159,10 @@ metadata/service_id = ""
 
 [node name="GroundBridgeWall03" type="Sprite2D" parent="Ground"]
 position = Vector2(610, 764.5)
-scale = Vector2(0.125838, 0.166045)
+scale = Vector2(0.112339, 0.16094)
 z_index = -31
 visible = true
-texture = ExtResource("11_bridge_wall_tile")
+texture = ExtResource("12_bridge_wall_tile")
 metadata/object_id = "ground_bridge_wall_03"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/bridge_wall_tile.png"
@@ -156,10 +174,10 @@ metadata/service_id = ""
 
 [node name="GroundBridgeWall04" type="Sprite2D" parent="Ground"]
 position = Vector2(854, 764.5)
-scale = Vector2(0.125838, 0.166045)
+scale = Vector2(0.112339, 0.16094)
 z_index = -31
 visible = true
-texture = ExtResource("11_bridge_wall_tile")
+texture = ExtResource("12_bridge_wall_tile")
 metadata/object_id = "ground_bridge_wall_04"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/bridge_wall_tile.png"
@@ -171,10 +189,10 @@ metadata/service_id = ""
 
 [node name="GroundBridgeWall05" type="Sprite2D" parent="Ground"]
 position = Vector2(1098, 764.5)
-scale = Vector2(0.125838, 0.166045)
+scale = Vector2(0.112339, 0.16094)
 z_index = -31
 visible = true
-texture = ExtResource("11_bridge_wall_tile")
+texture = ExtResource("12_bridge_wall_tile")
 metadata/object_id = "ground_bridge_wall_05"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/bridge_wall_tile.png"
@@ -186,10 +204,10 @@ metadata/service_id = ""
 
 [node name="GroundBridgeWall06" type="Sprite2D" parent="Ground"]
 position = Vector2(1342, 764.5)
-scale = Vector2(0.125838, 0.166045)
+scale = Vector2(0.112339, 0.16094)
 z_index = -31
 visible = true
-texture = ExtResource("11_bridge_wall_tile")
+texture = ExtResource("12_bridge_wall_tile")
 metadata/object_id = "ground_bridge_wall_06"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/bridge_wall_tile.png"
@@ -201,10 +219,10 @@ metadata/service_id = ""
 
 [node name="GroundBridgeWall07" type="Sprite2D" parent="Ground"]
 position = Vector2(1586, 764.5)
-scale = Vector2(0.125838, 0.166045)
+scale = Vector2(0.112339, 0.16094)
 z_index = -31
 visible = true
-texture = ExtResource("11_bridge_wall_tile")
+texture = ExtResource("12_bridge_wall_tile")
 metadata/object_id = "ground_bridge_wall_07"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/bridge_wall_tile.png"
@@ -216,10 +234,10 @@ metadata/service_id = ""
 
 [node name="GroundBridgeWall08" type="Sprite2D" parent="Ground"]
 position = Vector2(1825, 764.5)
-scale = Vector2(0.120681, 0.166045)
+scale = Vector2(0.107735, 0.16094)
 z_index = -31
 visible = true
-texture = ExtResource("11_bridge_wall_tile")
+texture = ExtResource("12_bridge_wall_tile")
 metadata/object_id = "ground_bridge_wall_08"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/bridge_wall_tile.png"
@@ -231,10 +249,10 @@ metadata/service_id = ""
 
 [node name="GroundStoneRoad01" type="Sprite2D" parent="Ground"]
 position = Vector2(122, 696)
-scale = Vector2(0.125644, 0.164948)
+scale = Vector2(0.112339, 0.146789)
 z_index = -30
 visible = true
-texture = ExtResource("12_stone_road_tile")
+texture = ExtResource("13_stone_road_tile")
 metadata/object_id = "ground_stone_road_01"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/stone_road_tile.png"
@@ -246,10 +264,10 @@ metadata/service_id = ""
 
 [node name="GroundStoneRoad02" type="Sprite2D" parent="Ground"]
 position = Vector2(366, 696)
-scale = Vector2(0.125644, 0.164948)
+scale = Vector2(0.112339, 0.146789)
 z_index = -30
 visible = true
-texture = ExtResource("12_stone_road_tile")
+texture = ExtResource("13_stone_road_tile")
 metadata/object_id = "ground_stone_road_02"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/stone_road_tile.png"
@@ -261,10 +279,10 @@ metadata/service_id = ""
 
 [node name="GroundStoneRoad03" type="Sprite2D" parent="Ground"]
 position = Vector2(610, 696)
-scale = Vector2(0.125644, 0.164948)
+scale = Vector2(0.112339, 0.146789)
 z_index = -30
 visible = true
-texture = ExtResource("12_stone_road_tile")
+texture = ExtResource("13_stone_road_tile")
 metadata/object_id = "ground_stone_road_03"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/stone_road_tile.png"
@@ -276,10 +294,10 @@ metadata/service_id = ""
 
 [node name="GroundStoneRoad04" type="Sprite2D" parent="Ground"]
 position = Vector2(854, 696)
-scale = Vector2(0.125644, 0.164948)
+scale = Vector2(0.112339, 0.146789)
 z_index = -30
 visible = true
-texture = ExtResource("12_stone_road_tile")
+texture = ExtResource("13_stone_road_tile")
 metadata/object_id = "ground_stone_road_04"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/stone_road_tile.png"
@@ -291,10 +309,10 @@ metadata/service_id = ""
 
 [node name="GroundStoneRoad05" type="Sprite2D" parent="Ground"]
 position = Vector2(1098, 696)
-scale = Vector2(0.125644, 0.164948)
+scale = Vector2(0.112339, 0.146789)
 z_index = -30
 visible = true
-texture = ExtResource("12_stone_road_tile")
+texture = ExtResource("13_stone_road_tile")
 metadata/object_id = "ground_stone_road_05"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/stone_road_tile.png"
@@ -306,10 +324,10 @@ metadata/service_id = ""
 
 [node name="GroundStoneRoad06" type="Sprite2D" parent="Ground"]
 position = Vector2(1342, 696)
-scale = Vector2(0.125644, 0.164948)
+scale = Vector2(0.112339, 0.146789)
 z_index = -30
 visible = true
-texture = ExtResource("12_stone_road_tile")
+texture = ExtResource("13_stone_road_tile")
 metadata/object_id = "ground_stone_road_06"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/stone_road_tile.png"
@@ -321,10 +339,10 @@ metadata/service_id = ""
 
 [node name="GroundStoneRoad07" type="Sprite2D" parent="Ground"]
 position = Vector2(1586, 696)
-scale = Vector2(0.125644, 0.164948)
+scale = Vector2(0.112339, 0.146789)
 z_index = -30
 visible = true
-texture = ExtResource("12_stone_road_tile")
+texture = ExtResource("13_stone_road_tile")
 metadata/object_id = "ground_stone_road_07"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/stone_road_tile.png"
@@ -336,10 +354,10 @@ metadata/service_id = ""
 
 [node name="GroundStoneRoad08" type="Sprite2D" parent="Ground"]
 position = Vector2(1825, 696)
-scale = Vector2(0.120494, 0.164948)
+scale = Vector2(0.107735, 0.146789)
 z_index = -30
 visible = true
-texture = ExtResource("12_stone_road_tile")
+texture = ExtResource("13_stone_road_tile")
 metadata/object_id = "ground_stone_road_08"
 metadata/category = "ground"
 metadata/source_asset = "res://assets/town/modular_v1/ground/stone_road_tile.png"
@@ -351,10 +369,10 @@ metadata/service_id = ""
 
 [node name="MaterialYard" type="Sprite2D" parent="Facilities"]
 position = Vector2(170, 507)
-scale = Vector2(0.257954, 0.31015)
+scale = Vector2(0.250209, 0.307549)
 z_index = -10
 visible = true
-texture = ExtResource("7_material_yard")
+texture = ExtResource("8_material_yard")
 metadata/object_id = "material_yard"
 metadata/category = "facility"
 metadata/source_asset = "res://assets/town/modular_v1/buildings/material_yard.png"
@@ -366,10 +384,10 @@ metadata/service_id = "material_yard"
 
 [node name="PlayerBlacksmith" type="Sprite2D" parent="Facilities"]
 position = Vector2(475, 472)
-scale = Vector2(0.304826, 0.386473)
+scale = Vector2(0.276285, 0.347826)
 z_index = -10
 visible = true
-texture = ExtResource("8_player_forge")
+texture = ExtResource("9_player_forge")
 metadata/object_id = "player_blacksmith"
 metadata/category = "facility"
 metadata/source_asset = "res://assets/town/modular_v1/buildings/player_forge.png"
@@ -381,10 +399,10 @@ metadata/service_id = "player_blacksmith"
 
 [node name="EternalFlame" type="Sprite2D" parent="Landmarks"]
 position = Vector2(830, 322)
-scale = Vector2(0.39239, 0.3427)
+scale = Vector2(0.358696, 0.334896)
 z_index = -9
 visible = true
-texture = ExtResource("14_eternal_forge_monument")
+texture = ExtResource("15_eternal_forge_monument")
 metadata/object_id = "eternal_flame"
 metadata/category = "landmark"
 metadata/source_asset = "res://assets/town/modular_v1/landmarks/eternal_forge_monument.png"
@@ -396,10 +414,10 @@ metadata/service_id = ""
 
 [node name="BattlePortal" type="Sprite2D" parent="Landmarks"]
 position = Vector2(830, 542)
-scale = Vector2(0.239521, 0.253165)
+scale = Vector2(0.211082, 0.221088)
 z_index = -8
 visible = true
-texture = ExtResource("13_battle_portal")
+texture = ExtResource("14_battle_portal")
 metadata/object_id = "battle_portal"
 metadata/category = "landmark"
 metadata/source_asset = "res://assets/town/modular_v1/landmarks/battle_portal.png"
@@ -411,10 +429,10 @@ metadata/service_id = ""
 
 [node name="TownHall" type="Sprite2D" parent="Facilities"]
 position = Vector2(1120, 497)
-scale = Vector2(0.27001, 0.324977)
+scale = Vector2(0.231788, 0.304083)
 z_index = -10
 visible = true
-texture = ExtResource("10_town_hall")
+texture = ExtResource("11_town_hall")
 metadata/object_id = "town_hall"
 metadata/category = "facility"
 metadata/source_asset = "res://assets/town/modular_v1/buildings/town_hall.png"
@@ -426,10 +444,10 @@ metadata/service_id = "town_hall"
 
 [node name="SwordSoulShop" type="Sprite2D" parent="Facilities"]
 position = Vector2(1370, 507)
-scale = Vector2(0.224417, 0.326409)
+scale = Vector2(0.191131, 0.29517)
 z_index = -10
 visible = true
-texture = ExtResource("9_sword_soul_shop")
+texture = ExtResource("10_sword_soul_shop")
 metadata/object_id = "sword_soul_shop"
 metadata/category = "facility"
 metadata/source_asset = "res://assets/town/modular_v1/buildings/sword_soul_shop.png"
@@ -441,10 +459,10 @@ metadata/service_id = "sword_soul_shop"
 
 [node name="EquipmentBlueprintShop" type="Sprite2D" parent="Facilities"]
 position = Vector2(1595, 497)
-scale = Vector2(0.193322, 0.337512)
+scale = Vector2(0.169101, 0.29889)
 z_index = -10
 visible = true
-texture = ExtResource("5_blueprint_research")
+texture = ExtResource("6_blueprint_research")
 metadata/object_id = "equipment_blueprint_shop"
 metadata/category = "facility"
 metadata/source_asset = "res://assets/town/modular_v1/buildings/blueprint_research.png"
@@ -456,10 +474,10 @@ metadata/service_id = "equipment_blueprint_shop"
 
 [node name="FarEastResidence" type="Sprite2D" parent="Facilities"]
 position = Vector2(1817, 507)
-scale = Vector2(0.263514, 0.336735)
+scale = Vector2(0.203301, 0.251716)
 z_index = -10
 visible = true
-texture = ExtResource("6_east_residence")
+texture = ExtResource("7_east_residence")
 metadata/object_id = "far_east_residence"
 metadata/category = "facility"
 metadata/source_asset = "res://assets/town/modular_v1/buildings/east_residence.png"
@@ -471,10 +489,10 @@ metadata/service_id = "far_east_residence"
 
 [node name="StreetLantern01" type="Sprite2D" parent="StreetProps"]
 position = Vector2(310, 592)
-scale = Vector2(0.186047, 0.110117)
+scale = Vector2(0.163743, 0.10263)
 z_index = -4
 visible = true
-texture = ExtResource("26_street_lantern")
+texture = ExtResource("27_street_lantern")
 metadata/object_id = "street_lantern_01"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/street_lantern.png"
@@ -486,10 +504,10 @@ metadata/service_id = ""
 
 [node name="WestFence" type="Sprite2D" parent="StreetProps"]
 position = Vector2(92, 632)
-scale = Vector2(0.123656, 0.149254)
+scale = Vector2(0.119792, 0.120846)
 z_index = -5
 visible = true
-texture = ExtResource("27_west_fence")
+texture = ExtResource("28_west_fence")
 metadata/object_id = "west_fence"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/west_fence.png"
@@ -501,10 +519,10 @@ metadata/service_id = ""
 
 [node name="NoticeBoard" type="Sprite2D" parent="StreetProps"]
 position = Vector2(300, 590)
-scale = Vector2(0.10352, 0.165489)
+scale = Vector2(0.0959693, 0.145648)
 z_index = -3
 visible = true
-texture = ExtResource("24_notice_board")
+texture = ExtResource("25_notice_board")
 metadata/object_id = "notice_board"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/notice_board.png"
@@ -516,10 +534,10 @@ metadata/service_id = ""
 
 [node name="MaterialCrates" type="Sprite2D" parent="StreetProps"]
 position = Vector2(70, 627)
-scale = Vector2(0.0958333, 0.101351)
+scale = Vector2(0.0899316, 0.0882353)
 z_index = -2
 visible = true
-texture = ExtResource("23_material_crates")
+texture = ExtResource("24_material_crates")
 metadata/object_id = "material_crates"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/material_crates.png"
@@ -531,10 +549,10 @@ metadata/service_id = ""
 
 [node name="MaterialBarrels" type="Sprite2D" parent="StreetProps"]
 position = Vector2(258, 630)
-scale = Vector2(0.0847107, 0.0931264)
+scale = Vector2(0.0810277, 0.0846774)
 z_index = -2
 visible = true
-texture = ExtResource("22_material_barrels")
+texture = ExtResource("23_material_barrels")
 metadata/object_id = "material_barrels"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/material_barrels.png"
@@ -546,10 +564,10 @@ metadata/service_id = ""
 
 [node name="ForgeAnvil" type="Sprite2D" parent="StreetProps"]
 position = Vector2(475, 628)
-scale = Vector2(0.0897196, 0.0992108)
+scale = Vector2(0.0779854, 0.0831758)
 z_index = -2
 visible = true
-texture = ExtResource("18_forge_anvil")
+texture = ExtResource("19_forge_anvil")
 metadata/object_id = "forge_anvil"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/forge_anvil.png"
@@ -561,10 +579,10 @@ metadata/service_id = ""
 
 [node name="StreetLantern02" type="Sprite2D" parent="StreetProps"]
 position = Vector2(665, 592)
-scale = Vector2(0.186047, 0.110117)
+scale = Vector2(0.163743, 0.10263)
 z_index = -4
 visible = true
-texture = ExtResource("26_street_lantern")
+texture = ExtResource("27_street_lantern")
 metadata/object_id = "street_lantern_02"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/street_lantern.png"
@@ -576,10 +594,10 @@ metadata/service_id = ""
 
 [node name="StreetLantern03" type="Sprite2D" parent="StreetProps"]
 position = Vector2(985, 592)
-scale = Vector2(0.186047, 0.110117)
+scale = Vector2(0.163743, 0.10263)
 z_index = -4
 visible = true
-texture = ExtResource("26_street_lantern")
+texture = ExtResource("27_street_lantern")
 metadata/object_id = "street_lantern_03"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/street_lantern.png"
@@ -591,10 +609,10 @@ metadata/service_id = ""
 
 [node name="StreetLantern04" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1240, 592)
-scale = Vector2(0.186047, 0.110117)
+scale = Vector2(0.163743, 0.10263)
 z_index = -4
 visible = true
-texture = ExtResource("26_street_lantern")
+texture = ExtResource("27_street_lantern")
 metadata/object_id = "street_lantern_04"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/street_lantern.png"
@@ -606,10 +624,10 @@ metadata/service_id = ""
 
 [node name="StreetLantern05" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1490, 592)
-scale = Vector2(0.186047, 0.110117)
+scale = Vector2(0.163743, 0.10263)
 z_index = -4
 visible = true
-texture = ExtResource("26_street_lantern")
+texture = ExtResource("27_street_lantern")
 metadata/object_id = "street_lantern_05"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/street_lantern.png"
@@ -621,10 +639,10 @@ metadata/service_id = ""
 
 [node name="StreetLantern06" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1710, 592)
-scale = Vector2(0.186047, 0.110117)
+scale = Vector2(0.163743, 0.10263)
 z_index = -4
 visible = true
-texture = ExtResource("26_street_lantern")
+texture = ExtResource("27_street_lantern")
 metadata/object_id = "street_lantern_06"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/street_lantern.png"
@@ -636,10 +654,10 @@ metadata/service_id = ""
 
 [node name="StreetLantern07" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1900, 592)
-scale = Vector2(0.159468, 0.110117)
+scale = Vector2(0.140351, 0.10263)
 z_index = -4
 visible = true
-texture = ExtResource("26_street_lantern")
+texture = ExtResource("27_street_lantern")
 metadata/object_id = "street_lantern_07"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/street_lantern.png"
@@ -651,10 +669,10 @@ metadata/service_id = ""
 
 [node name="ForgeBrazierLeft" type="Sprite2D" parent="StreetProps"]
 position = Vector2(370, 612)
-scale = Vector2(0.0951123, 0.140845)
+scale = Vector2(0.0703812, 0.117417)
 z_index = -3
 visible = true
-texture = ExtResource("19_forge_brazier")
+texture = ExtResource("20_forge_brazier")
 metadata/object_id = "forge_brazier_left"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/forge_brazier.png"
@@ -666,10 +684,10 @@ metadata/service_id = ""
 
 [node name="ForgeBrazierRight" type="Sprite2D" parent="StreetProps"]
 position = Vector2(580, 612)
-scale = Vector2(0.0951123, 0.140845)
+scale = Vector2(0.0703812, 0.117417)
 z_index = -3
 visible = true
-texture = ExtResource("19_forge_brazier")
+texture = ExtResource("20_forge_brazier")
 metadata/object_id = "forge_brazier_right"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/forge_brazier.png"
@@ -681,10 +699,10 @@ metadata/service_id = ""
 
 [node name="SoulBrazierLeft" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1290, 612)
-scale = Vector2(0.0933852, 0.108794)
+scale = Vector2(0.0859189, 0.0858984)
 z_index = -3
 visible = true
-texture = ExtResource("25_soul_brazier")
+texture = ExtResource("26_soul_brazier")
 metadata/object_id = "soul_brazier_left"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/soul_brazier.png"
@@ -696,10 +714,10 @@ metadata/service_id = ""
 
 [node name="SoulBrazierRight" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1450, 612)
-scale = Vector2(0.0933852, 0.108794)
+scale = Vector2(0.0859189, 0.0858984)
 z_index = -3
 visible = true
-texture = ExtResource("25_soul_brazier")
+texture = ExtResource("26_soul_brazier")
 metadata/object_id = "soul_brazier_right"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/soul_brazier.png"
@@ -711,10 +729,10 @@ metadata/service_id = ""
 
 [node name="HangingBannerPlayerForge" type="Sprite2D" parent="StreetProps"]
 position = Vector2(475, 335)
-scale = Vector2(0.124805, 0.11839)
+scale = Vector2(0.103896, 0.0970246)
 z_index = -2
 visible = true
-texture = ExtResource("21_hanging_banner")
+texture = ExtResource("22_hanging_banner")
 metadata/object_id = "hanging_banner_player_forge"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/hanging_banner.png"
@@ -726,10 +744,10 @@ metadata/service_id = ""
 
 [node name="HangingBannerTownHall" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1120, 362)
-scale = Vector2(0.124805, 0.11839)
+scale = Vector2(0.103896, 0.0970246)
 z_index = -2
 visible = true
-texture = ExtResource("21_hanging_banner")
+texture = ExtResource("22_hanging_banner")
 metadata/object_id = "hanging_banner_town_hall"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/hanging_banner.png"
@@ -741,10 +759,10 @@ metadata/service_id = ""
 
 [node name="HangingBannerSwordSoul" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1370, 375)
-scale = Vector2(0.124805, 0.11839)
+scale = Vector2(0.103896, 0.0970246)
 z_index = -2
 visible = true
-texture = ExtResource("21_hanging_banner")
+texture = ExtResource("22_hanging_banner")
 metadata/object_id = "hanging_banner_sword_soul"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/hanging_banner.png"
@@ -756,10 +774,10 @@ metadata/service_id = ""
 
 [node name="HangingBannerBlueprintShop" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1595, 365)
-scale = Vector2(0.124805, 0.11839)
+scale = Vector2(0.103896, 0.0970246)
 z_index = -2
 visible = true
-texture = ExtResource("21_hanging_banner")
+texture = ExtResource("22_hanging_banner")
 metadata/object_id = "hanging_banner_blueprint_shop"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/hanging_banner.png"
@@ -771,10 +789,10 @@ metadata/service_id = ""
 
 [node name="HangingBannerEastResidence" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1817, 375)
-scale = Vector2(0.124805, 0.11839)
+scale = Vector2(0.103896, 0.0970246)
 z_index = -2
 visible = true
-texture = ExtResource("21_hanging_banner")
+texture = ExtResource("22_hanging_banner")
 metadata/object_id = "hanging_banner_east_residence"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/hanging_banner.png"
@@ -786,10 +804,10 @@ metadata/service_id = ""
 
 [node name="ForgeCart" type="Sprite2D" parent="StreetProps"]
 position = Vector2(645, 625)
-scale = Vector2(0.0913313, 0.103753)
+scale = Vector2(0.0835694, 0.117061)
 z_index = -2
 visible = true
-texture = ExtResource("20_forge_cart")
+texture = ExtResource("21_forge_cart")
 metadata/object_id = "forge_cart"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/forge_cart.png"
@@ -801,10 +819,10 @@ metadata/service_id = ""
 
 [node name="CivicWell" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1000, 618)
-scale = Vector2(0.117514, 0.0971223)
+scale = Vector2(0.0966543, 0.0812641)
 z_index = -2
 visible = true
-texture = ExtResource("16_civic_well")
+texture = ExtResource("17_civic_well")
 metadata/object_id = "civic_well"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/civic_well.png"
@@ -816,10 +834,10 @@ metadata/service_id = ""
 
 [node name="CivicBench" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1215, 637)
-scale = Vector2(0.0923077, 0.111288)
+scale = Vector2(0.0731261, 0.0917431)
 z_index = -2
 visible = true
-texture = ExtResource("15_civic_bench")
+texture = ExtResource("16_civic_bench")
 metadata/object_id = "civic_bench"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/civic_bench.png"
@@ -831,10 +849,10 @@ metadata/service_id = ""
 
 [node name="EastFlowerBed" type="Sprite2D" parent="StreetProps"]
 position = Vector2(1898, 646)
-scale = Vector2(0.0486111, 0.107216)
+scale = Vector2(0.0398104, 0.159021)
 z_index = -2
 visible = true
-texture = ExtResource("17_east_flower_bed")
+texture = ExtResource("18_east_flower_bed")
 metadata/object_id = "east_flower_bed"
 metadata/category = "street_prop"
 metadata/source_asset = "res://assets/town/modular_v1/props/east_flower_bed.png"

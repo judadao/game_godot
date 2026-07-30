@@ -1528,15 +1528,19 @@ the HUD never reads gameplay state directly.
 - Data contract：`res://data/town_modular_layout.json`
 - Generator：`tools/build_town_modular_scene.py`
 - Status：Current — Generated Static Visual Component
-- Responsibility：將同一個 `1942 × 809` source canvas 上的 53 個 background、
+- Responsibility：將同一個 `1942 × 809` source canvas 上的 54 個 background、
   ground、facility、landmark 與 street-prop entries 組成 editor-visible 的
   `Sprite2D` children。每個 child 保留穩定 object ID、source path、position、
   target size、z-index 與 interaction-owner metadata，方便逐件替換。
 - Runtime boundary：此 component 只有 presentation；六個建築入口仍由
   `TownBuildingEntrances.tscn` 擁有，戰鬥門仍由
   `TownPortalSet/BattleGateway` 擁有，碰撞、NPC 與 progression 不移入此 scene。
+- Visual style：`res://data/town_visual_style.json` 定義
+  `storybook_handdrawn_pixel_v2` 的手繪墨線、紙張顆粒、木石色盤與統一光向；
+  `concept/town/main_horizontal_concept/town_handdrawn_pixel_v2.png` 是 repository
+  內的視覺基準。
 - Compatibility：`TownBackdrop/EternalForgeConcept` 的舊合成圖仍保留供比對，
-  但 runtime hidden，不得與 53 個分件同時顯示。
+  但 runtime hidden，不得與 54 個分件同時顯示。
 - Design handoff：`tools/build_town_modular_figma_board.py` 讀取同一 JSON 與分件
   source，產生重組地圖及可選取素材庫；Figma 不另持有第二份 layout authority。
 

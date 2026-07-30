@@ -192,13 +192,17 @@ wrappers，讓 portal、HUD、save 與既有測試不需知道實作已抽離：
 Town canonical content 維持 `1942 × 720` Eternal Forge gameplay world 與
 `y=672` baseline；視覺來源則由
 `res://data/town_modular_layout.json` 定義 `1942 × 809` source canvas 上的
-53 個可替換物件。`tools/build_town_modular_scene.py` 將該契約生成為靜態、可在
+54 個可替換物件。`tools/build_town_modular_scene.py` 將該契約生成為靜態、可在
 editor 選取的
 `scenes/maps/town/components/TownModularVisuals.tscn`，再由 `TownBackdrop`
 instance。舊 `assets/town/eternal_forge/town_eternal_forge_v1.png` 仍作為相容與
 視覺比對來源保留，但 runtime hidden，不再是 Town presentation authority。
 `tools/build_town_modular_figma_board.py` 讀取同一份 layout 與分件素材產生 Figma
 board，避免設計稿與 runtime scene 使用不同配置。
+Town 視覺統一採用 `data/town_visual_style.json` 的
+`storybook_handdrawn_pixel_v2`：手繪不規則墨線、紙張顆粒、低飽和木石色、
+冷苔綠陰影與左上暖蜜色主光。中央古樹是獨立 background object，不烘焙進天空
+或建築。
 互動、碰撞、NPC、Portal、Player 與 progression identity 仍由既有 linked scenes
 管理；模組化 Sprite 不建立第二套 gameplay authority。
 `EternalForgeIdentity` 提供八個精簡地點標籤與後續物件精修入口。
