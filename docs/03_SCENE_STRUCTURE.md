@@ -184,13 +184,19 @@ Town canonical scene另有：
 - one `Portals/BattleGateway` instance
 - camera/map metadata
 
-Town v1 使用單一 `1942 × 720` 的 Eternal Forge 橫向世界。主背景由
-`TownBackdrop/EternalForgeConcept` 以 1:1 顯示一次，禁止重複中央火炬或以不同
-X/Y scale 拉寬圖中物件；`TownEternalForgeIdentity.tscn` 持有八個
-可編輯中文地點標籤、區域光暈與後續可替換的 landmark 向量層。舊
-`Buildings`、`Ground`、`Props` linked scenes 保留作為 gameplay／progression
-identity，但初版 runtime 不與烘焙背景重複顯示。角色、NPC、Portal 與地面碰撞
-統一使用新圖道路的 `y=672` baseline。
+Town gameplay world 維持 `1942 × 720` 與 `y=672` baseline。Town 視覺的
+authoring authority 是 `res://data/town_modular_layout.json`：它在
+`1942 × 809` source canvas 定義 53 個 background、ground、facility、landmark
+與 street-prop entries，每個 entry 都有穩定 ID、source、position、尺寸與
+z-index。`tools/build_town_modular_scene.py` 將資料生成為靜態
+`TownModularVisuals.tscn`；`TownBackdrop` instance 該 scene，因此每個物件可在
+Scene editor 獨立選取和替換，runtime 不以 script 重建版面。
+`TownBackdrop/EternalForgeConcept` 的舊合成圖只保留作 compatibility reference
+並保持 hidden，不得再與模組物件同時顯示。
+`TownEternalForgeIdentity.tscn` 仍持有八個可編輯中文地點標籤、區域光暈與
+landmark identity。舊 `Buildings`、`Ground`、`Props` linked scenes 繼續作為
+compatibility／progression identity 並保持 runtime hidden。角色、NPC、Portal
+與地面碰撞仍統一使用 `y=672` baseline。
 Town 的六個建築 UI 觸發由 `BuildingEntrances` 獨立擁有；每個 Area 橫向覆蓋
 該建築完整地基，交界處由 Game 選擇距離 Player 最近的 candidate。NPC 僅保留角色
 視覺與 body collision，不得加入 `Interactives` 或持有 `InteractionArea`。入口透過
@@ -306,6 +312,8 @@ Runtime：
 Current composition：
 
 - active：`scenes/maps/town/components/TownBackdrop.tscn`
+- active generated visual component：
+  `scenes/maps/town/components/TownModularVisuals.tscn`
 - active：`scenes/maps/town/components/TownEternalForgeIdentity.tscn`
 - active：`scenes/maps/town/components/TownNPCs.tscn`
 - active：`scenes/maps/town/components/TownBuildingEntrances.tscn`
@@ -319,11 +327,16 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 
 ### 6.2 Component responsibility
 
-- backdrop只含視覺layer，不處理經濟或Portal。
+- `TownModularVisuals` 是由 `data/town_modular_layout.json` 生成的靜態視覺
+  composition；53 個 Sprite entries 可分別選取，但不擁有互動、碰撞或 progression。
+- `TownBackdrop` 只 instance 視覺 layer；舊合成概念圖保留但 runtime hidden，
+  不處理經濟或 Portal。
 - ground/collision分開，視覺改動不得隱式改physics。
 - NPC container組合display-only NPC instances，不承載互動或對話資料。
 - Building entrance container組合門口互動 instances，不承載 UI instance。
 - Portal set組合route instances，不自行load map。
+- `tools/build_town_modular_figma_board.py` 與 Scene generator 共用同一 layout，
+  Figma board 不得另維護一份位置或物件清單。
 - decorative prop不應加入`Interactives`，除非它真的實作完整contract。
 
 ### 6.3 Editor helpers

@@ -14,9 +14,11 @@
 
 ## World layout
 
-The Eternal Forge v1 town uses one 1942x720 side-scrolling image segment. Existing
-canonical map identity, portal targets, spawn transfer, HUD adoption, and save
-contracts remain compatible while camera and collision bounds match that segment.
+The Eternal Forge town keeps a 1942x720 gameplay world and a y=672 baseline.
+Its visual source canvas is 1942x809 and is assembled from the 53 independently
+replaceable entries in `data/town_modular_layout.json`. Existing canonical map
+identity, portal targets, spawn transfer, HUD adoption, camera, collision, and save
+contracts remain unchanged.
 
 | Range | District | Purpose |
 | --- | --- | --- |
@@ -26,31 +28,43 @@ contracts remain compatible while camera and collision bounds match that segment
 | x=760-980 | Battle Portal Plaza | One BattleGateway leading to the dedicated portal hub |
 | x=980-1220 | Civic Hall | Mayor and town progress interaction |
 | x=1220-1460 | Sword Soul Shop | Merchant interaction and purple soul-magic storefront |
-| x=1460-1700 | Blueprint Research | Research landmark and future presentation refinement |
-| x=1700-1942 | Equipment Blueprint Shop | Draftswoman merchant district |
+| x=1460-1700 | Equipment Blueprint Shop | Permanent equipment blueprint merchant |
+| x=1700-1942 | Far East Residence | Information-only residential district |
 
 ## Asset batches
 
-1. `town_background_v2.png`
-   - sky, distant mountains, forest and roof silhouettes in one coherent parallax panorama.
-2. `town_street_atlas_v2.png`
-   - continuous street, curb, drain, stairs and plaza variation.
-3. `town_buildings_atlas_v2.png`
-   - residence A/B, town hall, item shop, inn and blacksmith.
-4. `town_props_atlas_v2.png`
-   - notice board, well, lamp, bench, fence, crates, barrels, flower bed, forge and market cart.
-5. `town_portals_atlas_v2.png`
-   - Town BattleGateway plus the portal-hub region entrances.
-6. `town_npcs_atlas_v2.png`
-   - player-scale mayor, merchant, innkeeper, blacksmith, guard, male villager and female villager.
+All runtime Town presentation sources live under `assets/town/modular_v1/`.
+The 27 unique PNG sources are reused as 53 selectable scene entries:
+
+1. `background/`
+   - `sky.png`, `mountain_layer.png`, `castle_layer.png`, `forest_layer.png`.
+2. `ground/`
+   - `stone_road_tile.png` and `bridge_wall_tile.png`, each instanced as eight
+     independently replaceable modules.
+3. `buildings/`
+   - Material Yard, Player Forge, Town Hall, Sword Soul Shop, Blueprint Research,
+     and East Residence.
+4. `landmarks/`
+   - Eternal Forge Monument and Battle Portal.
+5. `props/`
+   - street lantern, forge/soul braziers, hanging banner, west fence, notice board,
+     material crates/barrels, and forge anvil.
 
 ## Scene architecture
 
 - `town.tscn` owns zoning, spawn markers, background, ground and world collision.
-- Each building remains a separate `.tscn` scene.
-- Each interactive NPC remains a separate `.tscn` scene and keeps its existing interaction ID.
-- Decorative props use split scenes or AtlasTexture regions but have no collision by default.
-- Portal scenes keep the current portal signals and target fields; only their visuals are replaced.
+- `data/town_modular_layout.json` is the single 53-entry visual layout contract.
+- `tools/build_town_modular_scene.py` generates the static, editor-visible
+  `scenes/maps/town/components/TownModularVisuals.tscn`; runtime does not rebuild
+  authored Town layout from script.
+- `TownBackdrop.tscn` instances `TownModularVisuals`. The old Eternal Forge composite
+  remains available as a hidden compatibility/reference sprite.
+- Generated visual children do not own interactions. The six building triggers remain
+  in `TownBuildingEntrances.tscn`, and BattleGateway remains in `TownPortalSet.tscn`.
+- NPC visuals, collision, portal signals, target fields, and progression ownership remain
+  in their existing scenes.
+- `tools/build_town_modular_figma_board.py` reads the same layout and PNG sources to
+  generate both the reconstructed map and the selectable Figma object library.
 
 ## Interaction preservation
 
@@ -76,3 +90,7 @@ contracts remain compatible while camera and collision bounds match that segment
 - Every shop, dialogue and portal can be reached by keyboard.
 - Town BattleGateway enters the portal hub and the hub return interaction restores Town.
 - Background and ground cover the full camera width at every supported window size.
+- The generated scene exposes exactly 53 stable object IDs across background, ground,
+  facility, landmark, and street-prop groups.
+- The Figma board and `TownModularVisuals.tscn` are regenerated from the same JSON
+  instead of maintaining separate placement data.

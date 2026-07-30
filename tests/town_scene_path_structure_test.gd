@@ -2,6 +2,7 @@ extends SceneTree
 
 const ACTIVE_SCENES := [
 	"res://scenes/maps/town/components/TownBackdrop.tscn",
+	"res://scenes/maps/town/components/TownModularVisuals.tscn",
 	"res://scenes/maps/town/components/TownEternalForgeIdentity.tscn",
 	"res://scenes/maps/town/components/TownNPCs.tscn",
 	"res://scenes/maps/town/components/TownBuildingEntrances.tscn",
@@ -71,6 +72,14 @@ func _run() -> void:
 				linked.scene_file_path == expected_links[node_path],
 				"Town linked node must use classified scene path: %s" % node_path
 			)
+	var modular := town.get_node_or_null("ParallaxBackground/ModularVisuals")
+	_expect(modular != null, "Town backdrop must expose the modular visual scene.")
+	if modular != null:
+		_expect(
+			modular.scene_file_path
+				== "res://scenes/maps/town/components/TownModularVisuals.tscn",
+			"Town modular visuals must remain a linked active scene."
+		)
 	town.free()
 	quit(0 if _failures == 0 else 1)
 

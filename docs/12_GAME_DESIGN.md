@@ -625,11 +625,14 @@ total-building-level threshold 為 0、3、7。Town 六棟建築的互動範圍�
 
 目前場景只直接改變 ItemShop、EmptyResidence、EmptyTowerHouse 與 Blacksmith 的部分視覺。Manager 產生的其他 visual flag 尚未完整投影，不得宣稱所有升級都有對應外觀。
 
-Town presentation 已替換為單一 `1942 × 720` Eternal Forge v1，地點由左至右為材料行、
-主角鐵匠鋪、不滅火炬、戰鬥傳送門、村長家、劍魂商、東側民宅與東郊民宅。
-背景只顯示一次，因此中央不滅火炬也只有一座。NPC、Portal、碰撞與 progression
-仍是獨立 scene authority，
-建築與 landmark 的逐物件精修列為後續 presentation 工作，不代表新增玩法。
+Town presentation 維持 `1942 × 720` gameplay world 與單一中央不滅火炬，但
+不再依賴一張 runtime baked 圖。`data/town_modular_layout.json` 以
+`1942 × 809` source canvas 定義 53 個可替換視覺物件，並生成靜態
+`TownModularVisuals.tscn` 供 `TownBackdrop` 顯示。地點由左至右仍為材料行、
+主角鐵匠鋪、不滅火炬、戰鬥傳送門、村長家、劍魂商、裝備圖紙商與東郊民宅。
+舊合成圖只作 hidden compatibility reference；NPC、建築入口、Portal、碰撞與
+progression 仍是獨立 scene authority。替換房屋、地板、火炬或街道 props
+只改變 presentation，不代表新增服務、互動或玩法。
 
 Town 不再直接排列各戰區傳送門，也不保留東西 fast travel。唯一的
 `BattleGateway` 進入 `battle_portal_hub.tscn`：大廳左右各兩個戰區入口，中央

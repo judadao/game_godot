@@ -2,6 +2,7 @@ extends SceneTree
 
 const TOWN_PATH := "res://scenes/maps/town.tscn"
 const CONCEPT_TEXTURE_PATH := "res://assets/town/eternal_forge/town_eternal_forge_v1.png"
+const MODULAR_SCENE_PATH := "res://scenes/maps/town/components/TownModularVisuals.tscn"
 const IDENTITY_SCENE_PATH := "res://scenes/maps/town/components/TownEternalForgeIdentity.tscn"
 
 var _failures := 0
@@ -22,7 +23,7 @@ func _run() -> void:
 	root.add_child(town)
 	await process_frame
 
-	_expect(int(town.get_meta("map_width")) == 1942, "Town must use one Eternal Forge image segment.")
+	_expect(int(town.get_meta("map_width")) == 1942, "Town must preserve the Eternal Forge world width.")
 	_expect(int(town.get_meta("map_height")) == 720, "Town must preserve the 720px gameplay height.")
 	_expect(
 		int(town.get_meta("camera_limit_right")) == 1942,
@@ -30,32 +31,64 @@ func _run() -> void:
 	)
 
 	var concept := town.get_node_or_null("ParallaxBackground/EternalForgeConcept") as Sprite2D
-	_expect(concept != null, "Town must expose the Eternal Forge concept backdrop.")
+	_expect(concept != null, "Town must retain the locked Eternal Forge concept reference.")
 	if concept != null:
 		_expect(
 			concept.texture != null and concept.texture.resource_path == CONCEPT_TEXTURE_PATH,
-			"Town concept backdrop must use the approved Figma reference."
+			"Town concept reference must preserve the approved source artwork."
 		)
-		_expect(concept.is_visible_in_tree(), "Town concept backdrop must be visible at runtime.")
-		_expect(
-			is_equal_approx(absf(concept.scale.x), absf(concept.scale.y)),
-			"Eternal Forge artwork must keep a uniform scale so its buildings are not distorted."
-		)
+		_expect(not concept.is_visible_in_tree(), "Flattened Town concept must stay hidden at runtime.")
 		_expect(
 			town.get_node_or_null("ParallaxBackground/EternalForgeConceptMid") == null
 				and town.get_node_or_null("ParallaxBackground/EternalForgeConceptEast") == null,
-			"Town must not repeat the Eternal Forge image or its central torch."
+			"Town must not repeat the flattened concept reference."
 		)
-		var concept_size := concept.texture.get_size() * concept.global_scale.abs()
-		var coverage_left := concept.global_position.x - concept_size.x * 0.5
-		var coverage_right := concept.global_position.x + concept_size.x * 0.5
-		var coverage_top := concept.global_position.y - concept_size.y * 0.5
-		var coverage_bottom := concept.global_position.y + concept_size.y * 0.5
-		_expect(coverage_left <= 0.5 and coverage_right >= 1941.5, "Single Town artwork must cover the full world width.")
-		_expect(coverage_top <= 0.5 and coverage_bottom >= 719.5, "Single Town artwork must cover the viewport height.")
+
+	var modular := town.get_node_or_null("ParallaxBackground/ModularVisuals")
+	_expect(modular != null, "Town must expose the linked modular visual scene.")
+	if modular != null:
+		_expect(
+			modular.scene_file_path == MODULAR_SCENE_PATH,
+			"Town modular visuals must remain a linked static scene."
+		)
+		_expect(modular.is_visible_in_tree(), "Town modular visual scene must be visible at runtime.")
+		var object_ids: Dictionary = {}
+		var modular_sprites := modular.find_children("*", "Sprite2D", true, false)
+		_expect(
+			modular_sprites.size() == 53,
+			"Town modular scene must expose all 53 independently replaceable instances."
+		)
+		for sprite_variant in modular_sprites:
+			var sprite := sprite_variant as Sprite2D
+			var object_id := String(sprite.get_meta("object_id", ""))
+			_expect(not object_id.is_empty(), "Every Town modular sprite must expose an object ID.")
+			_expect(not object_ids.has(object_id), "Town modular object IDs must be unique: %s" % object_id)
+			object_ids[object_id] = true
+			_expect(
+				String(sprite.get_meta("source_asset", "")).begins_with(
+					"res://assets/town/modular_v1/"
+				),
+				"Town modular sprites must use replaceable modular_v1 sources."
+			)
+		var sky := modular.get_node_or_null("Background/BackgroundSky") as Sprite2D
+		_expect(sky != null, "Town modular scene must own its independent sky layer.")
+		if sky != null:
+			var sky_size := sky.texture.get_size() * sky.global_scale.abs()
+			var coverage_left := sky.global_position.x - sky_size.x * 0.5
+			var coverage_right := sky.global_position.x + sky_size.x * 0.5
+			var coverage_top := sky.global_position.y - sky_size.y * 0.5
+			var coverage_bottom := sky.global_position.y + sky_size.y * 0.5
+			_expect(
+				coverage_left <= 0.5 and coverage_right >= 1941.5,
+				"Modular Town sky must cover the full world width."
+			)
+			_expect(
+				coverage_top <= 0.5 and coverage_bottom >= 719.5,
+				"Modular Town sky must cover the gameplay viewport height."
+			)
 	_expect(
 		not town.get_node("ParallaxBackground/Sky").visible,
-		"Legacy sky must not cover the Eternal Forge background."
+		"Legacy sky must not cover the modular Eternal Forge background."
 	)
 
 	var identity := town.get_node_or_null("EternalForgeIdentity")
@@ -138,17 +171,17 @@ func _run() -> void:
 	)
 	_expect(
 		not (battle_gateway.get_node("TownVisual") as CanvasItem).is_visible_in_tree(),
-		"Town must use the baked large battle portal without an overlapping runtime portal visual."
+		"Town must use the modular battle portal without a duplicate runtime portal visual."
 	)
 	_expect(
 		(identity.get_node("LocationLabels/BattlePortal") as CanvasItem).visible,
-		"Town must keep the battle-portal text over the baked large portal."
+		"Town must keep the battle-portal text over the modular portal."
 	)
 	var eternal_flame_label := identity.get_node("LocationLabels/EternalFlame") as Control
 	var battle_portal_label := identity.get_node("LocationLabels/BattlePortal") as Control
 	_expect(
 		is_equal_approx(eternal_flame_label.position.x + eternal_flame_label.size.x * 0.5, 830.0),
-		"Eternal Flame label must be centered on the baked monument."
+		"Eternal Flame label must be centered on the modular monument."
 	)
 	_expect(
 		eternal_flame_label.position.y <= 250.0,
@@ -156,7 +189,7 @@ func _run() -> void:
 	)
 	_expect(
 		is_equal_approx(battle_portal_label.position.x + battle_portal_label.size.x * 0.5, 830.0),
-		"Battle Portal label must be centered on the baked gateway."
+		"Battle Portal label must be centered on the modular gateway."
 	)
 	_expect(
 		battle_portal_label.position.y <= 465.0,

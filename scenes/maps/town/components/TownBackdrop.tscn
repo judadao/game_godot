@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://br6i1uvyi4wv2"]
+[gd_scene load_steps=8 format=3 uid="uid://br6i1uvyi4wv2"]
 
 [ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownSkyLayer.tscn" id="1_sky"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownCloudSet.tscn" id="2_clouds"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownDistantBuildings.tscn" id="4_buildings"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownTreeSet.tscn" id="5_trees"]
 [ext_resource type="Texture2D" path="res://assets/town/eternal_forge/town_eternal_forge_v1.png" id="6_eternal_forge"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownModularVisuals.tscn" id="7_modular"]
 
 [node name="TownBackdrop" type="Node2D" unique_id=2005808844]
 
@@ -27,7 +28,10 @@ position = Vector2(-349, 85)
 [node name="Trees2" parent="." unique_id=1703298562 instance=ExtResource("5_trees")]
 position = Vector2(-119, -75)
 
+[node name="ModularVisuals" parent="." instance=ExtResource("7_modular")]
+
 [node name="EternalForgeConcept" type="Sprite2D" parent="."]
+visible = false
 z_index = -100
 position = Vector2(971, 404.5)
 texture = ExtResource("6_eternal_forge")

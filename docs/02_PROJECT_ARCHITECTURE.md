@@ -189,11 +189,18 @@ wrappers，讓 portal、HUD、save 與既有測試不需知道實作已抽離：
 | `res://scenes/maps/crystal_caves.tscn` | `res://scenes/maps/layouts/CrystalCavesLayout.tscn` | `CrystalCaves` |
 | `res://scenes/maps/forbidden_graveyard.tscn` | `res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn` | `ForbiddenGraveyard` |
 
-Town canonical content 現為單一 `1942 × 720` Eternal Forge v1。背景使用專案內生成的
-`assets/town/eternal_forge/town_eternal_forge_v1.png`，互動、碰撞、NPC、Portal、
-Player 與 progression identity 仍由 linked scenes 管理；烘焙圖不是 gameplay
-authority。背景以一個 1:1 等比例 Sprite 覆蓋世界，只顯示一座中央火炬，
-禁止重複貼圖或非等比例縮放建築。
+Town canonical content 維持 `1942 × 720` Eternal Forge gameplay world 與
+`y=672` baseline；視覺來源則由
+`res://data/town_modular_layout.json` 定義 `1942 × 809` source canvas 上的
+53 個可替換物件。`tools/build_town_modular_scene.py` 將該契約生成為靜態、可在
+editor 選取的
+`scenes/maps/town/components/TownModularVisuals.tscn`，再由 `TownBackdrop`
+instance。舊 `assets/town/eternal_forge/town_eternal_forge_v1.png` 仍作為相容與
+視覺比對來源保留，但 runtime hidden，不再是 Town presentation authority。
+`tools/build_town_modular_figma_board.py` 讀取同一份 layout 與分件素材產生 Figma
+board，避免設計稿與 runtime scene 使用不同配置。
+互動、碰撞、NPC、Portal、Player 與 progression identity 仍由既有 linked scenes
+管理；模組化 Sprite 不建立第二套 gameplay authority。
 `EternalForgeIdentity` 提供八個精簡地點標籤與後續物件精修入口。
 六棟建築由 `TownBuildingEntrances` 擁有覆蓋完整地基的互動 Area 與 UI route；
 其中五棟提供服務，最東側民宅只開啟資訊 UI。原東側住宅改為裝備圖紙商，
