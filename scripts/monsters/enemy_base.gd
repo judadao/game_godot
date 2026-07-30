@@ -13,6 +13,7 @@ const ARCHETYPE_DATA := preload("res://scripts/monsters/enemy_archetype.gd")
 @export var gravity: float = 980.0
 @export var navigation_jump_velocity := 620.0
 @export var navigation_jump_cooldown := 0.55
+@export var navigation_landing_grace := 0.45
 @export var navigation_stuck_seconds := 0.28
 @export var platform_target_height := 42.0
 @export var platform_target_horizontal_range := 280.0
@@ -100,9 +101,15 @@ func _physics_process(delta: float) -> void:
 		velocity.x = 0.0
 	else:
 		_update_behavior()
+	var was_on_floor := is_on_floor()
 	var previous_x := global_position.x
 	var wanted_horizontal_motion := absf(velocity.x) > 1.0
 	move_and_slide()
+	if not was_on_floor and is_on_floor():
+		_navigation_jump_remaining = maxf(
+			_navigation_jump_remaining,
+			navigation_landing_grace
+		)
 	_update_navigation_recovery(delta, previous_x, wanted_horizontal_motion)
 
 
@@ -134,6 +141,11 @@ func _update_behavior() -> void:
 		1.0
 	)
 	var behavior := archetype.get("behavior") as StringName
+	var pursuit_jump_reason := get_pursuit_jump_reason(
+		behavior,
+		target_offset,
+		attack_range
+	)
 	if (
 		behavior == &"ranged"
 		and absf(target_offset.y) <= platform_target_height
@@ -145,13 +157,17 @@ func _update_behavior() -> void:
 			1.0
 		) * float(archetype.get("speed")) * _movement_multiplier()
 	elif (
-		behavior == &"leap"
-		and is_on_floor()
+		is_on_floor()
 		and _navigation_jump_remaining <= 0.0
+		and pursuit_jump_reason != &""
 	):
 		velocity.x = steering * float(archetype.get("speed")) * _movement_multiplier()
 		velocity.y = -navigation_jump_velocity * 0.72
-		_navigation_jump_remaining = navigation_jump_cooldown
+		_navigation_jump_remaining = (
+			maxf(navigation_jump_cooldown, 1.1)
+			if pursuit_jump_reason == &"pounce"
+			else navigation_jump_cooldown
+		)
 	else:
 		velocity.x = steering * float(archetype.get("speed")) * _movement_multiplier()
 	if visual != null:
@@ -200,6 +216,26 @@ func get_navigation_jump_reason(
 		and absf(target_offset.x) <= platform_target_horizontal_range
 	):
 		return &"platform"
+	return &""
+
+
+func get_pursuit_jump_reason(
+	behavior: StringName,
+	target_offset: Vector2,
+	attack_range: float
+) -> StringName:
+	if behavior != &"leap":
+		return &""
+	if (
+		target_offset.y <= -platform_target_height
+		and absf(target_offset.x) <= platform_target_horizontal_range
+	):
+		return &"platform"
+	if (
+		absf(target_offset.y) <= platform_target_height
+		and absf(target_offset.x) >= attack_range * 1.6
+	):
+		return &"pounce"
 	return &""
 
 

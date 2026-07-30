@@ -152,6 +152,47 @@ func _run() -> void:
 			"Enemies walking into route relief must jump over the obstacle."
 		)
 	_expect(
+		navigation_enemy.has_method("get_pursuit_jump_reason"),
+		"Enemy pursuit must expose a target-aware walk-or-jump decision."
+	)
+	if navigation_enemy.has_method("get_pursuit_jump_reason"):
+		_expect(
+			navigation_enemy.call(
+				"get_pursuit_jump_reason",
+				&"leap",
+				Vector2(32.0, 0.0),
+				72.0
+			) == &"",
+			"Leap enemies must walk or attack instead of hopping repeatedly beside the player."
+		)
+		_expect(
+			navigation_enemy.call(
+				"get_pursuit_jump_reason",
+				&"leap",
+				Vector2(180.0, 0.0),
+				72.0
+			) == &"pounce",
+			"Leap enemies may mix a pounce into a longer same-level pursuit."
+		)
+		_expect(
+			navigation_enemy.call(
+				"get_pursuit_jump_reason",
+				&"leap",
+				Vector2(80.0, -100.0),
+				72.0
+			) == &"platform",
+			"Leap enemies must prioritize the player's reachable platform height."
+		)
+		_expect(
+			navigation_enemy.call(
+				"get_pursuit_jump_reason",
+				&"chase",
+				Vector2(180.0, 0.0),
+				60.0
+			) == &"",
+			"Walking archetypes must keep walking on the same level."
+		)
+	_expect(
 		navigation_enemy.has_method("get_horde_separation_bias"),
 		"Dense enemies need local separation steering instead of stacking on one point."
 	)

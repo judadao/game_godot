@@ -168,6 +168,9 @@ Player 根節點為 `CharacterBody2D`，已實作：
 - Space 固有 Dash；
 - 朝向切換；
 - idle、walk、jump 視覺狀態；
+- 敵人追擊以玩家相對位置選擇走或跳：同層一般敵人持續步行，Leap archetype
+  只在同層有撲擊距離或玩家位於可達上方平台時跳躍；所有地面敵人落地後都有
+  短暫步行判斷期，不會在玩家未換位時連續原地彈跳；
 - Camera2D 跟隨；
 - 互動偵測與 Hurtbox。
 

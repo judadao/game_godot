@@ -414,6 +414,7 @@ instance.queue_free()
 | Migration | schema v6 會移除 retired Quickstep，且舊 payload deterministic、idempotent；card/skill/auto-attack 修復可驗證 |
 | Cooldown/exhaust | cooldown 到期回 discard；exhaust 不回收；pause 時 timer 不動 |
 | Status | source refresh、最高 armor tier、reduction cap 60%、unblockable bypass、regen/lifesteal |
+| Enemy pursuit | 玩家同層時一般 archetype 步行；Leap 近身不連跳、遠距可撲跳、玩家在可達上方才爬台跳；落地有重新判斷緩衝 |
 | Skill recipe | attack-only、multi-hit 一次 event、8 秒 window、count/exact sequence reset、獨立 cooldown |
 | Memory Library | capacity 10/14/18/24/30；learned 與 active loadout 分離 |
 | Growth queue | wave new-card 可直接 skip；滿 16 張可 replace/skip；EXP upgrade 五選一、全滿後獨立 fusion；無候選才 fallback；FIFO 不漏頁 |
