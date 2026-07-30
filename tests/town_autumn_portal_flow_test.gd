@@ -16,6 +16,13 @@ func _run() -> void:
 	var portal := game.get("current_map").get_node("Portals/BattleGateway") as Node
 	(player as Node2D).global_position = (portal as Node2D).global_position
 	game.call("_on_interaction_available", portal, player)
+	var prompt_label := game.get("hud").get_node(
+		"InteractionPanel/PromptRow/PromptText"
+	) as Label
+	_expect(
+		prompt_label.text == "Enter",
+		"Town BattleGateway prompt must show only the action because the portal label is already visible."
+	)
 	game.call("_try_interact")
 	await process_frame
 	await process_frame

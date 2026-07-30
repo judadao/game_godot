@@ -65,6 +65,14 @@ func _run() -> void:
 		if entrance == null:
 			continue
 		game.call("_on_interaction_available", entrance, player)
+		var prompt_label := game.get("hud").get_node(
+			"InteractionPanel/PromptRow/PromptText"
+		) as Label
+		_expect(
+			prompt_label.text == "Open",
+			"%s prompt must show only the action because its building label is already visible."
+			% entrance_name
+		)
 		game.call("_try_interact")
 		await process_frame
 		await process_frame

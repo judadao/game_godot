@@ -4955,7 +4955,10 @@ func _update_interaction_prompt() -> void:
 	if current_interactive.has_method("get_interaction_prompt"):
 		prompt = String(current_interactive.call("get_interaction_prompt"))
 	var raw_display_name: Variant = current_interactive.get("display_name")
-	if raw_display_name != null:
+	var show_target_name := not bool(
+		hud.get_meta("interaction_prompt_action_only", false)
+	)
+	if show_target_name and raw_display_name != null:
 		var display_name := String(raw_display_name).strip_edges()
 		if not display_name.is_empty():
 			prompt = "%s — %s" % [prompt, display_name]

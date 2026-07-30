@@ -3,6 +3,10 @@ class_name HUD
 
 signal interaction_prompt_accepted
 
+const AREA_PANEL_MIN_WIDTH := 220.0
+const AREA_PANEL_MAX_WIDTH := 520.0
+const AREA_TEXT_HORIZONTAL_PADDING := 88.0
+
 @onready var hp_fill: ColorRect = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/HPBar/Fill
 @onready var hp_value: Label = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/HPBar/Value
 @onready var mp_fill: ColorRect = $BottomHUD/HUDGrid/StatusColumn/StatusCenter/StatusProxy/HUDStatus/MPBar/Fill
@@ -14,6 +18,8 @@ signal interaction_prompt_accepted
 @onready var currency_value: Label = $BottomHUD/HUDGrid/ProgressColumn/ProgressCenter/ProgressProxy/HUDProgressPanel/Rows/GoldRow/CurrencyValue
 @onready var experience_value: Label = $BottomHUD/HUDGrid/ProgressColumn/ProgressCenter/ProgressProxy/HUDProgressPanel/Rows/ExperienceRow/ExperienceValue
 @onready var area_name: Label = $AreaPanel/AreaRows/AreaName
+@onready var area_heading: Label = $AreaPanel/AreaRows/AreaHeading
+@onready var area_panel: Control = $AreaPanel
 @onready var quest_text: Label = $BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy/HUDQuestTracker/QuestRows/QuestText
 @onready var quest_progress: Label = $BottomHUD/HUDGrid/InfoColumn/QuestCenter/QuestProxy/HUDQuestTracker/QuestRows/QuestProgress
 @onready var interaction_panel: Control = $InteractionPanel
@@ -28,6 +34,7 @@ var _feedback_generation: int = 0
 func _ready() -> void:
 	_make_display_only(self)
 	prompt_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_update_area_panel_width()
 
 func open() -> void:
 	visible = true
@@ -77,6 +84,40 @@ func show_potion_feedback(message: String, successful: bool = true) -> void:
 
 func set_area_name(value: String) -> void:
 	area_name.text = value.strip_edges() if not value.strip_edges().is_empty() else "Unknown Area"
+	_update_area_panel_width()
+
+
+func _update_area_panel_width() -> void:
+	if area_panel == null or area_heading == null or area_name == null:
+		return
+	var content_width := maxf(
+		_measure_label_text_width(area_heading),
+		_measure_label_text_width(area_name)
+	)
+	var panel_width := clampf(
+		ceilf(content_width + AREA_TEXT_HORIZONTAL_PADDING),
+		AREA_PANEL_MIN_WIDTH,
+		AREA_PANEL_MAX_WIDTH
+	)
+	area_panel.offset_left = -panel_width * 0.5
+	area_panel.offset_right = panel_width * 0.5
+
+
+func _measure_label_text_width(label: Label) -> float:
+	var settings := label.label_settings
+	var font := settings.font if settings != null and settings.font != null else label.get_theme_font("font")
+	var font_size := (
+		settings.font_size
+		if settings != null and settings.font_size > 0
+		else label.get_theme_font_size("font_size")
+	)
+	var outline_width := settings.outline_size * 2.0 if settings != null else 0.0
+	return font.get_string_size(
+		label.text,
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1.0,
+		font_size
+	).x + outline_width
 
 func set_objective(text: String, progress: String = "") -> void:
 	quest_text.text = text
