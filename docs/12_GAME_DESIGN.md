@@ -457,6 +457,13 @@ attack 觸發三秒弱霸體，cooldown 十秒。
 `frost_bind`）從玩家向外擴散 460px 結冰領域，對範圍內多個敵人施加 Slow，使用冰環、裂紋、
 冰晶和冷霧。VFX 半徑取自同一 card effect radius，但不自行判定傷害。
 
+範圍大招另沿玩家面向留下可拼裝地面路徑：火系是兩道弧形燃燒焦痕，冰系是一條
+主凍裂加兩條分岔；毒系 profile 使用不規則毒灘，供對應大招或元素進化接入。
+Core、Edge、Accent、Debris 四層各自顯現與消退，不能用一張整體火焰動畫換色。
+慢動作只放慢角色與戰局，大招本體、地面路徑和致死展示以真實時間對齊。致死傷害、
+掉落與碰撞立即結算，但 Fire／Ice 的敵人影像會分別保留到其衝擊點，再依元素色盤
+進入 dissolve／burst，讓收尾與招式本體成為同一段動作。
+
 ### 7.5 Meta card upgrade 與 fusion
 
 EXP growth 對個別 `CardInstance` 升級，最高 Lv.3；同 card ID 的兩張卡可有不同

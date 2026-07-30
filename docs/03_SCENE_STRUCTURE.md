@@ -357,9 +357,11 @@ func _ready() -> void:
 - `ElementalAttackAura.tscn`：掛在玩家或 projectile feedback 下的火／冰纏繞。
 - `FireUltimateVFX.tscn`：多圈火浪、焦土、火柱與火星。
 - `IceUltimateVFX.tscn`：擴張冰環、結冰地表、裂紋、冰晶與冷霧。
+- `ElementalGroundTrail.tscn`：依路徑採樣並以四個 atlas slots 拼裝火痕、凍裂或
+  毒灘；底層兩條 Line2D 只負責連續性，不擁有命中或持續傷害。
 - `SkillCastPresentation.tscn`：常駐 Game 的 CanvasLayer，不攔截輸入。
 
-前三者由建立端掛到當前 map 或 feedback，播放後停止或釋放；不得放入 map 作為
+前四者由建立端掛到當前 map 或 feedback，播放後停止或釋放；不得放入 map 作為
 固定傷害節點。實際命中半徑仍由 card effect 與 `CardEffectRunner` 決定。
 
 ### 7.1 Player contract
@@ -411,7 +413,9 @@ Enemy (CharacterBody2D, group "Enemies")
 - `attack_performed(pattern)`
 
 Boss另有`Bosses` group、phase/drop signals。HealthBar是world-space display，
-不是global HUD。
+不是global HUD。致死大招可透過 `prepare_hit_presentation()` 交付 element 與
+impact delay；`EnemyBase` 會立即停用碰撞並 emit `defeated`，但以真實時間保留
+`UltimateDeathPresentation` 到 impact 後完成 dissolve／burst 才釋放節點。
 
 ### 7.3 Director ownership
 

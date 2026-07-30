@@ -1,6 +1,15 @@
 extends SceneTree
 
 const ICE_ULTIMATE_SCENE := preload("res://scenes/combat/vfx/IceUltimateVFX.tscn")
+const EXPECTED_CLOSING_ORDER := [
+	&"impact_snap",
+	&"cohesive_decay",
+	&"tail_hold",
+]
+const EXPECTED_DECAY_RATIO := 0.18
+const EXPECTED_TAIL_RATIO := 0.12
+const EXPECTED_ICE_IMPACT_START := 0.67
+const EXPECTED_ICE_DECAY_START := 0.83
 
 var _failures := 0
 var _observed_stages: Array[StringName] = []
@@ -24,6 +33,21 @@ func _run() -> void:
 	_expect(effect.has_method("get_stage_name"), "Ice ultimate VFX must expose its current animation stage.")
 	_expect(effect.has_method("get_readability_hole_radius"), "Ice ultimate VFX must expose its player readability area.")
 	_expect(effect.has_method("get_visual_bounds_radius"), "Ice ultimate VFX must expose its visual bounds.")
+	_expect(
+		effect.has_method("get_closing_stage_order")
+			and effect.has_method("get_post_impact_decay_ratio")
+			and effect.has_method("get_tail_hold_ratio")
+			and effect.has_method("get_closing_stage_name")
+			and effect.has_method("debug_set_tail_hold_progress")
+			and effect.has_method("get_impact_start_progress_ratio")
+			and effect.has_method("get_cohesive_decay_start_progress_ratio")
+			and effect.has_method("uses_unscaled_timeline"),
+		"Ice ultimate must expose the shared impact/decay/tail closing rhythm diagnostics."
+	)
+	_expect(
+		bool(effect.call("uses_unscaled_timeline")),
+		"Ice ultimate timing must stay aligned with real-time shatter presentation during slow motion."
+	)
 	_expect(effect.has_signal("stage_changed"), "Ice ultimate VFX must announce each readable animation stage.")
 	_expect(effect.get_node_or_null("FrostRings/OuterRing") is Line2D, "The expanding freeze needs an authored outer ice ring.")
 	_expect(effect.get_node_or_null("FrostRings/InnerRing") is Line2D, "The expanding freeze needs an authored inner ice ring.")
@@ -69,6 +93,32 @@ func _run() -> void:
 		float(effect.call("get_visual_bounds_radius"))
 			<= float(effect.call("get_max_radius")) * 1.15,
 		"Every ice layer must stay inside a reusable bounded radius."
+	)
+	_expect(
+		(effect.call("get_closing_stage_order") as Array) == EXPECTED_CLOSING_ORDER
+			and is_equal_approx(float(effect.call("get_post_impact_decay_ratio")), EXPECTED_DECAY_RATIO)
+			and is_equal_approx(float(effect.call("get_tail_hold_ratio")), EXPECTED_TAIL_RATIO),
+		"Ice ultimate closing cadence must match the shared impact snap, cohesive decay, and tail hold contract."
+	)
+	_expect(
+		is_equal_approx(float(effect.call("get_impact_start_progress_ratio")), EXPECTED_ICE_IMPACT_START)
+			and is_equal_approx(float(effect.call("get_cohesive_decay_start_progress_ratio")), EXPECTED_ICE_DECAY_START),
+		"Ice ultimate must expose its real contact and closing transition timing for synced defeat/trail presentation."
+	)
+	effect.call("debug_set_progress", 0.74)
+	_expect(
+		StringName(effect.call("get_closing_stage_name")) == &"impact_snap",
+		"Ice shatter highlight must read as the shared impact snap."
+	)
+	effect.call("debug_set_progress", 0.92)
+	_expect(
+		StringName(effect.call("get_closing_stage_name")) == &"cohesive_decay",
+		"Ice cold mist decay must read as the shared cohesive decay."
+	)
+	effect.call("debug_set_tail_hold_progress", 0.5)
+	_expect(
+		StringName(effect.call("get_closing_stage_name")) == &"tail_hold",
+		"Ice post-decay mist linger must read as the shared tail hold."
 	)
 
 	await create_timer(0.75).timeout

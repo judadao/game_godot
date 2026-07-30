@@ -35,6 +35,13 @@ const EXPECTED_ARCHETYPES := {
 	"battle_tempo": "rhythm_pulse",
 	"grand_strategy": "tactical_ward",
 }
+const EXPECTED_CLOSING_ORDER := [
+	&"impact_snap",
+	&"cohesive_decay",
+	&"tail_hold",
+]
+const EXPECTED_DECAY_RATIO := 0.18
+const EXPECTED_TAIL_RATIO := 0.12
 
 var _failures := 0
 
@@ -155,10 +162,46 @@ func _run() -> void:
 	effect.call("play", "thunder_prison_pierce", 1, 1.0, true)
 	_expect(String(effect.call("get_profile_id")) == "thunder_prison_pierce", "Scene must retain exact skill identity.")
 	_expect(int(effect.call("get_part_count")) == 5, "Runtime scene must assemble five authored sprite parts.")
+	_expect(
+		effect.has_method("get_closing_stage_order")
+			and effect.has_method("get_post_impact_decay_ratio")
+			and effect.has_method("get_tail_hold_ratio")
+			and effect.has_method("get_closing_stage_name")
+			and effect.has_method("debug_set_tail_hold_progress")
+			and effect.has_method("get_impact_start_progress_ratio")
+			and effect.has_method("get_cohesive_decay_start_progress_ratio"),
+		"Named skill VFX must expose the shared impact/decay/tail closing rhythm diagnostics."
+	)
+	_expect(
+		(effect.call("get_closing_stage_order") as Array) == EXPECTED_CLOSING_ORDER
+			and is_equal_approx(float(effect.call("get_post_impact_decay_ratio")), EXPECTED_DECAY_RATIO)
+			and is_equal_approx(float(effect.call("get_tail_hold_ratio")), EXPECTED_TAIL_RATIO),
+		"Named skill closing cadence must match the shared impact snap, cohesive decay, and tail hold contract."
+	)
+	_expect(
+		float(effect.call("get_impact_start_progress_ratio")) > 0.0
+			and float(effect.call("get_impact_start_progress_ratio")) < float(effect.call("get_cohesive_decay_start_progress_ratio"))
+			and float(effect.call("get_cohesive_decay_start_progress_ratio")) <= 0.9,
+		"Named skill VFX must expose contact and cohesive decay timing for synced defeat/trail presentation."
+	)
 	effect.call("debug_set_progress", 0.08)
 	_expect(effect.call("get_stage_name") == &"anticipation", "Named VFX must begin with anticipation.")
 	effect.call("debug_set_progress", 0.72)
 	_expect(effect.call("get_stage_name") in [&"impact", &"decay"], "Named VFX must expose a decisive impact stage.")
+	_expect(
+		StringName(effect.call("get_closing_stage_name")) in [&"impact_snap", &"cohesive_decay"],
+		"Named VFX decisive contact must map to the shared closing rhythm."
+	)
+	effect.call("debug_set_progress", 0.96)
+	_expect(
+		StringName(effect.call("get_closing_stage_name")) == &"cohesive_decay",
+		"Named VFX late authored decay must read as the shared cohesive decay."
+	)
+	effect.call("debug_set_tail_hold_progress", 0.5)
+	_expect(
+		StringName(effect.call("get_closing_stage_name")) == &"tail_hold",
+		"Named VFX post-decay linger must read as the shared tail hold."
+	)
 	viewport.queue_free()
 	await process_frame
 

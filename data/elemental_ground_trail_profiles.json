@@ -1,0 +1,97 @@
+{
+  "profiles": [
+    {
+      "id": "fire_path",
+      "element": "fire",
+      "topology": "burning_scar",
+      "slots": {
+        "core": "charred_ember_bed",
+        "edge": "licking_flame_rim",
+        "accent": "branching_heat_cracks",
+        "debris": "rising_ember_flecks"
+      },
+      "atlas_path": "res://assets/generated/vfx/ground/fire_ground_path_parts_v1.png",
+      "atlas_size": [1536, 1024],
+      "atlas_regions": {
+        "core": [0, 0, 768, 512],
+        "edge": [768, 0, 768, 512],
+        "accent": [0, 512, 768, 512],
+        "debris": [768, 512, 768, 512]
+      },
+      "duration": 3.6,
+      "segment_spacing": 62.0,
+      "width": 48.0,
+      "max_segments": 24,
+      "core_color": "#42130bc4",
+      "edge_color": "#ff6a1fd9",
+      "accent_color": "#ffd36aff",
+      "debris_color": "#ff9a36ee",
+      "pulse_speed": 5.2,
+      "edge_jitter": 0.36,
+      "accent_density": 4,
+      "debris_count": 5
+    },
+    {
+      "id": "ice_path",
+      "element": "ice",
+      "topology": "frozen_rift",
+      "slots": {
+        "core": "frost_glass_plate",
+        "edge": "faceted_rime_border",
+        "accent": "forked_freeze_fracture",
+        "debris": "crystal_splinters"
+      },
+      "atlas_path": "res://assets/generated/vfx/ground/ice_ground_path_parts_v1.png",
+      "atlas_size": [1536, 1024],
+      "atlas_regions": {
+        "core": [0, 0, 768, 512],
+        "edge": [768, 0, 768, 512],
+        "accent": [0, 512, 768, 512],
+        "debris": [768, 512, 768, 512]
+      },
+      "duration": 4.8,
+      "segment_spacing": 70.0,
+      "width": 56.0,
+      "max_segments": 22,
+      "core_color": "#4da8c98a",
+      "edge_color": "#8ce8fff2",
+      "accent_color": "#e8fcffff",
+      "debris_color": "#baf3ffff",
+      "pulse_speed": 2.4,
+      "edge_jitter": 0.16,
+      "accent_density": 3,
+      "debris_count": 6
+    },
+    {
+      "id": "poison_pool",
+      "element": "poison",
+      "topology": "toxic_puddle",
+      "slots": {
+        "core": "viscous_toxic_pool",
+        "edge": "iridescent_slime_rim",
+        "accent": "gas_bubble_clusters",
+        "debris": "corrosive_droplets"
+      },
+      "atlas_path": "res://assets/generated/vfx/ground/poison_ground_path_parts_v1.png",
+      "atlas_size": [1536, 1024],
+      "atlas_regions": {
+        "core": [0, 0, 768, 512],
+        "edge": [768, 0, 768, 512],
+        "accent": [0, 512, 768, 512],
+        "debris": [768, 512, 768, 512]
+      },
+      "duration": 3.2,
+      "segment_spacing": 78.0,
+      "width": 70.0,
+      "max_segments": 20,
+      "core_color": "#315d18b8",
+      "edge_color": "#8ddc3fe8",
+      "accent_color": "#d6ff72f2",
+      "debris_color": "#a868d9e8",
+      "pulse_speed": 3.1,
+      "edge_jitter": 0.28,
+      "accent_density": 5,
+      "debris_count": 4
+    }
+  ]
+}

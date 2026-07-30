@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/elemental_ground_trail.gd" id="1_script"]
+
+[node name="ElementalGroundTrail" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="PathUnderlay" type="Node2D" parent="."]
+show_behind_parent = true
+
+[node name="EdgeRibbon" type="Line2D" parent="PathUnderlay"]
+z_index = -5
+antialiased = true
+
+[node name="CoreRibbon" type="Line2D" parent="PathUnderlay"]
+z_index = -4
+antialiased = true
+
+[node name="SegmentOwner" type="Node2D" parent="."]
+show_behind_parent = true

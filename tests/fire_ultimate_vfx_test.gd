@@ -11,6 +11,15 @@ const EXPECTED_STAGES := [
 ]
 const STAGE_SAMPLE_PROGRESS := [0.08, 0.22, 0.48, 0.74, 0.92]
 const MAX_PARTICLE_BUDGET := 256
+const EXPECTED_CLOSING_ORDER := [
+	&"impact_snap",
+	&"cohesive_decay",
+	&"tail_hold",
+]
+const EXPECTED_DECAY_RATIO := 0.18
+const EXPECTED_TAIL_RATIO := 0.12
+const EXPECTED_FIRE_IMPACT_START := 0.68
+const EXPECTED_FIRE_DECAY_START := 0.82
 
 var _failures := 0
 
@@ -53,6 +62,21 @@ func _run() -> void:
 		effect.get_node_or_null("FlamePillars") is GPUParticles2D
 			and effect.get_node_or_null("EmberSparks") is GPUParticles2D,
 		"Fire ultimate VFX must use bounded GPU particle systems for pillars and sparks."
+	)
+	_expect(
+		effect.has_method("get_closing_stage_order")
+			and effect.has_method("get_post_impact_decay_ratio")
+			and effect.has_method("get_tail_hold_ratio")
+			and effect.has_method("get_closing_stage_name")
+			and effect.has_method("debug_set_tail_hold_progress")
+			and effect.has_method("get_impact_start_progress_ratio")
+			and effect.has_method("get_cohesive_decay_start_progress_ratio")
+			and effect.has_method("uses_unscaled_timeline"),
+		"Fire ultimate must expose the shared impact/decay/tail closing rhythm diagnostics."
+	)
+	_expect(
+		bool(effect.call("uses_unscaled_timeline")),
+		"Fire ultimate timing must stay aligned with real-time impact presentation during slow motion."
 	)
 	_expect(not bool(effect.call("is_active")), "Fire ultimate VFX must remain inactive before play().")
 
@@ -98,6 +122,32 @@ func _run() -> void:
 			"Fire ultimate progress %.2f must resolve to the %s stage."
 				% [STAGE_SAMPLE_PROGRESS[sample_index], EXPECTED_STAGES[sample_index]]
 		)
+	_expect(
+		(effect.call("get_closing_stage_order") as Array) == EXPECTED_CLOSING_ORDER
+			and is_equal_approx(float(effect.call("get_post_impact_decay_ratio")), EXPECTED_DECAY_RATIO)
+			and is_equal_approx(float(effect.call("get_tail_hold_ratio")), EXPECTED_TAIL_RATIO),
+		"Fire ultimate closing cadence must match the shared impact snap, cohesive decay, and tail hold contract."
+	)
+	_expect(
+		is_equal_approx(float(effect.call("get_impact_start_progress_ratio")), EXPECTED_FIRE_IMPACT_START)
+			and is_equal_approx(float(effect.call("get_cohesive_decay_start_progress_ratio")), EXPECTED_FIRE_DECAY_START),
+		"Fire ultimate must expose its real contact and closing transition timing for synced defeat/trail presentation."
+	)
+	effect.call("debug_set_progress", 0.74)
+	_expect(
+		StringName(effect.call("get_closing_stage_name")) == &"impact_snap",
+		"Fire ultimate impact crown must read as the shared impact snap."
+	)
+	effect.call("debug_set_progress", 0.92)
+	_expect(
+		StringName(effect.call("get_closing_stage_name")) == &"cohesive_decay",
+		"Fire ultimate ember decay must read as the shared cohesive decay."
+	)
+	effect.call("debug_set_tail_hold_progress", 0.5)
+	_expect(
+		StringName(effect.call("get_closing_stage_name")) == &"tail_hold",
+		"Fire ultimate post-decay particle linger must read as the shared tail hold."
+	)
 
 	effect.set("duration", 0.3)
 	effect.call("play", Vector2(360.0, 260.0))

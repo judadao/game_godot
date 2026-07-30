@@ -201,7 +201,12 @@ resolved window StyleBox 與各功能替代狀態；其餘 scene-local override 
 Combat VFX 修改至少執行
 `skill_cast_presentation_test.gd`、`elemental_attack_aura_test.gd`、
 `fire_ultimate_vfx_test.gd`、`ice_ultimate_vfx_test.gd` 與
-`combat_vfx_integration_test.gd`。命名技能另執行
+`combat_vfx_integration_test.gd`。大招地面殘留另執行
+`elemental_ground_trail_test.gd`，驗證三張四象限 atlas、三種獨立 topology、
+路徑端點、visual budget、unscaled fresh／active／decay 與自動清理；大招致死
+演出另執行 `ultimate_enemy_defeat_presentation_test.gd`，確認 gameplay／碰撞／
+獎勵立即結算，但敵人保留到 Fire／Ice impact delay 後才 dissolve／burst。
+命名技能另執行
 `named_skill_vfx_test.gd`，驗證五個終結技、四個觸發技各自擁有唯一 atlas row、
 五個可拼裝部件、精確 ID、正式 element、九種唯一 archetype、各自不同且遞增的
 `beat_pattern`、三級 `evolution_layers` 與對齊的
@@ -218,7 +223,10 @@ Forward+ renderer 確認火／冰
 粒子、環線、標題層級、世界中心與自動 cleanup；標題 layout 需跑六解析度矩陣。
 火系可用 `FIRE_ULTIMATE_VFX_CAPTURE_PATH` 擷取 impact crown，冰系可用
 `ICE_ULTIMATE_CAPTURE_PATH` 與 `ICE_ULTIMATE_CAPTURE_PROGRESS` 分階段擷取；
-截圖必須同時確認滿版覆蓋與玩家中心可讀性。
+地面素材可用 `ELEMENTAL_GROUND_TRAIL_CAPTURE_PATH` 擷取三系 contact sheet；
+敵人消滅可用 `ULTIMATE_ENEMY_DEFEAT_CAPTURE_PATH` 與
+`ULTIMATE_ENEMY_DEFEAT_CAPTURE_DELAY` 擷取 impact 後畫面。截圖必須同時確認
+滿版覆蓋、玩家中心可讀性、路徑與招式方向一致，以及敵人不早於視覺命中消失。
 普通劍氣另執行 `auto_attack_feedback_test.gd`；可用
 `AUTO_ATTACK_FEEDBACK_CAPTURE_ELEMENT=flame|frost` 與
 `AUTO_ATTACK_FEEDBACK_CAPTURE_COMBO=0|3|6|9` 分離擷取屬性及 Combo 疊層，

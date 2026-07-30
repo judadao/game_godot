@@ -9,6 +9,11 @@ const SUPPORTED_EFFECTS := [
 	"gain_energy", "summon", "projectile_burst", "overdrive",
 	"infusion", "combat_status", "healing_pulses", "regeneration",
 ]
+const ELEMENT_TAXONOMY_SCRIPT := preload(
+	"res://scripts/systems/element_taxonomy.gd"
+)
+
+var _element_taxonomy: RefCounted = ELEMENT_TAXONOMY_SCRIPT.new()
 
 
 func supports_effect(kind: String) -> bool:
@@ -20,6 +25,7 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 		return {}
 	var effect := (card.get("effect", {}) as Dictionary).duplicate(true)
 	var kind := String(effect.get("kind", ""))
+	var hit_presentation := _resolve_hit_presentation(card, effect)
 	var result := {
 		"card_id": String(card.get("id", "")),
 		"instance_id": String(card.get("instance_id", "")),
@@ -67,10 +73,17 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 				selected,
 				int(effect.get("amount", 0)),
 				result,
-				resolved_projectile_count
+				resolved_projectile_count,
+				hit_presentation
 			)
 			_apply_infused_statuses(selected, effect)
-			_apply_finisher_mutations(caster, selected, effect, result)
+			_apply_finisher_mutations(
+				caster,
+				selected,
+				effect,
+				result,
+				hit_presentation
+			)
 		"area_damage":
 			var selected := _targets_in_radius(caster, targets, float(effect.get("radius", 150.0)))
 			_damage_targets(
@@ -79,7 +92,8 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 				int(effect.get("amount", 0)),
 				result,
 				1,
-				float(effect.get("knockback", 180.0))
+				float(effect.get("knockback", 180.0)),
+				hit_presentation
 			)
 			_apply_infused_statuses(selected, effect)
 		"block":
@@ -97,7 +111,15 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 				targets,
 				float(effect.get("radius", 170.0))
 			)
-			_damage_targets(caster, selected, int(effect.get("amount", 0)), result)
+			_damage_targets(
+				caster,
+				selected,
+				int(effect.get("amount", 0)),
+				result,
+				1,
+				80.0,
+				hit_presentation
+			)
 			_apply_infused_statuses(selected, effect)
 			_pull_targets(caster, selected, float(effect.get("pull_strength", 0.0)))
 		"slow":
@@ -117,7 +139,8 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 					status_damage,
 					result,
 					1,
-					float(effect.get("knockback", 180.0))
+					float(effect.get("knockback", 180.0)),
+					hit_presentation
 				)
 			_apply_status(
 				selected,
@@ -135,7 +158,19 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 				caster.set("attack_power", int(current) + int(effect.get("amount", 0)))
 				result["affected"] = 1
 		"damage_aura":
-			_damage_targets(caster, _targets_in_radius(caster, targets, float(effect.get("radius", 110.0))), int(effect.get("amount", 0)), result)
+			_damage_targets(
+				caster,
+				_targets_in_radius(
+					caster,
+					targets,
+					float(effect.get("radius", 110.0))
+				),
+				int(effect.get("amount", 0)),
+				result,
+				1,
+				80.0,
+				hit_presentation
+			)
 		"summon":
 			_resolve_summon(caster, effect, result)
 		"overdrive":
@@ -178,7 +213,8 @@ func _damage_targets(
 	raw_damage: int,
 	result: Dictionary,
 	hits: int = 1,
-	knockback: float = 80.0
+	knockback: float = 80.0,
+	hit_presentation: Dictionary = {}
 ) -> void:
 	for target in targets:
 		if not target is Node or not is_instance_valid(target):
@@ -188,6 +224,7 @@ func _damage_targets(
 			if not is_instance_valid(target):
 				break
 			if target.has_method("take_hit"):
+				_prepare_target_hit_presentation(target, hit_presentation)
 				var source := (caster as Node2D).global_position if caster is Node2D else Vector2.ZERO
 				target_total += int(target.call("take_hit", raw_damage, source, knockback))
 			elif target.has_method("take_damage"):
@@ -202,7 +239,8 @@ func _damage_projectile_volley(
 	targets: Array,
 	raw_damage: int,
 	result: Dictionary,
-	projectile_count: int
+	projectile_count: int,
+	hit_presentation: Dictionary = {}
 ) -> void:
 	if targets.is_empty():
 		return
@@ -216,6 +254,7 @@ func _damage_projectile_volley(
 			continue
 		var dealt := 0
 		if target.has_method("take_hit"):
+			_prepare_target_hit_presentation(target, hit_presentation)
 			var source := (caster as Node2D).global_position if caster is Node2D else Vector2.ZERO
 			dealt = int(target.call("take_hit", raw_damage, source, 80.0))
 		elif target.has_method("take_damage"):
@@ -225,6 +264,87 @@ func _damage_projectile_volley(
 		damaged_target_ids[target.get_instance_id()] = true
 		result["total"] = int(result["total"]) + dealt
 	result["affected"] = int(result["affected"]) + damaged_target_ids.size()
+
+
+func _prepare_target_hit_presentation(
+	target: Node,
+	hit_presentation: Dictionary
+) -> void:
+	if (
+		hit_presentation.is_empty()
+		or not target.has_method("prepare_hit_presentation")
+	):
+		return
+	target.call(
+		"prepare_hit_presentation",
+		hit_presentation.duplicate(true)
+	)
+
+
+func _resolve_hit_presentation(
+	card: Dictionary,
+	effect: Dictionary
+) -> Dictionary:
+	var tags := card.get("tags", []) as Array
+	var visual_profile := card.get("combo_visual_profile", {}) as Dictionary
+	var is_ultimate := (
+		String(card.get("type", "")) == "ultimate"
+		or bool(visual_profile.get("finisher", false))
+		or String(card.get("id", "")) == "inferno_orb"
+	)
+	for tag_variant in tags:
+		if String(tag_variant).strip_edges().to_lower() == "ultimate":
+			is_ultimate = true
+			break
+	if (
+		not is_ultimate
+		or String(effect.get("kind", "")) not in [
+			"damage", "area_damage", "area_slow", "damage_aura",
+		]
+	):
+		return {}
+	var element := "normal"
+	for tag_variant in tags:
+		var normalized := String(
+			_element_taxonomy.call("normalize", String(tag_variant))
+		)
+		if normalized.is_empty() or normalized == "normal":
+			continue
+		element = normalized
+		break
+	if element == "normal":
+		for element_variant in visual_profile.get("elements", []) as Array:
+			var normalized := String(
+				_element_taxonomy.call("normalize", String(element_variant))
+			)
+			if normalized.is_empty() or normalized == "normal":
+				continue
+			element = normalized
+			break
+	var skill_id := String(card.get("id", ""))
+	return {
+		"kind": "ultimate",
+		"timeline": "hit_dissolve_burst",
+		"element": element,
+		"skill_id": skill_id,
+		"impact_delay_seconds": _ultimate_impact_delay(skill_id),
+		"skill_level": clampi(
+			int(card.get("card_level", card.get("level", 1))),
+			1,
+			3
+		),
+		"stack_count": maxi(0, int(visual_profile.get("stack_count", 0))),
+	}
+
+
+func _ultimate_impact_delay(skill_id: String) -> float:
+	match skill_id:
+		"concussive_shout", "inferno_orb":
+			return 0.56
+		"frost_bind":
+			return 0.96
+		_:
+			return 0.44
 
 
 func _apply_status(
@@ -273,7 +393,8 @@ func _apply_finisher_mutations(
 	caster: Node,
 	targets: Array,
 	effect: Dictionary,
-	result: Dictionary
+	result: Dictionary,
+	hit_presentation: Dictionary = {}
 ) -> void:
 	var bonus_ratio := 0.0
 	var mutation_ids: Array[String] = []
@@ -293,7 +414,15 @@ func _apply_finisher_mutations(
 		roundi(float(effect.get("amount", 0)) * bonus_ratio)
 	)
 	var total_before := int(result.get("total", 0))
-	_damage_targets(caster, targets, mutation_damage, result)
+	_damage_targets(
+		caster,
+		targets,
+		mutation_damage,
+		result,
+		1,
+		80.0,
+		hit_presentation
+	)
 	result["mutation_damage"] = int(result.get("total", 0)) - total_before
 	result["mutations_triggered"] = mutation_ids
 

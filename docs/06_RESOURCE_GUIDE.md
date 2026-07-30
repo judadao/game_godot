@@ -36,14 +36,14 @@ pipeline描述成Current。
 
 | 類型 | 數量 | Path |
 |---|---:|---|
-| Gameplay JSON | 9 | `res://data/*.json` |
+| Gameplay JSON | 10 | `res://data/*.json` |
 | Gameplay `.tres` / `.res` | 0 | 無 |
 | `resources/` content | 0；空目錄不保留 placeholder | 無 |
 | Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
 | Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
-| Generated VFX texture | 21 | `res://assets/generated/vfx/` |
+| Generated VFX texture | 24 | `res://assets/generated/vfx/` |
 
-九個 JSON：
+十個 JSON：
 
 - `res://data/cards.json`
 - `res://data/evolutions.json`
@@ -54,6 +54,7 @@ pipeline描述成Current。
 - `res://data/combo_finishers.json`
 - `res://data/forge_catalog.json`
 - `res://data/named_skill_vfx_profiles.json`
+- `res://data/elemental_ground_trail_profiles.json`
 
 Generated combat presentation：
 
@@ -85,7 +86,14 @@ Generated combat presentation：
   Godot 原生 drawing、Line2D、Polygon2D 與 bounded GPUParticles2D，不依賴
   一次性影片。兩者都採五段演出、限制 visual bounds／particle budget，並在
   玩家中心保留 readability hole；火系由聚火、點燃、擴散、火冠至餘燼，冰系
-  由蓄勢、徑向凍結、晶柱爆發、碎裂亮邊至冷霧消散。
+  由蓄勢、徑向凍結、晶柱爆發、碎裂亮邊至冷霧消散。兩者以 unscaled timeline
+  維持 contact timing，並統一收束為 impact snap、cohesive decay、tail hold。
+- `assets/generated/vfx/ground/*_ground_path_parts_v1.png` 是三張 1536×1024 RGBA
+  四象限圖集：左上 Core、右上 Edge、左下 Accent、右下 Debris。
+  `ElementalGroundTrailCatalog` 驗證 atlas 尺寸、region 邊界及不重疊；
+  `ElementalGroundTrail` 沿路徑逐段組裝素材並以 unscaled fresh／active／decay
+  timeline 播放。火痕、凍裂、毒灘各有獨立 topology，不得只換 tint。象限與
+  generation contract 記錄於 `docs/art_concepts/elemental_ground_paths_v1.md`。
 - `SkillCastPresentation` 只以透明元素洗色、短促 impact flash、能量導線與
   可換行大字表現出招，不使用實心中央 UI 卡片。Major cast 才啟用邊緣壓暗，
   一般 Combo 維持正常時間流速。
@@ -180,6 +188,7 @@ UI setter/configure API
 | `combo_finishers.json` | `ComboFinisherCatalog` | `recipes` | 5 個精確三招終結技配方 |
 | `forge_catalog.json` | `ForgeCatalog` | `material_offers`, `equipment_recipes`, `sword_soul_recipes` | Town 鍛造 offer 與 recipe |
 | `named_skill_vfx_profiles.json` | `NamedSkillVFXCatalog` | `profiles` | 5 個 Finisher＋4 個 trigger 的差異化模組 VFX |
+| `elemental_ground_trail_profiles.json` | `ElementalGroundTrailCatalog` | `profiles` | 火焰路徑、冰裂分岔與毒灘的四槽 atlas 拼裝資料 |
 
 數量與重要cross-reference由`tests/content_validation_test.gd`驗證。新增內容時，
 測試中的固定數量若代表產品contract需一起更新；不得只為通過測試放寬assertion。

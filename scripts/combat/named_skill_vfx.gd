@@ -12,6 +12,17 @@ const STAGE_IMPACT := &"impact"
 const STAGE_DECAY := &"decay"
 const MAX_ACCENT_LAYER_COUNT := 10
 const DEFAULT_STACK_MILESTONES := [3, 6, 9]
+const POST_IMPACT_DECAY_RATIO := 0.18
+const TAIL_HOLD_RATIO := 0.12
+const MIN_TAIL_HOLD_DURATION := 0.06
+const CLOSING_STAGE_IMPACT_SNAP := &"impact_snap"
+const CLOSING_STAGE_COHESIVE_DECAY := &"cohesive_decay"
+const CLOSING_STAGE_TAIL_HOLD := &"tail_hold"
+const CLOSING_STAGE_ORDER := [
+	CLOSING_STAGE_IMPACT_SNAP,
+	CLOSING_STAGE_COHESIVE_DECAY,
+	CLOSING_STAGE_TAIL_HOLD,
+]
 
 @export var auto_free := true
 
@@ -33,6 +44,7 @@ var _evolution_level := 1
 var _buff_stacks := 0
 var _buff_stack_tier := 0
 var _animation_archetype := &""
+var _tail_progress := 0.0
 
 
 func _ready() -> void:
@@ -85,6 +97,7 @@ func play(
 	_apply_atlas_parts(atlas)
 	_elapsed = 0.0
 	_progress = 0.0
+	_tail_progress = 0.0
 	_impact_emitted = false
 	_active = true
 	visible = true
@@ -149,20 +162,63 @@ func get_hit_stop_duration() -> float:
 	return float(_profile.get("hit_stop", 0.0))
 
 
+func get_closing_stage_order() -> Array[StringName]:
+	return CLOSING_STAGE_ORDER.duplicate()
+
+
+func get_post_impact_decay_ratio() -> float:
+	return POST_IMPACT_DECAY_RATIO
+
+
+func get_tail_hold_ratio() -> float:
+	return TAIL_HOLD_RATIO
+
+
+func get_impact_start_progress_ratio() -> float:
+	return float(_profile.get("impact_time", 0.6)) / maxf(0.1, _duration)
+
+
+func get_cohesive_decay_start_progress_ratio() -> float:
+	return minf(0.9, get_impact_start_progress_ratio() + 0.14 / maxf(0.1, _duration))
+
+
+func get_closing_stage_name() -> StringName:
+	if _tail_progress > 0.0:
+		return CLOSING_STAGE_TAIL_HOLD
+	if _stage_name == STAGE_IMPACT:
+		return CLOSING_STAGE_IMPACT_SNAP
+	if _stage_name == STAGE_DECAY:
+		return CLOSING_STAGE_COHESIVE_DECAY
+	return _stage_name
+
+
 func debug_set_progress(value: float) -> void:
 	if not _active:
 		return
+	_tail_progress = 0.0
 	_elapsed = clampf(value, 0.0, 1.0) * _duration
 	_apply_progress(clampf(value, 0.0, 1.0))
+
+
+func debug_set_tail_hold_progress(value: float) -> void:
+	if not _active:
+		return
+	_apply_progress(1.0)
+	_set_tail_hold_progress(value)
 
 
 func _process(delta: float) -> void:
 	if not _active:
 		return
 	var real_delta := delta / maxf(Engine.time_scale, 0.05)
-	_elapsed = minf(_duration, _elapsed + real_delta)
-	_apply_progress(_elapsed / _duration)
-	if _elapsed >= _duration:
+	var tail_duration := _tail_hold_duration()
+	_elapsed = minf(_duration + tail_duration, _elapsed + real_delta)
+	if _elapsed <= _duration:
+		_tail_progress = 0.0
+		_apply_progress(_elapsed / _duration)
+	else:
+		_set_tail_hold_progress((_elapsed - _duration) / tail_duration)
+	if _elapsed >= _duration + tail_duration:
 		_finish()
 
 
@@ -251,6 +307,7 @@ func _resolve_stack_tier(stack_count: int) -> int:
 
 
 func _apply_progress(value: float) -> void:
+	_tail_progress = 0.0
 	_progress = clampf(value, 0.0, 1.0)
 	var anticipation_ratio := float(_profile.get("anticipation_time", 0.15)) / _duration
 	var impact_ratio := float(_profile.get("impact_time", 0.6)) / _duration
@@ -368,6 +425,58 @@ func _layout_parts(anticipation_ratio: float, impact_ratio: float, impact_end: f
 		strike,
 		decay
 	)
+
+
+func _set_tail_hold_progress(value: float) -> void:
+	_tail_progress = clampf(value, 0.0, 1.0)
+	_progress = 1.0
+	_stage_name = STAGE_DECAY
+	_layout_tail_hold()
+
+
+func _layout_tail_hold() -> void:
+	if _sprites.size() < 5:
+		return
+	var source := _vector_from_profile("source")
+	var target := _vector_from_profile("target")
+	var fade := 1.0 - ease(_tail_progress, 1.35)
+	var charge := _sprites[0]
+	var attack := _sprites[1]
+	var trail := _sprites[2]
+	var impact_part := _sprites[3]
+	var debris := _sprites[4]
+	charge.position = source.lerp(target, 0.82)
+	charge.scale = Vector2.ONE * lerpf(0.54, 0.46, _tail_progress)
+	_set_alpha(charge, fade * 0.08)
+	attack.position = target.lerp(source, 0.08 * _tail_progress)
+	attack.scale = Vector2.ONE * lerpf(0.84, 0.72, _tail_progress)
+	_set_alpha(attack, fade * 0.12)
+	trail.position = target.lerp(source, 0.18 + 0.08 * _tail_progress)
+	trail.scale = Vector2(lerpf(0.92, 1.08, _tail_progress), lerpf(0.62, 0.52, _tail_progress))
+	_set_alpha(trail, fade * 0.16)
+	impact_part.position = target
+	impact_part.scale = Vector2.ONE * lerpf(0.94, 1.10, _tail_progress)
+	_set_alpha(impact_part, fade * 0.18)
+	debris.position = target + Vector2(0.0, lerpf(-6.0, -18.0, _tail_progress))
+	debris.scale = Vector2.ONE * lerpf(1.02, 1.22, _tail_progress)
+	_set_alpha(debris, fade * 0.24)
+	for accent_index in _accent_sprites.size():
+		var sprite := _accent_sprites[accent_index]
+		var sample := float(accent_index + 1)
+		var ratio := sample / float(_accent_sprites.size() + 1)
+		var side := -1.0 if accent_index % 2 == 0 else 1.0
+		sprite.position = target.lerp(source, ratio * 0.22)
+		sprite.position += Vector2(
+			side * (8.0 + sample * 3.0),
+			-8.0 - _tail_progress * (6.0 + sample)
+		)
+		sprite.rotation = side * (0.04 + ratio * 0.06)
+		sprite.scale = Vector2.ONE * lerpf(0.62 + ratio * 0.18, 0.82 + ratio * 0.22, _tail_progress)
+		_set_alpha(sprite, fade * (0.12 + ratio * 0.06))
+
+
+func _tail_hold_duration() -> float:
+	return maxf(MIN_TAIL_HOLD_DURATION, _duration * TAIL_HOLD_RATIO)
 
 
 func _layout_archetype(

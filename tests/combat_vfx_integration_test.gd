@@ -31,8 +31,9 @@ func _run() -> void:
 		_expect(
 			String(inferno.get("element", "")) == "fire"
 				and bool(inferno.get("ultimate", false))
+				and String(inferno.get("ground_trail_profile", "")) == "fire_path"
 				and float(inferno.get("radius", 0.0)) >= 180.0,
-			"Inferno Orb must map to a reusable wide fire ultimate."
+			"Inferno Orb must map to a reusable wide fire ultimate and authored burning ground path."
 		)
 
 		var frost := game.call(
@@ -42,9 +43,10 @@ func _run() -> void:
 		_expect(
 			String(frost.get("element", "")) == "ice"
 				and bool(frost.get("ultimate", false))
+				and String(frost.get("ground_trail_profile", "")) == "ice_path"
 				and bool(frost.get("slow_motion", false))
 				and float(frost.get("radius", 0.0)) >= 220.0,
-			"Frost Bind must map to a player-centered radial freeze ultimate."
+			"Frost Bind must map to a player-centered radial freeze ultimate and authored frozen ground path."
 		)
 
 		var flame_imbue := game.call(
@@ -118,11 +120,42 @@ func _run() -> void:
 			],
 			"Combat VFX must normalize compatibility aliases into the formal nine-element taxonomy."
 		)
+	_expect(
+		game.has_method("_build_ultimate_ground_paths"),
+		"Game must expose one pure authority for element-specific ultimate ground geometry."
+	)
+	if game.has_method("_build_ultimate_ground_paths"):
+		var fire_paths := game.call(
+			"_build_ultimate_ground_paths",
+			"fire",
+			240.0,
+			Vector2.RIGHT
+		) as Array
+		var ice_paths := game.call(
+			"_build_ultimate_ground_paths",
+			"ice",
+			240.0,
+			Vector2.RIGHT
+		) as Array
+		_expect(
+			fire_paths.size() == 2 and ice_paths.size() == 3,
+			"Fire must leave two sweeping scars while ice branches into three frozen rifts."
+		)
+		_expect(
+			not fire_paths.is_empty()
+				and not ice_paths.is_empty()
+				and fire_paths[0] != ice_paths[0],
+			"Ultimate ground paths must use element-specific geometry instead of one recolored template."
+		)
 
 	var instance := game_scene.instantiate()
 	_expect(
 		instance.has_node("SkillCastPresentation"),
 		"Game scene must own the single screen-space cast presentation."
+	)
+	_expect(
+		instance.get("elemental_ground_trail_scene") is PackedScene,
+		"Game must preload the reusable elemental ground-trail presentation scene."
 	)
 	instance.free()
 	game.free()

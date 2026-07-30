@@ -289,21 +289,23 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `SkillRecipeManager` | `scripts/systems/skill_recipe_manager.gd` | `load_catalog`, `configure_loadout`, `record_card`, `tick`, `reset_runtime` |
 | `GrowthChoiceQueue` | `scripts/systems/growth_choice_queue.gd` | `enqueue_wave_blessing`, `enqueue_experience_growth`, `peek`, `resolve` |
 | `ElementTaxonomy` | `scripts/systems/element_taxonomy.gd` | `get_all`, `normalize`, `is_valid`, `get_color`；武器、神賜與戰鬥 VFX 共用的元素命名權威 |
+| `ElementalGroundTrailCatalog` | `scripts/systems/elemental_ground_trail_catalog.gd` | 驗證火／冰／毒地面路徑 profile、四象限 atlas 與 visual budget |
 | `SaveService` | `scripts/systems/save_service.gd` | `save_meta`, `load_meta` |
 
 ### 5.2 Combat
 
 | Class | Source | Contract |
 |---|---|---|
-| `CardEffectRunner` | `scripts/combat/card_effect_runner.gd` | `cast()` 修改 caster/targets，emit `effect_resolved` |
+| `CardEffectRunner` | `scripts/combat/card_effect_runner.gd` | `cast()` 修改 caster/targets，emit `effect_resolved`；大招致死前先以 `prepare_hit_presentation()` 傳遞元素與真實 impact delay |
 | `AutoAttackFeedback` | `scripts/combat/auto_attack_feedback.gd`、`scripts/combat/premium_crescent_layer.gd` | 以 deterministic 月牙 sheet 加上分層 additive atlas 投影普攻蓄勢、流動劍氣、命中、實際傷害與 Combo power；不處理傷害規則 |
 | `SkillCastPresentation` | `scripts/combat/skill_cast_presentation.gd` | 以 unscaled Tween 顯示放大招式名稱並管理短暫施法慢動作 |
 | Elemental combat VFX | `scenes/combat/vfx/*.tscn` | 火／冰攻擊纏繞與範圍大招的純 presentation；不擁有傷害判定 |
+| `ElementalGroundTrail` | `scenes/combat/vfx/ElementalGroundTrail.tscn`、`data/elemental_ground_trail_profiles.json` | 沿元素大招路徑拼裝 Core／Edge／Accent／Debris atlas 部件與連續 ribbon；火、冰、毒使用不同 topology，不擁有傷害判定 |
 | `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json` | 依精確 Skill／Finisher id、唯一 archetype 與 beat pattern 組合五種圖集部件；`play()` 另接收 evolution level 與 buff stacks 以增加結構層，不擁有傷害判定 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
 | `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | single countdown、scheduled Elite/Boss、Final Rush、XP gem |
-| `EnemyBase` | `scripts/monsters/enemy_base.gd` | archetype、attack、damage、status、reset |
+| `EnemyBase` | `scripts/monsters/enemy_base.gd` | archetype、attack、damage、status、reset；大招致死立即結算玩法，再以 unscaled `impact_hold → dissolve → burst` 保留可讀消滅演出 |
 | `AutumnGuardian` | `scripts/monsters/autumn_guardian.gd` | boss phases/pattern profiles |
 | `Hurtbox` | `scripts/combat/hurtbox.gd` | `receive_hit()` adapter |
 | `ExperienceGem` | `scripts/combat/experience_gem.gd` | configure/attract/collect |
@@ -529,6 +531,10 @@ service；修改 mappings或處理順序時須用實際 run驗證。
   替換成泛用火焰。
 - 手動施放顯示中央招式名稱並短暫慢動作；普通自動攻擊不反覆觸發標題。火／冰
   projectile 使用 `ElementalAttackAura`，範圍技使用自動清理的 Fire／Ice VFX。
+  大招本體與 `ElementalGroundTrail` 都使用 unscaled timeline：火系生成兩道掃掠
+  焦痕、冰系生成一條主裂隙與兩條分岔、毒系保留不規則毒灘 profile。玩法傷害仍
+  即時結算；致死敵人的碰撞與獎勵也立即結算，但 sprite 會保留到對應招式 impact
+  delay 後才元素化消散，避免慢動作期間在視覺命中前先消失。
 - Enemy archetype是 runtime-created `Resource`，不是 `.tres` catalog。
 
 ### 9.2 NPC — Current

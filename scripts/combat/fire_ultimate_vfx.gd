@@ -11,7 +11,9 @@ const MIN_INTENSITY := 0.35
 const MAX_INTENSITY := 2.5
 const CIRCLE_SEGMENTS := 64
 const BASE_RING_COUNT := 3
-const PARTICLE_TAIL := 0.38
+const POST_IMPACT_DECAY_RATIO := 0.18
+const TAIL_HOLD_RATIO := 0.12
+const MIN_TAIL_HOLD_DURATION := 0.06
 const RING_DELAYS := [0.0, 0.065, 0.13, 0.195]
 const ANTICIPATION_END := 0.16
 const IGNITION_END := 0.29
@@ -25,6 +27,14 @@ const STAGE_IGNITION := &"ignition"
 const STAGE_EXPANDING_INFERNO := &"expanding_inferno"
 const STAGE_IMPACT_CROWN := &"impact_crown"
 const STAGE_EMBER_DECAY := &"ember_decay"
+const CLOSING_STAGE_IMPACT_SNAP := &"impact_snap"
+const CLOSING_STAGE_COHESIVE_DECAY := &"cohesive_decay"
+const CLOSING_STAGE_TAIL_HOLD := &"tail_hold"
+const CLOSING_STAGE_ORDER := [
+	CLOSING_STAGE_IMPACT_SNAP,
+	CLOSING_STAGE_COHESIVE_DECAY,
+	CLOSING_STAGE_TAIL_HOLD,
+]
 const FLAME_COLORS := [
 	Color(1.0, 0.18, 0.015, 0.94),
 	Color(1.0, 0.48, 0.035, 0.96),
@@ -57,6 +67,7 @@ var _lifecycle_tween: Tween
 var _stage_name := STAGE_ANTICIPATION
 var _pillars_triggered := false
 var _embers_triggered := false
+var _tail_progress := 0.0
 
 
 func _ready() -> void:
@@ -76,6 +87,7 @@ func play(center: Variant = null) -> void:
 	_active = true
 	_progress = 0.0
 	_stage_name = STAGE_ANTICIPATION
+	_tail_progress = 0.0
 	_pillars_triggered = false
 	_embers_triggered = false
 	_configure_particles()
@@ -86,9 +98,10 @@ func play(center: Variant = null) -> void:
 	if _lifecycle_tween != null and _lifecycle_tween.is_valid():
 		_lifecycle_tween.kill()
 	_lifecycle_tween = create_tween()
+	_lifecycle_tween.set_ignore_time_scale(true)
 	_lifecycle_tween.set_trans(Tween.TRANS_LINEAR)
 	_lifecycle_tween.tween_method(_set_progress, 0.0, 1.0, _effect_duration)
-	_lifecycle_tween.tween_interval(PARTICLE_TAIL)
+	_lifecycle_tween.tween_method(_set_tail_hold_progress, 0.0, 1.0, _tail_hold_duration())
 	_lifecycle_tween.tween_callback(_finish)
 
 
@@ -105,6 +118,40 @@ func get_ring_count() -> int:
 
 
 func get_stage_name() -> StringName:
+	return _stage_name
+
+
+func get_closing_stage_order() -> Array[StringName]:
+	return CLOSING_STAGE_ORDER.duplicate()
+
+
+func get_post_impact_decay_ratio() -> float:
+	return POST_IMPACT_DECAY_RATIO
+
+
+func get_tail_hold_ratio() -> float:
+	return TAIL_HOLD_RATIO
+
+
+func get_impact_start_progress_ratio() -> float:
+	return INFERNO_END
+
+
+func get_cohesive_decay_start_progress_ratio() -> float:
+	return IMPACT_END
+
+
+func uses_unscaled_timeline() -> bool:
+	return true
+
+
+func get_closing_stage_name() -> StringName:
+	if _tail_progress > 0.0:
+		return CLOSING_STAGE_TAIL_HOLD
+	if _stage_name == STAGE_IMPACT_CROWN:
+		return CLOSING_STAGE_IMPACT_SNAP
+	if _stage_name == STAGE_EMBER_DECAY:
+		return CLOSING_STAGE_COHESIVE_DECAY
 	return _stage_name
 
 
@@ -126,6 +173,13 @@ func debug_set_progress(value: float) -> void:
 	_set_progress(value)
 
 
+func debug_set_tail_hold_progress(value: float) -> void:
+	if not _active:
+		return
+	_set_progress(1.0)
+	_set_tail_hold_progress(value)
+
+
 func _draw() -> void:
 	if not _active:
 		return
@@ -140,6 +194,8 @@ func _draw() -> void:
 			_draw_impact(_stage_progress(INFERNO_END, IMPACT_END))
 		STAGE_EMBER_DECAY:
 			_draw_ember_decay(_stage_progress(IMPACT_END, 1.0))
+	if _tail_progress > 0.0:
+		_draw_tail_hold(_tail_progress)
 
 
 func _draw_anticipation(stage_progress: float) -> void:
@@ -263,6 +319,42 @@ func _draw_ember_decay(stage_progress: float) -> void:
 			origin + rise + Vector2(0.0, -5.0 - float(ember_index % 5) * 2.0),
 			FLAME_COLORS[ember_index % FLAME_COLORS.size()] * Color(1.0, 1.0, 1.0, ember_alpha),
 			1.2 + float(ember_index % 3) * 0.7,
+			true
+		)
+
+
+func _draw_tail_hold(stage_progress: float) -> void:
+	var fade := 1.0 - ease(stage_progress, 1.4)
+	var safe_radius := get_readability_hole_radius()
+	draw_arc(
+		Vector2.ZERO,
+		_max_radius * lerpf(0.98, 1.03, stage_progress),
+		0.0,
+		TAU,
+		CIRCLE_SEGMENTS,
+		Color(1.0, 0.58, 0.10, 0.18 * fade),
+		2.2 + 2.0 * fade,
+		true
+	)
+	draw_arc(
+		Vector2.ZERO,
+		safe_radius + 16.0 + 8.0 * stage_progress,
+		0.0,
+		TAU,
+		36,
+		Color(1.0, 0.84, 0.38, 0.14 * fade),
+		1.6,
+		true
+	)
+	for ember_index in 18:
+		var angle := fmod(float(ember_index) * 2.399963 + stage_progress * 0.35, TAU)
+		var radius_at_ember := _max_radius * (0.34 + fmod(float(ember_index) * 0.217, 0.52))
+		var drift := Vector2.from_angle(angle) * radius_at_ember + Vector2(0.0, -stage_progress * (10.0 + float(ember_index % 5) * 3.0))
+		draw_line(
+			drift,
+			drift + Vector2.from_angle(angle + PI * 0.5) * (3.0 + float(ember_index % 4)),
+			FLAME_COLORS[ember_index % FLAME_COLORS.size()] * Color(1.0, 1.0, 1.0, fade * 0.32),
+			1.0 + float(ember_index % 2) * 0.45,
 			true
 		)
 
@@ -513,8 +605,19 @@ func _draw_heat_ripples(wave_radius: float, fade: float) -> void:
 
 func _set_progress(value: float) -> void:
 	_progress = clampf(value, 0.0, 1.0)
+	_tail_progress = 0.0
 	_stage_name = _resolve_stage(_progress)
 	_update_particle_stage()
+	_update_scorch()
+	_update_waves()
+	_update_stage_guides()
+	queue_redraw()
+
+
+func _set_tail_hold_progress(value: float) -> void:
+	_tail_progress = clampf(value, 0.0, 1.0)
+	_progress = 1.0
+	_stage_name = STAGE_EMBER_DECAY
 	_update_scorch()
 	_update_waves()
 	_update_stage_guides()
@@ -728,6 +831,10 @@ func _resolve_stage(progress_value: float) -> StringName:
 	if progress_value < IMPACT_END:
 		return STAGE_IMPACT_CROWN
 	return STAGE_EMBER_DECAY
+
+
+func _tail_hold_duration() -> float:
+	return maxf(MIN_TAIL_HOLD_DURATION, _effect_duration * TAIL_HOLD_RATIO)
 
 
 func _finish() -> void:

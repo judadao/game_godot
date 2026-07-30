@@ -16,8 +16,18 @@ const MIN_MIST_PARTICLES := 24
 const MAX_MIST_PARTICLES := 96
 const RING_POINT_COUNT := 80
 const READABILITY_HOLE_RADIUS := 64.0
-const MIST_TAIL_DURATION := 0.18
+const POST_IMPACT_DECAY_RATIO := 0.18
+const TAIL_HOLD_RATIO := 0.12
+const MIN_TAIL_HOLD_DURATION := 0.06
 const GOLDEN_ANGLE := 2.399963
+const CLOSING_STAGE_IMPACT_SNAP := &"impact_snap"
+const CLOSING_STAGE_COHESIVE_DECAY := &"cohesive_decay"
+const CLOSING_STAGE_TAIL_HOLD := &"tail_hold"
+const CLOSING_STAGE_ORDER := [
+	CLOSING_STAGE_IMPACT_SNAP,
+	CLOSING_STAGE_COHESIVE_DECAY,
+	CLOSING_STAGE_TAIL_HOLD,
+]
 const STAGE_NAMES := [
 	&"anticipation",
 	&"radial_freeze",
@@ -52,6 +62,8 @@ var _normalized_progress := 0.0
 var _stage_index := -1
 var _stage_progress := 0.0
 var _mist_started := false
+var _tail_progress := 0.0
+var _suppress_stage_signal := false
 var _crystal_nodes: Array[Polygon2D] = []
 var _shard_nodes: Array[Polygon2D] = []
 
@@ -85,6 +97,7 @@ func play(center: Variant = null) -> void:
 	_stage_index = -1
 	_stage_progress = 0.0
 	_mist_started = false
+	_tail_progress = 0.0
 	active = true
 	visible = true
 	modulate = Color.WHITE
@@ -132,22 +145,74 @@ func get_visual_bounds_radius() -> float:
 	return max_radius * 1.14
 
 
+func get_closing_stage_order() -> Array[StringName]:
+	return CLOSING_STAGE_ORDER.duplicate()
+
+
+func get_post_impact_decay_ratio() -> float:
+	return POST_IMPACT_DECAY_RATIO
+
+
+func get_tail_hold_ratio() -> float:
+	return TAIL_HOLD_RATIO
+
+
+func get_impact_start_progress_ratio() -> float:
+	return float(STAGE_ENDS[2])
+
+
+func get_cohesive_decay_start_progress_ratio() -> float:
+	return float(STAGE_ENDS[3])
+
+
+func uses_unscaled_timeline() -> bool:
+	return true
+
+
+func get_closing_stage_name() -> StringName:
+	if _tail_progress > 0.0:
+		return CLOSING_STAGE_TAIL_HOLD
+	match get_stage_name():
+		&"shatter_highlight":
+			return CLOSING_STAGE_IMPACT_SNAP
+		&"cold_mist_decay":
+			return CLOSING_STAGE_COHESIVE_DECAY
+	return get_stage_name()
+
+
 func debug_set_progress(value: float) -> void:
 	if not active:
 		return
+	_tail_progress = 0.0
+	_suppress_stage_signal = true
 	_set_normalized_progress(clampf(value, 0.0, 0.999))
+	_suppress_stage_signal = false
+
+
+func debug_set_tail_hold_progress(value: float) -> void:
+	if not active:
+		return
+	_suppress_stage_signal = true
+	_set_normalized_progress(1.0)
+	_suppress_stage_signal = false
+	_set_tail_hold_progress(value)
 
 
 func _process(delta: float) -> void:
 	if not active:
 		return
-	_elapsed = minf(_elapsed + delta, _effect_duration + MIST_TAIL_DURATION)
+	var real_delta := delta / maxf(Engine.time_scale, 0.05)
+	var tail_duration := _tail_hold_duration()
+	_elapsed = minf(_elapsed + real_delta, _effect_duration + tail_duration)
 	if _elapsed <= _effect_duration:
+		_tail_progress = 0.0
 		_set_normalized_progress(_elapsed / _effect_duration)
+	else:
+		_set_tail_hold_progress((_elapsed - _effect_duration) / tail_duration)
 	frost_rings.rotation = sin(_elapsed * 2.4) * 0.018
 	outer_ring.rotation = _elapsed * 0.12
 	inner_ring.rotation = -_elapsed * 0.19
-	if _elapsed >= _effect_duration + MIST_TAIL_DURATION:
+	if _elapsed >= _effect_duration + tail_duration:
 		_finish()
 
 
@@ -165,6 +230,8 @@ func _draw() -> void:
 			_draw_shatter_highlight()
 		&"cold_mist_decay":
 			_draw_cold_mist_decay()
+	if _tail_progress > 0.0:
+		_draw_tail_hold()
 
 
 func _draw_anticipation() -> void:
@@ -296,6 +363,32 @@ func _draw_cold_mist_decay() -> void:
 	_draw_sparkles(max_radius, 10, fade * 0.55)
 
 
+func _draw_tail_hold() -> void:
+	var fade := 1.0 - ease(_tail_progress, 1.35)
+	draw_circle(
+		Vector2.ZERO,
+		max_radius * lerpf(0.96, 1.02, _tail_progress),
+		Color(0.14, 0.43, 0.58, 0.035 * fade)
+	)
+	for ribbon_index in 5:
+		var y_offset := lerpf(-max_radius * 0.28, max_radius * 0.28, float(ribbon_index) / 4.0)
+		var drift := sin(_elapsed * 1.2 + float(ribbon_index) * 1.7) * max_radius * 0.045
+		var points := PackedVector2Array()
+		for point_index in 7:
+			var ratio := float(point_index) / 6.0
+			points.append(Vector2(
+				lerpf(-max_radius * 0.62, max_radius * 0.62, ratio) + drift,
+				y_offset + sin(ratio * TAU + _elapsed * 0.8 + float(ribbon_index)) * 8.0
+			))
+		draw_polyline(
+			points,
+			Color(0.62, 0.9, 1.0, fade * (0.035 + float(ribbon_index % 2) * 0.014)),
+			8.0 + float(ribbon_index % 2) * 4.0,
+			true
+		)
+	_draw_sparkles(max_radius * 0.86, 7, fade * 0.34)
+
+
 func _draw_cracks(reveal_radius: float, opacity: float, reveal: float) -> void:
 	var crack_count := 12 + roundi(intensity * 10.0)
 	for crack_index in crack_count:
@@ -370,6 +463,7 @@ func _draw_sparkles(area_radius: float, count: int, opacity: float) -> void:
 
 
 func _set_normalized_progress(value: float) -> void:
+	_tail_progress = 0.0
 	_normalized_progress = clampf(value, 0.0, 1.0)
 	var next_stage := _resolve_stage_index(_normalized_progress)
 	var stage_start := 0.0 if next_stage == 0 else float(STAGE_ENDS[next_stage - 1])
@@ -395,6 +489,8 @@ func _enter_stage() -> void:
 		_mist_started = true
 		cold_mist.restart()
 		cold_mist.emitting = true
+	if _suppress_stage_signal:
+		return
 	stage_changed.emit(stage_name)
 
 
@@ -504,6 +600,38 @@ func _update_decay_layers() -> void:
 		var shard := _shard_nodes[shard_index]
 		shard.position.y += _stage_progress * 0.8
 		shard.modulate.a = fade * 0.28
+
+
+func _set_tail_hold_progress(value: float) -> void:
+	_tail_progress = clampf(value, 0.0, 1.0)
+	_normalized_progress = 1.0
+	_stage_index = STAGE_NAMES.size() - 1
+	_stage_progress = 1.0
+	_update_tail_hold_layers()
+	queue_redraw()
+
+
+func _update_tail_hold_layers() -> void:
+	var fade := 1.0 - ease(_tail_progress, 1.45)
+	frost_rings.scale = Vector2.ONE * lerpf(1.12, 1.16, _tail_progress)
+	outer_ring.modulate.a = fade * 0.10
+	inner_ring.modulate.a = fade * 0.07
+	ground_frost.modulate.a = fade * 0.22
+	highlight_ring.modulate.a = fade * 0.06
+	center_readability.modulate.a = fade * 0.30
+	for crystal_index in _crystal_nodes.size():
+		var crystal := _crystal_nodes[crystal_index]
+		_place_crystal(crystal, crystal_index, 0.62, fade * 0.18)
+		crystal.position.y += 14.0 + _tail_progress * 8.0
+	for shard_index in _shard_nodes.size():
+		var shard := _shard_nodes[shard_index]
+		shard.position.y += 0.8 + _tail_progress * 6.0
+		shard.modulate.a = fade * 0.12
+	cold_mist.emitting = fade > 0.05
+
+
+func _tail_hold_duration() -> float:
+	return maxf(MIN_TAIL_HOLD_DURATION, _effect_duration * TAIL_HOLD_RATIO)
 
 
 func _build_ring_geometry() -> void:

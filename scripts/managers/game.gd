@@ -115,6 +115,9 @@ const COMBO_EVOLUTIONS := [
 @export var ice_ultimate_vfx_scene: PackedScene = preload(
 	"res://scenes/combat/vfx/IceUltimateVFX.tscn"
 )
+@export var elemental_ground_trail_scene: PackedScene = preload(
+	"res://scenes/combat/vfx/ElementalGroundTrail.tscn"
+)
 @export var named_skill_vfx_scene: PackedScene = preload(
 	"res://scenes/combat/vfx/NamedSkillVFX.tscn"
 )
@@ -2927,6 +2930,15 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 	if String(card.get("id", "")) == "inferno_orb":
 		is_elemental_skill = true
 	var progression := _named_skill_vfx_progression(card)
+	var ground_trail_profile := ""
+	if is_elemental_skill or is_finisher:
+		match primary_element:
+			"fire":
+				ground_trail_profile = "fire_path"
+			"ice":
+				ground_trail_profile = "ice_path"
+			"poison":
+				ground_trail_profile = "poison_pool"
 	return {
 		"element": primary_element,
 		"elements": elements,
@@ -2939,6 +2951,7 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 		),
 		"ultimate": is_elemental_skill and named_vfx_id.is_empty(),
 		"named_vfx_id": named_vfx_id,
+		"ground_trail_profile": ground_trail_profile,
 		"radius": maxf(96.0, float(effect.get("radius", 180.0))),
 		"intensity": clampi(
 			1
@@ -3022,6 +3035,8 @@ func _play_combat_vfx(card: Dictionary) -> void:
 			int(profile.get("evolution_level", 1)),
 			int(profile.get("buff_stacks", 0))
 		)
+	if not String(profile.get("ground_trail_profile", "")).is_empty():
+		_spawn_ultimate_ground_trails(profile)
 
 
 func _show_compact_cast_label(cast_name: String, element: StringName) -> void:
@@ -3099,6 +3114,114 @@ func _spawn_elemental_ultimate(profile: Dictionary) -> void:
 			effect.call("play", player)
 		else:
 			effect.call("play")
+
+
+func _spawn_ultimate_ground_trails(profile: Dictionary) -> void:
+	if (
+		current_map == null
+		or not player is Node2D
+		or elemental_ground_trail_scene == null
+	):
+		return
+	var profile_id := String(profile.get("ground_trail_profile", ""))
+	if profile_id.is_empty():
+		return
+	var direction := Vector2(
+		-1.0 if int(player.get("facing_direction")) < 0 else 1.0,
+		0.0
+	)
+	var paths := _build_ultimate_ground_paths(
+		String(profile.get("element", "normal")),
+		float(profile.get("radius", 180.0)),
+		direction
+	)
+	var trail_intensity := clampf(
+		0.78 + float(profile.get("intensity", 1)) * 0.12,
+		0.9,
+		1.45
+	)
+	for local_path_variant in paths:
+		var local_path := local_path_variant as PackedVector2Array
+		if local_path.size() < 2:
+			continue
+		var trail := elemental_ground_trail_scene.instantiate() as Node2D
+		if trail == null:
+			continue
+		current_map.add_child(trail)
+		trail.global_position = (player as Node2D).global_position
+		trail.z_index = -2
+		if not bool(trail.call(
+			"play_path",
+			profile_id,
+			local_path,
+			trail_intensity,
+			0.72
+		)):
+			trail.queue_free()
+
+
+func _build_ultimate_ground_paths(
+	element: String,
+	requested_radius: float,
+	direction: Vector2
+) -> Array[PackedVector2Array]:
+	var radius := maxf(96.0, requested_radius)
+	var forward := direction.normalized()
+	if forward.is_zero_approx():
+		forward = Vector2.RIGHT
+	var side := forward.orthogonal()
+	var paths: Array[PackedVector2Array] = []
+	match element:
+		"fire":
+			paths.append(PackedVector2Array([
+				forward * radius * 0.02,
+				forward * radius * 0.18 - side * radius * 0.10,
+				forward * radius * 0.40 - side * radius * 0.18,
+				forward * radius * 0.66 - side * radius * 0.13,
+				forward * radius * 0.88 - side * radius * 0.04,
+				forward * radius,
+			]))
+			paths.append(PackedVector2Array([
+				forward * radius * 0.04,
+				forward * radius * 0.20 + side * radius * 0.09,
+				forward * radius * 0.44 + side * radius * 0.17,
+				forward * radius * 0.70 + side * radius * 0.12,
+				forward * radius * 0.94 + side * radius * 0.03,
+			]))
+		"ice":
+			var fork_origin := forward * radius * 0.38 - side * radius * 0.03
+			paths.append(PackedVector2Array([
+				Vector2.ZERO,
+				forward * radius * 0.22 + side * radius * 0.03,
+				fork_origin,
+				forward * radius * 0.62 + side * radius * 0.05,
+				forward * radius * 0.82 - side * radius * 0.04,
+				forward * radius,
+			]))
+			paths.append(PackedVector2Array([
+				fork_origin,
+				forward * radius * 0.62 - side * radius * 0.18,
+				forward * radius * 0.88 - side * radius * 0.34,
+			]))
+			paths.append(PackedVector2Array([
+				forward * radius * 0.52 + side * radius * 0.02,
+				forward * radius * 0.72 + side * radius * 0.19,
+				forward * radius * 0.96 + side * radius * 0.38,
+			]))
+		"poison":
+			paths.append(PackedVector2Array([
+				Vector2.ZERO,
+				forward * radius * 0.24 + side * radius * 0.10,
+				forward * radius * 0.48 - side * radius * 0.08,
+				forward * radius * 0.72 + side * radius * 0.14,
+				forward * radius * 0.94,
+			]))
+			paths.append(PackedVector2Array([
+				forward * radius * 0.18 - side * radius * 0.16,
+				forward * radius * 0.44 - side * radius * 0.25,
+				forward * radius * 0.72 - side * radius * 0.18,
+			]))
+	return paths
 
 
 func _ensure_named_skill_vfx_catalog() -> bool:

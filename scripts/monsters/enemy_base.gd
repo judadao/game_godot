@@ -8,6 +8,11 @@ signal attack_telegraphed(pattern: StringName, duration: float)
 signal attack_performed(pattern: StringName)
 
 const ARCHETYPE_DATA := preload("res://scripts/monsters/enemy_archetype.gd")
+const ULTIMATE_DEATH_HIT_HOLD := 0.065
+const DEFAULT_ULTIMATE_IMPACT_DELAY := 0.44
+const ULTIMATE_DEATH_DISSOLVE := 0.26
+const ULTIMATE_DEATH_BURST_TAIL := 0.54
+const STANDARD_DEATH_CLEANUP := 0.25
 
 @export var archetype_id: StringName = &"sprout"
 @export var gravity: float = 980.0
@@ -53,6 +58,12 @@ var _separation_refresh_remaining := 0.0
 var _cached_separation_bias := 0.0
 var _hit_tween: Tween
 var _damage_number_tween: Tween
+var _pending_hit_presentation: Dictionary = {}
+var _death_presentation_profile: Dictionary = {}
+var _death_presentation_root: Node2D
+var _death_presentation_phase := &""
+var _death_presentation_active := false
+var _defeat_gameplay_settled := false
 
 
 func _ready() -> void:
@@ -78,6 +89,11 @@ func apply_archetype(data: Resource) -> void:
 	health = int(data.get("max_health"))
 	_pattern_index = 0
 	_dying = false
+	_pending_hit_presentation.clear()
+	_death_presentation_profile.clear()
+	_death_presentation_phase = &""
+	_death_presentation_active = false
+	_defeat_gameplay_settled = false
 	_apply_visual()
 	_update_health_bar()
 
@@ -371,11 +387,48 @@ func take_hit(raw_damage: int, source_position: Vector2, knockback: float = 180.
 	velocity.x = signf(global_position.x - source_position.x) * knockback
 	health_changed.emit(health, int(archetype.get("max_health")))
 	_update_health_bar()
+	var hit_presentation := _pending_hit_presentation.duplicate(true)
+	_pending_hit_presentation.clear()
+	if health <= 0 and String(hit_presentation.get("kind", "")) == "ultimate":
+		_death_presentation_profile = hit_presentation
 	_play_hit_feedback(applied, health <= 0)
 	_after_damage()
 	if health <= 0:
 		_die()
 	return applied
+
+
+func prepare_hit_presentation(profile: Dictionary) -> void:
+	if _dying:
+		return
+	_pending_hit_presentation = profile.duplicate(true)
+
+
+func get_defeat_presentation_state() -> Dictionary:
+	var impact_delay := _ultimate_death_impact_delay()
+	return {
+		"active": _death_presentation_active,
+		"phase": String(_death_presentation_phase),
+		"timeline": String(_death_presentation_profile.get("timeline", "")),
+		"element": String(_death_presentation_profile.get("element", "normal")),
+		"ignores_time_scale": _death_presentation_active,
+		"impact_delay_seconds": (
+			impact_delay
+			if _death_presentation_active
+			else 0.0
+		),
+		"cleanup_seconds": (
+			_ultimate_death_cleanup_seconds()
+			if _death_presentation_active
+			else STANDARD_DEATH_CLEANUP
+		),
+		"gameplay_settled": _defeat_gameplay_settled,
+		"presentation_node_count": (
+			_death_presentation_root.get_child_count()
+			if is_instance_valid(_death_presentation_root)
+			else 0
+		),
+	}
 
 
 func _after_damage() -> void:
@@ -396,6 +449,9 @@ func _play_hit_feedback(damage: int, lethal: bool) -> void:
 			Color(1.0, 0.82, 0.2) if lethal else Color(1.0, 0.97, 0.88)
 		)
 		_damage_number_tween = create_tween()
+		_damage_number_tween.set_ignore_time_scale(
+			lethal and not _death_presentation_profile.is_empty()
+		)
 		_damage_number_tween.set_parallel(true)
 		_damage_number_tween.tween_property(
 			damage_number,
@@ -417,6 +473,9 @@ func _play_hit_feedback(damage: int, lethal: bool) -> void:
 	var base_scale := archetype.get("visual_scale") as Vector2
 	visual.modulate = Color(2.4, 2.4, 2.4, 1.0)
 	visual.scale = base_scale * (Vector2(1.28, 0.78) if lethal else Vector2(1.18, 0.86))
+	if lethal and not _death_presentation_profile.is_empty():
+		_play_ultimate_death_presentation(base_color, base_scale)
+		return
 	_hit_tween = create_tween()
 	_hit_tween.set_parallel(true)
 	if lethal:
@@ -444,6 +503,279 @@ func _play_hit_feedback(damage: int, lethal: bool) -> void:
 			base_scale,
 			0.14
 		).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _play_ultimate_death_presentation(
+	base_color: Color,
+	base_scale: Vector2
+) -> void:
+	_death_presentation_active = true
+	_death_presentation_phase = &"hit"
+	var palette := _ultimate_death_palette(
+		String(_death_presentation_profile.get("element", "normal"))
+	)
+	var impact_delay := _ultimate_death_impact_delay()
+	var cleanup_seconds := _ultimate_death_cleanup_seconds()
+	if death_burst != null:
+		death_burst.color = palette[1]
+		death_burst.speed_scale = clampf(
+			1.0 / maxf(Engine.time_scale, 0.12),
+			1.0,
+			8.5
+		)
+		death_burst.emitting = false
+	_build_ultimate_death_parts(palette, impact_delay, cleanup_seconds)
+
+	_hit_tween = create_tween()
+	_hit_tween.set_ignore_time_scale(true)
+	_hit_tween.set_parallel(true)
+	_hit_tween.tween_property(
+		visual,
+		"scale",
+		base_scale * Vector2(1.06, 0.98),
+		0.12
+	).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_hit_tween.tween_property(
+		visual,
+		"modulate",
+		base_color,
+		0.14
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_hit_tween.tween_property(
+		visual,
+		"scale",
+		base_scale * Vector2(2.10, 1.58),
+		ULTIMATE_DEATH_DISSOLVE
+	).set_delay(impact_delay).set_trans(
+		Tween.TRANS_BACK
+	).set_ease(Tween.EASE_OUT)
+	_hit_tween.tween_property(
+		visual,
+		"rotation",
+		0.22 * (-1.0 if velocity.x < 0.0 else 1.0),
+		ULTIMATE_DEATH_DISSOLVE
+	).set_delay(impact_delay)
+	_hit_tween.tween_property(
+		visual,
+		"modulate",
+		palette[2],
+		0.04
+	).set_delay(impact_delay)
+	_hit_tween.tween_property(
+		visual,
+		"modulate",
+		Color(base_color.r, base_color.g, base_color.b, 0.0),
+		maxf(0.05, cleanup_seconds - impact_delay - 0.04)
+	).set_delay(impact_delay + 0.04)
+
+	var phase_tween := create_tween()
+	phase_tween.set_ignore_time_scale(true)
+	phase_tween.tween_interval(ULTIMATE_DEATH_HIT_HOLD)
+	phase_tween.tween_callback(
+		_set_death_presentation_phase.bind(&"impact_hold")
+	)
+	phase_tween.tween_interval(
+		maxf(0.0, impact_delay - ULTIMATE_DEATH_HIT_HOLD)
+	)
+	phase_tween.tween_callback(_begin_ultimate_death_impact)
+	phase_tween.tween_interval(ULTIMATE_DEATH_DISSOLVE)
+	phase_tween.tween_callback(_set_death_presentation_phase.bind(&"burst"))
+
+
+func _build_ultimate_death_parts(
+	palette: Array[Color],
+	impact_delay: float,
+	cleanup_seconds: float
+) -> void:
+	if is_instance_valid(_death_presentation_root):
+		_death_presentation_root.queue_free()
+	_death_presentation_root = Node2D.new()
+	_death_presentation_root.name = "UltimateDeathPresentation"
+	_death_presentation_root.position = Vector2(0.0, -38.0)
+	_death_presentation_root.z_index = 15
+	add_child(_death_presentation_root)
+
+	var core := Polygon2D.new()
+	core.name = "ImpactCore"
+	core.polygon = PackedVector2Array([
+		Vector2(0.0, -26.0),
+		Vector2(22.0, 0.0),
+		Vector2(0.0, 26.0),
+		Vector2(-22.0, 0.0),
+	])
+	core.color = palette[2]
+	core.modulate.a = 0.0
+	_death_presentation_root.add_child(core)
+
+	for ring_index in 2:
+		var ring := Line2D.new()
+		ring.name = "DissolveRing%d" % (ring_index + 1)
+		ring.closed = true
+		ring.width = 6.0 - float(ring_index) * 1.5
+		ring.default_color = palette[ring_index]
+		ring.points = _death_ring_points(32.0 + float(ring_index) * 16.0)
+		ring.scale = Vector2.ONE * (0.48 + float(ring_index) * 0.10)
+		ring.modulate.a = 0.0
+		_death_presentation_root.add_child(ring)
+
+	for shard_index in 8:
+		var shard := Polygon2D.new()
+		shard.name = "BurstShard%d" % (shard_index + 1)
+		shard.polygon = PackedVector2Array([
+			Vector2(-5.0, -4.0),
+			Vector2(19.0 + float(shard_index % 3) * 4.0, 0.0),
+			Vector2(-5.0, 4.0),
+		])
+		shard.color = palette[1 if shard_index % 2 == 0 else 2]
+		shard.rotation = TAU * float(shard_index) / 8.0
+		shard.scale = Vector2(0.9, 0.9)
+		shard.modulate.a = 0.0
+		_death_presentation_root.add_child(shard)
+
+	var parts_tween := _death_presentation_root.create_tween()
+	parts_tween.set_ignore_time_scale(true)
+	parts_tween.set_parallel(true)
+	for child_index in _death_presentation_root.get_child_count():
+		var part := _death_presentation_root.get_child(child_index) as CanvasItem
+		if part == null:
+			continue
+		if part is Line2D:
+			parts_tween.tween_property(
+				part,
+				"modulate:a",
+				0.9,
+				0.04
+			).set_delay(impact_delay)
+			parts_tween.tween_property(
+				part,
+				"scale",
+				Vector2.ONE * (1.94 + float(child_index) * 0.16),
+				cleanup_seconds - impact_delay
+			).set_delay(impact_delay)
+			parts_tween.tween_property(
+				part,
+				"modulate:a",
+				0.0,
+				0.28
+			).set_delay(impact_delay + 0.16)
+		elif part is Polygon2D and child_index > 2:
+			var angle := (part as Polygon2D).rotation
+			parts_tween.tween_property(
+				part,
+				"modulate:a",
+				1.0,
+				0.04
+			).set_delay(impact_delay)
+			parts_tween.tween_property(
+				part,
+				"position",
+				Vector2.from_angle(angle) * (112.0 + float(child_index) * 7.0),
+				cleanup_seconds - impact_delay
+			).set_delay(impact_delay)
+			parts_tween.tween_property(
+				part,
+				"rotation",
+				angle + (-0.9 if child_index % 2 == 0 else 0.9),
+				cleanup_seconds - impact_delay
+			).set_delay(impact_delay)
+			parts_tween.tween_property(
+				part,
+				"modulate:a",
+				0.0,
+				0.20
+			).set_delay(impact_delay + 0.28)
+		else:
+			parts_tween.tween_property(
+				part,
+				"modulate:a",
+				0.22,
+				0.04
+			).set_delay(impact_delay)
+			parts_tween.tween_property(
+				part,
+				"scale",
+				Vector2.ONE * 1.65,
+				ULTIMATE_DEATH_DISSOLVE
+			).set_delay(impact_delay)
+			parts_tween.tween_property(
+				part,
+				"modulate:a",
+				0.0,
+				0.25
+			).set_delay(impact_delay + 0.10)
+
+
+func _death_ring_points(radius: float) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for point_index in 24:
+		var angle := TAU * float(point_index) / 24.0
+		var irregularity := 1.0 + sin(angle * 5.0) * 0.08
+		points.append(Vector2.from_angle(angle) * radius * irregularity)
+	return points
+
+
+func _ultimate_death_palette(element: String) -> Array[Color]:
+	match element:
+		"fire":
+			return [
+				Color(1.0, 0.26, 0.04, 0.92),
+				Color(1.0, 0.58, 0.08, 0.94),
+				Color(1.0, 0.94, 0.58, 1.0),
+			]
+		"ice", "water":
+			return [
+				Color(0.14, 0.62, 1.0, 0.88),
+				Color(0.38, 0.90, 1.0, 0.96),
+				Color(0.92, 1.0, 1.0, 1.0),
+			]
+		"lightning", "light":
+			return [
+				Color(0.48, 0.28, 1.0, 0.90),
+				Color(0.82, 0.66, 1.0, 0.96),
+				Color(1.0, 0.98, 0.72, 1.0),
+			]
+		"poison":
+			return [
+				Color(0.24, 0.68, 0.08, 0.90),
+				Color(0.54, 1.0, 0.20, 0.94),
+				Color(0.92, 1.0, 0.62, 1.0),
+			]
+		_:
+			return [
+				Color(0.46, 0.82, 1.0, 0.88),
+				Color(1.0, 0.72, 0.18, 0.94),
+				Color(1.0, 1.0, 1.0, 1.0),
+			]
+
+
+func _set_death_presentation_phase(value: StringName) -> void:
+	if _death_presentation_active:
+		_death_presentation_phase = value
+
+
+func _begin_ultimate_death_impact() -> void:
+	if not _death_presentation_active:
+		return
+	_death_presentation_phase = &"dissolve"
+	if death_burst == null:
+		return
+	death_burst.restart()
+	death_burst.emitting = true
+
+
+func _ultimate_death_impact_delay() -> float:
+	return clampf(
+		float(_death_presentation_profile.get(
+			"impact_delay_seconds",
+			DEFAULT_ULTIMATE_IMPACT_DELAY
+		)),
+		ULTIMATE_DEATH_HIT_HOLD,
+		1.25
+	)
+
+
+func _ultimate_death_cleanup_seconds() -> float:
+	return _ultimate_death_impact_delay() + ULTIMATE_DEATH_BURST_TAIL
 
 
 func apply_status(status_id: String, effect: Dictionary) -> void:
@@ -546,13 +878,25 @@ func _die() -> void:
 	collision_mask = 0
 	if hurtbox != null:
 		hurtbox.monitorable = false
+	var health_bar := get_node_or_null("HealthBar") as CanvasItem
+	if health_bar != null:
+		health_bar.visible = false
 	_before_defeated()
+	_defeat_gameplay_settled = true
 	defeated.emit(
 		self,
 		int(archetype.get("experience_reward")),
 		int(archetype.get("gold_reward"))
 	)
-	await get_tree().create_timer(0.25).timeout
+	var uses_ultimate_presentation := _death_presentation_active
+	await get_tree().create_timer(
+		_ultimate_death_cleanup_seconds()
+			if uses_ultimate_presentation
+			else STANDARD_DEATH_CLEANUP,
+		true,
+		false,
+		uses_ultimate_presentation
+	).timeout
 	queue_free()
 
 
