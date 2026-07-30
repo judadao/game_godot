@@ -20,6 +20,16 @@ const BUILDING_NODE_NAMES := {
 	"far_east_residence": "FarEastResidence",
 }
 const EXPECTED_PERSPECTIVE_PROFILE := "b2_front_right_orthographic"
+const EXPECTED_BACKGROUND_PROFILE := "a_softbrush_autumn"
+const EXPECTED_LANDMARK_PROFILE := "a_softbrush_landmarks"
+const EXPECTED_A_SOURCE_BY_ID := {
+	"background_sky": "res://assets/town/modular_v2/background/sky.png",
+	"background_ancient_town_tree":
+		"res://assets/town/modular_v2/background/ancient_town_tree.png",
+	"eternal_flame":
+		"res://assets/town/modular_v2/landmarks/eternal_forge_monument.png",
+	"battle_portal": "res://assets/town/modular_v2/landmarks/battle_portal.png",
+}
 const EXPECTED_NEW_DRESSING_IDS := {
 	"market_stall": true,
 	"produce_baskets": true,
@@ -66,6 +76,14 @@ func _run() -> void:
 		"Town B2 style must define the approved shared building perspective profile."
 	)
 	_expect(
+		String(layout.get("background_style_profile", "")) == EXPECTED_BACKGROUND_PROFILE,
+		"Town background must use the approved A soft-brush profile."
+	)
+	_expect(
+		String(layout.get("landmark_style_profile", "")) == EXPECTED_LANDMARK_PROFILE,
+		"Town flame and portal must use the approved A landmark profile."
+	)
+	_expect(
 		String(perspective.get("projection", "")) == "orthographic_pseudo_three_quarter",
 		"Town B2 buildings must use an orthographic pseudo-three-quarter projection."
 	)
@@ -88,6 +106,7 @@ func _run() -> void:
 
 	var seen_buildings: Dictionary = {}
 	var seen_dressing: Dictionary = {}
+	var seen_a_sources: Dictionary = {}
 	for layer_variant in layout.get("layers", []) as Array:
 		if not layer_variant is Dictionary:
 			continue
@@ -114,11 +133,37 @@ func _run() -> void:
 				String(ownership.get("mode", "")) == "none",
 				"%s must remain visual-only and own no interaction." % layer_id
 			)
+		if EXPECTED_A_SOURCE_BY_ID.has(layer_id):
+			seen_a_sources[layer_id] = String(layer.get("source", ""))
+			_expect(
+				String(layer.get("source", "")) == String(EXPECTED_A_SOURCE_BY_ID[layer_id]),
+				"%s must use its approved A source." % layer_id
+			)
+		if (
+			String(layer.get("category", "")) == "street_prop"
+			and bool(layer.get("visible", false))
+		):
+			_expect(
+				String(layer.get("source", "")).begins_with(
+					"res://assets/town/modular_v2/"
+				),
+				"Every visible Town street object must use the B object family: %s"
+				% layer_id
+			)
+		if layer_id.begins_with("hanging_banner"):
+			_expect(
+				not bool(layer.get("visible", true)),
+				"Floating Town banners must remain hidden: %s" % layer_id
+			)
 
 	_expect(seen_buildings == BUILDING_IDS, "Every Town service building must use the B2 perspective.")
 	_expect(
 		seen_dressing == EXPECTED_NEW_DRESSING_IDS,
 		"Town layout must include every approved B2 streetscape dressing object."
+	)
+	_expect(
+		seen_a_sources == EXPECTED_A_SOURCE_BY_ID,
+		"Town must route every approved A background and landmark source."
 	)
 	_assert_generated_scene_perspective()
 	_finish()

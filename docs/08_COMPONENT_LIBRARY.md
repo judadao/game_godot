@@ -1538,13 +1538,25 @@ the HUD never reads gameplay state directly.
 - Visual style：`res://data/town_visual_style.json` 定義
   `storybook_handdrawn_pixel_v2` 的手繪墨線、紙張顆粒、木石色盤與統一光向；
   `concept/town/main_horizontal_concept/town_handdrawn_pixel_v2.png` 是 repository
-  內的視覺基準。背景保留 A；六棟建築以
+  內的視覺基準。天空、古樹、不滅火炬與戰鬥傳送門使用 modular-v2 A；六棟建築以
   `b2_front_right_orthographic` metadata 共用 B2 正面＋右側窄面視角。46 個
-  unique sources 中包含 18 個 visual-only 街景 dressing。
+  unique sources 中包含 18 個 visual-only B2 街景 dressing。舊 modular-v1
+  街具與浮空旗幟只保留 hidden stable entries，不得進入 runtime composition。
 - Compatibility：`TownBackdrop/EternalForgeConcept` 的舊合成圖仍保留供比對，
   但 runtime hidden，不得與 72 個分件同時顯示。
 - Design handoff：`tools/build_town_modular_figma_board.py` 讀取同一 JSON 與分件
   source，產生重組地圖及可選取素材庫；Figma 不另持有第二份 layout authority。
+
+### TownLocationLabels
+
+- Scene owner：`TownEternalForgeIdentity/LocationLabels`
+- Script：`res://scripts/maps/town_location_labels.gd`
+- Trigger authority：`TownBuildingEntrances` 的六個完整地基 Area
+- Presentation：六個建築名稱使用
+  `res://assets/town/modular_v2/ui/building_label_plaque.png`，固定在建築最高輪廓
+  上方；Player 進入時只顯示目前建築，離開後 hidden。
+- Boundary：只接受 `Player` group interactor，不擁有 interaction、UI route、
+  collision 或 service state。不滅火炬與戰鬥傳送門標籤不受 proximity 控制。
 
 ### TownEternalForgeHUD
 

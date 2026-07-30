@@ -202,13 +202,19 @@ board，避免設計稿與 runtime scene 使用不同配置。
 Town 視覺統一採用 `data/town_visual_style.json` 的
 `storybook_handdrawn_pixel_v2`：手繪不規則墨線、紙張顆粒、低飽和木石色、
 冷苔綠陰影與左上暖蜜色主光。中央古樹是獨立 background object，不烘焙進天空
-或建築。背景維持已核准的 A 方向；六棟正式建築與新增街景使用 B2
+或建築。天空、古樹、不滅火炬與戰鬥傳送門使用正式
+`assets/town/modular_v2/` A 素材；六棟正式建築與 runtime 可見街景使用 B2
 `b2_front_right_orthographic`：正面為主、只露右側窄面、垂直線保持垂直、
 深度邊一致往右上後退、地基維持水平。新增 18 個無碰撞生活／地面 dressing
-物件只增加街景密度，不建立新的互動或玩法權威。
+物件只增加街景密度，不建立新的互動或玩法權威。舊 modular-v1 街具與浮空旗幟
+保留 stable layout entry 供相容／替換，但 `visible=false`，不得參與 runtime
+composition 或遮住建築。
 互動、碰撞、NPC、Portal、Player 與 progression identity 仍由既有 linked scenes
 管理；模組化 Sprite 不建立第二套 gameplay authority。
-`EternalForgeIdentity` 提供八個精簡地點標籤與後續物件精修入口。
+`EternalForgeIdentity` 提供八個精簡地點標籤與後續物件精修入口。六棟建築標籤
+由 `scripts/maps/town_location_labels.gd` 投影 `TownBuildingEntrances` 的地基
+進出 signal：Player 在地基外時 hidden，進入時只顯示目前建築的 B2 木牌，並固定
+放在建築最高輪廓上方；不滅火炬與傳送門地標標籤維持常駐。
 六棟建築由 `TownBuildingEntrances` 擁有覆蓋完整地基的互動 Area 與 UI route；
 其中五棟提供服務，最東側民宅只開啟資訊 UI。原東側住宅改為裝備圖紙商，
 與劍魂商分別販售 equipment／Sword Soul 永久圖紙。NPC 不再是 Town 建築服務的

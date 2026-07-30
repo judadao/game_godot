@@ -2,6 +2,8 @@
   "schema_version": 1,
   "visual_style": "storybook_handdrawn_pixel_v2",
   "building_perspective_profile": "b2_front_right_orthographic",
+  "background_style_profile": "a_softbrush_autumn",
+  "landmark_style_profile": "a_softbrush_landmarks",
   "map": {
     "id": "town_eternal_forge_modular_v1",
     "width": 1942,
@@ -12,7 +14,7 @@
     {
       "id": "background_sky",
       "category": "background",
-      "source": "res://assets/town/modular_v1/background/sky.png",
+      "source": "res://assets/town/modular_v2/background/sky.png",
       "position": [971, 404.5],
       "target_size": [1942, 809],
       "z_index": -100,
@@ -76,7 +78,7 @@
     {
       "id": "background_ancient_town_tree",
       "category": "background",
-      "source": "res://assets/town/modular_v1/background/ancient_town_tree.png",
+      "source": "res://assets/town/modular_v2/background/ancient_town_tree.png",
       "position": [1030, 385],
       "target_size": [760, 690],
       "z_index": -84,
@@ -382,7 +384,7 @@
     {
       "id": "eternal_flame",
       "category": "landmark",
-      "source": "res://assets/town/modular_v1/landmarks/eternal_forge_monument.png",
+      "source": "res://assets/town/modular_v2/landmarks/eternal_forge_monument.png",
       "position": [830, 322],
       "target_size": [330, 500],
       "z_index": -9,
@@ -398,7 +400,7 @@
     {
       "id": "battle_portal",
       "category": "landmark",
-      "source": "res://assets/town/modular_v1/landmarks/battle_portal.png",
+      "source": "res://assets/town/modular_v2/landmarks/battle_portal.png",
       "position": [830, 542],
       "target_size": [240, 260],
       "z_index": -8,
@@ -486,7 +488,7 @@
       "position": [310, 592],
       "target_size": [56, 160],
       "z_index": -4,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -502,7 +504,7 @@
       "position": [92, 632],
       "target_size": [184, 80],
       "z_index": -5,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -518,7 +520,7 @@
       "position": [300, 590],
       "target_size": [100, 164],
       "z_index": -3,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -534,7 +536,7 @@
       "position": [70, 627],
       "target_size": [92, 90],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -550,7 +552,7 @@
       "position": [258, 630],
       "target_size": [82, 84],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -566,7 +568,7 @@
       "position": [475, 628],
       "target_size": [96, 88],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -582,7 +584,7 @@
       "position": [665, 592],
       "target_size": [56, 160],
       "z_index": -4,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -598,7 +600,7 @@
       "position": [985, 592],
       "target_size": [56, 160],
       "z_index": -4,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -614,7 +616,7 @@
       "position": [1240, 592],
       "target_size": [56, 160],
       "z_index": -4,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -630,7 +632,7 @@
       "position": [1490, 592],
       "target_size": [56, 160],
       "z_index": -4,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -646,7 +648,7 @@
       "position": [1710, 592],
       "target_size": [56, 160],
       "z_index": -4,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -662,7 +664,7 @@
       "position": [1900, 592],
       "target_size": [48, 160],
       "z_index": -4,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -678,7 +680,7 @@
       "position": [370, 612],
       "target_size": [72, 120],
       "z_index": -3,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -694,7 +696,7 @@
       "position": [580, 612],
       "target_size": [72, 120],
       "z_index": -3,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -710,7 +712,7 @@
       "position": [1290, 612],
       "target_size": [72, 120],
       "z_index": -3,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -726,7 +728,7 @@
       "position": [1450, 612],
       "target_size": [72, 120],
       "z_index": -3,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -742,7 +744,7 @@
       "position": [475, 335],
       "target_size": [80, 150],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -758,7 +760,7 @@
       "position": [1120, 362],
       "target_size": [80, 150],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -774,7 +776,7 @@
       "position": [1370, 375],
       "target_size": [80, 150],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -790,7 +792,7 @@
       "position": [1595, 365],
       "target_size": [80, 150],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -806,7 +808,7 @@
       "position": [1817, 375],
       "target_size": [80, 150],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -822,7 +824,7 @@
       "position": [645, 625],
       "target_size": [118, 94],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -838,7 +840,7 @@
       "position": [1000, 618],
       "target_size": [104, 108],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -854,7 +856,7 @@
       "position": [1215, 637],
       "target_size": [120, 70],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",
@@ -870,7 +872,7 @@
       "position": [1898, 646],
       "target_size": [84, 52],
       "z_index": -2,
-      "visible": true,
+      "visible": false,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",

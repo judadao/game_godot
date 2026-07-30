@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 116 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 117 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -297,7 +297,9 @@ Scene directory changes must run these permanent contracts:
 - `tests/town_residence_ui_layout_test.gd`：住宅資訊 UI 在六個基準解析度內不裁切。
 - `tests/town_scene_path_structure_test.gd`：Town active and legacy linked scenes keep their classified paths.
 - `tests/town_building_perspective_contract_test.gd`：六棟 B2 建築共用同一透視
-  profile，新增 18 個街景 dressing 保持 visual-only。
+  profile，A 背景／地標 source 精確，visible 街景只使用 B2、浮空旗幟保持 hidden。
+- `tests/town_location_label_proximity_test.gd`：六個建築木牌位於建築輪廓上方，
+  只接受 Player 進出完整地基 Area 的 signal，離開後全部 hidden。
 - `tests/map_registry_test.gd` and `tests/quick_save_migration_test.gd`：stable and legacy map paths remain loadable.
 
 Any scene move must also run `scene_registry_test.gd`, `content_validation_test.gd`,

@@ -124,13 +124,22 @@ func _run() -> void:
 			"FarEastResidence",
 		]:
 			var building_label := identity.get_node("LocationLabels/%s" % location_name) as Label
-			var plaque := building_label.get_theme_stylebox("normal") as StyleBoxFlat
+			var plaque := building_label.get_theme_stylebox("normal") as StyleBoxTexture
 			_expect(building_label.size.y <= 34.0, "%s label must use the compact Town plaque height." % location_name)
 			_expect(building_label.size.x <= 200.0, "%s label must not dominate its building facade." % location_name)
 			_expect(building_label.get_theme_font_size("font_size") <= 16, "%s label typography must stay compact." % location_name)
-			_expect(plaque.corner_radius_top_left >= 8, "%s label must use the redesigned soft-corner plaque." % location_name)
-			_expect(plaque.border_width_left >= 4 and plaque.border_width_top <= 1, "%s label must use a slim left-accent border." % location_name)
-			_expect(plaque.shadow_size <= 5, "%s label shadow must remain subtle." % location_name)
+			_expect(
+				building_label.visible == (location_name == "MaterialYard"),
+				"%s label visibility must follow the default player foundation." % location_name
+			)
+			_expect(plaque != null, "%s label must use the B2 wooden plaque texture." % location_name)
+			if plaque != null:
+				_expect(
+					plaque.texture != null
+						and plaque.texture.resource_path
+							== "res://assets/town/modular_v2/ui/building_label_plaque.png",
+					"%s label must resolve the shared B2 plaque source." % location_name
+				)
 
 	var expected_building_order := [
 		["WestHouse", &"material_yard"],

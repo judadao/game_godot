@@ -194,7 +194,10 @@ Scene editor 獨立選取和替換，runtime 不以 script 重建版面。
 `TownBackdrop/EternalForgeConcept` 的舊合成圖只保留作 compatibility reference
 並保持 hidden，不得再與模組物件同時顯示。
 `TownEternalForgeIdentity.tscn` 仍持有八個可編輯中文地點標籤、區域光暈與
-landmark identity。舊 `Buildings`、`Ground`、`Props` linked scenes 繼續作為
+landmark identity。六個建築標籤預設 hidden，由
+`scripts/maps/town_location_labels.gd` 監聽對應 BuildingEntrance 的
+`interaction_available`／`interaction_unavailable`；只有 Player 位於該建築
+完整地基 Area 時才顯示，並位於建築輪廓上方。舊 `Buildings`、`Ground`、`Props` linked scenes 繼續作為
 compatibility／progression identity 並保持 runtime hidden。角色、NPC、Portal
 與地面碰撞仍統一使用 `y=672` baseline。
 Town 的六個建築 UI 觸發由 `BuildingEntrances` 獨立擁有；每個 Area 橫向覆蓋
@@ -332,6 +335,9 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 - `TownModularVisuals` 的 46 個來源素材遵循
   `data/town_visual_style.json`；中央古樹保有自己的 source 與 object ID，
   可獨立替換且不建立 collision。
+- 天空、古樹、不滅火炬與戰鬥傳送門固定使用 modular-v2 的 A profile；
+  runtime 可見街景只允許 modular-v2 B2 source。舊 modular-v1 街具和
+  `hanging_banner_*` 僅保留 hidden stable entries，不得出現在 runtime。
 - 六棟建築 entry 必須保留 `b2_front_right_orthographic` metadata：正面為主、
   只露右側窄側牆、垂直線垂直、深度邊往右上後退、水平地基；背景 A 不受這個
   建築簡化規則覆寫。
@@ -343,6 +349,8 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 - ground/collision分開，視覺改動不得隱式改physics。
 - NPC container組合display-only NPC instances，不承載互動或對話資料。
 - Building entrance container組合門口互動 instances，不承載 UI instance。
+- `TownEternalForgeIdentity/LocationLabels` 只投影 entrance 地基 proximity；
+  其 B2 木牌 presentation 不取得 service ownership，也不改變互動候選。
 - Portal set組合route instances，不自行load map。
 - `tools/build_town_modular_figma_board.py` 與 Scene generator 共用同一 layout，
   Figma board 不得另維護一份位置或物件清單。

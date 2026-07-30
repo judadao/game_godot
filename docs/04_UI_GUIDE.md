@@ -482,10 +482,13 @@ contract，並由 `scenes/ui/town/TownCardHandUI.tscn` 提供 Eternal Forge them
 
 Town 世界內的八個地點名稱由
 `scenes/maps/town/components/TownEternalForgeIdentity.tscn/LocationLabels` author。
-建築招牌採 compact floating plaque：高度不超過 `34px`、字級不超過 `16px`、
-左側 `4–5px` 色帶、其餘 `1px` 細框、`10px` 圓角與不超過 `5px` 的陰影。
-一般／市政使用鍛造金，主設施使用火焰橘，戰鬥傳送門使用魔力藍，劍魂相關
-建築使用靈魂紫。招牌寬度不得超過 `200px`，避免壓過背景建築與 NPC。
+六棟建築招牌使用
+`assets/town/modular_v2/ui/building_label_plaque.png` 的 B2 手繪像素木牌：
+高度不超過 `34px`、字級不超過 `16px`、寬度不超過 `200px`，位置必須高於
+建築最高輪廓。它們預設 hidden；`scripts/maps/town_location_labels.gd` 只在
+Player 進入對應 `TownBuildingEntrances` 完整地基 Area 時顯示目前建築，離開即
+隱藏。非 Player body、NPC 或 UI 開關不得揭露招牌。不滅火炬與戰鬥傳送門是
+landmark identity，仍使用既有火焰橘／魔力藍常駐標籤。
 
 ### 10.2 HUD rules
 

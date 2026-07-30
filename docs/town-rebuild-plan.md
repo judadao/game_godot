@@ -47,13 +47,15 @@ sources provide 46 unique PNGs reused as 72 selectable scene entries:
    - Material Yard, Player Forge, Town Hall, Sword Soul Shop, Blueprint Research,
      and East Residence.
 4. `landmarks/`
-   - Eternal Forge Monument and Battle Portal.
+   - Eternal Forge Monument and Battle Portal; runtime uses their modular-v2 A
+     variants.
 5. `props/`
    - street lantern, forge/soul braziers, hanging banner, west fence, notice board,
-     material crates/barrels, and forge anvil.
+     material crates/barrels, and forge anvil. These modular-v1 entries remain hidden
+     for stable-ID compatibility and do not participate in runtime composition.
 6. `modular_v2/buildings`, `modular_v2/props`, and `modular_v2/streetscape`
    - six perspective-locked B2 buildings plus 18 visual-only market, household,
-     planting, and road-dressing sources.
+     planting, and road-dressing sources; these are the only visible street objects.
 
 All buildings use the shared `b2_front_right_orthographic` profile: front face
 dominant, narrow right face, vertical uprights, upper-right depth recession, and
@@ -73,6 +75,9 @@ horizontal foundations on the common gameplay baseline.
   remains available as a hidden compatibility/reference sprite.
 - Generated visual children do not own interactions. The six building triggers remain
   in `TownBuildingEntrances.tscn`, and BattleGateway remains in `TownPortalSet.tscn`.
+- Six building labels use the B2 plaque asset and project the corresponding foundation
+  trigger: hidden away from buildings, visible above the current building only while a
+  Player-group body is inside its full-foundation Area.
 - NPC visuals, collision, portal signals, target fields, and progression ownership remain
   in their existing scenes.
 - `tools/build_town_modular_figma_board.py` reads the same layout and PNG sources to
@@ -97,6 +102,8 @@ horizontal foundations on the common gameplay baseline.
 
 - No mixed perspective or mismatched pixel density.
 - No decorative object blocks the player.
+- No modular-v1 street prop or hanging banner is visible at runtime.
+- Building labels stay above silhouettes and only appear for Player foundation proximity.
 - All seven NPC roles display exactly one visual.
 - No Town building UI is triggered by an NPC.
 - Every shop, dialogue and portal can be reached by keyboard.
