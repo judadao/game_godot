@@ -626,20 +626,22 @@ total-building-level threshold 為 0、3、7。Town 六棟建築的互動範圍�
 目前場景只直接改變 ItemShop、EmptyResidence、EmptyTowerHouse 與 Blacksmith 的部分視覺。Manager 產生的其他 visual flag 尚未完整投影，不得宣稱所有升級都有對應外觀。
 
 Town presentation 維持 `1942 × 720` gameplay world 與單一中央不滅火炬，但
-不再依賴一張 runtime baked 圖。`data/town_modular_layout.json` 以
-`1942 × 809` source canvas 定義 72 個可替換視覺物件，並生成靜態
-`TownModularVisuals.tscn` 供 `TownBackdrop` 顯示。地點由左至右仍為材料行、
+畫風 review 期間先鎖定 Image #2 完整構圖作 runtime presentation。
+`data/town_modular_layout.json` 以 `1942 × 809` source canvas 定義 72 個
+可替換候選物件，並生成 hidden 的 `TownModularVisuals.tscn` 供 Figma 與
+Scene editor 逐件討論。地點由左至右仍為材料行、
 主角鐵匠鋪、不滅火炬、戰鬥傳送門、村長家、劍魂商、裝備圖紙商與東郊民宅。
-舊合成圖只作 hidden compatibility reference；NPC、建築入口、Portal、碰撞與
+NPC、建築入口、Portal、碰撞與
 progression 仍是獨立 scene authority。替換房屋、地板、火炬或街道 props
-只改變 presentation，不代表新增服務、互動或玩法。
+只改變 presentation，不代表新增服務、互動或玩法；分件候選未通過 Figma
+構圖 review 前不得替代 locked A runtime。
 所有 Town 分件採 `storybook_handdrawn_pixel_v2`：低飽和苔綠、木褐、砂岩與
 陶瓦為主色，冷苔炭色作環境陰影、暖蜜色作左上主光，藍紫魔法只保留為局部功能
 焦點。中央古樹是無碰撞的獨立視覺物件，用來建立手繪村落的自然遮蔭與生活感。
-天空、雲、群山與低矮秋林使用 locked A 的明亮空氣感；舊深綠森林、舊山脈與
-遠城疊層不顯示。古樹仍是可替換 A 分件，不滅火炬與戰鬥傳送門改用 B2 粗像素
-分件，三者都保持原始比例。六棟建築採核准 B2 筆觸並共用正面＋右側窄面的
-正交偽三分之四視角。runtime 可見市場攤、生活器具、花木與路面痕跡全部使用
+天空、雲、群山、低矮秋林、古樹、火炬與傳送門目前都直接取自 locked A
+完整構圖。獨立 A／B2 分件保留為下一輪候選，並維持原始比例。六棟建築候選採
+核准 B2 筆觸並共用正面＋右側窄面的
+正交偽三分之四視角。候選市場攤、生活器具、花木與路面痕跡全部使用
 B2，只提升街景熱鬧程度，不新增交易、NPC、碰撞或互動規則；舊 modular-v1
 街具、浮空旗幟，以及遮住東側建築立面的六個大型 dressing 不顯示。
 六棟建築名稱木牌位於各自最高輪廓上方，預設隱藏；Player 走進該建築完整地基

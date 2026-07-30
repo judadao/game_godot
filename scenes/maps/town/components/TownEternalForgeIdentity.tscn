@@ -250,6 +250,7 @@ vertical_alignment = 1
 metadata/location_id = "player_blacksmith"
 
 [node name="EternalFlame" type="Label" parent="LocationLabels"]
+visible = false
 offset_left = 725.0
 offset_top = 250.0
 offset_right = 935.0
@@ -266,6 +267,7 @@ vertical_alignment = 1
 metadata/location_id = "eternal_flame"
 
 [node name="BattlePortal" type="Label" parent="LocationLabels"]
+visible = false
 offset_left = 725.0
 offset_top = 460.0
 offset_right = 935.0

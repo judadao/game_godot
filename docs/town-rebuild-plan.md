@@ -15,10 +15,11 @@
 ## World layout
 
 The Eternal Forge town keeps a 1942x720 gameplay world and a y=672 baseline.
-Its visual source canvas is 1942x809 and is assembled from the 72 independently
-replaceable entries in `data/town_modular_layout.json`. Existing canonical map
-identity, portal targets, spawn transfer, HUD adoption, camera, collision, and save
-contracts remain unchanged.
+During style review, runtime displays the exact locked-A Image #2 as one visual
+plate. The 72 independently replaceable entries in `data/town_modular_layout.json`
+remain a hidden design candidate library. Existing canonical map identity, portal
+targets, spawn transfer, HUD adoption, camera, collision, and save contracts remain
+unchanged.
 
 | Range | District | Purpose |
 | --- | --- | --- |
@@ -33,7 +34,7 @@ contracts remain unchanged.
 
 ## Asset batches
 
-Runtime Town presentation sources live under `assets/town/modular_v1/`,
+Candidate Town presentation sources live under `assets/town/modular_v1/`,
 `assets/town/modular_v2/`, and `assets/town/modular_v3/`. The locked A background
 plate, independent A ancient tree, and B2 foreground
 sources provide 46 unique PNGs reused as 72 selectable scene entries:
@@ -74,8 +75,9 @@ horizontal foundations on the common gameplay baseline.
 - `tools/build_town_modular_scene.py` generates the static, editor-visible
   `scenes/maps/town/components/TownModularVisuals.tscn`; runtime does not rebuild
   authored Town layout from script.
-- `TownBackdrop.tscn` instances `TownModularVisuals`. The old Eternal Forge composite
-  remains available as a hidden compatibility/reference sprite.
+- `TownBackdrop.tscn` displays exact
+  `concept/town/main_horizontal_concept/town_style_direction_a_locked.png`.
+  Its `TownModularVisuals` instance remains linked but hidden during style review.
 - Generated visual children do not own interactions. The six building triggers remain
   in `TownBuildingEntrances.tscn`, and BattleGateway remains in `TownPortalSet.tscn`.
 - Six building labels use the B2 plaque asset and project the corresponding foundation
@@ -83,8 +85,8 @@ horizontal foundations on the common gameplay baseline.
   Player-group body is inside its full-foundation Area.
 - NPC visuals, collision, portal signals, target fields, and progression ownership remain
   in their existing scenes.
-- `tools/build_town_modular_figma_board.py` reads the same layout and PNG sources to
-  generate both the reconstructed map and the selectable Figma object library.
+- `tools/build_town_modular_figma_board.py` produces one Figma discussion board:
+  exact Image #2 first, then the reconstructed candidate and selectable object library.
 
 ## Interaction preservation
 
@@ -105,7 +107,7 @@ horizontal foundations on the common gameplay baseline.
 
 - No mixed perspective or mismatched pixel density.
 - No decorative object blocks the player.
-- No modular-v1 street prop or hanging banner is visible at runtime.
+- No modular candidate, modular-v1 street prop, or hanging banner is visible at runtime.
 - Building labels stay above silhouettes and only appear for Player foundation proximity.
 - All seven NPC roles display exactly one visual.
 - No Town building UI is triggered by an NPC.
@@ -114,5 +116,6 @@ horizontal foundations on the common gameplay baseline.
 - Background and ground cover the full camera width at every supported window size.
 - The generated scene exposes exactly 72 stable object IDs across background, ground,
   facility, landmark, and street-prop groups.
-- The Figma board and `TownModularVisuals.tscn` are regenerated from the same JSON
-  instead of maintaining separate placement data.
+- The Figma board locks exact Image #2 as its first section. Its candidate section and
+  `TownModularVisuals.tscn` are regenerated from the same JSON instead of maintaining
+  separate placement data.

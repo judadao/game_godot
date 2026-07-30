@@ -1527,12 +1527,13 @@ the HUD never reads gameplay state directly.
 - Owner：`TownBackdrop`
 - Data contract：`res://data/town_modular_layout.json`
 - Generator：`tools/build_town_modular_scene.py`
-- Status：Current — Generated Static Visual Component
+- Status：Current — Hidden Design Component
 - Responsibility：將同一個 `1942 × 809` source canvas 上的 72 個 background、
   ground、facility、landmark 與 street-prop entries 組成 editor-visible 的
   `Sprite2D` children。每個 child 保留穩定 object ID、source path、position、
   target size、z-index 與 interaction-owner metadata，方便逐件替換。
-- Runtime boundary：此 component 只有 presentation；六個建築入口仍由
+- Runtime boundary：畫風 review 期間此 component hidden，不是 runtime
+  presentation authority；六個建築入口仍由
   `TownBuildingEntrances.tscn` 擁有，戰鬥門仍由
   `TownPortalSet/BattleGateway` 擁有，碰撞、NPC 與 progression 不移入此 scene。
 - Visual style：`res://data/town_visual_style.json` 定義
@@ -1545,10 +1546,11 @@ the HUD never reads gameplay state directly.
   unique sources 中包含 18 個 visual-only B2 街景 dressing；12 個顯示，六個
   東側大型遮擋物保留 hidden。舊 modular-v1 街具與浮空旗幟只保留 hidden stable
   entries，不得進入 runtime composition。
-- Compatibility：`TownBackdrop/EternalForgeConcept` 的舊合成圖仍保留供比對，
-  但 runtime hidden，不得與 72 個分件同時顯示。
+- Runtime authority：`TownBackdrop/EternalForgeConcept` 顯示 exact
+  `town_style_direction_a_locked.png`。它與 72 個分件不得同時顯示。
 - Design handoff：`tools/build_town_modular_figma_board.py` 讀取同一 JSON 與分件
-  source，產生重組地圖及可選取素材庫；Figma 不另持有第二份 layout authority。
+  source，產生單頁 board；第一區鎖定 Image #2，第二區才放重組候選及可選取
+  素材庫。候選未經核准不得切回 runtime。
 
 ### TownLocationLabels
 
@@ -1559,7 +1561,8 @@ the HUD never reads gameplay state directly.
   `res://assets/town/modular_v2/ui/building_label_plaque.png`，固定在建築最高輪廓
   上方；Player 進入時只顯示目前建築，離開後 hidden。
 - Boundary：只接受 `Player` group interactor，不擁有 interaction、UI route、
-  collision 或 service state。不滅火炬與戰鬥傳送門標籤不受 proximity 控制。
+  collision 或 service state。Image #2 review 期間不滅火炬與戰鬥傳送門標籤
+  hidden。
 
 ### TownEternalForgeHUD
 

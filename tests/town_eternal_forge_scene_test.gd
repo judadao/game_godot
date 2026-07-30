@@ -1,7 +1,9 @@
 extends SceneTree
 
 const TOWN_PATH := "res://scenes/maps/town.tscn"
-const CONCEPT_TEXTURE_PATH := "res://assets/town/eternal_forge/town_eternal_forge_v1.png"
+const CONCEPT_TEXTURE_PATH := (
+	"res://concept/town/main_horizontal_concept/town_style_direction_a_locked.png"
+)
 const MODULAR_SCENE_PATH := "res://scenes/maps/town/components/TownModularVisuals.tscn"
 const IDENTITY_SCENE_PATH := "res://scenes/maps/town/components/TownEternalForgeIdentity.tscn"
 
@@ -37,7 +39,7 @@ func _run() -> void:
 			concept.texture != null and concept.texture.resource_path == CONCEPT_TEXTURE_PATH,
 			"Town concept reference must preserve the approved source artwork."
 		)
-		_expect(not concept.is_visible_in_tree(), "Flattened Town concept must stay hidden at runtime.")
+		_expect(concept.is_visible_in_tree(), "Locked A Town concept must be the runtime presentation.")
 		_expect(
 			town.get_node_or_null("ParallaxBackground/EternalForgeConceptMid") == null
 				and town.get_node_or_null("ParallaxBackground/EternalForgeConceptEast") == null,
@@ -51,7 +53,10 @@ func _run() -> void:
 			modular.scene_file_path == MODULAR_SCENE_PATH,
 			"Town modular visuals must remain a linked static scene."
 		)
-		_expect(modular.is_visible_in_tree(), "Town modular visual scene must be visible at runtime.")
+		_expect(
+			not modular.is_visible_in_tree(),
+			"Town modular visual scene must stay hidden while Figma style review is active."
+		)
 		var object_ids: Dictionary = {}
 		var modular_sprites := modular.find_children("*", "Sprite2D", true, false)
 		_expect(
@@ -94,7 +99,7 @@ func _run() -> void:
 			)
 	_expect(
 		not town.get_node("ParallaxBackground/Sky").visible,
-		"Legacy sky must not cover the modular Eternal Forge background."
+		"Legacy sky must not cover the locked A Eternal Forge background."
 	)
 
 	var identity := town.get_node_or_null("EternalForgeIdentity")
@@ -186,17 +191,21 @@ func _run() -> void:
 	)
 	_expect(
 		not (battle_gateway.get_node("TownVisual") as CanvasItem).is_visible_in_tree(),
-		"Town must use the modular battle portal without a duplicate runtime portal visual."
+		"Town must use the locked A battle portal without a duplicate runtime portal visual."
 	)
 	_expect(
-		(identity.get_node("LocationLabels/BattlePortal") as CanvasItem).visible,
-		"Town must keep the battle-portal text over the modular portal."
+		not (identity.get_node("LocationLabels/BattlePortal") as CanvasItem).visible,
+		"Town must keep the battle-portal label hidden over the locked A artwork."
+	)
+	_expect(
+		not (identity.get_node("LocationLabels/EternalFlame") as CanvasItem).visible,
+		"Town must keep the flame label hidden over the locked A artwork."
 	)
 	var eternal_flame_label := identity.get_node("LocationLabels/EternalFlame") as Control
 	var battle_portal_label := identity.get_node("LocationLabels/BattlePortal") as Control
 	_expect(
 		is_equal_approx(eternal_flame_label.position.x + eternal_flame_label.size.x * 0.5, 830.0),
-		"Eternal Flame label must be centered on the modular monument."
+		"Eternal Flame label anchor must remain centered on the locked concept landmark."
 	)
 	_expect(
 		eternal_flame_label.position.y <= 250.0,
@@ -204,7 +213,7 @@ func _run() -> void:
 	)
 	_expect(
 		is_equal_approx(battle_portal_label.position.x + battle_portal_label.size.x * 0.5, 830.0),
-		"Battle Portal label must be centered on the modular gateway."
+		"Battle Portal label anchor must remain centered on the locked concept landmark."
 	)
 	_expect(
 		battle_portal_label.position.y <= 465.0,

@@ -23,6 +23,10 @@ DEFAULT_OUTPUT = (
 DEFAULT_PREVIEW = (
 	ROOT / "output/playwright/town_objects/town_modular_reconstructed_map.png"
 )
+DEFAULT_REFERENCE = (
+	ROOT
+	/ "concept/town/main_horizontal_concept/town_style_direction_a_locked.png"
+)
 MAP_SCALE = 2.0
 BOARD_WIDTH = 6000
 BOARD_BACKGROUND = "#11161b"
@@ -250,16 +254,28 @@ def _build_library(
 	return current_y
 
 
-def build_board(layout_path: Path, output_path: Path, preview_path: Path) -> None:
+def build_board(
+	layout_path: Path,
+	output_path: Path,
+	preview_path: Path,
+	reference_path: Path,
+) -> None:
 	payload = json.loads(layout_path.read_text(encoding="utf-8"))
 	layers = payload["layers"]
 	assets = _load_assets(layers)
+	if not reference_path.exists():
+		raise FileNotFoundError(f"Missing locked Town reference: {reference_path}")
+	reference = Image.open(reference_path).convert("RGBA")
 	asset_ids = {
 		source: f"SourceAsset_{index + 1:02d}"
 		for index, source in enumerate(sorted(assets))
 	}
+	reference_x = 100
+	reference_y = 300
+	reference_width = float(payload["map"]["width"]) * MAP_SCALE
+	reference_height = reference.height * reference_width / reference.width
 	map_x = 100
-	map_y = 260
+	map_y = reference_y + reference_height + 240
 	map_width = float(payload["map"]["width"]) * MAP_SCALE
 	library_y = map_y + float(payload["map"]["height"]) * MAP_SCALE + 150
 	probe: list[str] = []
@@ -276,20 +292,50 @@ def build_board(layout_path: Path, output_path: Path, preview_path: Path) -> Non
 			f'<image id="{asset_ids[source]}" width="{image.width}" height="{image.height}" '
 			f'href="{_png_data_uri(image)}"/>'
 		)
+	parts.append(
+		f'<image id="LockedAReference" width="{reference.width}" '
+		f'height="{reference.height}" href="{_png_data_uri(reference)}"/>'
+	)
 	parts.append("</defs>")
-	_svg_text(parts, "TOWN / HAND-DRAWN MODULAR OBJECT MAP", 100, 102, 54, TEXT, 700)
+	_svg_text(parts, "TOWN / A BACKGROUND + OBJECT REVIEW", 100, 102, 54, TEXT, 700)
 	_svg_text(
 		parts,
 		(
-			"每個畫面元素都是有 ID 的獨立物件｜"
+			"01 鎖定 Image #2 為唯一畫風基準｜"
+			"02 分件候選不再直接進 runtime｜"
 			f"風格：{payload.get('visual_style', 'unspecified')}｜"
-			f"建築透視：{payload.get('building_perspective_profile', 'unspecified')}｜"
-			"上方為重組地圖｜下方為可替換素材庫"
+			"下方素材皆可在 Figma 單獨選取與討論"
 		),
 		102,
 		152,
 		24,
 		MUTED,
+	)
+	_svg_text(parts, "01 / LOCKED A BASELINE — IMAGE #2", reference_x, reference_y - 34, 32, ACCENT, 700)
+	parts.append(
+		f'<rect x="{reference_x:g}" y="{reference_y:g}" '
+		f'width="{reference_width:g}" height="{reference_height:g}" '
+		f'rx="24" fill="{PANEL}" stroke="{ACCENT}" stroke-width="5"/>'
+	)
+	parts.append(
+		f'<clipPath id="lockedReferenceClip"><rect x="{reference_x:g}" '
+		f'y="{reference_y:g}" width="{reference_width:g}" '
+		f'height="{reference_height:g}" rx="24"/></clipPath>'
+	)
+	parts.append(
+		f'<use href="#LockedAReference" clip-path="url(#lockedReferenceClip)" '
+		f'transform="translate({reference_x:g} {reference_y:g}) '
+		f'scale({reference_width / reference.width:g} '
+		f'{reference_height / reference.height:g})"/>'
+	)
+	_svg_text(
+		parts,
+		"02 / MODULAR CANDIDATE — FIGMA DISCUSSION ONLY",
+		map_x,
+		map_y - 34,
+		32,
+		MUTED,
+		700,
 	)
 	_svg_text(
 		parts,
@@ -314,8 +360,9 @@ def main() -> None:
 	parser.add_argument("--layout", type=Path, default=DEFAULT_LAYOUT)
 	parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
 	parser.add_argument("--preview", type=Path, default=DEFAULT_PREVIEW)
+	parser.add_argument("--reference", type=Path, default=DEFAULT_REFERENCE)
 	args = parser.parse_args()
-	build_board(args.layout, args.output, args.preview)
+	build_board(args.layout, args.output, args.preview, args.reference)
 
 
 if __name__ == "__main__":

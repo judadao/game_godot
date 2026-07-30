@@ -488,7 +488,8 @@ Town 世界內的八個地點名稱由
 建築最高輪廓。它們預設 hidden；`scripts/maps/town_location_labels.gd` 只在
 Player 進入對應 `TownBuildingEntrances` 完整地基 Area 時顯示目前建築，離開即
 隱藏。非 Player body、NPC 或 UI 開關不得揭露招牌。不滅火炬與戰鬥傳送門是
-landmark identity，仍使用既有火焰橘／魔力藍常駐標籤。
+landmark identity；Image #2 畫風 review 期間不疊加世界常駐標籤，避免遮住
+核准構圖。傳送門靠近時仍由 HUD interaction prompt 顯示操作與目的地。
 
 ### 10.2 HUD rules
 
