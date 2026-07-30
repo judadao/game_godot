@@ -169,7 +169,7 @@ def _build_preview(
 		target_width, target_height = _target_size(layer, image)
 		target = image.resize(
 			(max(1, round(target_width)), max(1, round(target_height))),
-			Image.Resampling.LANCZOS,
+			Image.Resampling.NEAREST,
 		)
 		position_x = float(layer["position"][0])
 		position_y = float(layer["position"][1])

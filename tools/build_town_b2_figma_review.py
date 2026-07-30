@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Build the one-page Figma review board for isolated Town B2 candidates."""
+"""Build the compact one-page Figma board for the approved Town Base set."""
 
 from __future__ import annotations
 
 import base64
 import io
+import json
 from pathlib import Path
+from typing import Any
 from xml.sax.saxutils import escape
 
 from PIL import Image, ImageDraw, ImageFont
@@ -13,13 +15,14 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCE_PATH = (
-	ROOT / "concept/town/main_horizontal_concept/town_style_direction_a_locked.png"
+	ROOT / "output/playwright/town_objects/town_base_reconstructed_map.png"
 )
-OUTPUT_PATH = ROOT / "design/figma/town/town_b2_building_landmark_review.svg"
-PREVIEW_PATH = ROOT / "output/playwright/town_objects/town_b2_building_landmark_review.png"
+LAYOUT_PATH = ROOT / "data/town_modular_layout.json"
+OUTPUT_PATH = ROOT / "design/figma/town/town_base_building_landmark_map_review.svg"
+PREVIEW_PATH = ROOT / "output/playwright/town_objects/town_base_building_landmark_map_review.png"
 
 BOARD_WIDTH = 5200
-BOARD_HEIGHT = 3740
+BOARD_HEIGHT = 4300
 BACKGROUND = "#10151a"
 PANEL = "#1a2229"
 CARD = "#222c34"
@@ -32,6 +35,7 @@ LANDMARK = "#8569d8"
 CANDIDATES = [
 	{
 		"id": "material_yard",
+		"layout_id": "material_yard",
 		"name": "材料行 / MATERIAL YARD",
 		"kind": "BUILDING",
 		"target": "300 × 240",
@@ -39,6 +43,7 @@ CANDIDATES = [
 	},
 	{
 		"id": "player_forge",
+		"layout_id": "player_blacksmith",
 		"name": "主角鐵匠鋪 / PLAYER FORGE",
 		"kind": "BUILDING",
 		"target": "360 × 316",
@@ -46,6 +51,7 @@ CANDIDATES = [
 	},
 	{
 		"id": "town_hall",
+		"layout_id": "town_hall",
 		"name": "村長家 / TOWN HALL",
 		"kind": "BUILDING",
 		"target": "280 × 249",
@@ -53,6 +59,7 @@ CANDIDATES = [
 	},
 	{
 		"id": "sword_soul_shop",
+		"layout_id": "sword_soul_shop",
 		"name": "劍魂商 / SWORD SOUL SHOP",
 		"kind": "BUILDING",
 		"target": "250 × 217",
@@ -60,6 +67,7 @@ CANDIDATES = [
 	},
 	{
 		"id": "equipment_blueprint_shop",
+		"layout_id": "equipment_blueprint_shop",
 		"name": "裝備圖紙商 / BLUEPRINT SHOP",
 		"kind": "BUILDING",
 		"target": "220 × 187",
@@ -67,6 +75,7 @@ CANDIDATES = [
 	},
 	{
 		"id": "far_east_residence",
+		"layout_id": "far_east_residence",
 		"name": "東郊民宅 / EAST RESIDENCE",
 		"kind": "BUILDING",
 		"target": "234 × 204",
@@ -74,6 +83,7 @@ CANDIDATES = [
 	},
 	{
 		"id": "eternal_flame",
+		"layout_id": "eternal_flame",
 		"name": "不滅火炬 / ETERNAL FLAME",
 		"kind": "LANDMARK",
 		"target": "330 × 495",
@@ -81,6 +91,7 @@ CANDIDATES = [
 	},
 	{
 		"id": "battle_portal",
+		"layout_id": "battle_portal",
 		"name": "戰鬥傳送門 / BATTLE PORTAL",
 		"kind": "LANDMARK",
 		"target": "240 × 260",
@@ -116,6 +127,83 @@ def _fit(source: tuple[int, int], bounds: tuple[float, float]) -> tuple[float, f
 	return source[0] * scale, source[1] * scale
 
 
+def _resource_file(resource_path: str) -> Path:
+	if not resource_path.startswith("res://"):
+		raise ValueError(f"Expected res:// source, got {resource_path}")
+	return ROOT / resource_path.removeprefix("res://")
+
+
+def _target_size(layer: dict[str, Any], image: Image.Image) -> tuple[float, float]:
+	if "target_size" in layer:
+		return float(layer["target_size"][0]), float(layer["target_size"][1])
+	scale = layer["scale"]
+	return image.width * float(scale[0]), image.height * float(scale[1])
+
+
+def _compose_layers(
+	size: tuple[int, int],
+	layers: list[dict[str, Any]],
+) -> Image.Image:
+	canvas = Image.new("RGBA", size, (0, 0, 0, 0))
+	for layer in sorted(layers, key=lambda item: int(item["z_index"])):
+		image = Image.open(_resource_file(str(layer["source"]))).convert("RGBA")
+		target_width, target_height = _target_size(layer, image)
+		rendered = image.resize(
+			(max(1, round(target_width)), max(1, round(target_height))),
+			Image.Resampling.NEAREST,
+		)
+		position_x = float(layer["position"][0])
+		position_y = float(layer["position"][1])
+		canvas.alpha_composite(
+			rendered,
+			(
+				round(position_x - rendered.width * 0.5),
+				round(position_y - rendered.height * 0.5),
+			),
+		)
+	return canvas
+
+
+def _load_map_layers() -> tuple[
+	Image.Image,
+	Image.Image,
+	list[tuple[dict[str, Any], Image.Image]],
+]:
+	payload = json.loads(LAYOUT_PATH.read_text(encoding="utf-8"))
+	map_size = (int(payload["map"]["width"]), int(payload["map"]["height"]))
+	visible_layers = [layer for layer in payload["layers"] if bool(layer["visible"])]
+	layer_by_id = {str(layer["id"]): layer for layer in visible_layers}
+	layout_ids = {str(candidate["layout_id"]) for candidate in CANDIDATES}
+
+	missing = sorted(layout_ids - set(layer_by_id))
+	if missing:
+		raise ValueError(f"Town Base map is missing editable layers: {missing}")
+
+	underlay = _compose_layers(
+		map_size,
+		[
+			layer
+			for layer in visible_layers
+			if str(layer["id"]) not in layout_ids and int(layer["z_index"]) < -8
+		],
+	)
+	overlay = _compose_layers(
+		map_size,
+		[
+			layer
+			for layer in visible_layers
+			if str(layer["id"]) not in layout_ids and int(layer["z_index"]) > -8
+		],
+	)
+	map_objects: list[tuple[dict[str, Any], Image.Image]] = []
+	for candidate in CANDIDATES:
+		layer = layer_by_id[str(candidate["layout_id"])]
+		image = Image.open(_resource_file(str(layer["source"]))).convert("RGBA")
+		map_objects.append((layer, image))
+	map_objects.sort(key=lambda item: int(item[0]["z_index"]))
+	return underlay, overlay, map_objects
+
+
 def _load_candidates() -> list[tuple[dict[str, str], Image.Image]]:
 	loaded: list[tuple[dict[str, str], Image.Image]] = []
 	for candidate in CANDIDATES:
@@ -130,7 +218,9 @@ def _load_candidates() -> list[tuple[dict[str, str], Image.Image]]:
 
 
 def _build_svg(
-	reference: Image.Image,
+	underlay: Image.Image,
+	overlay: Image.Image,
+	map_objects: list[tuple[dict[str, Any], Image.Image]],
 	loaded: list[tuple[dict[str, str], Image.Image]],
 ) -> None:
 	parts = [
@@ -141,10 +231,19 @@ def _build_svg(
 		f'<rect width="{BOARD_WIDTH}" height="{BOARD_HEIGHT}" fill="{BACKGROUND}"/>',
 		"<defs>",
 		(
-			f'<image id="LockedAReference" width="{reference.width}" '
-			f'height="{reference.height}" href="{_png_data_uri(reference)}"/>'
+			f'<image id="MapUnderlay" width="{underlay.width}" '
+			f'height="{underlay.height}" href="{_png_data_uri(underlay)}"/>'
+		),
+		(
+			f'<image id="MapOverlay" width="{overlay.width}" '
+			f'height="{overlay.height}" href="{_png_data_uri(overlay)}"/>'
 		),
 	]
+	for layer, image in map_objects:
+		parts.append(
+			f'<image id="MapAsset_{escape(str(layer["id"]))}" width="{image.width}" '
+			f'height="{image.height}" href="{_png_data_uri(image)}"/>'
+		)
 	for candidate, image in loaded:
 		parts.append(
 			f'<image id="Asset_{candidate["id"]}" width="{image.width}" '
@@ -152,10 +251,10 @@ def _build_svg(
 		)
 	parts.append("</defs>")
 
-	_text(parts, "TOWN / B2 HAND-PAINTED FRONT STYLE REVIEW", 100, 100, 54, TEXT, 700)
+	_text(parts, "TOWN / BASE MODULAR BUILDINGS + TOWN MAP", 100, 100, 54, TEXT, 700)
 	_text(
 		parts,
-		"只看獨立物件｜未接 runtime｜正面透視鎖定｜配色自由、手繪像素語言一致",
+		"Runtime composition｜背景維持 A｜八個 Base 主物件可獨立替換｜y=672 共用基線",
 		102,
 		154,
 		25,
@@ -164,9 +263,9 @@ def _build_svg(
 
 	reference_x = 100
 	reference_y = 250
-	reference_width = 2500
-	reference_height = reference.height * reference_width / reference.width
-	_text(parts, "01 / LOCKED A COMPOSITION REFERENCE", reference_x, 224, 30, ACCENT, 700)
+	reference_width = 3884
+	reference_height = 1618
+	_text(parts, "01 / FULL MAP PLACEMENT AUDIT · 1942 × 809", reference_x, 224, 30, ACCENT, 700)
 	parts.append(
 		f'<rect x="{reference_x}" y="{reference_y}" width="{reference_width}" '
 		f'height="{reference_height:g}" rx="24" fill="{PANEL}" '
@@ -176,54 +275,75 @@ def _build_svg(
 		f'<clipPath id="ReferenceClip"><rect x="{reference_x}" y="{reference_y}" '
 		f'width="{reference_width}" height="{reference_height:g}" rx="24"/></clipPath>'
 	)
+	parts.append('<g id="EditableTownMap" clip-path="url(#ReferenceClip)">')
 	parts.append(
-		f'<use href="#LockedAReference" clip-path="url(#ReferenceClip)" '
-		f'transform="translate({reference_x} {reference_y}) '
-		f'scale({reference_width / reference.width:g} '
-		f'{reference_height / reference.height:g})"/>'
+		f'<g id="Map_BackgroundAndGround"><use href="#MapUnderlay" '
+		f'transform="translate({reference_x} {reference_y}) scale(2)"/></g>'
 	)
+	for layer, image in map_objects:
+		target_width, target_height = _target_size(layer, image)
+		position_x = float(layer["position"][0])
+		position_y = float(layer["position"][1])
+		image_x = reference_x + (position_x - target_width * 0.5) * 2
+		image_y = reference_y + (position_y - target_height * 0.5) * 2
+		parts.append(
+			f'<g id="MapObject_{escape(str(layer["id"]))}" '
+			f'data-source="{escape(str(layer["source"]))}">'
+		)
+		parts.append(
+			f'<use href="#MapAsset_{escape(str(layer["id"]))}" '
+			f'transform="translate({image_x:g} {image_y:g}) '
+			f'scale({target_width * 2 / image.width:g} '
+			f'{target_height * 2 / image.height:g})"/>'
+		)
+		parts.append("</g>")
+	parts.append(
+		f'<g id="Map_ForegroundProps"><use href="#MapOverlay" '
+		f'transform="translate({reference_x} {reference_y}) scale(2)"/></g>'
+	)
+	parts.append("</g>")
 
-	rules_x = 2740
-	_text(parts, "REVIEW CHECKLIST", rules_x, 292, 34, TEXT, 700)
+	rules_x = 4100
+	_text(parts, "PLACEMENT CHECK", rules_x, 292, 30, TEXT, 700)
 	rules = [
-		"1  Strict front elevation; no side wall visible",
-		"2  Broad 3–4 step light and shadow masses",
-		"3  Coarse irregular hand-painted pixel clusters",
-		"4  Color may vary; value structure stays coherent",
-		"5  One focal detail zone; secondary planes simplify",
-		"6  No uniform outlines or repeated micro-texture",
-		"7  No background / NPC / label / floating flag",
-		"8  Approve objects individually before runtime use",
+		"1  Foundation y=672",
+		"2  No stretched object",
+		"3  No accidental gap",
+		"4  No facade collision",
+		"5  Background unchanged",
+		"6  Portal + flame read as one",
+		"7  Neutral Base lighting",
+		"8  Each object replaceable",
 	]
 	for index, rule in enumerate(rules):
-		_text(parts, rule, rules_x, 362 + index * 70, 28, MUTED)
+		_text(parts, rule, rules_x, 362 + index * 64, 22, MUTED)
 	parts.append(
-		f'<rect x="{rules_x}" y="955" width="2260" height="250" rx="22" '
+		f'<rect x="{rules_x}" y="930" width="1000" height="280" rx="22" '
 		f'fill="{PANEL}" stroke="{BORDER}" stroke-width="3"/>'
 	)
-	_text(parts, "B2 SHARED PROFILE", rules_x + 36, 1018, 26, ACCENT, 700)
+	_text(parts, "BASE SHARED PROFILE", rules_x + 36, 993, 25, ACCENT, 700)
 	_text(
 		parts,
-		"strict frontal geometry / flexible palette / shared handmade mark-making",
+		"Neutral structural AO",
 		rules_x + 36,
-		1072,
-		25,
+		1047,
+		22,
 		TEXT,
 	)
 	_text(
 		parts,
-		"Target size is a review guide only; no production replacement in this round.",
+		"Broad light stays in Godot.",
 		rules_x + 36,
-		1130,
-		24,
+		1102,
+		22,
 		MUTED,
 	)
 
-	_text(parts, "02 / ISOLATED B2 CANDIDATES", 100, 1420, 34, ACCENT, 700)
+	_text(parts, "02 / ISOLATED BASE OBJECTS", 100, 1950, 34, ACCENT, 700)
 	card_width = 1220
 	card_height = 1050
 	gap = 40
-	start_y = 1470
+	start_y = 2000
 	for index, (candidate, image) in enumerate(loaded):
 		column = index % 4
 		row = index // 4
@@ -299,20 +419,20 @@ def _build_preview(
 		(16, 21, 26, 255),
 	)
 	draw = ImageDraw.Draw(canvas)
-	draw.text((50, 36), "TOWN / B2 HAND-PAINTED FRONT STYLE REVIEW", font=_font(27), fill=TEXT)
-	ref = reference.resize((1250, round(1250 * reference.height / reference.width)))
+	draw.text((50, 36), "TOWN / BASE MODULAR BUILDINGS + TOWN MAP", font=_font(27), fill=TEXT)
+	ref = reference.resize((1942, 809), Image.Resampling.NEAREST)
 	canvas.alpha_composite(ref, (50, 125))
-	draw.text((1370, 145), "B2 ISOLATED CANDIDATES", font=_font(22), fill=ACCENT)
+	draw.text((2030, 145), "BASE ISOLATED OBJECTS", font=_font(22), fill=ACCENT)
 	draw.text(
-		(1370, 195),
-		"Strict frontal geometry / flexible palette / handmade light and texture",
+		(2030, 195),
+		"Neutral Base / shared baseline / runtime composition",
 		font=_font(15),
 		fill=MUTED,
 	)
 	card_width = 610
 	card_height = 525
 	gap = 20
-	start_y = 735
+	start_y = 1000
 	for index, (candidate, image) in enumerate(loaded):
 		column = index % 4
 		row = index // 4
@@ -335,7 +455,7 @@ def _build_preview(
 		render_width, render_height = _fit(image.size, (card_width - 44, card_height - 100))
 		render = image.resize(
 			(max(1, round(render_width)), max(1, round(render_height))),
-			Image.Resampling.LANCZOS,
+			Image.Resampling.NEAREST,
 		)
 		canvas.alpha_composite(
 			render,
@@ -353,7 +473,8 @@ def main() -> None:
 		raise FileNotFoundError(f"Missing locked Town reference: {REFERENCE_PATH}")
 	reference = Image.open(REFERENCE_PATH).convert("RGBA")
 	loaded = _load_candidates()
-	_build_svg(reference, loaded)
+	underlay, overlay, map_objects = _load_map_layers()
+	_build_svg(underlay, overlay, map_objects, loaded)
 	_build_preview(reference, loaded)
 	print(OUTPUT_PATH)
 	print(PREVIEW_PATH)

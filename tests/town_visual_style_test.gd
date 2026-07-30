@@ -78,6 +78,11 @@ func _run() -> void:
 		String(rendering.get("pixel_treatment", "")) == "painterly_clustered",
 		"Town visual style must use painterly pixel clusters."
 	)
+	_expect(
+		String(rendering.get("foreground_asset_layer", ""))
+			== "neutral_base_for_godot_light_overlays",
+		"Town foreground objects must remain neutral Base assets for Godot light overlays."
+	)
 
 	var lighting := style.get("lighting", {}) as Dictionary
 	_expect(
@@ -91,6 +96,15 @@ func _run() -> void:
 	_expect(
 		String(lighting.get("highlight", "")) == "warm_honey",
 		"Town visual lighting must use warm honey highlights."
+	)
+	_expect(
+		String(lighting.get("base_asset_policy", ""))
+			== "structural_ambient_occlusion_only",
+		"Town Base objects must bake only structural ambient occlusion."
+	)
+	_expect(
+		String(lighting.get("broad_light_owner", "")) == "godot_overlay",
+		"Town broad directional lighting must remain owned by a later Godot overlay."
 	)
 
 	_assert_all_layout_sources_are_assigned(style)

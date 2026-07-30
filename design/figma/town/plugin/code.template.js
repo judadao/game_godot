@@ -2,6 +2,7 @@ const SVG_ASSETS = __TOWN_SVG_ASSETS__;
 const REFERENCE_ASSETS = __TOWN_REFERENCE_ASSETS__;
 const B2_REVIEW_ASSETS = __TOWN_B2_REVIEW_ASSETS__;
 const B2_REFERENCE_ASSET = __TOWN_B2_REFERENCE_ASSET__;
+const BASE_MAP_PREVIEW = __TOWN_BASE_MAP_PREVIEW__;
 
 const B2_REVIEW_ITEMS = [
   ["material_yard_front_style_b2", "材料行 / MATERIAL YARD", "BUILDING · FRONT STYLE · 300 × 240"],
@@ -457,69 +458,69 @@ async function buildReferences(page) {
 async function buildB2Review(page) {
   const root = frame(
     page,
-    "Town / B2 Hand-Painted Front Style Review / FAST IMPORT",
+    "Town / Base Modular Buildings + Town Map / FAST IMPORT",
     0,
     0,
     5200,
-    3740,
+    4300,
     "#10151A"
   );
-  await text(root, "Title", "TOWN / B2 HAND-PAINTED FRONT STYLE REVIEW", 100, 56, 54);
+  await text(root, "Title", "TOWN / BASE MODULAR BUILDINGS + TOWN MAP", 100, 56, 54);
   await text(
     root,
     "Subtitle",
-    "只看獨立物件｜未接 runtime｜正面透視鎖定｜配色自由、手繪像素語言一致",
+    "Runtime composition｜背景維持 A｜八個 Base 主物件可獨立替換｜y=672 共用基線",
     102,
     126,
     25,
     "#A5B0B8",
     "Regular"
   );
-  await text(root, "ReferenceHeading", "01 / LOCKED A COMPOSITION REFERENCE", 100, 206, 30, C.goldLight);
-  raster(root, "_REF/Locked_A_Image_2", B2_REFERENCE_ASSET, 100, 250, 2500, 1044, true);
+  await text(root, "ReferenceHeading", "01 / FULL MAP PLACEMENT AUDIT · 1942 × 809", 100, 206, 30, C.goldLight);
+  raster(root, "Map/Full_Runtime_Composition", BASE_MAP_PREVIEW, 100, 250, 3884, 1618, true);
 
-  await text(root, "ChecklistHeading", "REVIEW CHECKLIST", 2740, 250, 34, C.white);
+  await text(root, "ChecklistHeading", "PLACEMENT CHECK", 4100, 250, 30, C.white);
   const rules = [
-    "1  Strict front elevation; no side wall visible",
-    "2  Broad 3–4 step light and shadow masses",
-    "3  Coarse irregular hand-painted pixel clusters",
-    "4  Color may vary; value structure stays coherent",
-    "5  One focal detail zone; secondary planes simplify",
-    "6  No uniform outlines or repeated micro-texture",
-    "7  No background / NPC / label / floating flag",
-    "8  Approve objects individually before runtime use"
+    "1  Foundation y=672",
+    "2  No stretched object",
+    "3  No accidental gap",
+    "4  No facade collision",
+    "5  Background unchanged",
+    "6  Portal + flame read as one",
+    "7  Neutral Base lighting",
+    "8  Each object replaceable"
   ];
   for (let index = 0; index < rules.length; index += 1) {
-    await text(root, `Checklist/${index + 1}`, rules[index], 2740, 320 + index * 70, 28, "#A5B0B8", "Regular");
+    await text(root, `Checklist/${index + 1}`, rules[index], 4100, 320 + index * 64, 23, "#A5B0B8", "Regular");
   }
-  rect(root, "FastImportNote", 2740, 940, 2260, 255, "#1A2229", 22, "#40505D", 3);
-  await text(root, "FastImportTitle", "FAST IMPORT MODE", 2780, 988, 27, C.goldLight);
+  rect(root, "FastImportNote", 4070, 900, 1030, 300, "#1A2229", 22, "#40505D", 3);
+  await text(root, "FastImportTitle", "FAST IMPORT", 4110, 948, 27, C.goldLight);
   await text(
     root,
     "FastImportBody",
-    "同一插件重跑時會替換本審稿區，不重新生成舊 Town frames。",
-    2780,
+    "重跑只替換本區。",
+    4110,
     1044,
-    24,
+    22,
     C.white,
     "Regular"
   );
   await text(
     root,
     "FastImportBody2",
-    "八張圖片是獨立 Figma layers，可逐件隱藏、移動與批註。",
-    2780,
+    "八張圖皆為獨立 layer。",
+    4110,
     1096,
-    24,
+    22,
     "#A5B0B8",
     "Regular"
   );
 
-  await text(root, "CandidateHeading", "02 / ISOLATED B2 CANDIDATES", 100, 1372, 34, C.goldLight);
+  await text(root, "CandidateHeading", "02 / ISOLATED BASE OBJECTS", 100, 1950, 34, C.goldLight);
   const cardWidth = 1220;
   const cardHeight = 1050;
   const gap = 40;
-  const startY = 1420;
+  const startY = 2000;
   for (let index = 0; index < B2_REVIEW_ITEMS.length; index += 1) {
     const [key, label, target] = B2_REVIEW_ITEMS[index];
     const column = index % 4;
@@ -555,9 +556,10 @@ async function main() {
     figma.loadFontAsync({ family: "Inter", style: "Bold" })
   ]);
   const targetPage = figma.currentPage;
-  const reviewName = "Town / B2 Hand-Painted Front Style Review / FAST IMPORT";
+  const reviewName = "Town / Base Modular Buildings + Town Map / FAST IMPORT";
   const reviewAliases = new Set([
     reviewName,
+    "Town / B2 Hand-Painted Front Style Review / FAST IMPORT",
     "Town / B2 Strict Front Elevation Review / FAST IMPORT",
     "Town / B2 Building + Landmark Review / FAST IMPORT"
   ]);

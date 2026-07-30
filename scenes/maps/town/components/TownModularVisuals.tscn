@@ -408,8 +408,8 @@ metadata/interaction_id = ""
 metadata/service_id = ""
 
 [node name="MaterialYard" type="Sprite2D" parent="Facilities"]
-position = Vector2(170, 563)
-scale = Vector2(0.21398, 0.213904)
+position = Vector2(170, 552)
+scale = Vector2(0.25, 0.25)
 z_index = -10
 visible = true
 texture = ExtResource("21_material_yard")
@@ -424,8 +424,8 @@ metadata/interaction_id = "material_yard_entrance"
 metadata/service_id = "material_yard"
 
 [node name="PlayerBlacksmith" type="Sprite2D" parent="Facilities"]
-position = Vector2(475, 530)
-scale = Vector2(0.268857, 0.268936)
+position = Vector2(475, 514)
+scale = Vector2(0.25, 0.25)
 z_index = -10
 visible = true
 texture = ExtResource("22_player_forge")
@@ -441,7 +441,7 @@ metadata/service_id = "player_blacksmith"
 
 [node name="EternalFlame" type="Sprite2D" parent="Landmarks"]
 position = Vector2(830, 322)
-scale = Vector2(0.322266, 0.322266)
+scale = Vector2(0.25, 0.25)
 z_index = -9
 visible = true
 texture = ExtResource("46_eternal_forge_monument")
@@ -457,7 +457,7 @@ metadata/service_id = ""
 
 [node name="BattlePortal" type="Sprite2D" parent="Landmarks"]
 position = Vector2(830, 542)
-scale = Vector2(0.199336, 0.199081)
+scale = Vector2(0.25, 0.25)
 z_index = -8
 visible = true
 texture = ExtResource("45_battle_portal")
@@ -472,8 +472,8 @@ metadata/interaction_id = "town_battle_gateway"
 metadata/service_id = ""
 
 [node name="TownHall" type="Sprite2D" parent="Facilities"]
-position = Vector2(1120, 558)
-scale = Vector2(0.210526, 0.21066)
+position = Vector2(1120, 547.5)
+scale = Vector2(0.25, 0.25)
 z_index = -10
 visible = true
 texture = ExtResource("24_town_hall")
@@ -488,8 +488,8 @@ metadata/interaction_id = "town_hall_entrance"
 metadata/service_id = "town_hall"
 
 [node name="SwordSoulShop" type="Sprite2D" parent="Facilities"]
-position = Vector2(1370, 576)
-scale = Vector2(0.185736, 0.185788)
+position = Vector2(1370, 563.5)
+scale = Vector2(0.25, 0.25)
 z_index = -10
 visible = true
 texture = ExtResource("23_sword_soul_shop")
@@ -504,8 +504,8 @@ metadata/interaction_id = "sword_soul_shop_entrance"
 metadata/service_id = "sword_soul_shop"
 
 [node name="EquipmentBlueprintShop" type="Sprite2D" parent="Facilities"]
-position = Vector2(1595, 587)
-scale = Vector2(0.161527, 0.161905)
+position = Vector2(1595, 578.5)
+scale = Vector2(0.25, 0.25)
 z_index = -10
 visible = true
 texture = ExtResource("19_blueprint_research")
@@ -520,8 +520,8 @@ metadata/interaction_id = "equipment_blueprint_shop_entrance"
 metadata/service_id = "equipment_blueprint_shop"
 
 [node name="FarEastResidence" type="Sprite2D" parent="Facilities"]
-position = Vector2(1817, 582)
-scale = Vector2(0.174237, 0.17421)
+position = Vector2(1817, 570)
+scale = Vector2(0.25, 0.25)
 z_index = -10
 visible = true
 texture = ExtResource("20_east_residence")

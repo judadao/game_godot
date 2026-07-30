@@ -235,9 +235,9 @@ metadata/location_id = "material_yard"
 [node name="PlayerBlacksmith" type="Label" parent="LocationLabels"]
 visible = false
 offset_left = 380.0
-offset_top = 338.0
+offset_top = 318.0
 offset_right = 560.0
-offset_bottom = 372.0
+offset_bottom = 352.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.901961, 0.658824, 1)
 theme_override_colors/font_outline_color = Color(0.0627451, 0.0823529, 0.113725, 1)
@@ -303,9 +303,9 @@ metadata/location_id = "town_hall"
 [node name="SwordSoulShop" type="Label" parent="LocationLabels"]
 visible = false
 offset_left = 1280.0
-offset_top = 432.0
+offset_top = 417.0
 offset_right = 1420.0
-offset_bottom = 466.0
+offset_bottom = 451.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.866667, 0.705882, 1, 1)
 theme_override_colors/font_outline_color = Color(0.101961, 0.027451, 0.164706, 1)
@@ -337,9 +337,9 @@ metadata/location_id = "equipment_blueprint_shop"
 [node name="FarEastResidence" type="Label" parent="LocationLabels"]
 visible = false
 offset_left = 1725.0
-offset_top = 443.0
+offset_top = 430.0
 offset_right = 1915.0
-offset_bottom = 477.0
+offset_bottom = 464.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.901961, 0.658824, 1)
 theme_override_colors/font_outline_color = Color(0.0627451, 0.0823529, 0.113725, 1)

@@ -19,6 +19,9 @@ B2_DIR = TOWN_DIR / "b2_front_style_candidates"
 B2_REFERENCE = (
 	ROOT / "concept/town/main_horizontal_concept/town_style_direction_a_locked.png"
 )
+BASE_MAP_PREVIEW = (
+	ROOT / "output/playwright/town_objects/town_base_reconstructed_map.png"
+)
 TEMPLATE_PATH = PLUGIN_DIR / "code.template.js"
 OUTPUT_PATH = PLUGIN_DIR / "code.js"
 
@@ -60,7 +63,13 @@ def main() -> None:
 		raise ValueError(f"Expected 8 Town B2 candidates, found {len(b2_assets)}")
 	if not B2_REFERENCE.exists():
 		raise FileNotFoundError(f"Missing locked Town reference: {B2_REFERENCE}")
+	if not BASE_MAP_PREVIEW.exists():
+		raise FileNotFoundError(
+			"Build the Town Base map preview before the Figma plugin: "
+			f"{BASE_MAP_PREVIEW}"
+		)
 	b2_reference = _base64_review_jpeg(B2_REFERENCE, (1800, 900), 86)
+	base_map_preview = _base64_review_png(BASE_MAP_PREVIEW, (1942, 809))
 
 	result = TEMPLATE_PATH.read_text(encoding="utf-8")
 	result = result.replace(
@@ -78,6 +87,10 @@ def main() -> None:
 	result = result.replace(
 		"__TOWN_B2_REFERENCE_ASSET__",
 		json.dumps(b2_reference),
+	)
+	result = result.replace(
+		"__TOWN_BASE_MAP_PREVIEW__",
+		json.dumps(base_map_preview),
 	)
 	OUTPUT_PATH.write_text(result, encoding="utf-8")
 	print(f"Built {OUTPUT_PATH}")

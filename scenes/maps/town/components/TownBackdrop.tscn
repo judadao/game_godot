@@ -29,12 +29,12 @@ position = Vector2(-349, 85)
 position = Vector2(-119, -75)
 
 [node name="ModularVisuals" parent="." instance=ExtResource("7_modular")]
-visible = false
 
 [node name="EternalForgeConcept" type="Sprite2D" parent="."]
+visible = false
 z_index = -100
 position = Vector2(971, 404.5)
 texture_filter = 1
 texture = ExtResource("6_eternal_forge")
 metadata/layer_role = "eternal_forge_concept"
-metadata/presentation_mode = "locked_a_runtime_reference"
+metadata/presentation_mode = "locked_a_composition_reference"

@@ -15,9 +15,10 @@
 ## World layout
 
 The Eternal Forge town keeps a 1942x720 gameplay world and a y=672 baseline.
-During style review, runtime displays the exact locked-A Image #2 as one visual
-plate. The 72 independently replaceable entries in `data/town_modular_layout.json`
-remain a hidden design candidate library. Existing canonical map identity, portal
+Runtime displays the approved Base modular composition. The 72 independently
+replaceable entries in `data/town_modular_layout.json` are the shared runtime,
+editor, and Figma layout. Locked-A Image #2 remains a hidden composition reference.
+Existing canonical map identity, portal
 targets, spawn transfer, HUD adoption, camera, collision, and save contracts remain
 unchanged.
 
@@ -75,9 +76,9 @@ horizontal foundations on the common gameplay baseline.
 - `tools/build_town_modular_scene.py` generates the static, editor-visible
   `scenes/maps/town/components/TownModularVisuals.tscn`; runtime does not rebuild
   authored Town layout from script.
-- `TownBackdrop.tscn` displays exact
-  `concept/town/main_horizontal_concept/town_style_direction_a_locked.png`.
-  Its `TownModularVisuals` instance remains linked but hidden during style review.
+- `TownBackdrop.tscn` displays its linked `TownModularVisuals` instance.
+  `concept/town/main_horizontal_concept/town_style_direction_a_locked.png`
+  remains linked but hidden as the composition reference.
 - Generated visual children do not own interactions. The six building triggers remain
   in `TownBuildingEntrances.tscn`, and BattleGateway remains in `TownPortalSet.tscn`.
 - Six building labels use the B2 plaque asset and project the corresponding foundation
@@ -107,7 +108,7 @@ horizontal foundations on the common gameplay baseline.
 
 - No mixed perspective or mismatched pixel density.
 - No decorative object blocks the player.
-- No modular candidate, modular-v1 street prop, or hanging banner is visible at runtime.
+- No hidden modular-v1 street prop or hanging banner is visible at runtime.
 - Building labels stay above silhouettes and only appear for Player foundation proximity.
 - All seven NPC roles display exactly one visual.
 - No Town building UI is triggered by an NPC.

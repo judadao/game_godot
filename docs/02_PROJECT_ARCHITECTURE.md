@@ -190,23 +190,21 @@ wrappers，讓 portal、HUD、save 與既有測試不需知道實作已抽離：
 | `res://scenes/maps/forbidden_graveyard.tscn` | `res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn` | `ForbiddenGraveyard` |
 
 Town canonical content 維持 `1942 × 720` Eternal Forge gameplay world 與
-`y=672` baseline。畫風討論期間的 runtime presentation authority 是
-`concept/town/main_horizontal_concept/town_style_direction_a_locked.png`：
-`TownBackdrop/EternalForgeConcept` 直接顯示這張核准的 Image #2，禁止再用分件
-近似重組核准構圖。`res://data/town_modular_layout.json` 仍定義
-`1942 × 809` source canvas 上的 72 個可替換候選物件，
-`tools/build_town_modular_scene.py` 仍將其生成為 editor 可選取的
-`TownModularVisuals.tscn`，但 `TownBackdrop/ModularVisuals` 在 style review
-期間保持 hidden，只作 Figma 討論與後續逐件替換來源。
-`tools/build_town_modular_figma_board.py` 產生單頁 Figma board：第一區固定放
-Image #2，第二區才顯示重組候選與分件素材庫。
+`y=672` baseline。`res://data/town_modular_layout.json` 定義
+`1942 × 809` source canvas 上的 72 個可替換物件，
+`tools/build_town_modular_scene.py` 將其生成為 editor 與 runtime 共用的
+`TownModularVisuals.tscn`；`TownBackdrop/ModularVisuals` 是目前 presentation
+authority。核准的 Image #2 保留在 hidden
+`TownBackdrop/EternalForgeConcept` 作背景、比例與整體構圖 reference。
+`tools/build_town_modular_figma_board.py` 產生單頁 Figma board，並以同一 layout
+輸出完整重組預覽與可單獨選取的分件素材庫。
 Town 視覺統一採用 `data/town_visual_style.json` 的
 `storybook_handdrawn_pixel_v2`：手繪不規則墨線、紙張顆粒、低飽和木石色、
 冷苔綠陰影與左上暖蜜色主光。正式視覺基準是
 `concept/town/main_horizontal_concept/town_style_direction_a_locked.png`。
-modular-v3 的 A 遠景、古樹、B2 火炬與傳送門分件仍是候選素材，不是目前
-runtime composition；任何候選進入 runtime 前都必須先在 Figma 對照核准圖，
-並通過構圖、比例、遮擋與透視 review。
+modular-v3 的 A 遠景、古樹、Base 火炬與傳送門已納入目前 runtime composition；
+六棟主建築也已統一為材料行 Base 的群塊、線稿與中性固有色語言。前景 Base
+只烘焙結構 AO 與接觸陰影，大面方向光由後續 Godot overlay 擁有。
 分件候選中的六棟正式建築與街景使用 B2
 `b2_front_right_orthographic`：正面為主、只露右側窄面、垂直線保持垂直、
 深度邊一致往右上後退、地基維持水平。新增 18 個無碰撞生活／地面 dressing
@@ -219,8 +217,8 @@ composition 或遮住建築。
 `EternalForgeIdentity` 提供八個精簡地點標籤與後續物件精修入口。六棟建築標籤
 由 `scripts/maps/town_location_labels.gd` 投影 `TownBuildingEntrances` 的地基
 進出 signal：Player 在地基外時 hidden，進入時只顯示目前建築的 B2 木牌，並固定
-放在建築最高輪廓上方。Image #2 review 期間不滅火炬與傳送門的世界標籤 hidden，
-傳送門仍由 HUD interaction prompt 說明。
+放在建築最高輪廓上方。不滅火炬與傳送門的世界標籤預設 hidden，傳送門仍由
+HUD interaction prompt 說明。
 六棟建築由 `TownBuildingEntrances` 擁有覆蓋完整地基的互動 Area 與 UI route；
 其中五棟提供服務，最東側民宅只開啟資訊 UI。原東側住宅改為裝備圖紙商，
 與劍魂商分別販售 equipment／Sword Soul 永久圖紙。NPC 不再是 Town 建築服務的

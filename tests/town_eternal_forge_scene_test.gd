@@ -39,7 +39,10 @@ func _run() -> void:
 			concept.texture != null and concept.texture.resource_path == CONCEPT_TEXTURE_PATH,
 			"Town concept reference must preserve the approved source artwork."
 		)
-		_expect(concept.is_visible_in_tree(), "Locked A Town concept must be the runtime presentation.")
+		_expect(
+			not concept.is_visible_in_tree(),
+			"Locked A Town concept must remain a hidden composition reference."
+		)
 		_expect(
 			town.get_node_or_null("ParallaxBackground/EternalForgeConceptMid") == null
 				and town.get_node_or_null("ParallaxBackground/EternalForgeConceptEast") == null,
@@ -54,8 +57,8 @@ func _run() -> void:
 			"Town modular visuals must remain a linked static scene."
 		)
 		_expect(
-			not modular.is_visible_in_tree(),
-			"Town modular visual scene must stay hidden while Figma style review is active."
+			modular.is_visible_in_tree(),
+			"Approved Town Base modular visuals must be the runtime presentation."
 		)
 		var object_ids: Dictionary = {}
 		var modular_sprites := modular.find_children("*", "Sprite2D", true, false)

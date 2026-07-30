@@ -18,7 +18,8 @@
     "surface_texture": "subtle_paper_grain",
     "pixel_treatment": "painterly_clustered",
     "shape_language": "b2_chunky_lived_in_timber_and_stone",
-    "magic_accent_policy": "restrained_focal_only"
+    "magic_accent_policy": "restrained_focal_only",
+    "foreground_asset_layer": "neutral_base_for_godot_light_overlays"
   },
   "variants": {
     "background": "a_locked_autumn_panorama",
@@ -40,7 +41,9 @@
     "key_direction": "upper_left",
     "ambient_shadow": "cool_moss_charcoal",
     "highlight": "warm_honey",
-    "window_and_forge_glow": "localized_amber"
+    "window_and_forge_glow": "localized_amber",
+    "base_asset_policy": "structural_ambient_occlusion_only",
+    "broad_light_owner": "godot_overlay"
   },
   "asset_sources": [
     "res://assets/town/modular_v3/background/ancient_town_tree.png",

@@ -184,14 +184,15 @@ Town canonical scene另有：
 - one `Portals/BattleGateway` instance
 - camera/map metadata
 
-Town gameplay world 維持 `1942 × 720` 與 `y=672` baseline。畫風 review
-期間，`TownBackdrop/EternalForgeConcept` 直接顯示核准的
-`town_style_direction_a_locked.png`，是唯一 runtime presentation authority。
+Town gameplay world 維持 `1942 × 720` 與 `y=672` baseline。
+`TownBackdrop/ModularVisuals` 顯示核准的 Base 分件組圖，是 runtime
+presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
+`town_style_direction_a_locked.png` 作 hidden composition reference。
 `res://data/town_modular_layout.json` 仍在 `1942 × 809` source canvas 定義
 72 個 background、ground、facility、landmark 與 street-prop candidates；
 `tools/build_town_modular_scene.py` 將資料生成為靜態
-`TownModularVisuals.tscn`，但其 instance 保持 hidden，供 Scene editor 與
-Figma 逐件討論，不與核准圖同時顯示。
+`TownModularVisuals.tscn`，其 instance 在 runtime visible，並與 Figma
+逐件討論頁共用相同位置與來源資料。
 `TownEternalForgeIdentity.tscn` 仍持有八個可編輯中文地點標籤、區域光暈與
 landmark identity。六個建築標籤預設 hidden，由
 `scripts/maps/town_location_labels.gd` 監聽對應 BuildingEntrance 的
@@ -314,7 +315,7 @@ Runtime：
 Current composition：
 
 - active：`scenes/maps/town/components/TownBackdrop.tscn`
-- linked hidden design component：
+- linked active presentation component：
   `scenes/maps/town/components/TownModularVisuals.tscn`
 - active：`scenes/maps/town/components/TownEternalForgeIdentity.tscn`
 - active：`scenes/maps/town/components/TownNPCs.tscn`
@@ -329,16 +330,15 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 
 ### 6.2 Component responsibility
 
-- `TownBackdrop/EternalForgeConcept` 是 style review 期間的 runtime 視覺；
-  texture 必須是 exact locked A，不得以分件近似替代。
-- `TownModularVisuals` 是由 `data/town_modular_layout.json` 生成的 hidden
-  design composition；72 個 Sprite entries 可分別選取，但不擁有互動、碰撞或
-  progression。
+- `TownBackdrop/EternalForgeConcept` 是 hidden 的 exact locked A 構圖參考。
+- `TownModularVisuals` 是由 `data/town_modular_layout.json` 生成的 active
+  design/runtime composition；72 個 Sprite entries 可分別選取，但不擁有互動、
+  碰撞或 progression。
 - `TownModularVisuals` 的 46 個來源素材遵循
   `data/town_visual_style.json`；中央古樹保有自己的 source 與 object ID，
   可獨立替換且不建立 collision。
-- `background_sky`、古樹、火炬與傳送門都是下一輪 Figma review 候選；其
-  stable ID 與比例 contract 保留，但目前不參與 runtime composition。
+- `background_sky`、古樹、火炬與傳送門保留 stable ID 與比例 contract，並
+  參與 runtime composition；背景來源未在本輪重繪。
 - 分件候選街景只允許 modular-v2 B2 source。舊 modular-v1 街具、
   `hanging_banner_*`，以及會遮住東側建築的 laundry／trough／woodpile／signpost／
   shrub／ivy entries 僅保留 hidden stable entries，不得出現在 runtime。
@@ -348,9 +348,8 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 - 新增的市場攤、籃筐、曬衣線、桌椅、麻袋、工具架、花槽、水槽、木柴、
   路牌與八個地面／植栽 dressing 都屬 visual-only，不得加入 `Interactives`、
   collision 或 service metadata。
-- `TownBackdrop` 只 instance 視覺 layer；locked A 概念圖 runtime visible，
-  modular candidate runtime hidden，
-  不處理經濟或 Portal。
+- `TownBackdrop` 只 instance 視覺 layer；modular Base runtime visible，
+  locked A 概念圖 hidden，不處理經濟或 Portal。
 - ground/collision分開，視覺改動不得隱式改physics。
 - NPC container組合display-only NPC instances，不承載互動或對話資料。
 - Building entrance container組合門口互動 instances，不承載 UI instance。
