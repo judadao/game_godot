@@ -204,11 +204,21 @@ metadata/calm_period = 4.4
 metadata/rustle_period = 6.1
 
 [node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/WestOuterPatch"]
-position = Vector2(0, -85)
-scale = Vector2(0.55, 0.55)
+position = Vector2(-18, -104)
+rotation = -0.035
+scale = Vector2(0.58, 0.58)
 z_index = -21
 texture_filter = 1
 texture = SubResource("AtlasTexture_foliage_0")
+
+[node name="LowerFill" type="Sprite2D" parent="ForestSwayLayers/WestOuterPatch"]
+position = Vector2(58, -30)
+rotation = 0.028
+scale = Vector2(0.44, 0.44)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_foliage_5")
+flip_h = true
 
 [node name="WestUpperPatch" type="Node2D" parent="ForestSwayLayers"]
 position = Vector2(250, 465)

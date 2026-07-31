@@ -311,6 +311,35 @@ func _assert_scene_contract() -> void:
 				moving_forest_patches >= 4,
 				"Several foliage patches must move independently during calm play."
 			)
+			var west_outer := forest_sway_layers.get_node_or_null(
+				"WestOuterPatch"
+			) as Node2D
+			_expect(
+				west_outer != null,
+				"Far-west foliage must remain an authored local pivot."
+			)
+			if west_outer != null:
+				var west_main := west_outer.get_node_or_null("Sprite") as Sprite2D
+				var west_lower := west_outer.get_node_or_null("LowerFill") as Sprite2D
+				_expect(
+					west_main != null and west_lower != null,
+					"Far-west foliage must layer an uneven lower fill beneath its crown."
+				)
+				if west_main != null and west_lower != null:
+					_expect(
+						west_lower.position.y > west_main.position.y + 50.0,
+						"Far-west lower fill must break the crown's flat baseline."
+					)
+					_expect(
+						west_lower.position.x > west_main.position.x + 40.0,
+						"Far-west lower fill must offset into the empty roof gap."
+					)
+					_expect(
+						west_lower.texture is AtlasTexture
+							and west_lower.texture_filter
+								== CanvasItem.TEXTURE_FILTER_NEAREST,
+						"Far-west lower fill must reuse a crisp modular foliage region."
+					)
 		for child in canopy_layers.get_children():
 			if child is Sprite2D and String(child.name).begins_with("LeafDrift"):
 				var leaf_sprite := child as Sprite2D
