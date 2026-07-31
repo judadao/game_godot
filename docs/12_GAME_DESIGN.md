@@ -653,7 +653,12 @@ village-stage progression。傳送門 Base v5 不含門洞旋渦、紫色內緣�
 暗紫 underpaint 與兩組
 12 幀手繪逐格主旋渦／次光，兩層以 6 FPS 播放 2 秒 loop 並保留相位差；
 符文呼吸只改變 presentation，不改變 `BattleGateway` 的 interaction、
-collision 或 hub route。道路視覺
+collision 或 hub route。`TownAmbientAnimation.tscn` 以完整古樹的偶發徐風、
+左右屋簷枝葉、五組單向落地秋葉及十個鳥停棲點補足悠閒城鎮氛圍。樹平時保持
+安定，只有陣風才從上半部緩慢彎曲再回正；落葉抵達近地後停留再淡出。鳥以
+屋頂／地面小群與零散個體分布，長時間左右待機／啄食，只有 Player 靠近或
+自然等待結束才起飛並稍後返回；所有環境動畫都不提供傷害、掉落、互動、碰撞
+或 progression。道路視覺
 頂緣為 `y=660`，與不變的 `y=672` gameplay baseline 重疊 12 px，讓角色腳部及
 建築地基確實貼地。不使用暖色整張城鎮圖作底層。六棟前景建築使用材料行
 Base 的中性分件；東側四棟採 MaterialYard-style Base v3，以約 4×

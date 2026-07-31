@@ -199,6 +199,13 @@ presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 `PortalHighlights` 各自播放 12 幀、6 FPS 的手繪逐格漩渦，次光層保留相位差，
 `PortalRuneGlow` 在頂部晶石內以 2 秒週期呼吸。各幀預先由門洞遮罩裁切；
 靜態 Base 不含旋渦、紫色內緣光或晶石 emission。
+`TownBackdrop/AmbientAnimation` instance
+`TownAmbientAnimation.tscn`；`CanopyLayers/AncientTreeWind` 以完整古樹與
+root-anchored shader 保存正確樹幹方向，兩組屋簷枝葉只從左右邊界伸入，五組
+落葉則各自保存起點與近地終點。`BirdPerches` 保存七個屋頂與三個地面停棲點。
+全部是 editor-visible、visual-only `Sprite2D`；runtime script 以
+`calm → gust → settle` 控制樹、以 `wait → fall → landed → fade` 控制落葉，
+並管理鳥的待機／群組起飛／飛離／返回狀態，不建立碰撞或第二套 NPC ownership。
 `res://data/town_modular_layout.json` 仍在 `1942 × 809` source canvas 定義
 layout-defined background、ground、facility、landmark 與 street-prop candidates；
 `tools/build_town_modular_scene.py` 將資料生成為靜態
@@ -330,6 +337,8 @@ Current composition：
   `scenes/maps/town/components/TownModularVisuals.tscn`
 - linked active landmark animation component：
   `scenes/maps/town/components/TownEternalFlameAnimation.tscn`
+- linked active environment animation component：
+  `scenes/maps/town/components/TownAmbientAnimation.tscn`
 - active：`scenes/maps/town/components/TownEternalForgeIdentity.tscn`
 - active：`scenes/maps/town/components/TownNPCs.tscn`
 - active：`scenes/maps/town/components/TownBuildingEntrances.tscn`

@@ -221,6 +221,13 @@ source-to-display pixel density 對齊鄰近 Base 建築的石材、銅件與木
 手繪逐格素材獨立負責，
 頂部符文則使用 2 秒柔和呼吸。所有門洞幀在資產準備階段以 aperture mask 裁切，
 不以單張貼圖做機械式 shader 旋轉。
+`TownAmbientAnimation.tscn` 另外持有完整古樹的 root-anchored 徐風 shader，
+以及可獨立替換的 12 幀屋簷枝葉、飄落葉與鳥類 sprite sheets。古樹平時固定，
+每隔 8–18 秒才由上半部緩慢受風再回正；落葉以世界位置單向下降，近地停留後
+原地淡出，不在半空 loop 或逆向飛。十個鳥停棲點以屋頂小群、地面小群及零散
+個體分布，長時間待機後才因 Player 靠近或自然等待而起飛，同群以短錯時依序
+離開。此 component 只負責 presentation，不建立碰撞、互動、NPC 或玩法
+authority。
 八塊道路與八塊橋牆組成唯一可見地板。道路視覺面從 `y=660`
 開始，與維持在 `y=672` 的角色、建築與互動基準重疊 12 px，避免腳下與地基露出
 背景縫隙。不得再以

@@ -1,0 +1,265 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/town_ambient_animation.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png" id="2_ancient_tree"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/eave_branch_sway_sheet.png" id="3_eave"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/falling_leaves_sheet.png" id="4_leaves"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/bird_idle_sheet.png" id="5_bird_idle"]
+[ext_resource type="Shader" path="res://shaders/maps/town_ambient_tree_wind.gdshader" id="6_tree_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tree_wind"]
+shader = ExtResource("6_tree_shader")
+shader_parameter/wind_strength = 0.0
+shader_parameter/wind_phase = 0.0
+
+[node name="TownAmbientAnimation" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="CanopyLayers" type="Node2D" parent="."]
+
+[node name="AncientTreeWind" type="Sprite2D" parent="CanopyLayers"]
+material = SubResource("ShaderMaterial_tree_wind")
+position = Vector2(1020, 330)
+scale = Vector2(0.512091, 0.512064)
+z_index = -19
+texture_filter = 1
+texture = ExtResource("2_ancient_tree")
+
+[node name="EaveBranchWest" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.92, 0.87, 0.88)
+position = Vector2(100, 370)
+scale = Vector2(0.66, 0.66)
+z_index = -9
+texture_filter = 1
+texture = ExtResource("3_eave")
+hframes = 4
+vframes = 3
+
+[node name="EaveBranchEast" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.92, 0.87, 0.88)
+position = Vector2(1840, 350)
+scale = Vector2(0.66, 0.66)
+z_index = -9
+texture_filter = 1
+texture = ExtResource("3_eave")
+hframes = 4
+vframes = 3
+flip_h = true
+
+[node name="LeafDriftWestA" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.92, 0.86, 0.78, 0.82)
+position = Vector2(120, 245)
+scale = Vector2(0.4, 0.4)
+z_index = -5
+texture_filter = 1
+texture = ExtResource("4_leaves")
+hframes = 4
+vframes = 3
+metadata/landing_y = 624.0
+metadata/drift_x = 170.0
+metadata/fall_duration = 8.4
+metadata/ground_hold = 2.2
+metadata/initial_delay = 0.2
+
+[node name="LeafDriftWestB" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.92, 0.86, 0.78, 0.78)
+position = Vector2(410, 275)
+scale = Vector2(0.36, 0.36)
+z_index = -5
+texture_filter = 1
+texture = ExtResource("4_leaves")
+hframes = 4
+vframes = 3
+frame = 4
+metadata/landing_y = 626.0
+metadata/drift_x = 125.0
+metadata/fall_duration = 9.2
+metadata/ground_hold = 1.8
+metadata/initial_delay = 2.4
+
+[node name="LeafDriftCenter" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.92, 0.86, 0.78, 0.8)
+position = Vector2(920, 225)
+scale = Vector2(0.4, 0.4)
+z_index = -5
+texture_filter = 1
+texture = ExtResource("4_leaves")
+hframes = 4
+vframes = 3
+frame = 8
+metadata/landing_y = 625.0
+metadata/drift_x = 165.0
+metadata/fall_duration = 9.8
+metadata/ground_hold = 2.4
+metadata/initial_delay = 1.2
+
+[node name="LeafDriftEastA" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.92, 0.86, 0.78, 0.82)
+position = Vector2(1390, 245)
+scale = Vector2(0.38, 0.38)
+z_index = -5
+texture_filter = 1
+texture = ExtResource("4_leaves")
+hframes = 4
+vframes = 3
+metadata/landing_y = 625.0
+metadata/drift_x = 155.0
+metadata/fall_duration = 8.8
+metadata/ground_hold = 2.0
+metadata/initial_delay = 3.4
+
+[node name="LeafDriftEastB" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.92, 0.86, 0.78, 0.76)
+position = Vector2(1710, 270)
+scale = Vector2(0.34, 0.34)
+z_index = -5
+texture_filter = 1
+texture = ExtResource("4_leaves")
+hframes = 4
+vframes = 3
+frame = 4
+metadata/landing_y = 626.0
+metadata/drift_x = 105.0
+metadata/fall_duration = 9.5
+metadata/ground_hold = 2.3
+metadata/initial_delay = 4.8
+
+[node name="BirdPerches" type="Node2D" parent="."]
+
+[node name="BirdRoofWestA" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(94, 456)
+scale = Vector2(0.08, 0.08)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+metadata/perch_kind = "roof"
+metadata/flock_id = "west_roof"
+metadata/flock_order = 0
+metadata/flight_offset = Vector2(-150, -46)
+metadata/trigger_distance = 90.0
+
+[node name="BirdRoofWestB" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(128, 458)
+scale = Vector2(0.078, 0.078)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+flip_h = true
+metadata/perch_kind = "roof"
+metadata/flock_id = "west_roof"
+metadata/flock_order = 1
+metadata/flight_offset = Vector2(-165, -42)
+metadata/trigger_distance = 90.0
+
+[node name="BirdRoofForge" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(470, 380)
+scale = Vector2(0.082, 0.082)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+metadata/perch_kind = "roof"
+metadata/flight_offset = Vector2(-170, -55)
+metadata/trigger_distance = 95.0
+
+[node name="BirdRoofMidA" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(1294, 387)
+scale = Vector2(0.08, 0.08)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+flip_h = true
+metadata/perch_kind = "roof"
+metadata/flock_id = "mid_roof"
+metadata/flock_order = 0
+metadata/flight_offset = Vector2(165, -48)
+metadata/trigger_distance = 95.0
+
+[node name="BirdRoofMidB" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(1388, 374)
+scale = Vector2(0.078, 0.078)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+metadata/perch_kind = "roof"
+metadata/flock_id = "mid_roof"
+metadata/flock_order = 1
+metadata/flight_offset = Vector2(175, -52)
+metadata/trigger_distance = 95.0
+
+[node name="BirdRoofEastA" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(1588, 371)
+scale = Vector2(0.078, 0.078)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+flip_h = true
+metadata/perch_kind = "roof"
+metadata/flight_offset = Vector2(165, -45)
+metadata/trigger_distance = 90.0
+
+[node name="BirdRoofEastB" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(1722, 348)
+scale = Vector2(0.076, 0.076)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+metadata/perch_kind = "roof"
+metadata/flight_offset = Vector2(150, -48)
+metadata/trigger_distance = 90.0
+
+[node name="BirdGroundTownA" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(1178, 650)
+scale = Vector2(0.085, 0.085)
+z_index = 2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+metadata/perch_kind = "ground"
+metadata/flock_id = "town_ground"
+metadata/flock_order = 0
+metadata/flight_offset = Vector2(145, -45)
+metadata/trigger_distance = 82.0
+
+[node name="BirdGroundTownB" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(1204, 652)
+scale = Vector2(0.086, 0.086)
+z_index = 2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+flip_h = true
+metadata/perch_kind = "ground"
+metadata/flock_id = "town_ground"
+metadata/flock_order = 1
+metadata/flight_offset = Vector2(155, -42)
+metadata/trigger_distance = 82.0
+
+[node name="BirdGroundEast" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(1231, 649)
+scale = Vector2(0.084, 0.084)
+z_index = 2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+metadata/perch_kind = "ground"
+metadata/flock_id = "town_ground"
+metadata/flock_order = 2
+metadata/flight_offset = Vector2(165, -48)
+metadata/trigger_distance = 82.0
