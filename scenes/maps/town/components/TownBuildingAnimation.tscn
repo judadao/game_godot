@@ -1,0 +1,480 @@
+[gd_scene load_steps=44 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/town_building_animation.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownWindowGlow.tscn" id="2_window"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownArchedWindowGlow.tscn" id="2_arch"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownTallArchedWindowGlow.tscn" id="2_tall_arch"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownRadialWindowGlow.tscn" id="2_radial"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v2/props/market_stall.png" id="3_market"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/material_yard.png" id="4_material"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v5.png" id="5_monument"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/town_hall_base_v3.png" id="6_hall"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/sword_soul_shop_base_v3.png" id="7_sword"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_00.png" id="8_fire_00"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_01.png" id="9_fire_01"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_02.png" id="10_fire_02"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_03.png" id="11_fire_03"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_04.png" id="12_fire_04"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_05.png" id="13_fire_05"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_06.png" id="14_fire_06"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_07.png" id="15_fire_07"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/sword_glint_handdrawn/frame_00.png" id="16_sword_glint_00"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/sword_glint_handdrawn/frame_01.png" id="17_sword_glint_01"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/sword_glint_handdrawn/frame_02.png" id="18_sword_glint_02"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/sword_glint_handdrawn/frame_03.png" id="19_sword_glint_03"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/sword_glint_handdrawn/frame_04.png" id="20_sword_glint_04"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/sword_glint_handdrawn/frame_05.png" id="21_sword_glint_05"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_00.png" id="22_gear_00"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_01.png" id="23_gear_01"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_02.png" id="24_gear_02"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_03.png" id="25_gear_03"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_04.png" id="26_gear_04"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_05.png" id="27_gear_05"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_06.png" id="28_gear_06"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_07.png" id="29_gear_07"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_forge_hearth"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("8_fire_00")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_fire_01")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_fire_02")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_fire_03")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_fire_04")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_fire_05")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_fire_06")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_fire_07")
+}],
+"loop": true,
+"name": &"hearth",
+"speed": 4.5
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_sword_glint"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("16_sword_glint_00")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_sword_glint_01")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_sword_glint_02")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_sword_glint_03")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_sword_glint_04")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_sword_glint_05")
+}],
+"loop": false,
+"name": &"glint",
+"speed": 9.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_blueprint_gear"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("22_gear_00")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_gear_01")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_gear_02")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_gear_03")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_gear_04")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_gear_05")
+}, {
+"duration": 1.0,
+"texture": ExtResource("28_gear_06")
+}, {
+"duration": 1.0,
+"texture": ExtResource("29_gear_07")
+}],
+"loop": true,
+"name": &"rotate",
+"speed": 1.8
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_market_awning"]
+atlas = ExtResource("3_market")
+region = Rect2(210, 250, 1060, 230)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_material_awning"]
+atlas = ExtResource("4_material")
+region = Rect2(80, 470, 840, 170)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_monument_left_flag"]
+atlas = ExtResource("5_monument")
+region = Rect2(38, 1380, 192, 564)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_monument_right_flag"]
+atlas = ExtResource("5_monument")
+region = Rect2(1162, 1380, 192, 564)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hall_banner"]
+atlas = ExtResource("6_hall")
+region = Rect2(576, 516, 216, 276)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sword_banner"]
+atlas = ExtResource("7_sword")
+region = Rect2(36, 684, 228, 376)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sword_awning"]
+atlas = ExtResource("7_sword")
+region = Rect2(640, 660, 432, 176)
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_forge_add"]
+blend_mode = 1
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_glint_add"]
+blend_mode = 1
+
+[node name="TownBuildingAnimation" type="Node2D"]
+texture_filter = 1
+script = ExtResource("1_script")
+
+[node name="WindowLights" type="Node2D" parent="."]
+
+[node name="MaterialYardAttic" parent="WindowLights" instance=ExtResource("2_window")]
+position = Vector2(94, 510)
+scale = Vector2(1, 1.1)
+metadata/period = 4.7
+metadata/phase = 0.2
+metadata/base_alpha = 0.8
+
+[node name="PlayerForgeAttic" parent="WindowLights" instance=ExtResource("2_window")]
+position = Vector2(447, 479)
+scale = Vector2(0.95, 1)
+metadata/period = 3.8
+metadata/phase = 1.1
+metadata/base_alpha = 0.82
+
+[node name="TownHallUpperLeft" parent="WindowLights" instance=ExtResource("2_arch")]
+position = Vector2(1019, 533)
+metadata/period = 4.4
+metadata/phase = 2.0
+metadata/base_alpha = 0.72
+
+[node name="TownHallLowerLeft" parent="WindowLights" instance=ExtResource("2_tall_arch")]
+position = Vector2(1018, 604)
+metadata/period = 3.6
+metadata/phase = 2.9
+metadata/base_alpha = 0.7
+
+[node name="TownHallUpperRight" parent="WindowLights" instance=ExtResource("2_arch")]
+position = Vector2(1221, 533)
+metadata/period = 3.2
+metadata/phase = 3.7
+metadata/base_alpha = 0.72
+
+[node name="TownHallLowerRight" parent="WindowLights" instance=ExtResource("2_tall_arch")]
+position = Vector2(1221, 604)
+metadata/period = 4.1
+metadata/phase = 4.5
+metadata/base_alpha = 0.7
+
+[node name="SwordSoulUpper" parent="WindowLights" instance=ExtResource("2_radial")]
+position = Vector2(1318, 524)
+scale = Vector2(1.05, 1)
+metadata/period = 3.4
+metadata/phase = 5.4
+metadata/base_alpha = 0.74
+
+[node name="BlueprintAttic" parent="WindowLights" instance=ExtResource("2_window")]
+position = Vector2(1687, 484)
+scale = Vector2(0.8, 0.84)
+metadata/period = 3.1
+metadata/phase = 7.0
+metadata/base_alpha = 0.82
+
+[node name="ResidenceAttic" parent="WindowLights" instance=ExtResource("2_window")]
+position = Vector2(1794, 451)
+scale = Vector2(1, 1.12)
+metadata/period = 3.9
+metadata/phase = 8.7
+metadata/base_alpha = 0.74
+
+[node name="ResidenceLower" parent="WindowLights" instance=ExtResource("2_window")]
+position = Vector2(1744, 565)
+scale = Vector2(1, 1.12)
+metadata/period = 2.9
+metadata/phase = 9.5
+metadata/base_alpha = 0.72
+
+[node name="ResidenceDoor" parent="WindowLights" instance=ExtResource("2_window")]
+position = Vector2(1830, 572)
+scale = Vector2(0.82, 1)
+metadata/period = 4.8
+metadata/phase = 10.4
+metadata/base_alpha = 0.74
+
+[node name="ForgeWarmth" type="Node2D" parent="."]
+position = Vector2(482, 632)
+z_index = -7
+
+[node name="WallBounce" type="Polygon2D" parent="ForgeWarmth"]
+material = SubResource("CanvasItemMaterial_forge_add")
+color = Color(1, 0.31, 0.07, 0.15)
+polygon = PackedVector2Array(-30, 12, -27, -22, -16, -36, 1, -31, 20, -34, 29, -18, 31, 12)
+
+[node name="HearthCore" type="AnimatedSprite2D" parent="ForgeWarmth"]
+material = SubResource("CanvasItemMaterial_forge_add")
+position = Vector2(0, -5)
+scale = Vector2(0.044, 0.044)
+texture_filter = 1
+sprite_frames = SubResource("SpriteFrames_forge_hearth")
+animation = &"hearth"
+autoplay = "hearth"
+
+[node name="HearthEmbers" type="Polygon2D" parent="ForgeWarmth"]
+material = SubResource("CanvasItemMaterial_forge_add")
+color = Color(1, 0.76, 0.18, 0.88)
+polygon = PackedVector2Array(-17, 8, -9, 5, -4, 9, 1, 5, 8, 9, 16, 6, 18, 12, -18, 12)
+
+[node name="ClothMotions" type="Node2D" parent="."]
+
+[node name="MarketAwningPivot" type="Node2D" parent="ClothMotions"]
+position = Vector2(97, 544)
+z_index = -2
+metadata/period = 3.2
+metadata/phase = 0.3
+metadata/max_offset = 1.0
+
+[node name="Cloth" type="Sprite2D" parent="ClothMotions/MarketAwningPivot"]
+position = Vector2(0, 16.7)
+scale = Vector2(0.11773, 0.14526)
+texture_filter = 1
+texture = SubResource("AtlasTexture_market_awning")
+
+[node name="MaterialAwningPivot" type="Node2D" parent="ClothMotions"]
+position = Vector2(145, 549.5)
+z_index = -8
+metadata/period = 4.9
+metadata/phase = 1.2
+metadata/max_offset = 1.0
+
+[node name="Cloth" type="Sprite2D" parent="ClothMotions/MaterialAwningPivot"]
+position = Vector2(0, 21.25)
+scale = Vector2(0.25, 0.25)
+texture_filter = 1
+texture = SubResource("AtlasTexture_material_awning")
+
+[node name="MonumentLeftFlagPivot" type="Node2D" parent="ClothMotions"]
+position = Vector2(691, 457)
+z_index = -8
+metadata/period = 3.5
+metadata/phase = 2.1
+metadata/max_offset = 1.0
+
+[node name="Cloth" type="Sprite2D" parent="ClothMotions/MonumentLeftFlagPivot"]
+position = Vector2(0, 70.5)
+scale = Vector2(0.25, 0.25)
+texture_filter = 1
+texture = SubResource("AtlasTexture_monument_left_flag")
+
+[node name="MonumentRightFlagPivot" type="Node2D" parent="ClothMotions"]
+position = Vector2(972, 457)
+z_index = -8
+metadata/period = 4.1
+metadata/phase = 3.0
+metadata/max_offset = 1.0
+
+[node name="Cloth" type="Sprite2D" parent="ClothMotions/MonumentRightFlagPivot"]
+position = Vector2(0, 70.5)
+scale = Vector2(0.25, 0.25)
+texture_filter = 1
+texture = SubResource("AtlasTexture_monument_right_flag")
+
+[node name="TownHallBannerPivot" type="Node2D" parent="ClothMotions"]
+position = Vector2(1120, 513)
+z_index = -8
+metadata/period = 4.6
+metadata/phase = 3.8
+metadata/max_offset = 1.0
+
+[node name="Cloth" type="Sprite2D" parent="ClothMotions/TownHallBannerPivot"]
+position = Vector2(0, 34.5)
+scale = Vector2(0.25, 0.25)
+texture_filter = 1
+texture = SubResource("AtlasTexture_hall_banner")
+
+[node name="SwordBannerPivot" type="Node2D" parent="ClothMotions"]
+position = Vector2(1240.5, 548)
+z_index = -8
+metadata/period = 3.8
+metadata/phase = 4.7
+metadata/max_offset = 1.0
+
+[node name="Cloth" type="Sprite2D" parent="ClothMotions/SwordBannerPivot"]
+position = Vector2(0, 47)
+scale = Vector2(0.25, 0.25)
+texture_filter = 1
+texture = SubResource("AtlasTexture_sword_banner")
+
+[node name="SwordAwningPivot" type="Node2D" parent="ClothMotions"]
+position = Vector2(1417, 542)
+z_index = -8
+metadata/period = 5.2
+metadata/phase = 5.6
+metadata/max_offset = 1.0
+
+[node name="Cloth" type="Sprite2D" parent="ClothMotions/SwordAwningPivot"]
+position = Vector2(0, 22)
+scale = Vector2(0.25, 0.25)
+texture_filter = 1
+texture = SubResource("AtlasTexture_sword_awning")
+
+[node name="ClockMechanism" type="Node2D" parent="."]
+position = Vector2(1120, 467)
+z_index = -7
+metadata/step_seconds = 1.0
+
+[node name="Face" type="Polygon2D" parent="ClockMechanism"]
+visible = false
+color = Color(0.84, 0.74, 0.57, 1)
+polygon = PackedVector2Array(0, -21, 8, -20, 15, -15, 20, -8, 21, 0, 20, 8, 15, 15, 8, 20, 0, 21, -8, 20, -15, 15, -20, 8, -21, 0, -20, -8, -15, -15, -8, -20)
+
+[node name="TickNorth" type="Polygon2D" parent="ClockMechanism"]
+visible = false
+color = Color(0.22, 0.18, 0.17, 1)
+polygon = PackedVector2Array(-1, -18, 1, -18, 1, -15, -1, -15)
+
+[node name="TickEast" type="Polygon2D" parent="ClockMechanism"]
+visible = false
+color = Color(0.22, 0.18, 0.17, 1)
+polygon = PackedVector2Array(15, -1, 18, -1, 18, 1, 15, 1)
+
+[node name="TickSouth" type="Polygon2D" parent="ClockMechanism"]
+visible = false
+color = Color(0.22, 0.18, 0.17, 1)
+polygon = PackedVector2Array(-1, 15, 1, 15, 1, 18, -1, 18)
+
+[node name="TickWest" type="Polygon2D" parent="ClockMechanism"]
+visible = false
+color = Color(0.22, 0.18, 0.17, 1)
+polygon = PackedVector2Array(-18, -1, -15, -1, -15, 1, -18, 1)
+
+[node name="HourHand" type="Line2D" parent="ClockMechanism"]
+visible = false
+points = PackedVector2Array(0, 0, 0, -9)
+width = 3.0
+default_color = Color(0.12, 0.16, 0.22, 1)
+
+[node name="MinuteHand" type="Line2D" parent="ClockMechanism"]
+visible = false
+points = PackedVector2Array(0, 0, 0, -15)
+width = 2.0
+default_color = Color(0.14, 0.19, 0.27, 1)
+
+[node name="SecondHand" type="Line2D" parent="ClockMechanism"]
+points = PackedVector2Array(0, 0, 0, -15)
+width = 1.0
+default_color = Color(0.38, 0.18, 0.12, 1)
+
+[node name="CenterPin" type="Polygon2D" parent="ClockMechanism"]
+color = Color(0.35, 0.25, 0.18, 1)
+polygon = PackedVector2Array(-2, -2, 2, -2, 2, 2, -2, 2)
+
+[node name="MechanicalDetails" type="Node2D" parent="."]
+z_index = -7
+
+[node name="BlueprintGear" type="Node2D" parent="MechanicalDetails"]
+position = Vector2(1591, 482)
+metadata/step_seconds = 0.55
+
+[node name="HandDrawnGear" type="AnimatedSprite2D" parent="MechanicalDetails/BlueprintGear"]
+scale = Vector2(0.255, 0.255)
+texture_filter = 1
+sprite_frames = SubResource("SpriteFrames_blueprint_gear")
+animation = &"rotate"
+
+[node name="MetalGlints" type="Node2D" parent="."]
+z_index = -7
+
+[node name="ForgeToolRackGlint" type="Node2D" parent="MetalGlints"]
+visible = false
+position = Vector2(535, 607)
+metadata/interval = 6.8
+metadata/duration = 0.2
+metadata/phase = 0.7
+metadata/travel = Vector2(5, 2)
+
+[node name="Highlight" type="Polygon2D" parent="MetalGlints/ForgeToolRackGlint"]
+material = SubResource("CanvasItemMaterial_glint_add")
+color = Color(0.72, 0.9, 1, 0.92)
+polygon = PackedVector2Array(-2, -1, 2, -1, 2, 1, -2, 1)
+
+[node name="SwordCrestGlint" type="Node2D" parent="MetalGlints"]
+visible = false
+position = Vector2(1386, 482)
+metadata/interval = 3.6
+metadata/duration = 0.7
+metadata/phase = 1.9
+metadata/travel = Vector2(0, 0)
+metadata/hand_drawn_frames = true
+
+[node name="HandDrawnReflection" type="AnimatedSprite2D" parent="MetalGlints/SwordCrestGlint"]
+material = SubResource("CanvasItemMaterial_glint_add")
+scale = Vector2(0.25, 0.25)
+texture_filter = 1
+sprite_frames = SubResource("SpriteFrames_sword_glint")
+animation = &"glint"
+
+[node name="SwordDisplayGlint" type="Node2D" parent="MetalGlints"]
+visible = false
+position = Vector2(1410, 614)
+metadata/interval = 4.2
+metadata/duration = 0.6
+metadata/phase = 3.1
+metadata/travel = Vector2(12, 0)
+
+[node name="Highlight" type="Polygon2D" parent="MetalGlints/SwordDisplayGlint"]
+material = SubResource("CanvasItemMaterial_glint_add")
+color = Color(0.86, 0.96, 1, 1)
+polygon = PackedVector2Array(-6, -1, 6, -1, 6, 1, -6, 1)
+
+[node name="SparkVertical" type="Polygon2D" parent="MetalGlints/SwordDisplayGlint"]
+material = SubResource("CanvasItemMaterial_glint_add")
+color = Color(0.94, 0.99, 1, 1)
+polygon = PackedVector2Array(-1, -4, 1, -4, 1, 4, -1, 4)
+
+[node name="BlueprintCompassGlint" type="Node2D" parent="MetalGlints"]
+visible = false
+position = Vector2(1595, 480)
+metadata/interval = 8.0
+metadata/duration = 0.24
+metadata/phase = 4.4
+metadata/travel = Vector2(5, 4)
+
+[node name="Highlight" type="Polygon2D" parent="MetalGlints/BlueprintCompassGlint"]
+material = SubResource("CanvasItemMaterial_glint_add")
+color = Color(0.78, 0.92, 1, 0.88)
+polygon = PackedVector2Array(-2, -1, 2, -1, 2, 1, -2, 1)

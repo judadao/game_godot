@@ -645,7 +645,8 @@ layers 只補邊界、貼地與前景建築後方的淺色空隙，並保持在�
 Base 建築的石材、銅件與木旗精細度，並與連續石橋獨立疊放。其靜態 Base 不含
 頂部火焰及中央符文光；`TownEternalFlameAnimation.tscn` 的 `FireLayers`
 以火盆接觸線為縮放軸，使用三個相位錯開的 8 幀、4.5 FPS 火焰層，形成外焰、亮芯
-與柔和餘光；`RuneCharge` 使用 8 幀、4 FPS 的自動循環充能發光，並由 2 秒連續
+與柔和餘光；同源 `BrazierFrontOccluder` 重畫火盆前緣，使火根保持在盆腔內，
+不可用移動火焰高度代替正確圖層。`RuneCharge` 使用 8 幀、4 FPS 的自動循環充能發光，並由 2 秒連續
 `RunePulse` 補足幀間亮度與縮放變化。火焰獨立分件是後續放大或換色的
 presentation 邊界；兩組不得重新烘焙進 Base，也不改變 Eternal Torch 的
 village-stage progression。傳送門 Base v5 不含門洞旋渦、紫色內緣光或頂部
@@ -653,7 +654,11 @@ village-stage progression。傳送門 Base v5 不含門洞旋渦、紫色內緣�
 暗紫 underpaint 與兩組
 12 幀手繪逐格主旋渦／次光，兩層以 6 FPS 播放 2 秒 loop 並保留相位差；
 符文呼吸只改變 presentation，不改變 `BattleGateway` 的 interaction、
-collision 或 hub route。`TownAmbientAnimation.tscn` 以完整古樹的偶發徐風、
+collision 或 hub route。`TownBuildingAnimation.tscn` 為六棟 Base 建築補上局部
+生活感：十一組實際可見窗格持續亮著，只以錯相低幅暖光微閃；鐵匠爐使用八幀手繪火焰
+與拱室內暖光；布料自由端只移動 1px；Town Hall 秒針使用整數像素步進；劍魂商
+劍徽反光與圖紙商齒輪使用透明手繪逐格素材。這些效果不得改動建築輪廓、覆蓋
+NPC、照亮牆面或建立新的互動權威。`TownAmbientAnimation.tscn` 以完整古樹的偶發徐風、
 八組上冠／外冠／前後景樹冠、四組根部藏在屋後的局部枝葉、二十四個單向落地
 單葉、三個可淡出的低矮路緣小堆及十六個鳥停棲點補足
 悠閒城鎮氛圍。完整古樹保持固定，八組獨立樹冠模組平時已有不同步的低幅擺動

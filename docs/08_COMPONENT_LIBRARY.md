@@ -1581,7 +1581,9 @@ the HUD never reads gameplay state directly.
   自動播放，`RunePulse` 以 2 秒 loop 連續插值 alpha 與 scale。循環邊界不得
   產生位置跳動、尺寸突變、明顯亮度斷點或可感知的卡頓。
 - Layer boundary：`FireLayers` 必須保持獨立並把原點固定在火盆接觸線，供後續
-  整組火焰放大或換色而不下沉；`RuneCharge` 只負責持續充能循環。兩組不得重新
+  整組火焰放大或換色而不下沉；`BrazierFrontOccluder` 從 Base v5 同源裁切火盆
+  前緣並位於主火焰之前，使火根由盆腔內冒出，禁止以調整火焰高度掩蓋分層錯誤。
+  `RuneCharge` 只負責持續充能循環。兩組不得重新
   烘焙進 Base v5，也不擁有 interaction、collision、Town progression 或火炬
   Tier 狀態。
 
@@ -1603,6 +1605,25 @@ the HUD never reads gameplay state directly.
   取代手繪逐格形變。
 - Boundary：此 Scene 只擁有 presentation。`TownPortalSet/BattleGateway` 繼續
   擁有 interaction、collision 與 `battle_portal_hub.tscn` route。
+
+### TownBuildingAnimation
+
+- Scene：`res://scenes/maps/town/components/TownBuildingAnimation.tscn`
+- Script：`res://scripts/maps/town_building_animation.gd`
+- Owner：`TownBackdrop`
+- Status：Current — Active Runtime Presentation
+- Responsibility：在六棟 MaterialYard-style Base 建築上疊加十一組可見窗格微光、
+  鐵匠爐暖光與手繪火焰、七組布料自由端、Town Hall 秒針、劍魂商劍徽反光與
+  圖紙商齒輪。`TownWindowGlow.tscn` 只遮罩玻璃格；窗戶保持常亮，以不同週期和
+  相位進行約 10–15% 的暖色微閃，不可同步明滅或照亮牆面。
+- Asset contract：鐵匠爐沿用八幀手繪火焰；劍徽反光與齒輪使用
+  `assets/town/modular_v3/animation/building/` 下的透明手繪逐格素材、nearest
+  filtering 與固定像素 pivot。禁止以 `Line2D`、`Polygon2D` 或平滑 shader
+  代替這兩組 raster 動畫。
+- Motion contract：布料只允許固定上緣後的 1px 整數位移；秒針以整數像素位置
+  跳動；齒輪以離散手繪幀旋轉；劍光為短促事件且大部分時間 hidden。
+- Boundary：只擁有 presentation，不建立 collision、interaction、NPC、
+  service route 或 Town progression。
 
 ### TownAmbientAnimation
 

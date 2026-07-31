@@ -3,6 +3,11 @@ extends SceneTree
 const ACTIVE_SCENES := [
 	"res://scenes/maps/town/components/TownBackdrop.tscn",
 	"res://scenes/maps/town/components/TownModularVisuals.tscn",
+	"res://scenes/maps/town/components/TownBuildingAnimation.tscn",
+	"res://scenes/maps/town/components/TownWindowGlow.tscn",
+	"res://scenes/maps/town/components/TownArchedWindowGlow.tscn",
+	"res://scenes/maps/town/components/TownTallArchedWindowGlow.tscn",
+	"res://scenes/maps/town/components/TownRadialWindowGlow.tscn",
 	"res://scenes/maps/town/components/TownEternalForgeIdentity.tscn",
 	"res://scenes/maps/town/components/TownNPCs.tscn",
 	"res://scenes/maps/town/components/TownBuildingEntrances.tscn",

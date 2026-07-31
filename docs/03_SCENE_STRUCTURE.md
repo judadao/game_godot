@@ -191,7 +191,8 @@ presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 `TownBackdrop/EternalFlameAnimation` 另以
 `TownEternalFlameAnimation.tscn` 疊在不滅火炬 Base v5 塔身上。`FireLayers`
 以火盆接觸線為縮放軸，內含 `FireGlow`、`TopFire`、`InnerFire` 三個相位錯開的
-`AnimatedSprite2D`；`RuneCharge` 與連續插值的 `RunePulse` 負責中央符文充能。
+`AnimatedSprite2D`；同源裁切的 `BrazierFrontOccluder` 位於主火焰前方，只重畫
+火盆前緣，確保火根留在盆腔內。`RuneCharge` 與連續插值的 `RunePulse` 負責中央符文充能。
 靜態 Base 不重複繪製這兩組。
 `TownBackdrop/BattlePortalAnimation` 以
 `TownBattlePortalAnimation.tscn` 疊在傳送門 Base v5 上；`PortalUnderpaint`
@@ -199,6 +200,10 @@ presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 `PortalHighlights` 各自播放 12 幀、6 FPS 的手繪逐格漩渦，次光層保留相位差，
 `PortalRuneGlow` 在頂部晶石內以 2 秒週期呼吸。各幀預先由門洞遮罩裁切；
 靜態 Base 不含旋渦、紫色內緣光或晶石 emission。
+`TownBackdrop/BuildingAnimation` instance `TownBuildingAnimation.tscn`，在
+`ModularVisuals` 之後疊加窗格火光、鐵匠爐手繪火焰、布料自由端、Town Hall
+秒針、劍徽手繪反光與圖紙商手繪齒輪。所有節點均為 editor-authored visual-only
+overlay；窗光只微幅錯相變色且不得離開玻璃格，布料只允許整數像素低幅位移。
 `TownBackdrop/AmbientAnimation` instance
 `TownAmbientAnimation.tscn`；`CanopyLayers/AncientTreeWind` 以完整古樹與
 固定為零的 root-anchored shader 保存正確樹幹方向與穩定基底；
@@ -353,6 +358,8 @@ Current composition：
   `scenes/maps/town/components/TownModularVisuals.tscn`
 - linked active landmark animation component：
   `scenes/maps/town/components/TownEternalFlameAnimation.tscn`
+- linked active building animation component：
+  `scenes/maps/town/components/TownBuildingAnimation.tscn`
 - linked active environment animation component：
   `scenes/maps/town/components/TownAmbientAnimation.tscn`
 - active：`scenes/maps/town/components/TownEternalForgeIdentity.tscn`
@@ -403,7 +410,8 @@ presentation 隱藏；不得在此新增新 Town 視覺。
   並以不同初始相位交錯更新；`RuneCharge` 使用 8 幀、4 FPS、loop、自動播放，
   再由 2 秒循環的 `RunePulse` 連續插值亮度與縮放，避免慢速充能有卡頓感。
   `FireLayers` 必須維持獨立物件且以火盆接觸線為縮放軸，讓後續放大或換色不影響
-  塔身；不得把任一動畫層重新合併進 Base。
+  塔身；`BrazierFrontOccluder` 必須使用 Base v5 同源像素、同位置與同縮放重畫
+  火盆前緣，不得以移動火焰高度代替前後遮擋。不得把任一動畫層重新合併進 Base。
   Base v5 傳送門不得烘焙門洞旋渦或紫色 emission；
   `TownBattlePortalAnimation` 必須以 `portal_aperture_mask.png` 把固定
   `PortalUnderpaint` 及

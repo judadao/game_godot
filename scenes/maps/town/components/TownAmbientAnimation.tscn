@@ -1309,7 +1309,7 @@ metadata/trigger_distance = 95.0
 metadata/visual_scale = 0.105
 
 [node name="BirdRoofMidA" type="Sprite2D" parent="BirdPerches"]
-position = Vector2(1130, 455)
+position = Vector2(1190, 455)
 scale = Vector2(0.08, 0.08)
 z_index = -2
 texture_filter = 1

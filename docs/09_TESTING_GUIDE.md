@@ -328,7 +328,7 @@ Scene directory changes must run these permanent contracts:
 - `tests/town_landmark_composition_contract_test.gd`：舊背景疊層與東側立面遮擋物
   保持 hidden；古樹、火炬與傳送門使用 modular-v3 source 並把比例失真限制在 2%。
 - `tests/town_eternal_flame_animation_test.gd`：不滅火炬 Base v5、三層火焰、
-  充能循環與火盆接觸線 pivot 保持獨立且可重建。
+  同源火盆前緣遮擋、充能循環與火盆接觸線 pivot 保持獨立且可重建。
 - `tests/town_battle_portal_animation_test.gd`：傳送門 Base v5、門洞遮罩與
   完整 underpaint、
   core/highlight 各 12 幀手繪逐格、6 FPS／2 秒 loop、次光相位差、符文呼吸，
@@ -339,6 +339,10 @@ Scene directory changes must run these permanent contracts:
   三張 12 幀透明 atlas、
   五組單向落葉、
   十個群組／零散鳥停棲點與起飛 presentation contract。
+- `tests/town_building_animation_test.gd`：`TownBackdrop` 的 building-animation
+  instance、十一組對齊可見玻璃格且錯相低幅微閃的窗光、八幀手繪爐火、七組低幅
+  布料、Town Hall 步進秒針、手繪劍光與手繪旋轉齒輪 presentation contract。
+  視覺驗證需比較兩個時間點的完整畫面與固定 3 × 2 六區，並另檢查劍光事件前後。
 - `tests/town_location_label_proximity_test.gd`：六個建築木牌位於建築輪廓上方，
   只接受 Player 進出完整地基 Area 的 signal，離開後全部 hidden。
 - `tests/map_registry_test.gd` and `tests/quick_save_migration_test.gd`：stable and legacy map paths remain loadable.

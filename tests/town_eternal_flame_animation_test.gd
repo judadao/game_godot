@@ -92,6 +92,9 @@ func _assert_animation_scene() -> void:
 	var afterglow := animation_root.get_node_or_null(
 		"FireLayers/FireGlow"
 	) as AnimatedSprite2D
+	var brazier_front := animation_root.get_node_or_null(
+		"BrazierFrontOccluder"
+	) as Sprite2D
 	var rune_charge := animation_root.get_node_or_null("RuneCharge") as AnimatedSprite2D
 	_expect(
 		fire_layers != null,
@@ -119,6 +122,7 @@ func _assert_animation_scene() -> void:
 		or inner_flame == null
 		or afterglow == null
 		or rune_charge == null
+		or brazier_front == null
 	):
 		animation_root.queue_free()
 		await process_frame
@@ -137,6 +141,25 @@ func _assert_animation_scene() -> void:
 		"Every flame layer must stay inside the independent FireLayers group."
 	)
 	_assert_position(fire_layers, Vector2(830.0, 195.0), "FireLayers bottom pivot")
+	_expect(
+		fire_layers.scale.is_equal_approx(Vector2(0.25, 0.25)),
+		"FireLayers must retain the authored flame size."
+	)
+	_expect(
+		fire_layers.z_index == -7
+			and outer_flame.z_index == 1
+			and inner_flame.z_index == 2
+			and afterglow.z_index == -3,
+		"Flame layers must stay between the static basin and its front-edge occluder."
+	)
+	_assert_position(brazier_front, Vector2(830.0, 209.5), "BrazierFrontOccluder")
+	_expect(
+		brazier_front.z_index == -4
+			and brazier_front.scale.is_equal_approx(Vector2(0.25, 0.25))
+			and brazier_front.region_enabled
+			and brazier_front.region_rect.is_equal_approx(Rect2(400.0, 260.0, 580.0, 260.0)),
+		"BrazierFrontOccluder must redraw the matching static basin front over the flame base."
+	)
 	_assert_position(rune_charge, Vector2(830.0, 365.0), "RuneCharge")
 	_assert_flame_layer_variation(outer_flame, inner_flame, afterglow)
 	_assert_bottom_pivot(outer_flame, "TopFire")

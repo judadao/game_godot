@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://br6i1uvyi4wv2"]
+[gd_scene load_steps=12 format=3 uid="uid://br6i1uvyi4wv2"]
 
 [ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownSkyLayer.tscn" id="1_sky"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownCloudSet.tscn" id="2_clouds"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownEternalFlameAnimation.tscn" id="8_eternal_flame_animation"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownBattlePortalAnimation.tscn" id="9_battle_portal_animation"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownAmbientAnimation.tscn" id="10_ambient_animation"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownBuildingAnimation.tscn" id="11_building_animation"]
 
 [node name="TownBackdrop" type="Node2D" unique_id=2005808844]
 
@@ -32,6 +33,8 @@ position = Vector2(-349, 85)
 position = Vector2(-119, -75)
 
 [node name="ModularVisuals" parent="." instance=ExtResource("7_modular")]
+
+[node name="BuildingAnimation" parent="." instance=ExtResource("11_building_animation")]
 
 [node name="EternalFlameAnimation" parent="." instance=ExtResource("8_eternal_flame_animation")]
 
