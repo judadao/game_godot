@@ -1546,11 +1546,11 @@ the HUD never reads gameplay state directly.
   封住最右房屋後方的淺色楔形空隙，
   舊綠色 legacy/parallax forest 仍不得顯示。
   不滅熔爐與旋渦門遵循 `base_material_yard_landmarks_v3` style profile；
-  熔爐與旋渦門皆使用 refined Base v4 source。兩者保留火盆、符文塔
-  與旋渦門辨識輪廓，並使用與材料行一致的灰藍石塊、粗斷裂線稿、有限明暗、
-  中性 Base 光與結構 AO。Base v4 熔爐另以約 4× source-to-display pixel
+  不滅火炬使用 refined Base v5 靜態塔身，旋渦門維持 refined Base v4 source。
+  兩者保留火盆、符文塔與旋渦門辨識輪廓，並使用與材料行一致的灰藍石塊、
+  粗斷裂線稿、有限明暗、中性 Base 光與結構 AO。Base v5 不滅火炬另以約 4× source-to-display pixel
   density 對齊相鄰建築的石縫、銅件與木旗精細度；禁止糊大塊、密集規整磚列與
-  微小紋理噪點。上述分件與 16 塊道路／橋牆
+  微小紋理噪點；其頂部火焰與中央符文光不得烘焙在靜態 Base。上述分件與 16 塊道路／橋牆
   各自可見，禁止再以
   `town_eternal_forge_v1.png` 暖色整張城鎮圖充當背景。東側四棟建築使用以
   材料行為 style reference 的 Base v3
@@ -1566,6 +1566,23 @@ the HUD never reads gameplay state directly.
 - Design handoff：`tools/build_town_modular_figma_board.py` 讀取同一 JSON 與分件
   source，產生單頁 board；第一區鎖定 Image #2，第二區才放重組候選及可選取
   素材庫。候選未經核准不得切回 runtime。
+
+### TownEternalFlameAnimation
+
+- Scene：`res://scenes/maps/town/components/TownEternalFlameAnimation.tscn`
+- Owner：`TownBackdrop`
+- Status：Current — Active Runtime Presentation
+- Responsibility：在 Base v5 不滅火炬靜態塔身上疊加彼此獨立的
+  `FireLayers` 與 `RuneCharge`。`FireLayers` 內含 `FireGlow`、`TopFire`、
+  `InnerFire` 三個 `AnimatedSprite2D`；`RunePulse` 只提供中央符文的連續光暈。
+- Playback contract：三層火焰各使用 8 幀、6 FPS、loop、自動播放，並以不同
+  frame 與 frame progress 錯開相位；`RuneCharge` 使用 8 幀、4 FPS、loop、
+  自動播放，`RunePulse` 以 2 秒 loop 連續插值 alpha 與 scale。循環邊界不得
+  產生位置跳動、尺寸突變、明顯亮度斷點或可感知的卡頓。
+- Layer boundary：`FireLayers` 必須保持獨立並把原點固定在火盆接觸線，供後續
+  整組火焰放大或換色而不下沉；`RuneCharge` 只負責持續充能循環。兩組不得重新
+  烘焙進 Base v5，也不擁有 interaction、collision、Town progression 或火炬
+  Tier 狀態。
 
 ### TownLocationLabels
 

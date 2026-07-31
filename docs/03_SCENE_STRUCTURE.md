@@ -188,6 +188,11 @@ Town gameplay world 維持 `1942 × 720` 與 `y=672` baseline。
 `TownBackdrop/ModularVisuals` 顯示核准的 Base 分件組圖，是 runtime
 presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 `town_style_direction_a_locked.png` 作 hidden composition reference。
+`TownBackdrop/EternalFlameAnimation` 另以
+`TownEternalFlameAnimation.tscn` 疊在不滅火炬 Base v5 塔身上。`FireLayers`
+以火盆接觸線為縮放軸，內含 `FireGlow`、`TopFire`、`InnerFire` 三個相位錯開的
+`AnimatedSprite2D`；`RuneCharge` 與連續插值的 `RunePulse` 負責中央符文充能。
+靜態 Base 不重複繪製這兩組。
 `res://data/town_modular_layout.json` 仍在 `1942 × 809` source canvas 定義
 layout-defined background、ground、facility、landmark 與 street-prop candidates；
 `tools/build_town_modular_scene.py` 將資料生成為靜態
@@ -317,6 +322,8 @@ Current composition：
 - active：`scenes/maps/town/components/TownBackdrop.tscn`
 - linked active presentation component：
   `scenes/maps/town/components/TownModularVisuals.tscn`
+- linked active landmark animation component：
+  `scenes/maps/town/components/TownEternalFlameAnimation.tscn`
 - active：`scenes/maps/town/components/TownEternalForgeIdentity.tscn`
 - active：`scenes/maps/town/components/TownNPCs.tscn`
 - active：`scenes/maps/town/components/TownBuildingEntrances.tscn`
@@ -351,12 +358,18 @@ presentation 隱藏；不得在此新增新 Town 視覺。
   明暗，不使用重複針葉紋理。三層都在秋林之前、中央大樹之後，且不建立
   collision 或 interaction。
   舊綠色 `forest_layer.png` 與
-  `parallax_forest_strip_v3.png` 仍不得顯示。古樹、Base v4 熔爐與
-  旋渦門、八塊道路與八塊橋牆各自是可見獨立 layer；熔爐與旋渦門實際 source
+  `parallax_forest_strip_v3.png` 仍不得顯示。古樹、Base v5 不滅火炬塔身、
+  Base v4 旋渦門、八塊道路與八塊橋牆各自是可見獨立 layer；兩個地標實際 source
   必須是各自核准的 MaterialYard-style Base 版本。地標必須使用與材料行一致的
-  像素群塊、手切不規則石塊、粗斷線與有限明暗；Base v4 熔爐以約 4×
+  像素群塊、手切不規則石塊、粗斷線與有限明暗；Base v5 不滅火炬以約 4×
   source-to-display pixel density 保留銅件、石縫與木旗細節，不得使用糊大塊、
-  密集規整磚紋或微小噪點。道路視覺頂緣
+  密集規整磚紋或微小噪點。Base v5 靜態圖不得烘焙頂部火焰或中央符文光；
+  `TownEternalFlameAnimation` 的三層火焰各使用 8 幀、6 FPS、loop、自動播放，
+  並以不同初始相位交錯更新；`RuneCharge` 使用 8 幀、4 FPS、loop、自動播放，
+  再由 2 秒循環的 `RunePulse` 連續插值亮度與縮放，避免慢速充能有卡頓感。
+  `FireLayers` 必須維持獨立物件且以火盆接觸線為縮放軸，讓後續放大或換色不影響
+  塔身；不得把任一動畫層重新合併進 Base。
+  道路視覺頂緣
   固定為 `y=660`，在不改 `y=672` gameplay baseline 的情況下提供 12 px 貼地
   重疊。不得使用整張暖色城鎮 composite，
   也不得讓同一地標或地板同時由兩個 layer 繪製。

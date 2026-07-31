@@ -1,0 +1,180 @@
+[gd_scene load_steps=23 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_00.png" id="1_flame_00"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_01.png" id="2_flame_01"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_02.png" id="3_flame_02"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_03.png" id="4_flame_03"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_04.png" id="5_flame_04"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_05.png" id="6_flame_05"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_06.png" id="7_flame_06"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/flame/frame_07.png" id="8_flame_07"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/rune/frame_00.png" id="9_rune_00"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/rune/frame_01.png" id="10_rune_01"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/rune/frame_02.png" id="11_rune_02"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/rune/frame_03.png" id="12_rune_03"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/rune/frame_04.png" id="13_rune_04"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/rune/frame_05.png" id="14_rune_05"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/rune/frame_06.png" id="15_rune_06"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_flame_animation/rune/frame_07.png" id="16_rune_07"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_top_fire"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_flame_00")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_flame_01")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_flame_02")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_flame_03")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_flame_04")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_flame_05")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_flame_06")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_flame_07")
+}],
+"loop": true,
+"name": &"default",
+"speed": 6.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_rune_charge"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_rune_00")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_rune_01")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_rune_02")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_rune_03")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_rune_04")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_rune_05")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_rune_06")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_rune_07")
+}],
+"loop": true,
+"name": &"default",
+"speed": 4.0
+}]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_fire_glow"]
+blend_mode = 1
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_inner_fire"]
+blend_mode = 1
+
+[sub_resource type="Animation" id="Animation_rune_pulse"]
+resource_name = "pulse"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("RuneCharge:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 0.86, 0.48, 0.78), Color(1, 0.98, 0.78, 1), Color(1, 0.86, 0.48, 0.78)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("RuneCharge:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0.245, 0.245), Vector2(0.255, 0.255), Vector2(0.245, 0.245)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_rune"]
+_data = {
+&"pulse": SubResource("Animation_rune_pulse")
+}
+
+[node name="TownEternalFlameAnimation" type="Node2D"]
+texture_filter = 1
+
+[node name="FireLayers" type="Node2D" parent="."]
+position = Vector2(830, 195)
+scale = Vector2(0.25, 0.25)
+z_index = -7
+
+[node name="FireGlow" type="AnimatedSprite2D" parent="FireLayers"]
+material = SubResource("CanvasItemMaterial_fire_glow")
+modulate = Color(1, 0.48, 0.16, 0.28)
+position = Vector2(0, -174.35)
+scale = Vector2(1.14, 1.1)
+texture_filter = 1
+sprite_frames = SubResource("SpriteFrames_top_fire")
+animation = &"default"
+autoplay = "default"
+frame = 5
+frame_progress = 0.65
+
+[node name="TopFire" type="AnimatedSprite2D" parent="FireLayers"]
+position = Vector2(0, -158.5)
+z_index = 1
+texture_filter = 1
+sprite_frames = SubResource("SpriteFrames_top_fire")
+animation = &"default"
+autoplay = "default"
+frame_progress = 0.1
+
+[node name="InnerFire" type="AnimatedSprite2D" parent="FireLayers"]
+material = SubResource("CanvasItemMaterial_inner_fire")
+modulate = Color(1, 0.88, 0.58, 0.78)
+position = Vector2(0, -123.63)
+scale = Vector2(0.72, 0.78)
+z_index = 2
+texture_filter = 1
+sprite_frames = SubResource("SpriteFrames_top_fire")
+animation = &"default"
+autoplay = "default"
+frame = 2
+frame_progress = 0.35
+
+[node name="RuneCharge" type="AnimatedSprite2D" parent="."]
+position = Vector2(830, 365)
+scale = Vector2(0.25, 0.25)
+z_index = -7
+texture_filter = 1
+sprite_frames = SubResource("SpriteFrames_rune_charge")
+animation = &"default"
+autoplay = "default"
+
+[node name="RunePulse" type="AnimationPlayer" parent="."]
+root_node = NodePath("..")
+libraries = {
+&"": SubResource("AnimationLibrary_rune")
+}
+autoplay = "pulse"

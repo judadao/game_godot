@@ -19,7 +19,7 @@ const EXPECTED_SOURCE_BY_ID := {
 	"background_ancient_town_tree":
 		"res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png",
 	"eternal_flame":
-		"res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v4.png",
+		"res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v5.png",
 	"battle_portal":
 		"res://assets/town/modular_v3/landmarks/battle_portal_base_v4.png",
 }

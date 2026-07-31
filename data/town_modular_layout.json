@@ -433,7 +433,7 @@
     {
       "id": "eternal_flame",
       "category": "landmark",
-      "source": "res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v4.png",
+      "source": "res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v5.png",
       "position": [830, 392],
       "target_size": [345, 560],
       "z_index": -9,

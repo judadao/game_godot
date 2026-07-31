@@ -28,7 +28,7 @@ INNER_MARGIN = 4 * RUNTIME_SCALE
 CANDIDATE_BY_ID = {
 	"material_yard": "material_yard_front_style_b2.png",
 	"player_blacksmith": "player_forge_front_style_b2.png",
-	"eternal_flame": "eternal_forge_monument_base_v4.png",
+	"eternal_flame": "eternal_forge_monument_base_v5.png",
 	"battle_portal": "battle_portal_base_v4.png",
 	"town_hall": "town_hall_front_style_base_v3.png",
 	"sword_soul_shop": "sword_soul_shop_front_style_base_v3.png",
@@ -40,7 +40,7 @@ RUNTIME_BY_ID = {
 	"material_yard": ROOT / "assets/town/modular_v2/buildings/material_yard.png",
 	"player_blacksmith": ROOT / "assets/town/modular_v2/buildings/player_forge.png",
 	"eternal_flame":
-		ROOT / "assets/town/modular_v3/landmarks/eternal_forge_monument_base_v4.png",
+		ROOT / "assets/town/modular_v3/landmarks/eternal_forge_monument_base_v5.png",
 	"battle_portal":
 		ROOT / "assets/town/modular_v3/landmarks/battle_portal_base_v4.png",
 	"town_hall": ROOT / "assets/town/modular_v2/buildings/town_hall_base_v3.png",

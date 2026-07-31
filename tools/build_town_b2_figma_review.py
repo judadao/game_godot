@@ -87,7 +87,7 @@ CANDIDATES = [
 		"name": "不滅火炬 / ETERNAL FLAME",
 		"kind": "LANDMARK",
 		"target": "345 × 560",
-		"path": "assets/town/modular_v3/landmarks/eternal_forge_monument_base_v4.png",
+		"path": "assets/town/modular_v3/landmarks/eternal_forge_monument_base_v5.png",
 	},
 	{
 		"id": "battle_portal",

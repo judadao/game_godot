@@ -11,7 +11,7 @@ const B2_REVIEW_ITEMS = [
   ["sword_soul_shop_front_style_base_v3", "劍魂商 / SWORD SOUL SHOP", "BUILDING · MATERIAL-YARD BASE V3 · 334 × 295"],
   ["equipment_blueprint_shop_front_style_base_v3", "裝備圖紙商 / BLUEPRINT SHOP", "BUILDING · MATERIAL-YARD BASE V3 · 334 × 295"],
   ["far_east_residence_front_style_base_v3", "東郊民宅 / EAST RESIDENCE", "BUILDING · MATERIAL-YARD BASE V3 · 298 × 331"],
-  ["eternal_forge_monument_base_v4", "不滅火炬 / ETERNAL FLAME", "LANDMARK · MATERIAL-YARD BASE V4 · 345 × 560"],
+  ["eternal_forge_monument_base_v5", "不滅火炬 / ETERNAL FLAME", "LANDMARK · MATERIAL-YARD BASE V5 · 345 × 560"],
   ["battle_portal_base_v4", "戰鬥傳送門 / BATTLE PORTAL", "LANDMARK · MATERIAL-YARD BASE V4 · 200 × 240"]
 ];
 

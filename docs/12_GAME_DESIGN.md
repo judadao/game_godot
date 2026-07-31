@@ -639,10 +639,17 @@ progression 仍是獨立 scene authority。替換房屋、地板、火炬或街�
 焦點。背景依 locked A 排版拆成藍天山景 plate、繁盛的中景秋林、西側粗像素
 破敗石塔、橫向綠色灌木殘骸帶、右緣針葉樹殘牆群，以及中央秋樹；三個 ruins
 layers 只補邊界、貼地與前景建築後方的淺色空隙，並保持在最大秋樹後方；
-不滅熔爐和藍紫旋渦門保留功能辨識度，兩者皆使用 refined Base v4。
+不滅火炬和藍紫旋渦門保留功能辨識度；不滅火炬使用 refined Base v5 靜態塔身，
+旋渦門維持 refined Base v4。
 非魔法表面共用材料行的大型不規則石塊、粗斷線、有限明暗與
-中性光照；Base v4 熔爐以約 4× source-to-display pixel density 對齊鄰近 Base
-建築的石材、銅件與木旗精細度，並與連續石橋獨立疊放。道路視覺
+中性光照；Base v5 不滅火炬以約 4× source-to-display pixel density 對齊鄰近
+Base 建築的石材、銅件與木旗精細度，並與連續石橋獨立疊放。其靜態 Base 不含
+頂部火焰及中央符文光；`TownEternalFlameAnimation.tscn` 的 `FireLayers`
+以火盆接觸線為縮放軸，使用三個相位錯開的 8 幀、6 FPS 火焰層，形成外焰、亮芯
+與柔和餘光；`RuneCharge` 使用 8 幀、4 FPS 的自動循環充能發光，並由 2 秒連續
+`RunePulse` 補足幀間亮度與縮放變化。火焰獨立分件是後續放大或換色的
+presentation 邊界；兩組不得重新烘焙進 Base，也不改變 Eternal Torch 的
+village-stage progression。道路視覺
 頂緣為 `y=660`，與不變的 `y=672` gameplay baseline 重疊 12 px，讓角色腳部及
 建築地基確實貼地。不使用暖色整張城鎮圖作底層。六棟前景建築使用材料行
 Base 的中性分件；東側四棟採 MaterialYard-style Base v3，以約 4×

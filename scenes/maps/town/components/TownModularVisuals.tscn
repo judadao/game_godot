@@ -48,7 +48,7 @@
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v2.png" id="46_green_ruins_east_edge_cluster_base_v2"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/town_a_background_plate.png" id="47_town_a_background_plate"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_base_v4.png" id="48_battle_portal_base_v4"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v4.png" id="49_eternal_forge_monument_base_v4"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v5.png" id="49_eternal_forge_monument_base_v5"]
 
 [node name="TownModularVisuals" type="Node2D"]
 texture_filter = 1
@@ -496,10 +496,10 @@ position = Vector2(830, 392)
 scale = Vector2(0.25, 0.25)
 z_index = -9
 visible = true
-texture = ExtResource("49_eternal_forge_monument_base_v4")
+texture = ExtResource("49_eternal_forge_monument_base_v5")
 metadata/object_id = "eternal_flame"
 metadata/category = "landmark"
-metadata/source_asset = "res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v4.png"
+metadata/source_asset = "res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v5.png"
 metadata/perspective_profile = ""
 metadata/interaction_mode = "none"
 metadata/interaction_owner_scene = ""
