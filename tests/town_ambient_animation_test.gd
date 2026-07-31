@@ -137,8 +137,16 @@ func _assert_scene_contract() -> void:
 		"Town needs independently timed leaf streams."
 	)
 	_expect(
-		int(contract.get("canopy_clusters", 0)) == 4,
-		"Ancient tree must use two rear and two front canopy clusters."
+		int(contract.get("canopy_clusters", 0)) == 8,
+		"Ancient tree must cover upper, outer, rear, and front canopy regions."
+	)
+	_expect(
+		int(contract.get("forest_sway_clusters", 0)) == 10,
+		"Town must animate ten foliage-only patches outside the ancient tree."
+	)
+	_expect(
+		int(contract.get("forest_patch_assets", 0)) == 6,
+		"Background forest motion must use six trunk-free patch shapes."
 	)
 	_expect(
 		float(contract.get("calm_wait_min", 0.0)) >= 8.0,
@@ -153,6 +161,10 @@ func _assert_scene_contract() -> void:
 	_expect(
 		bool(contract.get("tree_base_static", false)),
 		"The complete ancient tree must remain a stable visual anchor."
+	)
+	_expect(
+		bool(contract.get("calm_canopy_motion", false)),
+		"Canopy clusters must retain sparse motion between gusts."
 	)
 	_expect(
 		float(contract.get("idle_wait_min", 0.0)) >= 6.0,
@@ -181,8 +193,8 @@ func _assert_scene_contract() -> void:
 		_expect(clusters != null, "Ancient tree must expose modular canopy clusters.")
 		if clusters != null:
 			_expect(
-				clusters.get_child_count() == 4,
-				"Ancient tree must keep four branch-anchored canopy clusters."
+				clusters.get_child_count() == 8,
+				"Ancient tree must keep eight branch-anchored canopy clusters."
 			)
 			for pivot in clusters.get_children():
 				_expect(pivot is Node2D, "%s must be a branch pivot." % pivot.name)
@@ -191,19 +203,25 @@ func _assert_scene_contract() -> void:
 					var max_rotation := float(
 						(pivot as Node2D).get_meta("max_rotation", 0.0)
 					)
-					var max_skew := float(
-						(pivot as Node2D).get_meta("max_skew", 0.0)
-					)
 					_expect(
 						max_rotation >= 0.04 and max_rotation <= 0.09,
 						"%s must have visible but relaxed canopy sway."
 							% pivot.name
 					)
 					_expect(
-						max_skew >= 0.018 and max_skew <= 0.035,
-						"%s must deform internally during canopy sway."
+						float((pivot as Node2D).get_meta("calm_period", 0.0))
+							>= 4.0,
+						"%s must define relaxed independent calm motion."
 							% pivot.name
 					)
+					if String(pivot.name).begins_with("Outer"):
+						_expect(
+							float(
+								(pivot as Node2D).get_meta("calm_gain", 0.0)
+							) >= 1.7,
+							"%s must keep visible calm movement beside buildings."
+								% pivot.name
+						)
 					var sprite := pivot.get_node_or_null("Sprite") as Sprite2D
 					_expect(sprite != null, "%s must own one canopy sprite." % pivot.name)
 					if sprite != null:
@@ -222,10 +240,77 @@ func _assert_scene_contract() -> void:
 							% pivot.name
 					)
 					_expect(
-						not is_zero_approx((pivot as Node2D).skew),
-						"%s canopy deformation must be visible at gust peak."
+						not is_zero_approx((pivot as Node2D).rotation),
+						"%s branch rotation must be visible at gust peak."
 							% pivot.name
 					)
+			ambient.set("_ambient_time", 1.75)
+			ambient.call("_apply_calm_pose")
+			var moving_clusters := 0
+			for pivot in clusters.get_children():
+				if (
+					absf((pivot as Node2D).rotation) > 0.002
+				):
+					moving_clusters += 1
+			_expect(
+				moving_clusters >= 2,
+				"At least two canopy clusters must move during normal calm play."
+			)
+		var forest_sway_layers := ambient.get_node_or_null("ForestSwayLayers")
+		_expect(
+			forest_sway_layers != null,
+			"Town must expose independently animated background foliage."
+		)
+		if forest_sway_layers != null:
+			_expect(
+				forest_sway_layers.get_child_count() == 10,
+				"Background foliage patches must cover west and east regions."
+			)
+			ambient.set("_ambient_time", 1.75)
+			ambient.call("_apply_calm_pose")
+			var moving_forest_patches := 0
+			for child in forest_sway_layers.get_children():
+				var pivot := child as Node2D
+				_expect(pivot != null, "%s must be a foliage pivot." % child.name)
+				if pivot == null:
+					continue
+				var base_position := pivot.position
+				var base_scale := pivot.scale
+				var base_skew := pivot.skew
+				var foliage := pivot.get_node_or_null("Sprite") as Sprite2D
+				_expect(
+					foliage != null,
+					"%s must own one foliage-only patch." % pivot.name
+				)
+				if foliage == null:
+					continue
+				_expect(
+					foliage.texture is AtlasTexture,
+					"%s must use one replaceable patch atlas region."
+						% pivot.name
+				)
+				_expect(
+					foliage.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST,
+					"%s must keep crisp pixel edges." % pivot.name
+				)
+				_expect(
+					float(pivot.get_meta("max_rotation", 0.0))
+						>= 0.035,
+					"%s must keep visible local leaf-mass motion." % pivot.name
+				)
+				if absf(pivot.rotation) > 0.002:
+					moving_forest_patches += 1
+				_expect(
+					pivot.position == base_position
+						and pivot.scale == base_scale
+						and is_equal_approx(pivot.skew, base_skew),
+					"%s must sway without sliding, skewing, or stretching."
+						% pivot.name
+				)
+			_expect(
+				moving_forest_patches >= 4,
+				"Several foliage patches must move independently during calm play."
+			)
 		for child in canopy_layers.get_children():
 			if child is Sprite2D and String(child.name).begins_with("LeafDrift"):
 				var leaf_sprite := child as Sprite2D

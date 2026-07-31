@@ -334,8 +334,10 @@ Scene directory changes must run these permanent contracts:
   core/highlight 各 12 幀手繪逐格、6 FPS／2 秒 loop、次光相位差、符文呼吸，
   以及 `BattleGateway` presentation 邊界保持一致。
 - `tests/town_ambient_animation_test.gd`：`TownBackdrop` 的 ambient instance、
-  完整古樹固定基底、四區枝根固定且可見擺動的樹冠模組、三張 12 幀透明
-  atlas、五組單向落葉、
+  完整古樹固定基底、八區枝根固定且在 calm／gust 均可見擺動的樹冠模組、
+  十組 position／scale／skew 固定的屋後局部葉團、六種無樹幹 atlas region、
+  三張 12 幀透明 atlas、
+  五組單向落葉、
   十個群組／零散鳥停棲點與起飛 presentation contract。
 - `tests/town_location_label_proximity_test.gd`：六個建築木牌位於建築輪廓上方，
   只接受 Player 進出完整地基 Area 的 signal，離開後全部 hidden。

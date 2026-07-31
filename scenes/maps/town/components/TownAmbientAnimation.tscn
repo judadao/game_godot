@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/maps/town_ambient_animation.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png" id="2_ancient_tree"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/falling_leaves_sheet.png" id="4_leaves"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/bird_idle_sheet.png" id="5_bird_idle"]
 [ext_resource type="Shader" path="res://shaders/maps/town_ambient_tree_wind.gdshader" id="6_tree_shader"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/autumn_foliage_patch_atlas_v1.png" id="7_foliage_patches"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tree_wind"]
 shader = ExtResource("6_tree_shader")
@@ -28,6 +29,30 @@ region = Rect2(0, 627, 627, 627)
 atlas = ExtResource("3_canopy")
 region = Rect2(627, 627, 627, 627)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_foliage_0"]
+atlas = ExtResource("7_foliage_patches")
+region = Rect2(0, 0, 512, 512)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_foliage_1"]
+atlas = ExtResource("7_foliage_patches")
+region = Rect2(512, 0, 512, 512)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_foliage_2"]
+atlas = ExtResource("7_foliage_patches")
+region = Rect2(1024, 0, 512, 512)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_foliage_3"]
+atlas = ExtResource("7_foliage_patches")
+region = Rect2(0, 512, 512, 512)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_foliage_4"]
+atlas = ExtResource("7_foliage_patches")
+region = Rect2(512, 512, 512, 512)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_foliage_5"]
+atlas = ExtResource("7_foliage_patches")
+region = Rect2(1024, 512, 512, 512)
+
 [node name="TownAmbientAnimation" type="Node2D"]
 script = ExtResource("1_script")
 
@@ -46,9 +71,10 @@ texture = ExtResource("2_ancient_tree")
 [node name="BackLeftPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
 position = Vector2(950, 276)
 metadata/max_rotation = 0.045
-metadata/max_skew = 0.018
 metadata/gust_delay = 0.0
 metadata/phase = 0.4
+metadata/calm_period = 5.2
+metadata/rustle_period = 7.1
 
 [node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/BackLeftPivot"]
 position = Vector2(-72, -61)
@@ -60,9 +86,10 @@ texture = SubResource("AtlasTexture_canopy_ur")
 [node name="BackRightPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
 position = Vector2(1105, 286)
 metadata/max_rotation = 0.052
-metadata/max_skew = 0.021
 metadata/gust_delay = 0.08
 metadata/phase = 1.7
+metadata/calm_period = 4.7
+metadata/rustle_period = 6.3
 
 [node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/BackRightPivot"]
 position = Vector2(72, -58)
@@ -75,9 +102,10 @@ flip_h = true
 [node name="FrontLeftPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
 position = Vector2(930, 353)
 metadata/max_rotation = 0.072
-metadata/max_skew = 0.028
 metadata/gust_delay = 0.13
 metadata/phase = 2.6
+metadata/calm_period = 5.6
+metadata/rustle_period = 7.8
 
 [node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/FrontLeftPivot"]
 position = Vector2(-60, -50)
@@ -89,9 +117,10 @@ texture = SubResource("AtlasTexture_canopy_ul")
 [node name="FrontRightPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
 position = Vector2(1118, 348)
 metadata/max_rotation = 0.085
-metadata/max_skew = 0.032
 metadata/gust_delay = 0.2
 metadata/phase = 3.8
+metadata/calm_period = 4.4
+metadata/rustle_period = 5.9
 
 [node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/FrontRightPivot"]
 position = Vector2(55, -46)
@@ -100,6 +129,216 @@ z_index = -18
 texture_filter = 1
 texture = SubResource("AtlasTexture_canopy_lr")
 flip_h = true
+
+[node name="UpperLeftPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
+position = Vector2(982, 190)
+metadata/max_rotation = 0.052
+metadata/gust_delay = 0.05
+metadata/phase = 4.7
+metadata/calm_period = 4.9
+metadata/rustle_period = 6.7
+
+[node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/UpperLeftPivot"]
+position = Vector2(-50, -40)
+scale = Vector2(0.27, 0.27)
+z_index = -18
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_lr")
+
+[node name="UpperRightPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
+position = Vector2(1062, 202)
+metadata/max_rotation = 0.058
+metadata/gust_delay = 0.1
+metadata/phase = 5.6
+metadata/calm_period = 5.4
+metadata/rustle_period = 7.3
+
+[node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/UpperRightPivot"]
+position = Vector2(50, -40)
+scale = Vector2(0.27, 0.27)
+z_index = -18
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_ul")
+flip_h = true
+
+[node name="OuterLeftPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
+position = Vector2(856, 334)
+metadata/max_rotation = 0.068
+metadata/gust_delay = 0.16
+metadata/phase = 0.9
+metadata/calm_period = 4.3
+metadata/rustle_period = 5.7
+metadata/calm_gain = 1.8
+
+[node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/OuterLeftPivot"]
+position = Vector2(-45, -36)
+scale = Vector2(0.24, 0.24)
+z_index = -18
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_lr")
+
+[node name="OuterRightPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
+position = Vector2(1204, 328)
+metadata/max_rotation = 0.076
+metadata/gust_delay = 0.22
+metadata/phase = 2.2
+metadata/calm_period = 5.1
+metadata/rustle_period = 6.1
+metadata/calm_gain = 1.8
+
+[node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/OuterRightPivot"]
+position = Vector2(45, -36)
+scale = Vector2(0.24, 0.24)
+z_index = -18
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_ul")
+flip_h = true
+
+[node name="ForestSwayLayers" type="Node2D" parent="."]
+
+[node name="WestOuterPatch" type="Node2D" parent="ForestSwayLayers"]
+position = Vector2(80, 455)
+metadata/max_rotation = 0.045
+metadata/phase = 0.2
+metadata/calm_period = 4.4
+metadata/rustle_period = 6.1
+
+[node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/WestOuterPatch"]
+position = Vector2(0, -85)
+scale = Vector2(0.55, 0.55)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_foliage_0")
+
+[node name="WestUpperPatch" type="Node2D" parent="ForestSwayLayers"]
+position = Vector2(250, 465)
+metadata/max_rotation = 0.052
+metadata/phase = 1.1
+metadata/calm_period = 5.1
+metadata/rustle_period = 7.2
+
+[node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/WestUpperPatch"]
+position = Vector2(0, -78)
+scale = Vector2(0.5, 0.5)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_foliage_5")
+flip_h = true
+
+[node name="WestMiddlePatch" type="Node2D" parent="ForestSwayLayers"]
+position = Vector2(430, 470)
+metadata/max_rotation = 0.04
+metadata/phase = 2.0
+metadata/calm_period = 4.7
+metadata/rustle_period = 5.8
+
+[node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/WestMiddlePatch"]
+position = Vector2(0, -85)
+scale = Vector2(0.55, 0.55)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_foliage_4")
+
+[node name="WestInnerPatch" type="Node2D" parent="ForestSwayLayers"]
+position = Vector2(610, 455)
+metadata/max_rotation = 0.048
+metadata/phase = 2.9
+metadata/calm_period = 5.5
+metadata/rustle_period = 6.5
+
+[node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/WestInnerPatch"]
+position = Vector2(0, -85)
+scale = Vector2(0.55, 0.55)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_foliage_1")
+flip_h = true
+
+[node name="WestPortalEdgePatch" type="Node2D" parent="ForestSwayLayers"]
+position = Vector2(720, 450)
+metadata/max_rotation = 0.055
+metadata/phase = 3.7
+metadata/calm_period = 4.2
+metadata/rustle_period = 7.4
+
+[node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/WestPortalEdgePatch"]
+position = Vector2(0, -74)
+scale = Vector2(0.48, 0.48)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_foliage_0")
+
+[node name="EastInnerPatch" type="Node2D" parent="ForestSwayLayers"]
+position = Vector2(1270, 455)
+metadata/max_rotation = 0.046
+metadata/phase = 0.7
+metadata/calm_period = 4.9
+metadata/rustle_period = 6.8
+
+[node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/EastInnerPatch"]
+position = Vector2(0, -80)
+scale = Vector2(0.52, 0.52)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_foliage_1")
+flip_h = true
+
+[node name="EastUpperPatch" type="Node2D" parent="ForestSwayLayers"]
+position = Vector2(1405, 460)
+metadata/max_rotation = 0.054
+metadata/phase = 1.6
+metadata/calm_period = 5.3
+metadata/rustle_period = 5.9
+
+[node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/EastUpperPatch"]
+position = Vector2(0, -74)
+scale = Vector2(0.48, 0.48)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_foliage_5")
+
+[node name="EastMiddlePatch" type="Node2D" parent="ForestSwayLayers"]
+position = Vector2(1575, 470)
+metadata/max_rotation = 0.041
+metadata/phase = 2.5
+metadata/calm_period = 4.5
+metadata/rustle_period = 7.1
+
+[node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/EastMiddlePatch"]
+position = Vector2(0, -85)
+scale = Vector2(0.55, 0.55)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_foliage_4")
+
+[node name="EastRooflinePatch" type="Node2D" parent="ForestSwayLayers"]
+position = Vector2(1745, 455)
+metadata/max_rotation = 0.049
+metadata/phase = 3.4
+metadata/calm_period = 5.6
+metadata/rustle_period = 6.3
+
+[node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/EastRooflinePatch"]
+position = Vector2(0, -85)
+scale = Vector2(0.55, 0.55)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_foliage_1")
+flip_h = true
+
+[node name="EastOuterPatch" type="Node2D" parent="ForestSwayLayers"]
+position = Vector2(1900, 455)
+metadata/max_rotation = 0.053
+metadata/phase = 4.3
+metadata/calm_period = 4.3
+metadata/rustle_period = 7.6
+
+[node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/EastOuterPatch"]
+position = Vector2(0, -80)
+scale = Vector2(0.52, 0.52)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_foliage_5")
 
 [node name="LeafDriftWestA" type="Sprite2D" parent="CanopyLayers"]
 modulate = Color(0.92, 0.86, 0.78, 0.82)

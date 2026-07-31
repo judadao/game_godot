@@ -33,6 +33,7 @@ const BIRD_FLIGHT_TEXTURE: Texture2D = preload(
 @export_range(8.0, 45.0, 0.5) var away_wait_max := 18.0
 
 @onready var canopy_layers: Node2D = $CanopyLayers
+@onready var forest_sway_layers: Node2D = $ForestSwayLayers
 @onready var bird_perches: Node2D = $BirdPerches
 @onready var ancient_tree: Sprite2D = $CanopyLayers/AncientTreeWind
 
@@ -41,9 +42,11 @@ var _wind_timer := 0.0
 var _wind_wait := 6.0
 var _wind_duration := 4.0
 var _wind_direction := 1.0
+var _ambient_time := 0.0
 var _player_search_timer := 0.0
 var _player: Node2D
 var _canopy_clusters: Array[Dictionary] = []
+var _forest_sway_clusters: Array[Dictionary] = []
 var _leaf_streams: Array[Dictionary] = []
 var _birds: Array[Dictionary] = []
 var _tree_material: ShaderMaterial
@@ -56,6 +59,9 @@ func _ready() -> void:
 	for child in $CanopyLayers/CanopyClusters.get_children():
 		if child is Node2D:
 			_register_canopy_cluster(child as Node2D)
+	for child in forest_sway_layers.get_children():
+		if child is Node2D:
+			_register_forest_sway_cluster(child as Node2D)
 	_tree_material = ancient_tree.material as ShaderMaterial
 	for child in canopy_layers.get_children():
 		if child is Sprite2D and String(child.name).begins_with("LeafDrift"):
@@ -67,6 +73,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_ambient_time += delta
 	_player_search_timer -= delta
 	if _player_search_timer <= 0.0:
 		_resolve_player()
@@ -91,7 +98,10 @@ func get_ambient_contract() -> Dictionary:
 		"frame_count": FRAME_COUNT,
 		"ancient_tree_source": ancient_tree.texture.resource_path,
 		"tree_base_static": true,
+		"calm_canopy_motion": true,
 		"canopy_clusters": _canopy_clusters.size(),
+		"forest_sway_clusters": _forest_sway_clusters.size(),
+		"forest_patch_assets": 6,
 		"leaf_streams": _leaf_streams.size(),
 		"bird_count": _birds.size(),
 		"roof_perches": roof_perches,
@@ -119,12 +129,26 @@ func _register_canopy_cluster(pivot: Node2D) -> void:
 		"pivot": pivot,
 		"base_position": pivot.position,
 		"base_rotation": pivot.rotation,
-		"base_scale": pivot.scale,
-		"base_skew": pivot.skew,
 		"max_rotation": float(pivot.get_meta("max_rotation", 0.012)),
-		"max_skew": float(pivot.get_meta("max_skew", 0.018)),
 		"gust_delay": float(pivot.get_meta("gust_delay", 0.0)),
 		"phase": float(pivot.get_meta("phase", 0.0)),
+		"calm_period": float(pivot.get_meta("calm_period", 4.8)),
+		"rustle_period": float(pivot.get_meta("rustle_period", 6.5)),
+		"calm_gain": float(pivot.get_meta("calm_gain", 1.0)),
+	})
+
+
+func _register_forest_sway_cluster(pivot: Node2D) -> void:
+	_forest_sway_clusters.append({
+		"pivot": pivot,
+		"base_position": pivot.position,
+		"base_rotation": pivot.rotation,
+		"base_scale": pivot.scale,
+		"base_skew": pivot.skew,
+		"max_rotation": float(pivot.get_meta("max_rotation", 0.04)),
+		"phase": float(pivot.get_meta("phase", 0.0)),
+		"calm_period": float(pivot.get_meta("calm_period", 4.8)),
+		"rustle_period": float(pivot.get_meta("rustle_period", 6.5)),
 	})
 
 
@@ -184,7 +208,7 @@ func _resolve_player() -> void:
 func _update_wind(delta: float) -> void:
 	_wind_timer += delta
 	if _wind_state == WIND_CALM:
-		_apply_wind_pose(0.0)
+		_apply_calm_pose()
 		if _wind_timer < _wind_wait:
 			return
 		_wind_state = WIND_GUST
@@ -205,21 +229,66 @@ func _update_wind(delta: float) -> void:
 	_wind_wait = _rng.randf_range(calm_wait_min, calm_wait_max)
 
 
-func _apply_wind_pose(progress: float) -> void:
-	if _tree_material != null:
-		_tree_material.set_shader_parameter("wind_strength", 0.0)
-		_tree_material.set_shader_parameter(
-			"wind_phase",
-			progress * PI
-		)
+func _apply_calm_pose() -> void:
+	_stabilize_tree_base(_ambient_time)
 	for layer in _canopy_clusters:
-		var pivot: Node2D = layer["pivot"] as Node2D
-		var base_position := layer["base_position"] as Vector2
-		var base_rotation := float(layer["base_rotation"])
-		var base_scale := layer["base_scale"] as Vector2
-		var base_skew := float(layer["base_skew"])
-		var max_rotation := float(layer["max_rotation"])
-		var max_skew := float(layer["max_skew"])
+		var phase := float(layer["phase"])
+		var calm_period := float(layer["calm_period"])
+		var rustle_period := float(layer["rustle_period"])
+		var calm_gain := float(layer["calm_gain"])
+		var branch_sway := sin(
+			_ambient_time * TAU / calm_period + phase
+		) * 0.18
+		var rustle_gate := pow(
+			maxf(
+				0.0,
+				sin(
+					_ambient_time * TAU / rustle_period
+					+ phase * 1.37
+				)
+			),
+			6.0
+		)
+		var sparse_rustle := (
+			sin(_ambient_time * TAU / 0.7 + phase * 2.1)
+			* rustle_gate
+			* 0.32
+		)
+		_apply_canopy_transform(
+			layer,
+			(branch_sway + sparse_rustle) * calm_gain
+		)
+	for layer in _forest_sway_clusters:
+		var phase := float(layer["phase"])
+		var calm_period := float(layer["calm_period"])
+		var rustle_period := float(layer["rustle_period"])
+		var foliage_sway := sin(
+			_ambient_time * TAU / calm_period + phase
+		) * 0.52
+		var rustle_gate := pow(
+			maxf(
+				0.0,
+				sin(
+					_ambient_time * TAU / rustle_period
+					+ phase * 1.51
+				)
+			),
+			7.0
+		)
+		var local_rustle := (
+			sin(_ambient_time * TAU / 0.8 + phase * 2.3)
+			* rustle_gate
+			* 0.38
+		)
+		_apply_forest_patch_transform(
+			layer,
+			foliage_sway + local_rustle
+		)
+
+
+func _apply_wind_pose(progress: float) -> void:
+	_stabilize_tree_base(progress * PI)
+	for layer in _canopy_clusters:
 		var gust_delay := float(layer["gust_delay"])
 		var phase := float(layer["phase"])
 		var local_progress := clampf(
@@ -232,20 +301,55 @@ func _apply_wind_pose(progress: float) -> void:
 			0.72
 			+ sin(local_progress * TAU * 1.35 + phase) * 0.28
 		)
-		var local_strength := envelope * ripple
-		pivot.rotation = (
-			base_rotation
-			+ local_strength * max_rotation * _wind_direction
+		_apply_canopy_transform(
+			layer,
+			envelope * ripple * _wind_direction
 		)
-		pivot.skew = (
-			base_skew
-			+ local_strength * max_skew * _wind_direction
+	for layer in _forest_sway_clusters:
+		var phase := float(layer["phase"])
+		var envelope := sin(progress * PI)
+		var local_strength := envelope * (
+			0.78
+			+ sin(progress * TAU * 1.1 + phase) * 0.22
 		)
-		pivot.scale = base_scale * Vector2(
-			1.0 + local_strength * 0.01,
-			1.0 - local_strength * 0.006
+		_apply_forest_patch_transform(
+			layer,
+			local_strength * _wind_direction
 		)
-		pivot.position = base_position
+
+
+func _stabilize_tree_base(phase: float) -> void:
+	if _tree_material != null:
+		_tree_material.set_shader_parameter("wind_strength", 0.0)
+		_tree_material.set_shader_parameter("wind_phase", phase)
+
+
+func _apply_canopy_transform(
+	layer: Dictionary,
+	strength: float
+) -> void:
+	var pivot: Node2D = layer["pivot"] as Node2D
+	var base_position := layer["base_position"] as Vector2
+	var base_rotation := float(layer["base_rotation"])
+	var max_rotation := float(layer["max_rotation"])
+	pivot.rotation = base_rotation + strength * max_rotation
+	pivot.position = base_position
+
+
+func _apply_forest_patch_transform(
+	layer: Dictionary,
+	strength: float
+) -> void:
+	var pivot: Node2D = layer["pivot"] as Node2D
+	var base_position := layer["base_position"] as Vector2
+	var base_rotation := float(layer["base_rotation"])
+	var base_scale := layer["base_scale"] as Vector2
+	var base_skew := float(layer["base_skew"])
+	var max_rotation := float(layer["max_rotation"])
+	pivot.rotation = base_rotation + strength * max_rotation
+	pivot.position = base_position
+	pivot.scale = base_scale
+	pivot.skew = base_skew
 
 
 func _update_leaf_stream(leaf_index: int, delta: float) -> void:

@@ -202,8 +202,13 @@ presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 `TownBackdrop/AmbientAnimation` instance
 `TownAmbientAnimation.tscn`；`CanopyLayers/AncientTreeWind` 以完整古樹與
 固定為零的 root-anchored shader 保存正確樹幹方向與穩定基底；
-`CanopyClusters` 以兩組後景與兩組前景葉簇鎖在同一棵樹的枝幹接點，五組落葉
-都從中央樹冠範圍保存起點與近地終點。
+`CanopyClusters` 以八組上冠、外冠、後景與前景葉簇鎖在同一棵樹的枝幹接點，
+五組落葉都從中央樹冠範圍保存起點與近地終點。calm 狀態仍以各層獨立週期保持低幅
+擺動與短暫抖葉，gust 才提高整段順風形變。
+`ForestSwayLayers` 另保存十個 editor-authored foliage pivot，分布於西側、
+左右內側與東側屋頂後方；每個只持有 3 × 2 atlas 中一塊無樹幹葉團，固定
+position／scale／skew 並以不同週期小幅旋轉。原始秋林底圖與樹幹不移動，
+動態 patch 只補局部葉叢外緣。
 `BirdPerches` 保存七個屋頂與三個地面停棲點。全部是 editor-visible、
 visual-only node；runtime script 以
 `calm → gust → settle` 控制樹、以 `wait → fall → landed → fade` 控制落葉，
