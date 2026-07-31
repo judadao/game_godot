@@ -207,8 +207,10 @@ Town 視覺統一採用 `data/town_visual_style.json` 的
 `autumn_ancient_tree_base_v2.png` 主樹。前景建築與秋林之間另有 visual-only
 `green_ruins_boundary_tower_base_v3.png`、
 `green_ruins_debris_bush_strip_base_v2.png` 與
-`green_ruins_east_edge_cluster_base_v1.png`：粗像素古塔移到西側地圖邊界，
-低矮灌木／斷牆／碎柱帶橫跨地圖，右緣再以針葉樹與落地殘牆封住淺色楔形空隙；
+`green_ruins_east_edge_cluster_base_v2.png`：粗像素古塔移到西側地圖邊界，
+低矮灌木／斷牆／碎柱帶橫跨地圖，右緣再以針葉樹與落地殘牆封住淺色楔形空隙。
+右緣針葉樹使用 Base MaterialYard 的大型不對稱枝葉色塊、粗斷筆觸與有限明暗，
+不得以重複針葉紋理或密集高光製造細節；
 三者 z-index 保持在秋林之前、主樹之後，避免遮住最大古樹。中央熔爐與傳送門保留既有辨識輪廓，
 但改用 MaterialYard-style Base v3 的大型灰藍石塊、粗斷裂線稿、2–4 階明暗與
 中性固有色；八塊道路與八塊橋牆組成唯一可見地板。道路視覺面從 `y=660`

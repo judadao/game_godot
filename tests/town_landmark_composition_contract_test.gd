@@ -15,7 +15,7 @@ const EXPECTED_SOURCE_BY_ID := {
 	"background_green_ruins_debris":
 		"res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png",
 	"background_green_ruins_east_edge":
-		"res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v1.png",
+		"res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v2.png",
 	"background_ancient_town_tree":
 		"res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png",
 	"eternal_flame":

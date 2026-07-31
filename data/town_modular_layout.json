@@ -111,7 +111,7 @@
     {
       "id": "background_green_ruins_east_edge",
       "category": "background",
-      "source": "res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v1.png",
+      "source": "res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v2.png",
       "position": [1840, 540],
       "target_size": [251, 360],
       "z_index": -83,

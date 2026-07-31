@@ -45,7 +45,7 @@
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/autumn_forest_canopy_base_v2.png" id="43_autumn_forest_canopy_base_v2"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v3.png" id="44_green_ruins_boundary_tower_base_v3"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png" id="45_green_ruins_debris_bush_strip_base_v2"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v1.png" id="46_green_ruins_east_edge_cluster_base_v1"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v2.png" id="46_green_ruins_east_edge_cluster_base_v2"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/town_a_background_plate.png" id="47_town_a_background_plate"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_base_v3.png" id="48_battle_portal_base_v3"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png" id="49_eternal_forge_monument_base_v3"]
@@ -173,13 +173,13 @@ metadata/service_id = ""
 
 [node name="BackgroundGreenRuinsEastEdge" type="Sprite2D" parent="Background"]
 position = Vector2(1840, 540)
-scale = Vector2(0.271351, 0.271698)
+scale = Vector2(0.239962, 0.239521)
 z_index = -83
 visible = true
-texture = ExtResource("46_green_ruins_east_edge_cluster_base_v1")
+texture = ExtResource("46_green_ruins_east_edge_cluster_base_v2")
 metadata/object_id = "background_green_ruins_east_edge"
 metadata/category = "background"
-metadata/source_asset = "res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v1.png"
+metadata/source_asset = "res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v2.png"
 metadata/perspective_profile = ""
 metadata/interaction_mode = "none"
 metadata/interaction_owner_scene = ""

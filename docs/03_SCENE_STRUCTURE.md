@@ -346,8 +346,10 @@ presentation 隱藏；不得在此新增新 Town 視覺。
   `background_green_ruins_debris` 使用
   `green_ruins_debris_bush_strip_base_v2.png`，以低矮灌木、斷牆、碎柱與落石
   橫向填滿貼地空隙；`background_green_ruins_east_edge` 使用
-  `green_ruins_east_edge_cluster_base_v1.png` 在右側邊界補入針葉樹、灌木及落地
-  殘牆。三層都在秋林之前、中央大樹之後，且不建立 collision 或 interaction。
+  `green_ruins_east_edge_cluster_base_v2.png` 在右側邊界補入針葉樹、灌木及落地
+  殘牆；針葉樹遵循 Base MaterialYard 的大型不對稱枝葉色塊、粗斷筆觸與有限
+  明暗，不使用重複針葉紋理。三層都在秋林之前、中央大樹之後，且不建立
+  collision 或 interaction。
   舊綠色 `forest_layer.png` 與
   `parallax_forest_strip_v3.png` 仍不得顯示。古樹、Base v3 熔爐、旋渦門、八塊
   道路與八塊橋牆各自是可見獨立 layer；熔爐與旋渦門實際 source 必須是
