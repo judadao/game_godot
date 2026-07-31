@@ -36,8 +36,47 @@
 
 所有中文標籤保持為可編輯文字，建築上的圖像招牌保持空白。
 
-目前 review 規則：
+## Town 美術審查原則
+
+通用權威是 [`docs/09_TESTING_GUIDE.md` 的「生成圖片與整體構圖 Review」][art-review]。
+本節記錄 Town 的實際執行方式；若兩者衝突，以通用權威為準。
 
 1. 先以完整 1942 × 809 map 區比對 locked A 背景／地板排版與 Base 前景建築。
 2. 八張物件卡用來單獨討論或替換，位置仍以 JSON layout 為唯一權威。
 3. Base 不烘焙大面方向光；後續日照、色調與氛圍由 Godot 疊加層處理。
+4. 每個生成物件都要以原始尺寸檢查透明／色邊、像素密度、輪廓、比例、材質、
+   光向與不該出現的局部，不得只看縮小後的 Figma 卡片。
+5. Base 材料行是 Town 唯一筆觸基準：大型色塊、粗而斷裂的線稿、有限色階、
+   石木材質筆觸與細節密度必須一致。過度平滑、碎裂、寫實或高噪點，即使幾何
+   正確也不通過。
+6. 必須排除可辨識的 AI 生成痕跡：糊爛或過度細碎的紋理、無意義重複、
+   材質頻率不一致、錯誤幾何、假接縫，以及與既有 Town 畫風無關的裝飾。
+7. 完整整合圖必查焦點、色彩層級、前中後景、遮擋、重複、左右邊界、建築後方、
+   貼地空隙、比例、位置與 z-order。
+8. 完整圖固定切成 4 欄 × 3 列共 12 個等分區域；獨立 reviewer 必須逐一回報
+   `R1C1` 到 `R3C4` 的 PASS 或 finding，不得只看整張縮圖或問題 crop。
+9. finding 使用 `Critical`、`Important`、`Minor`。`Critical`／`Important`
+   未修正並重新審查前不得交付。
+10. 審查後只要修改 asset、scale、position、z-index 或排版，舊審查立即失效；
+    最終版必須重新完成原尺寸物件、full-frame 與全部 12 區審查。
+11. `.gd` 測試只保護載入、alpha、source path、aspect ratio、z-order 與
+    Scene／layout parity，不能代替畫風與構圖判斷。
+
+### 審查紀錄格式
+
+每次最終候選的 reviewer 紀錄至少包含：
+
+- revision／commit、審查者與整合圖路徑；
+- 原尺寸物件逐件結論；
+- full-frame 結論；
+- `R1C1` 至 `R3C4` 的 12 區結論；
+- finding 的 severity、位置、證據、處理結果；
+- 最後一次視覺修改後的重新審查結果；
+- 尚未驗證項目，不得以自動測試 PASS 代替。
+
+建議本機證據放在忽略提交的
+`output/playwright/town_reviews/<revision>/`，並使用
+`full_frame.png`、`object_<id>.png` 與 `slice_R<row>C<column>.png` 命名。
+正式提交只保留規則、來源素材與可重建工具，不提交本機 review cache。
+
+[art-review]: ../../../docs/09_TESTING_GUIDE.md#31-生成圖片與整體構圖-review
