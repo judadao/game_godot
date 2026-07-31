@@ -5,8 +5,8 @@ const AMBIENT_SCENE_PATH := (
 )
 const BACKDROP_SCENE_PATH := "res://scenes/maps/town/components/TownBackdrop.tscn"
 const ASSET_ROOT := "res://assets/town/modular_v3/ambient/"
+const CANOPY_SHEET := ASSET_ROOT + "autumn_canopy_modules_sheet.png"
 const SHEETS := {
-	"Eave branch sway": ASSET_ROOT + "eave_branch_sway_sheet.png",
 	"Falling leaves": ASSET_ROOT + "falling_leaves_sheet.png",
 	"Bird idle": ASSET_ROOT + "bird_idle_sheet.png",
 	"Bird flight": ASSET_ROOT + "bird_flight_sheet.png",
@@ -47,6 +47,35 @@ func _assert_asset_contract() -> void:
 		)
 		_expect(image.detect_alpha() != Image.ALPHA_NONE, "%s must retain alpha." % label)
 		_assert_sheet_cells(image, String(label))
+	_expect(FileAccess.file_exists(CANOPY_SHEET), "Canopy module sheet must exist.")
+	_expect(ResourceLoader.exists(CANOPY_SHEET), "Canopy module sheet must import.")
+	if FileAccess.file_exists(CANOPY_SHEET):
+		var canopy_image := Image.load_from_file(
+			ProjectSettings.globalize_path(CANOPY_SHEET)
+		)
+		_expect(
+			canopy_image.get_size() == Vector2i(1254, 1254),
+			"Canopy module sheet must retain four 627x627 regions."
+		)
+		_expect(
+			canopy_image.detect_alpha() != Image.ALPHA_NONE,
+			"Canopy module sheet must retain alpha."
+		)
+		for row in 2:
+			for column in 2:
+				var region := canopy_image.get_region(
+					Rect2i(column * 627, row * 627, 627, 627)
+				)
+				_expect(
+					region.get_used_rect().has_area(),
+					"Canopy region %d,%d must contain visible pixels."
+						% [column, row]
+				)
+				_expect(
+					_has_transparent_corners(region),
+					"Canopy region %d,%d must keep transparent corners."
+						% [column, row]
+				)
 
 
 func _assert_sheet_cells(image: Image, label: String) -> void:
@@ -108,6 +137,10 @@ func _assert_scene_contract() -> void:
 		"Town needs independently timed leaf streams."
 	)
 	_expect(
+		int(contract.get("canopy_clusters", 0)) == 4,
+		"Ancient tree must use two rear and two front canopy clusters."
+	)
+	_expect(
 		float(contract.get("calm_wait_min", 0.0)) >= 8.0,
 		"Foliage must hold calm before an occasional breeze."
 	)
@@ -132,8 +165,29 @@ func _assert_scene_contract() -> void:
 				tree.material is ShaderMaterial,
 				"Ancient tree wind must preserve a root-anchored shader."
 			)
+		var clusters := canopy_layers.get_node_or_null("CanopyClusters")
+		_expect(clusters != null, "Ancient tree must expose modular canopy clusters.")
+		if clusters != null:
+			_expect(
+				clusters.get_child_count() == 4,
+				"Ancient tree must keep four branch-anchored canopy clusters."
+			)
+			for pivot in clusters.get_children():
+				_expect(pivot is Node2D, "%s must be a branch pivot." % pivot.name)
+				if pivot is Node2D:
+					var sprite := pivot.get_node_or_null("Sprite") as Sprite2D
+					_expect(sprite != null, "%s must own one canopy sprite." % pivot.name)
+					if sprite != null:
+						_expect(
+							sprite.texture is AtlasTexture,
+							"%s must read one canopy atlas region." % pivot.name
+						)
+						_expect(
+							sprite.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST,
+							"%s must use nearest filtering." % pivot.name
+						)
 		for child in canopy_layers.get_children():
-			if child is Sprite2D and child.name != &"AncientTreeWind":
+			if child is Sprite2D and String(child.name).begins_with("LeafDrift"):
 				_assert_atlas_sprite(child as Sprite2D, String(child.name))
 	var birds := ambient.get_node_or_null("BirdPerches")
 	_expect(birds != null, "Ambient scene must expose BirdPerches.")

@@ -43,7 +43,7 @@ var _wind_duration := 4.0
 var _wind_direction := 1.0
 var _player_search_timer := 0.0
 var _player: Node2D
-var _foliage_layers: Array[Dictionary] = []
+var _canopy_clusters: Array[Dictionary] = []
 var _leaf_streams: Array[Dictionary] = []
 var _birds: Array[Dictionary] = []
 var _tree_material: ShaderMaterial
@@ -53,8 +53,9 @@ var _rng := RandomNumberGenerator.new()
 func _ready() -> void:
 	_rng.randomize()
 	_wind_wait = _rng.randf_range(calm_wait_min, calm_wait_max)
-	_register_foliage($CanopyLayers/EaveBranchWest, 0.018, 0.06)
-	_register_foliage($CanopyLayers/EaveBranchEast, 0.018, 0.12)
+	for child in $CanopyLayers/CanopyClusters.get_children():
+		if child is Node2D:
+			_register_canopy_cluster(child as Node2D)
 	_tree_material = ancient_tree.material as ShaderMaterial
 	for child in canopy_layers.get_children():
 		if child is Sprite2D and String(child.name).begins_with("LeafDrift"):
@@ -89,7 +90,7 @@ func get_ambient_contract() -> Dictionary:
 	return {
 		"frame_count": FRAME_COUNT,
 		"ancient_tree_source": ancient_tree.texture.resource_path,
-		"foliage_layers": _foliage_layers.size(),
+		"canopy_clusters": _canopy_clusters.size(),
 		"leaf_streams": _leaf_streams.size(),
 		"bird_count": _birds.size(),
 		"roof_perches": roof_perches,
@@ -112,19 +113,16 @@ func force_bird_takeoff(bird_name: StringName) -> void:
 		return
 
 
-func _register_foliage(
-	sprite: Sprite2D,
-	max_rotation: float,
-	gust_delay: float
-) -> void:
-	_foliage_layers.append({
-		"sprite": sprite,
-		"base_rotation": sprite.rotation,
-		"base_scale": sprite.scale,
-		"max_rotation": max_rotation,
-		"gust_delay": gust_delay,
+func _register_canopy_cluster(pivot: Node2D) -> void:
+	_canopy_clusters.append({
+		"pivot": pivot,
+		"base_position": pivot.position,
+		"base_rotation": pivot.rotation,
+		"max_rotation": float(pivot.get_meta("max_rotation", 0.012)),
+		"gust_delay": float(pivot.get_meta("gust_delay", 0.0)),
+		"sway_pixels": float(pivot.get_meta("sway_pixels", 1.5)),
+		"phase": float(pivot.get_meta("phase", 0.0)),
 	})
-	sprite.frame = 0
 
 
 func _register_leaf_stream(sprite: Sprite2D) -> void:
@@ -215,34 +213,36 @@ func _apply_wind_pose(progress: float) -> void:
 			"wind_phase",
 			progress * PI
 		)
-	for layer in _foliage_layers:
-		var sprite: Sprite2D = layer["sprite"] as Sprite2D
+	for layer in _canopy_clusters:
+		var pivot: Node2D = layer["pivot"] as Node2D
+		var base_position := layer["base_position"] as Vector2
 		var base_rotation := float(layer["base_rotation"])
-		var base_scale := layer["base_scale"] as Vector2
 		var max_rotation := float(layer["max_rotation"])
 		var gust_delay := float(layer["gust_delay"])
+		var sway_pixels := float(layer["sway_pixels"])
+		var phase := float(layer["phase"])
 		var local_progress := clampf(
 			(progress - gust_delay) / (1.0 - gust_delay),
 			0.0,
 			1.0
 		)
-		var local_strength := sin(local_progress * PI)
-		var frame_progress := (
-			local_progress * 2.0
-			if local_progress <= 0.5
-			else (1.0 - local_progress) * 2.0
+		var envelope := sin(local_progress * PI)
+		var ripple := (
+			0.72
+			+ sin(local_progress * TAU * 1.35 + phase) * 0.28
 		)
-		var frame := clampi(
-			roundi(frame_progress * float(FRAME_COUNT - 1)),
-			0,
-			FRAME_COUNT - 1
-		)
-		sprite.frame = frame
-		sprite.rotation = (
+		var local_strength := envelope * ripple
+		pivot.rotation = (
 			base_rotation
 			+ local_strength * max_rotation * _wind_direction
 		)
-		sprite.scale = base_scale * (1.0 + local_strength * 0.008)
+		pivot.position = (
+			base_position
+			+ Vector2(
+				local_strength * sway_pixels * _wind_direction,
+				-sin(local_progress * TAU + phase) * envelope * 0.35
+			)
+		)
 
 
 func _update_leaf_stream(leaf_index: int, delta: float) -> void:

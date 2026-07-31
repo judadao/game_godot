@@ -31,12 +31,12 @@
   runtime cels。旋渦與 emission 不可重新烘焙
   進傳送門 Base v5，也不可改回單張貼圖 shader 旋轉。
 - `b2_front_style_candidates/town_environment_animation/`：Town 環境動畫的
-  可替換來源，分為 `canopy_sway/` 的屋簷枝葉、`falling_leaves/` 與
-  `birds/`。每張來源使用 4 × 3、12 幀透明 atlas；
+  可替換來源，分為 `canopy_sway/` 的四區透明秋樹樹冠模組、
+  `falling_leaves/` 與 `birds/`。落葉與鳥素材使用 4 × 3、12 幀透明 atlas；
   `tools/prepare_town_ambient_animation.py` 會以有限色階、粗像素群塊與固定鳥
-  錨點產生 `assets/town/modular_v3/ambient/`。完整古樹沿用既有 Base 分件，
-  由 Godot root-anchored shader 只彎曲上半部；枝葉、落葉、鳥待機與鳥起飛
-  保持獨立，不烘焙回背景或建築 Base。
+  錨點產生三張 runtime atlas。完整古樹沿用既有 Base 分件，由 Godot
+  root-anchored shader 只彎曲上半部；樹冠模組以枝幹 pivot 前後分層，落葉、
+  鳥待機與鳥起飛保持獨立，不烘焙回背景或建築 Base。
 - `b2_candidates/`：保留的舊 3/4 視角候選，不再作為目前審稿來源。
 - `CODEX_RESTART_HANDOFF.md`：重開 Codex 後的完整續作紀錄。
 - `plugin/`：在 Figma 中產生原生節點、元件和頁面的本機插件。

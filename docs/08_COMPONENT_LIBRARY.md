@@ -1611,15 +1611,17 @@ the HUD never reads gameplay state directly.
 - Owner：`TownBackdrop`
 - Status：Current — Active Runtime Presentation
 - Responsibility：以完整 `autumn_ancient_tree_base_v2.png`、root-anchored
-  徐風 shader，以及四張可獨立替換的 4 × 3、12 幀透明 atlas 組合古樹、
-  屋簷枝葉、落葉、鳥類待機與起飛／飛行。
+  徐風 shader、四區透明樹冠模組，以及三張可獨立替換的 4 × 3、12 幀透明
+  atlas 組合古樹、落葉、鳥類待機與起飛／飛行。
 - Motion contract：古樹平時固定 8–18 秒，偶發徐風只彎曲上半部約 3.2–4.8
-  秒後回正；兩側枝葉以 0.2–0.5 秒延遲跟隨，不永久播放 GIF loop。五組落葉
+  秒後回正；兩組後景與兩組前景樹冠以不同相位、約 0.08–0.2 秒延遲跟隨，
+  每層只偏移約 1–2 px，不永久播放 GIF loop。五組落葉
   只向下移動，接近 `y=624–626` 後停留約 1.8–2.4 秒再原地淡出。十個鳥停棲點
   分為七個屋頂與三個地面，待機循環為 3 FPS，等待 10–22 秒或 Player 靠近才
   起飛；同群以 0.12 秒錯時依序離開，飛離後 9–18 秒返回 authored perch。
-- Composition contract：完整古樹保留正確樹幹方向並位於建築後方；屋簷枝葉
-  只從左右畫面外伸入，不得形成浮空斷枝。落葉保持稀疏且 y 單調下降，不得
+- Composition contract：完整古樹保留正確樹幹方向並位於建築後方；額外樹冠
+  必須鎖在中央樹的可追溯枝幹接點，前後層配色一致，不得形成邊界浮空斷枝。
+  落葉保持稀疏且 y 單調下降，不得
   半空消失或往左上倒飛；整體氛圍應悠閒而非暴風。
 - Boundary：只擁有 presentation。不得新增 collision、interaction、NPC、
   reward、save state 或 Town progression。

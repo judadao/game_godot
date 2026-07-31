@@ -1,8 +1,8 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/maps/town_ambient_animation.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png" id="2_ancient_tree"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/eave_branch_sway_sheet.png" id="3_eave"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/autumn_canopy_modules_sheet.png" id="3_canopy"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/falling_leaves_sheet.png" id="4_leaves"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/bird_idle_sheet.png" id="5_bird_idle"]
 [ext_resource type="Shader" path="res://shaders/maps/town_ambient_tree_wind.gdshader" id="6_tree_shader"]
@@ -11,6 +11,22 @@
 shader = ExtResource("6_tree_shader")
 shader_parameter/wind_strength = 0.0
 shader_parameter/wind_phase = 0.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_canopy_ul"]
+atlas = ExtResource("3_canopy")
+region = Rect2(0, 0, 627, 627)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_canopy_ur"]
+atlas = ExtResource("3_canopy")
+region = Rect2(627, 0, 627, 627)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_canopy_ll"]
+atlas = ExtResource("3_canopy")
+region = Rect2(0, 627, 627, 627)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_canopy_lr"]
+atlas = ExtResource("3_canopy")
+region = Rect2(627, 627, 627, 627)
 
 [node name="TownAmbientAnimation" type="Node2D"]
 script = ExtResource("1_script")
@@ -25,25 +41,64 @@ z_index = -19
 texture_filter = 1
 texture = ExtResource("2_ancient_tree")
 
-[node name="EaveBranchWest" type="Sprite2D" parent="CanopyLayers"]
-modulate = Color(0.94, 0.92, 0.87, 0.88)
-position = Vector2(100, 370)
-scale = Vector2(0.66, 0.66)
-z_index = -9
-texture_filter = 1
-texture = ExtResource("3_eave")
-hframes = 4
-vframes = 3
+[node name="CanopyClusters" type="Node2D" parent="CanopyLayers"]
 
-[node name="EaveBranchEast" type="Sprite2D" parent="CanopyLayers"]
-modulate = Color(0.94, 0.92, 0.87, 0.88)
-position = Vector2(1840, 350)
-scale = Vector2(0.66, 0.66)
-z_index = -9
+[node name="BackLeftPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
+position = Vector2(972, 276)
+metadata/max_rotation = 0.009
+metadata/gust_delay = 0.0
+metadata/sway_pixels = 1.1
+metadata/phase = 0.4
+
+[node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/BackLeftPivot"]
+position = Vector2(-72, -61)
+scale = Vector2(0.38, 0.38)
+z_index = -20
 texture_filter = 1
-texture = ExtResource("3_eave")
-hframes = 4
-vframes = 3
+texture = SubResource("AtlasTexture_canopy_ur")
+
+[node name="BackRightPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
+position = Vector2(1083, 286)
+metadata/max_rotation = 0.01
+metadata/gust_delay = 0.08
+metadata/sway_pixels = 1.3
+metadata/phase = 1.7
+
+[node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/BackRightPivot"]
+position = Vector2(72, -58)
+scale = Vector2(0.37, 0.37)
+z_index = -20
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_ll")
+flip_h = true
+
+[node name="FrontLeftPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
+position = Vector2(958, 353)
+metadata/max_rotation = 0.014
+metadata/gust_delay = 0.13
+metadata/sway_pixels = 1.8
+metadata/phase = 2.6
+
+[node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/FrontLeftPivot"]
+position = Vector2(-60, -50)
+scale = Vector2(0.32, 0.32)
+z_index = -18
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_ul")
+
+[node name="FrontRightPivot" type="Node2D" parent="CanopyLayers/CanopyClusters"]
+position = Vector2(1090, 348)
+metadata/max_rotation = 0.015
+metadata/gust_delay = 0.2
+metadata/sway_pixels = 2.0
+metadata/phase = 3.8
+
+[node name="Sprite" type="Sprite2D" parent="CanopyLayers/CanopyClusters/FrontRightPivot"]
+position = Vector2(55, -46)
+scale = Vector2(0.33, 0.33)
+z_index = -18
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_lr")
 flip_h = true
 
 [node name="LeafDriftWestA" type="Sprite2D" parent="CanopyLayers"]

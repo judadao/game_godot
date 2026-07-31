@@ -21,17 +21,11 @@ ROWS = 3
 FRAME_COUNT = COLUMNS * ROWS
 FRAME_SIZE = (ATLAS_SIZE[0] // COLUMNS, ATLAS_SIZE[1] // ROWS)
 PIXEL_ART_PRESETS = {
-	"eave_branch_sway_sheet.png": (2, 24),
 	"falling_leaves_sheet.png": (2, 16),
 	"bird_idle_sheet.png": (2, 20),
 	"bird_flight_sheet.png": (2, 20),
 }
 SOURCES = {
-	"eave_branch_sway_sheet.png": (
-		CANDIDATE_ROOT
-		/ "canopy_sway"
-		/ "eave_branch_sway_sheet_v1.png"
-	),
 	"falling_leaves_sheet.png": (
 		CANDIDATE_ROOT
 		/ "falling_leaves"
