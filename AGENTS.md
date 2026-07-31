@@ -39,6 +39,24 @@ Never overwrite, discard, or stage unrelated user changes. UI work requires
 behavioral and visual checks at the resolutions listed in `docs/rule_1.md`;
 successful parsing alone is not completion.
 
+Generated raster art and map-composition changes require an independent visual
+reviewer agent. The reviewer must inspect the integrated full-frame composition,
+the generated objects at native detail, and a fixed 4-column × 3-row grid of
+12 equal image slices. Reviews and fixes must also remove visible AI-generation
+artifacts: mushy or over-detailed texture, meaningless repetition, inconsistent
+material frequency, broken geometry, false seams, and elements that do not share
+the established scene art direction. For Town-generated art, use the Base
+MaterialYard building as the brushwork and art-direction reference: match its
+large color clusters, broken coarse linework, limited value steps, stone/wood
+mark-making, and detail density. Smooth, fragmented, photorealistic, or noisy
+AI-looking brushwork must be revised even when geometry is valid. If any asset, scale, position, z-order, or composition is
+changed after review, repeat both the full-frame and all 12 slice reviews.
+GDScript tests verify structural contracts such as loadability, alpha, source
+paths, aspect ratio, and z-order; they do not replace or repeatedly simulate art
+direction review. During image iteration, use agent visual review first, then
+run affected structural tests after integration and the full regression once
+before commit. See `docs/01_AI_GUIDE.md` and `docs/09_TESTING_GUIDE.md`.
+
 ## 2. Project Structure & Module Organization
 
 This is a Godot project. The root contains `project.godot`, engine import
@@ -144,6 +162,7 @@ func _ready() -> void:
 - [ ] Keep unrelated dirty files unstaged and unchanged.
 - [ ] Add a failing regression test before a bug fix or refactor.
 - [ ] Update governance documents when their contracts change.
+- [ ] Generated art has independent full-frame, object, and 12-slice review evidence.
 
 ## 12. Best Practice
 
@@ -163,6 +182,7 @@ success from a parse-only check.
 - [ ] New paths, signals, groups, and data fields have contract coverage.
 - [ ] Full tests and applicable editor/main smoke checks pass.
 - [ ] UI changes have the required multi-resolution evidence.
+- [ ] Generated art changes were re-reviewed after the final visual modification.
 - [ ] The cached Git diff contains only authorized files.
 
 ## 15. Future Extension

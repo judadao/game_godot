@@ -10,6 +10,12 @@ const EXPECTED_SOURCE_BY_ID := {
 		"res://assets/town/modular_v3/background/town_a_background_plate.png",
 	"background_forest":
 		"res://assets/town/modular_v3/background/autumn_forest_canopy_base_v2.png",
+	"background_green_ruins":
+		"res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v3.png",
+	"background_green_ruins_debris":
+		"res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png",
+	"background_green_ruins_east_edge":
+		"res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v1.png",
 	"background_ancient_town_tree":
 		"res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png",
 	"eternal_flame":
@@ -21,6 +27,18 @@ const EXPECTED_PLACEMENT_BY_ID := {
 	"background_forest": {
 		"position": Vector2(971, 430),
 		"target_size": Vector2(1942, 600),
+	},
+	"background_green_ruins": {
+		"position": Vector2(220, 390),
+		"target_size": Vector2(425, 650),
+	},
+	"background_green_ruins_debris": {
+		"position": Vector2(971, 572),
+		"target_size": Vector2(2000, 296),
+	},
+	"background_green_ruins_east_edge": {
+		"position": Vector2(1840, 540),
+		"target_size": Vector2(251, 360),
 	},
 	"background_ancient_town_tree": {
 		"position": Vector2(1020, 330),
@@ -51,6 +69,9 @@ const GROUND_OVERLAY_IDS := [
 ]
 const ASPECT_LOCKED_LANDMARK_IDS := [
 	"background_ancient_town_tree",
+	"background_green_ruins",
+	"background_green_ruins_debris",
+	"background_green_ruins_east_edge",
 	"eternal_flame",
 	"battle_portal",
 ]
@@ -81,6 +102,7 @@ func _run() -> void:
 	var entries_by_id := _index_entries(layout.get("layers", []))
 	_assert_a_background_plate(entries_by_id)
 	_assert_autumn_forest_canopy(entries_by_id)
+	_assert_green_ruins_midground(entries_by_id)
 	_assert_locked_autumn_tree_material(entries_by_id)
 	_assert_old_background_layers_hidden(entries_by_id)
 	_assert_repeated_ground_visible(entries_by_id)
@@ -166,6 +188,63 @@ func _assert_autumn_forest_canopy(entries_by_id: Dictionary) -> void:
 	_expect(
 		bool(forest.get("visible", false)),
 		"The autumn canopy layer must fill the empty roofline background."
+	)
+
+
+func _assert_green_ruins_midground(entries_by_id: Dictionary) -> void:
+	var ruins := _require_entry(entries_by_id, "background_green_ruins")
+	var debris := _require_entry(entries_by_id, "background_green_ruins_debris")
+	var east_edge := _require_entry(entries_by_id, "background_green_ruins_east_edge")
+	var forest := _require_entry(entries_by_id, "background_forest")
+	var ancient_tree := _require_entry(entries_by_id, "background_ancient_town_tree")
+	if (
+		ruins.is_empty()
+		or debris.is_empty()
+		or east_edge.is_empty()
+		or forest.is_empty()
+		or ancient_tree.is_empty()
+	):
+		return
+	_expect(
+		String(ruins.get("source", ""))
+			== String(EXPECTED_SOURCE_BY_ID["background_green_ruins"]),
+		"Town must use the coarse-pixel boundary tower material."
+	)
+	_expect(
+		String(debris.get("source", ""))
+			== String(EXPECTED_SOURCE_BY_ID["background_green_ruins_debris"]),
+		"Town must use the generated bush and randomized ruin-debris strip."
+	)
+	_expect(
+		String(east_edge.get("source", ""))
+			== String(EXPECTED_SOURCE_BY_ID["background_green_ruins_east_edge"]),
+		"Town must use the east-edge conifer and grounded ruin cluster."
+	)
+	_expect(
+		bool(ruins.get("visible", false))
+			and bool(debris.get("visible", false))
+			and bool(east_edge.get("visible", false)),
+		"The boundary tower, debris strip, and east-edge cluster must fill pale gaps."
+	)
+	_expect(
+		int(debris.get("z_index", 0)) > int(forest.get("z_index", 0))
+			and int(ruins.get("z_index", 0)) > int(debris.get("z_index", 0))
+			and int(east_edge.get("z_index", 0)) > int(debris.get("z_index", 0)),
+		"The debris, boundary tower, and east-edge cluster must render in front of the canopy."
+	)
+	_expect(
+		int(ruins.get("z_index", 0)) < int(ancient_tree.get("z_index", 0))
+			and int(east_edge.get("z_index", 0)) < int(ancient_tree.get("z_index", 0)),
+		"The green ruins and edge cluster must remain behind the main autumn tree."
+	)
+	var ownership := ruins.get("interaction_ownership", {}) as Dictionary
+	var debris_ownership := debris.get("interaction_ownership", {}) as Dictionary
+	var east_edge_ownership := east_edge.get("interaction_ownership", {}) as Dictionary
+	_expect(
+		String(ownership.get("mode", "")) == "none"
+			and String(debris_ownership.get("mode", "")) == "none"
+			and String(east_edge_ownership.get("mode", "")) == "none",
+		"The boundary tower, debris strip, and east-edge cluster must remain visual-only."
 	)
 
 

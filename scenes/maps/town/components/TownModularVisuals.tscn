@@ -1,4 +1,4 @@
-[gd_scene load_steps=47 format=3]
+[gd_scene load_steps=50 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/town/modular_v1/background/castle_layer.png" id="1_castle_layer"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v1/background/mountain_layer.png" id="2_mountain_layer"]
@@ -43,16 +43,19 @@
 [ext_resource type="Texture2D" path="res://assets/town/modular_v2/streetscape/small_tree.png" id="41_small_tree"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png" id="42_autumn_ancient_tree_base_v2"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/autumn_forest_canopy_base_v2.png" id="43_autumn_forest_canopy_base_v2"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/town_a_background_plate.png" id="44_town_a_background_plate"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_base_v3.png" id="45_battle_portal_base_v3"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png" id="46_eternal_forge_monument_base_v3"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v3.png" id="44_green_ruins_boundary_tower_base_v3"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png" id="45_green_ruins_debris_bush_strip_base_v2"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v1.png" id="46_green_ruins_east_edge_cluster_base_v1"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/town_a_background_plate.png" id="47_town_a_background_plate"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_base_v3.png" id="48_battle_portal_base_v3"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png" id="49_eternal_forge_monument_base_v3"]
 
 [node name="TownModularVisuals" type="Node2D"]
 texture_filter = 1
 metadata/layout_path = "res://data/town_modular_layout.json"
 metadata/visual_style = "storybook_handdrawn_pixel_v2"
 metadata/building_perspective_profile = "b2_front_right_orthographic"
-metadata/background_tree_material_profile = "a_locked_generated_autumn_layers_v2"
+metadata/background_tree_material_profile = "a_locked_autumn_green_ruins_layers_v3"
 metadata/map_width = 1942
 metadata/map_height = 809
 metadata/gameplay_baseline_y = 672
@@ -77,7 +80,7 @@ position = Vector2(971, 404.5)
 scale = Vector2(1, 1)
 z_index = -100
 visible = true
-texture = ExtResource("44_town_a_background_plate")
+texture = ExtResource("47_town_a_background_plate")
 metadata/object_id = "background_sky"
 metadata/category = "background"
 metadata/source_asset = "res://assets/town/modular_v3/background/town_a_background_plate.png"
@@ -136,10 +139,58 @@ metadata/interaction_node_path = ""
 metadata/interaction_id = ""
 metadata/service_id = ""
 
+[node name="BackgroundGreenRuins" type="Sprite2D" parent="Background"]
+position = Vector2(220, 390)
+scale = Vector2(0.425852, 0.425671)
+z_index = -83
+visible = true
+texture = ExtResource("44_green_ruins_boundary_tower_base_v3")
+metadata/object_id = "background_green_ruins"
+metadata/category = "background"
+metadata/source_asset = "res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v3.png"
+metadata/perspective_profile = ""
+metadata/interaction_mode = "none"
+metadata/interaction_owner_scene = ""
+metadata/interaction_node_path = ""
+metadata/interaction_id = ""
+metadata/service_id = ""
+
+[node name="BackgroundGreenRuinsDebris" type="Sprite2D" parent="Background"]
+position = Vector2(971, 572)
+scale = Vector2(0.92081, 0.922118)
+z_index = -84
+visible = true
+texture = ExtResource("45_green_ruins_debris_bush_strip_base_v2")
+metadata/object_id = "background_green_ruins_debris"
+metadata/category = "background"
+metadata/source_asset = "res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png"
+metadata/perspective_profile = ""
+metadata/interaction_mode = "none"
+metadata/interaction_owner_scene = ""
+metadata/interaction_node_path = ""
+metadata/interaction_id = ""
+metadata/service_id = ""
+
+[node name="BackgroundGreenRuinsEastEdge" type="Sprite2D" parent="Background"]
+position = Vector2(1840, 540)
+scale = Vector2(0.271351, 0.271698)
+z_index = -83
+visible = true
+texture = ExtResource("46_green_ruins_east_edge_cluster_base_v1")
+metadata/object_id = "background_green_ruins_east_edge"
+metadata/category = "background"
+metadata/source_asset = "res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v1.png"
+metadata/perspective_profile = ""
+metadata/interaction_mode = "none"
+metadata/interaction_owner_scene = ""
+metadata/interaction_node_path = ""
+metadata/interaction_id = ""
+metadata/service_id = ""
+
 [node name="BackgroundAncientTownTree" type="Sprite2D" parent="Background"]
 position = Vector2(1020, 330)
 scale = Vector2(0.512091, 0.512064)
-z_index = -84
+z_index = -82
 visible = true
 texture = ExtResource("42_autumn_ancient_tree_base_v2")
 metadata/object_id = "background_ancient_town_tree"
@@ -445,7 +496,7 @@ position = Vector2(830, 392)
 scale = Vector2(0.25, 0.25)
 z_index = -9
 visible = true
-texture = ExtResource("46_eternal_forge_monument_base_v3")
+texture = ExtResource("49_eternal_forge_monument_base_v3")
 metadata/object_id = "eternal_flame"
 metadata/category = "landmark"
 metadata/source_asset = "res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png"
@@ -461,7 +512,7 @@ position = Vector2(830, 552)
 scale = Vector2(0.25, 0.25)
 z_index = -8
 visible = true
-texture = ExtResource("45_battle_portal_base_v3")
+texture = ExtResource("48_battle_portal_base_v3")
 metadata/object_id = "battle_portal"
 metadata/category = "landmark"
 metadata/source_asset = "res://assets/town/modular_v3/landmarks/battle_portal_base_v3.png"

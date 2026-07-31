@@ -3,7 +3,7 @@
   "visual_style": "storybook_handdrawn_pixel_v2",
   "building_perspective_profile": "b2_front_right_orthographic",
   "background_style_profile": "a_locked_autumn_panorama",
-  "background_tree_material_profile": "a_locked_generated_autumn_layers_v2",
+  "background_tree_material_profile": "a_locked_autumn_green_ruins_layers_v3",
   "landmark_style_profile": "base_material_yard_landmarks_v3",
   "map": {
     "id": "town_eternal_forge_modular_v1",
@@ -77,12 +77,60 @@
       }
     },
     {
+      "id": "background_green_ruins",
+      "category": "background",
+      "source": "res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v3.png",
+      "position": [220, 390],
+      "target_size": [425, 650],
+      "z_index": -83,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "background_green_ruins_debris",
+      "category": "background",
+      "source": "res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png",
+      "position": [971, 572],
+      "target_size": [2000, 296],
+      "z_index": -84,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "background_green_ruins_east_edge",
+      "category": "background",
+      "source": "res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v1.png",
+      "position": [1840, 540],
+      "target_size": [251, 360],
+      "z_index": -83,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
       "id": "background_ancient_town_tree",
       "category": "background",
       "source": "res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png",
       "position": [1020, 330],
       "target_size": [720, 573],
-      "z_index": -84,
+      "z_index": -82,
       "visible": true,
       "interaction_ownership": {
         "mode": "none",

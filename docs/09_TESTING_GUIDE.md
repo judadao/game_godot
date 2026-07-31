@@ -59,6 +59,32 @@ Inventory／Codex focused coverage：
 5. 冒煙測試：以 headless 模式啟動 editor 與主場景，檢查 parser/runtime error。
 6. 人工視覺驗證：Godot 編輯器與實際執行畫面的像素、層級、操作與動畫。
 
+### 3.1 生成圖片與整體構圖 Review
+
+生成 raster asset 的品質由獨立 reviewer agent 判斷，不由 `.gd` 測試推測。每一個
+最終候選必須提供實際整合畫面，並依序完成：
+
+1. **Object review**：以原始尺寸檢查透明邊、色邊、像素密度、畫風、材質、光向、
+   比例、可讀輪廓與是否含不該出現的物件；並檢查糊爛細節、無意義重複、
+   材質頻率不一致、錯誤幾何與假接縫等可辨識的 AI 生成感。Town 生成物另以
+   Base 材料行為畫風筆觸基準：大型色塊、粗斷線、有限色階、石木筆觸與細節
+   密度都需一致；過度平滑、碎裂、寫實或高噪點的生成筆觸視為 finding。
+2. **Full-frame review**：檢查焦點、色彩層級、前中後景、遮擋、重複、左右邊界、
+   建築後方與貼地空隙。
+3. **12-slice review**：將完整畫面等分成 4 欄 × 3 列；逐一檢查 R1C1 到 R3C4，
+   不得只放大有問題的局部。每區都需回報 pass 或具體 finding，並確認該區沒有
+   與既有場景畫風不一致的 AI 生成痕跡。
+4. **Severity**：使用 Critical／Important／Minor。Critical／Important 未修正前
+   不得交付。
+5. **Re-review**：review 後若修改任何圖片、scale、position、z-index 或排版，
+   必須重新檢查生成物件、整張畫面與全部 12 區。
+
+結構測試仍負責 PNG／Texture 可載入、透明度、source path、aspect ratio、
+z-order、layout 與 generated Scene parity。圖片迭代過程不為主觀畫風建立大量
+硬編碼 GDScript assertions，也不需要每版圖片都跑 full suite；在最終素材整合後
+執行 affected focused tests，commit 前再執行一次
+`tools/run_godot_tests.sh --suite all --smoke --strict-warnings`。
+
 ## 4. 測試命名與結構
 
 - 檔名使用 `<behavior>_test.gd`。
@@ -326,6 +352,9 @@ DisplayServer 與共享資源。
 5. 主場景 headless 冒煙測試。
 6. 影響視覺時進行人工檢查。
 
+生成圖片任務的第 6 步必須使用第 3.1 節的獨立 agent full-frame／object／
+12-slice protocol；任何後續視覺修改都要重做整套 review。
+
 ## 10. Checklist
 
 - [ ] 已先建立可重現需求或 bug 的測試。
@@ -336,6 +365,8 @@ DisplayServer 與共享資源。
 - [ ] UI 修改已驗證四個基準尺寸與窄／寬比例。
 - [ ] Scene/JSON 變更已更新契約測試。
 - [ ] 文件與實際執行指令一致。
+- [ ] 生成圖片已完成獨立 agent 的 object、full-frame 與 12-slice review。
+- [ ] 最後一次視覺修改後已重新 review，而非沿用舊結論。
 
 ## 11. Best Practice
 
@@ -353,6 +384,8 @@ DisplayServer 與共享資源。
 - 測試依賴執行順序、真實存檔或不可控亂數。
 - 用字串搜尋取代應實際載入場景的行為驗證。
 - 因為測試不穩定而直接刪除，不先找根因。
+- 用 GDScript assertions 取代畫風、構圖與像素密度的獨立視覺 review。
+- 只看整張縮圖或單一問題 crop，未檢查固定 12 等分區域。
 
 ## 13. Code Example
 

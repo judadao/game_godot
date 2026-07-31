@@ -189,7 +189,7 @@ Town gameplay world 維持 `1942 × 720` 與 `y=672` baseline。
 presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 `town_style_direction_a_locked.png` 作 hidden composition reference。
 `res://data/town_modular_layout.json` 仍在 `1942 × 809` source canvas 定義
-72 個 background、ground、facility、landmark 與 street-prop candidates；
+layout-defined background、ground、facility、landmark 與 street-prop candidates；
 `tools/build_town_modular_scene.py` 將資料生成為靜態
 `TownModularVisuals.tscn`，其 instance 在 runtime visible，並與 Figma
 逐件討論頁共用相同位置與來源資料。
@@ -332,18 +332,24 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 
 - `TownBackdrop/EternalForgeConcept` 是 hidden 的 exact locked A 構圖參考。
 - `TownModularVisuals` 是由 `data/town_modular_layout.json` 生成的 active
-  design/runtime composition；72 個 Sprite entries 可分別選取，但不擁有互動、
+  design/runtime composition；所有 Sprite entries 可分別選取，但不擁有互動、
   碰撞或 progression。
-- `TownModularVisuals` 的 46 個來源素材遵循
+- `TownModularVisuals` 的已登錄來源素材遵循
   `data/town_visual_style.json`；中央古樹保有自己的 source 與 object ID，
   可獨立替換且不建立 collision。
 - `background_sky` 使用
   `assets/town/modular_v3/background/town_a_background_plate.png`，提供
   locked A 的藍天、白雲與群山；`background_forest` 改用生成的
   `autumn_forest_canopy_base_v2.png` 填滿屋頂後方空隙，中央大秋樹使用
-  `autumn_ancient_tree_base_v2.png`。兩層只允許金黃、橘、赭紅與深褐，
-  綠色 `forest_layer.png` 與
-  `parallax_forest_strip_v3.png` 不得顯示。古樹、Base v3 熔爐、旋渦門、八塊
+  `autumn_ancient_tree_base_v2.png`。`background_green_ruins` 使用專用
+  `green_ruins_boundary_tower_base_v3.png` 將粗像素破敗古塔放在西側邊界；
+  `background_green_ruins_debris` 使用
+  `green_ruins_debris_bush_strip_base_v2.png`，以低矮灌木、斷牆、碎柱與落石
+  橫向填滿貼地空隙；`background_green_ruins_east_edge` 使用
+  `green_ruins_east_edge_cluster_base_v1.png` 在右側邊界補入針葉樹、灌木及落地
+  殘牆。三層都在秋林之前、中央大樹之後，且不建立 collision 或 interaction。
+  舊綠色 `forest_layer.png` 與
+  `parallax_forest_strip_v3.png` 仍不得顯示。古樹、Base v3 熔爐、旋渦門、八塊
   道路與八塊橋牆各自是可見獨立 layer；熔爐與旋渦門實際 source 必須是
   MaterialYard-style Base v3 版本；地標必須使用與材料行相同大小的像素群塊、
   大型不規則石塊、粗斷線與 2–4 階明暗，不得使用細密規整磚紋。道路視覺頂緣

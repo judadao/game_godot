@@ -191,7 +191,7 @@ wrappers，讓 portal、HUD、save 與既有測試不需知道實作已抽離：
 
 Town canonical content 維持 `1942 × 720` Eternal Forge gameplay world 與
 `y=672` baseline。`res://data/town_modular_layout.json` 定義
-`1942 × 809` source canvas 上的 72 個可替換物件，
+`1942 × 809` source canvas 上由 layout 列出的可替換物件，
 `tools/build_town_modular_scene.py` 將其生成為 editor 與 runtime 共用的
 `TownModularVisuals.tscn`；`TownBackdrop/ModularVisuals` 是目前 presentation
 authority。核准的 Image #2 保留在 hidden
@@ -204,7 +204,12 @@ Town 視覺統一採用 `data/town_visual_style.json` 的
 `concept/town/main_horizontal_concept/town_style_direction_a_locked.png`。
 `town_a_background_plate.png` 提供藍天、白雲與群山；屋頂後方另疊
 `autumn_forest_canopy_base_v2.png` 的繁盛秋林與
-`autumn_ancient_tree_base_v2.png` 主樹。中央熔爐與傳送門保留既有辨識輪廓，
+`autumn_ancient_tree_base_v2.png` 主樹。前景建築與秋林之間另有 visual-only
+`green_ruins_boundary_tower_base_v3.png`、
+`green_ruins_debris_bush_strip_base_v2.png` 與
+`green_ruins_east_edge_cluster_base_v1.png`：粗像素古塔移到西側地圖邊界，
+低矮灌木／斷牆／碎柱帶橫跨地圖，右緣再以針葉樹與落地殘牆封住淺色楔形空隙；
+三者 z-index 保持在秋林之前、主樹之後，避免遮住最大古樹。中央熔爐與傳送門保留既有辨識輪廓，
 但改用 MaterialYard-style Base v3 的大型灰藍石塊、粗斷裂線稿、2–4 階明暗與
 中性固有色；八塊道路與八塊橋牆組成唯一可見地板。道路視覺面從 `y=660`
 開始，與維持在 `y=672` 的角色、建築與互動基準重疊 12 px，避免腳下與地基露出

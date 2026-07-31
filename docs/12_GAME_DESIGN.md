@@ -627,8 +627,8 @@ total-building-level threshold 為 0、3、7。Town 六棟建築的互動範圍�
 
 Town presentation 維持 `1942 × 720` gameplay world 與單一中央不滅火炬；
 核准的 Base 分件組圖已取代 Image #2 完整構圖成為 runtime presentation。
-`data/town_modular_layout.json` 以 `1942 × 809` source canvas 定義 72 個
-可替換物件，並生成 visible 的 `TownModularVisuals.tscn` 供 runtime、Figma 與
+`data/town_modular_layout.json` 以 `1942 × 809` source canvas 定義可替換物件，
+並生成 visible 的 `TownModularVisuals.tscn` 供 runtime、Figma 與
 Scene editor 共用。地點由左至右仍為材料行、
 主角鐵匠鋪、不滅火炬、戰鬥傳送門、村長家、劍魂商、裝備圖紙商與東郊民宅。
 NPC、建築入口、Portal、碰撞與
@@ -636,7 +636,9 @@ progression 仍是獨立 scene authority。替換房屋、地板、火炬或街�
 只改變 presentation，不代表新增服務、互動或玩法。
 所有 Town 分件採 `storybook_handdrawn_pixel_v2`：低飽和苔綠、木褐、砂岩與
 陶瓦為主色，冷苔炭色作環境陰影、暖蜜色作左上主光，藍紫魔法只保留為局部功能
-焦點。背景依 locked A 排版拆成藍天山景 plate、繁盛的中景秋林與中央秋樹；
+焦點。背景依 locked A 排版拆成藍天山景 plate、繁盛的中景秋林、西側粗像素
+破敗石塔、橫向綠色灌木殘骸帶、右緣針葉樹殘牆群，以及中央秋樹；三個 ruins
+layers 只補邊界、貼地與前景建築後方的淺色空隙，並保持在最大秋樹後方；
 不滅熔爐和藍紫旋渦門保留功能辨識度，但非魔法表面改用材料行 Base v3 的大型
 不規則石塊、粗斷線、2–4 階明暗與中性光照，並與連續石橋獨立疊放。道路視覺
 頂緣為 `y=660`，與不變的 `y=672` gameplay baseline 重疊 12 px，讓角色腳部及

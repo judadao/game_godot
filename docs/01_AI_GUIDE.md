@@ -126,6 +126,31 @@ func load_catalog(path: String) -> bool:
 大型功能與 refactor 必須有獨立 reviewer。Critical／Important 必須修正並
 re-review；不同意 finding 時用 code/test 證據裁決。
 
+### 6.3 Generated Art Review
+
+生成圖片、Town／map 背景、建築、地標、地板與 VFX raster composition 必須交給
+獨立 agent 做視覺 review，不得把 GDScript test 當成美術審查。固定流程：
+
+1. 先檢查每個生成物件的透明邊緣、像素密度、畫風、材質、光向、比例與辨識度。
+   同時消除可辨識的 AI 生成感：糊爛或過度細碎的紋理、無意義重複、材質頻率
+   不一致、錯誤幾何、假接縫，以及不符合既有場景美術方向的局部。
+   Town 生成物以 Base 材料行為筆觸與美術基準，對齊大型色塊、粗斷線、有限
+   色階、石木材質筆觸與細節密度；過度平滑、碎裂、寫實或高噪點的生成筆觸，
+   即使幾何正確也必須退回修正。
+2. 再檢查整張實際整合畫面，包含構圖焦點、遮擋、重複、左右邊界、貼地空隙與
+   前中後景關係。
+3. 將整張畫面固定切成 `4 columns × 3 rows` 共 12 個等分區域；reviewer 逐區以
+   原始像素細節檢查並以 row／column 回報 finding。
+4. findings 使用 Critical／Important／Minor；Critical／Important 修正後必須
+   重新交給獨立 agent。
+5. 任何 asset、scale、position、z-index 或整體排版修改都會使前次視覺結論失效；
+   最終版必須重新完成整張、物件與 12 區 review。
+
+圖片迭代期間先做上述 agent review。`.gd` 測試只保護可載入、alpha、source path、
+aspect ratio、z-order、Scene／layout parity 等結構契約；整合完成後跑 affected
+focused tests，commit 前再跑一次 full regression，不得每產生一版圖片就靠整套
+test scripts 判斷畫風好壞。
+
 ## 7. Testing SOP
 
 ### 7.1 Focused

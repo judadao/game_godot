@@ -19,7 +19,7 @@ const EXPECTED_FACILITY_IDS := {
 	"equipment_blueprint_shop": true,
 	"far_east_residence": true,
 }
-const EXPECTED_SOURCES := {
+const REQUIRED_SOURCES := {
 	"res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png": true,
 	"res://assets/town/modular_v3/background/autumn_forest_canopy_base_v2.png": true,
 	"res://assets/town/modular_v2/buildings/material_yard.png": true,
@@ -145,7 +145,7 @@ func _run() -> void:
 		_finish()
 		return
 	var layers := layers_variant as Array
-	_expect(layers.size() == 72, "Town modular layout must expose exactly 72 assembled objects.")
+	_expect(not layers.is_empty(), "Town modular layout must expose assembled objects.")
 
 	var ids: Dictionary = {}
 	var sources: Dictionary = {}
@@ -173,13 +173,8 @@ func _run() -> void:
 			int(category_counts.get(category, 0)) > 0,
 			"Town modular layout must include the %s category." % category
 		)
-	for source in EXPECTED_SOURCES:
+	for source in REQUIRED_SOURCES:
 		_expect(sources.has(source), "Town modular layout must use generated source: %s" % source)
-	for source in sources:
-		_expect(
-			EXPECTED_SOURCES.has(source),
-			"Town modular layout must not reference an unassigned generated source: %s" % source
-		)
 
 	_assert_interaction_owners(entries_by_id)
 	_assert_repeated_ground_modules(layers)

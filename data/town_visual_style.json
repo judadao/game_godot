@@ -23,7 +23,7 @@
   },
   "variants": {
     "background": "a_locked_autumn_panorama",
-    "background_trees": "a_locked_generated_autumn_layers_v2",
+    "background_trees": "a_locked_autumn_green_ruins_layers_v3",
     "landmarks": "base_material_yard_landmarks_v3",
     "buildings": "b2_front_right_orthographic",
     "visible_street_props": "b2_chunky_lived_in"
@@ -49,6 +49,9 @@
   "asset_sources": [
     "res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png",
     "res://assets/town/modular_v3/background/autumn_forest_canopy_base_v2.png",
+    "res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v3.png",
+    "res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png",
+    "res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v1.png",
     "res://assets/town/modular_v1/background/castle_layer.png",
     "res://assets/town/modular_v1/background/mountain_layer.png",
     "res://assets/town/modular_v3/background/town_a_background_plate.png",
