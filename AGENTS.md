@@ -41,8 +41,8 @@ successful parsing alone is not completion.
 
 Generated raster art and map-composition changes require an independent visual
 reviewer agent. The reviewer must inspect the integrated full-frame composition,
-the generated objects at native detail, and a fixed 4-column × 3-row grid of
-12 equal image slices. Reviews and fixes must also remove visible AI-generation
+the generated objects at native detail, and 6 equal image slices in a fixed
+3-column × 2-row grid. Reviews and fixes must also remove visible AI-generation
 artifacts: mushy or over-detailed texture, meaningless repetition, inconsistent
 material frequency, broken geometry, false seams, and elements that do not share
 the established scene art direction. For Town-generated art, use the Base
@@ -50,7 +50,7 @@ MaterialYard building as the brushwork and art-direction reference: match its
 large color clusters, broken coarse linework, limited value steps, stone/wood
 mark-making, and detail density. Smooth, fragmented, photorealistic, or noisy
 AI-looking brushwork must be revised even when geometry is valid. If any asset, scale, position, z-order, or composition is
-changed after review, repeat both the full-frame and all 12 slice reviews.
+changed after review, repeat both the full-frame and all 6 slice reviews.
 GDScript tests verify structural contracts such as loadability, alpha, source
 paths, aspect ratio, and z-order; they do not replace or repeatedly simulate art
 direction review. During image iteration, use agent visual review first, then
@@ -162,7 +162,7 @@ func _ready() -> void:
 - [ ] Keep unrelated dirty files unstaged and unchanged.
 - [ ] Add a failing regression test before a bug fix or refactor.
 - [ ] Update governance documents when their contracts change.
-- [ ] Generated art has independent full-frame, object, and 12-slice review evidence.
+- [ ] Generated art has independent full-frame, object, and 6-slice review evidence.
 
 ## 12. Best Practice
 

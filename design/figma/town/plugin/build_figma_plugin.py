@@ -27,12 +27,12 @@ OUTPUT_PATH = PLUGIN_DIR / "code.js"
 B2_REVIEW_STEMS = [
 	"material_yard_front_style_b2",
 	"player_forge_front_style_b2",
-	"town_hall_front_style_base_v2",
-	"sword_soul_shop_front_style_base_v2",
-	"equipment_blueprint_shop_front_style_base_v2",
-	"far_east_residence_front_style_base_v2",
-	"eternal_forge_monument_base_v3",
-	"battle_portal_base_v3",
+	"town_hall_front_style_base_v3",
+	"sword_soul_shop_front_style_base_v3",
+	"equipment_blueprint_shop_front_style_base_v3",
+	"far_east_residence_front_style_base_v3",
+	"eternal_forge_monument_base_v4",
+	"battle_portal_base_v4",
 ]
 
 

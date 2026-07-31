@@ -351,15 +351,17 @@ presentation 隱藏；不得在此新增新 Town 視覺。
   明暗，不使用重複針葉紋理。三層都在秋林之前、中央大樹之後，且不建立
   collision 或 interaction。
   舊綠色 `forest_layer.png` 與
-  `parallax_forest_strip_v3.png` 仍不得顯示。古樹、Base v3 熔爐、旋渦門、八塊
-  道路與八塊橋牆各自是可見獨立 layer；熔爐與旋渦門實際 source 必須是
-  MaterialYard-style Base v3 版本；地標必須使用與材料行相同大小的像素群塊、
-  大型不規則石塊、粗斷線與 2–4 階明暗，不得使用細密規整磚紋。道路視覺頂緣
+  `parallax_forest_strip_v3.png` 仍不得顯示。古樹、Base v4 熔爐與
+  旋渦門、八塊道路與八塊橋牆各自是可見獨立 layer；熔爐與旋渦門實際 source
+  必須是各自核准的 MaterialYard-style Base 版本。地標必須使用與材料行一致的
+  像素群塊、手切不規則石塊、粗斷線與有限明暗；Base v4 熔爐以約 4×
+  source-to-display pixel density 保留銅件、石縫與木旗細節，不得使用糊大塊、
+  密集規整磚紋或微小噪點。道路視覺頂緣
   固定為 `y=660`，在不改 `y=672` gameplay baseline 的情況下提供 12 px 貼地
   重疊。不得使用整張暖色城鎮 composite，
   也不得讓同一地標或地板同時由兩個 layer 繪製。
 - 村長家、劍魂商、裝備圖紙商與東郊民宅使用 MaterialYard-style
-  `*_base_v2.png`，以約 4× source-to-display pixel density 顯示並共同落在
+  `*_base_v3.png`，以約 4× source-to-display pixel density 顯示並共同落在
   `y=672` foundation；不得為塞入東側而縮成低精細度小屋。
 - 分件候選街景只允許 modular-v2 B2 source。舊 modular-v1 街具、
   `hanging_banner_*`，以及會遮住東側建築的 laundry／trough／woodpile／signpost／

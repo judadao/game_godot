@@ -7,12 +7,12 @@ const BASE_MAP_PREVIEW = __TOWN_BASE_MAP_PREVIEW__;
 const B2_REVIEW_ITEMS = [
   ["material_yard_front_style_b2", "材料行 / MATERIAL YARD", "BUILDING · FRONT STYLE · 300 × 240"],
   ["player_forge_front_style_b2", "主角鐵匠鋪 / PLAYER FORGE", "BUILDING · FRONT STYLE · 360 × 316"],
-  ["town_hall_front_style_b2", "村長家 / TOWN HALL", "BUILDING · FRONT STYLE · 280 × 249"],
-  ["sword_soul_shop_front_style_b2", "劍魂商 / SWORD SOUL SHOP", "BUILDING · FRONT STYLE · 250 × 217"],
-  ["equipment_blueprint_shop_front_style_b2", "裝備圖紙商 / BLUEPRINT SHOP", "BUILDING · FRONT STYLE · 220 × 187"],
-  ["far_east_residence_front_style_b2", "東郊民宅 / EAST RESIDENCE", "BUILDING · FRONT STYLE · 234 × 204"],
-  ["eternal_forge_monument_base_v3", "不滅火炬 / ETERNAL FLAME", "LANDMARK · MATERIAL-YARD BASE V3 · 345 × 560"],
-  ["battle_portal_base_v3", "戰鬥傳送門 / BATTLE PORTAL", "LANDMARK · MATERIAL-YARD BASE V3 · 200 × 240"]
+  ["town_hall_front_style_base_v3", "村長家 / TOWN HALL", "BUILDING · MATERIAL-YARD BASE V3 · 342 × 288"],
+  ["sword_soul_shop_front_style_base_v3", "劍魂商 / SWORD SOUL SHOP", "BUILDING · MATERIAL-YARD BASE V3 · 334 × 295"],
+  ["equipment_blueprint_shop_front_style_base_v3", "裝備圖紙商 / BLUEPRINT SHOP", "BUILDING · MATERIAL-YARD BASE V3 · 334 × 295"],
+  ["far_east_residence_front_style_base_v3", "東郊民宅 / EAST RESIDENCE", "BUILDING · MATERIAL-YARD BASE V3 · 298 × 331"],
+  ["eternal_forge_monument_base_v4", "不滅火炬 / ETERNAL FLAME", "LANDMARK · MATERIAL-YARD BASE V4 · 345 × 560"],
+  ["battle_portal_base_v4", "戰鬥傳送門 / BATTLE PORTAL", "LANDMARK · MATERIAL-YARD BASE V4 · 200 × 240"]
 ];
 
 const C = {

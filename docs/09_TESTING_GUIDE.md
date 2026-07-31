@@ -71,13 +71,13 @@ Inventory／Codex focused coverage：
    密度都需一致；過度平滑、碎裂、寫實或高噪點的生成筆觸視為 finding。
 2. **Full-frame review**：檢查焦點、色彩層級、前中後景、遮擋、重複、左右邊界、
    建築後方與貼地空隙。
-3. **12-slice review**：將完整畫面等分成 4 欄 × 3 列；逐一檢查 R1C1 到 R3C4，
+3. **6-slice review**：將完整畫面等分成 3 欄 × 2 列；逐一檢查 R1C1 到 R2C3，
    不得只放大有問題的局部。每區都需回報 pass 或具體 finding，並確認該區沒有
    與既有場景畫風不一致的 AI 生成痕跡。
 4. **Severity**：使用 Critical／Important／Minor。Critical／Important 未修正前
    不得交付。
 5. **Re-review**：review 後若修改任何圖片、scale、position、z-index 或排版，
-   必須重新檢查生成物件、整張畫面與全部 12 區。
+   必須重新檢查生成物件、整張畫面與全部 6 區。
 
 結構測試仍負責 PNG／Texture 可載入、透明度、source path、aspect ratio、
 z-order、layout 與 generated Scene parity。圖片迭代過程不為主觀畫風建立大量
@@ -353,7 +353,7 @@ DisplayServer 與共享資源。
 6. 影響視覺時進行人工檢查。
 
 生成圖片任務的第 6 步必須使用第 3.1 節的獨立 agent full-frame／object／
-12-slice protocol；任何後續視覺修改都要重做整套 review。
+6-slice protocol；任何後續視覺修改都要重做整套 review。
 
 ## 10. Checklist
 
@@ -365,7 +365,7 @@ DisplayServer 與共享資源。
 - [ ] UI 修改已驗證四個基準尺寸與窄／寬比例。
 - [ ] Scene/JSON 變更已更新契約測試。
 - [ ] 文件與實際執行指令一致。
-- [ ] 生成圖片已完成獨立 agent 的 object、full-frame 與 12-slice review。
+- [ ] 生成圖片已完成獨立 agent 的 object、full-frame 與 6-slice review。
 - [ ] 最後一次視覺修改後已重新 review，而非沿用舊結論。
 
 ## 11. Best Practice

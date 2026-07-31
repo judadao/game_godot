@@ -55,7 +55,7 @@ CANDIDATES = [
 		"name": "村長家 / TOWN HALL",
 		"kind": "BUILDING",
 		"target": "342 × 288",
-		"path": "design/figma/town/b2_front_style_candidates/town_hall_front_style_base_v2.png",
+		"path": "design/figma/town/b2_front_style_candidates/town_hall_front_style_base_v3.png",
 	},
 	{
 		"id": "sword_soul_shop",
@@ -63,7 +63,7 @@ CANDIDATES = [
 		"name": "劍魂商 / SWORD SOUL SHOP",
 		"kind": "BUILDING",
 		"target": "334 × 295",
-		"path": "design/figma/town/b2_front_style_candidates/sword_soul_shop_front_style_base_v2.png",
+		"path": "design/figma/town/b2_front_style_candidates/sword_soul_shop_front_style_base_v3.png",
 	},
 	{
 		"id": "equipment_blueprint_shop",
@@ -71,7 +71,7 @@ CANDIDATES = [
 		"name": "裝備圖紙商 / BLUEPRINT SHOP",
 		"kind": "BUILDING",
 		"target": "334 × 295",
-		"path": "design/figma/town/b2_front_style_candidates/equipment_blueprint_shop_front_style_base_v2.png",
+		"path": "design/figma/town/b2_front_style_candidates/equipment_blueprint_shop_front_style_base_v3.png",
 	},
 	{
 		"id": "far_east_residence",
@@ -79,7 +79,7 @@ CANDIDATES = [
 		"name": "東郊民宅 / EAST RESIDENCE",
 		"kind": "BUILDING",
 		"target": "298 × 331",
-		"path": "design/figma/town/b2_front_style_candidates/far_east_residence_front_style_base_v2.png",
+		"path": "design/figma/town/b2_front_style_candidates/far_east_residence_front_style_base_v3.png",
 	},
 	{
 		"id": "eternal_flame",
@@ -87,7 +87,7 @@ CANDIDATES = [
 		"name": "不滅火炬 / ETERNAL FLAME",
 		"kind": "LANDMARK",
 		"target": "345 × 560",
-		"path": "assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png",
+		"path": "assets/town/modular_v3/landmarks/eternal_forge_monument_base_v4.png",
 	},
 	{
 		"id": "battle_portal",
@@ -95,7 +95,7 @@ CANDIDATES = [
 		"name": "戰鬥傳送門 / BATTLE PORTAL",
 		"kind": "LANDMARK",
 		"target": "200 × 240",
-		"path": "assets/town/modular_v3/landmarks/battle_portal_base_v3.png",
+		"path": "assets/town/modular_v3/landmarks/battle_portal_base_v4.png",
 	},
 ]
 

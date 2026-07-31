@@ -211,14 +211,16 @@ Town 視覺統一採用 `data/town_visual_style.json` 的
 低矮灌木／斷牆／碎柱帶橫跨地圖，右緣再以針葉樹與落地殘牆封住淺色楔形空隙。
 右緣針葉樹使用 Base MaterialYard 的大型不對稱枝葉色塊、粗斷筆觸與有限明暗，
 不得以重複針葉紋理或密集高光製造細節；
-三者 z-index 保持在秋林之前、主樹之後，避免遮住最大古樹。中央熔爐與傳送門保留既有辨識輪廓，
-但改用 MaterialYard-style Base v3 的大型灰藍石塊、粗斷裂線稿、2–4 階明暗與
-中性固有色；八塊道路與八塊橋牆組成唯一可見地板。道路視覺面從 `y=660`
+三者 z-index 保持在秋林之前、主樹之後，避免遮住最大古樹。中央熔爐與傳送門保留既有辨識輪廓；
+不滅熔爐與傳送門皆使用 MaterialYard-style Base v4。兩者共用大型
+灰藍石塊、粗斷裂線稿、有限明暗與中性固有色；Base v4 熔爐另以約 4×
+source-to-display pixel density 對齊鄰近 Base 建築的石材、銅件與木旗細節。
+八塊道路與八塊橋牆組成唯一可見地板。道路視覺面從 `y=660`
 開始，與維持在 `y=672` 的角色、建築與互動基準重疊 12 px，避免腳下與地基露出
 背景縫隙。不得再以
 `town_eternal_forge_v1.png` 整張暖色城鎮合成圖作 runtime background。
 村長家、劍魂商、裝備圖紙商與東郊民宅使用以材料行為唯一 style reference 的
-`*_base_v2.png`，runtime 維持約 4× source-to-display pixel density，且
+`*_base_v3.png`，runtime 維持約 4× source-to-display pixel density，且
 foundation 全部對齊 `y=672`。
 六棟主建築也已統一為材料行 Base 的群塊、線稿與中性固有色語言。前景 Base
 只烘焙結構 AO 與接觸陰影，大面方向光由後續 Godot overlay 擁有。

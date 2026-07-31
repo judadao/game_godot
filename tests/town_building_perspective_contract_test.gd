@@ -22,13 +22,13 @@ const BUILDING_NODE_NAMES := {
 const EXPECTED_BUILDING_SOURCE_BY_ID := {
 	"material_yard": "res://assets/town/modular_v2/buildings/material_yard.png",
 	"player_blacksmith": "res://assets/town/modular_v2/buildings/player_forge.png",
-	"town_hall": "res://assets/town/modular_v2/buildings/town_hall_base_v2.png",
+	"town_hall": "res://assets/town/modular_v2/buildings/town_hall_base_v3.png",
 	"sword_soul_shop":
-		"res://assets/town/modular_v2/buildings/sword_soul_shop_base_v2.png",
+		"res://assets/town/modular_v2/buildings/sword_soul_shop_base_v3.png",
 	"equipment_blueprint_shop":
-		"res://assets/town/modular_v2/buildings/blueprint_research_base_v2.png",
+		"res://assets/town/modular_v2/buildings/blueprint_research_base_v3.png",
 	"far_east_residence":
-		"res://assets/town/modular_v2/buildings/east_residence_base_v2.png",
+		"res://assets/town/modular_v2/buildings/east_residence_base_v3.png",
 }
 const EXPECTED_PERSPECTIVE_PROFILE := "b2_front_right_orthographic"
 const EXPECTED_BACKGROUND_PROFILE := "a_locked_autumn_panorama"

@@ -1545,13 +1545,15 @@ the HUD never reads gameplay state directly.
   位於秋林之前、主樹之後；古塔靠近西側邊界，殘骸帶補滿貼地空隙，右緣群組
   封住最右房屋後方的淺色楔形空隙，
   舊綠色 legacy/parallax forest 仍不得顯示。
-  不滅熔爐與旋渦門改用
-  `base_material_yard_landmarks_v3`，保留火盆、符文塔與旋渦門辨識輪廓，但使用
-  與材料行一致的大型灰藍石塊、粗斷裂線稿、2–4 階明暗、中性 Base 光與結構
-  AO，禁止密集規整磚列與微小紋理噪點。上述分件與 16 塊道路／橋牆
+  不滅熔爐與旋渦門遵循 `base_material_yard_landmarks_v3` style profile；
+  熔爐與旋渦門皆使用 refined Base v4 source。兩者保留火盆、符文塔
+  與旋渦門辨識輪廓，並使用與材料行一致的灰藍石塊、粗斷裂線稿、有限明暗、
+  中性 Base 光與結構 AO。Base v4 熔爐另以約 4× source-to-display pixel
+  density 對齊相鄰建築的石縫、銅件與木旗精細度；禁止糊大塊、密集規整磚列與
+  微小紋理噪點。上述分件與 16 塊道路／橋牆
   各自可見，禁止再以
   `town_eternal_forge_v1.png` 暖色整張城鎮圖充當背景。東側四棟建築使用以
-  材料行為 style reference 的 Base v2
+  材料行為 style reference 的 Base v3
   source，以約 4× source-to-display pixel density 保留相同細節密度。六棟建築以
   `b2_front_right_orthographic` metadata 共用 B2 正面＋右側窄面視角。已登錄
   unique sources 中包含 18 個 visual-only B2 街景 dressing；道路頂緣固定

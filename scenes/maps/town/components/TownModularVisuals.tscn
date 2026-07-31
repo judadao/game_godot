@@ -17,12 +17,12 @@
 [ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/soul_brazier.png" id="15_soul_brazier"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/street_lantern.png" id="16_street_lantern"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v1/props/west_fence.png" id="17_west_fence"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/blueprint_research_base_v2.png" id="18_blueprint_research_base_v2"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/east_residence_base_v2.png" id="19_east_residence_base_v2"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/blueprint_research_base_v3.png" id="18_blueprint_research_base_v3"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/east_residence_base_v3.png" id="19_east_residence_base_v3"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/material_yard.png" id="20_material_yard"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/player_forge.png" id="21_player_forge"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/sword_soul_shop_base_v2.png" id="22_sword_soul_shop_base_v2"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/town_hall_base_v2.png" id="23_town_hall_base_v2"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/sword_soul_shop_base_v3.png" id="22_sword_soul_shop_base_v3"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v2/buildings/town_hall_base_v3.png" id="23_town_hall_base_v3"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v2/props/flower_planter.png" id="24_flower_planter"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v2/props/laundry_line.png" id="25_laundry_line"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v2/props/market_stall.png" id="26_market_stall"]
@@ -47,8 +47,8 @@
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png" id="45_green_ruins_debris_bush_strip_base_v2"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v2.png" id="46_green_ruins_east_edge_cluster_base_v2"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/town_a_background_plate.png" id="47_town_a_background_plate"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_base_v3.png" id="48_battle_portal_base_v3"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png" id="49_eternal_forge_monument_base_v3"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_base_v4.png" id="48_battle_portal_base_v4"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v4.png" id="49_eternal_forge_monument_base_v4"]
 
 [node name="TownModularVisuals" type="Node2D"]
 texture_filter = 1
@@ -496,10 +496,10 @@ position = Vector2(830, 392)
 scale = Vector2(0.25, 0.25)
 z_index = -9
 visible = true
-texture = ExtResource("49_eternal_forge_monument_base_v3")
+texture = ExtResource("49_eternal_forge_monument_base_v4")
 metadata/object_id = "eternal_flame"
 metadata/category = "landmark"
-metadata/source_asset = "res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v3.png"
+metadata/source_asset = "res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v4.png"
 metadata/perspective_profile = ""
 metadata/interaction_mode = "none"
 metadata/interaction_owner_scene = ""
@@ -512,10 +512,10 @@ position = Vector2(830, 552)
 scale = Vector2(0.25, 0.25)
 z_index = -8
 visible = true
-texture = ExtResource("48_battle_portal_base_v3")
+texture = ExtResource("48_battle_portal_base_v4")
 metadata/object_id = "battle_portal"
 metadata/category = "landmark"
-metadata/source_asset = "res://assets/town/modular_v3/landmarks/battle_portal_base_v3.png"
+metadata/source_asset = "res://assets/town/modular_v3/landmarks/battle_portal_base_v4.png"
 metadata/perspective_profile = ""
 metadata/interaction_mode = "scene_owned"
 metadata/interaction_owner_scene = "res://scenes/maps/town/portals/TownPortalSet.tscn"
@@ -528,10 +528,10 @@ position = Vector2(1120, 528)
 scale = Vector2(0.25, 0.25)
 z_index = -10
 visible = true
-texture = ExtResource("23_town_hall_base_v2")
+texture = ExtResource("23_town_hall_base_v3")
 metadata/object_id = "town_hall"
 metadata/category = "facility"
-metadata/source_asset = "res://assets/town/modular_v2/buildings/town_hall_base_v2.png"
+metadata/source_asset = "res://assets/town/modular_v2/buildings/town_hall_base_v3.png"
 metadata/perspective_profile = "b2_front_right_orthographic"
 metadata/interaction_mode = "scene_owned"
 metadata/interaction_owner_scene = "res://scenes/maps/town/components/TownBuildingEntrances.tscn"
@@ -544,10 +544,10 @@ position = Vector2(1370, 524.5)
 scale = Vector2(0.25, 0.25)
 z_index = -10
 visible = true
-texture = ExtResource("22_sword_soul_shop_base_v2")
+texture = ExtResource("22_sword_soul_shop_base_v3")
 metadata/object_id = "sword_soul_shop"
 metadata/category = "facility"
-metadata/source_asset = "res://assets/town/modular_v2/buildings/sword_soul_shop_base_v2.png"
+metadata/source_asset = "res://assets/town/modular_v2/buildings/sword_soul_shop_base_v3.png"
 metadata/perspective_profile = "b2_front_right_orthographic"
 metadata/interaction_mode = "scene_owned"
 metadata/interaction_owner_scene = "res://scenes/maps/town/components/TownBuildingEntrances.tscn"
@@ -560,10 +560,10 @@ position = Vector2(1595, 524.5)
 scale = Vector2(0.25, 0.25)
 z_index = -10
 visible = true
-texture = ExtResource("18_blueprint_research_base_v2")
+texture = ExtResource("18_blueprint_research_base_v3")
 metadata/object_id = "equipment_blueprint_shop"
 metadata/category = "facility"
-metadata/source_asset = "res://assets/town/modular_v2/buildings/blueprint_research_base_v2.png"
+metadata/source_asset = "res://assets/town/modular_v2/buildings/blueprint_research_base_v3.png"
 metadata/perspective_profile = "b2_front_right_orthographic"
 metadata/interaction_mode = "scene_owned"
 metadata/interaction_owner_scene = "res://scenes/maps/town/components/TownBuildingEntrances.tscn"
@@ -576,10 +576,10 @@ position = Vector2(1793, 506.5)
 scale = Vector2(0.25, 0.25)
 z_index = -10
 visible = true
-texture = ExtResource("19_east_residence_base_v2")
+texture = ExtResource("19_east_residence_base_v3")
 metadata/object_id = "far_east_residence"
 metadata/category = "facility"
-metadata/source_asset = "res://assets/town/modular_v2/buildings/east_residence_base_v2.png"
+metadata/source_asset = "res://assets/town/modular_v2/buildings/east_residence_base_v3.png"
 metadata/perspective_profile = "b2_front_right_orthographic"
 metadata/interaction_mode = "scene_owned"
 metadata/interaction_owner_scene = "res://scenes/maps/town/components/TownBuildingEntrances.tscn"

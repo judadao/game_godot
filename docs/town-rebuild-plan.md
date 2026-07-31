@@ -60,11 +60,13 @@ scene entries:
    - Material Yard, Player Forge, Town Hall, Sword Soul Shop, Blueprint Research,
      and East Residence.
 4. `landmarks/`
-   - Eternal Forge Monument and Battle Portal use aspect-locked MaterialYard-style
-     Base v3 variants. They retain the fire bowl, rune-tower silhouette, stone arch,
-     and blue-purple vortex while matching Material Yard's larger pixel clusters,
-     irregular gray-blue masonry, coarse broken linework, 2–4 shade ramps, neutral
-     base light, and structural AO.
+   - Eternal Forge Monument uses the refined aspect-locked MaterialYard-style Base
+     v4 source; Battle Portal also uses Base v4. They retain the fire bowl,
+     rune-tower silhouette, stone arch, and blue-purple vortex while matching
+     Material Yard's deliberate pixel clusters, irregular gray-blue masonry, coarse
+     broken linework, limited shade ramps, neutral base light, and structural AO.
+     The Base v4 monument keeps roughly 4x source-to-display density so its stone,
+     copper, and banner detail remains compatible with adjacent Base buildings.
 5. `props/`
    - street lantern, forge/soul braziers, hanging banner, west fence, notice board,
      material crates/barrels, and forge anvil. These modular-v1 entries remain hidden
@@ -78,7 +80,7 @@ All buildings use the shared `b2_front_right_orthographic` profile: front face
 dominant, narrow right face, vertical uprights, upper-right depth recession, and
 horizontal foundations on the common gameplay baseline.
 Town Hall, Sword Soul Shop, Equipment Blueprint Shop, and Far East Residence use
-MaterialYard-style Base v2 candidates at approximately 4x source-to-display pixel
+MaterialYard-style Base v3 candidates at approximately 4x source-to-display pixel
 density, so the east side does not lose scale or facade detail.
 
 ## Scene architecture
