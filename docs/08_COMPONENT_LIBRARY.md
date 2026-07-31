@@ -1546,7 +1546,7 @@ the HUD never reads gameplay state directly.
   封住最右房屋後方的淺色楔形空隙，
   舊綠色 legacy/parallax forest 仍不得顯示。
   不滅熔爐與旋渦門遵循 `base_material_yard_landmarks_v3` style profile；
-  不滅火炬使用 refined Base v5 靜態塔身，旋渦門維持 refined Base v4 source。
+  不滅火炬與旋渦門都使用 refined Base v5 靜態塔身。
   兩者保留火盆、符文塔與旋渦門辨識輪廓，並使用與材料行一致的灰藍石塊、
   粗斷裂線稿、有限明暗、中性 Base 光與結構 AO。Base v5 不滅火炬另以約 4× source-to-display pixel
   density 對齊相鄰建築的石縫、銅件與木旗精細度；禁止糊大塊、密集規整磚列與
@@ -1575,14 +1575,34 @@ the HUD never reads gameplay state directly.
 - Responsibility：在 Base v5 不滅火炬靜態塔身上疊加彼此獨立的
   `FireLayers` 與 `RuneCharge`。`FireLayers` 內含 `FireGlow`、`TopFire`、
   `InnerFire` 三個 `AnimatedSprite2D`；`RunePulse` 只提供中央符文的連續光暈。
-- Playback contract：三層火焰各使用 8 幀、4.5 FPS、loop、自動播放，並以不同
-  frame 與 frame progress 錯開相位；`RuneCharge` 使用 8 幀、4 FPS、loop、
+- Playback contract：三層火焰共用固定火根、圓弧外焰、橙色中焰與淡黃核心的
+  v2 逐格素材；各使用 8 幀、4.5 FPS、loop、自動播放，並以不同 frame 與
+  frame progress 錯開相位；`RuneCharge` 使用 8 幀、4 FPS、loop、
   自動播放，`RunePulse` 以 2 秒 loop 連續插值 alpha 與 scale。循環邊界不得
   產生位置跳動、尺寸突變、明顯亮度斷點或可感知的卡頓。
 - Layer boundary：`FireLayers` 必須保持獨立並把原點固定在火盆接觸線，供後續
   整組火焰放大或換色而不下沉；`RuneCharge` 只負責持續充能循環。兩組不得重新
   烘焙進 Base v5，也不擁有 interaction、collision、Town progression 或火炬
   Tier 狀態。
+
+### TownBattlePortalAnimation
+
+- Scene：`res://scenes/maps/town/components/TownBattlePortalAnimation.tscn`
+- Owner：`TownBackdrop`
+- Status：Current — Active Runtime Presentation
+- Responsibility：在 Base v5 傳送門石框內疊加完整暗紫 `PortalUnderpaint`、
+  `PortalCore` 主旋渦、
+  `PortalHighlights` 次光筆觸與 `PortalRuneGlow` 頂部晶石呼吸。
+- Asset contract：`portal_aperture_mask.png` 與 800 × 960 Base 精確對位，
+  並產生完整填滿門洞的 underpaint，再把 core 候選量化為約五階大像素色塊，
+  派生 highlight，輸出兩組 12 幀、`800x960` runtime cels；
+  旋渦或 emission 不得重新烘焙進 Base。
+- Motion contract：`PortalCore` 與 `PortalHighlights` 自動播放 12 幀、
+  6 FPS、2 秒 `vortex` loop，次光從第 3 幀起保持相位差；`PortalPulse`
+  只連續插值次光 alpha 與頂部符文 alpha／scale。禁止以單張貼圖 shader 旋轉
+  取代手繪逐格形變。
+- Boundary：此 Scene 只擁有 presentation。`TownPortalSet/BattleGateway` 繼續
+  擁有 interaction、collision 與 `battle_portal_hub.tscn` route。
 
 ### TownLocationLabels
 

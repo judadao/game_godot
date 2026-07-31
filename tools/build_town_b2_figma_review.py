@@ -95,7 +95,7 @@ CANDIDATES = [
 		"name": "戰鬥傳送門 / BATTLE PORTAL",
 		"kind": "LANDMARK",
 		"target": "200 × 240",
-		"path": "assets/town/modular_v3/landmarks/battle_portal_base_v4.png",
+		"path": "assets/town/modular_v3/landmarks/battle_portal_base_v5.png",
 	},
 ]
 

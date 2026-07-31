@@ -193,6 +193,12 @@ presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 以火盆接觸線為縮放軸，內含 `FireGlow`、`TopFire`、`InnerFire` 三個相位錯開的
 `AnimatedSprite2D`；`RuneCharge` 與連續插值的 `RunePulse` 負責中央符文充能。
 靜態 Base 不重複繪製這兩組。
+`TownBackdrop/BattlePortalAnimation` 以
+`TownBattlePortalAnimation.tscn` 疊在傳送門 Base v5 上；`PortalUnderpaint`
+完整填滿門洞並穩定動畫體積，`PortalCore` 與
+`PortalHighlights` 各自播放 12 幀、6 FPS 的手繪逐格漩渦，次光層保留相位差，
+`PortalRuneGlow` 在頂部晶石內以 2 秒週期呼吸。各幀預先由門洞遮罩裁切；
+靜態 Base 不含旋渦、紫色內緣光或晶石 emission。
 `res://data/town_modular_layout.json` 仍在 `1942 × 809` source canvas 定義
 layout-defined background、ground、facility、landmark 與 street-prop candidates；
 `tools/build_town_modular_scene.py` 將資料生成為靜態
@@ -359,7 +365,7 @@ presentation 隱藏；不得在此新增新 Town 視覺。
   collision 或 interaction。
   舊綠色 `forest_layer.png` 與
   `parallax_forest_strip_v3.png` 仍不得顯示。古樹、Base v5 不滅火炬塔身、
-  Base v4 旋渦門、八塊道路與八塊橋牆各自是可見獨立 layer；兩個地標實際 source
+  Base v5 傳送門石框、八塊道路與八塊橋牆各自是可見獨立 layer；兩個地標實際 source
   必須是各自核准的 MaterialYard-style Base 版本。地標必須使用與材料行一致的
   像素群塊、手切不規則石塊、粗斷線與有限明暗；Base v5 不滅火炬以約 4×
   source-to-display pixel density 保留銅件、石縫與木旗細節，不得使用糊大塊、
@@ -369,6 +375,12 @@ presentation 隱藏；不得在此新增新 Town 視覺。
   再由 2 秒循環的 `RunePulse` 連續插值亮度與縮放，避免慢速充能有卡頓感。
   `FireLayers` 必須維持獨立物件且以火盆接觸線為縮放軸，讓後續放大或換色不影響
   塔身；不得把任一動畫層重新合併進 Base。
+  Base v5 傳送門不得烘焙門洞旋渦或紫色 emission；
+  `TownBattlePortalAnimation` 必須以 `portal_aperture_mask.png` 把固定
+  `PortalUnderpaint` 及
+  `PortalCore` 與 `PortalHighlights` 的 12 幀手繪逐格素材限制在石框內，
+  兩層皆以 6 FPS 播放 2 秒 loop 並保留相位差；頂部晶石另以 2 秒 loop 呼吸。
+  動畫只負責 presentation，不得接管 Portal interaction。
   道路視覺頂緣
   固定為 `y=660`，在不改 `y=672` gameplay baseline 的情況下提供 12 px 貼地
   重疊。不得使用整張暖色城鎮 composite，

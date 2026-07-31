@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_FIRE_SHEET = (
 	ROOT
 	/ "design/figma/town/b2_front_style_candidates/eternal_flame_animation"
-	/ "top_fire_sheet_v1.png"
+	/ "top_fire_sheet_v2.png"
 )
 DEFAULT_RUNE_SHEET = (
 	ROOT

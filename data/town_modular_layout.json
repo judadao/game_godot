@@ -449,7 +449,7 @@
     {
       "id": "battle_portal",
       "category": "landmark",
-      "source": "res://assets/town/modular_v3/landmarks/battle_portal_base_v4.png",
+      "source": "res://assets/town/modular_v3/landmarks/battle_portal_base_v5.png",
       "position": [830, 552],
       "target_size": [200, 240],
       "z_index": -8,

@@ -32,7 +32,7 @@ B2_REVIEW_STEMS = [
 	"equipment_blueprint_shop_front_style_base_v3",
 	"far_east_residence_front_style_base_v3",
 	"eternal_forge_monument_base_v5",
-	"battle_portal_base_v4",
+	"battle_portal_base_v5",
 ]
 
 

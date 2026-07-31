@@ -47,7 +47,7 @@
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png" id="45_green_ruins_debris_bush_strip_base_v2"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v2.png" id="46_green_ruins_east_edge_cluster_base_v2"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/town_a_background_plate.png" id="47_town_a_background_plate"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_base_v4.png" id="48_battle_portal_base_v4"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_base_v5.png" id="48_battle_portal_base_v5"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v5.png" id="49_eternal_forge_monument_base_v5"]
 
 [node name="TownModularVisuals" type="Node2D"]
@@ -512,10 +512,10 @@ position = Vector2(830, 552)
 scale = Vector2(0.25, 0.25)
 z_index = -8
 visible = true
-texture = ExtResource("48_battle_portal_base_v4")
+texture = ExtResource("48_battle_portal_base_v5")
 metadata/object_id = "battle_portal"
 metadata/category = "landmark"
-metadata/source_asset = "res://assets/town/modular_v3/landmarks/battle_portal_base_v4.png"
+metadata/source_asset = "res://assets/town/modular_v3/landmarks/battle_portal_base_v5.png"
 metadata/perspective_profile = ""
 metadata/interaction_mode = "scene_owned"
 metadata/interaction_owner_scene = "res://scenes/maps/town/portals/TownPortalSet.tscn"

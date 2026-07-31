@@ -21,7 +21,7 @@ const EXPECTED_SOURCE_BY_ID := {
 	"eternal_flame":
 		"res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v5.png",
 	"battle_portal":
-		"res://assets/town/modular_v3/landmarks/battle_portal_base_v4.png",
+		"res://assets/town/modular_v3/landmarks/battle_portal_base_v5.png",
 }
 const EXPECTED_PLACEMENT_BY_ID := {
 	"background_forest": {

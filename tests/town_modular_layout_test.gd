@@ -25,7 +25,7 @@ const REQUIRED_SOURCES := {
 	"res://assets/town/modular_v2/buildings/material_yard.png": true,
 	"res://assets/town/modular_v2/buildings/player_forge.png": true,
 	"res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v5.png": true,
-	"res://assets/town/modular_v3/landmarks/battle_portal_base_v4.png": true,
+	"res://assets/town/modular_v3/landmarks/battle_portal_base_v5.png": true,
 	"res://assets/town/modular_v2/buildings/town_hall_base_v3.png": true,
 	"res://assets/town/modular_v2/buildings/sword_soul_shop_base_v3.png": true,
 	"res://assets/town/modular_v2/buildings/blueprint_research_base_v3.png": true,

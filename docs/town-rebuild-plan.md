@@ -61,7 +61,7 @@ scene entries:
      and East Residence.
 4. `landmarks/`
    - Eternal Forge Monument uses the refined aspect-locked MaterialYard-style Base
-     v5 source; Battle Portal remains on Base v4. They retain the fire bowl,
+     v5 source; Battle Portal also uses Base v5. They retain the fire bowl,
      rune-tower silhouette, stone arch, and blue-purple vortex while matching
      Material Yard's deliberate pixel clusters, irregular gray-blue masonry, coarse
      broken linework, limited shade ramps, neutral base light, and structural AO.
@@ -69,6 +69,9 @@ scene entries:
      copper, and banner detail remains compatible with adjacent Base buildings.
      Its top fire and center rune emission are separate eight-frame looping
      animation objects and are not baked into the static monument.
+     The portal Base keeps only the unlit stone frame and crystal. Its masked
+     core and highlight layers use separate twelve-cel hand-drawn animation
+     objects on a relaxed two-second loop; the rune uses a separate pulse.
 5. `props/`
    - street lantern, forge/soul braziers, hanging banner, west fence, notice board,
      material crates/barrels, and forge anvil. These modular-v1 entries remain hidden

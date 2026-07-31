@@ -1,0 +1,212 @@
+[gd_scene load_steps=31 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_00.png" id="1_core_00"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_01.png" id="2_core_01"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_02.png" id="3_core_02"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_03.png" id="4_core_03"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_04.png" id="5_core_04"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_05.png" id="6_core_05"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_06.png" id="7_core_06"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_07.png" id="8_core_07"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_08.png" id="9_core_08"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_09.png" id="10_core_09"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_10.png" id="11_core_10"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_core/frame_11.png" id="12_core_11"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_00.png" id="13_high_00"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_01.png" id="14_high_01"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_02.png" id="15_high_02"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_03.png" id="16_high_03"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_04.png" id="17_high_04"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_05.png" id="18_high_05"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_06.png" id="19_high_06"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_07.png" id="20_high_07"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_08.png" id="21_high_08"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_09.png" id="22_high_09"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_10.png" id="23_high_10"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/vortex_highlights/frame_11.png" id="24_high_11"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/landmarks/battle_portal_animation/portal_underpaint.png" id="25_underpaint"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_core"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_core_00")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_core_01")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_core_02")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_core_03")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_core_04")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_core_05")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_core_06")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_core_07")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_core_08")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_core_09")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_core_10")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_core_11")
+}],
+"loop": true,
+"name": &"vortex",
+"speed": 6.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_highlights"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_high_00")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_high_01")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_high_02")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_high_03")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_high_04")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_high_05")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_high_06")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_high_07")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_high_08")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_high_09")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_high_10")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_high_11")
+}],
+"loop": true,
+"name": &"vortex",
+"speed": 6.0
+}]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_highlights"]
+blend_mode = 1
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_rune"]
+blend_mode = 1
+
+[sub_resource type="Animation" id="Animation_pulse"]
+resource_name = "pulse"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("PortalHighlights:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(0.75, 0.82, 1, 0.28), Color(0.9, 0.92, 1, 0.46), Color(0.75, 0.82, 1, 0.28)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("PortalRuneGlow:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(0.55, 0.2, 1, 0.62), Color(0.94, 0.74, 1, 1), Color(0.55, 0.2, 1, 0.62)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("PortalRuneGlow:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0.9, 0.9), Vector2(1.08, 1.08), Vector2(0.9, 0.9)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_portal"]
+_data = {
+&"pulse": SubResource("Animation_pulse")
+}
+
+[node name="TownBattlePortalAnimation" type="Node2D"]
+texture_filter = 1
+
+[node name="PortalUnderpaint" type="Sprite2D" parent="."]
+position = Vector2(830, 552)
+scale = Vector2(0.25, 0.25)
+z_index = -7
+texture_filter = 1
+texture = ExtResource("25_underpaint")
+
+[node name="PortalCore" type="AnimatedSprite2D" parent="."]
+position = Vector2(830, 552)
+scale = Vector2(0.25, 0.25)
+z_index = -6
+texture_filter = 1
+sprite_frames = SubResource("SpriteFrames_core")
+animation = &"vortex"
+autoplay = "vortex"
+
+[node name="PortalHighlights" type="AnimatedSprite2D" parent="."]
+material = SubResource("CanvasItemMaterial_highlights")
+modulate = Color(0.75, 0.82, 1, 0.28)
+position = Vector2(830, 552)
+scale = Vector2(0.25, 0.25)
+z_index = -5
+texture_filter = 1
+sprite_frames = SubResource("SpriteFrames_highlights")
+animation = &"vortex"
+autoplay = "vortex"
+frame = 3
+frame_progress = 0.35
+
+[node name="PortalRuneGlow" type="Polygon2D" parent="."]
+material = SubResource("CanvasItemMaterial_rune")
+position = Vector2(830, 469)
+z_index = -4
+color = Color(0.72, 0.34, 1, 0.92)
+polygon = PackedVector2Array(-7, 0, 0, -11, 7, 0, 0, 11)
+
+[node name="PortalPulse" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_portal")
+}
+autoplay = "pulse"
