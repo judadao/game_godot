@@ -47,6 +47,7 @@ var _player_search_timer := 0.0
 var _player: Node2D
 var _canopy_clusters: Array[Dictionary] = []
 var _forest_sway_clusters: Array[Dictionary] = []
+var _forest_sway_sprite_layer_count := 0
 var _leaf_streams: Array[Dictionary] = []
 var _birds: Array[Dictionary] = []
 var _tree_material: ShaderMaterial
@@ -101,8 +102,9 @@ func get_ambient_contract() -> Dictionary:
 		"calm_canopy_motion": true,
 		"canopy_clusters": _canopy_clusters.size(),
 		"forest_sway_clusters": _forest_sway_clusters.size(),
-		"forest_patch_assets": 10,
-		"forest_trunk_anchors": 1,
+		"forest_sway_sprite_layers": _forest_sway_sprite_layer_count,
+		"forest_patch_assets": 3,
+		"forest_trunk_anchors": 0,
 		"leaf_streams": _leaf_streams.size(),
 		"bird_count": _birds.size(),
 		"roof_perches": roof_perches,
@@ -140,6 +142,17 @@ func _register_canopy_cluster(pivot: Node2D) -> void:
 
 
 func _register_forest_sway_cluster(pivot: Node2D) -> void:
+	var sprite_layers: Array[Dictionary] = []
+	for child in pivot.get_children():
+		if not child is Sprite2D:
+			continue
+		var sprite := child as Sprite2D
+		sprite_layers.append({
+			"sprite": sprite,
+			"base_rotation": sprite.rotation,
+			"sway_gain": float(sprite.get_meta("sway_gain", 0.65)),
+		})
+	_forest_sway_sprite_layer_count += sprite_layers.size()
 	_forest_sway_clusters.append({
 		"pivot": pivot,
 		"base_position": pivot.position,
@@ -150,6 +163,7 @@ func _register_forest_sway_cluster(pivot: Node2D) -> void:
 		"phase": float(pivot.get_meta("phase", 0.0)),
 		"calm_period": float(pivot.get_meta("calm_period", 4.8)),
 		"rustle_period": float(pivot.get_meta("rustle_period", 6.5)),
+		"sprite_layers": sprite_layers,
 	})
 
 
@@ -347,10 +361,20 @@ func _apply_forest_patch_transform(
 	var base_scale := layer["base_scale"] as Vector2
 	var base_skew := float(layer["base_skew"])
 	var max_rotation := float(layer["max_rotation"])
-	pivot.rotation = base_rotation + strength * max_rotation
+	var pivot_gain := 0.45
+	pivot.rotation = base_rotation + strength * max_rotation * pivot_gain
 	pivot.position = base_position
 	pivot.scale = base_scale
 	pivot.skew = base_skew
+	for sprite_layer_variant in layer["sprite_layers"] as Array:
+		var sprite_layer := sprite_layer_variant as Dictionary
+		var sprite := sprite_layer["sprite"] as Sprite2D
+		var sprite_base_rotation := float(sprite_layer["base_rotation"])
+		var sway_gain := float(sprite_layer["sway_gain"])
+		sprite.rotation = (
+			sprite_base_rotation
+			+ strength * max_rotation * (sway_gain - pivot_gain)
+		)
 
 
 func _update_leaf_stream(leaf_index: int, delta: float) -> void:

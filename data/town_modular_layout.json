@@ -79,9 +79,9 @@
     {
       "id": "background_green_ruins",
       "category": "background",
-      "source": "res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v3.png",
+      "source": "res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v4.png",
       "position": [220, 390],
-      "target_size": [425, 650],
+      "target_size": [392, 650],
       "z_index": -83,
       "visible": true,
       "interaction_ownership": {

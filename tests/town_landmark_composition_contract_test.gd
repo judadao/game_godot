@@ -11,7 +11,7 @@ const EXPECTED_SOURCE_BY_ID := {
 	"background_forest":
 		"res://assets/town/modular_v3/background/autumn_forest_canopy_base_v2.png",
 	"background_green_ruins":
-		"res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v3.png",
+		"res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v4.png",
 	"background_green_ruins_debris":
 		"res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png",
 	"background_green_ruins_east_edge":
@@ -30,7 +30,7 @@ const EXPECTED_PLACEMENT_BY_ID := {
 	},
 	"background_green_ruins": {
 		"position": Vector2(220, 390),
-		"target_size": Vector2(425, 650),
+		"target_size": Vector2(392, 650),
 	},
 	"background_green_ruins_debris": {
 		"position": Vector2(971, 572),

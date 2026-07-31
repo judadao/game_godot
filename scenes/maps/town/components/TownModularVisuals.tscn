@@ -43,7 +43,7 @@
 [ext_resource type="Texture2D" path="res://assets/town/modular_v2/streetscape/small_tree.png" id="41_small_tree"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png" id="42_autumn_ancient_tree_base_v2"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/autumn_forest_canopy_base_v2.png" id="43_autumn_forest_canopy_base_v2"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v3.png" id="44_green_ruins_boundary_tower_base_v3"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v4.png" id="44_green_ruins_boundary_tower_base_v4"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png" id="45_green_ruins_debris_bush_strip_base_v2"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v2.png" id="46_green_ruins_east_edge_cluster_base_v2"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/town_a_background_plate.png" id="47_town_a_background_plate"]
@@ -141,13 +141,13 @@ metadata/service_id = ""
 
 [node name="BackgroundGreenRuins" type="Sprite2D" parent="Background"]
 position = Vector2(220, 390)
-scale = Vector2(0.425852, 0.425671)
+scale = Vector2(0.427015, 0.42735)
 z_index = -83
 visible = true
-texture = ExtResource("44_green_ruins_boundary_tower_base_v3")
+texture = ExtResource("44_green_ruins_boundary_tower_base_v4")
 metadata/object_id = "background_green_ruins"
 metadata/category = "background"
-metadata/source_asset = "res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v3.png"
+metadata/source_asset = "res://assets/town/modular_v3/background/green_ruins_boundary_tower_base_v4.png"
 metadata/perspective_profile = ""
 metadata/interaction_mode = "none"
 metadata/interaction_owner_scene = ""

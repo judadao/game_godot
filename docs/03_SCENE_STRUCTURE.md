@@ -206,14 +206,11 @@ presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 五組落葉都從中央樹冠範圍保存起點與近地終點。calm 狀態仍以各層獨立週期保持低幅
 擺動與短暫抖葉，gust 才提高整段順風形變。
 `ForestSwayLayers` 另保存十個 editor-authored foliage pivot，分布於西側、
-左右內側與東側屋頂後方；通用葉團來自 3 × 2 atlas，西側另可用 2 × 2 atlas
-的圓鈍垂落葉袋，以不同高度的小葉團打破水平底緣。pivot 固定
-position／scale／skew 並以不同週期小幅旋轉；同一西側 pivot 的主冠與下垂葉袋
-共享枝端接點，相鄰 pivot 仍保留相位差。原始秋林底圖與樹幹不移動，
-動態 patch 只補局部葉叢外緣。`ForestTrunkAnchors/WestMaterialTreeTrunk`
-以 `z=-20` 保存不擺動的靜態分枝錨點並嵌入材料行屋頂後方；西側兩個 pivot
-的葉袋位於 `z=-21`，只在固定樹幹上方局部擺動。`z=-10` 前景屋頂遮住樹幹底部接縫，
-禁止再建立沒有靜態枝幹支撐的浮空樹冠。
+左右內側與東側屋頂後方；每個 pivot 使用 3 × 2 atlas 中三種粗像素實色葉團，
+在 `z=-88/-87/-86` 疊成後、中、前三層。三層位於 `z=-85` 固定秋林後方，
+因此只讓葉梢越過既有冠線；底部、水平切面與枝端接縫由固定秋林遮住。
+pivot 固定 position／scale／skew 並以不同週期小幅旋轉，各層另保留 sway gain
+差異。原始秋林底圖與整棵樹不移動，禁止新增樹幹、完整小樹或浮空圓冠。
 `BirdPerches` 保存七個屋頂與三個地面停棲點。全部是 editor-visible、
 visual-only node；runtime script 以
 `calm → gust → settle` 控制樹、以 `wait → fall → landed → fade` 控制落葉，
@@ -376,7 +373,8 @@ presentation 隱藏；不得在此新增新 Town 視覺。
   locked A 的藍天、白雲與群山；`background_forest` 改用生成的
   `autumn_forest_canopy_base_v2.png` 填滿屋頂後方空隙，中央大秋樹使用
   `autumn_ancient_tree_base_v2.png`。`background_green_ruins` 使用專用
-  `green_ruins_boundary_tower_base_v3.png` 將粗像素破敗古塔放在西側邊界；
+  `green_ruins_boundary_tower_base_v4.png` 將粗像素破敗古塔放在西側邊界，且移除
+  邊界外側沒有地面或枝幹支撐的孤立針葉樹；
   `background_green_ruins_debris` 使用
   `green_ruins_debris_bush_strip_base_v2.png`，以低矮灌木、斷牆、碎柱與落石
   橫向填滿貼地空隙；`background_green_ruins_east_edge` 使用
@@ -384,6 +382,9 @@ presentation 隱藏；不得在此新增新 Town 視覺。
   殘牆；針葉樹遵循 Base MaterialYard 的大型不對稱枝葉色塊、粗斷筆觸與有限
   明暗，不使用重複針葉紋理。三層都在秋林之前、中央大樹之後，且不建立
   collision 或 interaction。
+  `TownAmbientAnimation/ForestSwayLayers` 在固定秋林後方以十個區域各疊後、中、前
+  三層局部葉團；三層使用 `z=-88/-87/-86`、原始實色色階與不同 sway gain，
+  僅讓葉梢越過固定冠線呈現局部微動，不建立會與背景割裂的完整動畫樹。
   舊綠色 `forest_layer.png` 與
   `parallax_forest_strip_v3.png` 仍不得顯示。古樹、Base v5 不滅火炬塔身、
   Base v5 傳送門石框、八塊道路與八塊橋牆各自是可見獨立 layer；兩個地標實際 source

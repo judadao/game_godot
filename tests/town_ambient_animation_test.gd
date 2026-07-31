@@ -6,8 +6,6 @@ const AMBIENT_SCENE_PATH := (
 const BACKDROP_SCENE_PATH := "res://scenes/maps/town/components/TownBackdrop.tscn"
 const ASSET_ROOT := "res://assets/town/modular_v3/ambient/"
 const CANOPY_SHEET := ASSET_ROOT + "autumn_canopy_modules_sheet.png"
-const DROOP_SHEET := ASSET_ROOT + "autumn_foliage_droop_atlas_v1.png"
-const TRUNK_ASSET := ASSET_ROOT + "autumn_foliage_anchor_trunk_v1.png"
 const SHEETS := {
 	"Falling leaves": ASSET_ROOT + "falling_leaves_sheet.png",
 	"Bird idle": ASSET_ROOT + "bird_idle_sheet.png",
@@ -78,48 +76,6 @@ func _assert_asset_contract() -> void:
 					"Canopy region %d,%d must keep transparent corners."
 						% [column, row]
 				)
-	_expect(FileAccess.file_exists(DROOP_SHEET), "Drooping foliage atlas must exist.")
-	_expect(ResourceLoader.exists(DROOP_SHEET), "Drooping foliage atlas must import.")
-	if FileAccess.file_exists(DROOP_SHEET):
-		var droop_image := Image.load_from_file(ProjectSettings.globalize_path(DROOP_SHEET))
-		_expect(
-			droop_image.get_size() == Vector2i(1254, 1254),
-			"Drooping foliage atlas must retain four 627x627 regions."
-		)
-		_expect(
-			droop_image.detect_alpha() != Image.ALPHA_NONE,
-			"Drooping foliage atlas must retain alpha."
-		)
-		for row in 2:
-			for column in 2:
-				var region := droop_image.get_region(
-					Rect2i(column * 627, row * 627, 627, 627)
-				)
-				_expect(
-					region.get_used_rect().has_area(),
-					"Drooping foliage region %d,%d must contain visible pixels."
-						% [column, row]
-				)
-				_expect(
-					_has_transparent_corners(region),
-					"Drooping foliage region %d,%d must keep transparent corners."
-						% [column, row]
-				)
-	_expect(FileAccess.file_exists(TRUNK_ASSET), "West foliage trunk anchor must exist.")
-	_expect(ResourceLoader.exists(TRUNK_ASSET), "West foliage trunk anchor must import.")
-	if FileAccess.file_exists(TRUNK_ASSET):
-		var trunk_image := Image.load_from_file(ProjectSettings.globalize_path(TRUNK_ASSET))
-		_expect(
-			trunk_image.get_size() == Vector2i(1254, 1254),
-			"West foliage trunk anchor must retain its authored source canvas."
-		)
-		_expect(
-			trunk_image.detect_alpha() != Image.ALPHA_NONE
-				and _has_transparent_corners(trunk_image),
-			"West foliage trunk anchor must retain transparent outer corners."
-		)
-
-
 func _assert_sheet_cells(image: Image, label: String) -> void:
 	var frame_size := Vector2i(
 		image.get_width() / EXPECTED_COLUMNS,
@@ -187,12 +143,16 @@ func _assert_scene_contract() -> void:
 		"Town must animate ten foliage-only patches outside the ancient tree."
 	)
 	_expect(
-		int(contract.get("forest_patch_assets", 0)) == 10,
-		"Background forest motion must expose six general and four drooping patch shapes."
+		int(contract.get("forest_sway_sprite_layers", 0)) >= 30,
+		"Each background foliage region must stack back, middle, and front leaf layers."
 	)
 	_expect(
-		int(contract.get("forest_trunk_anchors", 0)) == 1,
-		"West material tree must keep one static trunk anchor."
+		int(contract.get("forest_patch_assets", 0)) == 3,
+		"Background forest motion must use three approved solid foliage silhouettes."
+	)
+	_expect(
+		int(contract.get("forest_trunk_anchors", -1)) == 0,
+		"Background overlays must not add complete standalone trees or trunk anchors."
 	)
 	_expect(
 		float(contract.get("calm_wait_min", 0.0)) >= 8.0,
@@ -303,23 +263,6 @@ func _assert_scene_contract() -> void:
 				"At least two canopy clusters must move during normal calm play."
 			)
 		var forest_sway_layers := ambient.get_node_or_null("ForestSwayLayers")
-		var forest_trunk := ambient.get_node_or_null(
-			"ForestTrunkAnchors/WestMaterialTreeTrunk"
-		) as Sprite2D
-		_expect(
-			forest_trunk != null,
-			"Far-west animated foliage must retain a static trunk anchor."
-		)
-		if forest_trunk != null:
-			_expect(
-				forest_trunk.texture != null
-					and forest_trunk.texture.resource_path == TRUNK_ASSET,
-				"Far-west trunk must use its replaceable authored source."
-			)
-			_expect(
-				forest_trunk.z_index == -20 and forest_trunk.scale.x <= 0.15,
-				"Far-west trunk must remain a compact static anchor behind the leaf bags."
-			)
 		_expect(
 			forest_sway_layers != null,
 			"Town must expose independently animated background foliage."
@@ -340,7 +283,7 @@ func _assert_scene_contract() -> void:
 				var base_position := pivot.position
 				var base_scale := pivot.scale
 				var base_skew := pivot.skew
-				var foliage := pivot.get_node_or_null("Sprite") as Sprite2D
+				var foliage := pivot.get_node_or_null("MidLayer") as Sprite2D
 				_expect(
 					foliage != null,
 					"%s must own one foliage-only patch." % pivot.name
@@ -356,10 +299,50 @@ func _assert_scene_contract() -> void:
 					foliage.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST,
 					"%s must keep crisp pixel edges." % pivot.name
 				)
+				var sprite_layers: Array[Sprite2D] = []
+				var layer_depths: Dictionary = {}
+				var minimum_sway_gain := INF
+				var maximum_sway_gain := -INF
+				for layer_child in pivot.get_children():
+					if not layer_child is Sprite2D:
+						continue
+					var layer_sprite := layer_child as Sprite2D
+					sprite_layers.append(layer_sprite)
+					layer_depths[layer_sprite.z_index] = true
+					var sway_gain := float(layer_sprite.get_meta("sway_gain", 0.0))
+					minimum_sway_gain = minf(minimum_sway_gain, sway_gain)
+					maximum_sway_gain = maxf(maximum_sway_gain, sway_gain)
+					_expect(
+						layer_sprite.texture is AtlasTexture,
+						"%s/%s must use one modular foliage atlas region."
+							% [pivot.name, layer_sprite.name]
+					)
+					_expect(
+						layer_sprite.modulate.a >= 0.99,
+						"%s/%s must use solid foliage; transparency cannot hide a style mismatch."
+							% [pivot.name, layer_sprite.name]
+					)
+				_expect(
+					sprite_layers.size() >= 3,
+					"%s must layer at least three leaf masses over the static forest."
+						% pivot.name
+				)
+				_expect(
+					layer_depths.has(-88)
+						and layer_depths.has(-87)
+						and layer_depths.has(-86),
+					"%s must stay behind the fixed forest on three leaf-tip planes."
+						% pivot.name
+				)
+				_expect(
+					minimum_sway_gain <= 0.5 and maximum_sway_gain >= 0.9,
+					"%s leaf layers must move at visibly different amplitudes."
+						% pivot.name
+				)
 				_expect(
 					float(pivot.get_meta("max_rotation", 0.0))
-						>= 0.035,
-					"%s must keep visible local leaf-mass motion." % pivot.name
+						>= 0.018,
+					"%s must keep subtle but visible local leaf-tip motion." % pivot.name
 				)
 				if absf(pivot.rotation) > 0.002:
 					moving_forest_patches += 1
@@ -382,16 +365,16 @@ func _assert_scene_contract() -> void:
 				"Far-west foliage must remain an authored local pivot."
 			)
 			if west_outer != null:
-				var west_main := west_outer.get_node_or_null("Sprite") as Sprite2D
-				var west_lower := west_outer.get_node_or_null("LowerFill") as Sprite2D
+				var west_main := west_outer.get_node_or_null("MidLayer") as Sprite2D
+				var west_lower := west_outer.get_node_or_null("FrontLayer") as Sprite2D
 				_expect(
 					west_main != null and west_lower != null,
-					"Far-west foliage must layer an uneven lower fill beneath its crown."
+					"Far-west foliage must layer middle and front leaf-tip silhouettes."
 				)
 				if west_main != null and west_lower != null:
 					_expect(
-						west_main.z_index == -21 and west_lower.z_index == -21,
-						"Far-west foliage must sit inside the forest plane behind the ruins."
+						west_main.z_index == -87 and west_lower.z_index == -86,
+						"Far-west foliage must remain behind the fixed forest silhouette."
 					)
 					_expect(
 						west_main.scale.x <= 0.401 and west_main.scale.y <= 0.401,
@@ -402,12 +385,12 @@ func _assert_scene_contract() -> void:
 						"Far-west lower motion must remain a small silhouette breaker."
 					)
 					_expect(
-						west_lower.position.y > west_main.position.y + 25.0,
-						"Far-west lower fill must break the crown's flat baseline."
+						west_lower.position.y > west_main.position.y,
+						"Far-west front tips must sit inside the fixed canopy silhouette."
 					)
 					_expect(
-						west_lower.position.x > west_main.position.x + 40.0,
-						"Far-west lower fill must offset into the empty roof gap."
+						west_lower.position.x < west_main.position.x,
+						"Far-west leaf-tip layers must overlap instead of forming separate trees."
 					)
 					_expect(
 						west_lower.texture is AtlasTexture
@@ -423,19 +406,19 @@ func _assert_scene_contract() -> void:
 				"Upper-west foliage must remain an authored local pivot."
 			)
 			if west_upper != null:
-				var west_upper_main := west_upper.get_node_or_null("Sprite") as Sprite2D
+				var west_upper_main := west_upper.get_node_or_null("MidLayer") as Sprite2D
 				var west_upper_lower := west_upper.get_node_or_null(
-					"LowerFragment"
+					"FrontLayer"
 				) as Sprite2D
 				_expect(
 					west_upper_main != null and west_upper_lower != null,
-					"Upper-west foliage must use separate crown and lower fragments."
+					"Upper-west foliage must use overlapping middle and front leaf tips."
 				)
 				if west_upper_main != null and west_upper_lower != null:
 					_expect(
-						west_upper_main.z_index == -21
-							and west_upper_lower.z_index == -21,
-						"Upper-west foliage must be occluded by ruins instead of floating over them."
+						west_upper_main.z_index == -87
+							and west_upper_lower.z_index == -86,
+						"Upper-west foliage must remain behind the fixed forest silhouette."
 					)
 					_expect(
 						west_upper_main.scale.x <= 0.401
@@ -443,9 +426,8 @@ func _assert_scene_contract() -> void:
 						"Upper-west motion must not redraw a complete tree crown."
 					)
 					_expect(
-						west_upper_lower.position.y
-							> west_upper_main.position.y + 25.0,
-						"Upper-west lower fragment must break the horizontal edge."
+						west_upper_lower.position.y > west_upper_main.position.y,
+						"Upper-west front tips must sit inside the fixed canopy silhouette."
 					)
 		for child in canopy_layers.get_children():
 			if child is Sprite2D and String(child.name).begins_with("LeafDrift"):
