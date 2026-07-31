@@ -364,7 +364,7 @@ presentation 隱藏；不得在此新增新 Town 視覺。
   像素群塊、手切不規則石塊、粗斷線與有限明暗；Base v5 不滅火炬以約 4×
   source-to-display pixel density 保留銅件、石縫與木旗細節，不得使用糊大塊、
   密集規整磚紋或微小噪點。Base v5 靜態圖不得烘焙頂部火焰或中央符文光；
-  `TownEternalFlameAnimation` 的三層火焰各使用 8 幀、6 FPS、loop、自動播放，
+  `TownEternalFlameAnimation` 的三層火焰各使用 8 幀、4.5 FPS、loop、自動播放，
   並以不同初始相位交錯更新；`RuneCharge` 使用 8 幀、4 FPS、loop、自動播放，
   再由 2 秒循環的 `RunePulse` 連續插值亮度與縮放，避免慢速充能有卡頓感。
   `FireLayers` 必須維持獨立物件且以火盆接觸線為縮放軸，讓後續放大或換色不影響

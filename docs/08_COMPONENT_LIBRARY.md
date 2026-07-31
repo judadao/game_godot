@@ -1575,7 +1575,7 @@ the HUD never reads gameplay state directly.
 - Responsibility：在 Base v5 不滅火炬靜態塔身上疊加彼此獨立的
   `FireLayers` 與 `RuneCharge`。`FireLayers` 內含 `FireGlow`、`TopFire`、
   `InnerFire` 三個 `AnimatedSprite2D`；`RunePulse` 只提供中央符文的連續光暈。
-- Playback contract：三層火焰各使用 8 幀、6 FPS、loop、自動播放，並以不同
+- Playback contract：三層火焰各使用 8 幀、4.5 FPS、loop、自動播放，並以不同
   frame 與 frame progress 錯開相位；`RuneCharge` 使用 8 幀、4 FPS、loop、
   自動播放，`RunePulse` 以 2 秒 loop 連續插值 alpha 與 scale。循環邊界不得
   產生位置跳動、尺寸突變、明顯亮度斷點或可感知的卡頓。

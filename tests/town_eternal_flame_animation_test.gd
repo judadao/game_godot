@@ -9,7 +9,7 @@ const BASE_TEXTURE_PATH := (
 )
 const ANIMATION_NAME := &"default"
 const EXPECTED_FRAME_COUNT := 8
-const EXPECTED_FIRE_FPS := 6.0
+const EXPECTED_FIRE_FPS := 4.5
 const EXPECTED_RUNE_FPS := 4.0
 const EXPECTED_RUNE_CYCLE_SECONDS := 2.0
 const POSITION_TOLERANCE := Vector2(4.0, 12.0)
@@ -203,7 +203,7 @@ func _assert_sprite_contract(
 	)
 	_expect(
 		is_equal_approx(frames.get_animation_speed(ANIMATION_NAME), expected_fps),
-		"%s default animation must play at %.0f FPS." % [label, expected_fps]
+		"%s default animation must play at %.1f FPS." % [label, expected_fps]
 	)
 
 	var paths: Dictionary = {}

@@ -645,7 +645,7 @@ layers 只補邊界、貼地與前景建築後方的淺色空隙，並保持在�
 中性光照；Base v5 不滅火炬以約 4× source-to-display pixel density 對齊鄰近
 Base 建築的石材、銅件與木旗精細度，並與連續石橋獨立疊放。其靜態 Base 不含
 頂部火焰及中央符文光；`TownEternalFlameAnimation.tscn` 的 `FireLayers`
-以火盆接觸線為縮放軸，使用三個相位錯開的 8 幀、6 FPS 火焰層，形成外焰、亮芯
+以火盆接觸線為縮放軸，使用三個相位錯開的 8 幀、4.5 FPS 火焰層，形成外焰、亮芯
 與柔和餘光；`RuneCharge` 使用 8 幀、4 FPS 的自動循環充能發光，並由 2 秒連續
 `RunePulse` 補足幀間亮度與縮放變化。火焰獨立分件是後續放大或換色的
 presentation 邊界；兩組不得重新烘焙進 Base，也不改變 Eternal Torch 的
