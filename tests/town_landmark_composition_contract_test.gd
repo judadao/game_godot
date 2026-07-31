@@ -16,8 +16,20 @@ const EXPECTED_SOURCE_BY_ID := {
 		"res://assets/town/modular_v3/background/green_ruins_debris_bush_strip_base_v2.png",
 	"background_green_ruins_east_edge":
 		"res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v2.png",
+	"background_green_ruins_west_edge":
+		"res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v2.png",
 	"background_ancient_town_tree":
 		"res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png",
+	"ground_transition_west_market":
+		"res://assets/town/modular_v3/ground/building_street_transition_modules_base_v2.png",
+	"ground_transition_material_forge":
+		"res://assets/town/modular_v3/ground/building_street_transition_modules_base_v2.png",
+	"ground_transition_forge_portal":
+		"res://assets/town/modular_v3/ground/building_street_transition_modules_base_v2.png",
+	"ground_transition_hall":
+		"res://assets/town/modular_v3/ground/building_street_transition_modules_base_v2.png",
+	"ground_transition_east_shops":
+		"res://assets/town/modular_v3/ground/building_street_transition_modules_base_v2.png",
 	"eternal_flame":
 		"res://assets/town/modular_v3/landmarks/eternal_forge_monument_base_v5.png",
 	"battle_portal":
@@ -40,9 +52,33 @@ const EXPECTED_PLACEMENT_BY_ID := {
 		"position": Vector2(1840, 540),
 		"target_size": Vector2(251, 360),
 	},
+	"background_green_ruins_west_edge": {
+		"position": Vector2(70, 530),
+		"target_size": Vector2(217, 310),
+	},
 	"background_ancient_town_tree": {
 		"position": Vector2(1020, 330),
 		"target_size": Vector2(720, 573),
+	},
+	"ground_transition_west_market": {
+		"position": Vector2(95, 644),
+		"target_size": Vector2(180, 46),
+	},
+	"ground_transition_material_forge": {
+		"position": Vector2(400, 644),
+		"target_size": Vector2(255, 47),
+	},
+	"ground_transition_forge_portal": {
+		"position": Vector2(760, 647),
+		"target_size": Vector2(340, 41),
+	},
+	"ground_transition_hall": {
+		"position": Vector2(1305, 645),
+		"target_size": Vector2(245, 45),
+	},
+	"ground_transition_east_shops": {
+		"position": Vector2(1700, 647),
+		"target_size": Vector2(330, 40),
 	},
 	"eternal_flame": {
 		"position": Vector2(830, 392),
@@ -52,6 +88,13 @@ const EXPECTED_PLACEMENT_BY_ID := {
 		"position": Vector2(830, 552),
 		"target_size": Vector2(200, 240),
 	},
+}
+const EXPECTED_SOURCE_REGION_BY_ID := {
+	"ground_transition_west_market": [8, 8, 426, 110],
+	"ground_transition_material_forge": [545, 16, 548, 101],
+	"ground_transition_forge_portal": [1234, 20, 799, 96],
+	"ground_transition_hall": [545, 16, 548, 101],
+	"ground_transition_east_shops": [1234, 20, 799, 96],
 }
 const OLD_BACKGROUND_LAYER_IDS := [
 	"background_mountains",
@@ -72,6 +115,7 @@ const ASPECT_LOCKED_LANDMARK_IDS := [
 	"background_green_ruins",
 	"background_green_ruins_debris",
 	"background_green_ruins_east_edge",
+	"background_green_ruins_west_edge",
 	"eternal_flame",
 	"battle_portal",
 ]
@@ -195,12 +239,14 @@ func _assert_green_ruins_midground(entries_by_id: Dictionary) -> void:
 	var ruins := _require_entry(entries_by_id, "background_green_ruins")
 	var debris := _require_entry(entries_by_id, "background_green_ruins_debris")
 	var east_edge := _require_entry(entries_by_id, "background_green_ruins_east_edge")
+	var west_edge := _require_entry(entries_by_id, "background_green_ruins_west_edge")
 	var forest := _require_entry(entries_by_id, "background_forest")
 	var ancient_tree := _require_entry(entries_by_id, "background_ancient_town_tree")
 	if (
 		ruins.is_empty()
 		or debris.is_empty()
 		or east_edge.is_empty()
+		or west_edge.is_empty()
 		or forest.is_empty()
 		or ancient_tree.is_empty()
 	):
@@ -221,16 +267,26 @@ func _assert_green_ruins_midground(entries_by_id: Dictionary) -> void:
 		"Town must use the east-edge conifer and grounded ruin cluster."
 	)
 	_expect(
+		String(west_edge.get("source", ""))
+			== String(EXPECTED_SOURCE_BY_ID["background_green_ruins_west_edge"]),
+		"Town must reuse the approved coarse-pixel ruin and shrub cluster at the west edge."
+	)
+	_expect(
 		bool(ruins.get("visible", false))
 			and bool(debris.get("visible", false))
-			and bool(east_edge.get("visible", false)),
-		"The boundary tower, debris strip, and east-edge cluster must fill pale gaps."
+			and bool(east_edge.get("visible", false))
+			and bool(west_edge.get("visible", false)),
+		"The boundary tower, debris strip, and both edge clusters must fill pale gaps."
 	)
 	_expect(
 		int(debris.get("z_index", 0)) > int(forest.get("z_index", 0))
 			and int(ruins.get("z_index", 0)) > int(debris.get("z_index", 0))
 			and int(east_edge.get("z_index", 0)) > int(debris.get("z_index", 0)),
 		"The debris, boundary tower, and east-edge cluster must render in front of the canopy."
+	)
+	_expect(
+		int(west_edge.get("z_index", 0)) > int(ruins.get("z_index", 0)),
+		"The west shrub and ruin cluster must cover the exposed edge of the boundary tower."
 	)
 	_expect(
 		int(ruins.get("z_index", 0)) < int(ancient_tree.get("z_index", 0))
@@ -240,11 +296,13 @@ func _assert_green_ruins_midground(entries_by_id: Dictionary) -> void:
 	var ownership := ruins.get("interaction_ownership", {}) as Dictionary
 	var debris_ownership := debris.get("interaction_ownership", {}) as Dictionary
 	var east_edge_ownership := east_edge.get("interaction_ownership", {}) as Dictionary
+	var west_edge_ownership := west_edge.get("interaction_ownership", {}) as Dictionary
 	_expect(
 		String(ownership.get("mode", "")) == "none"
 			and String(debris_ownership.get("mode", "")) == "none"
-			and String(east_edge_ownership.get("mode", "")) == "none",
-		"The boundary tower, debris strip, and east-edge cluster must remain visual-only."
+			and String(east_edge_ownership.get("mode", "")) == "none"
+			and String(west_edge_ownership.get("mode", "")) == "none",
+		"The boundary tower, debris strip, and edge clusters must remain visual-only."
 	)
 
 
@@ -312,6 +370,11 @@ func _assert_reference_placements(entries_by_id: Dictionary) -> void:
 		if entry.is_empty():
 			continue
 		var expected := EXPECTED_PLACEMENT_BY_ID[entry_id] as Dictionary
+		if EXPECTED_SOURCE_BY_ID.has(entry_id):
+			_expect(
+				String(entry.get("source", "")) == String(EXPECTED_SOURCE_BY_ID[entry_id]),
+				"%s must use its approved composition source." % entry_id
+			)
 		var position := entry.get("position", []) as Array
 		var target_size := entry.get("target_size", []) as Array
 		if position.size() == 2:
@@ -325,6 +388,29 @@ func _assert_reference_placements(entries_by_id: Dictionary) -> void:
 				Vector2(float(target_size[0]), float(target_size[1]))
 					== (expected["target_size"] as Vector2),
 				"%s must match the locked A reference size." % entry_id
+			)
+		if EXPECTED_SOURCE_REGION_BY_ID.has(entry_id):
+			var actual_region := entry.get("source_region", []) as Array
+			var expected_region := EXPECTED_SOURCE_REGION_BY_ID[entry_id] as Array
+			_expect(
+				actual_region.size() == 4
+					and Rect2(
+						float(actual_region[0]),
+						float(actual_region[1]),
+						float(actual_region[2]),
+						float(actual_region[3])
+					) == Rect2(
+						float(expected_region[0]),
+						float(expected_region[1]),
+						float(expected_region[2]),
+						float(expected_region[3])
+					),
+				"%s must crop one approved low street-edge module." % entry_id
+			)
+			_expect(
+				int(entry.get("z_index", 0)) == -11
+					and float(target_size[1]) <= 47.0,
+				"%s must remain a thin transition behind building foundations." % entry_id
 			)
 
 

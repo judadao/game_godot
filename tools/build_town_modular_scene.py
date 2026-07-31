@@ -60,6 +60,23 @@ def _texture_scale(layer: dict[str, Any]) -> list[float]:
 		raise FileNotFoundError(f"Missing modular Town asset: {source_file}")
 	with Image.open(source_file) as image:
 		width, height = image.size
+	region = layer.get("source_region")
+	if region is not None:
+		if not isinstance(region, list) or len(region) != 4:
+			raise ValueError(f"{layer['id']} source_region must be [x, y, width, height]")
+		x, y, region_width, region_height = (int(value) for value in region)
+		if (
+			x < 0
+			or y < 0
+			or region_width <= 0
+			or region_height <= 0
+			or x + region_width > width
+			or y + region_height > height
+		):
+			raise ValueError(
+				f"{layer['id']} source_region {region!r} exceeds {width}x{height}"
+			)
+		width, height = region_width, region_height
 	return [float(target_size[0]) / width, float(target_size[1]) / height]
 
 
@@ -103,17 +120,31 @@ def build_scene(layout_path: Path, scene_path: Path) -> None:
 	payload = json.loads(layout_path.read_text(encoding="utf-8"))
 	layers = _validate_layout(payload)
 	sources = sorted({str(layer["source"]) for layer in layers})
+	region_layers = [layer for layer in layers if "source_region" in layer]
 	resource_ids = {
 		source: f"{index + 1}_{Path(source).stem}"
 		for index, source in enumerate(sources)
 	}
 	lines = [
-		f'[gd_scene load_steps={len(sources) + 1} format=3]',
+		f'[gd_scene load_steps={len(sources) + len(region_layers) + 1} format=3]',
 		"",
 	]
 	for source in sources:
 		lines.append(
 			f'[ext_resource type="Texture2D" path="{source}" id="{resource_ids[source]}"]'
+		)
+	region_resource_ids: dict[str, str] = {}
+	for index, layer in enumerate(region_layers):
+		layer_id = str(layer["id"])
+		region_resource_id = f"{index + 1}_region_{layer_id}"
+		region_resource_ids[layer_id] = region_resource_id
+		lines.extend(
+			[
+				"",
+				f'[sub_resource type="AtlasTexture" id="{region_resource_id}"]',
+				f'atlas = ExtResource("{resource_ids[str(layer["source"])]}")',
+				f'region = Rect2({", ".join(str(int(value)) for value in layer["source_region"])})',
+			]
 		)
 	lines.extend(
 		[
@@ -142,6 +173,12 @@ def build_scene(layout_path: Path, scene_path: Path) -> None:
 		category = str(layer["category"])
 		source = str(layer["source"])
 		ownership = layer.get("interaction_ownership", {})
+		texture_reference = (
+			f'SubResource("{region_resource_ids[layer_id]}")'
+			if layer_id in region_resource_ids
+			else f'ExtResource("{resource_ids[source]}")'
+		)
+		source_region = layer.get("source_region", [])
 		lines.extend(
 			[
 				"",
@@ -150,10 +187,11 @@ def build_scene(layout_path: Path, scene_path: Path) -> None:
 				f'scale = {_vector2(_texture_scale(layer))}',
 				f'z_index = {int(layer["z_index"])}',
 				f'visible = {"true" if bool(layer["visible"]) else "false"}',
-				f'texture = ExtResource("{resource_ids[source]}")',
+				f'texture = {texture_reference}',
 				f'metadata/object_id = "{layer_id}"',
 				f'metadata/category = "{category}"',
 				f'metadata/source_asset = "{source}"',
+				f'metadata/source_region = {source_region}',
 				f'metadata/perspective_profile = "{layer.get("perspective_profile", "")}"',
 				f'metadata/interaction_mode = "{ownership.get("mode", "none")}"',
 				f'metadata/interaction_owner_scene = "{ownership.get("owner_scene", "")}"',

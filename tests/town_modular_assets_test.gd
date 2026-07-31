@@ -163,7 +163,10 @@ func _assert_generated_scene(layers: Array) -> void:
 		if not layer_variant is Dictionary:
 			continue
 		var layer := layer_variant as Dictionary
-		expected_object_ids[String(layer.get("id", ""))] = String(layer.get("source", ""))
+		expected_object_ids[String(layer.get("id", ""))] = {
+			"source": String(layer.get("source", "")),
+			"source_region": layer.get("source_region", []) as Array,
+		}
 	var actual_object_ids: Dictionary = {}
 	for sprite_variant in sprites:
 		var sprite := sprite_variant as Sprite2D
@@ -180,16 +183,41 @@ func _assert_generated_scene(layers: Array) -> void:
 		)
 		actual_object_ids[object_id] = true
 		if expected_object_ids.has(object_id):
+			var expected := expected_object_ids[object_id] as Dictionary
 			_expect(
-				source == String(expected_object_ids[object_id]),
+				source == String(expected.get("source", "")),
 				"Generated Town Sprite2D source metadata must match layout: %s" % object_id
 			)
 		_expect(sprite.texture != null, "Generated Town Sprite2D must have a texture: %s" % object_id)
 		if sprite.texture != null:
-			_expect(
-				sprite.texture.resource_path == source,
-				"Generated Town Sprite2D texture path must match source metadata: %s" % object_id
-			)
+			var expected := expected_object_ids.get(object_id, {}) as Dictionary
+			var source_region := expected.get("source_region", []) as Array
+			if source_region.is_empty():
+				_expect(
+					sprite.texture.resource_path == source,
+					"Generated Town Sprite2D texture path must match source metadata: %s" % object_id
+				)
+			else:
+				var atlas_texture := sprite.texture as AtlasTexture
+				_expect(
+					atlas_texture != null,
+					"Generated Town source_region must become an AtlasTexture: %s" % object_id
+				)
+				if atlas_texture != null:
+					_expect(
+						atlas_texture.atlas.resource_path == source,
+						"Generated Town AtlasTexture must keep its source asset: %s" % object_id
+					)
+					_expect(
+						atlas_texture.region
+							== Rect2(
+								float(source_region[0]),
+								float(source_region[1]),
+								float(source_region[2]),
+								float(source_region[3])
+							),
+						"Generated Town AtlasTexture region must match layout: %s" % object_id
+					)
 			_expect(
 				ResourceLoader.exists(source) and load(source) is Texture2D,
 				"Generated Town Sprite2D source must remain loadable: %s" % source

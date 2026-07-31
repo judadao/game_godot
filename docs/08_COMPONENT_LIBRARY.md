@@ -1611,8 +1611,9 @@ the HUD never reads gameplay state directly.
 - Owner：`TownBackdrop`
 - Status：Current — Active Runtime Presentation
 - Responsibility：以完整且不位移的 `autumn_ancient_tree_base_v2.png`、
-  八區透明樹冠模組、一張 3 × 2 街景 atlas 中三種核准實色葉團，以及三張
-  4 × 3、12 幀透明 atlas 組合古樹、左右秋林、落葉、鳥類待機與起飛／飛行。
+  八區透明樹冠模組、一張 3 × 2 街景 atlas 中三種核准實色葉團、四個屋後
+  branch anchors，以及三張 4 × 3、12 幀透明 atlas 組合古樹、左右秋林、
+  獨立單葉、路緣小堆、鳥類待機與起飛／飛行。
 - Motion contract：完整古樹永遠保持固定；一般狀態下八組樹冠以
   `4.3–5.6` 秒不同週期低幅擺動，並以 `5.7–7.8` 秒週期穿插短暫稀疏抖葉。
   建築間露出的左右外冠另保留 `1.8×` calm gain，確保一般遊玩可見。
@@ -1625,19 +1626,25 @@ the HUD never reads gameplay state directly.
   只允許葉梢越過既有冠線，透明度不得用來掩蓋畫風差異。各區域以不同 `4.2–5.6` 秒 calm 與
   `5.8–7.6` 秒 rustle 週期在隱藏支點低幅旋轉。pivot position／scale／skew
   固定，只讓局部樹梢表面不同步晃動，不移動
-  原始背景樹或形成同步水波。五組落葉
-  全部從中央樹冠 `x=720–1200, y=145–270` 出生並只向下移動，接近
-  `y=624–626` 後停留約 1.8–2.4 秒再原地淡出。十個鳥停棲點
-  分為七個屋頂與三個地面，待機循環為 3 FPS，等待 10–22 秒或 Player 靠近才
-  起飛；同群以 0.12 秒錯時依序離開，飛離後 9–18 秒返回 authored perch。
+  原始背景樹或形成同步水波。四個 house-edge pivot 只使用兩層方向不同的枝端，
+  主枝保持在建築後方 `z=-11`，根部必須由屋簷／招牌遮住。二十四個獨立單葉
+  由中央樹冠或屋後樹冠出生，只向下移動到街道、屋頂或建築平台；runtime scale
+  為 authored scale 的 `0.48`，停留後原地淡出。三個路緣小堆各由五片扁平葉
+  組成，使用 40 秒淡入／長時間停留／淡出／短暫隱藏週期。十六個鳥停棲點分為
+  十四個屋頂／石座與兩個地面位置；鳥只循環側面站姿列，使用冷深藍褐剪影，
+  預設 scale 為 `0.065`，主要建築停棲點由 metadata 提升至 `0.105`；等待
+  45–72 秒或 Player 靠近才
+  起飛，同群以 0.12 秒錯時依序離開，飛離後 5–8 秒返回 authored perch。
 - Composition contract：完整古樹保留正確樹幹方向並位於建築後方；額外樹冠
   必須鎖在中央樹的可追溯枝幹接點，前後層配色一致，不得形成邊界浮空斷枝。
   十組街景 foliage patches 必須沒有可見樹幹、枝根或完整圓形樹冠，並嵌入
   屋頂後方的既有秋林。三層葉團必須互相重疊，禁止長水平底緣、楔形尖頭或
   窄頸漂浮葉帶；不得成為浮在天空中的獨立灌木或整棵搖動的小樹，也不得新增
   樹幹。固定秋林必須遮住動態葉團底部，只留下有根據的局部葉梢 sway。
-  落葉保持稀疏且 y 單調下降，不得
-  半空消失或往左上倒飛；整體氛圍應悠閒而非暴風。
+  落葉保持稀疏且 y 單調下降，不得半空消失或往左上倒飛；單葉可讀尺寸不得
+  退化為大型貼紙，路緣堆必須保持低矮且避開 NPC／UI。鳥的 authored perches
+  必須跨 west tower、forge、portal 與 clockhouse 可讀，不得只集中西側。
+  整體氛圍應悠閒而非暴風。
 - Boundary：只擁有 presentation。不得新增 collision、interaction、NPC、
   reward、save state 或 Town progression。
 

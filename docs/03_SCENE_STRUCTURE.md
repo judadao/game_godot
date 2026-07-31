@@ -202,8 +202,11 @@ presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 `TownBackdrop/AmbientAnimation` instance
 `TownAmbientAnimation.tscn`；`CanopyLayers/AncientTreeWind` 以完整古樹與
 固定為零的 root-anchored shader 保存正確樹幹方向與穩定基底；
-`CanopyClusters` 以八組上冠、外冠、後景與前景葉簇鎖在同一棵樹的枝幹接點，
-五組落葉都從中央樹冠範圍保存起點與近地終點。calm 狀態仍以各層獨立週期保持低幅
+`CanopyClusters` 以八組上冠、外冠、後景與前景葉簇鎖在同一棵樹的枝幹接點；
+`HouseSwayLayers` 另有四個根部由屋簷／招牌遮住的屋後枝葉錨點。
+二十四個獨立單葉保存中央／屋後起點與街道、屋頂、建築平台終點，三個
+`SettledLeafPiles` 各以五片扁平葉形成 `40` 秒淡入、長時間停留、淡出與短暫隱藏的
+路緣小堆。calm 狀態仍以各層獨立週期保持低幅
 擺動與短暫抖葉，gust 才提高整段順風形變。
 `ForestSwayLayers` 另保存十個 editor-authored foliage pivot，分布於西側、
 左右內側與東側屋頂後方；每個 pivot 使用 3 × 2 atlas 中三種粗像素實色葉團，
@@ -211,15 +214,19 @@ presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 因此只讓葉梢越過既有冠線；底部、水平切面與枝端接縫由固定秋林遮住。
 pivot 固定 position／scale／skew 並以不同週期小幅旋轉，各層另保留 sway gain
 差異。原始秋林底圖與整棵樹不移動，禁止新增樹幹、完整小樹或浮空圓冠。
-`BirdPerches` 保存七個屋頂與三個地面停棲點。全部是 editor-visible、
-visual-only node；runtime script 以
+`BirdPerches` 保存十四個屋頂／石座與兩個地面停棲點，並在 west tower、forge、
+portal 與 clockhouse 之間分散。全部是 editor-visible、
+visual-only node；屋頂停棲只循環側面站姿列，預設 scale 為 `0.065`，主要建築
+停棲點由 metadata 使用 `0.105`。runtime script 以
 `calm → gust → settle` 控制樹、以 `wait → fall → landed → fade` 控制落葉，
 並管理鳥的待機／群組起飛／飛離／返回狀態，不建立碰撞或第二套 NPC ownership。
 `res://data/town_modular_layout.json` 仍在 `1942 × 809` source canvas 定義
 layout-defined background、ground、facility、landmark 與 street-prop candidates；
 `tools/build_town_modular_scene.py` 將資料生成為靜態
 `TownModularVisuals.tscn`，其 instance 在 runtime visible，並與 Figma
-逐件討論頁共用相同位置與來源資料。
+逐件討論頁共用相同位置與來源資料。generator 支援 optional `source_region`，
+目前將一張三模組街緣 atlas 裁成五段低矮、入口有斷口且位於建築基座後方的
+ground sprites，不再以單張全寬 strip 覆蓋街道。
 `TownEternalForgeIdentity.tscn` 仍持有八個可編輯中文地點標籤、區域光暈與
 landmark identity。六個建築標籤預設 hidden，由
 `scripts/maps/town_location_labels.gd` 監聽對應 BuildingEntrance 的

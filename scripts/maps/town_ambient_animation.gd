@@ -27,13 +27,17 @@ const BIRD_FLIGHT_TEXTURE: Texture2D = preload(
 @export_range(4.0, 30.0, 0.5) var calm_wait_max := 18.0
 @export_range(1.0, 8.0, 0.1) var gust_duration_min := 3.2
 @export_range(1.0, 10.0, 0.1) var gust_duration_max := 4.8
-@export_range(6.0, 30.0, 0.5) var idle_wait_min := 10.0
-@export_range(8.0, 45.0, 0.5) var idle_wait_max := 22.0
-@export_range(5.0, 30.0, 0.5) var away_wait_min := 9.0
-@export_range(8.0, 45.0, 0.5) var away_wait_max := 18.0
+@export_range(12.0, 90.0, 0.5) var idle_wait_min := 45.0
+@export_range(18.0, 120.0, 0.5) var idle_wait_max := 72.0
+@export_range(3.0, 15.0, 0.5) var away_wait_min := 5.0
+@export_range(5.0, 20.0, 0.5) var away_wait_max := 8.0
+@export_range(0.25, 1.0, 0.01) var leaf_visual_scale := 0.48
+@export_range(0.04, 0.12, 0.005) var bird_visual_scale := 0.065
 
 @onready var canopy_layers: Node2D = $CanopyLayers
 @onready var forest_sway_layers: Node2D = $ForestSwayLayers
+@onready var house_sway_layers: Node2D = $HouseSwayLayers
+@onready var settled_leaf_piles: Node2D = $SettledLeafPiles
 @onready var bird_perches: Node2D = $BirdPerches
 @onready var ancient_tree: Sprite2D = $CanopyLayers/AncientTreeWind
 
@@ -63,6 +67,9 @@ func _ready() -> void:
 	for child in forest_sway_layers.get_children():
 		if child is Node2D:
 			_register_forest_sway_cluster(child as Node2D)
+	for child in house_sway_layers.get_children():
+		if child is Node2D:
+			_register_forest_sway_cluster(child as Node2D)
 	_tree_material = ancient_tree.material as ShaderMaterial
 	for child in canopy_layers.get_children():
 		if child is Sprite2D and String(child.name).begins_with("LeafDrift"):
@@ -81,6 +88,7 @@ func _process(delta: float) -> void:
 	_update_wind(delta)
 	for leaf_index in _leaf_streams.size():
 		_update_leaf_stream(leaf_index, delta)
+	_update_settled_leaf_piles()
 	for bird_index in _birds.size():
 		_update_bird(bird_index, delta)
 
@@ -88,6 +96,9 @@ func _process(delta: float) -> void:
 func get_ambient_contract() -> Dictionary:
 	var roof_perches := 0
 	var ground_perches := 0
+	var street_leaf_landings := 0
+	var roof_leaf_landings := 0
+	var building_leaf_landings := 0
 	for bird in _birds:
 		var sprite: Sprite2D = bird["sprite"] as Sprite2D
 		var perch_kind := String(sprite.get_meta("perch_kind", ""))
@@ -95,20 +106,37 @@ func get_ambient_contract() -> Dictionary:
 			roof_perches += 1
 		elif perch_kind == "ground":
 			ground_perches += 1
+	for leaf in _leaf_streams:
+		var leaf_sprite := leaf["sprite"] as Sprite2D
+		match String(leaf_sprite.get_meta("landing_surface", "")):
+			"street":
+				street_leaf_landings += 1
+			"roof":
+				roof_leaf_landings += 1
+			"building":
+				building_leaf_landings += 1
 	return {
 		"frame_count": FRAME_COUNT,
 		"ancient_tree_source": ancient_tree.texture.resource_path,
 		"tree_base_static": true,
 		"calm_canopy_motion": true,
 		"canopy_clusters": _canopy_clusters.size(),
-		"forest_sway_clusters": _forest_sway_clusters.size(),
+		"forest_sway_clusters": forest_sway_layers.get_child_count(),
+		"house_sway_clusters": house_sway_layers.get_child_count(),
+		"total_sway_clusters": _forest_sway_clusters.size(),
 		"forest_sway_sprite_layers": _forest_sway_sprite_layer_count,
 		"forest_patch_assets": 3,
 		"forest_trunk_anchors": 0,
 		"leaf_streams": _leaf_streams.size(),
+		"street_leaf_landings": street_leaf_landings,
+		"roof_leaf_landings": roof_leaf_landings,
+		"building_leaf_landings": building_leaf_landings,
+		"settled_leaf_piles": settled_leaf_piles.get_child_count(),
+		"leaf_visual_scale": leaf_visual_scale,
 		"bird_count": _birds.size(),
 		"roof_perches": roof_perches,
 		"ground_perches": ground_perches,
+		"bird_visual_scale": bird_visual_scale,
 		"calm_wait_min": calm_wait_min,
 		"idle_wait_min": idle_wait_min,
 		"idle_wait_max": idle_wait_max,
@@ -168,6 +196,7 @@ func _register_forest_sway_cluster(pivot: Node2D) -> void:
 
 
 func _register_leaf_stream(sprite: Sprite2D) -> void:
+	sprite.scale *= leaf_visual_scale
 	var base_color := sprite.modulate
 	var initial_delay := float(sprite.get_meta("initial_delay", 0.0))
 	_leaf_streams.append({
@@ -177,6 +206,8 @@ func _register_leaf_stream(sprite: Sprite2D) -> void:
 		"drift_x": float(sprite.get_meta("drift_x", 140.0)),
 		"duration": float(sprite.get_meta("fall_duration", 8.0)),
 		"hold": float(sprite.get_meta("ground_hold", 1.8)),
+		"landing_rotation": float(sprite.get_meta("landing_rotation", 0.0)),
+		"fade_duration": float(sprite.get_meta("fade_duration", 1.2)),
 		"wait_min": float(sprite.get_meta("wait_min", 3.0)),
 		"wait_max": float(sprite.get_meta("wait_max", 8.0)),
 		"phase": _rng.randf_range(0.0, TAU),
@@ -186,6 +217,23 @@ func _register_leaf_stream(sprite: Sprite2D) -> void:
 		"wait": _rng.randf_range(0.5, 3.0),
 	})
 	sprite.visible = false
+
+
+func _update_settled_leaf_piles() -> void:
+	for child in settled_leaf_piles.get_children():
+		var pile := child as Node2D
+		if pile == null:
+			continue
+		var phase := float(pile.get_meta("phase", 0.0))
+		var cycle := fposmod(_ambient_time + phase, 40.0)
+		var alpha := 0.0
+		if cycle < 2.0:
+			alpha = cycle / 2.0
+		elif cycle < 32.0:
+			alpha = 1.0
+		elif cycle < 36.0:
+			alpha = 1.0 - (cycle - 32.0) / 4.0
+		pile.modulate.a = alpha
 
 
 func _register_bird(sprite: Sprite2D) -> void:
@@ -198,8 +246,13 @@ func _register_bird(sprite: Sprite2D) -> void:
 		if raw_offset is Vector2
 		else Vector2(150.0, -42.0)
 	)
+	var perch_kind := String(sprite.get_meta("perch_kind", "roof"))
+	var idle_frame_count := 4 if perch_kind == "roof" else FRAME_COUNT
+	var authored_scale := float(sprite.get_meta("visual_scale", bird_visual_scale))
 	sprite.texture = BIRD_IDLE_TEXTURE
-	sprite.frame = _rng.randi_range(0, FRAME_COUNT - 1)
+	sprite.scale = Vector2.ONE * authored_scale
+	sprite.modulate = Color(0.52, 0.68, 0.95, 1.0)
+	sprite.frame = _rng.randi_range(0, idle_frame_count - 1)
 	_birds.append({
 		"sprite": sprite,
 		"perch": sprite.position,
@@ -210,6 +263,7 @@ func _register_bird(sprite: Sprite2D) -> void:
 		"timer": _rng.randf_range(0.0, 3.0),
 		"wait": _rng.randf_range(idle_wait_min, idle_wait_max),
 		"phase": float(sprite.frame),
+		"idle_frame_count": idle_frame_count,
 		"direction": 1.0,
 	})
 
@@ -420,12 +474,16 @@ func _update_leaf_stream(leaf_index: int, delta: float) -> void:
 				leaf["state"] = LEAF_LANDED
 				leaf["timer"] = 0.0
 		LEAF_LANDED:
-			sprite.rotation = lerpf(sprite.rotation, 0.0, delta * 3.0)
+			sprite.rotation = lerpf(
+				sprite.rotation,
+				float(leaf["landing_rotation"]),
+				delta * 3.0
+			)
 			if timer >= float(leaf["hold"]):
 				leaf["state"] = LEAF_FADE
 				leaf["timer"] = 0.0
 		LEAF_FADE:
-			var fade_progress := clampf(timer / 1.2, 0.0, 1.0)
+			var fade_progress := clampf(timer / float(leaf["fade_duration"]), 0.0, 1.0)
 			var base_color := leaf["base_color"] as Color
 			sprite.modulate = Color(
 				base_color.r,
@@ -457,7 +515,7 @@ func _update_bird(bird_index: int, delta: float) -> void:
 			sprite.texture = BIRD_IDLE_TEXTURE
 			sprite.frame = (
 				int(floor(timer * BIRD_IDLE_FPS + float(bird["phase"])))
-				% FRAME_COUNT
+				% int(bird["idle_frame_count"])
 			)
 			if _should_takeoff(sprite, timer, float(bird["wait"])):
 				_birds[bird_index] = bird
@@ -575,7 +633,7 @@ func _reset_bird(bird: Dictionary) -> void:
 	sprite.visible = true
 	sprite.texture = BIRD_IDLE_TEXTURE
 	sprite.position = bird["perch"] as Vector2
-	sprite.frame = _rng.randi_range(0, FRAME_COUNT - 1)
+	sprite.frame = _rng.randi_range(0, int(bird["idle_frame_count"]) - 1)
 	sprite.flip_h = _rng.randi_range(0, 1) == 0
 	bird["state"] = BIRD_IDLE
 	bird["timer"] = 0.0

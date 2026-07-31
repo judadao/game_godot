@@ -125,12 +125,113 @@
       }
     },
     {
+      "id": "background_green_ruins_west_edge",
+      "category": "background",
+      "source": "res://assets/town/modular_v3/background/green_ruins_east_edge_cluster_base_v2.png",
+      "position": [70, 530],
+      "target_size": [217, 310],
+      "z_index": -82,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
       "id": "background_ancient_town_tree",
       "category": "background",
       "source": "res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png",
       "position": [1020, 330],
       "target_size": [720, 573],
       "z_index": -82,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "ground_transition_west_market",
+      "category": "ground",
+      "source": "res://assets/town/modular_v3/ground/building_street_transition_modules_base_v2.png",
+      "source_region": [8, 8, 426, 110],
+      "position": [95, 644],
+      "target_size": [180, 46],
+      "z_index": -11,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "ground_transition_material_forge",
+      "category": "ground",
+      "source": "res://assets/town/modular_v3/ground/building_street_transition_modules_base_v2.png",
+      "source_region": [545, 16, 548, 101],
+      "position": [400, 644],
+      "target_size": [255, 47],
+      "z_index": -11,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "ground_transition_forge_portal",
+      "category": "ground",
+      "source": "res://assets/town/modular_v3/ground/building_street_transition_modules_base_v2.png",
+      "source_region": [1234, 20, 799, 96],
+      "position": [760, 647],
+      "target_size": [340, 41],
+      "z_index": -11,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "ground_transition_hall",
+      "category": "ground",
+      "source": "res://assets/town/modular_v3/ground/building_street_transition_modules_base_v2.png",
+      "source_region": [545, 16, 548, 101],
+      "position": [1305, 645],
+      "target_size": [245, 45],
+      "z_index": -11,
+      "visible": true,
+      "interaction_ownership": {
+        "mode": "none",
+        "owner_scene": "",
+        "node_path": "",
+        "interaction_id": "",
+        "service_id": ""
+      }
+    },
+    {
+      "id": "ground_transition_east_shops",
+      "category": "ground",
+      "source": "res://assets/town/modular_v3/ground/building_street_transition_modules_base_v2.png",
+      "source_region": [1234, 20, 799, 96],
+      "position": [1700, 647],
+      "target_size": [330, 40],
+      "z_index": -11,
       "visible": true,
       "interaction_ownership": {
         "mode": "none",

@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/maps/town_ambient_animation.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png" id="2_ancient_tree"]
@@ -40,6 +40,30 @@ region = Rect2(1024, 0, 512, 512)
 [sub_resource type="AtlasTexture" id="AtlasTexture_foliage_3"]
 atlas = ExtResource("7_foliage_patches")
 region = Rect2(0, 512, 512, 512)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_leaf_maple"]
+atlas = ExtResource("4_leaves")
+region = Rect2(44, 136, 62, 66)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_leaf_oak"]
+atlas = ExtResource("4_leaves")
+region = Rect2(108, 110, 48, 58)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_leaf_small_maple"]
+atlas = ExtResource("4_leaves")
+region = Rect2(206, 106, 48, 44)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_leaf_slender"]
+atlas = ExtResource("4_leaves")
+region = Rect2(38, 60, 44, 46)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_leaf_curl"]
+atlas = ExtResource("4_leaves")
+region = Rect2(238, 194, 40, 46)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_leaf_side"]
+atlas = ExtResource("4_leaves")
+region = Rect2(136, 202, 44, 32)
 
 [node name="TownAmbientAnimation" type="Node2D"]
 script = ExtResource("1_script")
@@ -539,88 +563,710 @@ texture = SubResource("AtlasTexture_foliage_2")
 flip_h = true
 metadata/sway_gain = 1.00
 
-[node name="LeafDriftWestA" type="Sprite2D" parent="CanopyLayers"]
-modulate = Color(0.92, 0.86, 0.78, 0.82)
-position = Vector2(720, 270)
-scale = Vector2(0.4, 0.4)
+[node name="HouseSwayLayers" type="Node2D" parent="."]
+
+[node name="WestBoundaryBranch" type="Node2D" parent="HouseSwayLayers"]
+position = Vector2(36, 528)
+metadata/max_rotation = 0.018
+metadata/phase = 0.35
+metadata/calm_period = 5.8
+metadata/rustle_period = 7.4
+
+[node name="BackBranch" type="Sprite2D" parent="HouseSwayLayers/WestBoundaryBranch"]
+position = Vector2(-18, -34)
+rotation = -0.085
+scale = Vector2(0.13, 0.13)
+z_index = -11
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_ll")
+flip_h = true
+metadata/sway_gain = 0.45
+
+[node name="FrontTips" type="Sprite2D" parent="HouseSwayLayers/WestBoundaryBranch"]
+position = Vector2(18, -12)
+rotation = -0.12
+scale = Vector2(0.05, 0.05)
+z_index = -9
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_lr")
+flip_h = true
+metadata/sway_gain = 0.72
+
+[node name="MaterialYardRearBranch" type="Node2D" parent="HouseSwayLayers"]
+position = Vector2(286, 466)
+metadata/max_rotation = 0.021
+metadata/phase = 1.2
+metadata/calm_period = 5.1
+metadata/rustle_period = 6.8
+
+[node name="BackBranch" type="Sprite2D" parent="HouseSwayLayers/MaterialYardRearBranch"]
+position = Vector2(-6, -38)
+rotation = 0.07
+scale = Vector2(0.12, 0.12)
+z_index = -11
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_ur")
+flip_h = true
+metadata/sway_gain = 0.45
+
+[node name="FrontTips" type="Sprite2D" parent="HouseSwayLayers/MaterialYardRearBranch"]
+position = Vector2(-24, -5)
+rotation = 0.11
+scale = Vector2(0.045, 0.045)
+z_index = -9
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_ul")
+metadata/sway_gain = 0.72
+
+[node name="ForgeRearBranch" type="Node2D" parent="HouseSwayLayers"]
+position = Vector2(570, 445)
+metadata/max_rotation = 0.019
+metadata/phase = 2.05
+metadata/calm_period = 5.5
+metadata/rustle_period = 7.2
+
+[node name="BackBranch" type="Sprite2D" parent="HouseSwayLayers/ForgeRearBranch"]
+position = Vector2(8, -42)
+rotation = -0.06
+scale = Vector2(0.125, 0.125)
+z_index = -11
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_lr")
+metadata/sway_gain = 0.45
+
+[node name="FrontTips" type="Sprite2D" parent="HouseSwayLayers/ForgeRearBranch"]
+position = Vector2(-12, -20)
+rotation = -0.1
+scale = Vector2(0.05, 0.05)
+z_index = -11
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_ur")
+flip_h = true
+metadata/sway_gain = 0.72
+
+[node name="EastTreeRoofBranch" type="Node2D" parent="HouseSwayLayers"]
+position = Vector2(1608, 456)
+metadata/max_rotation = 0.022
+metadata/phase = 3.75
+metadata/calm_period = 4.9
+metadata/rustle_period = 6.4
+
+[node name="BackBranch" type="Sprite2D" parent="HouseSwayLayers/EastTreeRoofBranch"]
+position = Vector2(20, -44)
+rotation = 0.09
+scale = Vector2(0.135, 0.135)
+z_index = -11
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_ul")
+flip_h = true
+metadata/sway_gain = 0.45
+
+[node name="FrontTips" type="Sprite2D" parent="HouseSwayLayers/EastTreeRoofBranch"]
+position = Vector2(-26, -6)
+rotation = 0.13
+scale = Vector2(0.05, 0.05)
+z_index = -9
+texture_filter = 1
+texture = SubResource("AtlasTexture_canopy_lr")
+metadata/sway_gain = 0.72
+
+[node name="LeafDriftStreetWestA" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(140, 350)
+scale = Vector2(0.55, 0.55)
 z_index = -5
 texture_filter = 1
-texture = ExtResource("4_leaves")
-hframes = 4
-vframes = 3
+texture = SubResource("AtlasTexture_leaf_maple")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "street"
 metadata/landing_y = 624.0
-metadata/drift_x = 145.0
-metadata/fall_duration = 8.4
-metadata/ground_hold = 2.2
-metadata/initial_delay = 0.2
+metadata/drift_x = 70.0
+metadata/fall_duration = 9.4
+metadata/ground_hold = 6
+metadata/initial_delay = 0.4
+metadata/landing_rotation = 0.05
+metadata/fade_duration = 1.6
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
 
-[node name="LeafDriftWestB" type="Sprite2D" parent="CanopyLayers"]
-modulate = Color(0.92, 0.86, 0.78, 0.78)
-position = Vector2(835, 190)
-scale = Vector2(0.36, 0.36)
+[node name="LeafDriftStreetWestB" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(420, 330)
+scale = Vector2(0.62, 0.62)
 z_index = -5
 texture_filter = 1
-texture = ExtResource("4_leaves")
-hframes = 4
-vframes = 3
-frame = 4
-metadata/landing_y = 626.0
-metadata/drift_x = 120.0
-metadata/fall_duration = 9.2
-metadata/ground_hold = 1.8
-metadata/initial_delay = 2.4
-
-[node name="LeafDriftCenter" type="Sprite2D" parent="CanopyLayers"]
-modulate = Color(0.92, 0.86, 0.78, 0.8)
-position = Vector2(955, 145)
-scale = Vector2(0.4, 0.4)
-z_index = -5
-texture_filter = 1
-texture = ExtResource("4_leaves")
-hframes = 4
-vframes = 3
-frame = 8
+texture = SubResource("AtlasTexture_leaf_oak")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "street"
 metadata/landing_y = 625.0
-metadata/drift_x = 160.0
-metadata/fall_duration = 9.8
-metadata/ground_hold = 2.4
-metadata/initial_delay = 1.2
+metadata/drift_x = 85.0
+metadata/fall_duration = 10.2
+metadata/ground_hold = 5.4
+metadata/initial_delay = 2.1
+metadata/landing_rotation = -0.08
+metadata/fade_duration = 1.8
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
 
-[node name="LeafDriftEastA" type="Sprite2D" parent="CanopyLayers"]
-modulate = Color(0.92, 0.86, 0.78, 0.82)
-position = Vector2(1085, 175)
-scale = Vector2(0.38, 0.38)
+[node name="LeafDriftStreetCenterA" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(720, 250)
+scale = Vector2(0.58, 0.58)
 z_index = -5
 texture_filter = 1
-texture = ExtResource("4_leaves")
-hframes = 4
-vframes = 3
-metadata/landing_y = 625.0
-metadata/drift_x = 135.0
+texture = SubResource("AtlasTexture_leaf_small_maple")
+metadata/origin_kind = "central_tree"
+metadata/landing_surface = "street"
+metadata/landing_y = 624.0
+metadata/drift_x = 95.0
 metadata/fall_duration = 8.8
-metadata/ground_hold = 2.0
-metadata/initial_delay = 3.4
+metadata/ground_hold = 6.8
+metadata/initial_delay = 1.2
+metadata/landing_rotation = 0.02
+metadata/fade_duration = 1.5
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
 
-[node name="LeafDriftEastB" type="Sprite2D" parent="CanopyLayers"]
-modulate = Color(0.92, 0.86, 0.78, 0.76)
-position = Vector2(1200, 245)
-scale = Vector2(0.34, 0.34)
+[node name="LeafDriftStreetCenterB" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(900, 180)
+scale = Vector2(0.64, 0.64)
 z_index = -5
 texture_filter = 1
-texture = ExtResource("4_leaves")
-hframes = 4
-vframes = 3
-frame = 4
+texture = SubResource("AtlasTexture_leaf_slender")
+metadata/origin_kind = "central_tree"
+metadata/landing_surface = "street"
 metadata/landing_y = 626.0
 metadata/drift_x = 110.0
-metadata/fall_duration = 9.5
-metadata/ground_hold = 2.3
-metadata/initial_delay = 4.8
+metadata/fall_duration = 9.6
+metadata/ground_hold = 5.8
+metadata/initial_delay = 3.5
+metadata/landing_rotation = -0.04
+metadata/fade_duration = 1.7
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftStreetCenterC" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(1100, 190)
+scale = Vector2(0.6, 0.6)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_curl")
+metadata/origin_kind = "central_tree"
+metadata/landing_surface = "street"
+metadata/landing_y = 625.0
+metadata/drift_x = 90.0
+metadata/fall_duration = 10.5
+metadata/ground_hold = 7.2
+metadata/initial_delay = 0.8
+metadata/landing_rotation = 0.06
+metadata/fade_duration = 1.9
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftStreetCenterD" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(1250, 250)
+scale = Vector2(0.68, 0.68)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_side")
+metadata/origin_kind = "central_tree"
+metadata/landing_surface = "street"
+metadata/landing_y = 624.0
+metadata/drift_x = 75.0
+metadata/fall_duration = 9.2
+metadata/ground_hold = 6.4
+metadata/initial_delay = 4.2
+metadata/landing_rotation = -0.03
+metadata/fade_duration = 1.6
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftStreetEastA" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(1500, 330)
+scale = Vector2(0.52, 0.52)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_maple")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "street"
+metadata/landing_y = 626.0
+metadata/drift_x = 88.0
+metadata/fall_duration = 10.8
+metadata/ground_hold = 5.6
+metadata/initial_delay = 2.8
+metadata/landing_rotation = 0.07
+metadata/fade_duration = 1.8
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftStreetEastB" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(1750, 350)
+scale = Vector2(0.6, 0.6)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_oak")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "street"
+metadata/landing_y = 625.0
+metadata/drift_x = 72.0
+metadata/fall_duration = 11.2
+metadata/ground_hold = 6.6
+metadata/initial_delay = 5
+metadata/landing_rotation = -0.05
+metadata/fade_duration = 2
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftRoofWest" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(180, 260)
+scale = Vector2(0.56, 0.56)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_small_maple")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "roof"
+metadata/landing_y = 470.0
+metadata/drift_x = 35.0
+metadata/fall_duration = 7.8
+metadata/ground_hold = 5.2
+metadata/initial_delay = 1.8
+metadata/landing_rotation = -0.18
+metadata/fade_duration = 1.5
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftRoofForge" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(500, 260)
+scale = Vector2(0.62, 0.62)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_slender")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "roof"
+metadata/landing_y = 430.0
+metadata/drift_x = 42.0
+metadata/fall_duration = 8.4
+metadata/ground_hold = 4.8
+metadata/initial_delay = 3.8
+metadata/landing_rotation = 0.14
+metadata/fade_duration = 1.6
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftRoofHall" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(1320, 250)
+scale = Vector2(0.58, 0.58)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_curl")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "roof"
+metadata/landing_y = 445.0
+metadata/drift_x = 38.0
+metadata/fall_duration = 8
+metadata/ground_hold = 5.8
+metadata/initial_delay = 2.6
+metadata/landing_rotation = -0.12
+metadata/fade_duration = 1.7
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftRoofEast" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(1650, 260)
+scale = Vector2(0.66, 0.66)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_side")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "roof"
+metadata/landing_y = 455.0
+metadata/drift_x = 40.0
+metadata/fall_duration = 8.6
+metadata/ground_hold = 5
+metadata/initial_delay = 4.7
+metadata/landing_rotation = 0.16
+metadata/fade_duration = 1.8
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftBuildingRuins" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(260, 180)
+scale = Vector2(0.54, 0.54)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_oak")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "building"
+metadata/landing_y = 390.0
+metadata/drift_x = 28.0
+metadata/fall_duration = 7.5
+metadata/ground_hold = 4.5
+metadata/initial_delay = 0.9
+metadata/landing_rotation = -0.1
+metadata/fade_duration = 1.4
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftBuildingForge" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(650, 250)
+scale = Vector2(0.5, 0.5)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_maple")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "building"
+metadata/landing_y = 520.0
+metadata/drift_x = 45.0
+metadata/fall_duration = 9
+metadata/ground_hold = 4.2
+metadata/initial_delay = 3
+metadata/landing_rotation = 0.09
+metadata/fade_duration = 1.5
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftBuildingHall" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(1400, 240)
+scale = Vector2(0.58, 0.58)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_small_maple")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "building"
+metadata/landing_y = 515.0
+metadata/drift_x = 40.0
+metadata/fall_duration = 8.8
+metadata/ground_hold = 5
+metadata/initial_delay = 2
+metadata/landing_rotation = -0.07
+metadata/fade_duration = 1.6
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftBuildingEast" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(1800, 260)
+scale = Vector2(0.56, 0.56)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_curl")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "building"
+metadata/landing_y = 525.0
+metadata/drift_x = 36.0
+metadata/fall_duration = 9.4
+metadata/ground_hold = 4.6
+metadata/initial_delay = 5.3
+metadata/landing_rotation = 0.11
+metadata/fade_duration = 1.7
+metadata/wait_min = 2.5
+metadata/wait_max = 9.0
+
+[node name="LeafDriftPileWestA" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(158, 420)
+scale = Vector2(0.48, 0.48)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_maple")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "street"
+metadata/landing_y = 625.0
+metadata/drift_x = 42.0
+metadata/fall_duration = 6.8
+metadata/ground_hold = 13.0
+metadata/initial_delay = 0.2
+metadata/landing_rotation = -0.18
+metadata/fade_duration = 2.8
+metadata/wait_min = 6.0
+metadata/wait_max = 12.0
+
+[node name="LeafDriftPileWestB" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(182, 390)
+scale = Vector2(0.45, 0.45)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_oak")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "street"
+metadata/landing_y = 625.0
+metadata/drift_x = 20.0
+metadata/fall_duration = 7.4
+metadata/ground_hold = 14.0
+metadata/initial_delay = 1.0
+metadata/landing_rotation = 0.22
+metadata/fade_duration = 3.0
+metadata/wait_min = 6.0
+metadata/wait_max = 12.0
+
+[node name="LeafDriftPilePortalA" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(930, 310)
+scale = Vector2(0.5, 0.5)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_small_maple")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "street"
+metadata/landing_y = 624.0
+metadata/drift_x = 35.0
+metadata/fall_duration = 7.6
+metadata/ground_hold = 12.5
+metadata/initial_delay = 0.6
+metadata/landing_rotation = -0.12
+metadata/fade_duration = 2.6
+metadata/wait_min = 6.0
+metadata/wait_max = 12.0
+
+[node name="LeafDriftPilePortalB" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(958, 280)
+scale = Vector2(0.46, 0.46)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_side")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "street"
+metadata/landing_y = 624.0
+metadata/drift_x = 10.0
+metadata/fall_duration = 8.0
+metadata/ground_hold = 13.5
+metadata/initial_delay = 1.4
+metadata/landing_rotation = 0.16
+metadata/fade_duration = 2.8
+metadata/wait_min = 6.0
+metadata/wait_max = 12.0
+
+[node name="LeafDriftPileEastA" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(1668, 410)
+scale = Vector2(0.52, 0.52)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_curl")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "street"
+metadata/landing_y = 625.0
+metadata/drift_x = 32.0
+metadata/fall_duration = 7.1
+metadata/ground_hold = 12.0
+metadata/initial_delay = 0.9
+metadata/landing_rotation = -0.2
+metadata/fade_duration = 2.5
+metadata/wait_min = 6.0
+metadata/wait_max = 12.0
+
+[node name="LeafDriftPileEastB" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(1712, 380)
+scale = Vector2(0.44, 0.44)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_slender")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "street"
+metadata/landing_y = 625.0
+metadata/drift_x = -12.0
+metadata/fall_duration = 7.8
+metadata/ground_hold = 13.0
+metadata/initial_delay = 1.7
+metadata/landing_rotation = 0.14
+metadata/fade_duration = 2.7
+metadata/wait_min = 6.0
+metadata/wait_max = 12.0
+
+[node name="LeafDriftRoofForgeCompanion" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(522, 315)
+scale = Vector2(0.44, 0.44)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_oak")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "roof"
+metadata/landing_y = 463.0
+metadata/drift_x = 18.0
+metadata/fall_duration = 5.8
+metadata/ground_hold = 11.0
+metadata/initial_delay = 0.8
+metadata/landing_rotation = -0.28
+metadata/fade_duration = 2.4
+metadata/wait_min = 6.0
+metadata/wait_max = 12.0
+
+[node name="LeafDriftRoofHallCompanion" type="Sprite2D" parent="CanopyLayers"]
+modulate = Color(0.94, 0.9, 0.84, 0.9)
+position = Vector2(1305, 305)
+scale = Vector2(0.46, 0.46)
+z_index = -5
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_maple")
+metadata/origin_kind = "house_edge"
+metadata/landing_surface = "roof"
+metadata/landing_y = 448.0
+metadata/drift_x = 16.0
+metadata/fall_duration = 6.1
+metadata/ground_hold = 11.5
+metadata/initial_delay = 1.2
+metadata/landing_rotation = 0.24
+metadata/fade_duration = 2.5
+metadata/wait_min = 6.0
+metadata/wait_max = 12.0
+
+[node name="SettledLeafPiles" type="Node2D" parent="."]
+
+[node name="WestCurbPile" type="Node2D" parent="SettledLeafPiles"]
+position = Vector2(342, 658)
+z_index = 1
+metadata/phase = 0.0
+
+[node name="LeafA" type="Sprite2D" parent="SettledLeafPiles/WestCurbPile"]
+position = Vector2(0, 1)
+rotation = -0.24
+scale = Vector2(0.3, 0.09)
+modulate = Color(0.45, 0.26, 0.16, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_maple")
+
+[node name="LeafB" type="Sprite2D" parent="SettledLeafPiles/WestCurbPile"]
+position = Vector2(-2, 1)
+rotation = 0.3
+scale = Vector2(0.16, 0.075)
+modulate = Color(0.95, 0.48, 0.18, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_oak")
+
+[node name="LeafC" type="Sprite2D" parent="SettledLeafPiles/WestCurbPile"]
+position = Vector2(5, 0)
+rotation = -0.08
+scale = Vector2(0.16, 0.07)
+modulate = Color(0.78, 0.31, 0.14, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_side")
+
+[node name="LeafD" type="Sprite2D" parent="SettledLeafPiles/WestCurbPile"]
+position = Vector2(10, 0)
+rotation = 0.12
+scale = Vector2(0.14, 0.065)
+modulate = Color(0.96, 0.62, 0.22, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_slender")
+
+[node name="LeafE" type="Sprite2D" parent="SettledLeafPiles/WestCurbPile"]
+position = Vector2(1, -1)
+rotation = -0.1
+scale = Vector2(0.13, 0.06)
+modulate = Color(0.9, 0.39, 0.16, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_small_maple")
+
+[node name="PortalStepPile" type="Node2D" parent="SettledLeafPiles"]
+position = Vector2(955, 658)
+z_index = 1
+metadata/phase = 3.0
+
+[node name="LeafA" type="Sprite2D" parent="SettledLeafPiles/PortalStepPile"]
+position = Vector2(0, 1)
+rotation = 0.2
+scale = Vector2(0.3, 0.09)
+modulate = Color(0.44, 0.24, 0.15, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_small_maple")
+
+[node name="LeafB" type="Sprite2D" parent="SettledLeafPiles/PortalStepPile"]
+position = Vector2(-2, 1)
+rotation = -0.34
+scale = Vector2(0.16, 0.075)
+modulate = Color(0.92, 0.42, 0.17, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_curl")
+
+[node name="LeafC" type="Sprite2D" parent="SettledLeafPiles/PortalStepPile"]
+position = Vector2(5, 0)
+rotation = 0.08
+scale = Vector2(0.16, 0.07)
+modulate = Color(0.8, 0.32, 0.14, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_slender")
+
+[node name="LeafD" type="Sprite2D" parent="SettledLeafPiles/PortalStepPile"]
+position = Vector2(10, 0)
+rotation = -0.14
+scale = Vector2(0.14, 0.065)
+modulate = Color(0.98, 0.6, 0.2, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_maple")
+
+[node name="LeafE" type="Sprite2D" parent="SettledLeafPiles/PortalStepPile"]
+position = Vector2(1, -1)
+rotation = 0.1
+scale = Vector2(0.13, 0.06)
+modulate = Color(0.88, 0.36, 0.15, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_side")
+
+[node name="EastCurbPile" type="Node2D" parent="SettledLeafPiles"]
+position = Vector2(1203, 658)
+z_index = 1
+metadata/phase = 6.0
+
+[node name="LeafA" type="Sprite2D" parent="SettledLeafPiles/EastCurbPile"]
+position = Vector2(0, 1)
+rotation = -0.18
+scale = Vector2(0.3, 0.09)
+modulate = Color(0.43, 0.24, 0.14, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_oak")
+
+[node name="LeafB" type="Sprite2D" parent="SettledLeafPiles/EastCurbPile"]
+position = Vector2(-2, 1)
+rotation = 0.26
+scale = Vector2(0.16, 0.075)
+modulate = Color(0.94, 0.46, 0.18, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_maple")
+
+[node name="LeafC" type="Sprite2D" parent="SettledLeafPiles/EastCurbPile"]
+position = Vector2(5, 0)
+rotation = -0.05
+scale = Vector2(0.16, 0.07)
+modulate = Color(0.78, 0.3, 0.13, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_side")
+
+[node name="LeafD" type="Sprite2D" parent="SettledLeafPiles/EastCurbPile"]
+position = Vector2(10, 0)
+rotation = 0.15
+scale = Vector2(0.14, 0.065)
+modulate = Color(0.98, 0.62, 0.22, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_small_maple")
+
+[node name="LeafE" type="Sprite2D" parent="SettledLeafPiles/EastCurbPile"]
+position = Vector2(1, -1)
+rotation = -0.12
+scale = Vector2(0.13, 0.06)
+modulate = Color(0.9, 0.38, 0.15, 1)
+texture_filter = 1
+texture = SubResource("AtlasTexture_leaf_curl")
 
 [node name="BirdPerches" type="Node2D" parent="."]
 
 [node name="BirdRoofWestA" type="Sprite2D" parent="BirdPerches"]
-position = Vector2(94, 456)
+position = Vector2(142, 92)
 scale = Vector2(0.08, 0.08)
 z_index = -2
 texture_filter = 1
@@ -634,7 +1280,7 @@ metadata/flight_offset = Vector2(-150, -46)
 metadata/trigger_distance = 90.0
 
 [node name="BirdRoofWestB" type="Sprite2D" parent="BirdPerches"]
-position = Vector2(128, 458)
+position = Vector2(575, 415)
 scale = Vector2(0.078, 0.078)
 z_index = -2
 texture_filter = 1
@@ -643,13 +1289,14 @@ hframes = 4
 vframes = 3
 flip_h = true
 metadata/perch_kind = "roof"
-metadata/flock_id = "west_roof"
-metadata/flock_order = 1
+metadata/flock_id = ""
+metadata/flock_order = 0
 metadata/flight_offset = Vector2(-165, -42)
 metadata/trigger_distance = 90.0
+metadata/visual_scale = 0.105
 
 [node name="BirdRoofForge" type="Sprite2D" parent="BirdPerches"]
-position = Vector2(470, 380)
+position = Vector2(485, 430)
 scale = Vector2(0.082, 0.082)
 z_index = -2
 texture_filter = 1
@@ -659,9 +1306,10 @@ vframes = 3
 metadata/perch_kind = "roof"
 metadata/flight_offset = Vector2(-170, -55)
 metadata/trigger_distance = 95.0
+metadata/visual_scale = 0.105
 
 [node name="BirdRoofMidA" type="Sprite2D" parent="BirdPerches"]
-position = Vector2(1294, 387)
+position = Vector2(1130, 455)
 scale = Vector2(0.08, 0.08)
 z_index = -2
 texture_filter = 1
@@ -674,9 +1322,10 @@ metadata/flock_id = "mid_roof"
 metadata/flock_order = 0
 metadata/flight_offset = Vector2(165, -48)
 metadata/trigger_distance = 95.0
+metadata/visual_scale = 0.105
 
 [node name="BirdRoofMidB" type="Sprite2D" parent="BirdPerches"]
-position = Vector2(1388, 374)
+position = Vector2(1250, 500)
 scale = Vector2(0.078, 0.078)
 z_index = -2
 texture_filter = 1
@@ -688,9 +1337,10 @@ metadata/flock_id = "mid_roof"
 metadata/flock_order = 1
 metadata/flight_offset = Vector2(175, -52)
 metadata/trigger_distance = 95.0
+metadata/visual_scale = 0.105
 
 [node name="BirdRoofEastA" type="Sprite2D" parent="BirdPerches"]
-position = Vector2(1588, 371)
+position = Vector2(1570, 370)
 scale = Vector2(0.078, 0.078)
 z_index = -2
 texture_filter = 1
@@ -703,7 +1353,7 @@ metadata/flight_offset = Vector2(165, -45)
 metadata/trigger_distance = 90.0
 
 [node name="BirdRoofEastB" type="Sprite2D" parent="BirdPerches"]
-position = Vector2(1722, 348)
+position = Vector2(1730, 350)
 scale = Vector2(0.076, 0.076)
 z_index = -2
 texture_filter = 1
@@ -714,8 +1364,97 @@ metadata/perch_kind = "roof"
 metadata/flight_offset = Vector2(150, -48)
 metadata/trigger_distance = 90.0
 
+[node name="BirdRoofMarket" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(760, 295)
+scale = Vector2(0.078, 0.078)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+flip_h = true
+metadata/perch_kind = "roof"
+metadata/flock_id = "forge_roof"
+metadata/flock_order = 0
+metadata/flight_offset = Vector2(-145, -50)
+metadata/trigger_distance = 88.0
+metadata/visual_scale = 0.105
+
+[node name="BirdRoofRuin" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(405, 415)
+scale = Vector2(0.076, 0.076)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+metadata/perch_kind = "roof"
+metadata/flock_id = ""
+metadata/flock_order = 0
+metadata/flight_offset = Vector2(-160, -56)
+metadata/trigger_distance = 90.0
+metadata/visual_scale = 0.105
+
+[node name="BirdRoofForgeEast" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(900, 480)
+scale = Vector2(0.08, 0.08)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+flip_h = true
+metadata/perch_kind = "roof"
+metadata/flock_id = "forge_roof"
+metadata/flock_order = 1
+metadata/flight_offset = Vector2(-155, -52)
+metadata/trigger_distance = 94.0
+metadata/visual_scale = 0.105
+
+[node name="BirdRoofHallWest" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(1040, 485)
+scale = Vector2(0.078, 0.078)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+metadata/perch_kind = "roof"
+metadata/flock_id = "hall_roof"
+metadata/flock_order = 0
+metadata/flight_offset = Vector2(150, -50)
+metadata/trigger_distance = 92.0
+metadata/visual_scale = 0.105
+
+[node name="BirdRoofResearch" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(1460, 405)
+scale = Vector2(0.076, 0.076)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+flip_h = true
+metadata/perch_kind = "roof"
+metadata/flock_id = "hall_roof"
+metadata/flock_order = 1
+metadata/flight_offset = Vector2(165, -54)
+metadata/trigger_distance = 92.0
+
+[node name="BirdRoofFarEast" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(1810, 420)
+scale = Vector2(0.078, 0.078)
+z_index = -2
+texture_filter = 1
+texture = ExtResource("5_bird_idle")
+hframes = 4
+vframes = 3
+metadata/perch_kind = "roof"
+metadata/flight_offset = Vector2(155, -48)
+metadata/trigger_distance = 88.0
+
 [node name="BirdGroundTownA" type="Sprite2D" parent="BirdPerches"]
-position = Vector2(1178, 650)
+position = Vector2(1050, 650)
 scale = Vector2(0.085, 0.085)
 z_index = 2
 texture_filter = 1
@@ -728,23 +1467,24 @@ metadata/flock_order = 0
 metadata/flight_offset = Vector2(145, -45)
 metadata/trigger_distance = 82.0
 
-[node name="BirdGroundTownB" type="Sprite2D" parent="BirdPerches"]
-position = Vector2(1204, 652)
-scale = Vector2(0.086, 0.086)
-z_index = 2
+[node name="BirdRoofPortalLintel" type="Sprite2D" parent="BirdPerches"]
+position = Vector2(720, 470)
+scale = Vector2(0.082, 0.082)
+z_index = -2
 texture_filter = 1
 texture = ExtResource("5_bird_idle")
 hframes = 4
 vframes = 3
 flip_h = true
-metadata/perch_kind = "ground"
-metadata/flock_id = "town_ground"
-metadata/flock_order = 1
+metadata/perch_kind = "roof"
+metadata/flock_id = ""
+metadata/flock_order = 0
 metadata/flight_offset = Vector2(155, -42)
 metadata/trigger_distance = 82.0
+metadata/visual_scale = 0.105
 
 [node name="BirdGroundEast" type="Sprite2D" parent="BirdPerches"]
-position = Vector2(1231, 649)
+position = Vector2(1740, 649)
 scale = Vector2(0.084, 0.084)
 z_index = 2
 texture_filter = 1
@@ -752,7 +1492,7 @@ texture = ExtResource("5_bird_idle")
 hframes = 4
 vframes = 3
 metadata/perch_kind = "ground"
-metadata/flock_id = "town_ground"
-metadata/flock_order = 2
+metadata/flock_id = ""
+metadata/flock_order = 0
 metadata/flight_offset = Vector2(165, -48)
 metadata/trigger_distance = 82.0
