@@ -148,7 +148,11 @@ func _assert_scene_contract() -> void:
 		String(contract.get("ancient_tree_source", ""))
 			== "res://assets/town/modular_v3/background/"
 				+ "autumn_ancient_tree_base_v2.png",
-		"Ambient wind must deform the complete authored ancient tree."
+		"Ambient animation must retain the complete authored ancient tree."
+	)
+	_expect(
+		bool(contract.get("tree_base_static", false)),
+		"The complete ancient tree must remain a stable visual anchor."
 	)
 	_expect(
 		float(contract.get("idle_wait_min", 0.0)) >= 6.0,
@@ -165,6 +169,14 @@ func _assert_scene_contract() -> void:
 				tree.material is ShaderMaterial,
 				"Ancient tree wind must preserve a root-anchored shader."
 			)
+			ambient.call("_apply_wind_pose", 0.5)
+			var tree_material := tree.material as ShaderMaterial
+			_expect(
+				is_zero_approx(
+					float(tree_material.get_shader_parameter("wind_strength"))
+				),
+				"Wind must not translate the complete ancient tree."
+			)
 		var clusters := canopy_layers.get_node_or_null("CanopyClusters")
 		_expect(clusters != null, "Ancient tree must expose modular canopy clusters.")
 		if clusters != null:
@@ -175,6 +187,23 @@ func _assert_scene_contract() -> void:
 			for pivot in clusters.get_children():
 				_expect(pivot is Node2D, "%s must be a branch pivot." % pivot.name)
 				if pivot is Node2D:
+					var base_position := (pivot as Node2D).position
+					var max_rotation := float(
+						(pivot as Node2D).get_meta("max_rotation", 0.0)
+					)
+					var max_skew := float(
+						(pivot as Node2D).get_meta("max_skew", 0.0)
+					)
+					_expect(
+						max_rotation >= 0.04 and max_rotation <= 0.09,
+						"%s must have visible but relaxed canopy sway."
+							% pivot.name
+					)
+					_expect(
+						max_skew >= 0.018 and max_skew <= 0.035,
+						"%s must deform internally during canopy sway."
+							% pivot.name
+					)
 					var sprite := pivot.get_node_or_null("Sprite") as Sprite2D
 					_expect(sprite != null, "%s must own one canopy sprite." % pivot.name)
 					if sprite != null:
@@ -186,9 +215,28 @@ func _assert_scene_contract() -> void:
 							sprite.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST,
 							"%s must use nearest filtering." % pivot.name
 						)
+					ambient.call("_apply_wind_pose", 0.5)
+					_expect(
+						(pivot as Node2D).position == base_position,
+						"%s branch root must stay fixed during wind."
+							% pivot.name
+					)
+					_expect(
+						not is_zero_approx((pivot as Node2D).skew),
+						"%s canopy deformation must be visible at gust peak."
+							% pivot.name
+					)
 		for child in canopy_layers.get_children():
 			if child is Sprite2D and String(child.name).begins_with("LeafDrift"):
-				_assert_atlas_sprite(child as Sprite2D, String(child.name))
+				var leaf_sprite := child as Sprite2D
+				_assert_atlas_sprite(leaf_sprite, String(child.name))
+				_expect(
+					Rect2(680.0, 120.0, 620.0, 180.0).has_point(
+						leaf_sprite.position
+					),
+					"%s must originate inside the central autumn canopy."
+						% child.name
+				)
 	var birds := ambient.get_node_or_null("BirdPerches")
 	_expect(birds != null, "Ambient scene must expose BirdPerches.")
 	if birds != null:

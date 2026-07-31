@@ -201,8 +201,9 @@ presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 靜態 Base 不含旋渦、紫色內緣光或晶石 emission。
 `TownBackdrop/AmbientAnimation` instance
 `TownAmbientAnimation.tscn`；`CanopyLayers/AncientTreeWind` 以完整古樹與
-root-anchored shader 保存正確樹幹方向；`CanopyClusters` 以兩組後景與兩組
-前景葉簇鎖在同一棵樹的枝幹接點，五組落葉各自保存起點與近地終點。
+固定為零的 root-anchored shader 保存正確樹幹方向與穩定基底；
+`CanopyClusters` 以兩組後景與兩組前景葉簇鎖在同一棵樹的枝幹接點，五組落葉
+都從中央樹冠範圍保存起點與近地終點。
 `BirdPerches` 保存七個屋頂與三個地面停棲點。全部是 editor-visible、
 visual-only node；runtime script 以
 `calm → gust → settle` 控制樹、以 `wait → fall → landed → fade` 控制落葉，

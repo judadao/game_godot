@@ -90,6 +90,7 @@ func get_ambient_contract() -> Dictionary:
 	return {
 		"frame_count": FRAME_COUNT,
 		"ancient_tree_source": ancient_tree.texture.resource_path,
+		"tree_base_static": true,
 		"canopy_clusters": _canopy_clusters.size(),
 		"leaf_streams": _leaf_streams.size(),
 		"bird_count": _birds.size(),
@@ -118,9 +119,11 @@ func _register_canopy_cluster(pivot: Node2D) -> void:
 		"pivot": pivot,
 		"base_position": pivot.position,
 		"base_rotation": pivot.rotation,
+		"base_scale": pivot.scale,
+		"base_skew": pivot.skew,
 		"max_rotation": float(pivot.get_meta("max_rotation", 0.012)),
+		"max_skew": float(pivot.get_meta("max_skew", 0.018)),
 		"gust_delay": float(pivot.get_meta("gust_delay", 0.0)),
-		"sway_pixels": float(pivot.get_meta("sway_pixels", 1.5)),
 		"phase": float(pivot.get_meta("phase", 0.0)),
 	})
 
@@ -203,12 +206,8 @@ func _update_wind(delta: float) -> void:
 
 
 func _apply_wind_pose(progress: float) -> void:
-	var tree_strength := sin(progress * PI)
 	if _tree_material != null:
-		_tree_material.set_shader_parameter(
-			"wind_strength",
-			tree_strength * 7.0 * _wind_direction
-		)
+		_tree_material.set_shader_parameter("wind_strength", 0.0)
 		_tree_material.set_shader_parameter(
 			"wind_phase",
 			progress * PI
@@ -217,9 +216,11 @@ func _apply_wind_pose(progress: float) -> void:
 		var pivot: Node2D = layer["pivot"] as Node2D
 		var base_position := layer["base_position"] as Vector2
 		var base_rotation := float(layer["base_rotation"])
+		var base_scale := layer["base_scale"] as Vector2
+		var base_skew := float(layer["base_skew"])
 		var max_rotation := float(layer["max_rotation"])
+		var max_skew := float(layer["max_skew"])
 		var gust_delay := float(layer["gust_delay"])
-		var sway_pixels := float(layer["sway_pixels"])
 		var phase := float(layer["phase"])
 		var local_progress := clampf(
 			(progress - gust_delay) / (1.0 - gust_delay),
@@ -236,13 +237,15 @@ func _apply_wind_pose(progress: float) -> void:
 			base_rotation
 			+ local_strength * max_rotation * _wind_direction
 		)
-		pivot.position = (
-			base_position
-			+ Vector2(
-				local_strength * sway_pixels * _wind_direction,
-				-sin(local_progress * TAU + phase) * envelope * 0.35
-			)
+		pivot.skew = (
+			base_skew
+			+ local_strength * max_skew * _wind_direction
 		)
+		pivot.scale = base_scale * Vector2(
+			1.0 + local_strength * 0.01,
+			1.0 - local_strength * 0.006
+		)
+		pivot.position = base_position
 
 
 func _update_leaf_stream(leaf_index: int, delta: float) -> void:
