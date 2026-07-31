@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/maps/town_ambient_animation.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/autumn_ancient_tree_base_v2.png" id="2_ancient_tree"]
@@ -7,6 +7,8 @@
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/bird_idle_sheet.png" id="5_bird_idle"]
 [ext_resource type="Shader" path="res://shaders/maps/town_ambient_tree_wind.gdshader" id="6_tree_shader"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/autumn_foliage_patch_atlas_v1.png" id="7_foliage_patches"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/autumn_foliage_droop_atlas_v1.png" id="8_foliage_droop"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/ambient/autumn_foliage_anchor_trunk_v1.png" id="9_foliage_trunk"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tree_wind"]
 shader = ExtResource("6_tree_shader")
@@ -52,6 +54,22 @@ region = Rect2(512, 512, 512, 512)
 [sub_resource type="AtlasTexture" id="AtlasTexture_foliage_5"]
 atlas = ExtResource("7_foliage_patches")
 region = Rect2(1024, 512, 512, 512)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_droop_0"]
+atlas = ExtResource("8_foliage_droop")
+region = Rect2(0, 0, 627, 627)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_droop_1"]
+atlas = ExtResource("8_foliage_droop")
+region = Rect2(627, 0, 627, 627)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_droop_2"]
+atlas = ExtResource("8_foliage_droop")
+region = Rect2(0, 627, 627, 627)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_droop_3"]
+atlas = ExtResource("8_foliage_droop")
+region = Rect2(627, 627, 627, 627)
 
 [node name="TownAmbientAnimation" type="Node2D"]
 script = ExtResource("1_script")
@@ -194,6 +212,15 @@ texture_filter = 1
 texture = SubResource("AtlasTexture_canopy_ul")
 flip_h = true
 
+[node name="ForestTrunkAnchors" type="Node2D" parent="."]
+
+[node name="WestMaterialTreeTrunk" type="Sprite2D" parent="ForestTrunkAnchors"]
+position = Vector2(160, 450)
+scale = Vector2(0.13, 0.13)
+z_index = -20
+texture_filter = 1
+texture = ExtResource("9_foliage_trunk")
+
 [node name="ForestSwayLayers" type="Node2D" parent="."]
 
 [node name="WestOuterPatch" type="Node2D" parent="ForestSwayLayers"]
@@ -204,20 +231,20 @@ metadata/calm_period = 4.4
 metadata/rustle_period = 6.1
 
 [node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/WestOuterPatch"]
-position = Vector2(-18, -104)
-rotation = -0.035
-scale = Vector2(0.58, 0.58)
+position = Vector2(0, -105)
+rotation = -0.018
+scale = Vector2(0.38, 0.38)
 z_index = -21
 texture_filter = 1
-texture = SubResource("AtlasTexture_foliage_0")
+texture = SubResource("AtlasTexture_droop_0")
 
 [node name="LowerFill" type="Sprite2D" parent="ForestSwayLayers/WestOuterPatch"]
-position = Vector2(58, -30)
-rotation = 0.028
-scale = Vector2(0.44, 0.44)
+position = Vector2(45, -35)
+rotation = 0.045
+scale = Vector2(0.24, 0.24)
 z_index = -21
 texture_filter = 1
-texture = SubResource("AtlasTexture_foliage_5")
+texture = SubResource("AtlasTexture_droop_3")
 flip_h = true
 
 [node name="WestUpperPatch" type="Node2D" parent="ForestSwayLayers"]
@@ -228,12 +255,21 @@ metadata/calm_period = 5.1
 metadata/rustle_period = 7.2
 
 [node name="Sprite" type="Sprite2D" parent="ForestSwayLayers/WestUpperPatch"]
-position = Vector2(0, -78)
-scale = Vector2(0.5, 0.5)
+position = Vector2(-20, -90)
+rotation = 0.022
+scale = Vector2(0.36, 0.36)
 z_index = -21
 texture_filter = 1
-texture = SubResource("AtlasTexture_foliage_5")
+texture = SubResource("AtlasTexture_droop_2")
 flip_h = true
+
+[node name="LowerFragment" type="Sprite2D" parent="ForestSwayLayers/WestUpperPatch"]
+position = Vector2(-38, -20)
+rotation = -0.04
+scale = Vector2(0.22, 0.22)
+z_index = -21
+texture_filter = 1
+texture = SubResource("AtlasTexture_droop_3")
 
 [node name="WestMiddlePatch" type="Node2D" parent="ForestSwayLayers"]
 position = Vector2(430, 470)

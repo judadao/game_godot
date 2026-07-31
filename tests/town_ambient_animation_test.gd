@@ -6,6 +6,8 @@ const AMBIENT_SCENE_PATH := (
 const BACKDROP_SCENE_PATH := "res://scenes/maps/town/components/TownBackdrop.tscn"
 const ASSET_ROOT := "res://assets/town/modular_v3/ambient/"
 const CANOPY_SHEET := ASSET_ROOT + "autumn_canopy_modules_sheet.png"
+const DROOP_SHEET := ASSET_ROOT + "autumn_foliage_droop_atlas_v1.png"
+const TRUNK_ASSET := ASSET_ROOT + "autumn_foliage_anchor_trunk_v1.png"
 const SHEETS := {
 	"Falling leaves": ASSET_ROOT + "falling_leaves_sheet.png",
 	"Bird idle": ASSET_ROOT + "bird_idle_sheet.png",
@@ -76,6 +78,46 @@ func _assert_asset_contract() -> void:
 					"Canopy region %d,%d must keep transparent corners."
 						% [column, row]
 				)
+	_expect(FileAccess.file_exists(DROOP_SHEET), "Drooping foliage atlas must exist.")
+	_expect(ResourceLoader.exists(DROOP_SHEET), "Drooping foliage atlas must import.")
+	if FileAccess.file_exists(DROOP_SHEET):
+		var droop_image := Image.load_from_file(ProjectSettings.globalize_path(DROOP_SHEET))
+		_expect(
+			droop_image.get_size() == Vector2i(1254, 1254),
+			"Drooping foliage atlas must retain four 627x627 regions."
+		)
+		_expect(
+			droop_image.detect_alpha() != Image.ALPHA_NONE,
+			"Drooping foliage atlas must retain alpha."
+		)
+		for row in 2:
+			for column in 2:
+				var region := droop_image.get_region(
+					Rect2i(column * 627, row * 627, 627, 627)
+				)
+				_expect(
+					region.get_used_rect().has_area(),
+					"Drooping foliage region %d,%d must contain visible pixels."
+						% [column, row]
+				)
+				_expect(
+					_has_transparent_corners(region),
+					"Drooping foliage region %d,%d must keep transparent corners."
+						% [column, row]
+				)
+	_expect(FileAccess.file_exists(TRUNK_ASSET), "West foliage trunk anchor must exist.")
+	_expect(ResourceLoader.exists(TRUNK_ASSET), "West foliage trunk anchor must import.")
+	if FileAccess.file_exists(TRUNK_ASSET):
+		var trunk_image := Image.load_from_file(ProjectSettings.globalize_path(TRUNK_ASSET))
+		_expect(
+			trunk_image.get_size() == Vector2i(1254, 1254),
+			"West foliage trunk anchor must retain its authored source canvas."
+		)
+		_expect(
+			trunk_image.detect_alpha() != Image.ALPHA_NONE
+				and _has_transparent_corners(trunk_image),
+			"West foliage trunk anchor must retain transparent outer corners."
+		)
 
 
 func _assert_sheet_cells(image: Image, label: String) -> void:
@@ -145,8 +187,12 @@ func _assert_scene_contract() -> void:
 		"Town must animate ten foliage-only patches outside the ancient tree."
 	)
 	_expect(
-		int(contract.get("forest_patch_assets", 0)) == 6,
-		"Background forest motion must use six trunk-free patch shapes."
+		int(contract.get("forest_patch_assets", 0)) == 10,
+		"Background forest motion must expose six general and four drooping patch shapes."
+	)
+	_expect(
+		int(contract.get("forest_trunk_anchors", 0)) == 1,
+		"West material tree must keep one static trunk anchor."
 	)
 	_expect(
 		float(contract.get("calm_wait_min", 0.0)) >= 8.0,
@@ -257,6 +303,23 @@ func _assert_scene_contract() -> void:
 				"At least two canopy clusters must move during normal calm play."
 			)
 		var forest_sway_layers := ambient.get_node_or_null("ForestSwayLayers")
+		var forest_trunk := ambient.get_node_or_null(
+			"ForestTrunkAnchors/WestMaterialTreeTrunk"
+		) as Sprite2D
+		_expect(
+			forest_trunk != null,
+			"Far-west animated foliage must retain a static trunk anchor."
+		)
+		if forest_trunk != null:
+			_expect(
+				forest_trunk.texture != null
+					and forest_trunk.texture.resource_path == TRUNK_ASSET,
+				"Far-west trunk must use its replaceable authored source."
+			)
+			_expect(
+				forest_trunk.z_index == -20 and forest_trunk.scale.x <= 0.15,
+				"Far-west trunk must remain a compact static anchor behind the leaf bags."
+			)
 		_expect(
 			forest_sway_layers != null,
 			"Town must expose independently animated background foliage."
@@ -327,7 +390,19 @@ func _assert_scene_contract() -> void:
 				)
 				if west_main != null and west_lower != null:
 					_expect(
-						west_lower.position.y > west_main.position.y + 50.0,
+						west_main.z_index == -21 and west_lower.z_index == -21,
+						"Far-west foliage must sit inside the forest plane behind the ruins."
+					)
+					_expect(
+						west_main.scale.x <= 0.401 and west_main.scale.y <= 0.401,
+						"Far-west motion must use a local crown fragment, not a full-tree overlay."
+					)
+					_expect(
+						west_lower.scale.x <= 0.32 and west_lower.scale.y <= 0.32,
+						"Far-west lower motion must remain a small silhouette breaker."
+					)
+					_expect(
+						west_lower.position.y > west_main.position.y + 25.0,
 						"Far-west lower fill must break the crown's flat baseline."
 					)
 					_expect(
@@ -339,6 +414,38 @@ func _assert_scene_contract() -> void:
 							and west_lower.texture_filter
 								== CanvasItem.TEXTURE_FILTER_NEAREST,
 						"Far-west lower fill must reuse a crisp modular foliage region."
+					)
+			var west_upper := forest_sway_layers.get_node_or_null(
+				"WestUpperPatch"
+			) as Node2D
+			_expect(
+				west_upper != null,
+				"Upper-west foliage must remain an authored local pivot."
+			)
+			if west_upper != null:
+				var west_upper_main := west_upper.get_node_or_null("Sprite") as Sprite2D
+				var west_upper_lower := west_upper.get_node_or_null(
+					"LowerFragment"
+				) as Sprite2D
+				_expect(
+					west_upper_main != null and west_upper_lower != null,
+					"Upper-west foliage must use separate crown and lower fragments."
+				)
+				if west_upper_main != null and west_upper_lower != null:
+					_expect(
+						west_upper_main.z_index == -21
+							and west_upper_lower.z_index == -21,
+						"Upper-west foliage must be occluded by ruins instead of floating over them."
+					)
+					_expect(
+						west_upper_main.scale.x <= 0.401
+							and west_upper_main.scale.y <= 0.401,
+						"Upper-west motion must not redraw a complete tree crown."
+					)
+					_expect(
+						west_upper_lower.position.y
+							> west_upper_main.position.y + 25.0,
+						"Upper-west lower fragment must break the horizontal edge."
 					)
 		for child in canopy_layers.get_children():
 			if child is Sprite2D and String(child.name).begins_with("LeafDrift"):

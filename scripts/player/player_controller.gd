@@ -163,8 +163,12 @@ func set_facing_direction(direction: int) -> void:
 		return
 
 	facing_direction = signi(direction)
-	if visual != null:
-		visual.scale.x = float(facing_direction)
+	if character_sprite != null:
+		if visual != null:
+			visual.scale.x = absf(visual.scale.x)
+		character_sprite.flip_h = facing_direction < 0
+	elif visual != null:
+		visual.scale.x = absf(visual.scale.x) * float(facing_direction)
 	if interaction_detector != null:
 		interaction_detector.position.x = absf(interaction_detector.position.x) * float(facing_direction)
 

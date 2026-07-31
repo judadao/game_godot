@@ -1611,7 +1611,8 @@ the HUD never reads gameplay state directly.
 - Owner：`TownBackdrop`
 - Status：Current — Active Runtime Presentation
 - Responsibility：以完整且不位移的 `autumn_ancient_tree_base_v2.png`、
-  八區透明樹冠模組、一張含六種無樹幹葉團的 3 × 2 街景 atlas，以及三張
+  八區透明樹冠模組、一張含六種通用葉團的 3 × 2 街景 atlas、
+  一張含四種圓鈍垂落葉袋的 2 × 2 atlas，以及三張
   4 × 3、12 幀透明 atlas 組合古樹、左右秋林、落葉、鳥類待機與起飛／飛行。
 - Motion contract：完整古樹永遠保持固定；一般狀態下八組樹冠以
   `4.3–5.6` 秒不同週期低幅擺動，並以 `5.7–7.8` 秒週期穿插短暫稀疏抖葉。
@@ -1630,8 +1631,10 @@ the HUD never reads gameplay state directly.
 - Composition contract：完整古樹保留正確樹幹方向並位於建築後方；額外樹冠
   必須鎖在中央樹的可追溯枝幹接點，前後層配色一致，不得形成邊界浮空斷枝。
   十組街景 foliage patches 必須沒有可見樹幹、枝根或完整圓形樹冠，並嵌入
-  屋頂後方的既有秋林，只露出局部上緣；不得成為浮在天空中的獨立灌木或整棵
-  搖動的小樹。
+  屋頂後方的既有秋林。西側主冠使用圓鈍葉袋與較低碎葉形成至少兩段凹口／垂落
+  輪廓，禁止長水平底緣、楔形尖頭或窄頸漂浮葉帶；不得成為浮在天空中的獨立
+  灌木或整棵搖動的小樹。西側材料行樹由 `z=-20` 靜態分枝／樹幹錨點支撐，
+  `z=-21` 葉袋只作局部 sway；樹幹下端嵌入材料行屋頂後方並由 `z=-10` 前景遮住接縫。
   落葉保持稀疏且 y 單調下降，不得
   半空消失或往左上倒飛；整體氛圍應悠閒而非暴風。
 - Boundary：只擁有 presentation。不得新增 collision、interaction、NPC、

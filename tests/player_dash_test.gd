@@ -30,6 +30,19 @@ func _run() -> void:
 		quit(1)
 		return
 	var start: Vector2 = player.global_position
+	var player_visual := player.get_node("Visual") as Node2D
+	var character_sprite := player.get_node("Visual/CharacterSprite") as Sprite2D
+	var sprite_anchor := character_sprite.global_position
+	player.call("set_facing_direction", -1)
+	_expect(
+		character_sprite.global_position == sprite_anchor,
+		"Facing left must not move the player artwork away from its collision anchor."
+	)
+	_expect(
+		character_sprite.flip_h and player_visual.scale.x > 0.0,
+		"Facing left must flip only the player sprite, not mirror its offset container."
+	)
+	player.call("set_facing_direction", 1)
 	var original_collision_layer: int = player.collision_layer
 	_expect(bool(player.call("try_dash", 1)), "Ready player must be able to dash.")
 	_expect(bool(player.call("is_invulnerable")), "Dash must grant invulnerability immediately.")

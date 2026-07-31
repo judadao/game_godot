@@ -206,9 +206,14 @@ presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 五組落葉都從中央樹冠範圍保存起點與近地終點。calm 狀態仍以各層獨立週期保持低幅
 擺動與短暫抖葉，gust 才提高整段順風形變。
 `ForestSwayLayers` 另保存十個 editor-authored foliage pivot，分布於西側、
-左右內側與東側屋頂後方；每個只持有 3 × 2 atlas 中一塊無樹幹葉團，固定
-position／scale／skew 並以不同週期小幅旋轉。原始秋林底圖與樹幹不移動，
-動態 patch 只補局部葉叢外緣。
+左右內側與東側屋頂後方；通用葉團來自 3 × 2 atlas，西側另可用 2 × 2 atlas
+的圓鈍垂落葉袋，以不同高度的小葉團打破水平底緣。pivot 固定
+position／scale／skew 並以不同週期小幅旋轉；同一西側 pivot 的主冠與下垂葉袋
+共享枝端接點，相鄰 pivot 仍保留相位差。原始秋林底圖與樹幹不移動，
+動態 patch 只補局部葉叢外緣。`ForestTrunkAnchors/WestMaterialTreeTrunk`
+以 `z=-20` 保存不擺動的靜態分枝錨點並嵌入材料行屋頂後方；西側兩個 pivot
+的葉袋位於 `z=-21`，只在固定樹幹上方局部擺動。`z=-10` 前景屋頂遮住樹幹底部接縫，
+禁止再建立沒有靜態枝幹支撐的浮空樹冠。
 `BirdPerches` 保存七個屋頂與三個地面停棲點。全部是 editor-visible、
 visual-only node；runtime script 以
 `calm → gust → settle` 控制樹、以 `wait → fall → landed → fade` 控制落葉，
@@ -483,6 +488,9 @@ Player (CharacterBody2D, group "Player")
 ```
 
 Script：`scripts/player/player_controller.gd`。
+
+角色面向只切換 `CharacterSprite.flip_h`；不得鏡像帶有非零 sprite offset 的
+`Visual` 容器，否則角色圖會離開碰撞錨點，造成左右地圖邊界視覺不對稱。
 
 Required signals：
 
