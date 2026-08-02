@@ -49,6 +49,36 @@ func _run() -> void:
 		&"traveler", &"social", &"witch", &"merchant", 0.42, PackedStringArray(["scenic"])
 	)
 	_expect(String(scenic.get("id", "")) == "watch_sky", "Required tags must constrain deterministic selection.")
+	var knowledge_allowlist := PackedStringArray(["discuss_work", "chat", "watch_sky"])
+	var knowledge_results: Array[String] = []
+	for roll in [0.0, 0.75, 0.99]:
+		var selected := _select_with_allowlist(
+			catalog, roll, PackedStringArray(), knowledge_allowlist
+		)
+		var selected_id := String(selected.get("id", ""))
+		knowledge_results.append(selected_id)
+		_expect(
+			knowledge_allowlist.has(selected_id),
+			"Witch-scientist profile selection must stay inside its interaction allowlist."
+		)
+	_expect(
+		knowledge_results == ["chat", "discuss_work", "watch_sky"],
+		"Allowlist filtering must preserve existing priority and weighted selection order."
+	)
+	var allowed_scenic := _select_with_allowlist(
+		catalog, 0.42, PackedStringArray(["scenic"]), knowledge_allowlist
+	)
+	_expect(
+		String(allowed_scenic.get("id", "")) == "watch_sky",
+		"Required tags must apply after allowlist filtering."
+	)
+	var empty_allowlist_result := _select_with_allowlist(
+		catalog,
+		0.42,
+		PackedStringArray(),
+		PackedStringArray(["farewell_only_if_it_existed"])
+	)
+	_expect(empty_allowlist_result.is_empty(), "An allowlist with no eligible ID must return no selection.")
 
 	_expect(
 		catalog.is_pair_eligible(&"share_goods", &"grocer", &"merchant", &"traveler", &"visitor"),
@@ -110,6 +140,23 @@ func _contains_id(items: Array[Dictionary], target_id: String) -> bool:
 		if String(item.get("id", "")) == target_id:
 			return true
 	return false
+
+
+func _select_with_allowlist(
+	catalog: RefCounted,
+	roll: float,
+	required_tags: PackedStringArray,
+	allowed_interaction_ids: PackedStringArray
+) -> Dictionary:
+	return catalog.select_candidate(
+		&"witch",
+		&"merchant",
+		&"scientist",
+		&"scholar",
+		roll,
+		required_tags,
+		allowed_interaction_ids
+	)
 
 
 func _errors_mention(errors: PackedStringArray, needle: String) -> bool:

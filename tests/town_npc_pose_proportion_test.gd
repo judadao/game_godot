@@ -8,7 +8,9 @@ const CHARACTER_ASSETS := [
 const CELL_SIZE := Vector2i(144, 152)
 const FRAME_COUNT := 4
 const STATE_COUNT := 13
+const CHARACTER_ACTION_STATE_COUNT := 17
 const EMOTION_ROWS := [4, 5, 6, 7, 8]
+const CHARACTER_ACTION_ROWS := [13, 14, 15, 16]
 const GUARD_SPEAR_ROWS := [0, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const TARGET_HEIGHT := 132
 const FOOT_BASELINE_Y := 144
@@ -19,6 +21,9 @@ const TORSO_BAND_START := 42
 const TORSO_BAND_END := 88
 const MAX_CORE_ALPHA_SPREAD_RATIO := 1.4
 const MAX_HEAD_CORE_REFERENCE_RATIO := 1.33
+const MAX_ACTION_HEAD_CORE_REFERENCE_RATIO := 1.5
+const MIN_ACTION_HEAD_CORE_REFERENCE_RATIO := 0.55
+const MAX_ACTION_HEIGHT_SPREAD := 10
 const SPEAR_SAMPLE_END_Y := 132
 const MIN_SPEAR_LENGTH := 112
 const MAX_SPEAR_SLOPE_X := 30
@@ -90,9 +95,14 @@ func _assert_atlas_proportions(character_name: String) -> void:
 	if texture == null:
 		return
 	var image := texture.get_image()
+	var expected_state_count := (
+		CHARACTER_ACTION_STATE_COUNT
+		if character_name in ["witch", "scientist"]
+		else STATE_COUNT
+	)
 	_expect(
-		image.get_size() == Vector2i(CELL_SIZE.x * FRAME_COUNT, CELL_SIZE.y * STATE_COUNT),
-		"%s atlas must remain a 4x13 grid." % character_name
+		image.get_size() == Vector2i(CELL_SIZE.x * FRAME_COUNT, CELL_SIZE.y * expected_state_count),
+		"%s atlas must use its approved 4x%d grid." % [character_name, expected_state_count]
 	)
 	var idle_head_core_areas: Array[int] = []
 	for column in FRAME_COUNT:
@@ -115,7 +125,11 @@ func _assert_atlas_proportions(character_name: String) -> void:
 		idle_head_reference = (
 			idle_head_core_areas[1] + idle_head_core_areas[2]
 		) * 0.5
-	for row in EMOTION_ROWS:
+	var reviewed_rows := EMOTION_ROWS.duplicate()
+	if character_name in ["witch", "scientist"]:
+		reviewed_rows.append_array(CHARACTER_ACTION_ROWS)
+	for row in reviewed_rows:
+		var is_character_action: bool = row in CHARACTER_ACTION_ROWS
 		var heights: Array[int] = []
 		var widths: Array[int] = []
 		var head_core_areas: Array[int] = []
@@ -139,17 +153,35 @@ func _assert_atlas_proportions(character_name: String) -> void:
 			)
 			head_core_areas.append(head_core_area)
 			if idle_head_reference > 0.0:
+				var head_ratio := float(head_core_area) / idle_head_reference
+				var maximum_head_ratio := (
+					MAX_ACTION_HEAD_CORE_REFERENCE_RATIO
+					if is_character_action
+					else MAX_HEAD_CORE_REFERENCE_RATIO
+				)
 				_expect(
-					float(head_core_area) / idle_head_reference <= MAX_HEAD_CORE_REFERENCE_RATIO,
+					head_ratio <= maximum_head_ratio,
 					"%s row %d frame %d head core must remain within %.2fx of idle adult proportions; got %.3fx."
 					% [
 						character_name,
 						row,
 						column,
-						MAX_HEAD_CORE_REFERENCE_RATIO,
-						float(head_core_area) / idle_head_reference,
+						maximum_head_ratio,
+						head_ratio,
 					]
 				)
+				if is_character_action:
+					_expect(
+						head_ratio >= MIN_ACTION_HEAD_CORE_REFERENCE_RATIO,
+						"%s row %d frame %d head core must remain at least %.2fx of idle adult proportions; got %.3fx."
+						% [
+							character_name,
+							row,
+							column,
+							MIN_ACTION_HEAD_CORE_REFERENCE_RATIO,
+							head_ratio,
+						]
+					)
 			torso_core_areas.append(_count_core_alpha(
 				frame, used.position.y + TORSO_BAND_START, used.position.y + TORSO_BAND_END
 			))
@@ -160,7 +192,8 @@ func _assert_atlas_proportions(character_name: String) -> void:
 				% [character_name, row, column, FOOT_BASELINE_Y, used.end.y]
 			)
 			_expect(
-				used.size.y >= TARGET_HEIGHT - 6 and used.size.y <= TARGET_HEIGHT + 6,
+				used.size.y >= TARGET_HEIGHT - (8 if is_character_action else 6)
+				and used.size.y <= TARGET_HEIGHT + 6,
 				"%s row %d frame %d must retain adult height near %dpx, got %dpx."
 				% [character_name, row, column, TARGET_HEIGHT, used.size.y]
 			)
@@ -172,23 +205,30 @@ func _assert_atlas_proportions(character_name: String) -> void:
 		if heights.size() == FRAME_COUNT:
 			heights.sort()
 			var median_height := (heights[1] + heights[2]) * 0.5
+			var maximum_height_spread := (
+				MAX_ACTION_HEIGHT_SPREAD if is_character_action else 4
+			)
 			_expect(
-				heights[3] - heights[0] <= 4,
-				"%s row %d visible height must stay within 4px across its emotion loop; heights=%s."
-				% [character_name, row, heights]
+				heights[3] - heights[0] <= maximum_height_spread,
+				"%s row %d visible height must stay within %dpx across its authored action; heights=%s."
+				% [character_name, row, maximum_height_spread, heights]
 			)
 			_expect(
 				median_height >= TARGET_HEIGHT - 1 and median_height <= TARGET_HEIGHT + 1,
 				"%s row %d median height must normalize to %dpx; heights=%s widths=%s."
 				% [character_name, row, TARGET_HEIGHT, heights, widths]
 			)
-		if head_core_areas.size() == FRAME_COUNT:
+		# Props and spell effects intentionally cross the central sample bands in
+		# the authored action rows. Their body proportions are reviewed visually;
+		# here we retain height, baseline, head-range, clipping, and uniqueness
+		# contracts without mistaking a book or ward circle for a swollen torso.
+		if head_core_areas.size() == FRAME_COUNT and not is_character_action:
 			_assert_core_area_stability(character_name, row, "head", head_core_areas)
-		if torso_core_areas.size() == FRAME_COUNT:
+		if torso_core_areas.size() == FRAME_COUNT and not is_character_action:
 			_assert_core_area_stability(character_name, row, "torso", torso_core_areas)
 		_expect(
 			frame_hashes.size() >= 3,
-			"%s row %d must contain at least three authored emotion poses."
+			"%s row %d must contain at least three authored poses."
 			% [character_name, row]
 		)
 

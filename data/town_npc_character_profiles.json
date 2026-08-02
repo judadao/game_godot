@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "profiles": [
+    {
+      "id": "priest",
+      "ambient_actions": ["prayer", "bless", "comfort", "share_goods", "courage"],
+      "day_periods": [
+        {
+          "id": "dawn",
+          "start_progress": 0.0,
+          "end_progress": 0.16,
+          "locations": ["temple"],
+          "activities": ["prayer"],
+          "minimum_stay_seconds": 10.0
+        },
+        {
+          "id": "morning",
+          "start_progress": 0.16,
+          "end_progress": 0.34,
+          "locations": ["temple", "town_square"],
+          "activities": ["bless", "comfort"],
+          "minimum_stay_seconds": 8.0
+        },
+        {
+          "id": "noon",
+          "start_progress": 0.34,
+          "end_progress": 0.5,
+          "locations": ["grocer_stall", "player_blacksmith"],
+          "activities": ["share_goods", "bless"],
+          "minimum_stay_seconds": 6.0
+        },
+        {
+          "id": "afternoon",
+          "start_progress": 0.5,
+          "end_progress": 0.68,
+          "locations": ["town_square", "guard_post"],
+          "activities": ["comfort", "bless"],
+          "minimum_stay_seconds": 7.0
+        },
+        {
+          "id": "evening",
+          "start_progress": 0.68,
+          "end_progress": 0.84,
+          "locations": ["eternal_torch", "temple"],
+          "activities": ["prayer", "comfort"],
+          "minimum_stay_seconds": 12.0
+        },
+        {
+          "id": "night",
+          "start_progress": 0.84,
+          "end_progress": 1.0,
+          "locations": ["temple"],
+          "activities": ["prayer"],
+          "minimum_stay_seconds": 9.0
+        }
+      ],
+      "logical_partner_interactions": [
+        {"partner_id": "witch", "interaction_ids": ["chat", "comfort", "watch_sky"]},
+        {"partner_id": "scientist", "interaction_ids": ["chat", "comfort"]},
+        {"partner_id": "guard", "interaction_ids": ["comfort", "share_goods"]},
+        {"partner_id": "grocer", "interaction_ids": ["share_goods", "chat"]},
+        {"partner_id": "innkeeper", "interaction_ids": ["comfort", "share_goods"]}
+      ]
+    },
+    {
+      "id": "witch",
+      "ambient_actions": ["read_grimoire", "brew_potion", "divination", "cast_ward", "hidden_concern"],
+      "day_periods": [
+        {
+          "id": "dawn",
+          "start_progress": 0.0,
+          "end_progress": 0.16,
+          "locations": ["town_outskirts", "witch_house"],
+          "activities": ["brew_potion", "divination"],
+          "minimum_stay_seconds": 8.0
+        },
+        {
+          "id": "morning",
+          "start_progress": 0.16,
+          "end_progress": 0.34,
+          "locations": ["witch_house"],
+          "activities": ["read_grimoire", "brew_potion", "divination"],
+          "minimum_stay_seconds": 12.0
+        },
+        {
+          "id": "noon",
+          "start_progress": 0.34,
+          "end_progress": 0.5,
+          "locations": ["grocer_stall", "temple"],
+          "activities": ["brew_potion", "hidden_concern"],
+          "minimum_stay_seconds": 6.0
+        },
+        {
+          "id": "afternoon",
+          "start_progress": 0.5,
+          "end_progress": 0.68,
+          "locations": ["eternal_torch", "town_wall", "player_blacksmith"],
+          "activities": ["divination", "cast_ward", "read_grimoire"],
+          "minimum_stay_seconds": 8.0
+        },
+        {
+          "id": "evening",
+          "start_progress": 0.68,
+          "end_progress": 0.84,
+          "locations": ["town_gate", "town_square"],
+          "activities": ["hidden_concern", "cast_ward"],
+          "minimum_stay_seconds": 7.0
+        },
+        {
+          "id": "night",
+          "start_progress": 0.84,
+          "end_progress": 1.0,
+          "locations": ["witch_house", "town_outskirts"],
+          "activities": ["divination", "read_grimoire", "cast_ward", "hidden_concern"],
+          "minimum_stay_seconds": 12.0
+        }
+      ],
+      "logical_partner_interactions": [
+        {"partner_id": "priest", "interaction_ids": ["chat", "comfort", "watch_sky"]},
+        {"partner_id": "scientist", "interaction_ids": ["discuss_work", "chat", "watch_sky"]},
+        {"partner_id": "guard", "interaction_ids": ["discuss_work", "chat"]},
+        {"partner_id": "grocer", "interaction_ids": ["share_goods", "chat"]},
+        {"partner_id": "innkeeper", "interaction_ids": ["share_goods", "gossip"]}
+      ]
+    },
+    {
+      "id": "scientist",
+      "ambient_actions": ["write_notes", "measure", "assemble", "malfunction", "inspiration", "concern"],
+      "day_periods": [
+        {
+          "id": "dawn",
+          "start_progress": 0.0,
+          "end_progress": 0.16,
+          "locations": ["laboratory"],
+          "activities": ["write_notes", "inspiration"],
+          "minimum_stay_seconds": 16.0
+        },
+        {
+          "id": "morning",
+          "start_progress": 0.16,
+          "end_progress": 0.34,
+          "locations": ["laboratory", "player_blacksmith"],
+          "activities": ["measure", "assemble", "write_notes"],
+          "minimum_stay_seconds": 18.0
+        },
+        {
+          "id": "noon",
+          "start_progress": 0.34,
+          "end_progress": 0.5,
+          "locations": ["laboratory", "grocer_stall"],
+          "activities": ["write_notes", "concern"],
+          "minimum_stay_seconds": 14.0
+        },
+        {
+          "id": "afternoon",
+          "start_progress": 0.5,
+          "end_progress": 0.68,
+          "locations": ["town_square", "guard_post", "eternal_torch"],
+          "activities": ["measure", "assemble", "inspiration"],
+          "minimum_stay_seconds": 16.0
+        },
+        {
+          "id": "evening",
+          "start_progress": 0.68,
+          "end_progress": 0.84,
+          "locations": ["player_blacksmith", "laboratory"],
+          "activities": ["inspiration", "write_notes", "concern"],
+          "minimum_stay_seconds": 16.0
+        },
+        {
+          "id": "night",
+          "start_progress": 0.84,
+          "end_progress": 1.0,
+          "locations": ["laboratory"],
+          "activities": ["assemble", "write_notes", "inspiration"],
+          "minimum_stay_seconds": 20.0
+        }
+      ],
+      "logical_partner_interactions": [
+        {"partner_id": "priest", "interaction_ids": ["chat", "comfort"]},
+        {"partner_id": "witch", "interaction_ids": ["discuss_work", "chat", "watch_sky"]},
+        {"partner_id": "guard", "interaction_ids": ["discuss_work", "chat"]},
+        {"partner_id": "grocer", "interaction_ids": ["discuss_work", "share_goods"]},
+        {"partner_id": "innkeeper", "interaction_ids": ["discuss_work", "share_goods"]}
+      ]
+    }
+  ]
+}

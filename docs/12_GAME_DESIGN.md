@@ -692,14 +692,24 @@ Town 九個 display-only NPC placement 使用各自 world texture identity；六
 兩位 visitors 的 atlas 都有 idle、walk、sit、chat、laugh、happy、sad、surprised、angry、
 idle_look、idle_stretch、greet、work 共 13 個 presentation states。八位角色的 row 4–8
 使用各自 authored emotion strips，人物統一 132 px、腳底 `y=144`；runtime 不額外縮放、
-bob 或旋轉情緒幀。女巫 directional source 原生朝左，移動時依 requested facing 正確翻面。
-祭司以 `y=672`／`z_index=0` 固定路線走到女巫左側 95 px，祭司朝右、女巫朝左聊天後再沿
-同一 baseline 回 Town Hall；舊的前景繞行不再使用。其餘六位居民會在各自店面／街區附近
+bob 或旋轉情緒幀。女巫與科學家另有四列角色專屬工作姿勢；女巫 directional source 原生
+朝左，移動時依 requested facing 正確翻面。祭司的八列 atlas 另含祈禱、祝福、安慰／遞物與
+緊張到鼓起勇氣；courage 只供明確危險／保護事件使用，不是 ambient。她在清晨／夜間優先
+留在 home 執行平靜設定動作，只在中午至傍晚、冷卻結束且
+女巫空閒時，以 `y=672`／`z_index=0` 走到女巫左側 95 px；兩人面對面聊天後沿同一 baseline
+回 Town Hall，舊的前景繞行不再使用。其餘六位居民會在各自店面／街區附近
 待機、表達情緒、做符合身份的悠閒工作、坐下休息或短距離散步；社交時先保留 partner、
 走到 catalog 指定距離，
 依序打招呼、聊天／談工作、產生情緒反應、道別，再回到精確 home。初次見面偏好 greet；
 熟人可依角色選擇 discuss_work，golden hour 可一起 watch_sky。familiarity 與 cooldown 都是
-session-local，不形成持久 schedule。散步區域依相鄰 home anchor 切開，至少保留一個人物
+session-local，不形成持久 schedule。每次本地活動後有明確 idle recovery，無事件環境不會
+隨機生氣／難過／驚訝；近期 partner 與重複動作有 cooldown。女巫與科學家可跨街區走到共同
+會面點，但仍受雙方角色 allowlist 限制；兩者不隨機切入 generic sit，坐下只由有座位的角色
+事件觸發。科學家的專屬動作播放一次、短暫停在完成姿勢後回到慢速細微待機，day-period work
+仍至少停留 14–20 秒，
+malfunction 只供明確失敗事件；一般居民 idle 為 5.5–10 秒、role recovery 為 10–16 秒，
+社交聊天基準約 7 秒且最近 partner 冷卻 75 秒，營造悠閒而非狀態輪播的節奏。散步區域依
+相鄰 home anchor 切開，至少保留一個人物
 寬度，避免同基準線互相穿入。
 
 `town_npc_interactions.json` 提供九種悠閒小鎮 presentation interaction：greet、chat、laugh、

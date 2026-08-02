@@ -37,6 +37,7 @@ func _run() -> void:
 		if (witch_visual.call("get_supported_states") as Array).has(&"idle_look")
 		else &"idle"
 	)
+	town.call("set_time_of_day_progress", 0.40)
 
 	var home := priest.call("get_home_position") as Vector2
 	_expect(home == Vector2(1130.0, 672.0), "Priest home must remain the approved Town baseline placement.")

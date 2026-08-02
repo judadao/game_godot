@@ -37,6 +37,26 @@ const STATE_ROWS := {
 	STATE_GREET: 11,
 	STATE_WORK: 12,
 }
+const CHARACTER_STATE_ROWS := {
+	&"witch": {
+		&"read_grimoire": 13,
+		&"brew_potion": 14,
+		&"divination": 15,
+		&"cast_ward": 16,
+		&"hidden_concern": 9,
+	},
+	&"scientist": {
+		&"write_notes": 13,
+		&"measure": 14,
+		&"assemble": 15,
+		&"malfunction": 16,
+		&"inspiration": 5,
+		&"concern": 9,
+	},
+}
+const CHARACTER_ACTION_FRAME_RATE := 2.0
+const CHARACTER_ACTION_SETTLE_SECONDS := 4.0
+const SETTLED_IDLE_FRAME_RATE := 1.0
 const LEFT_FACING_DIRECTIONAL_CHARACTERS: Array[StringName] = [&"witch"]
 
 @export_range(80.0, 160.0, 1.0) var target_height := 118.0
@@ -63,7 +83,7 @@ func _ready() -> void:
 		push_error("TownNPCVisual requires a character texture.")
 		return
 	_native_directional_facing_sign = _resolve_native_directional_facing_sign()
-	_active_state = StringName(initial_state) if SUPPORTED_STATES.has(StringName(initial_state)) else STATE_IDLE
+	_active_state = StringName(initial_state) if get_supported_states().has(StringName(initial_state)) else STATE_IDLE
 	var source_height := ATLAS_BODY_HEIGHT if body_sprite.region_enabled else float(body_sprite.texture.get_height())
 	body_sprite.position = (
 		Vector2(0.0, -ATLAS_CELL_SIZE.y * 0.5 + 8.0)
@@ -84,7 +104,15 @@ func _process(delta: float) -> void:
 func advance_animation(delta: float) -> void:
 	var step := maxf(delta, 0.0)
 	_elapsed += step
-	_pose_frame = int(floor(_elapsed * FRAME_RATE)) % 4
+	if _is_character_action_state(_active_state):
+		if _has_character_action_settled():
+			_pose_frame = int(floor(
+				(_elapsed - CHARACTER_ACTION_SETTLE_SECONDS) * SETTLED_IDLE_FRAME_RATE
+			)) % 4
+		else:
+			_pose_frame = mini(int(floor(_elapsed * CHARACTER_ACTION_FRAME_RATE)), 3)
+	else:
+		_pose_frame = int(floor(_elapsed * FRAME_RATE)) % 4
 	if ambient_enabled:
 		_ambient_timer -= step
 		if _ambient_timer <= 0.0:
@@ -93,11 +121,11 @@ func advance_animation(delta: float) -> void:
 
 
 func play_state(state: StringName) -> bool:
-	if not SUPPORTED_STATES.has(state):
+	if not get_supported_states().has(state):
 		return false
 	_active_state = state
-	_elapsed = phase_offset
-	_pose_frame = int(floor(_elapsed * FRAME_RATE)) % 4
+	_elapsed = 0.0 if _is_character_action_state(state) else phase_offset
+	_pose_frame = 0 if _is_character_action_state(state) else int(floor(_elapsed * FRAME_RATE)) % 4
 	_apply_pose()
 	return true
 
@@ -107,7 +135,12 @@ func get_active_state() -> StringName:
 
 
 func get_supported_states() -> Array[StringName]:
-	return SUPPORTED_STATES.duplicate()
+	var supported := SUPPORTED_STATES.duplicate()
+	var character_rows := _character_state_rows()
+	for state in character_rows:
+		if not supported.has(StringName(state)):
+			supported.append(StringName(state))
+	return supported
 
 
 func has_runtime_overlay_for_active_state() -> bool:
@@ -117,6 +150,7 @@ func has_runtime_overlay_for_active_state() -> bool:
 func get_animation_snapshot() -> Dictionary:
 	return {
 		"state": _active_state,
+		"rendered_state": _rendered_state(),
 		"frame": _pose_frame,
 		"position": visual_root.position,
 		"scale": visual_root.scale,
@@ -163,17 +197,18 @@ func _apply_pose() -> void:
 	if visual_root == null:
 		return
 	if body_sprite.region_enabled:
-		var state_row := int(STATE_ROWS.get(_active_state, 0))
+		var state_row := _state_row(_rendered_state())
 		body_sprite.region_rect = Rect2(
 			_pose_frame * ATLAS_CELL_SIZE.x,
 			state_row * ATLAS_CELL_SIZE.y,
 			ATLAS_CELL_SIZE.x,
 			ATLAS_CELL_SIZE.y
 		)
+	var rendered_state := _rendered_state()
 	var directional_state := (
-		_active_state == STATE_WALK
-		or _active_state == STATE_CHAT
-		or _active_state == STATE_GREET
+		rendered_state == STATE_WALK
+		or rendered_state == STATE_CHAT
+		or rendered_state == STATE_GREET
 	)
 	body_sprite.flip_h = (
 		directional_state
@@ -183,7 +218,7 @@ func _apply_pose() -> void:
 	var scale_factor := Vector2.ONE
 	var rotation_degrees := 0.0
 	var tone := Color.WHITE
-	match _active_state:
+	match rendered_state:
 		STATE_WALK:
 			position_offset.y = [0.0, -2.0, 0.0, -2.0][_pose_frame]
 			rotation_degrees = [-0.25, 0.25, -0.25, 0.25][_pose_frame]
@@ -225,6 +260,39 @@ func _resolve_native_directional_facing_sign() -> float:
 		return 1.0
 	var character_id := StringName(actor.get_meta("character_id", ""))
 	return -1.0 if LEFT_FACING_DIRECTIONAL_CHARACTERS.has(character_id) else 1.0
+
+
+func _state_row(state: StringName) -> int:
+	var character_rows := _character_state_rows()
+	if character_rows.has(state):
+		return int(character_rows[state])
+	return int(STATE_ROWS.get(state, 0))
+
+
+func _character_state_rows() -> Dictionary:
+	var actor := get_parent()
+	if actor == null:
+		return {}
+	var character_id := StringName(actor.get_meta("character_id", ""))
+	return CHARACTER_STATE_ROWS.get(character_id, {}) as Dictionary
+
+
+func _is_character_action_state(state: StringName) -> bool:
+	return _character_state_rows().has(state)
+
+
+func _has_character_action_settled() -> bool:
+	return (
+		_is_character_action_state(_active_state)
+		and _elapsed >= CHARACTER_ACTION_SETTLE_SECONDS
+	)
+
+
+func _rendered_state() -> StringName:
+	# A role action is performed once, held long enough to read, then returns to
+	# a slow breathing idle while TownNPCLife keeps the calm work-state dwell.
+	# This avoids both a rapid GIF loop and a 12–18 second frozen final pose.
+	return STATE_IDLE if _has_character_action_settled() else _active_state
 
 
 func _draw() -> void:

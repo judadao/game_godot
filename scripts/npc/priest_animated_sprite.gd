@@ -8,9 +8,14 @@ const ANIMATIONS := {
 	&"front_chat": {"row": 1, "fps": 8.0},
 	&"side_walk": {"row": 2, "fps": 10.0},
 	&"side_chat": {"row": 3, "fps": 8.0},
+	&"prayer": {"row": 4, "fps": 5.0},
+	&"bless": {"row": 5, "fps": 6.0},
+	&"comfort": {"row": 6, "fps": 6.0},
+	&"share_goods": {"row": 6, "fps": 6.0},
+	&"courage": {"row": 7, "fps": 6.0},
 }
 
-@export_enum("front_idle", "front_chat", "side_walk", "side_chat")
+@export_enum("front_idle", "front_chat", "side_walk", "side_chat", "prayer", "bless", "comfort", "share_goods", "courage")
 var animation_name := "front_idle":
 	set(value):
 		animation_name = value

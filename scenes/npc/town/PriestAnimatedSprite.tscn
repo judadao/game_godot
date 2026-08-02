@@ -11,4 +11,4 @@ texture_filter = 1
 position = Vector2(0, -256)
 texture = ExtResource("2_atlas")
 hframes = 8
-vframes = 4
+vframes = 8

@@ -6,7 +6,10 @@ const PRIEST_SCENE := preload("res://scenes/npc/town/PriestAnimatedSprite.tscn")
 const PREVIEW_SCENE := preload("res://scenes/dev/previews/PriestAnimationPreview.tscn")
 const FRAME_SIZE := Vector2i(384, 512)
 const FRAME_COUNT := 8
-const ACTIONS := [&"front_idle", &"front_chat", &"side_walk", &"side_chat"]
+const ACTIONS := [
+	&"front_idle", &"front_chat", &"side_walk", &"side_chat",
+	&"prayer", &"bless", &"comfort", &"courage",
+]
 
 var _failures: Array[String] = []
 
@@ -59,7 +62,7 @@ func _test_atlas_contract() -> void:
 	if texture == null:
 		return
 	var atlas := texture.get_image()
-	_expect(atlas.get_size() == Vector2i(FRAME_SIZE.x * FRAME_COUNT, FRAME_SIZE.y * ACTIONS.size()), "Priest atlas dimensions must match the 8x4 frame contract.")
+	_expect(atlas.get_size() == Vector2i(FRAME_SIZE.x * FRAME_COUNT, FRAME_SIZE.y * ACTIONS.size()), "Priest atlas dimensions must match the 8x8 frame contract.")
 	_expect(atlas.detect_alpha(), "Priest atlas must retain transparency.")
 	for row in range(ACTIONS.size()):
 		var frame_hashes: Dictionary = {}
@@ -73,7 +76,8 @@ func _test_atlas_contract() -> void:
 			_expect(used.end.y >= 490 and used.end.y <= 492, "%s frame %d must share the authored foot baseline." % [ACTIONS[row], column])
 			_expect(used.size.x <= 280, "%s frame %d must not contain a neighbouring pose or detached side artifact." % [ACTIONS[row], column])
 			frame_hashes[hash(region.get_data())] = true
-		_expect(frame_hashes.size() >= 7, "%s must contain at least seven visually distinct frames." % ACTIONS[row])
+		var minimum_distinct_frames := 7 if row < 4 else 3
+		_expect(frame_hashes.size() >= minimum_distinct_frames, "%s must contain at least %d visually distinct frames." % [ACTIONS[row], minimum_distinct_frames])
 
 
 func _test_runtime_player() -> void:
@@ -83,12 +87,14 @@ func _test_runtime_player() -> void:
 	var sprite := priest.get_node_or_null("CharacterSprite") as Sprite2D
 	_expect(sprite != null, "Priest scene must own its CharacterSprite.")
 	if sprite != null:
-		_expect(sprite.hframes == 8 and sprite.vframes == 4, "Priest runtime sprite must expose the 8x4 atlas grid.")
+		_expect(sprite.hframes == 8 and sprite.vframes == 8, "Priest runtime sprite must expose the 8x8 atlas grid.")
 	for row in range(ACTIONS.size()):
 		_expect(bool(priest.call("play_animation", ACTIONS[row], true)), "%s must be playable." % ACTIONS[row])
 		priest.call("set_frame_for_review", 7)
 		_expect(int(priest.call("get_frame_index")) == 7, "%s must reach frame seven." % ACTIONS[row])
 		_expect(int(priest.call("get_animation_row")) == row, "%s must map to atlas row %d." % [ACTIONS[row], row])
+	_expect(bool(priest.call("play_animation", &"share_goods", true)), "share_goods alias must be playable.")
+	_expect(int(priest.call("get_animation_row")) == 6, "share_goods must reuse the approved comfort/item handoff row.")
 	priest.queue_free()
 
 

@@ -24,6 +24,7 @@ const RESIDENT_CHARACTER_ASSETS := [
 const VISITOR_CHARACTER_ASSETS := ["visitor_farmer", "visitor_minstrel"]
 const GENERATED_CHARACTER_ASSETS := RESIDENT_CHARACTER_ASSETS + VISITOR_CHARACTER_ASSETS
 const GENERATED_ROWS := [0, 1, 3, 9, 10, 11, 12]
+const CHARACTER_ACTION_ROWS := [13, 14, 15, 16]
 const ATLAS_CELL_SIZE := Vector2i(144, 152)
 const REQUIRED_STATES: Array[StringName] = [
 	&"idle", &"walk", &"sit", &"chat", &"laugh",
@@ -78,9 +79,13 @@ func _assert_priest_scene(scene_path: String) -> void:
 		and body.texture != null
 		and body.texture.resource_path == "res://assets/town/npc/priest/priest_animation_atlas.png"
 		and body.hframes == 8
-		and body.vframes == 4,
-		"Priest must expose the approved 8x4 full-pose animation atlas."
+		and body.vframes == 8,
+		"Priest must expose the approved 8x8 full-pose animation atlas."
 	)
+	if body != null and body.texture != null:
+		_expect(body.texture.get_size() == Vector2(3072, 4096), "Priest atlas must retain eight authored rows.")
+	for action in [&"prayer", &"bless", &"comfort", &"share_goods", &"courage"]:
+		_expect(visual.call("play_animation", action, true), "Priest must support %s." % action)
 	priest.queue_free()
 
 
@@ -159,8 +164,12 @@ func _assert_generated_animation_assets() -> void:
 		if texture == null:
 			continue
 		var image := texture.get_image()
-		_expect(image.get_size() == Vector2i(576, 1976), "%s atlas must remain a 4x13 grid." % asset_name)
-		for row in GENERATED_ROWS:
+		var expected_rows := 17 if asset_name in ["witch", "scientist"] else 13
+		_expect(image.get_size() == Vector2i(576, expected_rows * ATLAS_CELL_SIZE.y), "%s atlas must use its approved state grid." % asset_name)
+		var reviewed_rows := GENERATED_ROWS.duplicate()
+		if asset_name in ["witch", "scientist"]:
+			reviewed_rows.append_array(CHARACTER_ACTION_ROWS)
+		for row in reviewed_rows:
 			var frame_hashes: Dictionary = {}
 			for column in range(4):
 				var rect := Rect2i(column * ATLAS_CELL_SIZE.x, row * ATLAS_CELL_SIZE.y, ATLAS_CELL_SIZE.x, ATLAS_CELL_SIZE.y)
@@ -230,7 +239,7 @@ func _capture_review_frames() -> void:
 	viewport.add_child(town)
 	await process_frame
 	await process_frame
-	await RenderingServer.frame_post_draw
+	await process_frame
 	_save_review_frame(viewport, capture_directory.path_join("town_npcs_idle"))
 	var showcase_states: Array[StringName] = [
 		&"sit", &"chat", &"laugh", &"happy", &"sad", &"surprised", &"angry",
@@ -250,11 +259,42 @@ func _capture_review_frames() -> void:
 			visual.call("advance_animation", 0.4)
 		index += 1
 	await process_frame
-	await RenderingServer.frame_post_draw
+	await process_frame
 	_save_review_frame(viewport, capture_directory.path_join("town_npcs_showcase"))
+	var priest_visual := town.get_node("NPCs/Mayor/Visual")
+	priest_visual.call("play_animation", &"prayer", true)
+	priest_visual.call("set_frame_for_review", 3)
+	var witch_visual := town.get_node("NPCs/EquipmentBlueprintMerchant/Visual")
+	witch_visual.call("play_state", &"cast_ward")
+	witch_visual.call("advance_animation", 2.0)
+	var scientist_visual := town.get_node("NPCs/Blacksmith/Visual")
+	scientist_visual.call("play_state", &"malfunction")
+	scientist_visual.call("advance_animation", 2.0)
+	await process_frame
+	await process_frame
+	_save_review_frame(viewport, capture_directory.path_join("town_character_actions"))
+	witch_visual.call("advance_animation", 3.0)
+	scientist_visual.call("advance_animation", 3.0)
+	await process_frame
+	await process_frame
+	_save_review_frame(viewport, capture_directory.path_join("town_character_actions_settled"))
+	town.call("set_time_of_day_progress", 0.05)
+	var priest := town.get_node("NPCs/Mayor")
+	priest.set("home_wait_seconds", 0.1)
+	priest.call("advance_behavior", 0.11)
+	var witch := town.get_node("NPCs/EquipmentBlueprintMerchant") as TownNPCLife
+	witch.call("request_character_activity", &"read_grimoire", 12.0)
+	var scientist := town.get_node("NPCs/Blacksmith") as TownNPCLife
+	scientist.call("request_character_activity", &"write_notes", 9.0)
+	witch.npc_visual.call("advance_animation", 2.0)
+	scientist.npc_visual.call("advance_animation", 2.0)
+	await process_frame
+	await process_frame
+	_save_review_frame(viewport, capture_directory.path_join("town_profile_runtime"))
 	viewport.queue_free()
 	await process_frame
 	await _save_state_sheet(capture_directory)
+	await _save_character_action_sheet(capture_directory)
 
 
 func _disable_cameras(node: Node) -> void:
@@ -328,9 +368,49 @@ func _save_state_sheet(capture_directory: String) -> void:
 		row += 1
 	await process_frame
 	await process_frame
-	await RenderingServer.frame_post_draw
+	await process_frame
 	var output_path := capture_directory.path_join("town_npc_animation_state_sheet.png")
 	_expect(viewport.get_texture().get_image().save_png(output_path) == OK, "Town NPC state sheet must save.")
+	viewport.queue_free()
+	await process_frame
+
+
+func _save_character_action_sheet(capture_directory: String) -> void:
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1120, 500)
+	viewport.transparent_bg = false
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	root.add_child(viewport)
+	var backdrop := ColorRect.new()
+	backdrop.color = Color("26211d")
+	backdrop.size = Vector2(viewport.size)
+	viewport.add_child(backdrop)
+	var scenes := [
+		["res://scenes/npc/town/Mayor.tscn", [&"prayer", &"bless", &"comfort", &"share_goods", &"courage"]],
+		["res://scenes/npc/town/FemaleVillager.tscn", [&"read_grimoire", &"brew_potion", &"divination", &"cast_ward", &"hidden_concern"]],
+		["res://scenes/npc/town/Blacksmith.tscn", [&"write_notes", &"measure", &"assemble", &"malfunction", &"inspiration", &"concern"]],
+	]
+	for row in range(scenes.size()):
+		var scene_spec: Array = scenes[row]
+		var actions: Array = scene_spec[1]
+		for column in range(actions.size()):
+			var npc := (load(String(scene_spec[0])) as PackedScene).instantiate()
+			viewport.add_child(npc)
+			npc.position = Vector2(90.0 + column * 180.0, 150.0 + row * 158.0)
+			npc.set_process(false)
+			var action := StringName(actions[column])
+			if row == 0:
+				npc.get_node("Visual").call("play_animation", action, true)
+				npc.get_node("Visual").call("set_frame_for_review", 3)
+			else:
+				npc.get_node("Visual").set("ambient_enabled", false)
+				npc.get_node("Visual").call("play_state", action)
+				npc.get_node("Visual").call("advance_animation", 2.0)
+	await process_frame
+	await process_frame
+	await process_frame
+	var output_path := capture_directory.path_join("town_character_action_state_sheet.png")
+	_expect(viewport.get_texture().get_image().save_png(output_path) == OK, "Character action state sheet must save.")
 	viewport.queue_free()
 	await process_frame
 

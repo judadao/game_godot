@@ -1541,13 +1541,22 @@ the HUD never reads gameplay state directly.
 - Status：Current — Active Runtime Presentation
 - Responsibility：`TownNPCLife` 在 authored home 附近選擇待機、休息、情緒、角色化
   work／look／stretch、散步與鄰居社交；社交依序執行靠近、greet、chat／work、reaction、
-  farewell、return-home。`TownNPCVisual` 只播放 4 × 13 atlas state、5 FPS cadence 與左右面向；
+  farewell、return-home。每個本地活動完成後先進入 configured idle recovery，無事件 ambient
+  emotion 只允許 friendly states，且不得連續重複相同活動／情緒。`TownNPCVisual` 播放共同
+  4 × 13 atlas state、5 FPS cadence 與左右面向；女巫與科學家可由各自 4 × 17 atlas 追加
+  角色專屬工作 state。專屬四幀以 2 FPS one-shot 播放、短暫 hold 後回到 1 FPS 細微待機，
+  不能在長工作期間反覆播放或凍結最後一格；
+  無限 loop。
   八位 resident／visitor 的 authored emotion row 4–8 都是 132 px、腳底 `y=144`，runtime
   不再額外縮放或 bob 這些幀。女巫 directional source 原生朝左，flip 必須依 requested
   facing 與 native facing 的差異計算。
 - Coordination：`town_life_npcs` group 只用於尋找可用鄰居；配對持有 partner、catalog
-  preferred distance、session familiarity 與 cooldown。祭司或 visitor 使用
+  preferred distance、session familiarity、per-partner cooldown 與較少互動者優先的公平選擇。
+  角色 profile 的雙方 allowlist 交集限制可選 interaction。祭司或 visitor 使用
   external-interaction lock 時，既有配對會安全取消，第三位 NPC 不得搶走居民。
+- Cadence：一般 idle 預設 5.5–10 秒；profile role activity 後 recovery 預設 10–16 秒；
+  greet／reaction／farewell 約 1.8／1.8／1.4 秒，chat 基準 7 秒並有小幅 deterministic RNG
+  變化，最近 partner 冷卻預設 75 秒。測試可縮短 export，但正式 scene 不得壓回快速輪播。
 - Boundary：不擁有建築互動、商店、gameplay dialogue、NavMesh、quest 或 persistent
   schedule；TownBuildingEntrances 與既有 Game controller 仍是互動 authority。
 
@@ -1556,8 +1565,13 @@ the HUD never reads gameplay state directly.
 - Scripts：`res://scripts/npc/priest_town_behavior.gd`、`res://scripts/npc/priest_animated_sprite.gd`
 - Consumer：`res://scenes/npc/town/Mayor.tscn`（外部 compatibility name）
 - Status：Current — Active Runtime Presentation
-- Responsibility：wait-home → walk-to-witch → chat-with-witch → walk-home；home 與 route
-  共用 Town NPC `y=672`／`z_index=0`。祭司停在女巫左側 95 px，祭司朝右、女巫朝左聊天。
+- Responsibility：wait-home 可進入 profile-driven prayer／bless／comfort／share-goods
+  home activity；只有 noon／afternoon／evening、visit cooldown 結束且女巫可社交時才執行
+  walk-to-witch → chat-with-witch → walk-home。home 與 route 共用 Town NPC
+  `y=672`／`z_index=0`。祭司停在女巫左側 95 px，祭司朝右、女巫朝左聊天。
+- Event boundary：courage 動畫只由明確危險／保護事件呼叫，不得放進無事件 ambient schedule。
+  科學家的 malfunction 同樣只由明確試機失敗事件呼叫；inspiration 使用正向完成姿勢，
+  不得先播放冒煙故障。
 - Boundary：route offset 為 `0`；舊的前景繞行／較高 z layer 不是 current contract。
   女巫只由 external-interaction lock 暫停，祭司不得接管她的 autonomous state。
 
@@ -1573,6 +1587,18 @@ the HUD never reads gameplay state directly.
   cooldown、weight、priority、visitor eligibility 與 directionality。
 - Determinism：catalog 固定排序；weighted selection 的 normalized roll 由 caller 注入，
   catalog 不持有 RNG、relationship、movement、partner 或 interaction state。
+
+### TownNPCCharacterProfileCatalog
+
+- Data：`res://data/town_npc_character_profiles.json`
+- Script：`res://scripts/npc/town_npc_character_profile_catalog.gd`
+- Consumers：`TownNPCLife`、`PriestTownBehavior`
+- Status：Current — Static Presentation Rhythm Catalog
+- Responsibility：all-or-nothing 驗證祭司、女巫、科學家的連續六時段資料、logical locations、
+  最短停留、角色專屬 ambient actions 與 partner interaction allowlist；getter 一律 deep copy。
+- Boundary：只驅動 Town 的短期 presentation rhythm，不擁有 quest、dialogue、NavMesh、存檔或
+  persistent simulation；movement speed、scene path 與 gameplay authority 不得寫入此 catalog。
+  Profile 角色不得隨機播放 generic sit；坐下必須由有座位與專用姿勢的 authored event 觸發。
 
 ### TownVisitorLife
 

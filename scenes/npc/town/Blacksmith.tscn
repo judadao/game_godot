@@ -13,6 +13,7 @@ collision_mask = 1
 sync_to_physics = false
 script = ExtResource("3_life")
 roam_radius = 60.0
+social_radius = 1200.0
 social_chance = 0.3
 metadata/character_id = "scientist"
 

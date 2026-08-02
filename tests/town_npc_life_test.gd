@@ -76,6 +76,10 @@ func _run() -> void:
 	guard.advance_life(10.0)
 	_expect(guard.get_social_partner() == null, "A third resident must not steal an already reserved partner.")
 	_advance_pair_until_state(traveler, merchant, &"social_greet")
+	_expect(
+		float(traveler.get("_state_timer")) >= 1.5,
+		"Residents must pause for a readable greeting instead of rushing into chat."
+	)
 	var expected_greeting := (
 		&"greet" if traveler.npc_visual.get_supported_states().has(&"greet") else &"chat"
 	)
@@ -93,6 +97,21 @@ func _run() -> void:
 	var traveler_facing := float(traveler.npc_visual.get_animation_snapshot()["facing_sign"])
 	var merchant_facing := float(merchant.npc_visual.get_animation_snapshot()["facing_sign"])
 	_expect(traveler_facing > 0.0 and merchant_facing < 0.0, "Chat partners must face each other.")
+	_advance_pair_until_state(traveler, merchant, &"social_react")
+	_expect(
+		float(traveler.get("_state_timer")) >= 1.5,
+		"Face-to-face reactions need a relaxed beat before farewell."
+	)
+	_expect(
+		traveler.npc_visual.get_active_state() == &"chat"
+		and merchant.npc_visual.get_active_state() == &"chat",
+		"Face-to-face reactions must preserve the directional conversation pose instead of snapping front-facing."
+	)
+	_advance_pair_until_state(traveler, merchant, &"social_farewell")
+	_expect(
+		float(traveler.get("_state_timer")) >= 1.2,
+		"Farewell must remain visible long enough to read as a deliberate gesture."
+	)
 
 	_advance_pair_until_state(traveler, merchant, &"idle")
 	_expect(
@@ -246,7 +265,7 @@ func _run() -> void:
 
 
 func _advance_pair_until_state(first: TownNPCLife, second: TownNPCLife, state: StringName) -> void:
-	for _step in range(200):
+	for _step in range(600):
 		if first.get_life_state() == state and second.get_life_state() == state:
 			return
 		first.advance_life(0.05)

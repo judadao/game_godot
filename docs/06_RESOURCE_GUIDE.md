@@ -113,7 +113,7 @@ Town NPC presentation：
 - 輸出必須保留來源 pixel-art 幾何與服裝設計，具有透明背景、無彩色殘邊，且不得把
   concept 漸層背景帶入 Town 或人物半身框。重新產生後必須重跑 native-detail、Town
   full-frame、固定 3 × 2 slices 與六解析度服務 UI 視覺審查。
-- 正式 resident／visitor atlas 為 `576×1976` RGBA、4 columns × 13 rows；row 順序固定為
+- 正式 resident／visitor atlas 的共同基底為 `576×1976` RGBA、4 columns × 13 rows；row 順序固定為
   idle、walk、sit、chat、laugh、happy、sad、surprised、angry、idle_look、idle_stretch、
   greet、work。guard、innkeeper、visitor farmer 與 visitor minstrel 必須保留獨立
   palette／accessory／texture identity，禁止重新指向 traveler／grocer atlas。
@@ -132,13 +132,24 @@ Town NPC presentation：
   旋轉來取代來源動作。
   任何來源或 normalization 改動後，必須重建八張 atlas 並重做原尺寸、Town full-frame、
   時序與固定 3 × 2 slices 審查。
+- 女巫與科學家另由 `character_action_strips_v4/` 各提供四列角色專屬完整姿勢，builder
+  追加至 row 13–16，因此兩張正式 atlas 為 `576×2584`。女巫依序為 read_grimoire、
+  brew_potion、divination、cast_ward；科學家依序為 write_notes、measure、assemble、
+  malfunction。hidden_concern／concern 等語意 state 可重用已核准的克制觀察列，但仍須由
+  profile 事件觸發，不得回到無原因的隨機負面情緒。
+  角色專屬四幀以 2 FPS 播放一次、短暫 hold 最終姿勢，再回到 1 FPS 細微待機；life state
+  仍維持完整的長停留時間。禁止在同一次 work state 中無限循環成快速 GIF，也禁止長時間
+  凍結在最後一格。malfunction 與 priest courage 同屬
+  event-only 動作，不得出現在 ambient day-period activities。
 - 女巫的 walk／chat／greet directional source 原生朝左；其他目前 atlas 原生朝右。
   `TownNPCVisual` 必須以角色原生方向和 requested facing 的差異決定 `flip_h`，不可假定所有
   source 都朝右。
-- 祭司 runtime 使用 `assets/town/npc/priest/pose_strips_v2/` 的四組完整成人骨架動作帶，
+- 祭司 runtime 使用 `assets/town/npc/priest/pose_strips_v2/` 的四組基礎完整成人骨架動作帶，
+  並使用 `pose_strips_v3/priest_actions.png` 的角色專屬完整姿勢，
   由 `tools/art/build_priest_animation.py` 依透明間隔擷取完整人物、統一 448 px 原生高度與
-  腳底線，再輸出 `priest_animation_atlas.png` 的 8 columns × 4 rows atlas；row 順序固定為
-  front idle、front chat、side walk、side chat。`parts/` 舊分件只保留為來源紀錄，不得再
+  腳底線，再輸出 `priest_animation_atlas.png` 的 8 columns × 8 rows atlas；row 順序固定為
+  front idle、front chat、side walk、side chat、prayer、bless、comfort/share_goods、
+  courage。`parts/` 舊分件只保留為來源紀錄，不得再
   直接拼成 runtime 幀，以免不同頭身比例或相鄰肢體混入。
 
 ### 1.2 術語
@@ -229,6 +240,7 @@ UI setter/configure API
 | `named_skill_vfx_profiles.json` | `NamedSkillVFXCatalog` | `profiles` | 5 個 Finisher＋4 個 trigger 的差異化模組 VFX |
 | `elemental_ground_trail_profiles.json` | `ElementalGroundTrailCatalog` | `profiles` | 火焰路徑、冰裂分岔與毒灘的四槽 atlas 拼裝資料 |
 | `town_npc_interactions.json` | `TownNPCInteractionCatalog` | `interactions` | 9 種 Town presentation interaction、雙方 animation sequence、角色／archetype selector、距離、cooldown 與 weight |
+| `town_npc_character_profiles.json` | `TownNPCCharacterProfileCatalog` | `profiles` | 祭司、女巫、科學家的六時段 presentation rhythm、logical locations、專屬 action 與 partner interaction allowlist |
 
 既有共用內容數量與 cross-reference 由 `tests/content_validation_test.gd` 驗證；Town interaction
 schema、ID、selector、sequence 與 deterministic query 另由

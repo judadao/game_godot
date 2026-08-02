@@ -99,7 +99,8 @@ func select_candidate(
 	actor_b_role: StringName,
 	actor_b_archetype: StringName,
 	deterministic_roll: float,
-	required_tags: PackedStringArray = PackedStringArray()
+	required_tags: PackedStringArray = PackedStringArray(),
+	allowed_interaction_ids: PackedStringArray = PackedStringArray()
 ) -> Dictionary:
 	var candidates := get_candidates(
 		actor_a_role,
@@ -110,6 +111,11 @@ func select_candidate(
 	var eligible: Array[Dictionary] = []
 	var total_weight := 0.0
 	for candidate in candidates:
+		if (
+			not allowed_interaction_ids.is_empty()
+			and not allowed_interaction_ids.has(String(candidate["id"]))
+		):
+			continue
 		if not _has_all_tags(candidate, required_tags):
 			continue
 		eligible.append(candidate)

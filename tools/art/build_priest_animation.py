@@ -1,4 +1,4 @@
-"""Build the priest atlas from four reviewed full-pose animation strips.
+"""Build the priest atlas from reviewed full-pose animation strips.
 
 The generated strips contain two rows of four characters, but their spacing is
 not assumed to be mathematically uniform. Transparent row/column gaps are used
@@ -27,7 +27,19 @@ FRAME_SIZE = (384, 512)
 FRAME_COUNT = 8
 TARGET_CHARACTER_HEIGHT = 448
 FOOT_BASELINE_Y = 492
-ACTIONS = ("front_idle", "front_chat", "side_walk", "side_chat")
+ACTIONS = (
+    "front_idle", "front_chat", "side_walk", "side_chat",
+    "prayer", "bless", "comfort", "courage",
+)
+GENERATED_ACTION_PATH = ASSET_ROOT / "pose_strips_v3" / "priest_actions.png"
+GENERATED_ACTION_COLUMNS = {
+    "prayer": (0, 1, 2, 3),
+    "bless": (0, 1, 2, 3),
+    # Exclude the kneeling scale break and the unauthorised shield/staff pose.
+    "comfort": (1, 2, 3, 2),
+    "courage": (0, 1, 2, 2),
+}
+PING_PONG_COLUMNS = (0, 1, 2, 3, 3, 2, 1, 0)
 
 
 def _occupied_ranges(values: list[bool]) -> list[tuple[int, int]]:
@@ -77,6 +89,35 @@ def _extract_poses(path: Path) -> list[Image.Image]:
     return poses
 
 
+def _extract_generated_rows(path: Path) -> list[list[Image.Image]]:
+    sheet = Image.open(path).convert("RGBA")
+    alpha = sheet.getchannel("A")
+    row_ranges = _occupied_ranges([
+        alpha.crop((0, y, sheet.width, y + 1)).getbbox() is not None
+        for y in range(sheet.height)
+    ])
+    if len(row_ranges) != 4:
+        raise ValueError(f"{path.name}: expected four generated rows, found {row_ranges}")
+    rows: list[list[Image.Image]] = []
+    for top, bottom in row_ranges:
+        poses: list[Image.Image] = []
+        row_alpha = alpha.crop((0, top, sheet.width, bottom))
+        column_ranges = _occupied_ranges([
+            row_alpha.crop((x, 0, x + 1, bottom - top)).getbbox() is not None
+            for x in range(sheet.width)
+        ])
+        if len(column_ranges) != 4:
+            raise ValueError(f"{path.name}: expected four poses, found {column_ranges}")
+        for left, right in column_ranges:
+            pose = sheet.crop((left, top, right, bottom))
+            bounds = pose.getchannel("A").getbbox()
+            if bounds is None:
+                raise ValueError(f"{path.name}: empty generated cell {row},{column}")
+            poses.append(pose.crop(bounds))
+        rows.append(poses)
+    return rows
+
+
 def _normalize_poses(poses: list[Image.Image]) -> list[Image.Image]:
     source_height = median(pose.height for pose in poses)
     scale = TARGET_CHARACTER_HEIGHT / source_height
@@ -107,8 +148,14 @@ def main() -> None:
         (FRAME_SIZE[0] * FRAME_COUNT, FRAME_SIZE[1] * len(ACTIONS)),
         (0, 0, 0, 0),
     )
+    generated_rows = _extract_generated_rows(GENERATED_ACTION_PATH)
     for row, action in enumerate(ACTIONS):
-        poses = _extract_poses(STRIP_ROOT / f"{action}.png")
+        if row < 4:
+            poses = _extract_poses(STRIP_ROOT / f"{action}.png")
+        else:
+            source_row = generated_rows[row - 4]
+            selected = [source_row[index] for index in GENERATED_ACTION_COLUMNS[action]]
+            poses = [selected[index].copy() for index in PING_PONG_COLUMNS]
         if len(poses) != FRAME_COUNT:
             raise ValueError(f"{action}: expected {FRAME_COUNT} poses, found {len(poses)}")
         for column, pose in enumerate(_normalize_poses(poses)):

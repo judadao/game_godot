@@ -26,6 +26,7 @@ VISITORS = ("visitor_farmer", "visitor_minstrel")
 CELL_SIZE = (144, 152)
 FRAME_COUNT = 4
 STATE_COUNT = 13
+CHARACTER_ACTION_STATE_COUNT = 17
 LEGACY_STATE_COUNT = 9
 TARGET_HEIGHT = 132
 TARGET_SIT_HEIGHT = 120
@@ -33,6 +34,7 @@ FOOT_BASELINE_Y = 144
 SOURCE_TO_ATLAS_ROWS = ((0, 0), (1, 1), (2, 3))
 EXTRA_TO_ATLAS_ROWS = ((0, 9), (1, 10), (2, 11), (3, 12))
 EMOTION_TO_ATLAS_ROWS = ((0, 4), (1, 5), (2, 6), (3, 7), (4, 8))
+CHARACTER_ACTION_TO_ATLAS_ROWS = ((0, 13), (1, 14), (2, 15), (3, 16))
 GUARD_FALLBACK_ROWS = (2,)
 
 
@@ -90,6 +92,31 @@ def _extract_rows(path: Path, expected_rows: int) -> list[list[Image.Image]]:
             bounds = pose.getchannel("A").getbbox()
             if bounds is None:
                 raise ValueError(f"{path.name}: extracted an empty pose")
+            poses.append(pose.crop(bounds))
+        rows.append(poses)
+    return rows
+
+
+def _extract_equal_grid(path: Path, row_count: int) -> list[list[Image.Image]]:
+    """Extract generated transparent sheets whose cells use an exact visual grid."""
+    sheet = Image.open(path).convert("RGBA")
+    alpha = sheet.getchannel("A")
+    row_ranges = _occupied_ranges([
+        alpha.crop((0, y, sheet.width, y + 1)).getbbox() is not None
+        for y in range(sheet.height)
+    ])
+    if len(row_ranges) != row_count:
+        raise ValueError(f"{path.name}: expected {row_count} rows, found {row_ranges}")
+    rows: list[list[Image.Image]] = []
+    for row, (top, bottom) in enumerate(row_ranges):
+        poses: list[Image.Image] = []
+        for column in range(FRAME_COUNT):
+            left = round(sheet.width * column / FRAME_COUNT)
+            right = round(sheet.width * (column + 1) / FRAME_COUNT)
+            pose = sheet.crop((left, top, right, bottom))
+            bounds = pose.getchannel("A").getbbox()
+            if bounds is None:
+                raise ValueError(f"{path.name}: empty grid cell {row},{column}")
             poses.append(pose.crop(bounds))
         rows.append(poses)
     return rows
@@ -199,9 +226,10 @@ def _build_character(name: str) -> None:
         raise ValueError(
             f"{fallback_path.name}: expected {expected_legacy_size}, got {fallback.size}"
         )
+    state_count = CHARACTER_ACTION_STATE_COUNT if name in ("witch", "scientist") else STATE_COUNT
     atlas = Image.new(
         "RGBA",
-        (CELL_SIZE[0] * FRAME_COUNT, CELL_SIZE[1] * STATE_COUNT),
+        (CELL_SIZE[0] * FRAME_COUNT, CELL_SIZE[1] * state_count),
         (0, 0, 0, 0),
     )
     atlas.alpha_composite(fallback)
@@ -221,6 +249,11 @@ def _build_character(name: str) -> None:
 
     emotion_rows = _extract_rows(EXTRA_STRIP_ROOT / f"{name}_emotion.png", 5)
     _write_normalized_rows(atlas, emotion_rows, EMOTION_TO_ATLAS_ROWS)
+
+    if name in ("witch", "scientist"):
+        action_path = EXTRA_STRIP_ROOT.parent / "character_action_strips_v4" / f"{name}_actions.png"
+        action_rows = _extract_equal_grid(action_path, 4)
+        _write_normalized_rows(atlas, action_rows, CHARACTER_ACTION_TO_ATLAS_ROWS)
 
     output_path = CHARACTER_ROOT / f"{name}_animation_atlas.png"
     atlas.save(output_path, optimize=True)
