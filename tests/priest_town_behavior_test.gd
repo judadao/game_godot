@@ -22,6 +22,10 @@ func _run() -> void:
 		_finish()
 		return
 
+	_expect(
+		float(priest.get("walk_speed")) >= 44.0 and float(priest.get("walk_speed")) <= 52.0,
+		"Priest must stroll at the same relaxed pace as other Town residents."
+	)
 	priest.set_process(false)
 	priest.set("home_wait_seconds", 0.1)
 	priest.set("chat_seconds", 0.2)

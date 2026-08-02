@@ -36,10 +36,17 @@ func _run() -> void:
 	_expect((priest_dawn.get("locations", []) as Array).has("temple"), "Priest dawn must include the temple.")
 	_expect((priest_dawn.get("activities", []) as Array).has("prayer"), "Priest dawn must include prayer.")
 	for period_variant in (catalog.get_profile(&"priest").get("day_periods", []) as Array):
+		var priest_period := period_variant as Dictionary
 		_expect(
-			not ((period_variant as Dictionary).get("activities", []) as Array).has("courage"),
+			not (priest_period.get("activities", []) as Array).has("courage"),
 			"Priest courage is event-driven and must not be selected as an ambient daily activity."
 		)
+		for partner_only_action in ["comfort", "share_goods"]:
+			_expect(
+				not (priest_period.get("activities", []) as Array).has(partner_only_action),
+				"Priest %s requires a visible interaction partner and must not play toward empty air."
+				% partner_only_action
+			)
 	var witch_night: Dictionary = catalog.get_period_profile(&"witch", 0.90)
 	_expect(String(witch_night.get("id", "")) == "night", "Witch must expose a night routine.")
 	_expect((witch_night.get("activities", []) as Array).has("divination"), "Witch night must include divination.")

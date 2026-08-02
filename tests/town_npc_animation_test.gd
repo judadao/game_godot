@@ -315,6 +315,19 @@ func _capture_review_frames() -> void:
 	await process_frame
 	await process_frame
 	_save_review_frame(viewport, capture_directory.path_join("town_character_actions_settled"))
+	priest_visual.call("play_animation", &"share_goods", true)
+	priest_visual.call("advance_animation", 1.0)
+	await process_frame
+	await process_frame
+	_save_review_frame(viewport, capture_directory.path_join("town_priest_bread_prepare"))
+	priest_visual.call("advance_animation", 2.6)
+	await process_frame
+	await process_frame
+	_save_review_frame(viewport, capture_directory.path_join("town_priest_bread_handoff"))
+	priest_visual.call("advance_animation", 4.0)
+	await process_frame
+	await process_frame
+	_save_review_frame(viewport, capture_directory.path_join("town_priest_bread_held"))
 	town.call("set_time_of_day_progress", 0.05)
 	var priest := town.get_node("NPCs/Mayor")
 	priest.set("home_wait_seconds", 0.1)

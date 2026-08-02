@@ -26,12 +26,12 @@
   "animations": {
     "front_idle": {"row": 0, "frames": 8, "fps": 6.0, "loop": true},
     "front_chat": {"row": 1, "frames": 8, "fps": 8.0, "loop": true},
-    "side_walk": {"row": 2, "frames": 8, "fps": 10.0, "loop": true},
+    "side_walk": {"row": 2, "frames": 8, "fps": 6.0, "loop": true},
     "side_chat": {"row": 3, "frames": 8, "fps": 8.0, "loop": true},
     "prayer": {"row": 4, "frames": 8, "fps": 5.0, "loop": true},
     "bless": {"row": 5, "frames": 8, "fps": 6.0, "loop": true},
-    "comfort": {"row": 6, "frames": 8, "fps": 6.0, "loop": true},
-    "share_goods": {"row": 6, "frames": 8, "fps": 6.0, "loop": true},
+    "comfort": {"row": 6, "frames": 8, "fps": 2.0, "loop": false},
+    "share_goods": {"row": 6, "frames": 8, "fps": 2.0, "loop": false},
     "courage": {"row": 7, "frames": 8, "fps": 6.0, "loop": true}
   },
   "body_groups": ["head", "chest", "abdomen", "left_arm", "right_arm", "lower_robe", "legs"],

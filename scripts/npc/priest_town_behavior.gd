@@ -11,7 +11,7 @@ const STATE_CHAT_WITH_WITCH: StringName = &"chat_with_witch"
 const STATE_WALK_HOME: StringName = &"walk_home"
 
 @export var witch_path := NodePath("../EquipmentBlueprintMerchant")
-@export_range(20.0, 180.0, 1.0) var walk_speed := 100.0
+@export_range(20.0, 180.0, 1.0) var walk_speed := 48.0
 @export_range(48.0, 160.0, 1.0) var conversation_offset := 95.0
 @export_range(0.1, 20.0, 0.1) var home_wait_seconds := 4.0
 @export_range(0.1, 30.0, 0.1) var home_activity_seconds := 6.0

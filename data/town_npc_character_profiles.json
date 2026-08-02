@@ -18,7 +18,7 @@
           "start_progress": 0.16,
           "end_progress": 0.34,
           "locations": ["temple", "town_square"],
-          "activities": ["bless", "comfort"],
+          "activities": ["bless"],
           "minimum_stay_seconds": 8.0
         },
         {
@@ -26,7 +26,7 @@
           "start_progress": 0.34,
           "end_progress": 0.5,
           "locations": ["grocer_stall", "player_blacksmith"],
-          "activities": ["share_goods", "bless"],
+          "activities": ["bless", "prayer"],
           "minimum_stay_seconds": 6.0
         },
         {
@@ -34,7 +34,7 @@
           "start_progress": 0.5,
           "end_progress": 0.68,
           "locations": ["town_square", "guard_post"],
-          "activities": ["comfort", "bless"],
+          "activities": ["prayer", "bless"],
           "minimum_stay_seconds": 7.0
         },
         {
@@ -42,7 +42,7 @@
           "start_progress": 0.68,
           "end_progress": 0.84,
           "locations": ["eternal_torch", "temple"],
-          "activities": ["prayer", "comfort"],
+          "activities": ["prayer"],
           "minimum_stay_seconds": 12.0
         },
         {

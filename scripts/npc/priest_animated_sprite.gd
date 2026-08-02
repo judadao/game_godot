@@ -6,7 +6,7 @@ const FRAME_COUNT := 8
 const ANIMATIONS := {
 	&"front_idle": {"row": 0, "fps": 6.0},
 	&"front_chat": {"row": 1, "fps": 8.0},
-	&"side_walk": {"row": 2, "fps": 10.0},
+	&"side_walk": {"row": 2, "fps": 6.0},
 	&"side_chat": {"row": 3, "fps": 8.0},
 	&"side_idle": {
 		"row": 3,
@@ -16,8 +16,8 @@ const ANIMATIONS := {
 	},
 	&"prayer": {"row": 4, "fps": 5.0},
 	&"bless": {"row": 5, "fps": 6.0},
-	&"comfort": {"row": 6, "fps": 6.0},
-	&"share_goods": {"row": 6, "fps": 6.0},
+	&"comfort": {"row": 6, "fps": 2.0, "one_shot": true},
+	&"share_goods": {"row": 6, "fps": 2.0, "one_shot": true},
 	&"courage": {"row": 7, "fps": 6.0},
 }
 
@@ -63,7 +63,11 @@ func advance_animation(delta: float) -> void:
 			sequence_index %= frame_sequence.size()
 		next_frame = int(frame_sequence[sequence_index])
 	else:
-		next_frame = int(floor(_elapsed * fps)) % FRAME_COUNT
+		next_frame = int(floor(_elapsed * fps))
+		if bool(spec.get("one_shot", false)):
+			next_frame = mini(next_frame, FRAME_COUNT - 1)
+		else:
+			next_frame %= FRAME_COUNT
 	if next_frame != _frame_index:
 		_frame_index = next_frame
 		_apply_frame()

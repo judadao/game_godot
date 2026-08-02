@@ -93,8 +93,29 @@ func _test_runtime_player() -> void:
 		priest.call("set_frame_for_review", 7)
 		_expect(int(priest.call("get_frame_index")) == 7, "%s must reach frame seven." % ACTIONS[row])
 		_expect(int(priest.call("get_animation_row")) == row, "%s must map to atlas row %d." % [ACTIONS[row], row])
+	_expect(bool(priest.call("play_animation", &"side_walk", true)), "Priest side walk must be playable.")
+	priest.call("advance_animation", 0.5)
+	_expect(
+		int(priest.call("get_frame_index")) <= 3,
+		"Priest walk cycle must read as a relaxed stroll instead of hurried footwork."
+	)
 	_expect(bool(priest.call("play_animation", &"share_goods", true)), "share_goods alias must be playable.")
 	_expect(int(priest.call("get_animation_row")) == 6, "share_goods must reuse the approved comfort/item handoff row.")
+	priest.call("advance_animation", 1.0)
+	_expect(
+		int(priest.call("get_frame_index")) <= 2,
+		"Priest bread handoff must unfold slowly instead of playing at GIF speed."
+	)
+	priest.call("advance_animation", 3.1)
+	_expect(
+		int(priest.call("get_frame_index")) == 7,
+		"Priest bread handoff must complete one deliberate gesture arc."
+	)
+	priest.call("advance_animation", 4.0)
+	_expect(
+		int(priest.call("get_frame_index")) == 7,
+		"Priest bread handoff must hold its final pose instead of looping."
+	)
 	_expect(bool(priest.call("play_animation", &"side_idle", true)), "Priest must expose a calm non-front idle gesture.")
 	priest.call("advance_animation", 2.1)
 	_expect(int(priest.call("get_frame_index")) == 0, "Priest side idle must settle on its calm three-quarter pose.")
