@@ -1539,13 +1539,51 @@ the HUD never reads gameplay state directly.
 - Scripts：`res://scripts/npc/town_npc_life.gd`、`res://scripts/npc/town_npc_visual.gd`
 - Consumers：Town traveler、witch、guard、item merchant、blacksmith、innkeeper scenes
 - Status：Current — Active Runtime Presentation
-- Responsibility：`TownNPCLife` 在各角色 authored home 附近選擇待機、坐下休息、情緒、散步與
-  鄰居社交，協調會合、互相面對聊天及返回原位；`TownNPCVisual` 只播放 4 × 9 atlas
-  state、逐格 cadence 與左右面向。
-- Coordination：`town_life_npcs` group 只用於尋找可用鄰居；祭司對女巫的專屬路線使用
-  external-interaction lock，期間不得讓女巫同時接受另一個社交配對。
+- Responsibility：`TownNPCLife` 在 authored home 附近選擇待機、休息、情緒、角色化
+  work／look／stretch、散步與鄰居社交；社交依序執行靠近、greet、chat／work、reaction、
+  farewell、return-home。`TownNPCVisual` 只播放 4 × 13 atlas state、5 FPS cadence 與左右面向；
+  八位 resident／visitor 的 authored emotion row 4–8 都是 132 px、腳底 `y=144`，runtime
+  不再額外縮放或 bob 這些幀。女巫 directional source 原生朝左，flip 必須依 requested
+  facing 與 native facing 的差異計算。
+- Coordination：`town_life_npcs` group 只用於尋找可用鄰居；配對持有 partner、catalog
+  preferred distance、session familiarity 與 cooldown。祭司或 visitor 使用
+  external-interaction lock 時，既有配對會安全取消，第三位 NPC 不得搶走居民。
 - Boundary：不擁有建築互動、商店、gameplay dialogue、NavMesh、quest 或 persistent
   schedule；TownBuildingEntrances 與既有 Game controller 仍是互動 authority。
+
+### PriestTownBehavior / PriestAnimatedSprite
+
+- Scripts：`res://scripts/npc/priest_town_behavior.gd`、`res://scripts/npc/priest_animated_sprite.gd`
+- Consumer：`res://scenes/npc/town/Mayor.tscn`（外部 compatibility name）
+- Status：Current — Active Runtime Presentation
+- Responsibility：wait-home → walk-to-witch → chat-with-witch → walk-home；home 與 route
+  共用 Town NPC `y=672`／`z_index=0`。祭司停在女巫左側 95 px，祭司朝右、女巫朝左聊天。
+- Boundary：route offset 為 `0`；舊的前景繞行／較高 z layer 不是 current contract。
+  女巫只由 external-interaction lock 暫停，祭司不得接管她的 autonomous state。
+
+### TownNPCInteractionCatalog
+
+- Data：`res://data/town_npc_interactions.json`
+- Script：`res://scripts/npc/town_npc_interaction_catalog.gd`
+- Consumers：`TownNPCLife`；visitor eligibility 也由相同 selector contract 查詢
+- Status：Current — Static Presentation Catalog
+- Responsibility：all-or-nothing 驗證並以 deep copy 回傳 greet、chat、laugh、gossip、
+  comfort、share_goods、discuss_work、watch_sky、farewell 九種 interaction；每筆定義
+  兩名 participant 的 role／archetype、animation sequence、duration、social distance、
+  cooldown、weight、priority、visitor eligibility 與 directionality。
+- Determinism：catalog 固定排序；weighted selection 的 normalized roll 由 caller 注入，
+  catalog 不持有 RNG、relationship、movement、partner 或 interaction state。
+
+### TownVisitorLife
+
+- Script：`res://scripts/npc/town_visitor_life.gd`
+- Consumers：`VisitorFarmer.tscn`、`VisitorMinstrel.tscn`
+- Status：Current — Active Runtime Presentation
+- Responsibility：在 initial delay 後由 authored town edge 進場，走到 greeting stop，
+  向可用偏好居民 greet／chat，再走到相反 edge；完成一輪後 offscreen wait 再循環。
+- Groups：保留 `NPCs`／`town_visitors`，不得加入 `town_life_npcs` 或 `Interactives`。
+- Boundary：只記錄 session-local pass／greeting count；不擁有建築 interaction、schedule
+  save、gameplay dialogue、quest 或 resident movement。
 
 ### TownModularVisuals
 

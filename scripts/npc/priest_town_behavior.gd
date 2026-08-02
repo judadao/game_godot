@@ -14,8 +14,7 @@ const STATE_WALK_HOME: StringName = &"walk_home"
 @export_range(0.1, 20.0, 0.1) var home_wait_seconds := 4.0
 @export_range(0.1, 20.0, 0.1) var chat_seconds := 4.5
 @export_range(0.1, 8.0, 0.1) var arrival_tolerance := 1.0
-@export_range(12.0, 56.0, 1.0) var foreground_lane_offset := 46.0
-@export_range(24.0, 120.0, 1.0) var lane_entry_distance := 70.0
+@export_range(0.0, 56.0, 1.0) var foreground_lane_offset := 0.0
 
 @onready var priest_visual: PriestAnimatedSprite = $Visual
 
@@ -86,23 +85,23 @@ func _resolve_witch() -> void:
 func _conversation_x() -> float:
 	if not is_instance_valid(_witch):
 		return _home_position.x
-	return _witch.position.x + conversation_offset
+	return _witch.position.x - conversation_offset
 
 
 func _outbound_route() -> Array[Vector2]:
-	var lane_y := _home_position.y + foreground_lane_offset
+	if is_zero_approx(foreground_lane_offset):
+		return [get_conversation_position()]
 	return [
-		Vector2(_home_position.x + lane_entry_distance, lane_y),
-		Vector2(_conversation_x(), lane_y),
+		Vector2(_conversation_x(), _home_position.y + foreground_lane_offset),
 		get_conversation_position(),
 	]
 
 
 func _return_route() -> Array[Vector2]:
-	var lane_y := _home_position.y + foreground_lane_offset
+	if is_zero_approx(foreground_lane_offset):
+		return [_home_position]
 	return [
-		Vector2(_conversation_x(), lane_y),
-		Vector2(_home_position.x, lane_y),
+		Vector2(_home_position.x, _home_position.y + foreground_lane_offset),
 		_home_position,
 	]
 
@@ -136,14 +135,14 @@ func _enter_state(next_state: StringName) -> void:
 			z_index = 0
 			_set_visual(&"front_idle", 1.0)
 		STATE_WALK_TO_WITCH:
-			z_index = 2
+			z_index = 2 if not is_zero_approx(foreground_lane_offset) else 0
 			_set_visual(&"side_walk", 1.0)
 		STATE_CHAT_WITH_WITCH:
 			z_index = 0
-			_set_visual(&"side_chat", -1.0)
+			_set_visual(&"side_chat", 1.0)
 			_begin_witch_chat()
 		STATE_WALK_HOME:
-			z_index = 2
+			z_index = 2 if not is_zero_approx(foreground_lane_offset) else 0
 			_set_visual(&"side_walk", -1.0)
 	behavior_state_changed.emit(_state)
 

@@ -128,8 +128,9 @@ Guardian 死亡本身不是最終結算點；玩家回到安全區時才完成�
 Town 是起始 Hub，現有內容包括：
 
 - Player、地形與碰撞；
-- 祭司／Mayor placement、女巫、村民、守衛、藥水商人、鐵匠與旅店角色；祭司會從
-  Town Hall 前往女巫身旁聊天，之後返回原點等待並重複社交循環；
+- 祭司／Mayor placement、六位常駐居民與 farmer／minstrel 兩位通行 visitor；祭司會從
+  Town Hall 前往女巫身旁聊天再回到原點，visitor 則由城鎮一側進入、與居民短聊後由
+  另一側離開；
 - Material Yard、Player Blacksmith、Town Hall 專用建築 UI；
 - Town 商品買賣；
 - Autumn、Crystal Caves、Forbidden Graveyard portal；
@@ -687,13 +688,26 @@ B2，只提升街景熱鬧程度，不新增交易、NPC、碰撞或互動規則
 六棟建築名稱木牌位於各自最高輪廓上方，預設隱藏；Player 走進該建築完整地基
 範圍時只顯示目前建築，離開後立刻回到無木牌狀態。NPC 經過不觸發。
 
-Town 七個 display-only NPC 全部使用 `concept/characters` 的五套新角色設計；共用
-idle、walk、sit、chat、laugh、happy、sad、surprised、angry presentation state，
-並以七套 world atlas 區分守衛與旅店主人，不在同一畫面複製角色身份。祭司以固定路線
-走到女巫旁聊天再回到 Town Hall；其餘六位會在各自店面／街區附近隨機待機、表達情緒、
-坐下休息、短距離散步，或與可用鄰居保持距離會合、面向彼此聊天後回到原位。每個人的
-自主散步區域會依相鄰 home anchor 切開，至少保留一個人物寬度，避免同基準線互相穿入。
-這些行為只營造活城鎮，
+Town 九個 display-only NPC placement 使用各自 world texture identity；六位 residents 與
+兩位 visitors 的 atlas 都有 idle、walk、sit、chat、laugh、happy、sad、surprised、angry、
+idle_look、idle_stretch、greet、work 共 13 個 presentation states。八位角色的 row 4–8
+使用各自 authored emotion strips，人物統一 132 px、腳底 `y=144`；runtime 不額外縮放、
+bob 或旋轉情緒幀。女巫 directional source 原生朝左，移動時依 requested facing 正確翻面。
+祭司以 `y=672`／`z_index=0` 固定路線走到女巫左側 95 px，祭司朝右、女巫朝左聊天後再沿
+同一 baseline 回 Town Hall；舊的前景繞行不再使用。其餘六位居民會在各自店面／街區附近
+待機、表達情緒、做符合身份的悠閒工作、坐下休息或短距離散步；社交時先保留 partner、
+走到 catalog 指定距離，
+依序打招呼、聊天／談工作、產生情緒反應、道別，再回到精確 home。初次見面偏好 greet；
+熟人可依角色選擇 discuss_work，golden hour 可一起 watch_sky。familiarity 與 cooldown 都是
+session-local，不形成持久 schedule。散步區域依相鄰 home anchor 切開，至少保留一個人物
+寬度，避免同基準線互相穿入。
+
+`town_npc_interactions.json` 提供九種悠閒小鎮 presentation interaction：greet、chat、laugh、
+gossip、comfort、share_goods、discuss_work、watch_sky、farewell。Catalog 只決定合法候選與
+雙方動畫 sequence；實際 partner、movement、external lock、relationship count 與 completion
+仍由居民 life controller 擁有。farmer／minstrel visitor 各自從相反方向進鎮，在 authored
+stop 優先找指定居民 greet／chat，之後穿越整個小鎮離開並等待下一輪；visitor 不成為商店、
+建築或居民社交 authority。這些行為只營造活城鎮，
 不擁有 NavMesh、持久 schedule、gameplay dialogue 或建築互動。Autumn safe-zone seated merchant 與 compatibility
 Merchant 也已換成新 atlas hierarchy，仍保留原商店互動。服務 UI 的人物框同步換成這批角色的動態
 半身像。Town root 提供 day／golden-hour 光色同步 API；golden hour 在 normalized

@@ -13,15 +13,22 @@ const INTERACTIVE_NPC_SCENE_PATHS := {
 	"GenericMerchant": "res://scenes/npc/Merchant.tscn",
 	"SeatedTrailMerchant": "res://scenes/maps/autumn_safe/components/SeatedTrailMerchant.tscn",
 }
+const VISITOR_NPC_SCENE_PATHS := {
+	"VisitorFarmer": "res://scenes/npc/town/VisitorFarmer.tscn",
+	"VisitorMinstrel": "res://scenes/npc/town/VisitorMinstrel.tscn",
+}
 const CHARACTER_TEXTURE_ROOT := "res://assets/town/npc/characters/"
-const GENERATED_CHARACTER_ASSETS := [
+const RESIDENT_CHARACTER_ASSETS := [
 	"traveler", "witch", "guard", "grocer", "scientist", "innkeeper",
 ]
-const GENERATED_ROWS := [0, 1, 3]
+const VISITOR_CHARACTER_ASSETS := ["visitor_farmer", "visitor_minstrel"]
+const GENERATED_CHARACTER_ASSETS := RESIDENT_CHARACTER_ASSETS + VISITOR_CHARACTER_ASSETS
+const GENERATED_ROWS := [0, 1, 3, 9, 10, 11, 12]
 const ATLAS_CELL_SIZE := Vector2i(144, 152)
 const REQUIRED_STATES: Array[StringName] = [
 	&"idle", &"walk", &"sit", &"chat", &"laugh",
 	&"happy", &"sad", &"surprised", &"angry",
+	&"idle_look", &"idle_stretch", &"greet", &"work",
 ]
 
 var _failures := 0
@@ -139,14 +146,20 @@ func _assert_npc_scene(npc_name: String, scene_path: String) -> void:
 func _assert_generated_animation_assets() -> void:
 	for asset_name in GENERATED_CHARACTER_ASSETS:
 		var atlas_path := "%s%s_animation_atlas.png" % [CHARACTER_TEXTURE_ROOT, asset_name]
-		var motion_path := "%smotion_strips_v2/%s_motion.png" % [CHARACTER_TEXTURE_ROOT, asset_name]
+		var motion_path := (
+			"%smotion_strips_v2/%s_motion.png" % [CHARACTER_TEXTURE_ROOT, asset_name]
+			if RESIDENT_CHARACTER_ASSETS.has(asset_name)
+			else "%smotion_strips_v3/%s_base.png" % [CHARACTER_TEXTURE_ROOT, asset_name]
+		)
+		var extra_path := "%smotion_strips_v3/%s_extra.png" % [CHARACTER_TEXTURE_ROOT, asset_name]
 		_expect(ResourceLoader.exists(atlas_path), "%s generated atlas must exist." % asset_name)
 		_expect(ResourceLoader.exists(motion_path), "%s reviewed full-pose source strip must exist." % asset_name)
+		_expect(ResourceLoader.exists(extra_path), "%s reviewed extra-action strip must exist." % asset_name)
 		var texture := load(atlas_path) as Texture2D
 		if texture == null:
 			continue
 		var image := texture.get_image()
-		_expect(image.get_size() == Vector2i(576, 1368), "%s atlas must remain a 4x9 grid." % asset_name)
+		_expect(image.get_size() == Vector2i(576, 1976), "%s atlas must remain a 4x13 grid." % asset_name)
 		for row in GENERATED_ROWS:
 			var frame_hashes: Dictionary = {}
 			for column in range(4):
@@ -161,13 +174,14 @@ func _assert_generated_animation_assets() -> void:
 				)
 				frame_hashes[hash(frame.get_data())] = true
 			_expect(frame_hashes.size() >= 3, "%s row %d must contain authored pose changes." % [asset_name, row])
-		for column in range(4):
-			var sit_frame := image.get_region(Rect2i(column * ATLAS_CELL_SIZE.x, 2 * ATLAS_CELL_SIZE.y, ATLAS_CELL_SIZE.x, ATLAS_CELL_SIZE.y))
-			var sit_used := sit_frame.get_used_rect()
-			_expect(
-				sit_used.size.y >= 116 and sit_used.size.y <= 122,
-				"%s sit frame %d must preserve adult torso scale and a readable seat silhouette." % [asset_name, column]
-			)
+		if RESIDENT_CHARACTER_ASSETS.has(asset_name):
+			for column in range(4):
+				var sit_frame := image.get_region(Rect2i(column * ATLAS_CELL_SIZE.x, 2 * ATLAS_CELL_SIZE.y, ATLAS_CELL_SIZE.x, ATLAS_CELL_SIZE.y))
+				var sit_used := sit_frame.get_used_rect()
+				_expect(
+					sit_used.size.y >= 116 and sit_used.size.y <= 122,
+					"%s sit frame %d must preserve adult torso scale and a readable seat silhouette." % [asset_name, column]
+				)
 
 
 func _assert_town_integration() -> void:
@@ -270,7 +284,7 @@ func _save_review_frame(viewport: SubViewport, path_prefix: String) -> void:
 
 func _save_state_sheet(capture_directory: String) -> void:
 	var viewport := SubViewport.new()
-	viewport.size = Vector2i(1530, 1120)
+	viewport.size = Vector2i(2210, 1430)
 	viewport.transparent_bg = false
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	root.add_child(viewport)
@@ -280,11 +294,18 @@ func _save_state_sheet(capture_directory: String) -> void:
 	viewport.add_child(backdrop)
 	var states: Array[StringName] = REQUIRED_STATES.duplicate()
 	var row := 0
-	for npc_name in NPC_SCENE_PATHS:
+	var state_sheet_scenes := NPC_SCENE_PATHS.duplicate()
+	state_sheet_scenes.merge(VISITOR_NPC_SCENE_PATHS)
+	for npc_name in state_sheet_scenes:
 		for column in range(states.size()):
-			var npc := (load(String(NPC_SCENE_PATHS[npc_name])) as PackedScene).instantiate()
-			npc.position = Vector2(85.0 + column * 170.0, 148.0 + row * 156.0)
+			var npc := (load(String(state_sheet_scenes[npc_name])) as PackedScene).instantiate()
+			var desired_position := Vector2(85.0 + column * 170.0, 148.0 + row * 156.0)
+			if npc is TownVisitorLife:
+				npc.set("visitor_enabled", false)
 			viewport.add_child(npc)
+			# TownVisitorLife initializes at its offscreen route entry in _ready().
+			# Restore the authored review-grid position after that initialization.
+			npc.position = desired_position
 			var visual := npc.get_node("Visual")
 			if npc_name == "Mayor":
 				var priest_animation: StringName = (
@@ -296,7 +317,10 @@ func _save_state_sheet(capture_directory: String) -> void:
 				visual.call("play_animation", priest_animation, true)
 				visual.call("set_frame_for_review", column % 8)
 			else:
-				npc.set("life_enabled", false)
+				if npc is TownNPCLife:
+					npc.set("life_enabled", false)
+				elif npc is TownVisitorLife:
+					npc.set("visitor_enabled", false)
 				npc.set_process(false)
 				visual.set("ambient_enabled", false)
 				visual.call("play_state", states[column])

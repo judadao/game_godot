@@ -630,28 +630,46 @@ service；修改 mappings或處理順序時須用實際 run驗證。
 - 通用 NPC/Merchant scene可使用 `StaticBody2D` + `Interactives` group。
 - Town NPC由 `scenes/maps/town/components/TownNPCs.tscn` 組合，且是
   display-only；Town 互動由 `TownBuildingEntrances` 負責。
-- 七個 Town placement 維持各自 dedicated scene；祭司以外的六個 Town NPC 根節點為
-  `AnimatableBody2D` + `TownNPCLife`，其 `Visual` 使用 `TownNPCVisual`。角色透明圖由
-  `concept/characters` 的五個核准設計產生，再建立六套 world-scale 4 幀 × 9 狀態
-  atlas；idle、side walk、side chat 使用獨立生成的完整成人姿勢，sit／laugh／情緒 row
-  保留相同角色身份的既有 authored poses。守衛與旅店主人有獨立服色、長矛／帽子與
-  texture identity，不會在同一 Town 畫面複製 traveler／grocer。runtime 不再引用舊
-  `town_npcs_atlas_v2.png`。
+- `TownNPCs.tscn` 現有九個 Town placement：祭司、六位常駐居民，以及由左右城鎮邊界
+  進出的 farmer／minstrel 兩位 visitor。六位居民根節點為
+  `AnimatableBody2D` + `TownNPCLife`；兩位 visitor 使用相同視覺樹，但由
+  `TownVisitorLife` 單獨管理通行生命週期。九位角色各自保有 dedicated scene 與 texture
+  identity，不會把 traveler／grocer atlas 當成守衛、旅店主人或 visitor 的替代品。
+- 六套居民與兩套 visitor world atlas 都是 `144×152` cell、4 columns × 13 rows；row
+  固定為 idle、walk、sit、chat、laugh、happy、sad、surprised、angry、idle_look、
+  idle_stretch、greet、work。八位角色的 row 4–8 全部來自各自身份一致的 authored
+  laugh／happy／sad／surprised／angry 完整姿勢動作帶，和其他生成 row 一樣統一為
+  `132 px` 人物高度與 cell `y=144` 腳底線；runtime 不再對這些情緒 row 額外做逐幀縮放、
+  上下 bob 或旋轉來假造動作。居民 sit row 維持 120 px 成人坐姿與清楚椅凳；runtime
+  不再引用舊 `town_npcs_atlas_v2.png`。
 - 穩定 placement `NPCs/Mayor` 現由祭司角色呈現：`Mayor.tscn` 保留外部 scene/path
   compatibility，但根節點是 `AnimatableBody2D`，由 `PriestTownBehavior` 驅動
   wait-home、walk-to-witch、chat-with-witch、walk-home 循環；`Visual` 使用獨立
   8 columns × 4 rows 完整姿勢祭司 atlas；每個 row 由獨立的 8 幀成人骨架動作帶組成，
-  舊版異同比例分件不得再直接組成 runtime 幀。祭司在女巫右側停靠、面向女巫聊天，結束後
-  回到原點正面等待；女巫的 ambient state 只在對話期間暫停並於離開時恢復。
-  祭司移動時使用比一般 NPC baseline 前移 46 px 的 foreground lane 與較高 z-index，
-  避免穿過正在散步、坐下或交談的自主 NPC 身體。
-- `TownNPCVisual` 以 5 FPS 離散手繪 cadence 提供 idle、walk、sit、chat、laugh、
-  happy、sad、surprised、angry，並只負責 atlas state 與面向。`TownNPCLife` 是六個
-  Town NPC 的位置／社交 authority：在 authored home 附近隨機散步、坐下休息、抽取情緒、尋找
-  可用鄰居、保持間距走到會合點、面向彼此聊天，再返回精確 home anchor。
+  舊版異同比例分件不得再直接組成 runtime 幀。祭司全程與居民共用 `y=672` baseline 與
+  `z_index=0`；由 Town Hall 原點直走至女巫左側 `95 px` 的 approach anchor，祭司朝右、
+  女巫朝左互相面向聊天，再沿同一 baseline 返回原點正面等待。現行 route offset 為 `0`，
+  舊的前景繞行與較高 depth layer 都不是 active contract。女巫的 ambient state 只在
+  對話期間暫停並於離開時恢復。
+- `TownNPCVisual` 以 5 FPS 離散手繪 cadence 播放上述 13 states，並只負責 atlas row、
+  frame 與面向。方向判定會比較移動方向與 atlas 原生方向；女巫 directional rows 原生朝左，
+  其餘目前角色原生朝右，因此不得再以全角色共用的 `facing_sign < 0` 判斷翻面。
+  `TownNPCLife` 是六位居民的位置／社交 authority：除散步、休息與
+  角色化 work／look／stretch 待機外，會從 `TownNPCInteractionCatalog` 查詢角色／archetype
+  合法互動，依序執行靠近、greet、chat／work topic、情緒 reaction、farewell，再返回精確
+  home anchor。配對全程保留 partner、雙方互相面向並套用 catalog 距離與 cooldown；
+  familiar count 只存在本次 session。
+- `data/town_npc_interactions.json` 是九種 presentation interaction 的靜態 authority：
+  greet、chat、laugh、gossip、comfort、share_goods、discuss_work、watch_sky、farewell。
+  `TownNPCInteractionCatalog` 只驗證／查詢 selector、雙方動畫 sequence、duration、social
+  distance、cooldown 與 deterministic weight，不擁有移動、配對或 gameplay dialogue。
+- `TownVisitorLife` 讓 visitor 在 offscreen wait 後由一側進鎮，走到 authored greeting
+  stop，若偏好居民可用便先 greet、短聊，再走到另一側離鎮並等待下一輪；visitor 使用
+  `town_visitors` group，不加入 `town_life_npcs`，也不成為居民社交或建築互動 authority。
 - `TownNPCLife` 是 session-local presentation simulation，不使用 NavMesh、不進入存檔，
-  不新增建築互動或對話權威。祭司仍由 `PriestTownBehavior` 單獨控制；祭司接近女巫時
-  透過 external-interaction lock 暫停女巫的自主行為，離開後恢復。
+  不新增建築互動或對話權威。祭司與 visitor 需要居民配合時都透過
+  `set_external_interaction()` 鎖住居民；lock 會取消既有配對且避免第三人搶走 partner，
+  釋放後回到 idle。祭司仍由 `PriestTownBehavior` 單獨控制。
 - Merchant只發 intent signal；stock/economy由 `Game` 管理。
 - Production Autumn safe-zone 的 `SeatedTrailMerchant` 與 compatibility
   `scenes/npc/Merchant.tscn` 也使用相同 atlas animation hierarchy；前者固定為 sit，

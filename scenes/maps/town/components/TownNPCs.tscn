@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/npc/town/Mayor.tscn" id="1_mayor"]
 [ext_resource type="PackedScene" path="res://scenes/npc/town/MaleVillager.tscn" id="2_male"]
@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" path="res://scenes/npc/town/PotionMerchant.tscn" id="5_merchant"]
 [ext_resource type="PackedScene" path="res://scenes/npc/town/Blacksmith.tscn" id="6_smith"]
 [ext_resource type="PackedScene" path="res://scenes/npc/town/Innkeeper.tscn" id="7_innkeeper"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/VisitorFarmer.tscn" id="8_farmer"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/VisitorMinstrel.tscn" id="9_minstrel"]
 
 [node name="TownNPCs" type="Node2D"]
 
@@ -30,3 +32,9 @@ position = Vector2(550, 672)
 
 [node name="Innkeeper" parent="." instance=ExtResource("7_innkeeper")]
 position = Vector2(1780, 672)
+
+[node name="VisitorFarmer" parent="." instance=ExtResource("8_farmer")]
+position = Vector2(-140, 672)
+
+[node name="VisitorMinstrel" parent="." instance=ExtResource("9_minstrel")]
+position = Vector2(2082, 672)

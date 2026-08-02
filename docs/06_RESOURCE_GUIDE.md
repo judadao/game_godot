@@ -9,7 +9,7 @@ pipeline描述成Current。
 
 1. [目的、現況與術語](#1-目的現況與術語)
 2. [資料分層與 Ownership](#2-資料分層與-ownership)
-3. [現有九個 JSON Catalog](#3-現有九個-json-catalog)
+3. [現有十一個 JSON Catalog](#3-現有十一個-json-catalog)
 4. [Card Data 與 CardDatabase](#4-card-data-與-carddatabase)
 5. [Fusion Recipe 與 EvolutionManager](#5-fusion-recipe-與-evolutionmanager)
 6. [Equipment Data 與 Inventory Runtime State](#6-equipment-data-與-inventory-runtime-state)
@@ -36,16 +36,16 @@ pipeline描述成Current。
 
 | 類型 | 數量 | Path |
 |---|---:|---|
-| Gameplay JSON | 10 | `res://data/*.json` |
+| Gameplay JSON | 11 | `res://data/*.json` |
 | Gameplay `.tres` / `.res` | 0 | 無 |
 | `resources/` content | 0；空目錄不保留 placeholder | 無 |
 | Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
 | Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
 | Generated VFX texture | 24 | `res://assets/generated/vfx/` |
 | Town NPC transparent cutout | 5 | `res://assets/town/npc/characters/` |
-| Town NPC world animation atlas | 7 | `res://assets/town/npc/characters/*_animation_atlas.png` |
+| Town NPC world animation atlas | 9 | `res://assets/town/npc/characters/*_animation_atlas.png`、`res://assets/town/npc/priest/priest_animation_atlas.png` |
 
-十個 JSON：
+十一個 JSON：
 
 - `res://data/cards.json`
 - `res://data/evolutions.json`
@@ -57,6 +57,7 @@ pipeline描述成Current。
 - `res://data/forge_catalog.json`
 - `res://data/named_skill_vfx_profiles.json`
 - `res://data/elemental_ground_trail_profiles.json`
+- `res://data/town_npc_interactions.json`
 
 Generated combat presentation：
 
@@ -112,19 +113,28 @@ Town NPC presentation：
 - 輸出必須保留來源 pixel-art 幾何與服裝設計，具有透明背景、無彩色殘邊，且不得把
   concept 漸層背景帶入 Town 或人物半身框。重新產生後必須重跑 native-detail、Town
   full-frame、固定 3 × 2 slices 與六解析度服務 UI 視覺審查。
-- `tools/build_town_npc_animation_atlases.gd` 將五張 cutout 縮至 Town 的粗像素頻率，
-  產生初版一般 Town NPC 的 `576×1368` RGBA atlas。每張固定 4 columns × 9 rows，row 順序為
-  idle、walk、sit、chat、laugh、happy、sad、surprised、angry；guard 與 innkeeper
-  必須保留獨立 palette/accessory variant，禁止重新指向 traveler／grocer atlas。
+- 正式 resident／visitor atlas 為 `576×1976` RGBA、4 columns × 13 rows；row 順序固定為
+  idle、walk、sit、chat、laugh、happy、sad、surprised、angry、idle_look、idle_stretch、
+  greet、work。guard、innkeeper、visitor farmer 與 visitor minstrel 必須保留獨立
+  palette／accessory／texture identity，禁止重新指向 traveler／grocer atlas。
 - 本機、git-ignored 的 `assets/town/npc/characters/source_motion_v2/` 可保存六位角色的
   原始 chroma generation；版本化的 `motion_strips_v2/` 保存去背後 4 columns × 3 rows
   完整姿勢動作帶，row 固定為
   front idle、side walk、side chat。`tools/art/build_town_npc_full_pose_atlases.py` 依透明
   間隔擷取每格、統一 132 px 人物高度與 `y=144` 腳底線，覆寫正式 atlas 的 row 0／1／3；
-  sit row 另統一為 120 px（包含清楚椅凳）以保留成人頭身，laugh／情緒 row 從
-  `procedural_v1/` 保留。守衛的 retained row 會同步轉為核准的 charcoal uniform。
-  任何來源或 normalization 改動後，
-  必須重建六張 atlas 並重做原尺寸、Town full-frame、時序與固定 3 × 2 slices 審查。
+  sit row 另統一為 120 px（包含清楚椅凳）以保留成人頭身。守衛的 retained sit row
+  會同步轉為核准的 charcoal uniform。
+  `motion_strips_v3/` 為六位居民加入 lookout／stretch／greet／role-work 四列完整姿勢，
+  並保存兩位 visitor 的角色 base／額外動作來源；builder 將四列寫入 atlas row 9–12。
+  同目錄的八份 `*_emotion.png` 為六位居民與兩位 visitor 提供各自的 laugh／happy／sad／
+  surprised／angry 完整姿勢列，依序寫入 atlas row 4–8。這些 authored emotion frames
+  一律 normalized 至 132 px、腳底 `y=144`；runtime 不得再額外套逐幀縮放、上下 bob 或
+  旋轉來取代來源動作。
+  任何來源或 normalization 改動後，必須重建八張 atlas 並重做原尺寸、Town full-frame、
+  時序與固定 3 × 2 slices 審查。
+- 女巫的 walk／chat／greet directional source 原生朝左；其他目前 atlas 原生朝右。
+  `TownNPCVisual` 必須以角色原生方向和 requested facing 的差異決定 `flip_h`，不可假定所有
+  source 都朝右。
 - 祭司 runtime 使用 `assets/town/npc/priest/pose_strips_v2/` 的四組完整成人骨架動作帶，
   由 `tools/art/build_priest_animation.py` 依透明間隔擷取完整人物、統一 448 px 原生高度與
   腳底線，再輸出 `priest_animation_atlas.png` 的 8 columns × 4 rows atlas；row 順序固定為
@@ -204,7 +214,7 @@ UI setter/configure API
 如果getter回傳catalog內部reference，consumer可能污染所有後續讀取。Current
 `CardDatabase.get_card()`與`get_all_cards()`已回傳deep copies。
 
-## 3. 現有九個 JSON Catalog
+## 3. 現有十一個 JSON Catalog
 
 | JSON | Loader | Root field | Current validated content |
 |---|---|---|---|
@@ -218,9 +228,12 @@ UI setter/configure API
 | `forge_catalog.json` | `ForgeCatalog` | `material_offers`, `equipment_recipes`, `sword_soul_recipes` | Town 鍛造 offer 與 recipe |
 | `named_skill_vfx_profiles.json` | `NamedSkillVFXCatalog` | `profiles` | 5 個 Finisher＋4 個 trigger 的差異化模組 VFX |
 | `elemental_ground_trail_profiles.json` | `ElementalGroundTrailCatalog` | `profiles` | 火焰路徑、冰裂分岔與毒灘的四槽 atlas 拼裝資料 |
+| `town_npc_interactions.json` | `TownNPCInteractionCatalog` | `interactions` | 9 種 Town presentation interaction、雙方 animation sequence、角色／archetype selector、距離、cooldown 與 weight |
 
-數量與重要cross-reference由`tests/content_validation_test.gd`驗證。新增內容時，
-測試中的固定數量若代表產品contract需一起更新；不得只為通過測試放寬assertion。
+既有共用內容數量與 cross-reference 由 `tests/content_validation_test.gd` 驗證；Town interaction
+schema、ID、selector、sequence 與 deterministic query 另由
+`tests/town_npc_interaction_catalog_test.gd` 驗證。新增內容時，測試中的固定數量若代表
+產品 contract 需一起更新；不得只為通過測試放寬 assertion。
 
 ### 3.1 JSON parsing rules
 
@@ -241,9 +254,11 @@ UI setter/configure API
 - `town_upgrades.json`：目前沒有schema_version field
 - `divine_gifts.json`：目前沒有 schema_version field
 - `combo_finishers.json`：目前沒有 schema_version field
+- `town_npc_interactions.json`：`schema_version = 1`；loader 要求 exact version 並採
+  all-or-nothing validation，目前沒有 migration
 
-Loader目前不以schema version分派migration。新增／更改schema前，必須先建立version
-policy與old fixture，不能只提高number。
+多數 loader 目前不以 schema version 分派 migration。新增／更改 schema 前，必須先建立
+version policy 與 old fixture，不能只提高 number。
 
 ### 3.3 Formal element taxonomy
 
@@ -1104,7 +1119,7 @@ func read_dictionary(path: String) -> Dictionary:
 
 ## 20. Review Checklist
 
-- [ ] 九個 JSON 仍可由 current loader 成功載入。
+- [ ] 十一個 JSON 仍可由 current loader 成功載入。
 - [ ] Catalog count與ID contract符合產品需求。
 - [ ] Card icon與cross-reference paths存在。
 - [ ] Equipment cost/effect/special ability consumer一致。

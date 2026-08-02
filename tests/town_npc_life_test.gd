@@ -5,6 +5,14 @@ const LIFE_NPCS := [
 	"VillagerMale", "EquipmentBlueprintMerchant", "Guard",
 	"ItemMerchant", "Blacksmith", "Innkeeper",
 ]
+const EXPECTED_ROLE_ACTIVITIES := {
+	"VillagerMale": &"watch_square",
+	"EquipmentBlueprintMerchant": &"check_charms",
+	"Guard": &"watch_street",
+	"ItemMerchant": &"arrange_goods",
+	"Blacksmith": &"inspect_notes",
+	"Innkeeper": &"welcome_guests",
+}
 
 var _failures: Array[String] = []
 
@@ -62,8 +70,24 @@ func _run() -> void:
 	_expect(merchant.get_life_state() == &"social_walk", "A social invitation must reserve both participants.")
 	_expect(traveler.get_social_partner() == merchant, "Traveler must retain the reserved partner.")
 	_expect(merchant.get_social_partner() == traveler, "Merchant must retain the reserved partner.")
+	guard.life_enabled = true
+	guard.social_chance = 1.0
+	guard.social_radius = 1000.0
+	guard.advance_life(10.0)
+	_expect(guard.get_social_partner() == null, "A third resident must not steal an already reserved partner.")
+	_advance_pair_until_state(traveler, merchant, &"social_greet")
+	var expected_greeting := (
+		&"greet" if traveler.npc_visual.get_supported_states().has(&"greet") else &"chat"
+	)
+	_expect(
+		traveler.npc_visual.get_active_state() == expected_greeting,
+		"The greeter must visibly open the conversation."
+	)
 	_advance_pair_until_state(traveler, merchant, &"social_chat")
-	_expect(absf(traveler.position.x - merchant.position.x) >= 96.0, "Chat partners must stop beside rather than overlap each other.")
+	_expect(
+		absf(traveler.position.x - merchant.position.x) >= 96.0,
+		"Chat partners must stop beside rather than overlap each other."
+	)
 	_expect(traveler.npc_visual.get_active_state() == &"chat", "Traveler must play generated chat poses.")
 	_expect(merchant.npc_visual.get_active_state() == &"chat", "Merchant must play generated chat poses.")
 	var traveler_facing := float(traveler.npc_visual.get_animation_snapshot()["facing_sign"])
@@ -71,9 +95,77 @@ func _run() -> void:
 	_expect(traveler_facing > 0.0 and merchant_facing < 0.0, "Chat partners must face each other.")
 
 	_advance_pair_until_state(traveler, merchant, &"idle")
-	_expect(traveler.position == traveler_home and merchant.position == merchant_home, "Social partners must return to authored home anchors.")
+	_expect(
+		traveler.position == traveler_home and merchant.position == merchant_home,
+		"Social partners must return to authored home anchors."
+	)
 	_expect(traveler.get_completed_interactions() == 1, "Traveler must record the completed social interaction.")
 	_expect(merchant.get_completed_interactions() == 1, "Merchant must record the completed social interaction.")
+	var expected_sequence: Array[StringName] = [
+		&"social_greet", &"social_chat", &"social_react", &"social_farewell",
+	]
+	_expect(
+		traveler.get_last_social_sequence() == expected_sequence,
+		"A relaxed conversation must progress through greeting, chat, reaction, and farewell."
+	)
+	_expect(
+		merchant.get_last_social_sequence() == expected_sequence,
+		"Both participants must retain the same completed conversation sequence."
+	)
+	_expect(
+		traveler.get_last_completed_interaction_id() == &"greet"
+		and merchant.get_last_completed_interaction_id() == &"greet",
+		"Residents meeting for the first time must select the catalog's welcoming greeting."
+	)
+	_expect(
+		traveler.get_last_social_reaction() == &"happy",
+		"The greeting catalog sequence must resolve to a friendly reaction."
+	)
+	_expect(
+		traveler.get_relationship_count(merchant) == 1
+		and merchant.get_relationship_count(traveler) == 1,
+		"A completed conversation must raise the relationship count for both residents."
+	)
+	_expect(
+		not traveler.is_available_for_social() and not merchant.is_available_for_social(),
+		"A completed interaction must apply its catalog cooldown to both residents."
+	)
+
+	guard.life_enabled = false
+	traveler.life_enabled = false
+	merchant.life_enabled = false
+	traveler.advance_life(100.0)
+	merchant.advance_life(100.0)
+	traveler.life_enabled = true
+	merchant.life_enabled = true
+	town.call("set_time_of_day_progress", 1.0)
+	traveler.advance_life(10.0)
+	_expect(
+		traveler.get_social_partner() == merchant,
+		"Residents must be able to reserve another conversation after returning home."
+	)
+	_expect(
+		traveler.get_active_interaction_id() == &"watch_sky"
+		and merchant.get_active_interaction_id() == &"watch_sky",
+		"Familiar residents must choose the scenic catalog interaction during golden hour."
+	)
+	_advance_pair_until_state(traveler, merchant, &"social_greet")
+	merchant.set_external_interaction(true, Vector2(merchant.position.x + 100.0, merchant.position.y))
+	_expect(
+		merchant.get_life_state() == &"external_chat",
+		"External interactions must preempt an autonomous conversation."
+	)
+	_expect(traveler.get_life_state() == &"return_home", "A cancelled partner must calmly return home.")
+	_expect(
+		traveler.get_social_partner() == null,
+		"Cancelling a conversation must release the other resident's reservation."
+	)
+	_expect(
+		traveler.get_completed_interactions() == 1,
+		"Cancelled conversations must not count as completed interactions."
+	)
+	merchant.set_external_interaction(false)
+	_advance_pair_until_state(traveler, merchant, &"idle")
 
 	var witch := town.get_node("NPCs/EquipmentBlueprintMerchant") as TownNPCLife
 	witch.life_enabled = true
@@ -85,6 +177,68 @@ func _run() -> void:
 	_expect(witch.position == witch_home, "External interaction lock must prevent autonomous wandering.")
 	witch.set_external_interaction(false)
 	_expect(witch.get_life_state() == &"idle", "Releasing external chat must restore autonomous idle.")
+
+	for actor in actors:
+		actor.life_enabled = false
+	var scientist := town.get_node("NPCs/Blacksmith") as TownNPCLife
+	witch.life_enabled = true
+	scientist.life_enabled = true
+	witch.social_chance = 1.0
+	witch.social_radius = 2000.0
+	witch.minimum_idle_seconds = 0.1
+	witch.maximum_idle_seconds = 0.1
+	witch.walk_speed = 600.0
+	scientist.walk_speed = 600.0
+	town.call("set_time_of_day_progress", 0.0)
+	witch.advance_life(10.0)
+	_advance_pair_until_state(witch, scientist, &"idle")
+	witch.life_enabled = false
+	scientist.life_enabled = false
+	witch.advance_life(100.0)
+	scientist.advance_life(100.0)
+	witch.life_enabled = true
+	scientist.life_enabled = true
+	witch.advance_life(10.0)
+	_expect(
+		witch.get_active_interaction_id() == &"discuss_work"
+		and scientist.get_active_interaction_id() == &"discuss_work",
+		"Familiar working residents must select a role-appropriate daytime discussion."
+	)
+	witch.cancel_social_interaction()
+	_expect(
+		witch.get_life_state() == &"return_home"
+		and scientist.get_life_state() == &"return_home",
+		"Either participant must be able to cancel a reserved interaction cleanly."
+	)
+	witch.life_enabled = false
+	scientist.life_enabled = false
+
+	var role_activities: Array[StringName] = []
+	for actor in actors:
+		actor.request_role_activity(1.0)
+		var activity_name := actor.get_role_activity_name()
+		role_activities.append(activity_name)
+		_expect(
+			activity_name == EXPECTED_ROLE_ACTIVITIES.get(String(actor.name), &""),
+			"%s must perform a daily activity tied to its resident role." % actor.name
+		)
+		_expect(
+			actor.get_life_state() == &"role_activity",
+			"%s must expose its daily activity as an observable life state." % actor.name
+		)
+	var expected_guard_work := (
+		&"work" if guard.npc_visual.get_supported_states().has(&"work") else &"angry"
+	)
+	_expect(
+		guard.npc_visual.get_active_state() == expected_guard_work,
+		"The guard must visibly survey the street while on duty."
+	)
+	_expect(role_activities.size() == 6, "All six residents must expose role-specific daily activity contracts.")
+	var unique_role_activities: Array[StringName] = []
+	for activity_name in role_activities:
+		if not unique_role_activities.has(activity_name):
+			unique_role_activities.append(activity_name)
+	_expect(unique_role_activities.size() == 6, "Resident roles must not collapse into one generic work activity.")
 
 	town.queue_free()
 	await process_frame

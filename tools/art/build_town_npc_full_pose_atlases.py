@@ -1,7 +1,9 @@
-"""Insert reviewed full-pose idle, walk, and chat rows into Town NPC atlases.
+"""Build reviewed full-pose Town NPC atlases, including visiting townsfolk.
 
-The remaining sit/laugh/emotion rows come from the retained procedural-v1
-atlases until they receive their own generated full-pose replacements.
+Resident sit rows retain the procedural-v1 poses. The generated motion-v2 rows
+replace idle/walk/chat, while motion-v3 adds lookout, stretch, greeting,
+role-work, and five full-pose emotion loops. Visitors use their generated base,
+extra, and emotion strips.
 """
 
 from __future__ import annotations
@@ -16,17 +18,22 @@ from PIL import Image
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CHARACTER_ROOT = PROJECT_ROOT / "assets" / "town" / "npc" / "characters"
 STRIP_ROOT = CHARACTER_ROOT / "motion_strips_v2"
+EXTRA_STRIP_ROOT = CHARACTER_ROOT / "motion_strips_v3"
 FALLBACK_ROOT = CHARACTER_ROOT / "procedural_v1"
 
-CHARACTERS = ("traveler", "witch", "guard", "grocer", "scientist", "innkeeper")
+RESIDENTS = ("traveler", "witch", "guard", "grocer", "scientist", "innkeeper")
+VISITORS = ("visitor_farmer", "visitor_minstrel")
 CELL_SIZE = (144, 152)
 FRAME_COUNT = 4
-STATE_COUNT = 9
+STATE_COUNT = 13
+LEGACY_STATE_COUNT = 9
 TARGET_HEIGHT = 132
 TARGET_SIT_HEIGHT = 120
 FOOT_BASELINE_Y = 144
 SOURCE_TO_ATLAS_ROWS = ((0, 0), (1, 1), (2, 3))
-GUARD_FALLBACK_ROWS = (2, 4, 5, 6, 7, 8)
+EXTRA_TO_ATLAS_ROWS = ((0, 9), (1, 10), (2, 11), (3, 12))
+EMOTION_TO_ATLAS_ROWS = ((0, 4), (1, 5), (2, 6), (3, 7), (4, 8))
+GUARD_FALLBACK_ROWS = (2,)
 
 
 def _occupied_ranges(values: list[bool]) -> list[tuple[int, int]]:
@@ -43,15 +50,17 @@ def _occupied_ranges(values: list[bool]) -> list[tuple[int, int]]:
     return result
 
 
-def _extract_rows(path: Path) -> list[list[Image.Image]]:
+def _extract_rows(path: Path, expected_rows: int) -> list[list[Image.Image]]:
     sheet = Image.open(path).convert("RGBA")
     alpha = sheet.getchannel("A")
     row_ranges = _occupied_ranges([
         alpha.crop((0, y, sheet.width, y + 1)).getbbox() is not None
         for y in range(sheet.height)
     ])
-    if len(row_ranges) != 3:
-        raise ValueError(f"{path.name}: expected 3 occupied rows, found {row_ranges}")
+    if len(row_ranges) != expected_rows:
+        raise ValueError(
+            f"{path.name}: expected {expected_rows} occupied rows, found {row_ranges}"
+        )
 
     rows: list[list[Image.Image]] = []
     for top, bottom in row_ranges:
@@ -61,10 +70,20 @@ def _extract_rows(path: Path) -> list[list[Image.Image]]:
             for x in range(sheet.width)
         ])
         if len(column_ranges) != FRAME_COUNT:
-            raise ValueError(
-                f"{path.name}: expected {FRAME_COUNT} isolated poses in row {top}, "
-                f"found {column_ranges}"
-            )
+            # Long disconnected props such as the guard's spear can split the
+            # alpha projection. Generated sheets have a strict four-column
+            # layout, so recover each authored cell from equal column bands.
+            column_ranges = []
+            for column in range(FRAME_COUNT):
+                band_left = round(sheet.width * column / FRAME_COUNT)
+                band_right = round(sheet.width * (column + 1) / FRAME_COUNT)
+                band = alpha.crop((band_left, top, band_right, bottom))
+                bounds = band.getbbox()
+                if bounds is None:
+                    raise ValueError(
+                        f"{path.name}: empty grid cell row {top} column {column}"
+                    )
+                column_ranges.append((band_left + bounds[0], band_left + bounds[2]))
         poses: list[Image.Image] = []
         for left, right in column_ranges:
             pose = sheet.crop((left, top, right, bottom))
@@ -97,6 +116,20 @@ def _clear_cell(atlas: Image.Image, column: int, row: int) -> None:
         Image.new("RGBA", CELL_SIZE, (0, 0, 0, 0)),
         (column * CELL_SIZE[0], row * CELL_SIZE[1]),
     )
+
+
+def _write_normalized_rows(
+    atlas: Image.Image,
+    source_rows: list[list[Image.Image]],
+    row_mapping: tuple[tuple[int, int], ...],
+) -> None:
+    for source_row, atlas_row in row_mapping:
+        for column, cell in enumerate(_normalize_row(source_rows[source_row])):
+            _clear_cell(atlas, column, atlas_row)
+            atlas.alpha_composite(
+                cell,
+                (column * CELL_SIZE[0], atlas_row * CELL_SIZE[1]),
+            )
 
 
 def _normalize_existing_atlas_row(atlas: Image.Image, row: int, target_height: int) -> None:
@@ -157,19 +190,64 @@ def _neutralize_guard_fallback_uniform(atlas: Image.Image) -> None:
 
 def _build_character(name: str) -> None:
     fallback_path = FALLBACK_ROOT / f"{name}_animation_atlas.png"
-    atlas = Image.open(fallback_path).convert("RGBA")
-    expected_size = (CELL_SIZE[0] * FRAME_COUNT, CELL_SIZE[1] * STATE_COUNT)
-    if atlas.size != expected_size:
-        raise ValueError(f"{fallback_path.name}: expected {expected_size}, got {atlas.size}")
+    fallback = Image.open(fallback_path).convert("RGBA")
+    expected_legacy_size = (
+        CELL_SIZE[0] * FRAME_COUNT,
+        CELL_SIZE[1] * LEGACY_STATE_COUNT,
+    )
+    if fallback.size != expected_legacy_size:
+        raise ValueError(
+            f"{fallback_path.name}: expected {expected_legacy_size}, got {fallback.size}"
+        )
+    atlas = Image.new(
+        "RGBA",
+        (CELL_SIZE[0] * FRAME_COUNT, CELL_SIZE[1] * STATE_COUNT),
+        (0, 0, 0, 0),
+    )
+    atlas.alpha_composite(fallback)
     _normalize_existing_atlas_row(atlas, 2, TARGET_SIT_HEIGHT)
     if name == "guard":
         _neutralize_guard_fallback_uniform(atlas)
 
-    source_rows = _extract_rows(STRIP_ROOT / f"{name}_motion.png")
-    for source_row, atlas_row in SOURCE_TO_ATLAS_ROWS:
-        for column, cell in enumerate(_normalize_row(source_rows[source_row])):
-            _clear_cell(atlas, column, atlas_row)
+    source_rows = _extract_rows(STRIP_ROOT / f"{name}_motion.png", 3)
+    _write_normalized_rows(atlas, source_rows, SOURCE_TO_ATLAS_ROWS)
+
+    extra_rows = _extract_rows(EXTRA_STRIP_ROOT / f"{name}_extra.png", 4)
+    if name == "grocer":
+        # The third generated work frame included a stray display plinth. Keep
+        # the clean inspection frame in that beat instead of integrating it.
+        extra_rows[3][2] = extra_rows[3][1].copy()
+    _write_normalized_rows(atlas, extra_rows, EXTRA_TO_ATLAS_ROWS)
+
+    emotion_rows = _extract_rows(EXTRA_STRIP_ROOT / f"{name}_emotion.png", 5)
+    _write_normalized_rows(atlas, emotion_rows, EMOTION_TO_ATLAS_ROWS)
+
+    output_path = CHARACTER_ROOT / f"{name}_animation_atlas.png"
+    atlas.save(output_path, optimize=True)
+    print(f"Wrote {output_path.relative_to(PROJECT_ROOT)} ({atlas.width}x{atlas.height})")
+
+
+def _build_visitor(name: str) -> None:
+    atlas = Image.new(
+        "RGBA",
+        (CELL_SIZE[0] * FRAME_COUNT, CELL_SIZE[1] * STATE_COUNT),
+        (0, 0, 0, 0),
+    )
+    source_rows = _extract_rows(EXTRA_STRIP_ROOT / f"{name}_base.png", 3)
+    normalized_idle = _normalize_row(source_rows[0])
+
+    # Sit has no visitor-specific authored sequence; retain one neutral adult
+    # silhouette instead of introducing a scale-changing fallback pose.
+    for atlas_row in (0, 2):
+        for column, cell in enumerate(normalized_idle):
             atlas.alpha_composite(cell, (column * CELL_SIZE[0], atlas_row * CELL_SIZE[1]))
+    _write_normalized_rows(atlas, source_rows, ((1, 1), (2, 3)))
+
+    extra_rows = _extract_rows(EXTRA_STRIP_ROOT / f"{name}_extra.png", 4)
+    _write_normalized_rows(atlas, extra_rows, EXTRA_TO_ATLAS_ROWS)
+
+    emotion_rows = _extract_rows(EXTRA_STRIP_ROOT / f"{name}_emotion.png", 5)
+    _write_normalized_rows(atlas, emotion_rows, EMOTION_TO_ATLAS_ROWS)
 
     output_path = CHARACTER_ROOT / f"{name}_animation_atlas.png"
     atlas.save(output_path, optimize=True)
@@ -177,8 +255,10 @@ def _build_character(name: str) -> None:
 
 
 def main() -> None:
-    for name in CHARACTERS:
+    for name in RESIDENTS:
         _build_character(name)
+    for name in VISITORS:
+        _build_visitor(name)
 
 
 if __name__ == "__main__":

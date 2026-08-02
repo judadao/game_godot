@@ -1,0 +1,298 @@
+{
+  "schema_version": 1,
+  "interactions": [
+    {
+      "id": "greet",
+      "tags": ["social", "brief", "welcoming"],
+      "participants": [
+        {
+          "roles": ["*"],
+          "archetypes": ["*"],
+          "animation_sequence": [
+            {"state": "greet", "seconds": 1.2},
+            {"state": "happy", "seconds": 0.6},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        },
+        {
+          "roles": ["*"],
+          "archetypes": ["*"],
+          "animation_sequence": [
+            {"state": "greet", "seconds": 1.2},
+            {"state": "happy", "seconds": 0.6},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        }
+      ],
+      "duration_seconds": 2.4,
+      "social_distance": {"minimum": 72.0, "preferred": 96.0, "maximum": 132.0},
+      "cooldown_seconds": 18.0,
+      "weight": 2.2,
+      "priority": 80,
+      "visitor_allowed": true,
+      "bidirectional": true
+    },
+    {
+      "id": "chat",
+      "tags": ["social", "conversation", "relaxed"],
+      "participants": [
+        {
+          "roles": ["*"],
+          "archetypes": ["*"],
+          "animation_sequence": [
+            {"state": "chat", "seconds": 2.4},
+            {"state": "idle_look", "seconds": 1.4},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        },
+        {
+          "roles": ["*"],
+          "archetypes": ["*"],
+          "animation_sequence": [
+            {"state": "idle_look", "seconds": 1.0},
+            {"state": "chat", "seconds": 2.8},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        }
+      ],
+      "duration_seconds": 4.4,
+      "social_distance": {"minimum": 76.0, "preferred": 104.0, "maximum": 144.0},
+      "cooldown_seconds": 24.0,
+      "weight": 2.8,
+      "priority": 60,
+      "visitor_allowed": true,
+      "bidirectional": true
+    },
+    {
+      "id": "laugh",
+      "tags": ["social", "joy", "conversation"],
+      "participants": [
+        {
+          "roles": ["traveler", "witch", "grocer", "innkeeper"],
+          "archetypes": ["social", "merchant", "resident", "visitor"],
+          "animation_sequence": [
+            {"state": "chat", "seconds": 0.8},
+            {"state": "laugh", "seconds": 1.6},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        },
+        {
+          "roles": ["traveler", "witch", "grocer", "innkeeper"],
+          "archetypes": ["social", "merchant", "resident", "visitor"],
+          "animation_sequence": [
+            {"state": "surprised", "seconds": 0.8},
+            {"state": "laugh", "seconds": 1.6},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        }
+      ],
+      "duration_seconds": 3.0,
+      "social_distance": {"minimum": 78.0, "preferred": 108.0, "maximum": 146.0},
+      "cooldown_seconds": 32.0,
+      "weight": 1.5,
+      "priority": 45,
+      "visitor_allowed": true,
+      "bidirectional": true
+    },
+    {
+      "id": "gossip",
+      "tags": ["social", "conversation", "resident_only"],
+      "participants": [
+        {
+          "roles": ["traveler", "witch", "grocer", "innkeeper"],
+          "archetypes": ["social", "merchant", "resident"],
+          "animation_sequence": [
+            {"state": "idle_look", "seconds": 0.8},
+            {"state": "chat", "seconds": 2.4},
+            {"state": "surprised", "seconds": 1.0},
+            {"state": "laugh", "seconds": 0.8},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        },
+        {
+          "roles": ["traveler", "witch", "grocer", "innkeeper"],
+          "archetypes": ["social", "merchant", "resident"],
+          "animation_sequence": [
+            {"state": "chat", "seconds": 2.2},
+            {"state": "surprised", "seconds": 1.0},
+            {"state": "chat", "seconds": 1.2},
+            {"state": "laugh", "seconds": 0.6},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        }
+      ],
+      "duration_seconds": 5.6,
+      "social_distance": {"minimum": 72.0, "preferred": 94.0, "maximum": 124.0},
+      "cooldown_seconds": 48.0,
+      "weight": 0.8,
+      "priority": 25,
+      "visitor_allowed": false,
+      "bidirectional": true
+    },
+    {
+      "id": "comfort",
+      "tags": ["social", "care", "emotion"],
+      "participants": [
+        {
+          "roles": ["priest", "innkeeper", "witch", "traveler"],
+          "archetypes": ["spiritual", "social", "resident"],
+          "animation_sequence": [
+            {"state": "greet", "seconds": 0.8},
+            {"state": "chat", "seconds": 1.6},
+            {"state": "happy", "seconds": 1.8},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        },
+        {
+          "roles": ["*"],
+          "archetypes": ["*"],
+          "animation_sequence": [
+            {"state": "sad", "seconds": 1.2},
+            {"state": "chat", "seconds": 1.6},
+            {"state": "happy", "seconds": 1.4},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        }
+      ],
+      "duration_seconds": 4.8,
+      "social_distance": {"minimum": 70.0, "preferred": 92.0, "maximum": 126.0},
+      "cooldown_seconds": 54.0,
+      "weight": 0.9,
+      "priority": 70,
+      "visitor_allowed": true,
+      "bidirectional": true
+    },
+    {
+      "id": "share_goods",
+      "tags": ["social", "trade", "generosity", "directional"],
+      "participants": [
+        {
+          "roles": ["grocer", "innkeeper", "witch"],
+          "archetypes": ["merchant", "worker"],
+          "animation_sequence": [
+            {"state": "work", "seconds": 1.5},
+            {"state": "greet", "seconds": 0.8},
+            {"state": "chat", "seconds": 1.8},
+            {"state": "idle_look", "seconds": 0.5},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        },
+        {
+          "roles": ["traveler", "guard", "scientist", "priest"],
+          "archetypes": ["resident", "visitor", "scholar", "guard", "spiritual"],
+          "animation_sequence": [
+            {"state": "surprised", "seconds": 1.0},
+            {"state": "greet", "seconds": 0.8},
+            {"state": "happy", "seconds": 1.8},
+            {"state": "chat", "seconds": 1.0},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        }
+      ],
+      "duration_seconds": 5.2,
+      "social_distance": {"minimum": 76.0, "preferred": 100.0, "maximum": 138.0},
+      "cooldown_seconds": 58.0,
+      "weight": 0.75,
+      "priority": 55,
+      "visitor_allowed": true,
+      "bidirectional": false
+    },
+    {
+      "id": "discuss_work",
+      "tags": ["social", "work", "resident_only"],
+      "participants": [
+        {
+          "roles": ["guard", "grocer", "scientist", "innkeeper", "witch"],
+          "archetypes": ["guard", "merchant", "scholar", "worker"],
+          "animation_sequence": [
+            {"state": "work", "seconds": 2.4},
+            {"state": "chat", "seconds": 1.8},
+            {"state": "idle_look", "seconds": 1.2},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        },
+        {
+          "roles": ["guard", "grocer", "scientist", "innkeeper", "witch"],
+          "archetypes": ["guard", "merchant", "scholar", "worker"],
+          "animation_sequence": [
+            {"state": "idle_look", "seconds": 1.2},
+            {"state": "chat", "seconds": 1.8},
+            {"state": "work", "seconds": 2.4},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        }
+      ],
+      "duration_seconds": 6.0,
+      "social_distance": {"minimum": 80.0, "preferred": 112.0, "maximum": 154.0},
+      "cooldown_seconds": 72.0,
+      "weight": 0.7,
+      "priority": 35,
+      "visitor_allowed": false,
+      "bidirectional": true
+    },
+    {
+      "id": "watch_sky",
+      "tags": ["social", "quiet", "scenic"],
+      "participants": [
+        {
+          "roles": ["*"],
+          "archetypes": ["*"],
+          "animation_sequence": [
+            {"state": "idle_look", "seconds": 3.2},
+            {"state": "chat", "seconds": 1.2},
+            {"state": "happy", "seconds": 1.4},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        },
+        {
+          "roles": ["*"],
+          "archetypes": ["*"],
+          "animation_sequence": [
+            {"state": "idle_look", "seconds": 3.6},
+            {"state": "happy", "seconds": 1.6},
+            {"state": "chat", "seconds": 0.6},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        }
+      ],
+      "duration_seconds": 6.4,
+      "social_distance": {"minimum": 86.0, "preferred": 126.0, "maximum": 180.0},
+      "cooldown_seconds": 76.0,
+      "weight": 0.55,
+      "priority": 20,
+      "visitor_allowed": true,
+      "bidirectional": true
+    },
+    {
+      "id": "farewell",
+      "tags": ["social", "brief", "closing"],
+      "participants": [
+        {
+          "roles": ["*"],
+          "archetypes": ["*"],
+          "animation_sequence": [
+            {"state": "greet", "seconds": 1.2},
+            {"state": "happy", "seconds": 1.0},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        },
+        {
+          "roles": ["*"],
+          "archetypes": ["*"],
+          "animation_sequence": [
+            {"state": "greet", "seconds": 1.2},
+            {"state": "happy", "seconds": 1.0},
+            {"state": "idle", "seconds": 0.6}
+          ]
+        }
+      ],
+      "duration_seconds": 2.8,
+      "social_distance": {"minimum": 74.0, "preferred": 104.0, "maximum": 148.0},
+      "cooldown_seconds": 20.0,
+      "weight": 1.8,
+      "priority": 75,
+      "visitor_allowed": true,
+      "bidirectional": true
+    }
+  ]
+}

@@ -627,15 +627,37 @@ TownNpcName (AnimatableBody2D, TownNPCLife, town_life_npcs)
 └── CollisionShape2D
 ```
 
-`TownNPCLife` 只在 authored home 附近驅動 idle／rest／emote／wander／social-walk／
-social-chat／return-home，配對時保留 100 px 左右間距並令雙方互相面對；不建立 NavMesh、
-save state 或 gameplay dialogue。`Visual` 支援 idle／walk／sit／chat／laugh 與
-happy／sad／surprised／angry，並接受 life controller 的狀態與左右面向。Town 建築互動
-仍只由 `TownBuildingEntrances` 擁有；不得在這七個 display NPC 加回 `InteractionArea`。
-`BodySprite` 使用 `144×152` cell、4 columns × 9 rows 的 world animation atlas；每個 state
-切換自己的 atlas row；idle／walk／chat row 必須是完整姿勢逐格，不能退回單張高解析
-cutout 的整體位移。`SeatedTrailMerchant`
+`TownNPCLife` 在 authored home 附近驅動 idle／rest／emote／role-activity／wander，並將
+居民社交拆為 social-walk → social-greet → social-chat／work → social-react →
+social-farewell → return-home。配對期間雙方保留 catalog preferred distance、互相面對、
+持有同一 partner，完成後才增加 session-local familiarity 與 cooldown；external lock
+會先安全取消配對，再把居民交給祭司或 visitor 的短暫 presentation sequence。
+`TownNPCLife` 不建立 NavMesh、save state 或 gameplay dialogue。Town 建築互動仍只由
+`TownBuildingEntrances` 擁有；不得在 display NPC 加回 `InteractionArea`。
+`BodySprite` 使用 `144×152` cell、4 columns × 13 rows 的 world animation atlas；row 為
+idle／walk／sit／chat／laugh／happy／sad／surprised／angry／idle_look／idle_stretch／
+greet／work。六位 resident 與兩位 visitor 的 row 4–8 是角色專屬 authored emotion strips；
+每格統一為 132 px 高、腳底對齊 cell `y=144`。`TownNPCVisual` 對 authored emotion rows
+不再附加逐幀縮放、上下 bob 或旋轉；每個 state 必須切換自己的 atlas row，不得退回單張
+cutout 整體位移。directional row 翻面需比較 atlas 原生方向：女巫原生朝左，其餘目前角色
+原生朝右。
+`SeatedTrailMerchant`
 與 compatibility Merchant 允許保留 `InteractionArea`，但其 `Visual` hierarchy 相同。
+
+兩位通行 visitor 使用獨立生命週期，不加入 resident group：
+
+```text
+VisitorFarmer / VisitorMinstrel (AnimatableBody2D, TownVisitorLife, town_visitors)
+├── Visual (TownNPCVisual, 4 columns × 13 rows)
+│   └── VisualRoot
+│       └── BodySprite
+└── BodyCollision
+```
+
+`TownVisitorLife` 的穩定流程為 offscreen-wait → crossing → social-greet → social-chat →
+exiting → opposite offscreen edge；若沒有可用居民，greeting stop 只短暫 pause 再離開。
+Visitor 僅以 `set_external_interaction()` 暫借一位居民，不得加入 `town_life_npcs`、
+`Interactives` 或持有 `InteractionArea`。
 
 祭司保留外部節點路徑 `NPCs/Mayor`，但使用下列專屬移動／視覺樹：
 
@@ -650,8 +672,9 @@ Mayor (AnimatableBody2D, PriestTownBehavior)
 `TownNPCVisual` 重複更新祭司位置。外部 `Mayor` 名稱只保留 scene/path compatibility，
 角色素材與 `metadata/character_id` 為 `priest`。女巫進入祭司對話時由
 `TownNPCLife.set_external_interaction()` 暫停自主配對與走動，避免兩套 authority 競爭；
-祭司移動段使用 `foreground_lane_offset = 46`、`walk_speed = 100` 與 `z_index = 2`
-穿越街道，降低停留在其他 NPC home anchor 正前方的時間。
+祭司的 current route、home 與 conversation anchor 都位於共用 `y=672`，全程維持
+`z_index=0`。conversation anchor 是女巫 `x - 95`；抵達後祭司朝右、女巫朝左互相面向。
+現行 route offset 為 `0`，舊的前景繞行與較高 z layer 不是 active Scene contract。
 
 ### 8.3 Portal rule
 

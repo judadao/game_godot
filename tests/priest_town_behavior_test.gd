@@ -32,6 +32,11 @@ func _run() -> void:
 	witch_visual.set_process(false)
 	witch_visual.set("ambient_enabled", true)
 	witch_visual.call("play_state", &"idle")
+	var expected_released_witch_state := (
+		&"idle_look"
+		if (witch_visual.call("get_supported_states") as Array).has(&"idle_look")
+		else &"idle"
+	)
 
 	var home := priest.call("get_home_position") as Vector2
 	_expect(home == Vector2(1130.0, 672.0), "Priest home must remain the approved Town baseline placement.")
@@ -50,28 +55,39 @@ func _run() -> void:
 	_expect(StringName(visual.get("animation_name")) == &"side_walk", "Outbound travel must use side walk.")
 	_expect(visual.scale.x > 0.0, "Outbound priest must face toward the witch.")
 	priest.call("advance_behavior", 0.05)
-	_expect(priest.position.y > home.y, "Priest must enter the foreground lane instead of crossing through stationary NPCs.")
 	_expect(
-		float(priest.get("foreground_lane_offset")) >= 46.0,
-		"Priest travel lane must keep at least 46 px of depth separation from autonomous NPCs."
+		is_equal_approx(priest.position.y, home.y),
+		"Priest travel must remain on the shared Town baseline."
 	)
-	_expect(priest.z_index > 0, "Foreground-lane travel must render in front of stationary NPCs.")
+	_expect(
+		is_zero_approx(float(priest.get("foreground_lane_offset"))),
+		"Priest foreground lane offset must stay disabled."
+	)
+	_expect(priest.z_index == 0, "Priest travel must use the shared NPC depth layer.")
 
 	_advance_until_state(priest, &"chat_with_witch")
 	var conversation_position := priest.call("get_conversation_position") as Vector2
 	_expect(priest.position == conversation_position, "Priest must stop at the authored conversation point.")
-	_expect(is_equal_approx(conversation_position.x, witch.position.x + 95.0), "Priest must stop beside, not on top of, the witch.")
+	_expect(is_equal_approx(conversation_position.x, witch.position.x - 95.0), "Priest must stop on the approach side of the witch.")
 	_expect(StringName(visual.get("animation_name")) == &"side_chat", "Conversation must use side chat.")
-	_expect(visual.scale.x < 0.0, "Priest must turn back toward the witch while chatting.")
+	_expect(visual.scale.x > 0.0, "Priest must face right toward the witch while chatting.")
 	_expect(priest.z_index == 0, "Conversation must restore the shared NPC depth layer.")
 	_expect(witch_visual.call("get_active_state") == &"chat", "Witch must enter chat while the priest is beside her.")
+	var witch_snapshot := witch_visual.call("get_animation_snapshot") as Dictionary
+	_expect(
+		float(witch_snapshot.get("facing_sign", 1.0)) < 0.0,
+		"Witch must face left toward the priest during their conversation."
+	)
 	_expect(not bool(witch_visual.get("ambient_enabled")), "Witch ambient animation must pause during the conversation.")
 
 	priest.call("advance_behavior", 0.21)
 	_expect(priest.call("get_behavior_state") == &"walk_home", "Priest must return home after chatting.")
 	_expect(StringName(visual.get("animation_name")) == &"side_walk", "Return travel must use side walk.")
 	_expect(visual.scale.x < 0.0, "Returning priest must face home.")
-	_expect(witch_visual.call("get_active_state") == &"idle", "Witch must restore her pre-conversation state.")
+	_expect(
+		witch_visual.call("get_active_state") == expected_released_witch_state,
+		"Witch must resume the supported autonomous idle policy after the conversation."
+	)
 	_expect(bool(witch_visual.get("ambient_enabled")), "Witch ambient animation must resume after chatting.")
 
 	_advance_until_state(priest, &"wait_home")

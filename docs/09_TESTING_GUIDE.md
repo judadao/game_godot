@@ -347,20 +347,42 @@ Scene directory changes must run these permanent contracts:
   手繪雲物件、邊緣假接縫清理 shader、錯速低幅漂移、完整離場回繞，以及
   sky／cloud／mountain z-order contract。視覺驗證需比較兩個時間點的完整畫面、各自固定
   3 × 2 六區、cloud-free 天空原圖及八個實際套用 shader 後的原尺寸雲物件。
-- `tests/town_npc_animation_test.gd`：七個 Town placement 的 dedicated scene link、
-  concept-derived 透明 cutout、stable Visual hierarchy、六個 living NPC 的
-  `AnimatableBody2D`／`TownNPCLife` contract、idle／walk／sit／chat／laugh／happy／sad／
-  surprised／angry atlas rows、生成 idle／walk／chat frame 的非空／無裁切／pose 差異、祭司的四組
-  8 幀完整姿勢成人比例動畫、七個不同 world texture identity、Autumn
+- `tests/town_npc_animation_test.gd`：九個 Town placement 的 dedicated scene link、
+  concept-derived 透明 cutout、stable Visual hierarchy、六位 residents 與兩位 visitors 的
+  `AnimatableBody2D` contract、4 columns × 13 rows 的 idle／walk／sit／chat／laugh／happy／
+  sad／surprised／angry／idle_look／idle_stretch／greet／work、生成 frame 的非空／無裁切／
+  pose 差異、祭司四組 8 幀完整姿勢成人比例動畫、九個不同 world texture identity、Autumn
   seated merchant 與 compatibility Merchant，以及 display-only／interactive 邊界。視覺驗證需檢查
-  idle/showcase 兩張 Town full-frame、兩組固定 3 × 2 slices、六張原尺寸 atlas、四個
-  living-Town 時序 full-frame 與九狀態 sheet。
-- `tests/town_npc_life_test.gd`：六個自主 NPC 的 group／home anchor、鄰居配對、走到
-  不重疊的會合點、聊天雙向面向、完成後返回精確原位，以及祭司對女巫的 external lock。
-  行為參數改動後必須以 `TownLifePreview.tscn` 擷取 idle、walk、social-chat、return-home
+  idle/showcase 兩張 Town full-frame、兩組固定 3 × 2 slices、八張原尺寸 resident／visitor
+  atlas、living-Town 時序 full-frame 與 13-state sheet；其中 row 4–8 要確認八份 authored
+  emotion strips 都維持 132 px／`y=144` normalization，runtime 沒有額外縮放或 bob。
+- `tests/town_npc_interaction_catalog_test.gd`：十一份 gameplay JSON 中的 Town interaction
+  catalog schema、九種 stable IDs、role／archetype 與 visitor eligibility、directional
+  share-goods、雙方 sequence、distance／duration／cooldown、deep-copy boundary，以及 caller-roll
+  deterministic weighted selection。
+- `tests/town_npc_life_test.gd`：六個自主 NPC 的 group／home anchor、reserved partner、catalog
+  interaction、social-greet → chat／work → react → farewell sequence、雙向面向、familiarity／
+  cooldown、角色化 work activity、取消／external lock 與完成後返回精確原位。
+  行為參數改動後必須以 `TownLifePreview.tscn` 擷取 idle、walk、social sequence、return-home
   時點，並在最後整合畫面重做固定 3 × 2 六區審查。
+- `tests/town_npc_facing_direction_test.gd`：女巫 atlas 原生朝左、預設角色原生朝右，並驗證
+  `set_facing_direction()` 的 `flip_h` 與 `TownNPCLife` 實際左右位移方向一致，避免角色倒退走。
+- `tests/town_visitor_life_test.gd`：兩個 visitor scene／atlas／group contract、左右相反的
+  offscreen entry、整鎮 crossing、偏好居民 greet／chat external lock、opposite-edge exit、
+  pass／greeting count 與下一輪 wait。
+- `tests/town_life_preview_test.gd`：deterministic preview 會停用 resident／visitor process，
+  以 0.05 秒 fixed-step 對非保留居民呼叫 `advance_life()`、對兩位 visitor 呼叫
+  `advance_visitor()`；指定 12 秒擷取進鎮、
+  16 秒附近擷取 visitor-resident interaction、60 秒確認兩位 visitor 已離鎮。
+- 本輪 Town social review evidence 固定輸出到 `.review_town_social_v3/`：包含祭司與女巫
+  對話中的 t09、t12／t18／t35 full frames、每個時間點固定 3 × 2 slices、`npc_states/`
+  13-state sheet 與原尺寸檢查。
+  Reviewer 要求修改任何 visitor baseline、atlas、scale、position、z-order 或 composition 後，
+  必須覆寫同一 versioned evidence 集並重新檢查全部 full-frame／native-detail／六區；最終
+  verdict 由獨立 review report 記錄，不由測試或本 guide 代替。
 - `tests/priest_town_behavior_test.gd`：祭司 wait-home → walk-to-witch → chat-with-witch →
-  walk-home 循環、精確 home／conversation anchor、左右朝向、四組動畫切換，以及女巫
+  walk-home 循環、全程共用 `y=672`／`z_index=0`、女巫左側 95 px conversation anchor、
+  祭司朝右與女巫朝左的雙方面向、四組動畫切換，以及女巫
   ambient/chat state 的暫停與恢復。行為或停靠位置改動後，需用 graphical renderer 擷取
   起點、去程、對話、回程與返家畫面，再重做 full-frame 與固定 3 × 2 六區審查。
 - `tests/town_npc_portrait_animation_test.gd`：`TownNPCPortrait` 的 reusable scene/API、
