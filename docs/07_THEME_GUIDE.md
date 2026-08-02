@@ -303,8 +303,9 @@ Theme Variation 讓語意元件繼承 Godot base type，同時集中差異。例
 - `fantasy_icons_16x16`：258 PNG、1 PSD
 - `hud/generated`：17 PNG
 - `shop/generated`：7 PNG
+- `inventory/generated`：1 PNG（無文字 open-journal frame）
 
-總計 301 PNG、14 PSD。301 PNG 均已有 import metadata。
+總計 302 PNG、14 PSD。302 PNG 均已有 import metadata。
 
 現役 Town building/Shop screen 直接重用 curated runtime icon：
 
@@ -313,6 +314,8 @@ Theme Variation 讓語意元件繼承 Godot base type，同時集中差異。例
 - Shop actions：Buy、Sell、Confirm、Close、quantity、currency；
 - Shop item rows：explicit item texture，缺少時由 `shop_ui.gd` 依 identity 選擇
   sword、boots、gem、map 或 supply fallback。
+- Inventory journal chapter、filter、item、equipment slot、Sword Soul 與 compendium rows
+  重用 curated pixel icons；generated journal 只負責大色塊、紙頁、封皮、書脊與書籤。
 
 圖示是掃描與辨識輔助，不取代 button text、tooltip、stock/cost/state label。
 
@@ -385,8 +388,9 @@ variations。
 
 ### 9.2 Current
 
-Inventory、Shop、Dialogue、Pause、HUD 各自有 StyleBoxFlat；Shop/HUD 另使用 generated
-textures。沒有正式 panel registry。
+Inventory、Shop、Dialogue、Pause、HUD 各自有 StyleBoxFlat；Inventory／Shop／HUD 另使用
+generated textures。Inventory 的高解析度 open-journal frame 使用 linear filter，內容
+pixel icons 維持 nearest／整數倍語意尺寸。沒有正式 panel registry。
 
 ### 9.3 Rules
 

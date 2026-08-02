@@ -726,7 +726,7 @@ Town prop/building多為`Sprite2D` scene，groups如`TownProp`、`TownBuilding`�
 |---|---|---|
 | `scenes/ui/hud/HUD.tscn` | `Control` | status/area/objective/prompt |
 | `scenes/ui/cards/CardHandUI.tscn` | `Control` | card fan/AP/combo/boss |
-| `scenes/ui/inventory/InventoryUI.tscn` | `Control` | inventory browser；discovery codex 的 live VFX／concept art、元素與成長資訊 |
+| `scenes/ui/inventory/InventoryUI.tscn` | `Control` | 古老日記式 backpack／status-equipment／owned Sword Souls／four-section compendium；招式保留 live VFX／concept art |
 | `scenes/ui/dialogue/DialogueUI.tscn` | `Control` | speaker/text/choice interaction |
 | `scenes/ui/shop/ShopUI.tscn` | `Control` | icon-based merchant catalog transaction intent |
 | `scenes/ui/system/PauseMenu.tscn` | `Control` | pause/settings/save/load/exit-combat intent |
@@ -947,18 +947,27 @@ Portal (StaticBody2D, Interactives + Portals)
 
 ```text
 InventoryUI (Control)
-├── DimBackground
-└── MainPanel (PanelContainer)
-    └── MainMargin (MarginContainer)
-        └── MainLayout (VBoxContainer)
-            ├── HeaderPanel (instance)
-            └── ContentRow (HBoxContainer)
-                ├── InventoryColumn
-                │   ├── CategoryTabs (instance)
-                │   └── SlotGrid
-                │       └── InventorySlot instances
-                └── DetailPanel (instance)
+├── Shade (ColorRect, Full Rect)
+└── Center (Control, safe margin)
+    └── MainPanel (Control, 1020×680 native 1.5 aspect)
+        ├── BookBackground (TextureRect, generated journal spread)
+        └── Margin/Layout (VBoxContainer)
+            ├── Header
+            ├── ModeTabs
+            │   ├── Inventory
+            │   ├── Status
+            │   ├── SwordSouls
+            │   └── Codex
+            └── Pages
+                ├── InventoryPage (filter/list + details/equip intent)
+                ├── StatusPage (personal status + three equipment slots)
+                ├── SwordSoulsPage (owned instance list + details)
+                └── CodexPage (four filters + live/concept/static preview)
 ```
+
+`MainPanel` 以中心 pivot 做整體等比縮放；六個 required viewport 都只能顯示一個
+active page。靜態 layout 由 scene 擁有，`inventory_ui.gd` 只注入 projection、篩選、
+focus、選取與 equip intent。
 
 ### 14.3 Runtime map
 

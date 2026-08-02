@@ -59,6 +59,28 @@ const MAX_COMBO_EFFECT_DURATION := 2.0
 const MAX_COMBO_DURATION := 3.0
 const DEFAULT_AUTO_ATTACK_CARD_ID := "ember_bolt"
 const DEFAULT_AUTO_ATTACK_INTERVAL := 1.0
+const JOURNAL_ICON_ROOT := "res://assets/ui/fantasy_icons_16x16/png/Separately/"
+const JOURNAL_EQUIPMENT_ICON_ROOT := "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/"
+const JOURNAL_ITEM_ICONS := {
+	"travel_bread": JOURNAL_ICON_ROOT + "Icon69_1_2.png",
+	"town_map": JOURNAL_ICON_ROOT + "Icon45_1_2.png",
+	"iron_sword": JOURNAL_EQUIPMENT_ICON_ROOT + "DefaultSet_0000_Weapon.png",
+	"guard_boots": JOURNAL_EQUIPMENT_ICON_ROOT + "DefaultSet_0006_Boots.png",
+	"soul_edge": JOURNAL_EQUIPMENT_ICON_ROOT + "StealSet_0000_Weapon.png",
+	"shard_charm": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
+}
+const JOURNAL_SLOT_ICONS := {
+	"weapon": JOURNAL_EQUIPMENT_ICON_ROOT + "DefaultSet_0000_Weapon.png",
+	"armor": JOURNAL_EQUIPMENT_ICON_ROOT + "DefaultSet_0003_Chest.png",
+	"accessory": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_03.png",
+}
+const JOURNAL_ENEMY_ICONS := {
+	"chase": JOURNAL_ICON_ROOT + "Icon55_1_2.png",
+	"leap": JOURNAL_ICON_ROOT + "Icon49_1_2.png",
+	"ranged": JOURNAL_ICON_ROOT + "Icon52_1_2.png",
+	"charge": JOURNAL_ICON_ROOT + "Icon58_1_2.png",
+	"elite": JOURNAL_ICON_ROOT + "Icon40_1_2.png",
+}
 const AUTO_ATTACK_HIT_HALF_WIDTH := 44.0
 const COMBO_FINISHER_DAMAGE := 28
 const COMBO_FINISHER_RANGE := 420.0
@@ -3567,17 +3589,21 @@ func _open_inventory() -> void:
 		return
 	inventory_ui.call("set_gold", wallet_gold)
 	inventory_ui.call("set_items", _inventory_projection())
-	inventory_ui.call("set_codex_entries", _inventory_codex_projection())
+	inventory_ui.call("set_player_status", _inventory_status_projection())
+	inventory_ui.call("set_equipment_entries", _inventory_equipment_projection())
+	inventory_ui.call("set_sword_souls", _inventory_sword_soul_projection())
+	inventory_ui.call("set_codex_entries", _inventory_compendium_projection())
+	_connect_with_source_if_present(inventory_ui, &"equip_requested", &"_on_inventory_equip_requested")
 
 
 func _inventory_projection() -> Array[Dictionary]:
 	var definitions := {
-		"travel_bread": {"name": "Travel Bread", "description": "Simple food for long roads.", "category": "items", "stats": "A basic provision."},
-		"town_map": {"name": "Town Map", "description": "Marks roads around town.", "category": "quest", "stats": "Quest item"},
-		"iron_sword": {"name": "Iron Sword", "description": "A reliable starter blade.", "category": "gear", "stats": "Attack +8"},
-		"guard_boots": {"name": "Guard Boots", "description": "Light boots for long roads.", "category": "gear", "stats": "Defense +2"},
-		"soul_edge": {"name": "Soul Edge", "description": "A blade tuned to sword-soul resonance.", "category": "gear", "stats": "Attack +12"},
-		"shard_charm": {"name": "Shard Charm", "description": "Stabilizes carried magic shards.", "category": "gear", "stats": "Magic stability"},
+		"travel_bread": {"name": "Travel Bread", "description": "Simple food for long roads.", "category": "items", "stats": "A basic provision.", "icon_path": JOURNAL_ITEM_ICONS["travel_bread"]},
+		"town_map": {"name": "Town Map", "description": "Marks roads around town.", "category": "quest", "stats": "Key item · cannot be consumed.", "icon_path": JOURNAL_ITEM_ICONS["town_map"]},
+		"iron_sword": {"name": "Iron Sword", "description": "A reliable starter blade.", "category": "gear", "stats": "Attack +8", "icon_path": JOURNAL_ITEM_ICONS["iron_sword"]},
+		"guard_boots": {"name": "Guard Boots", "description": "Light boots for long roads.", "category": "gear", "stats": "Defense +2", "icon_path": JOURNAL_ITEM_ICONS["guard_boots"]},
+		"soul_edge": {"name": "Soul Edge", "description": "A blade tuned to sword-soul resonance.", "category": "gear", "stats": "Attack +12", "icon_path": JOURNAL_ITEM_ICONS["soul_edge"]},
+		"shard_charm": {"name": "Shard Charm", "description": "Stabilizes carried magic shards.", "category": "gear", "stats": "Magic stability", "icon_path": JOURNAL_ITEM_ICONS["shard_charm"]},
 	}
 	var projection: Array[Dictionary] = []
 	for item_id in player_inventory.keys():
@@ -3622,9 +3648,225 @@ func _inventory_projection() -> Array[Dictionary]:
 		owned["category"] = "gear"
 		owned["kind_label"] = "%s EQUIPMENT" % String(equipment.get("slot", "gear")).to_upper()
 		owned["quantity"] = int(inventory_manager.call("get_equipment_count", StringName(equipment_id)))
-		owned["stats"] = "Forge level %d" % int(inventory_manager.call("get_equipment_level", StringName(equipment_id)))
+		owned["stats"] = "Forge level %d\n%s" % [
+			int(inventory_manager.call("get_equipment_level", StringName(equipment_id))),
+			_equipment_effect_summary(equipment),
+		]
+		owned["icon_path"] = _journal_equipment_icon(equipment)
+		owned["equipped"] = StringName(inventory_manager.call("get_equipped", StringName(equipment.get("slot", "")))) == StringName(equipment_id)
 		projection.append(owned)
 	return projection
+
+
+func _on_inventory_equip_requested(item_id: StringName, ui_control: Control) -> void:
+	if ui_control == null or not is_instance_valid(ui_control):
+		return
+	if not bool(inventory_manager.call("equip", item_id)):
+		return
+	_apply_equipment_stats()
+	_sync_progression_to_meta()
+	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	ui_control.call("set_items", _inventory_projection())
+	ui_control.call("set_player_status", _inventory_status_projection())
+	ui_control.call("set_equipment_entries", _inventory_equipment_projection())
+	ui_control.call("set_codex_entries", _inventory_compendium_projection())
+
+
+func _inventory_status_projection() -> Dictionary:
+	if player == null:
+		return {
+			"level": 1,
+			"character_class": "Adventurer",
+			"experience": 0,
+			"experience_required": 1,
+			"health": 0,
+			"max_health": 0,
+			"mana": 0,
+			"max_mana": 0,
+			"attack": 0,
+			"defense": 0,
+			"speed": 0.0,
+		}
+	return {
+		"level": run_state.level if run_state.active else int(player.get("level")),
+		"character_class": String(player.get("character_class")),
+		"experience": run_state.experience if run_state.active else int(player.get("experience")),
+		"experience_required": run_state.experience_required if run_state.active else int(player.get("experience_to_next_level")),
+		"health": int(player.get("health")),
+		"max_health": int(player.get("max_health")),
+		"mana": int(player.get("mana")),
+		"max_mana": int(player.get("max_mana")),
+		"attack": int(player.get("attack_power")),
+		"defense": int(player.get("defense")),
+		"speed": float(player.get("speed")),
+	}
+
+
+func _inventory_equipment_projection() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for slot in [&"weapon", &"armor", &"accessory"]:
+		var item_id := StringName(inventory_manager.call("get_equipped", slot))
+		if item_id.is_empty():
+			result.append({
+				"slot": String(slot),
+				"id": "",
+				"name": "Empty",
+				"level": 0,
+				"stats": "No equipment is currently fitted in this slot.",
+				"icon_path": JOURNAL_SLOT_ICONS[String(slot)],
+			})
+			continue
+		var item := inventory_manager.call("get_equipment", item_id) as Dictionary
+		result.append({
+			"slot": String(slot),
+			"id": String(item_id),
+			"name": String(item.get("name", item_id)),
+			"level": int(inventory_manager.call("get_equipment_level", item_id)),
+			"stats": _equipment_effect_summary(item),
+			"icon_path": _journal_equipment_icon(item),
+		})
+	return result
+
+
+func _inventory_sword_soul_projection() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for instance in meta_state.selected_card_instances:
+		if instance == null:
+			continue
+		var card := card_database.get_card(instance.card_id)
+		if card.is_empty():
+			continue
+		result.append({
+			"instance_id": instance.instance_id,
+			"card_id": instance.card_id,
+			"id": instance.instance_id,
+			"name": String(card.get("name", instance.card_id.capitalize())),
+			"kind_label": "OWNED SWORD SOUL",
+			"level": instance.level,
+			"description": _card_level_description(card, instance.level),
+			"effect_summary": _card_effect_summary(card.get("effect", {}) as Dictionary),
+			"icon_path": String(card.get("icon_path", JOURNAL_ICON_ROOT + "Icon41_1_2.png")),
+		})
+	result.sort_custom(
+		func(left: Dictionary, right: Dictionary) -> bool:
+			return "%s:%s" % [left.get("name", ""), left.get("instance_id", "")] < "%s:%s" % [right.get("name", ""), right.get("instance_id", "")]
+	)
+	return result
+
+
+func _inventory_compendium_projection() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for technique_variant in _inventory_codex_projection():
+		var technique := technique_variant.duplicate(true)
+		technique["section"] = "techniques"
+		if String(technique.get("icon_path", "")).is_empty():
+			technique["icon_path"] = JOURNAL_ICON_ROOT + "Icon41_1_2.png"
+		result.append(technique)
+	result.append_array(_inventory_enemy_codex_projection())
+	result.append_array(_inventory_sword_soul_codex_projection())
+	result.append_array(_inventory_equipment_codex_projection())
+	return result
+
+
+func _inventory_enemy_codex_projection() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var catalog := EnemyArchetype.autumn_catalog()
+	var ids := catalog.keys()
+	ids.sort_custom(func(left: Variant, right: Variant) -> bool: return String(left) < String(right))
+	for id_variant in ids:
+		var archetype := catalog[id_variant] as EnemyArchetype
+		var patterns := PackedStringArray()
+		for pattern in archetype.attack_patterns:
+			patterns.append(String(pattern).replace("_", " ").capitalize())
+		result.append({
+			"section": "enemies",
+			"id": String(archetype.archetype_id),
+			"name": archetype.display_name,
+			"kind_label": "AUTUMN ENEMY CATALOG",
+			"description": "A recorded autumn archetype. This catalog is a reference, not discovery progress.",
+			"effect_summary": "Health %d · Attack %d · Defense %d · Speed %d" % [archetype.max_health, archetype.attack_damage, archetype.defense, roundi(archetype.speed)],
+			"trigger_summary": "Behavior: %s · Patterns: %s" % [String(archetype.behavior).capitalize(), ", ".join(patterns)],
+			"meta_summary": "RANGE %d  ·  REWARD %d XP / %d G" % [roundi(archetype.attack_range), archetype.experience_reward, archetype.gold_reward],
+			"icon_path": JOURNAL_ENEMY_ICONS.get(String(archetype.behavior), JOURNAL_ICON_ROOT + "Icon40_1_2.png"),
+		})
+	return result
+
+
+func _inventory_sword_soul_codex_projection() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for recipe_variant in forge_catalog.call("get_all_recipes") as Array:
+		var recipe := recipe_variant as Dictionary
+		if StringName(recipe.get("result_kind", "")) != &"sword_soul":
+			continue
+		var card_id := StringName(recipe.get("result_id", ""))
+		var card := card_database.get_card(String(card_id))
+		var progress := _sword_soul_progress(card_id)
+		result.append({
+			"section": "sword_souls",
+			"id": String(card_id),
+			"name": String(card.get("name", card_id)),
+			"kind_label": "SWORD SOUL DESIGN",
+			"description": String(card.get("description", "A forgeable Sword Soul design.")),
+			"effect_summary": _card_effect_summary(card.get("effect", {}) as Dictionary),
+			"trigger_summary": "Forge design · Blacksmith level %d" % int(recipe.get("required_blacksmith_level", 1)),
+			"meta_summary": "OWNED %s  ·  LEVEL %d / 3" % ["YES" if bool(progress.get("owned", false)) else "NO", int(progress.get("level", 0))],
+			"icon_path": String(card.get("icon_path", JOURNAL_ICON_ROOT + "Icon41_1_2.png")),
+		})
+	result.sort_custom(func(left: Dictionary, right: Dictionary) -> bool: return String(left.get("name", "")) < String(right.get("name", "")))
+	return result
+
+
+func _inventory_equipment_codex_projection() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for item_variant in inventory_manager.call("get_equipment_catalog") as Array:
+		var item := item_variant as Dictionary
+		var item_id := StringName(item.get("id", ""))
+		var slot := StringName(item.get("slot", ""))
+		var owned := bool(inventory_manager.call("has_equipment", item_id))
+		var equipped := StringName(inventory_manager.call("get_equipped", slot)) == item_id
+		result.append({
+			"section": "equipment",
+			"id": String(item_id),
+			"name": String(item.get("name", item_id)),
+			"kind_label": "%s EQUIPMENT" % String(slot).to_upper(),
+			"description": String((item.get("special_ability", {}) as Dictionary).get("description", "A forgeable equipment design.")),
+			"effect_summary": _equipment_effect_summary(item),
+			"trigger_summary": "Persistent equipment catalog · Forge level cap 3",
+			"meta_summary": "OWNED %s  ·  EQUIPPED %s  ·  LEVEL %d / 3" % ["YES" if owned else "NO", "YES" if equipped else "NO", int(inventory_manager.call("get_equipment_level", item_id))],
+			"icon_path": _journal_equipment_icon(item),
+		})
+	result.sort_custom(func(left: Dictionary, right: Dictionary) -> bool: return "%s:%s" % [left.get("kind_label", ""), left.get("name", "")] < "%s:%s" % [right.get("kind_label", ""), right.get("name", "")])
+	return result
+
+
+func _journal_equipment_icon(item: Dictionary) -> String:
+	var item_id := String(item.get("id", ""))
+	if JOURNAL_ITEM_ICONS.has(item_id):
+		return String(JOURNAL_ITEM_ICONS[item_id])
+	return String(JOURNAL_SLOT_ICONS.get(String(item.get("slot", "accessory")), JOURNAL_SLOT_ICONS["accessory"]))
+
+
+func _equipment_effect_summary(item: Dictionary) -> String:
+	var labels := {
+		"attack": "Attack",
+		"defense": "Defense",
+		"max_health": "Max Health",
+		"max_mana": "Max Mana",
+		"move_speed_multiplier": "Move Speed",
+	}
+	var parts := PackedStringArray()
+	var effects := item.get("effects", {}) as Dictionary
+	for key in ["attack", "defense", "max_health", "max_mana", "move_speed_multiplier"]:
+		if not effects.has(key):
+			continue
+		var value := float(effects[key])
+		parts.append(
+			"%s %s" % [
+				labels[key],
+				("%+.0f%%" % (value * 100.0)) if key == "move_speed_multiplier" else "%+d" % int(value),
+			]
+		)
+	return " · ".join(parts) if not parts.is_empty() else "No active status modifier"
 
 
 func _inventory_codex_projection() -> Array[Dictionary]:

@@ -42,6 +42,7 @@ pipeline描述成Current。
 | Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
 | Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
 | Generated VFX texture | 24 | `res://assets/generated/vfx/` |
+| Generated inventory journal frame | 1 | `res://assets/ui/inventory/generated/inventory_journal_spread_v1.png` |
 | Town NPC transparent cutout | 5 | `res://assets/town/npc/characters/` |
 | Town NPC world animation atlas | 9 | `res://assets/town/npc/characters/*_animation_atlas.png`、`res://assets/town/npc/priest/priest_animation_atlas.png` |
 
@@ -104,6 +105,14 @@ Generated combat presentation：
   每招由 anticipation、attack、trail、impact、debris 五個 atlas parts 拼裝，
   並以唯一 archetype、beat pattern、三級 evolution layers 與 stack traits
   控制動畫拓樸和成長，不以單一模板只換 motion 名稱。
+
+Generated inventory presentation：
+
+- `assets/ui/inventory/generated/inventory_journal_spread_v1.png` 是 1536×1024、無文字
+  的古老冒險者雙頁日記底圖；runtime 以 keep-aspect centered 顯示，所有標題、按鈕、
+  icon 與可互動狀態仍由 Godot scene authoring 擁有。
+- 生成提示、使用方式與重審契約記錄於
+  `docs/art_concepts/inventory_journal_spread_v1.md`。
 
 Town NPC presentation：
 
@@ -546,8 +555,9 @@ UI不得直接改以上private dictionaries。
 - `MetaState.resources/equipment/equipment_levels/inventory_state`
 - `Game.wallet_gold/player_inventory/_merchant_catalogs`
 
-InventoryUI 以只讀 projection 合併 `player_inventory` consumables、
-InventoryManager resources/equipment，以及 MetaState discovery fields；
+InventoryUI 以 projection 合併 `player_inventory` consumables、InventoryManager
+resources/equipment、玩家狀態、`MetaState.selected_card_instances` 與四類 compendium；
+只有 `equip_requested` 會回到 Game，再經 InventoryManager domain API mutation；
 MaterialYardUI、PlayerBlacksmithUI 與 TownHallUI 操作
 InventoryManager/TownManager。任何 transaction 仍要追蹤所有同步點。
 
@@ -847,7 +857,7 @@ backup。修改其中一條pipeline時不可假定另一條自動同步。
 |---|---|
 | CardHandUI | Game從CardDatabase + RunState產生card copies |
 | HUD | Player、RunState、wallet與objective setters |
-| InventoryUI | Game `_inventory_projection()` + `_inventory_codex_projection()` |
+| InventoryUI | Game `_inventory_projection()`、`_inventory_status_projection()`、`_inventory_equipment_projection()`、`_inventory_sword_soul_projection()`、`_inventory_compendium_projection()` |
 | ShopUI | Game catalog/owned count projection |
 | MaterialYardUI | TownManager workshop + InventoryManager resources |
 | PlayerBlacksmithUI | TownManager blacksmith/memory library + InventoryManager equipment/resources |

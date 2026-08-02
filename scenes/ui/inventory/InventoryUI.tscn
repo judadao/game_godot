@@ -1,45 +1,79 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/inventory/inventory_ui.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/inventory/inventory_codex_preview.gd" id="2"]
-
-[sub_resource type="StyleBoxFlat" id="panel"]
-bg_color = Color(0.055, 0.066, 0.065, 0.98)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.68, 0.49, 0.22, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[ext_resource type="Texture2D" path="res://assets/ui/inventory/generated/inventory_journal_spread_v1.png" id="3_book"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon48_1_2.png" id="4_bag"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon40_1_2.png" id="5_status"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon41_1_2.png" id="6_soul"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon45_1_2.png" id="7_codex"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Type Icons/sword_itemType.png" id="8_weapon"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Type Icons/torso_itemType.png" id="9_armor"]
+[ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Type Icons/misc_itemType.png" id="10_accessory"]
 
 [sub_resource type="StyleBoxFlat" id="section"]
-bg_color = Color(0.075, 0.09, 0.087, 0.98)
+bg_color = Color(0.745, 0.626, 0.43, 0.24)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.28, 0.32, 0.27, 1)
+border_color = Color(0.29, 0.22, 0.16, 0.72)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="tab"]
+bg_color = Color(0.25, 0.19, 0.14, 0.82)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 2
+border_color = Color(0.61, 0.47, 0.28, 0.9)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[sub_resource type="StyleBoxFlat" id="tab"]
-bg_color = Color(0.11, 0.13, 0.12, 1)
+[sub_resource type="StyleBoxFlat" id="tab_hover"]
+bg_color = Color(0.48, 0.34, 0.19, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
 border_width_bottom = 2
-border_color = Color(0.34, 0.29, 0.18, 1)
+border_color = Color(0.86, 0.64, 0.32, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="tab_pressed"]
-bg_color = Color(0.2, 0.16, 0.09, 1)
+bg_color = Color(0.08, 0.12, 0.16, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
 border_width_bottom = 3
-border_color = Color(0.94, 0.67, 0.22, 1)
+border_color = Color(0.85, 0.66, 0.35, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="list_focus"]
+bg_color = Color(0.84, 0.67, 0.36, 0.24)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.52, 0.34, 0.16, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="InventoryUI" type="Control"]
 layout_mode = 3
@@ -57,88 +91,176 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.01, 0.012, 0.011, 0.78)
+color = Color(0.015, 0.021, 0.028, 0.84)
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="Center" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 28.0
-offset_top = 24.0
-offset_right = -28.0
-offset_bottom = -24.0
+offset_left = 12.0
+offset_top = 8.0
+offset_right = -12.0
+offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MainPanel" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(1040, 620)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_styles/panel = SubResource("panel")
+[node name="MainPanel" type="Control" parent="Center"]
+custom_minimum_size = Vector2(1020, 680)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -510.0
+offset_top = -340.0
+offset_right = 510.0
+offset_bottom = 340.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(510, 340)
+mouse_filter = 1
+
+[node name="BookBackground" type="TextureRect" parent="Center/MainPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture_filter = 2
+texture = ExtResource("3_book")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Margin" type="MarginContainer" parent="Center/MainPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 18
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 76
+theme_override_constants/margin_top = 44
+theme_override_constants/margin_right = 86
+theme_override_constants/margin_bottom = 96
 
 [node name="Layout" type="VBoxContainer" parent="Center/MainPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 7
 
 [node name="Header" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout"]
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HeaderInset" type="Control" parent="Center/MainPanel/Margin/Layout/Header"]
+custom_minimum_size = Vector2(12, 0)
+layout_mode = 2
+mouse_filter = 2
 
 [node name="Title" type="Label" parent="Center/MainPanel/Margin/Layout/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.96, 0.79, 0.42, 1)
-theme_override_font_sizes/font_size = 26
-text = "Inventory & Codex"
+theme_override_colors/font_color = Color(0.19, 0.14, 0.105, 1)
+theme_override_font_sizes/font_size = 24
+text = "THE WANDERER'S JOURNAL"
 
 [node name="GoldCaption" type="Label" parent="Center/MainPanel/Margin/Layout/Header"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.56, 0.72, 0.68, 1)
-text = "GOLD  "
+theme_override_colors/font_color = Color(0.31, 0.25, 0.18, 1)
+text = "COIN"
 
 [node name="Gold" type="Label" parent="Center/MainPanel/Margin/Layout/Header"]
-custom_minimum_size = Vector2(110, 0)
+custom_minimum_size = Vector2(92, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.73, 0.22, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.4, 0.27, 0.08, 1)
+theme_override_font_sizes/font_size = 17
 text = "0 G"
 
 [node name="Close" type="Button" parent="Center/MainPanel/Margin/Layout/Header"]
-custom_minimum_size = Vector2(42, 38)
+custom_minimum_size = Vector2(36, 34)
 layout_mode = 2
-tooltip_text = "Close"
-text = "X"
+tooltip_text = "Close journal (Esc)"
+theme_override_colors/font_color = Color(0.96, 0.86, 0.64, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "×"
 
 [node name="ModeTabs" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout"]
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
-theme_override_constants/separation = 4
+alignment = 1
+theme_override_constants/separation = 6
 
 [node name="Inventory" type="Button" parent="Center/MainPanel/Margin/Layout/ModeTabs"]
-custom_minimum_size = Vector2(180, 38)
+custom_minimum_size = Vector2(152, 40)
 layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "背包 Backpack"
 toggle_mode = true
+button_group = null
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.88, 0.58, 1)
+theme_override_constants/icon_max_width = 26
 theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
 theme_override_styles/pressed = SubResource("tab_pressed")
-text = "INVENTORY"
+icon = ExtResource("4_bag")
+text = "背包  BAG"
+
+[node name="Status" type="Button" parent="Center/MainPanel/Margin/Layout/ModeTabs"]
+custom_minimum_size = Vector2(152, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "狀態 Status"
+toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.88, 0.58, 1)
+theme_override_constants/icon_max_width = 26
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+icon = ExtResource("5_status")
+text = "狀態  STATUS"
+
+[node name="SwordSouls" type="Button" parent="Center/MainPanel/Margin/Layout/ModeTabs"]
+custom_minimum_size = Vector2(164, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "現有劍魂 Sword Souls"
+toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.88, 0.58, 1)
+theme_override_constants/icon_max_width = 26
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+icon = ExtResource("6_soul")
+text = "劍魂  SOULS"
 
 [node name="Codex" type="Button" parent="Center/MainPanel/Margin/Layout/ModeTabs"]
-custom_minimum_size = Vector2(180, 38)
+custom_minimum_size = Vector2(152, 40)
 layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "圖鑑"
 toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.88, 0.58, 1)
+theme_override_constants/icon_max_width = 26
 theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
 theme_override_styles/pressed = SubResource("tab_pressed")
-text = "DISCOVERY CODEX"
+icon = ExtResource("7_codex")
+text = "圖鑑"
 
 [node name="Rule" type="HSeparator" parent="Center/MainPanel/Margin/Layout"]
 layout_mode = 2
+theme_override_colors/separator = Color(0.37, 0.25, 0.14, 0.7)
 
 [node name="Pages" type="Control" parent="Center/MainPanel/Margin/Layout"]
 layout_mode = 2
@@ -151,22 +273,39 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 52
 
 [node name="Browser" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage"]
-custom_minimum_size = Vector2(410, 0)
+custom_minimum_size = Vector2(355, 0)
 layout_mode = 2
-theme_override_constants/separation = 8
+size_flags_horizontal = 3
+theme_override_constants/separation = 7
+
+[node name="Chapter" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.23, 0.16, 0.11, 1)
+theme_override_font_sizes/font_size = 21
+text = "背包內容 · PACK CONTENTS"
 
 [node name="Filter" type="OptionButton" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser"]
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.15, 0.11, 1)
+theme_override_styles/normal = SubResource("section")
 
 [node name="Items" type="ItemList" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.9, 0.82, 0.67, 1)
+theme_override_colors/font_selected_color = Color(0.12, 0.09, 0.07, 1)
+theme_override_colors/font_hovered_color = Color(1, 0.91, 0.72, 1)
+theme_override_colors/guide_color = Color(0.34, 0.25, 0.17, 0.32)
+theme_override_constants/line_separation = 8
 theme_override_constants/icon_margin = 12
-fixed_icon_size = Vector2i(38, 38)
-fixed_column_width = 385
+theme_override_styles/focus = SubResource("list_focus")
+theme_override_styles/selected = SubResource("list_focus")
+fixed_icon_size = Vector2i(44, 44)
+fixed_column_width = 340
 same_column_width = true
 
 [node name="Details" type="PanelContainer" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage"]
@@ -176,86 +315,374 @@ theme_override_styles/panel = SubResource("section")
 
 [node name="Content" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Details"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="Name" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Details/Content"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.17, 0.115, 0.08, 1)
+theme_override_font_sizes/font_size = 25
 text = "No items"
 
 [node name="Kind" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Details/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.78, 0.7, 1)
+theme_override_colors/font_color = Color(0.35, 0.26, 0.16, 1)
 text = "ITEM"
 
 [node name="Description" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Details/Content"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.2, 0.16, 0.12, 1)
 autowrap_mode = 2
 
 [node name="Stats" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Details/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.72, 0.3, 1)
+theme_override_colors/font_color = Color(0.38, 0.24, 0.08, 1)
 autowrap_mode = 2
 
-[node name="CodexPage" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages"]
+[node name="Equip" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Details/Content"]
+visible = false
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../../Browser/Items")
+theme_override_colors/font_color = Color(0.93, 0.82, 0.58, 1)
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+theme_override_styles/focus = SubResource("tab_pressed")
+text = "裝備 · EQUIP"
+
+[node name="StatusPage" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 52
 
-[node name="Browser" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage"]
-custom_minimum_size = Vector2(335, 0)
+[node name="Personal" type="PanelContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("section")
+
+[node name="Content" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Personal"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Filter" type="OptionButton" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser"]
+[node name="Chapter" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Personal/Content"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.14, 0.1, 1)
+theme_override_font_sizes/font_size = 22
+text = "個人狀態 · PERSONAL STATUS"
+
+[node name="Identity" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Personal/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.21, 0.14, 1)
+theme_override_font_sizes/font_size = 18
+text = "Adventurer · Level 1"
+
+[node name="Experience" type="ProgressBar" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Personal/Content"]
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+show_percentage = false
+
+[node name="ExperienceText" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Personal/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.29, 0.22, 0.15, 1)
+text = "EXP 0 / 100"
+
+[node name="Vitals" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Personal/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.17, 0.13, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "HEALTH   0 / 0\nMANA      0 / 0\nATTACK    0\nDEFENSE   0\nSPEED     0"
+
+[node name="Equipment" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Chapter" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.14, 0.1, 1)
+theme_override_font_sizes/font_size = 22
+text = "裝備 · EQUIPMENT"
+
+[node name="Weapon" type="PanelContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("section")
+
+[node name="Row" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Weapon"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Weapon/Row"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("8_weapon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Weapon/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Weapon/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.19, 0.13, 0.09, 1)
+theme_override_font_sizes/font_size = 17
+text = "Weapon · Empty"
+
+[node name="Stats" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Weapon/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.34, 0.25, 0.16, 1)
+autowrap_mode = 2
+
+[node name="Armor" type="PanelContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("section")
+
+[node name="Row" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Armor"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Armor/Row"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("9_armor")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Armor/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Armor/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.19, 0.13, 0.09, 1)
+theme_override_font_sizes/font_size = 17
+text = "Armor · Empty"
+
+[node name="Stats" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Armor/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.34, 0.25, 0.16, 1)
+autowrap_mode = 2
+
+[node name="Accessory" type="PanelContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("section")
+
+[node name="Row" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Accessory"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Accessory/Row"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+texture_filter = 1
+texture = ExtResource("10_accessory")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Accessory/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Accessory/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.19, 0.13, 0.09, 1)
+theme_override_font_sizes/font_size = 17
+text = "Accessory · Empty"
+
+[node name="Stats" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Accessory/Row/Text"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.34, 0.25, 0.16, 1)
+autowrap_mode = 2
+
+[node name="SwordSoulsPage" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 52
+
+[node name="Browser" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage"]
+custom_minimum_size = Vector2(355, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 7
+
+[node name="Chapter" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Browser"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.14, 0.1, 1)
+theme_override_font_sizes/font_size = 21
+text = "現有劍魂 · OWNED SWORD SOULS"
+
+[node name="Hint" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Browser"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.25, 0.16, 1)
+text = "每一枚劍魂皆保留獨立等級與印記。"
+autowrap_mode = 2
+
+[node name="Entries" type="ItemList" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Browser"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.9, 0.82, 0.67, 1)
+theme_override_colors/font_selected_color = Color(0.12, 0.09, 0.07, 1)
+theme_override_colors/font_hovered_color = Color(1, 0.91, 0.72, 1)
+theme_override_constants/line_separation = 8
+theme_override_constants/icon_margin = 12
+theme_override_styles/focus = SubResource("list_focus")
+theme_override_styles/selected = SubResource("list_focus")
+fixed_icon_size = Vector2i(44, 44)
+fixed_column_width = 340
+same_column_width = true
+
+[node name="Details" type="PanelContainer" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("section")
+
+[node name="Content" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content"]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_horizontal = 4
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.12, 0.08, 1)
+theme_override_font_sizes/font_size = 24
+text = "No Sword Souls"
+horizontal_alignment = 1
+
+[node name="Kind" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.24, 0.15, 1)
+horizontal_alignment = 1
+
+[node name="Meta" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.26, 0.19, 0.31, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.15, 0.11, 1)
+autowrap_mode = 2
+
+[node name="Effect" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.39, 0.24, 0.08, 1)
+autowrap_mode = 2
+
+[node name="CodexPage" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 52
+
+[node name="Browser" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage"]
+custom_minimum_size = Vector2(355, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 7
+
+[node name="Chapter" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.14, 0.1, 1)
+theme_override_font_sizes/font_size = 21
+text = "圖鑑"
+
+[node name="Filter" type="OptionButton" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.15, 0.11, 1)
+theme_override_styles/normal = SubResource("section")
 
 [node name="Entries" type="ItemList" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/icon_margin = 10
-fixed_icon_size = Vector2i(42, 42)
-fixed_column_width = 310
+theme_override_colors/font_color = Color(0.9, 0.82, 0.67, 1)
+theme_override_colors/font_selected_color = Color(0.12, 0.09, 0.07, 1)
+theme_override_colors/font_hovered_color = Color(1, 0.91, 0.72, 1)
+theme_override_constants/line_separation = 8
+theme_override_constants/icon_margin = 12
+theme_override_styles/focus = SubResource("list_focus")
+theme_override_styles/selected = SubResource("list_focus")
+fixed_icon_size = Vector2i(44, 44)
+fixed_column_width = 340
 same_column_width = true
 
 [node name="Details" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="ViewTabs" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 5
 
 [node name="LiveVFX" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/ViewTabs"]
-custom_minimum_size = Vector2(128, 30)
+custom_minimum_size = Vector2(112, 30)
 layout_mode = 2
 toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
 theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
 theme_override_styles/pressed = SubResource("tab_pressed")
 text = "LIVE VFX"
 
 [node name="ConceptArt" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/ViewTabs"]
-custom_minimum_size = Vector2(148, 30)
+custom_minimum_size = Vector2(132, 30)
 layout_mode = 2
 toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
 theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
 theme_override_styles/pressed = SubResource("tab_pressed")
 text = "CONCEPT ART"
 
 [node name="Preview" type="Control" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
-custom_minimum_size = Vector2(0, 210)
+custom_minimum_size = Vector2(0, 152)
 layout_mode = 2
 script = ExtResource("2")
 
 [node name="ConceptView" type="TextureRect" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
 visible = false
-custom_minimum_size = Vector2(0, 210)
+custom_minimum_size = Vector2(0, 152)
+layout_mode = 2
+mouse_filter = 2
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StaticIcon" type="TextureRect" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
+visible = false
+custom_minimum_size = Vector2(0, 152)
 layout_mode = 2
 mouse_filter = 2
 texture_filter = 1
@@ -267,41 +694,81 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("section")
 
-[node name="Content" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info"]
+[node name="InfoFrame" type="Control" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info"]
 layout_mode = 2
-theme_override_constants/separation = 5
 
-[node name="Name" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content"]
+[node name="Scroll" type="ScrollContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -26.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 1
+scroll_deadzone = 8
+
+[node name="Content" type="VBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.79, 0.42, 1)
-theme_override_font_sizes/font_size = 22
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="TopInset" type="Control" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Name" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.12, 0.08, 1)
+theme_override_font_sizes/font_size = 21
 text = "No discoveries"
 
-[node name="Kind" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content"]
+[node name="Kind" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.78, 0.7, 1)
+theme_override_colors/font_color = Color(0.34, 0.24, 0.15, 1)
 
-[node name="Meta" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content"]
+[node name="Meta" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.86, 0.94, 1)
+theme_override_colors/font_color = Color(0.24, 0.28, 0.25, 1)
 theme_override_font_sizes/font_size = 13
 
-[node name="Growth" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content"]
+[node name="Growth" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.88, 0.76, 0.48, 1)
+theme_override_colors/font_color = Color(0.37, 0.27, 0.13, 1)
 theme_override_font_sizes/font_size = 13
 autowrap_mode = 2
 
-[node name="Description" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content"]
+[node name="Description" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.15, 0.11, 1)
 autowrap_mode = 2
 
-[node name="Effect" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content"]
+[node name="Effect" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.72, 0.3, 1)
+theme_override_colors/font_color = Color(0.39, 0.24, 0.08, 1)
 autowrap_mode = 2
 
-[node name="Trigger" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content"]
+[node name="Trigger" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.68, 0.74, 0.7, 1)
+theme_override_colors/font_color = Color(0.27, 0.24, 0.2, 1)
 autowrap_mode = 2
+
+[node name="BottomInset" type="Control" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="FooterSafe" type="Control" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -26.0
+offset_right = -18.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2

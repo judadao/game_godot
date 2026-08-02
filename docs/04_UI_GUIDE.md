@@ -554,9 +554,17 @@ HUDLayer
 
 `InventoryUI.tscn`：
 
-- centered 1040×620 responsive panel
-- Inventory／Discovery Codex 主分頁
-- 可篩選、可捲動的 item/discovery lists
+- centered 1020×680 native open-journal frame，整本等比縮放且維持 1.5 aspect
+- 背包／狀態／劍魂／圖鑑四個有 icon 與明確 focus state 的章節分頁；第四章的
+  玩家可見名稱固定只顯示「圖鑑」，不附加 `CODEX`／`COMPENDIUM`
+- 背包依素材／關鍵道具／裝備／補給品篩選；裝備詳細頁提供至少 32px 的
+  `裝備 · EQUIP` intent button，已裝備項目顯示 disabled `已裝備 · EQUIPPED`
+- 狀態頁同時顯示 personal status 與 weapon／armor／accessory 三個權威裝備投影
+- 劍魂頁逐一保留 `CardInstance.instance_id` 與獨立 level，不用 card id 合併持有實例
+- 圖鑑依招式／敵人／劍魂／裝備篩選；敵人是 catalog reference，不是假造 discovery
+- 所有章節內容保留 32px painted page-curl safe inset；圖鑑長內容在固定 detail viewport
+  內捲動，viewport 下方另保留 26px 無繪製 footer 與內容 BottomInset，不讓最後一行
+  落入書頁捲邊或顯示半行
 - Codex 左側 basic attacks／skills／infusions／finishers 列表；右上可在 `LIVE VFX`
   與 `CONCEPT ART` 間切換，右下顯示效果／觸發說明
 - 命名 Skill／Finisher 的 concept view 依 stable id 裁切專屬概念列；其他條目依
@@ -578,7 +586,10 @@ HUDLayer
 
 `inventory_ui.gd`：
 
-- `set_gold()`、`set_items()`、`set_codex_entries()`、`set_mode()`
+- `set_gold()`、`set_items()`、`set_player_status()`、`set_equipment_entries()`、
+  `set_sword_souls()`、`set_codex_entries()`、`set_mode()`
+- `equip_requested(item_id)` 只送出使用者意圖；`Game` 是唯一 mutation owner，成功後
+  重新注入背包、狀態、裝備與圖鑑 projection
 - `set_codex_view_mode()` 在 production VFX 與 concept art 間切換；沒有可用素材時
   必須安全退回 live view
 - inventory category 與 codex category 都執行實際篩選
@@ -587,14 +598,15 @@ HUDLayer
 ### 12.2 Current gaps
 
 - consumable compatibility state 仍與 InventoryManager 分離。
+- 敵人尚無獨立 discovery state，因此圖鑑只能標示為完整 archetype reference catalog。
 - storm／venom infusion 已沿用 attack-bound aura contract；它們的獨立 Ultimate
   尚未實作。
 - component 子場景無 script/signal，父 controller 依賴 deep NodePath。
-- empty/max/long localized item 尚無 resolution test。
 
 ### 12.3 Inventory rules
 
 - UI 不直接修改 item catalog。
+- 裝備操作只 emit intent，不直接呼叫 InventoryManager 或寫 save。
 - category filtering 必須定義 projection index 與 source index mapping。
 - empty slot、selected slot、disabled slot、quantity 的 visual state 要分開。
 - 超過容量時使用 scroll/pagination，不靜默丟棄。

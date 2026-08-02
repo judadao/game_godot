@@ -417,10 +417,12 @@ UI 對上層提供 setter/configure API與 typed signals：
 - `DialogueUI`：speaker/text/choices；emit choice/advanced/canceled。
 - `ShopUI`：圖示化 catalog projection 與結構化商品列；emit
   mode/quantity/confirmed。
-- `InventoryUI`：消耗品、永久材料、持有裝備 projection，以及只讀 discovery
-  codex。Codex 由 `MetaState.unlocked_cards`／`learned_skill_ids` 投影普通攻擊、
-  skills 與 infusions，預覽重用
-  production elemental VFX，不擁有戰鬥規則。
+- `InventoryUI`：以單一古老日記呈現四個章節：背包（素材、關鍵道具、裝備）、
+  個人狀態與三個裝備欄位、依 `CardInstance` identity 投影的現有劍魂，以及招式／
+  敵人／劍魂／裝備圖鑑。招式預覽重用 production elemental／named VFX；敵人章節
+  是 `EnemyArchetype.autumn_catalog()` 的靜態參考，不宣稱 discovery 進度。UI 只透過
+  `equip_requested` emit 裝備意圖，由 `Game` 驗證後呼叫 `InventoryManager.equip()`、
+  重算玩家屬性並同步 Meta save，不擁有 inventory 或戰鬥規則。
 - `MaterialYardUI`：依 Eternal Torch／village stage 解鎖的鍛造材料與永久工具。
 - `PlayerBlacksmithUI`：圖紙鍛造、blacksmith 等級、Sword Soul 升級與裝備販售桌。
 - `TownHallUI`：village stage、總建築等級、Town Hall 成本與升級操作。

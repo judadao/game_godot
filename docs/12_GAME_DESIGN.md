@@ -565,6 +565,10 @@ Apprentice Staff 分別為 normal／wind／water。InventoryManager 驗證其屬
 
 裝備可購買、裝備、卸下，最高升到 level 3。升級成本由目前 level 計算：
 
+玩家可在古老日記式 InventoryUI 的背包裝備分類檢視持有物並直接送出裝備意圖；
+狀態章節同時呈現 weapon／armor／accessory 的目前結果。該 UI 不建立第二套裝備狀態，
+仍由 InventoryManager 驗證 ownership 與 slot，Game 重算屬性並同步 Meta save。
+
 ```text
 gold = 25 × current_level
 autumn_wood = 5 × current_level

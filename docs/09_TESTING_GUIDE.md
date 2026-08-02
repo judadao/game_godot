@@ -38,6 +38,13 @@ repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user dat
 
 Inventory／Codex focused coverage：
 
+- `inventory_journal_ui_contract_test.gd`：四個章節、單一 active page、tab icon／32px
+  hit target、背包／圖鑑 filters，以及 equipment intent signal/button。
+- `inventory_journal_projection_test.gd`：玩家狀態、三個裝備欄位、owned Sword Soul
+  instance identity，以及招式／七個 autumn enemies／劍魂／十件裝備圖鑑 projection。
+- `inventory_journal_layout_test.gd`：1152×720、1280×720、1600×900、1920×1080、
+  2560×1080、2560×1440 的整本等比 frame、page bounds、center gutter 與極值內容；
+  `INVENTORY_JOURNAL_CAPTURE_DIR` 只在 graphical renderer 產生四章 review captures。
 - `inventory_codex_projection_test.gd`：所有已解鎖 card、已學 passive Skill 與
   Finisher 的唯一 projection、完整說明、preview kind，以及命名技能的元素／進化／
   Buff milestone metadata。

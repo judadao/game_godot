@@ -636,6 +636,21 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
 - 不把 visual-only scene描述成完整 reusable API。
 - 不讓slot直接改 inventory model。
 
+### 12.9 InventoryJournal owner contract
+
+- owner：`scenes/ui/inventory/InventoryUI.tscn`
+- chapter modes：`bag`、`status`、`sword_souls`、`codex`
+- authored parts：open-journal background、四個 icon tabs、四個 page containers、filters、
+  lists、status/equipment slots、detail panels、equip action
+- public projection API：`set_items()`、`set_player_status()`、
+  `set_equipment_entries()`、`set_sword_souls()`、`set_codex_entries()`
+- action boundary：`equip_requested(item_id)`；父 Game 驗證、mutation、save 與 refresh
+- empty/selection/focus：每頁 deterministic initial focus；同一時間恰好一個 page visible
+- safe area：底部保留 32px page-curl inset；Codex Info 的 Panel 內嵌 vertical
+  ScrollContainer、26px unpainted footer 與 scroll-content BottomInset
+- visual boundary：招式使用 `InventoryCodexPreview`／concept crop；其他圖鑑分類使用
+  static icon，不 runtime 偽造技能 VFX
+
 ## 13. HealthBar
 
 ### 13.1 狀態

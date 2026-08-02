@@ -104,10 +104,10 @@ func _run() -> void:
 			"Concept mode must replace the live preview with the selected skill's cropped concept art."
 		)
 	var meta := ui.get_node_or_null(
-		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content/Meta"
+		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Meta"
 	) as Label
 	var growth := ui.get_node_or_null(
-		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/Content/Growth"
+		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Growth"
 	) as Label
 	_expect(
 		meta != null
