@@ -560,7 +560,10 @@ HUDLayer
 - 背包依素材／關鍵道具／裝備／補給品篩選；裝備詳細頁提供至少 32px 的
   `裝備 · EQUIP` intent button，已裝備項目顯示 disabled `已裝備 · EQUIPPED`
 - 狀態頁同時顯示 personal status 與 weapon／armor／accessory 三個權威裝備投影
-- 劍魂頁逐一保留 `CardInstance.instance_id` 與獨立 level，不用 card id 合併持有實例
+- 劍魂頁逐一保留 `CardInstance.instance_id` 與獨立 level，不用 card id 合併持有實例；
+  左頁使用雙欄劍魂格填滿書脊前的可用空間，右頁只呈現 Game projection 提供的
+  `bonus_type_label` 與短中文 `ability_summary`，UI 不自行推算攻擊／防禦／治療／
+  元素／機動／AP 類型
 - 圖鑑依招式／敵人／劍魂／裝備篩選；敵人是 catalog reference，不是假造 discovery
 - 所有章節內容保留 32px painted page-curl safe inset；圖鑑長內容在固定 detail viewport
   內捲動，viewport 下方另保留 26px 無繪製 footer 與內容 BottomInset，不讓最後一行
@@ -580,7 +583,7 @@ HUDLayer
   Finisher，stable id 不得重複
 - 治療、防禦、能量、移動、控制及強化技使用對應的 code-native `technique`
   preview；不能因為沒有火／冰專屬 VFX 而從列表消失
-- 四個已學命名觸發技與五個 Combo Finisher 必須投影精確 `named_vfx_id`；
+- 四個已學命名觸發技與五個既有專屬 VFX 的 stable Combo Finisher 必須投影精確 `named_vfx_id`；
   Discovery Codex 與戰鬥共用 `NamedSkillVFX.tscn` 及同一份 profile，不能退回
   泛用 technique 圈或放大版普通劍氣
 
@@ -1137,7 +1140,8 @@ AutumnHUD
 activity feed，最下方保留 survival countdown/navigation rail。倒數使用 `MM:SS`，
 最後 30 秒切換紅橙色 `FINAL RUSH`，00:00 顯示 `FINAL BOSS`。不可恢復常駐 combo/recipe 或
 status progress panel。skill toast 最多三筆、約 1.5 秒淡出；相同技能重複觸發
-刷新既有 toast。
+刷新既有 toast。viewport 寬度低於 1200px 時，Boss panel／bar 會縮為 312／280px，
+確保 1152×720 的中央 Boss 資訊不與右上 GOLD／SHARD／SETTINGS 面板重疊。
 
 ### Autumn structured cards
 
@@ -1154,8 +1158,17 @@ Card height is derived from the lower-HUD height and hand-column width. The
 renderer preserves a `0.72` width-to-height ratio and updates the negative
 card dimensions on viewport resize. Autumn cards are `148–196px` high, reserve
 a `48px` semantic icon, and use Healing／Flame／Volley／Storm color families so
-the player can identify the action before reading its name. Do not add per-resolution card
+the player can identify the action before reading its name. 所有 20 張可投入終結技公式的
+Combo／Healing 劍魂都使用 `assets/ui/autumn/cards/generated/<card_id>.png` 的獨立
+256×256 暗黑塔羅插畫；外框則由 `AutumnBattleCard` 以深墨卡身、三層舊金／元素框線、
+四角契印與同心秘儀環即時繪製，不能烘進 PNG。Do not add per-resolution card
 positions or resize these cards from gameplay code.
+
+技能名稱固定在兩行文字區內 wrap，超出時以省略號截斷；任何繁中長名稱、神賜疊加
+前綴或字型 fallback 都不得改變卡框尺寸。成功施放後由 Game 在 AP 扣除與效果確認後
+呼叫 HUD 的 `show_card_cast_feedback(card_id)`；Hand 只對相符卡片播放約 0.34 秒的
+元素色描邊／光暈脈衝。AP 不足、未知 ID 或拒絕施放不能播放，重複施放則安全重啟
+同一 tween。這是 presentation feedback，不是 cooldown 或第二套戰鬥狀態。
 
 `PlayerVitals` owns the always-visible XP projection. `set_experience(current,
 required)` must show both values plus `NEXT <remaining>` and update the cyan
@@ -1180,20 +1193,27 @@ equipment-modified AP cost 必須在 affordability 與 input check 前 projectio
 戰鬥卡只由 AP 限制，打出後留在原 slot；HUD 不顯示 draw、discard、redraw 或
 Auto Use control。卡片以短類型、icon、AP 與永久 stack 為主，不顯示
 START／LINK／FINISH 等角色說明。
-右側 `ComboSkillRows` 顯示三格 Combo 公式、永久 stacks、持有神賜與 FIFO
-終結技 queue；Healing 不進公式。公式完成時必須突出實際招式全名，例如
+右側 `ComboSkillRows` 顯示三格終結技公式、永久 stacks、持有神賜與 FIFO
+終結技 queue；被 catalog 收錄的 Healing 也能進入公式。輸入一至兩招時可顯示
+最多三個仍可能完成的配方，但必須明示這是候選提示而非已完成招式。公式完成時必須突出實際招式全名，例如
 `絕對零度的千刃殺 · NEXT AUTO SHOT`，後續排隊招式仍須可讀。
 
 Deck Builder 以四個可點選槽位呈現固定手牌，不使用全卡表 `＋／－` 計數器：
-第一格是綠色 Healing 專用欄位，後三格是紫色 Combo 1／2／3。點槽位後，下方候選
-只顯示該類型，Combo 候選排除另外兩格已選技能。畫面必須即時列出目前三張 Combo
-能完成的已學會終結技名稱。另有 Basic Attack selector；它不是四格手牌之一，
+四格都可選不重複的 Healing／Combo，整組至少保留一張 Healing；最後一張 Healing
+不得直接換成 Combo。點槽位後，下方候選排除另外三格已選技能。畫面必須以中文名稱
+與說明即時列出目前四張技能能完成的已學會終結技，並用 `×3` 或箭頭保留精確順序。
+另有 Basic Attack selector；它不是四格手牌之一，
 UI 必須明示所選 attack 會在 Run 開始後鎖定、免費、自動水平攻擊。
 
 每個 stage/wave 的首次菁英掉落使用既有 `CardGrowthUI` modal shell，但內容是
 Divine Gift，不是卡牌升級：顯示 icon、短名稱、等級、最多三點效果，主稱號神賜
 標記 `MAIN`。存在兩個不同滿級神賜時，同頁提供融合選項；若頁面只有融合選項則
 允許略過，避免 modal 反覆開啟。
+
+玩家可見文案使用「神賜／菁英祝福／昇華」，名稱、說明、階級與融合名稱皆為繁中。
+Autumn HUD 固定容納並顯示三個神賜 slot；滿三項時選擇頁只列既有神賜升級，不得用
+未持有神賜覆蓋任一 slot。三項前綴與效果都持續累加，主要神賜標記只表示最近取得，
+不代表其他神賜失效。
 
 ### Responsive contract
 

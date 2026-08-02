@@ -4,6 +4,7 @@
     {
       "id": "iron_momentum",
       "name": "Iron Momentum",
+      "name_zh": "鐵勢連擊",
       "memory_cost": 1,
       "match_mode": "count",
       "attack_count": 5,
@@ -19,6 +20,7 @@
     {
       "id": "ember_reprise",
       "name": "Ember Reprise",
+      "name_zh": "餘燼再奏",
       "memory_cost": 3,
       "match_mode": "sequence",
       "sequence": ["ember_bolt", "ember_bolt", "cleave"],
@@ -33,6 +35,7 @@
     {
       "id": "battle_tempo",
       "name": "Battle Tempo",
+      "name_zh": "戰鬥節奏",
       "memory_cost": 2,
       "match_mode": "count",
       "attack_count": 5,
@@ -46,6 +49,7 @@
     {
       "id": "grand_strategy",
       "name": "Grand Strategy",
+      "name_zh": "大戰略",
       "memory_cost": 12,
       "match_mode": "sequence",
       "sequence": ["ember_bolt", "cleave", "dash_strike", "ember_bolt"],

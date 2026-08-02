@@ -11,57 +11,71 @@
     {
       "id": "iron_sword",
       "name": "Iron Sword",
+      "name_zh": "鐵劍",
+      "description_zh": "一把重量適中、沒有紋章的量產鐵劍。刃上有七處修補痕，握柄卻只磨損了一側。",
       "slot": "weapon",
       "primal_element": "normal",
       "purchase_cost": {"gold": 60, "autumn_wood": 5},
       "effects": {"attack": 4},
-      "special_ability": {"id": "tempered_edge", "description": "Attack cards deal +2 damage.", "card_damage_bonus": 2}
+      "special_ability": {"id": "tempered_edge", "description": "Attack cards deal +2 damage.", "description_zh": "攻擊卡額外造成 2 點傷害。", "card_damage_bonus": 2}
     },
     {
       "id": "hunter_bow",
       "name": "Hunter Bow",
+      "name_zh": "獵弓",
+      "description_zh": "以秋林心材製成的短弓。弓背刻著風向，而非獵物數量。",
       "slot": "weapon",
       "primal_element": "wind",
       "purchase_cost": {"gold": 70, "autumn_wood": 6},
       "effects": {"attack": 3, "critical_chance": 0.05},
-      "special_ability": {"id": "keen_draw", "description": "Attack cards deal +1 damage and critical chance rises.", "card_damage_bonus": 1}
+      "special_ability": {"id": "keen_draw", "description": "Attack cards deal +1 damage and critical chance rises.", "description_zh": "攻擊卡額外造成 1 點傷害，暴擊率亦會提高。", "card_damage_bonus": 1}
     },
     {
       "id": "apprentice_staff",
       "name": "Apprentice Staff",
+      "name_zh": "學徒法杖",
+      "description_zh": "杖身太短、導魔環略歪，卻總能在持有者力竭前多擠出一點魔力。",
       "slot": "weapon",
       "primal_element": "water",
       "purchase_cost": {"gold": 80, "magic_shard": 5},
       "effects": {"magic_power": 3, "max_mana": 10},
-      "special_ability": {"id": "mana_current", "description": "AP regenerates 0.10 faster per second and Energy Cycle restores +2 AP.", "ap_regen": 0.10, "energy_card_bonus": 2}
+      "special_ability": {"id": "mana_current", "description": "AP regenerates 0.10 faster per second and Energy Cycle restores +2 AP.", "description_zh": "每秒額外恢復 0.10 AP，且能量循環額外恢復 2 AP。", "ap_regen": 0.10, "energy_card_bonus": 2}
     },
     {
       "id": "leather_armor",
       "name": "Leather Armor",
+      "name_zh": "皮甲",
+      "description_zh": "由不同顏色皮片拼成，肩帶縫了又拆，顯然轉手過許多人。",
       "slot": "armor",
       "purchase_cost": {"gold": 55, "autumn_wood": 4},
       "effects": {"defense": 2, "max_health": 10},
-      "special_ability": {"id": "brace", "description": "Defense cards gain +2 Block.", "card_block_bonus": 2}
+      "special_ability": {"id": "brace", "description": "Defense cards gain +2 Block.", "description_zh": "防禦卡獲得 2 點額外格擋。", "card_block_bonus": 2}
     },
     {
       "id": "chain_armor",
       "name": "Chain Armor",
+      "name_zh": "鎖甲",
+      "description_zh": "沉重鎖環上混著天界銀與地界黑鐵，兩種材料本應互相排斥。",
       "slot": "armor",
       "purchase_cost": {"gold": 85, "stone": 8},
       "effects": {"defense": 4, "move_speed_multiplier": -0.05},
-      "special_ability": {"id": "unyielding", "description": "Defense cards gain +4 Block.", "card_block_bonus": 4}
+      "special_ability": {"id": "unyielding", "description": "Defense cards gain +4 Block.", "description_zh": "防禦卡獲得 4 點額外格擋。", "card_block_bonus": 4}
     },
     {
       "id": "mage_robe",
       "name": "Mage Robe",
+      "name_zh": "法師長袍",
+      "description_zh": "袍內寫滿失敗公式，外側則被人仔細染成莊重的深藍色。",
       "slot": "armor",
       "purchase_cost": {"gold": 75, "magic_shard": 6},
       "effects": {"defense": 1, "max_mana": 20},
-      "special_ability": {"id": "spellweave", "description": "AP regenerates 0.15 faster per second.", "ap_regen": 0.15}
+      "special_ability": {"id": "spellweave", "description": "AP regenerates 0.15 faster per second.", "description_zh": "每秒額外恢復 0.15 AP。", "ap_regen": 0.15}
     },
     {
       "id": "swift_ring",
       "name": "Swift Ring",
+      "name_zh": "迅捷戒",
+      "description_zh": "戒面沒有寶石，只有一道像是向前延伸的刻痕。",
       "slot": "accessory",
       "purchase_cost": {"gold": 65, "magic_shard": 3},
       "effects": {"move_speed_multiplier": 0.08},
@@ -69,6 +83,7 @@
       "special_ability": {
         "id": "afterimage",
         "description": "After the forest story unlocks it, Space Dash gains +30 distance and +0.1 sec evasion.",
+        "description_zh": "森林劇情解鎖後，空白鍵衝刺距離增加 30，迴避時間延長 0.1 秒。",
         "dash_distance_bonus": 30,
         "dash_evasion_bonus": 0.1
       }
@@ -76,20 +91,25 @@
     {
       "id": "vitality_charm",
       "name": "Vitality Charm",
+      "name_zh": "生命護符",
+      "description_zh": "內部塞著乾草、糖紙與一小截繃帶，沒有任何昂貴材料。",
       "slot": "accessory",
       "purchase_cost": {"gold": 60, "autumn_wood": 5},
       "effects": {"max_health": 15},
-      "special_ability": {"id": "second_wind", "description": "Healing cards restore +4 health.", "card_heal_bonus": 4}
+      "special_ability": {"id": "second_wind", "description": "Healing cards restore +4 health.", "description_zh": "治療卡額外恢復 4 點生命。", "card_heal_bonus": 4}
     },
     {
       "id": "focus_amulet",
       "name": "Focus Amulet",
+      "name_zh": "專注護符",
+      "description_zh": "中央鏡片有一道裂縫，透過它看東西反而比完整時清楚。",
       "slot": "accessory",
       "purchase_cost": {"gold": 70, "magic_shard": 5},
       "effects": {"critical_chance": 0.05, "max_mana": 5},
       "special_ability": {
         "id": "steady_focus",
         "description": "Attack cards deal +1 damage; Combo cards cost 1 less AP and last 0.5 seconds longer.",
+        "description_zh": "攻擊卡額外造成 1 點傷害；Combo 卡消耗減少 1 AP，持續時間延長 0.5 秒。",
         "card_damage_bonus": 1,
         "combo_cost_reduction": 1,
         "combo_duration_bonus": 0.5
@@ -98,10 +118,12 @@
     {
       "id": "merchant_seal",
       "name": "Merchant Seal",
+      "name_zh": "商旅印章",
+      "description_zh": "蓋出的圖案不是家徽，而是一扇半開的門。",
       "slot": "accessory",
       "purchase_cost": {"gold": 90, "autumn_core": 2},
       "effects": {"shop_discount": 0.1},
-      "special_ability": {"id": "rare_stock", "description": "Wandering merchants offer an extra rare choice.", "merchant_bonus_choice": 1}
+      "special_ability": {"id": "rare_stock", "description": "Wandering merchants offer an extra rare choice.", "description_zh": "流浪商人會額外提供 1 個稀有選項。", "merchant_bonus_choice": 1}
     }
   ]
 }

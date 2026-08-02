@@ -125,12 +125,18 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	var top_right := hud.get_node("TopRightMeta") as Control
 	var top_left_rect := _canvas_rect(top_left)
 	var top_center_rect := _canvas_rect(top_center)
+	var top_right_rect := _canvas_rect(top_right)
 	_expect(screen.encloses(top_left_rect), "Top-left status/objective stack must remain on-screen at %s." % viewport_size)
 	_expect(screen.encloses(top_center_rect), "Top-center Boss/toast stack must remain on-screen at %s." % viewport_size)
-	_expect(screen.encloses(_canvas_rect(top_right)), "Top-right economy strip must remain on-screen at %s." % viewport_size)
+	_expect(screen.encloses(top_right_rect), "Top-right economy strip must remain on-screen at %s." % viewport_size)
 	_expect(
 		not top_left_rect.intersects(top_center_rect),
 		"Top-left status/objective must not overlap Boss/toast space at %s." % viewport_size
+	)
+	_expect(
+		not top_center_rect.intersects(top_right_rect),
+		"Boss/toast space %s must not overlap the top-right economy strip %s at %s."
+			% [top_center_rect, top_right_rect, viewport_size]
 	)
 	_expect(
 		top_left_rect.end.y <= bottom_rect.position.y,
@@ -181,6 +187,10 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 			)
 
 	if not _capture_directory.is_empty():
+		_expect(
+			bool(hud.call("show_card_cast_feedback", "flame_imbue")),
+			"Visual capture must include the matching card's short cast pulse."
+		)
 		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 		await create_timer(0.05).timeout
 		await process_frame
@@ -205,6 +215,33 @@ func _check_projection_behavior() -> void:
 	var hud := (load(HUD_PATH) as PackedScene).instantiate() as Control
 	viewport.add_child(hud)
 	await process_frame
+	hud.call("set_cards", _sample_cards(), 5.0)
+	await process_frame
+	var hand := hud.get_node("BottomStage/CardStage/AutumnCardHandUI") as CardHandUI
+	_expect(
+		bool(hud.call("show_card_cast_feedback", "flame_imbue")),
+		"A successful cast projection must find and pulse its matching fixed card."
+	)
+	var flame_card := hand.get_card_button(1)
+	var healing_card := hand.get_card_button(0)
+	_expect(
+		bool(flame_card.call("is_cast_feedback_active"))
+			and not bool(healing_card.call("is_cast_feedback_active")),
+		"Cast feedback must emphasize only the matching Combo/Healing card."
+	)
+	_expect(
+		bool(hud.call("show_card_cast_feedback", "flame_imbue")),
+		"Repeated casts must safely restart the same short card pulse."
+	)
+	_expect(
+		not bool(hud.call("show_card_cast_feedback", "missing_card")),
+		"Unknown card ids must not create stray HUD feedback."
+	)
+	await create_timer(0.5).timeout
+	_expect(
+		not bool(flame_card.call("is_cast_feedback_active")),
+		"Card cast feedback must settle quickly without becoming a cooldown overlay."
+	)
 
 	var boss := hud.get_node("TopCenterStack/BossHealth") as Control
 	_expect(not boss.visible, "Boss panel must not occupy space before a Boss is projected.")
@@ -305,10 +342,10 @@ func _check_projection_behavior() -> void:
 
 func _sample_cards() -> Array[Dictionary]:
 	return [
-		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Recover.", "cost": 1, "level": 1, "fixed": true},
-		{"id": "flame_imbue", "name": "Flame Imbue", "type": "combo", "description": "Gain flame.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 3},
-		{"id": "echo_volley", "name": "Echo Volley", "type": "combo", "description": "Add projectiles.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 2},
-		{"id": "storm_charge", "name": "Storm Charge", "type": "combo", "description": "Add storm.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 1},
+		{"id": "healing_light", "name": "春庭朝光翠綠復甦", "type": "healing", "description": "Recover.", "cost": 1, "level": 1, "fixed": true},
+		{"id": "flame_imbue", "name": "煉獄業火萬象灌注", "type": "combo", "description": "Gain flame.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 3},
+		{"id": "echo_volley", "name": "無盡迴響千羽齊射", "type": "combo", "description": "Add projectiles.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 2},
+		{"id": "storm_charge", "name": "天罰雷霆風暴充能", "type": "combo", "description": "Add storm.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 1},
 		{"id": "gale_lunge", "name": "Gale Lunge", "type": "attack", "description": "Dash.", "cost": 2, "level": 3},
 		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Recover.", "cost": 2, "level": 1},
 		{"id": "meteor", "name": "Meteor", "type": "ultimate", "description": "Heavy damage.", "cost": 5, "level": 1},

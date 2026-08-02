@@ -52,7 +52,14 @@ func _check_size(viewport_size: Vector2i) -> void:
 		{"slot": "accessory", "id": "swift_ring", "name": "Swift Ring", "level": 3, "stats": "Move Speed +8%", "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_03.png"},
 	])
 	ui.call("set_sword_souls", [
-		{"instance_id": "journal-layout-soul", "name": "Flame Imbue", "level": 3, "description": "Wrap every weapon strike in fire and preserve this long explanation inside the page.", "effect_summary": "Attack damage and burn", "icon_path": "res://assets/props/magic_book/png/Icons/Icon1_big.png"},
+		{"instance_id": "journal-layout-flame", "name": "流火附魔", "level": 3, "kind_label": "現有劍魂", "bonus_type_label": "元素", "description": "讓武器斬擊纏上火焰。", "ability_summary": "攻擊傷害 +4、附魔 1.5 秒", "icon_path": "res://assets/props/magic_book/png/Icons/Icon1_big.png"},
+		{"instance_id": "journal-layout-guard", "name": "守勢", "level": 2, "kind_label": "現有劍魂", "bonus_type_label": "防禦", "description": "以沉穩架勢抵住迎面衝擊。", "ability_summary": "霸體階級 1、持續 1.5 秒", "icon_path": "res://assets/ui/fantasy_icons_16x16/png/Separately/Icon41_1_2.png"},
+		{"instance_id": "journal-layout-heal", "name": "治癒之光", "level": 3, "kind_label": "現有劍魂", "bonus_type_label": "治療", "description": "柔光會尋向傷勢最重的同伴。", "ability_summary": "恢復 20 生命並連鎖治療", "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png"},
+		{"instance_id": "journal-layout-step", "name": "疾行步法", "level": 1, "kind_label": "現有劍魂", "bonus_type_label": "機動", "description": "借風勢縮短與敵人的距離。", "ability_summary": "移動速度 +10%", "icon_path": "res://assets/ui/fantasy_icons_16x16/png/Separately/Icon48_1_2.png"},
+		{"instance_id": "journal-layout-breath", "name": "奧術吐納", "level": 2, "kind_label": "現有劍魂", "bonus_type_label": "AP", "description": "以規律吐納加速行動力恢復。", "ability_summary": "AP 回復 +0.40", "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_03.png"},
+		{"instance_id": "journal-layout-rhythm", "name": "戰鬥節奏", "level": 3, "kind_label": "現有劍魂", "bonus_type_label": "攻擊", "description": "連續斬擊會讓攻勢更加銳利。", "ability_summary": "攻擊傷害 +4", "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png"},
+		{"instance_id": "journal-layout-frost", "name": "霜爆附魔", "level": 2, "kind_label": "現有劍魂", "bonus_type_label": "元素", "description": "冰霜附著斬擊並拖慢敵人。", "ability_summary": "緩速 30%、附魔 1.5 秒", "icon_path": "res://assets/ui/fantasy_icons_16x16/png/Separately/Icon45_1_2.png"},
+		{"instance_id": "journal-layout-iron", "name": "鐵骨", "level": 1, "kind_label": "現有劍魂", "bonus_type_label": "防禦", "description": "凝練筋骨以承受更多傷害。", "ability_summary": "防禦 +2", "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Type Icons/torso_itemType.png"},
 	])
 	ui.call("set_codex_entries", [
 		{"section": "techniques", "id": "ember_bolt", "name": "Ember Bolt", "category": "attacks", "kind_label": "DISCOVERED BASIC ATTACK", "preview_kind": "basic_attack", "element": "normal", "level": 3, "combo_stack": 7, "evolution_layers": ["ember spark", "burning edge", "scarlet arc"], "stack_milestones": [3, 6, 9], "stack_traits": ["warm edge", "double ember", "lasting blaze"], "description": "A fast horizontal sword wave recorded after repeated field use. The journal preserves its combat role, current evolution and all activation notes without hiding long text beneath the painted page curl.", "effect_summary": "Deals 28 base damage in a forward arc; current equipment and active Combo modifiers are projected by Game before use.", "trigger_summary": "Automatic basic attack while a valid target is inside the horizontal engagement range.", "icon_path": "res://assets/props/magic_book/png/Icons/Icon1_big.png"},
@@ -81,6 +88,12 @@ func _check_size(viewport_size: Vector2i) -> void:
 			var codex_scroll := panel.get_node("Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll") as ScrollContainer
 			_expect(_rect(codex_info).encloses(_rect(codex_footer)), "Codex safe footer must stay inside its detail panel at %s." % viewport_size)
 			_expect(_rect(codex_info).encloses(_rect(codex_scroll)), "Codex scroll viewport must stay inside its detail panel at %s." % viewport_size)
+		elif mode == &"sword_souls":
+			var soul_entries := panel.get_node("Margin/Layout/Pages/SwordSoulsPage/Browser/Entries") as ItemList
+			var soul_bonus := panel.get_node("Margin/Layout/Pages/SwordSoulsPage/Details/Content/BonusType") as Label
+			_expect(soul_entries.max_columns == 2, "Sword Soul shelf must use two visible columns at %s." % viewport_size)
+			_expect(soul_entries.item_count == 8, "Sword Soul shelf must keep all projected instances visible at %s." % viewport_size)
+			_expect(soul_bonus.text.contains("加乘類型"), "Sword Soul details must keep the bonus-type seal readable at %s." % viewport_size)
 		if not _capture_dir.is_empty():
 			DirAccess.make_dir_recursive_absolute(_capture_dir)
 			viewport.render_target_update_mode = SubViewport.UPDATE_ONCE

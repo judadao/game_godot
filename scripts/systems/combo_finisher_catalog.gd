@@ -6,11 +6,13 @@ const FORMULA_LENGTH := 3
 
 var _recipes: Dictionary = {}
 var _ordered_ids: Array[String] = []
+var _eligible_skill_ids: Dictionary = {}
 
 
 func load_catalog(path: String = DEFAULT_DATA_PATH) -> bool:
 	_recipes.clear()
 	_ordered_ids.clear()
+	_eligible_skill_ids.clear()
 	if not FileAccess.file_exists(path):
 		return false
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -43,6 +45,7 @@ func load_catalog(path: String = DEFAULT_DATA_PATH) -> bool:
 			if skill_id.is_empty():
 				return false
 			sequence.append(skill_id)
+			_eligible_skill_ids[skill_id] = true
 		recipe["sequence"] = sequence
 		var required_variant: Variant = recipe.get("required_skills", sequence)
 		var required: Array[String] = []
@@ -82,4 +85,28 @@ func get_all_recipes() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for recipe_id in _ordered_ids:
 		result.append((_recipes[recipe_id] as Dictionary).duplicate(true))
+	return result
+
+
+func is_skill_eligible(skill_id: String) -> bool:
+	return _eligible_skill_ids.has(skill_id)
+
+
+func get_possible_recipes(prefix: Array) -> Array[Dictionary]:
+	if prefix.is_empty() or prefix.size() >= FORMULA_LENGTH:
+		return []
+	var normalized: Array[String] = []
+	for skill_id_variant in prefix:
+		normalized.append(String(skill_id_variant))
+	var result: Array[Dictionary] = []
+	for recipe_id in _ordered_ids:
+		var recipe := _recipes[recipe_id] as Dictionary
+		var sequence := recipe.get("sequence", []) as Array
+		var matches := true
+		for index in normalized.size():
+			if String(sequence[index]) != normalized[index]:
+				matches = false
+				break
+		if matches:
+			result.append(recipe.duplicate(true))
 	return result

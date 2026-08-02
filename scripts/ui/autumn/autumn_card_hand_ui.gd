@@ -57,6 +57,23 @@ func hide_boss_health() -> void:
 		hud.call("hide_boss_health")
 
 
+func show_card_cast_feedback(card_id: String) -> bool:
+	var normalized_id := card_id.strip_edges()
+	if normalized_id.is_empty():
+		return false
+	for button in _buttons:
+		if not is_instance_valid(button) or not button.has_method("play_cast_feedback"):
+			continue
+		var global_index := int(button.get_meta("global_card_index", -1))
+		if global_index < 0 or global_index >= _cards.size():
+			continue
+		if String(_cards[global_index].get("id", "")) != normalized_id:
+			continue
+		button.call("play_cast_feedback")
+		return true
+	return false
+
+
 func _refresh() -> void:
 	for tween_variant in _card_tweens.values():
 		if tween_variant is Tween and (tween_variant as Tween).is_valid():

@@ -18,6 +18,9 @@ func _run() -> void:
 		{"id": "wood", "name": "Autumn Wood", "category": "materials", "quantity": 12},
 		{"id": "sword", "name": "Iron Sword", "category": "gear", "quantity": 1},
 	])
+	ui.call("set_equipment_entries", [
+		{"slot": "weapon", "id": "iron_sword", "name": "鐵劍", "level": 2, "stats": "攻擊 +4"},
+	])
 	ui.call("set_codex_entries", [
 		{"id": "ember_bolt", "name": "Ember Bolt", "category": "attacks", "preview_kind": "basic_attack"},
 		{"id": "flame_imbue", "name": "Flame Imbue", "category": "infusions", "preview_kind": "attack_aura", "elements": ["flame"]},
@@ -109,19 +112,58 @@ func _run() -> void:
 	var growth := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Growth"
 	) as Label
+	var effect_label := ui.get_node_or_null(
+		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Effect"
+	) as Label
+	var notes_label := ui.get_node_or_null(
+		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Trigger"
+	) as Label
 	_expect(
 		meta != null
-			and meta.text.contains("FIRE")
-			and meta.text.contains("LV 3/3")
-			and meta.text.contains("BUFF ×7"),
-		"Codex details must show canonical element, evolution level, and current Buff stacks."
+			and meta.text.contains("屬性  火")
+			and meta.text.contains("等級 3/3")
+			and meta.text.contains("增益 ×7")
+			and not meta.text.contains("ELEMENT")
+			and not meta.text.contains("BUFF"),
+		"Codex details must show the element, evolution level, and Buff stacks in Traditional Chinese."
 	)
 	_expect(
 		growth != null
+			and growth.text.contains("進化")
 			and growth.text.contains("Cremation Pillar")
+			and growth.text.contains("下一層")
 			and growth.text.contains("×9")
-			and growth.text.contains("Ninefold Sunburst"),
-		"Codex details must show the active evolution structure and next stack milestone."
+			and growth.text.contains("Ninefold Sunburst")
+			and not growth.text.contains("EVOLUTION")
+			and not growth.text.contains("NEXT STACK"),
+		"Codex details must show the active evolution structure and next stack milestone with Chinese labels."
+	)
+	_expect(
+		effect_label != null
+			and effect_label.text.begins_with("效果\n")
+			and notes_label != null
+			and notes_label.text.begins_with("說明\n"),
+		"Codex explanation headings must use Traditional Chinese."
+	)
+	var weapon_name := ui.get_node(
+		"Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Weapon/Row/Text/Name"
+	) as Label
+	var armor_name := ui.get_node(
+		"Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Armor/Row/Text/Name"
+	) as Label
+	var armor_stats := ui.get_node(
+		"Center/MainPanel/Margin/Layout/Pages/StatusPage/Equipment/Armor/Row/Text/Stats"
+	) as Label
+	_expect(
+		weapon_name.text == "武器  ·  鐵劍  ·  等級 2"
+			and armor_name.text == "防具  ·  未裝備"
+			and armor_stats.text == "此欄位目前沒有裝備。",
+		"Status equipment slots must use natural Traditional Chinese labels."
+	)
+	ui.call("select_codex_entry", "flame_imbue")
+	_expect(
+		growth.text.contains("進化  基礎招式"),
+		"Codex entries without authored evolution layers must show the Chinese base-technique label."
 	)
 	ui.queue_free()
 	viewport.queue_free()

@@ -43,6 +43,7 @@ pipeline描述成Current。
 | Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
 | Generated VFX texture | 24 | `res://assets/generated/vfx/` |
 | Generated inventory journal frame | 1 | `res://assets/ui/inventory/generated/inventory_journal_spread_v1.png` |
+| Generated Combo／Healing card art | 20 | `res://assets/ui/autumn/cards/generated/<card_id>.png` |
 | Town NPC transparent cutout | 5 | `res://assets/town/npc/characters/` |
 | Town NPC world animation atlas | 9 | `res://assets/town/npc/characters/*_animation_atlas.png`、`res://assets/town/npc/priest/priest_animation_atlas.png` |
 
@@ -248,7 +249,7 @@ UI setter/configure API
 | `equipment.json` | `inventory_manager.gd` | `resource_order`, `starting_resources`, `equipment` | 5 resources, 10 equipment |
 | `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 4 buildings × 3 levels, 3 stages |
 | `divine_gifts.json` | `DivineGiftManager` | `gifts` | 6 個三級 Run-local 神賜 |
-| `combo_finishers.json` | `ComboFinisherCatalog` | `recipes` | 5 個精確三招終結技配方 |
+| `combo_finishers.json` | `ComboFinisherCatalog` | `recipes` | 32 個精確三招終結技配方 |
 | `forge_catalog.json` | `ForgeCatalog` | `material_offers`, `equipment_recipes`, `sword_soul_recipes` | Town 鍛造 offer 與 recipe |
 | `named_skill_vfx_profiles.json` | `NamedSkillVFXCatalog` | `profiles` | 5 個 Finisher＋4 個 trigger 的差異化模組 VFX |
 | `elemental_ground_trail_profiles.json` | `ElementalGroundTrailCatalog` | `profiles` | 火焰路徑、冰裂分岔與毒灘的四槽 atlas 拼裝資料 |
@@ -278,7 +279,7 @@ schema、ID、selector、sequence 與 deterministic query 另由
 - `equipment.json`：目前沒有schema_version field
 - `town_upgrades.json`：目前沒有schema_version field
 - `divine_gifts.json`：目前沒有 schema_version field
-- `combo_finishers.json`：目前沒有 schema_version field
+- `combo_finishers.json`：`schema_version = 2`
 - `town_npc_interactions.json`：`schema_version = 1`；loader 要求 exact version 並採
   all-or-nothing validation，目前沒有 migration
 
@@ -699,7 +700,7 @@ inventory_state / town_state
 同時保留legacy compatibility。
 
 `selected_deck`／`selected_card_instances` 的 production loadout 固定為四個 unique
-instances：剛好一個 Healing 與三個 Combo。舊存檔可帶較大的 legacy list，
+Healing／Combo instances，且至少一個是 Healing。舊存檔可帶較大的 legacy list，
 但 Deck Builder 與 Run start 必須正規化成此 invariant。
 
 ### 9.2 RunState
@@ -737,9 +738,26 @@ instance。Basic Attack 只以 `MetaState.auto_attack_card_id` 與 run-local loc
 canonical ElementTaxonomy ID；融合結果的 `elements` 陣列保留兩個材料的 canonical
 元素，並以第一項投影相容的 primary `element`。
 
-`data/combo_finishers.json` 每筆 recipe 包含 `id`、`name`、精確三項 `sequence`、
-`required_skills` 與 `base_effect`。`ComboFinisherCatalog` 只匹配相同順序的完整
-三招；AAA 與 ABC 都是合法配方，但任何 required skill 未學會時不得排入終結技。
+神賜玩家可見 `name`／`description` 與所有動態融合名稱均為繁中；stable ID 與元素
+canonical value 不翻譯。Manager 同時最多保存三項 inventory entry：有空位時 reward
+可混合新神賜與既有升級，滿三項時只能回傳既有未滿級 entry。融合原子移除兩項材料
+並加入一項 evolved entry，因此釋出一格。所有 inventory entry 的 effects、mutation
+與 prefix 依取得順序聚合，不得由 primary entry 覆蓋。
+
+`data/combo_finishers.json` 每筆 recipe 包含穩定 `id`、中文 `name`／`description`、
+`role`、精確三項 `sequence`、`required_skills` 與 `base_effect`。
+`ComboFinisherCatalog` 只匹配相同順序的完整三招；AAA 與 ABC 都是合法配方，
+Healing 可作為正式材料，但任何 required skill 未學會時不得排入終結技。prefix query
+只供 HUD 顯示仍可能完成的候選，不得當作成功匹配。
+
+`cards.json` 與 `equipment.json` 保留 canonical 英文 `name`／`description`，並以
+`name_zh`／`description_zh` 提供玩家可見繁中投影；stable ID、戰鬥數值與存檔 key
+不因在地化改名。任何出現在 `combo_finishers.json.sequence` 的 Combo／Healing 卡，
+`icon_path` 必須是唯一的 `res://assets/ui/autumn/cards/generated/<card_id>.png`，格式固定
+256×256；圖片不含文字、數字、AP、快捷鍵或外框。完整 prompt set 記錄於
+`docs/art_concepts/combo_card_tarot_v1.md`。InventoryManager 的裝備持久化正式允許 Lv.1–15，但目前只有
+Lv.1→2、Lv.2→3 成本與截至 Lv.3 的效果曲線有 runtime authority。Lv.4–15 會保留
+存檔等級，但不得外推屬性或捏造突破成本；鐵匠鋪以「突破素材尚未開放」停用操作。
 
 跨 authority 的 add／fuse／exact removal 不再由 `Game` 分別呼叫
 `MetaState`、`RunState` 與 `DeckManager` mutation API，而統一經

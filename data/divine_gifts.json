@@ -2,8 +2,8 @@
   "gifts": [
     {
       "id": "resonant_grace",
-      "name": "Infernal Grace",
-      "description": "Every Combo builds additional resonance; named Finishers strike harder.",
+      "name": "煉獄恩典",
+      "description": "每次連段都會累積額外共鳴，並強化具名終結技。",
       "prefix": "煉獄業火的",
       "element": "fire",
       "finisher_mutations": {"burn_damage": 4, "burn_duration": 4.0, "final_burst": true},
@@ -16,8 +16,8 @@
     },
     {
       "id": "echoing_will",
-      "name": "Echoing Will",
-      "description": "Every Combo becomes stronger; named Finishers gain an echo.",
+      "name": "迴響意志",
+      "description": "強化每次連段，並使具名終結技追加一次迴響。",
       "prefix": "無盡迴響的",
       "element": "dark",
       "finisher_mutations": {"finisher_echoes": 1, "echo_decay": 0.7},
@@ -30,8 +30,8 @@
     },
     {
       "id": "boundless_font",
-      "name": "Venomous Font",
-      "description": "Every Combo refunds AP; named Finishers restore health.",
+      "name": "萬毒源泉",
+      "description": "每次連段返還 AP，具名終結技則會恢復生命。",
       "prefix": "萬毒蝕心的",
       "element": "poison",
       "finisher_mutations": {"poison_damage": 3, "poison_duration": 5.0, "death_spread": true},
@@ -44,8 +44,8 @@
     },
     {
       "id": "prismatic_oath",
-      "name": "Thunder Oath",
-      "description": "Every Combo carries elemental force; named Finishers spread every element.",
+      "name": "雷霆誓約",
+      "description": "使每次連段帶有元素力量，並讓具名終結技擴散元素效果。",
       "prefix": "天罰雷霆的",
       "element": "lightning",
       "finisher_mutations": {"combo_stun": 0.6, "chain_lightning": true},
@@ -58,8 +58,8 @@
     },
     {
       "id": "celestial_momentum",
-      "name": "Celestial Momentum",
-      "description": "Every Combo accelerates combat; named Finishers become larger and faster.",
+      "name": "天穹疾勢",
+      "description": "每次連段都會加快戰鬥節奏，使具名終結技更大、更快。",
       "prefix": "天穹神速的",
       "element": "wind",
       "finisher_mutations": {"piercing": true, "speed_multiplier": 1.5},
@@ -72,8 +72,8 @@
     },
     {
       "id": "eternal_memory",
-      "name": "Absolute Zero",
-      "description": "Every Combo retains more power; named Finishers read deeper into the formula.",
+      "name": "絕對零度",
+      "description": "使每次連段保留更多力量，並讓具名終結技讀取更深層的公式。",
       "prefix": "絕對零度的",
       "element": "ice",
       "finisher_mutations": {"frost_ratio": 0.65, "frost_duration": 4.5, "shatter": true},

@@ -16,6 +16,7 @@ const REQUIRED_CARD_NODES := [
 	"CardContent/CostRow/CostLabel",
 	"CardContent/CostRow/CostValue",
 	"LockBadge",
+	"CastFeedback",
 ]
 const VIEWPORTS := [
 	Vector2i(1152, 720),
@@ -133,6 +134,38 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 			"Card %d name must use at least 12px text at %s." % [index, viewport_size]
 		)
 		_expect(
+			card_name.autowrap_mode == TextServer.AUTOWRAP_ARBITRARY
+				and card_name.max_lines_visible == 2
+				and card_name.clip_text,
+			"Long Chinese skill names must wrap inside a controlled two-line card title at %s." % viewport_size
+		)
+		_expect(
+			card.has_method("play_cast_feedback")
+				and card.has_method("is_cast_feedback_active"),
+			"Every Autumn card must expose short cast-feedback behavior."
+		)
+		_expect(
+			card.has_method("get_frame_design_state"),
+			"Every Autumn card must expose its code-native ritual-frame contract."
+		)
+		if card.has_method("get_frame_design_state"):
+			var frame_state := card.call("get_frame_design_state") as Dictionary
+			_expect(
+				int(frame_state.get("frame_layers", 0)) >= 3
+					and int(frame_state.get("ritual_rings", 0)) >= 3
+					and int(frame_state.get("corner_marks", 0)) == 4
+					and bool(frame_state.get("name_plate", false)),
+				"Card %d must use layered gold framing, ritual geometry, four corner marks, and a name plate." % index
+			)
+		var normal_style := card.get_theme_stylebox("normal") as StyleBoxFlat
+		_expect(
+			normal_style != null
+				and normal_style.bg_color.get_luminance() < 0.20
+				and normal_style.border_width_left >= 3
+				and normal_style.shadow_size >= 6,
+			"Card %d must keep a dark-fantasy body with a strong outlined silhouette." % index
+		)
+		_expect(
 			icon.visible
 				and icon.texture != null
 				and icon.size.x >= 46.0
@@ -143,8 +176,18 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 			role_label.text.contains("COMBO") or role_label.text.contains("HEALING"),
 			"Card %d must preserve its gameplay type beside the visual family at %s." % [index, viewport_size]
 		)
+		_expect(
+			_contains_han(role_label.text),
+			"Card %d information hierarchy must include an intuitive Chinese family label." % index
+		)
 		_expect(card.has_method("get_visual_family"), "Autumn cards must expose their visual family.")
 		_expect(_inside_lower_hud(card, viewport_size), "Card %d must remain inside the lower HUD at %s." % [index, viewport_size])
+		if index > 0:
+			var previous := hand.get_card_button(index - 1) as Control
+			_expect(
+				not _canvas_rect(previous).intersects(_canvas_rect(card)),
+				"Long Chinese names must not stretch adjacent card frames into overlap at %s." % viewport_size
+			)
 	var families: Array[String] = []
 	for index in 4:
 		families.append(String(hand.get_card_button(index).call("get_visual_family")))
@@ -178,7 +221,7 @@ func _verify_group_states(hand: CardHandUI, active_group: int, viewport_size: Ve
 
 
 func _inside_lower_hud(card: Control, viewport_size: Vector2i) -> bool:
-	var rect := card.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, card.size)
+	var rect := _canvas_rect(card)
 	var hud_top := float(viewport_size.y) * 0.66
 	return (
 		rect.position.x >= -0.5
@@ -188,12 +231,24 @@ func _inside_lower_hud(card: Control, viewport_size: Vector2i) -> bool:
 	)
 
 
+func _canvas_rect(control: Control) -> Rect2:
+	return control.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, control.size)
+
+
+func _contains_han(text: String) -> bool:
+	for character in text:
+		var codepoint := character.unicode_at(0)
+		if codepoint >= 0x3400 and codepoint <= 0x9FFF:
+			return true
+	return false
+
+
 func _sample_cards() -> Array:
 	return [
-		{"id": "flame_imbue", "name": "Flame Imbue", "type": "combo", "description": "Add flame.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 2},
-		{"id": "echo_volley", "name": "Echo Volley", "type": "combo", "description": "Add projectiles.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 1},
-		{"id": "storm_charge", "name": "Storm Charge", "type": "combo", "description": "Add storm.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 3},
-		{"id": "healing_light", "name": "Healing Light", "type": "healing", "description": "Restore health.", "cost": 1, "level": 1, "fixed": true},
+		{"id": "flame_imbue", "name": "煉獄業火萬象灌注", "type": "combo", "description": "Add flame.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 2},
+		{"id": "echo_volley", "name": "無盡迴響千羽齊射", "type": "combo", "description": "Add projectiles.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 1},
+		{"id": "storm_charge", "name": "天罰雷霆風暴充能", "type": "combo", "description": "Add storm.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 3},
+		{"id": "healing_light", "name": "春庭朝光翠綠復甦", "type": "healing", "description": "Restore health.", "cost": 1, "level": 1, "fixed": true},
 	]
 
 

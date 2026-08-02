@@ -1,8 +1,10 @@
 extends RefCounted
 
 const DEFAULT_DATA_PATH := "res://data/equipment.json"
-const SAVE_SCHEMA_VERSION := 2
+const SAVE_SCHEMA_VERSION := 3
 const VALID_SLOTS: Array[StringName] = [&"weapon", &"armor", &"accessory"]
+const MAX_EQUIPMENT_LEVEL := 15
+const IMPLEMENTED_EFFECT_LEVEL_CAP := 3
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
 
 var _loaded := false
@@ -232,7 +234,11 @@ func get_effect_totals() -> Dictionary:
 			continue
 		var item := _equipment_by_id.get(String(item_id), {}) as Dictionary
 		var effects := item.get("effects", {}) as Dictionary
-		var level_multiplier := 1.0 + 0.5 * float(get_equipment_level(item_id) - 1)
+		var implemented_level := mini(
+			get_equipment_level(item_id),
+			get_implemented_effect_level_cap(item_id)
+		)
+		var level_multiplier := 1.0 + 0.5 * float(implemented_level - 1)
 		for effect_variant in effects:
 			var effect_id := String(effect_variant)
 			totals[effect_id] = float(totals.get(effect_id, 0.0)) + float(effects[effect_variant]) * level_multiplier
@@ -263,9 +269,28 @@ func get_equipment_level(item_id: StringName) -> int:
 	return int(_equipment_levels.get(String(item_id), 0))
 
 
+func get_max_equipment_level() -> int:
+	return MAX_EQUIPMENT_LEVEL
+
+
+func get_implemented_effect_level_cap(item_id: StringName = StringName()) -> int:
+	if item_id.is_empty():
+		return IMPLEMENTED_EFFECT_LEVEL_CAP
+	var item := _equipment_by_id.get(String(item_id), {}) as Dictionary
+	return clampi(
+		int(item.get("implemented_effect_level_cap", IMPLEMENTED_EFFECT_LEVEL_CAP)),
+		1,
+		MAX_EQUIPMENT_LEVEL
+	)
+
+
 func get_equipment_upgrade_cost(item_id: StringName) -> Dictionary:
 	var level := get_equipment_level(item_id)
-	if level <= 0 or level >= 3:
+	if level <= 0 or level >= MAX_EQUIPMENT_LEVEL:
+		return {}
+	# OB only defines exact per-level runtime costs through Lv.3. Later milestone
+	# recipes remain unavailable until their theme-material authorities exist.
+	if level >= IMPLEMENTED_EFFECT_LEVEL_CAP:
 		return {}
 	return {
 		"gold": 25 * level,
@@ -277,9 +302,6 @@ func get_equipment_upgrade_cost(item_id: StringName) -> Dictionary:
 func upgrade_equipment(item_id: StringName) -> bool:
 	var key := String(item_id)
 	if not _owned_equipment.has(key):
-		return false
-	var item := _equipment_by_id.get(key, {}) as Dictionary
-	if not _meets_upgrade_requirement(item):
 		return false
 	var cost := get_equipment_upgrade_cost(item_id)
 	if cost.is_empty() or not spend_resources(cost):
@@ -383,7 +405,11 @@ func apply_dict(data: Dictionary) -> void:
 	var saved_levels: Variant = data.get("equipment_levels", {})
 	if saved_levels is Dictionary:
 		for item_id in _owned_equipment:
-			_equipment_levels[item_id] = clampi(int(saved_levels.get(item_id, 1)), 1, 3)
+			_equipment_levels[item_id] = clampi(
+				int(saved_levels.get(item_id, 1)),
+				1,
+				MAX_EQUIPMENT_LEVEL
+			)
 	var saved_equipped: Variant = data.get("equipped", {})
 	for slot in VALID_SLOTS:
 		_equipped[String(slot)] = StringName()

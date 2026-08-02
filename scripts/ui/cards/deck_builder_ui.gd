@@ -6,8 +6,8 @@ signal loadout_confirmed(deck_ids: Array[String], auto_attack_card_id: String)
 signal canceled
 
 const SLOT_COUNT := 4
-const HEALING_SLOT := 0
-const SLOT_ROLES := ["治療", "COMBO 1", "COMBO 2", "COMBO 3"]
+const MIN_HEALING_COUNT := 1
+const SLOT_ROLES := ["技能 1", "技能 2", "技能 3", "技能 4"]
 
 var _catalog: Array[Dictionary] = []
 var _counts: Dictionary = {}
@@ -75,45 +75,45 @@ func get_context_id() -> StringName:
 
 func _restore_fixed_loadout(requested: Array[String]) -> void:
 	_slot_card_ids = ["", "", "", ""]
-	var requested_combos: Array[String] = []
+	var restored: Array[String] = []
 	for card_id in requested:
 		var card := _find_catalog_card(card_id)
-		if not _is_combat_hand_card(card):
-			continue
-		var card_type := String(card.get("type", ""))
-		if card_type == "healing" and _slot_card_ids[HEALING_SLOT].is_empty():
-			_slot_card_ids[HEALING_SLOT] = card_id
-		elif (
-			card_type == "combo"
-			and requested_combos.size() < 3
-			and not requested_combos.has(card_id)
+		if (
+			restored.size() >= SLOT_COUNT
+			or restored.has(card_id)
+			or not _is_combat_hand_card(card)
 		):
-			requested_combos.append(card_id)
-	_fill_missing_slot(HEALING_SLOT, "healing", [])
-	for combo_index in 3:
-		var slot_index := combo_index + 1
-		if combo_index < requested_combos.size():
-			_slot_card_ids[slot_index] = requested_combos[combo_index]
-		_fill_missing_slot(slot_index, "combo", _slot_card_ids)
+			continue
+		restored.append(card_id)
+	if _healing_count(restored) < MIN_HEALING_COUNT:
+		var fallback_healing := _first_available_card("healing", restored)
+		if not fallback_healing.is_empty():
+			restored.push_front(fallback_healing)
+			if restored.size() > SLOT_COUNT:
+				restored.pop_back()
+	while restored.size() < SLOT_COUNT:
+		var fallback := _first_available_card("", restored)
+		if fallback.is_empty():
+			break
+		restored.append(fallback)
+	for slot_index in mini(SLOT_COUNT, restored.size()):
+		_slot_card_ids[slot_index] = restored[slot_index]
 	_sync_counts_from_slots()
 
 
-func _fill_missing_slot(
-	slot_index: int,
-	required_type: String,
-	excluded_ids: Array
-) -> void:
-	if not _slot_card_ids[slot_index].is_empty():
-		return
+func _first_available_card(required_type: String, excluded_ids: Array) -> String:
 	for card in _catalog:
 		var card_id := String(card.get("id", ""))
 		if (
 			_is_combat_hand_card(card)
-			and String(card.get("type", "")) == required_type
+			and (
+				required_type.is_empty()
+				or String(card.get("type", "")) == required_type
+			)
 			and not excluded_ids.has(card_id)
 		):
-			_slot_card_ids[slot_index] = card_id
-			return
+			return card_id
+	return ""
 
 
 func _sync_counts_from_slots() -> void:
@@ -176,8 +176,7 @@ func choose_card_for_active_slot(card_id: String) -> bool:
 	if not _is_card_valid_for_slot(card, _active_slot_index):
 		return false
 	if (
-		_active_slot_index != HEALING_SLOT
-		and _slot_card_ids.has(card_id)
+		_slot_card_ids.has(card_id)
 		and _slot_card_ids[_active_slot_index] != card_id
 	):
 		return false
@@ -240,11 +239,7 @@ func _build_layout() -> void:
 	column.add_child(slots)
 	for slot_index in SLOT_COUNT:
 		var slot := Button.new()
-		slot.name = (
-			"HealingSlot"
-			if slot_index == HEALING_SLOT
-			else "ComboSlot%d" % slot_index
-		)
+		slot.name = "SkillSlot%d" % (slot_index + 1)
 		slot.custom_minimum_size = Vector2(215, 100)
 		slot.toggle_mode = true
 		slot.focus_mode = Control.FOCUS_ALL
@@ -313,13 +308,13 @@ func _apply_context() -> void:
 	if _title_label == null or _hint_label == null or _confirm_button == null:
 		return
 	if _context_id == &"blueprint_research":
-		_title_label.text = "DESIGN RESEARCH"
-		_hint_label.text = "Review the healing and combo blueprint slots, then save the design."
-		_confirm_button.text = "SAVE DESIGN"
+		_title_label.text = "技能設計研究"
+		_hint_label.text = "配置四張治療或 Combo 技能；隊伍中至少保留一張治療。"
+		_confirm_button.text = "儲存設計"
 	else:
-		_title_label.text = "EXPEDITION LOADOUT"
-		_hint_label.text = "Choose a slot, then select a card below. Healing has a dedicated slot."
-		_confirm_button.text = "ENTER FOREST"
+		_title_label.text = "遠征技能配置"
+		_hint_label.text = "四個技能槽皆可配置治療或 Combo；至少保留一張治療。"
+		_confirm_button.text = "進入森林"
 
 
 func _refresh_all() -> void:
@@ -340,13 +335,13 @@ func _refresh_slots() -> void:
 		slot.text = "%s  %s\n%s\nAP %d" % [
 			icon,
 			SLOT_ROLES[slot_index],
-			String(card.get("name", "選擇技能")),
+			_display_name(card, "選擇技能"),
 			int(card.get("cost", 0)),
 		]
 		slot.button_pressed = slot_index == _active_slot_index
 		slot.modulate = (
 			Color(0.72, 1.0, 0.78)
-			if slot_index == HEALING_SLOT
+			if String(card.get("type", "")) == "healing"
 			else Color(0.90, 0.76, 1.0)
 		)
 		if slot_index == _active_slot_index:
@@ -359,19 +354,18 @@ func _rebuild_choices() -> void:
 	for child in _choice_grid.get_children():
 		child.queue_free()
 	_visible_choice_ids.clear()
-	var required_type := "healing" if _active_slot_index == HEALING_SLOT else "combo"
+	var protects_last_healing := _slot_holds_last_healing(_active_slot_index)
 	_choice_header.text = (
-		"💚 選擇治療技能"
-		if required_type == "healing"
-		else "⚔ 選擇 COMBO %d" % _active_slot_index
+		"💚 選擇治療技能 · 先在其他槽配置治療，才能更換為 Combo"
+		if protects_last_healing
+		else "◆ 選擇治療或 Combo 技能"
 	)
 	for card in _catalog:
 		if not _is_card_valid_for_slot(card, _active_slot_index):
 			continue
 		var card_id := String(card.get("id", ""))
 		if (
-			required_type == "combo"
-			and _slot_card_ids.has(card_id)
+			_slot_card_ids.has(card_id)
 			and _slot_card_ids[_active_slot_index] != card_id
 		):
 			continue
@@ -380,12 +374,12 @@ func _rebuild_choices() -> void:
 		choice.name = "Choice_%s" % card_id
 		choice.text = "%s  %s     AP %d" % [
 			_card_icon(card),
-			String(card.get("name", card_id)),
+			_display_name(card, card_id),
 			int(card.get("cost", 0)),
 		]
 		choice.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		choice.custom_minimum_size = Vector2(445, 44)
-		choice.tooltip_text = String(card.get("description", ""))
+		choice.tooltip_text = _display_description(card)
 		choice.disabled = _slot_card_ids[_active_slot_index] == card_id
 		choice.pressed.connect(_on_choice_pressed.bind(card_id))
 		_choice_grid.add_child(choice)
@@ -402,31 +396,31 @@ func _update_detail(card: Dictionary) -> void:
 		return
 	_detail_label.text = "%s  %s — %s" % [
 		_card_icon(card),
-		String(card.get("name", "尚未選擇技能")),
-		String(card.get("description", "")),
+		_display_name(card, "尚未選擇技能"),
+		_display_description(card),
 	]
 
 
 func _refresh_recipe_summary() -> void:
 	if _recipe_summary == null:
 		return
-	var selected_combos: Array[String] = []
-	for slot_index in range(1, SLOT_COUNT):
-		if not _slot_card_ids[slot_index].is_empty():
-			selected_combos.append(_slot_card_ids[slot_index])
-	var available_names: Array[String] = []
+	var selected_skills: Array[String] = []
+	for card_id in _slot_card_ids:
+		if not card_id.is_empty():
+			selected_skills.append(card_id)
+	var available_recipes: Array[String] = []
 	for recipe in _finisher_catalog.get_all_recipes():
 		var all_available := true
 		for required_id in recipe.get("required_skills", []):
-			if not selected_combos.has(String(required_id)):
+			if not selected_skills.has(String(required_id)):
 				all_available = false
 				break
 		if all_available:
-			available_names.append(String(recipe.get("name", "Finisher")))
+			available_recipes.append(_format_recipe_hint(recipe))
 	_recipe_summary.text = (
-		"⚔ 可用終結技  " + "  ·  ".join(available_names)
-		if not available_names.is_empty()
-		else "⚠ 這三張 Combo 目前沒有已學會的終結技配方"
+		"⚔ 可用終結技  " + "  ·  ".join(available_recipes)
+		if not available_recipes.is_empty()
+		else "⚠ 目前四張技能沒有可用的終結技配方"
 	)
 
 
@@ -446,17 +440,12 @@ func _update_controls() -> void:
 func _is_valid_loadout() -> bool:
 	if get_selected_count() != SLOT_COUNT:
 		return false
-	if String(_find_catalog_card(_slot_card_ids[0]).get("type", "")) != "healing":
-		return false
-	var combos: Array[String] = []
-	for slot_index in range(1, SLOT_COUNT):
-		var card_id := _slot_card_ids[slot_index]
-		if String(_find_catalog_card(card_id).get("type", "")) != "combo":
+	var unique_ids: Array[String] = []
+	for card_id in _slot_card_ids:
+		if unique_ids.has(card_id) or not _is_combat_hand_card(_find_catalog_card(card_id)):
 			return false
-		if combos.has(card_id):
-			return false
-		combos.append(card_id)
-	return true
+		unique_ids.append(card_id)
+	return _healing_count(_slot_card_ids) >= MIN_HEALING_COUNT
 
 
 func _rebuild_auto_attack_selector() -> void:
@@ -471,7 +460,7 @@ func _rebuild_auto_attack_selector() -> void:
 		var card_id := String(card.get("id", ""))
 		_auto_attack_selector.add_item(
 			"🎯 自動水平攻擊 — %s"
-			% String(card.get("name", card_id))
+			% _display_name(card, card_id)
 		)
 		_auto_attack_selector.set_item_metadata(index, card_id)
 		if card_id == _auto_attack_card_id:
@@ -498,16 +487,19 @@ func _on_auto_attack_selected(index: int) -> void:
 
 
 func _is_card_valid_for_slot(card: Dictionary, slot_index: int) -> bool:
-	if not _is_combat_hand_card(card):
+	if slot_index < 0 or slot_index >= SLOT_COUNT or not _is_combat_hand_card(card):
 		return false
-	var expected_type := "healing" if slot_index == HEALING_SLOT else "combo"
-	return String(card.get("type", "")) == expected_type
+	return not (
+		_slot_holds_last_healing(slot_index)
+		and String(card.get("type", "")) != "healing"
+	)
 
 
 func _is_combat_hand_card(card: Dictionary) -> bool:
 	return (
 		String(card.get("type", "")) in ["combo", "healing"]
 		and bool(card.get("combat_hand", true))
+		and _finisher_catalog.is_skill_eligible(String(card.get("id", "")))
 	)
 
 
@@ -526,3 +518,56 @@ func _card_icon(card: Dictionary) -> String:
 	if "venom" in card_id:
 		return "☠"
 	return "◆"
+
+
+func _healing_count(card_ids: Array) -> int:
+	var count := 0
+	for card_id_variant in card_ids:
+		var card := _find_catalog_card(String(card_id_variant))
+		if String(card.get("type", "")) == "healing":
+			count += 1
+	return count
+
+
+func _slot_holds_last_healing(slot_index: int) -> bool:
+	if slot_index < 0 or slot_index >= SLOT_COUNT:
+		return false
+	var current := _find_catalog_card(_slot_card_ids[slot_index])
+	return (
+		String(current.get("type", "")) == "healing"
+		and _healing_count(_slot_card_ids) <= MIN_HEALING_COUNT
+	)
+
+
+func _format_recipe_hint(recipe: Dictionary) -> String:
+	var sequence_names: Array[String] = []
+	for card_id_variant in recipe.get("sequence", []) as Array:
+		var card_id := String(card_id_variant)
+		sequence_names.append(_display_name(_find_catalog_card(card_id), card_id))
+	var formula := " → ".join(sequence_names)
+	if (
+		sequence_names.size() == 3
+		and sequence_names[0] == sequence_names[1]
+		and sequence_names[1] == sequence_names[2]
+	):
+		formula = "%s ×3" % sequence_names[0]
+	return "%s（%s）" % [_display_name(recipe, "終結技"), formula]
+
+
+func _display_name(entry: Dictionary, fallback: String) -> String:
+	for key in [
+		"display_name_zh_tw", "name_zh_tw", "display_name_zh", "name_zh",
+		"display_name", "name",
+	]:
+		var value := String(entry.get(key, "")).strip_edges()
+		if not value.is_empty():
+			return value
+	return fallback
+
+
+func _display_description(entry: Dictionary) -> String:
+	for key in ["description_zh_tw", "description_zh", "description"]:
+		var value := String(entry.get(key, "")).strip_edges()
+		if not value.is_empty():
+			return value
+	return ""

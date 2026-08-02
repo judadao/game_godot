@@ -75,6 +75,22 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
+[sub_resource type="StyleBoxFlat" id="soul_badge"]
+bg_color = Color(0.29, 0.16, 0.08, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.74, 0.5, 0.2, 0.95)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 12.0
+content_margin_top = 3.0
+content_margin_right = 12.0
+content_margin_bottom = 3.0
+
 [node name="InventoryUI" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -541,12 +557,15 @@ size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.9, 0.82, 0.67, 1)
 theme_override_colors/font_selected_color = Color(0.12, 0.09, 0.07, 1)
 theme_override_colors/font_hovered_color = Color(1, 0.91, 0.72, 1)
-theme_override_constants/line_separation = 8
-theme_override_constants/icon_margin = 12
+theme_override_font_sizes/font_size = 15
+theme_override_constants/line_separation = 10
+theme_override_constants/h_separation = 6
+theme_override_constants/icon_margin = 6
 theme_override_styles/focus = SubResource("list_focus")
 theme_override_styles/selected = SubResource("list_focus")
-fixed_icon_size = Vector2i(44, 44)
-fixed_column_width = 340
+max_columns = 2
+fixed_icon_size = Vector2i(36, 36)
+fixed_column_width = 184
 same_column_width = true
 
 [node name="Details" type="PanelContainer" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage"]
@@ -559,7 +578,7 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="Icon" type="TextureRect" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content"]
-custom_minimum_size = Vector2(96, 96)
+custom_minimum_size = Vector2(84, 84)
 layout_mode = 2
 size_flags_horizontal = 4
 texture_filter = 1
@@ -578,6 +597,16 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.35, 0.24, 0.15, 1)
 horizontal_alignment = 1
 
+[node name="BonusType" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content"]
+custom_minimum_size = Vector2(112, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.96, 0.82, 0.57, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("soul_badge")
+text = "加乘類型 · 攻擊"
+horizontal_alignment = 1
+
 [node name="Meta" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.26, 0.19, 0.31, 1)
@@ -592,6 +621,7 @@ autowrap_mode = 2
 [node name="Effect" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.39, 0.24, 0.08, 1)
+theme_override_font_sizes/font_size = 16
 autowrap_mode = 2
 
 [node name="CodexPage" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages"]

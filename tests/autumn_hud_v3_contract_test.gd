@@ -73,6 +73,7 @@ func _run() -> void:
 			"set_boss_health",
 			"hide_boss_health",
 			"show_skill_toast",
+			"show_card_cast_feedback",
 			"set_combo_chain",
 			"set_material_count",
 			"set_survival_timer",

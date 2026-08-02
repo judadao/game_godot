@@ -29,8 +29,8 @@ func _run() -> void:
 	if inventory.has_method("set_progression_unlocks"):
 		inventory.call("set_progression_unlocks", {"dash_upgrade_unlocked": false})
 	_expect(
-		not bool(inventory.call("upgrade_equipment", &"swift_ring")),
-		"Swift Ring must not upgrade before the Heartwood Guardian story unlock."
+		bool(inventory.call("upgrade_equipment", &"swift_ring")),
+		"一般裝備的素材強化不得被可選共鳴劇情鎖住。"
 	)
 	_expect(
 		not (inventory.call("get_special_ability_totals") as Dictionary).has("dash_distance_bonus"),
@@ -38,7 +38,7 @@ func _run() -> void:
 	)
 	if inventory.has_method("set_progression_unlocks"):
 		inventory.call("set_progression_unlocks", {"dash_upgrade_unlocked": true})
-	_expect(bool(inventory.call("upgrade_equipment", &"swift_ring")), "Swift Ring must upgrade after the story unlock.")
+	_expect(bool(inventory.call("upgrade_equipment", &"swift_ring")), "劇情解鎖後仍可繼續強化迅捷戒。")
 	var unlocked_totals := inventory.call("get_special_ability_totals") as Dictionary
 	_expect(float(unlocked_totals.get("dash_distance_bonus", 0.0)) > 0.0, "Unlocked equipment must add Dash distance.")
 	_expect(float(unlocked_totals.get("dash_evasion_bonus", 0.0)) > 0.0, "Unlocked equipment must add evasion time.")
@@ -69,7 +69,7 @@ func _run() -> void:
 	await process_frame
 
 	if _failures == 0:
-		print("PASS: Dash equipment growth and story gating")
+		print("PASS: Equipment growth is material-driven while Dash ability remains story-gated")
 	quit(1 if _failures > 0 else 0)
 
 

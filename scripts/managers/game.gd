@@ -1370,18 +1370,20 @@ func _show_card_reward_choices(wave_number: int) -> void:
 	if not run_state.active:
 		return
 	var choices_by_wave := {
-		2: ["echo_volley", "giant_arc", "energy_surge", "healing_light"],
+		2: ["echo_volley", "giant_arc", "battle_rhythm", "healing_light"],
 		3: ["sweeping_reach", "quickened_cadence", "deep_reservoir", "storm_charge"],
 	}
 	var card_ids: Array = choices_by_wave.get(wave_number, ["guard", "renewal", "frostburst_imbue"])
 	var choices: Array[Dictionary] = []
 	for card_id in card_ids:
 		var card := card_database.get_card(String(card_id))
+		var localized_name := _localized_text(card, "name")
+		var localized_description := _localized_text(card, "description")
 		choices.append({
-			"text": "%s — %s" % [String(card.get("name", card_id)), String(card.get("description", ""))],
+			"text": "%s — %s" % [localized_name, localized_description],
 			"card_id": String(card_id),
-			"name": String(card.get("name", card_id)),
-			"description": String(card.get("description", "")),
+			"name": localized_name,
+			"description": localized_description,
 			"type": String(card.get("type", "")),
 			"cost": int(card.get("cost", 0)),
 			"icon_path": String(card.get("icon_path", "")),
@@ -1477,6 +1479,8 @@ func _on_card_selected(index: int) -> void:
 	_resolve_skill_triggers(skill_recipe_manager.record_card(card))
 	run_state.energy = deck_manager.energy
 	_refresh_card_hand()
+	if hud != null and hud.has_method("show_card_cast_feedback"):
+		hud.call("show_card_cast_feedback", String(card.get("id", "")))
 	_refresh_combo_display()
 
 
@@ -1650,6 +1654,7 @@ func _try_basic_attack() -> bool:
 				deck_manager.max_energy,
 				deck_manager.energy + finisher_energy
 			)
+		_apply_finisher_support_statuses(card, finisher_effect)
 		var echo_count := maxi(0, int(finisher_effect.get("finisher_echoes", 0)))
 		for _echo in echo_count:
 			var echo_result := _cast_auto_attack_effect(card, cast_targets)
@@ -1712,6 +1717,23 @@ func _try_basic_attack() -> bool:
 		float(card.get("auto_attack_interval", DEFAULT_AUTO_ATTACK_INTERVAL))
 	)
 	return true
+
+
+func _apply_finisher_support_statuses(finisher: Dictionary, effect: Dictionary) -> void:
+	if player == null:
+		return
+	var controller := player.get_node_or_null("CombatStatusController")
+	if controller == null:
+		return
+	var source_id := String(finisher.get("id", "combo_finisher"))
+	var display_name := String(finisher.get("name", "終結技"))
+	var duration := maxf(0.1, float(effect.get("status_duration", 2.5)))
+	var armor_tier := maxi(0, int(effect.get("super_armor_tier", 0)))
+	if armor_tier > 0 and controller.has_method("apply_super_armor"):
+		controller.call("apply_super_armor", source_id, armor_tier, duration, display_name)
+	var reduction := clampf(float(effect.get("damage_reduction", 0.0)), 0.0, 0.9)
+	if reduction > 0.0 and controller.has_method("apply_damage_reduction"):
+		controller.call("apply_damage_reduction", source_id, reduction, duration, display_name)
 
 
 func _nearest_combat_targets(targets: Array, count: int) -> Array[Node2D]:
@@ -2119,7 +2141,13 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 
 
 func _record_combo_formula(card: Dictionary) -> Dictionary:
-	if card.is_empty() or String(card.get("type", "")) != "combo":
+	if (
+		card.is_empty()
+		or not combo_finisher_catalog.call(
+			"is_skill_eligible",
+			String(card.get("id", ""))
+		)
+	):
 		return {}
 	var gift_effects := divine_gift_manager.call("get_global_effects") as Dictionary
 	var stack_gain := 1 + maxi(0, int(gift_effects.get("combo_stack_bonus", 0)))
@@ -2261,14 +2289,19 @@ func _build_formula_finisher(
 		0,
 		int(recipe_effect.get("projectile_bonus", 0))
 	)
-	var finisher_heal := maxi(0, int(gift_effects.get("finisher_heal", 0)))
-	var finisher_guard := 0
-	var finisher_energy := 0.0
+	var finisher_heal := maxi(
+		0,
+		int(recipe_effect.get("finisher_heal", 0))
+		+ int(gift_effects.get("finisher_heal", 0))
+	)
+	var finisher_guard := maxi(0, int(recipe_effect.get("finisher_guard", 0)))
+	var finisher_energy := maxf(0.0, float(recipe_effect.get("finisher_energy", 0.0)))
 	var elements: Array[String] = []
 	for status_key in [
 		"burn_damage", "burn_duration", "frost_ratio",
 		"frost_duration", "poison_damage", "poison_duration",
-		"combo_stun",
+		"combo_stun", "damage_reduction", "status_duration",
+		"super_armor_tier", "defense_bonus", "cleanse",
 	]:
 		if recipe_effect.has(status_key):
 			effect[status_key] = recipe_effect[status_key]
@@ -2302,13 +2335,51 @@ func _build_formula_finisher(
 				var infusion_id := String(formula_effect.get("infusion_id", ""))
 				if infusion_id in ["flame", "frost", "storm", "venom"]:
 					_append_vfx_element(elements, infusion_id)
+				finisher_guard += maxi(0, int(formula_effect.get("defense_bonus", 0)))
+				finisher_energy += maxf(
+					0.0,
+					float(formula_effect.get("ap_regen_bonus", 0.0))
+					+ float(formula_effect.get("ap_max_bonus", 0.0))
+				)
 			"heal", "regeneration", "healing_pulses":
+				var healing_amount := float(formula_effect.get(
+					"amount",
+					formula_effect.get("heal", 8)
+				))
 				finisher_heal += maxi(
 					1,
-					roundi(float(formula_effect.get("amount", 8)) * 0.35)
+					roundi(healing_amount * 0.35)
 				)
 			"combat_status":
 				finisher_guard += 4
+				var lifesteal_ratio := clampf(
+					float(formula_effect.get("lifesteal_ratio", 0.0)),
+					0.0,
+					1.0
+				)
+				finisher_heal += roundi(
+					float(effect.get("amount", 0)) * lifesteal_ratio
+				)
+				for status_variant in formula_effect.get("statuses", []) as Array:
+					if not status_variant is Dictionary:
+						continue
+					var status := status_variant as Dictionary
+					var duration := maxf(
+						float(effect.get("status_duration", 0.0)),
+						float(status.get("duration", 0.0))
+					)
+					effect["status_duration"] = duration
+					match String(status.get("status_id", "")):
+						"super_armor":
+							effect["super_armor_tier"] = maxi(
+								int(effect.get("super_armor_tier", 0)),
+								int(status.get("tier", 1))
+							)
+						"damage_reduction":
+							effect["damage_reduction"] = maxf(
+								float(effect.get("damage_reduction", 0.0)),
+								float(status.get("ratio", 0.0))
+							)
 			"gain_energy":
 				finisher_energy += maxf(
 					0.0,
@@ -2323,13 +2394,14 @@ func _build_formula_finisher(
 		total_stacks += maxi(0, int(stack_value))
 	bonus_damage += floori(float(total_stacks) * 0.75 * combo_multiplier)
 	bonus_damage += maxi(0, int(gift_effects.get("finisher_element_damage", 0)))
-	effect["amount"] = roundi(
+	var damage_scale := clampf(float(recipe_effect.get("damage_scale", 1.0)), 0.0, 4.0)
+	effect["amount"] = roundi(damage_scale * float(
 		float(int(effect.get("amount", 0)) + bonus_damage)
 		* maxf(
 			1.0,
 			float(gift_effects.get("finisher_damage_multiplier", 1.0))
 		)
-	)
+	))
 	effect["projectile_count"] = maxi(
 		1,
 		int(effect.get("projectile_count", 1)) + projectile_bonus
@@ -2359,8 +2431,10 @@ func _build_formula_finisher(
 			)
 	for flag_key in [
 		"shatter", "final_burst", "death_spread",
-		"chain_lightning", "piercing",
+		"chain_lightning", "piercing", "returning_projectiles",
 	]:
+		if bool(recipe_effect.get(flag_key, false)):
+			effect[flag_key] = true
 		if bool(mutations.get(flag_key, false)):
 			effect[flag_key] = true
 	effect["finisher_echoes"] = maxi(
@@ -3384,6 +3458,8 @@ func _card_for_cast(card_or_instance: Variant) -> Dictionary:
 	card["effect"] = effect
 	card["level"] = current_level
 	card["card_level"] = current_level
+	card["name"] = _localized_text(card, "name")
+	card["description"] = _localized_text(card, "description")
 	card["growth_locked"] = growth_locked
 	card["fixed"] = growth_locked
 	if card_id == "energy_surge":
@@ -3394,10 +3470,7 @@ func _card_for_cast(card_or_instance: Variant) -> Dictionary:
 			+ int(energy_specials.get("energy_card_bonus", 0.0))
 		)
 		card["effect"] = effect
-		card["description"] = (
-			"Spend 1 AP to restore %d AP. STABLE: cannot upgrade or fuse."
-			% int(effect["amount"])
-		)
+		card["description"] = "消耗 1 AP，回復 %d AP。穩定卡無法升級或融合。" % int(effect["amount"])
 	if instance != null:
 		card["instance_id"] = instance.instance_id
 		card["card_instance"] = instance
@@ -3466,6 +3539,7 @@ func _refresh_combo_display() -> void:
 		[]
 	) as Array
 	var projected_finishers: Array[Dictionary] = []
+	var possible_finishers: Array[Dictionary] = []
 	var epithet := String(divine_gift_manager.call("get_epithet_prefix"))
 	for entry_variant in finisher_queue:
 		if not entry_variant is Dictionary:
@@ -3478,6 +3552,21 @@ func _refresh_combo_display() -> void:
 				String(entry.get("name", "Finisher")),
 			],
 		})
+	if not history.is_empty() and history.size() < COMBO_FORMULA_LENGTH:
+		var prefix: Array[String] = []
+		for card_variant in history:
+			if card_variant is Dictionary:
+				prefix.append(String((card_variant as Dictionary).get("id", "")))
+		for recipe_variant in combo_finisher_catalog.call("get_possible_recipes", prefix) as Array:
+			if not recipe_variant is Dictionary:
+				continue
+			var recipe := recipe_variant as Dictionary
+			if not _is_finisher_recipe_learned(recipe):
+				continue
+			possible_finishers.append({
+				"recipe_id": String(recipe.get("id", "")),
+				"display_name": "%s%s" % [epithet, String(recipe.get("name", "終結技"))],
+			})
 	var gift_inventory := divine_gift_manager.call("get_inventory") as Array
 	var primary_gift := divine_gift_manager.call("get_primary_gift") as Dictionary
 	var primary_gift_id := String(primary_gift.get("id", ""))
@@ -3493,7 +3582,8 @@ func _refresh_combo_display() -> void:
 		run_state.temporary_buffs.get("persistent_combo_stacks", {}) as Dictionary,
 		not finisher_queue.is_empty(),
 		gift_inventory,
-		projected_finishers
+		projected_finishers,
+		possible_finishers
 	)
 
 
@@ -3598,12 +3688,12 @@ func _open_inventory() -> void:
 
 func _inventory_projection() -> Array[Dictionary]:
 	var definitions := {
-		"travel_bread": {"name": "Travel Bread", "description": "Simple food for long roads.", "category": "items", "stats": "A basic provision.", "icon_path": JOURNAL_ITEM_ICONS["travel_bread"]},
-		"town_map": {"name": "Town Map", "description": "Marks roads around town.", "category": "quest", "stats": "Key item · cannot be consumed.", "icon_path": JOURNAL_ITEM_ICONS["town_map"]},
-		"iron_sword": {"name": "Iron Sword", "description": "A reliable starter blade.", "category": "gear", "stats": "Attack +8", "icon_path": JOURNAL_ITEM_ICONS["iron_sword"]},
-		"guard_boots": {"name": "Guard Boots", "description": "Light boots for long roads.", "category": "gear", "stats": "Defense +2", "icon_path": JOURNAL_ITEM_ICONS["guard_boots"]},
-		"soul_edge": {"name": "Soul Edge", "description": "A blade tuned to sword-soul resonance.", "category": "gear", "stats": "Attack +12", "icon_path": JOURNAL_ITEM_ICONS["soul_edge"]},
-		"shard_charm": {"name": "Shard Charm", "description": "Stabilizes carried magic shards.", "category": "gear", "stats": "Magic stability", "icon_path": JOURNAL_ITEM_ICONS["shard_charm"]},
+		"travel_bread": {"name": "旅人麵包", "description": "適合長途跋涉的樸實乾糧。", "category": "items", "stats": "基礎補給品。", "icon_path": JOURNAL_ITEM_ICONS["travel_bread"]},
+		"town_map": {"name": "城鎮地圖", "description": "標記城鎮周圍的道路。", "category": "quest", "stats": "關鍵道具・無法消耗。", "icon_path": JOURNAL_ITEM_ICONS["town_map"]},
+		"iron_sword": {"name": "鐵劍", "description": "可靠的入門長劍。", "category": "gear", "stats": "攻擊 +8", "icon_path": JOURNAL_ITEM_ICONS["iron_sword"]},
+		"guard_boots": {"name": "守衛長靴", "description": "適合長途行走的輕便長靴。", "category": "gear", "stats": "防禦 +2", "icon_path": JOURNAL_ITEM_ICONS["guard_boots"]},
+		"soul_edge": {"name": "魂刃", "description": "能與劍魂共鳴的刀刃。", "category": "gear", "stats": "攻擊 +12", "icon_path": JOURNAL_ITEM_ICONS["soul_edge"]},
+		"shard_charm": {"name": "碎晶護符", "description": "穩定隨身攜帶的魔法碎晶。", "category": "gear", "stats": "提升魔力穩定性", "icon_path": JOURNAL_ITEM_ICONS["shard_charm"]},
 	}
 	var projection: Array[Dictionary] = []
 	for item_id in player_inventory.keys():
@@ -3616,10 +3706,10 @@ func _inventory_projection() -> Array[Dictionary]:
 		item["quantity"] = count
 		projection.append(item)
 	var resource_labels := {
-		"autumn_wood": ["Autumn Wood", "Timber gathered beneath the autumn canopy.", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png"],
-		"stone": ["Stone", "Dense stone used for forge construction and equipment.", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Stone.png"],
-		"magic_shard": ["Magic Shard", "Crystallized magic used in advanced forging.", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png"],
-		"autumn_core": ["Autumn Core", "A rare core carrying the forest's concentrated power.", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_07.png"],
+		"autumn_wood": ["秋木", "自秋色樹冠下採集的木材。", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png"],
+		"stone": ["石材", "用於建造鍛造設施與裝備的堅硬石材。", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Stone.png"],
+		"magic_shard": ["魔法碎晶", "用於高階鍛造的結晶魔力。", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png"],
+		"autumn_core": ["秋之核心", "凝聚森林力量的稀有核心。", "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_07.png"],
 	}
 	for resource_id in inventory_manager.call("get_resource_ids") as Array:
 		var key := String(resource_id)
@@ -3628,14 +3718,14 @@ func _inventory_projection() -> Array[Dictionary]:
 		var quantity := int(inventory_manager.call("get_resource_amount", StringName(key)))
 		if quantity <= 0:
 			continue
-		var label_data: Array = resource_labels.get(key, [key.capitalize(), "A forging material.", ""])
+		var label_data: Array = resource_labels.get(key, [key.capitalize(), "鍛造素材。", ""])
 		projection.append({
 			"id": key,
 			"name": label_data[0],
 			"description": label_data[1],
 			"category": "materials",
-			"kind_label": "FORGING MATERIAL",
-			"stats": "Stored permanently in the town workshop.",
+			"kind_label": "鍛造素材",
+			"stats": "永久存放於城鎮工坊。",
 			"quantity": quantity,
 			"icon_path": label_data[2],
 		})
@@ -3645,11 +3735,14 @@ func _inventory_projection() -> Array[Dictionary]:
 		if equipment_id.is_empty() or not bool(inventory_manager.call("has_equipment", StringName(equipment_id))):
 			continue
 		var owned := equipment.duplicate(true)
+		owned["name"] = _localized_text(equipment, "name")
+		owned["description"] = _localized_text(equipment, "description")
 		owned["category"] = "gear"
-		owned["kind_label"] = "%s EQUIPMENT" % String(equipment.get("slot", "gear")).to_upper()
+		owned["kind_label"] = _equipment_slot_label(StringName(equipment.get("slot", "")))
 		owned["quantity"] = int(inventory_manager.call("get_equipment_count", StringName(equipment_id)))
-		owned["stats"] = "Forge level %d\n%s" % [
+		owned["stats"] = "鍛造等級 %d / %d\n%s" % [
 			int(inventory_manager.call("get_equipment_level", StringName(equipment_id))),
+			int(inventory_manager.call("get_max_equipment_level")),
 			_equipment_effect_summary(equipment),
 		]
 		owned["icon_path"] = _journal_equipment_icon(equipment)
@@ -3710,9 +3803,9 @@ func _inventory_equipment_projection() -> Array[Dictionary]:
 			result.append({
 				"slot": String(slot),
 				"id": "",
-				"name": "Empty",
+				"name": "未裝備",
 				"level": 0,
-				"stats": "No equipment is currently fitted in this slot.",
+				"stats": "此欄位目前沒有裝備。",
 				"icon_path": JOURNAL_SLOT_ICONS[String(slot)],
 			})
 			continue
@@ -3720,7 +3813,7 @@ func _inventory_equipment_projection() -> Array[Dictionary]:
 		result.append({
 			"slot": String(slot),
 			"id": String(item_id),
-			"name": String(item.get("name", item_id)),
+			"name": _localized_text(item, "name"),
 			"level": int(inventory_manager.call("get_equipment_level", item_id)),
 			"stats": _equipment_effect_summary(item),
 			"icon_path": _journal_equipment_icon(item),
@@ -3736,15 +3829,19 @@ func _inventory_sword_soul_projection() -> Array[Dictionary]:
 		var card := card_database.get_card(instance.card_id)
 		if card.is_empty():
 			continue
+		var bonus_type := _sword_soul_bonus_type(card)
 		result.append({
 			"instance_id": instance.instance_id,
 			"card_id": instance.card_id,
 			"id": instance.instance_id,
-			"name": String(card.get("name", instance.card_id.capitalize())),
-			"kind_label": "OWNED SWORD SOUL",
+			"name": _localized_text(card, "name"),
+			"kind_label": "現有劍魂",
+			"bonus_type": String(bonus_type),
+			"bonus_type_label": _sword_soul_bonus_type_label(bonus_type),
 			"level": instance.level,
 			"description": _card_level_description(card, instance.level),
 			"effect_summary": _card_effect_summary(card.get("effect", {}) as Dictionary),
+			"ability_summary": _sword_soul_ability_summary(card),
 			"icon_path": String(card.get("icon_path", JOURNAL_ICON_ROOT + "Icon41_1_2.png")),
 		})
 	result.sort_custom(
@@ -3752,6 +3849,67 @@ func _inventory_sword_soul_projection() -> Array[Dictionary]:
 			return "%s:%s" % [left.get("name", ""), left.get("instance_id", "")] < "%s:%s" % [right.get("name", ""), right.get("instance_id", "")]
 	)
 	return result
+
+
+func _sword_soul_bonus_type(card: Dictionary) -> StringName:
+	var effect := card.get("effect", {}) as Dictionary
+	var effect_kind := String(effect.get("kind", ""))
+	var card_type := String(card.get("type", ""))
+	var tags := card.get("tags", []) as Array
+	var has_element_tag := false
+	for tag_variant in tags:
+		if String(tag_variant) in [
+			"water", "fire", "wind", "lightning", "ice", "poison", "light", "dark",
+		]:
+			has_element_tag = true
+			break
+	if (
+		String(effect.get("target_action", "")) == "dash"
+		or tags.has("mobility")
+		or effect.has("move_speed_multiplier")
+	):
+		return &"mobility"
+	if (
+		effect_kind in ["gain_energy", "action_points"]
+		or effect.has("ap_regen_bonus")
+		or effect.has("ap_max_bonus")
+	):
+		return &"ap"
+	if (
+		card_type == "healing"
+		or tags.has("healing")
+		or effect_kind in ["heal", "healing_pulses", "regeneration"]
+	):
+		return &"healing"
+	if (
+		effect_kind == "infusion"
+		or has_element_tag
+	):
+		return &"element"
+	if (
+		effect_kind == "combat_status"
+		or tags.has("defense")
+		or effect.has("defense_bonus")
+		or not (effect.get("statuses", []) as Array).is_empty()
+	):
+		return &"defense"
+	return &"attack"
+
+
+func _sword_soul_bonus_type_label(bonus_type: StringName) -> String:
+	return {
+		&"attack": "攻擊",
+		&"defense": "防禦",
+		&"healing": "治療",
+		&"element": "元素",
+		&"mobility": "機動",
+		&"ap": "AP",
+	}.get(bonus_type, "攻擊")
+
+
+func _sword_soul_ability_summary(card: Dictionary) -> String:
+	var summary := _card_effect_summary(card.get("effect", {}) as Dictionary).strip_edges()
+	return summary if not summary.is_empty() else "依劍魂等級提供戰鬥加乘。"
 
 
 func _inventory_compendium_projection() -> Array[Dictionary]:
@@ -3771,22 +3929,47 @@ func _inventory_compendium_projection() -> Array[Dictionary]:
 func _inventory_enemy_codex_projection() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	var catalog := EnemyArchetype.autumn_catalog()
+	var enemy_names := {
+		"sprout": "秋芽獸",
+		"hopper": "躍葉獸",
+		"moth_swarm": "琥珀蛾群",
+		"thornling": "棘生靈",
+		"charger": "樹皮衝鋒獸",
+		"grove_shaman": "林地薩滿",
+		"elite": "緋紅林地菁英",
+	}
+	var behavior_names := {
+		"chase": "追擊",
+		"leap": "跳躍突襲",
+		"ranged": "遠距攻擊",
+		"charge": "蓄力衝鋒",
+		"elite": "菁英複合行動",
+	}
+	var pattern_names := {
+		"jab": "近身刺擊",
+		"leap": "跳躍攻擊",
+		"thorn_volley": "荊棘齊射",
+		"rush": "直線衝撞",
+		"cleave": "橫掃",
+		"shockwave": "震波",
+	}
 	var ids := catalog.keys()
 	ids.sort_custom(func(left: Variant, right: Variant) -> bool: return String(left) < String(right))
 	for id_variant in ids:
 		var archetype := catalog[id_variant] as EnemyArchetype
 		var patterns := PackedStringArray()
 		for pattern in archetype.attack_patterns:
-			patterns.append(String(pattern).replace("_", " ").capitalize())
+			patterns.append(String(pattern_names.get(String(pattern), "特殊攻擊")))
+		var archetype_id := String(archetype.archetype_id)
 		result.append({
 			"section": "enemies",
-			"id": String(archetype.archetype_id),
-			"name": archetype.display_name,
-			"kind_label": "AUTUMN ENEMY CATALOG",
-			"description": "A recorded autumn archetype. This catalog is a reference, not discovery progress.",
-			"effect_summary": "Health %d · Attack %d · Defense %d · Speed %d" % [archetype.max_health, archetype.attack_damage, archetype.defense, roundi(archetype.speed)],
-			"trigger_summary": "Behavior: %s · Patterns: %s" % [String(archetype.behavior).capitalize(), ", ".join(patterns)],
-			"meta_summary": "RANGE %d  ·  REWARD %d XP / %d G" % [roundi(archetype.attack_range), archetype.experience_reward, archetype.gold_reward],
+			"id": archetype_id,
+			"name": String(enemy_names.get(archetype_id, "未知敵人")),
+			"kind_label": "秋境敵人圖鑑",
+			"description": "記錄於秋境的敵人原型；此頁為戰鬥參考資料，不代表發現進度。",
+			"effect_summary": "生命 %d · 攻擊 %d · 防禦 %d · 速度 %d" % [archetype.max_health, archetype.attack_damage, archetype.defense, roundi(archetype.speed)],
+			"trigger_summary": "行動：%s · 招式：%s" % [String(behavior_names.get(String(archetype.behavior), "特殊行動")), "、".join(patterns)],
+			"meta_summary": "攻擊距離 %d · 獎勵 %d 經驗 / %d 金幣" % [roundi(archetype.attack_range), archetype.experience_reward, archetype.gold_reward],
 			"icon_path": JOURNAL_ENEMY_ICONS.get(String(archetype.behavior), JOURNAL_ICON_ROOT + "Icon40_1_2.png"),
 		})
 	return result
@@ -3804,12 +3987,12 @@ func _inventory_sword_soul_codex_projection() -> Array[Dictionary]:
 		result.append({
 			"section": "sword_souls",
 			"id": String(card_id),
-			"name": String(card.get("name", card_id)),
-			"kind_label": "SWORD SOUL DESIGN",
-			"description": String(card.get("description", "A forgeable Sword Soul design.")),
+			"name": _localized_text(card, "name"),
+			"kind_label": "劍魂圖紙",
+			"description": _localized_text(card, "description"),
 			"effect_summary": _card_effect_summary(card.get("effect", {}) as Dictionary),
-			"trigger_summary": "Forge design · Blacksmith level %d" % int(recipe.get("required_blacksmith_level", 1)),
-			"meta_summary": "OWNED %s  ·  LEVEL %d / 3" % ["YES" if bool(progress.get("owned", false)) else "NO", int(progress.get("level", 0))],
+			"trigger_summary": "鍛造圖紙 · 鐵匠鋪等級 %d" % int(recipe.get("required_blacksmith_level", 1)),
+			"meta_summary": "持有 %s · 等級 %d / 3" % ["是" if bool(progress.get("owned", false)) else "否", int(progress.get("level", 0))],
 			"icon_path": String(card.get("icon_path", JOURNAL_ICON_ROOT + "Icon41_1_2.png")),
 		})
 	result.sort_custom(func(left: Dictionary, right: Dictionary) -> bool: return String(left.get("name", "")) < String(right.get("name", "")))
@@ -3827,12 +4010,23 @@ func _inventory_equipment_codex_projection() -> Array[Dictionary]:
 		result.append({
 			"section": "equipment",
 			"id": String(item_id),
-			"name": String(item.get("name", item_id)),
-			"kind_label": "%s EQUIPMENT" % String(slot).to_upper(),
-			"description": String((item.get("special_ability", {}) as Dictionary).get("description", "A forgeable equipment design.")),
+			"name": _localized_text(item, "name"),
+			"kind_label": _equipment_slot_label(slot),
+			"description": "%s\n\n【固有能力】%s" % [
+				_localized_text(item, "description"),
+				_localized_text(item.get("special_ability", {}) as Dictionary, "description"),
+			],
 			"effect_summary": _equipment_effect_summary(item),
-			"trigger_summary": "Persistent equipment catalog · Forge level cap 3",
-			"meta_summary": "OWNED %s  ·  EQUIPPED %s  ·  LEVEL %d / 3" % ["YES" if owned else "NO", "YES" if equipped else "NO", int(inventory_manager.call("get_equipment_level", item_id))],
+			"trigger_summary": "永久裝備圖鑑 · 正式上限 Lv.%d · 現行效果實作至 Lv.%d" % [
+				int(inventory_manager.call("get_max_equipment_level")),
+				int(inventory_manager.call("get_implemented_effect_level_cap", item_id)),
+			],
+			"meta_summary": "持有 %s  ·  裝備中 %s  ·  等級 %d / %d" % [
+				"是" if owned else "否",
+				"是" if equipped else "否",
+				int(inventory_manager.call("get_equipment_level", item_id)),
+				int(inventory_manager.call("get_max_equipment_level")),
+			],
 			"icon_path": _journal_equipment_icon(item),
 		})
 	result.sort_custom(func(left: Dictionary, right: Dictionary) -> bool: return "%s:%s" % [left.get("kind_label", ""), left.get("name", "")] < "%s:%s" % [right.get("kind_label", ""), right.get("name", "")])
@@ -3848,25 +4042,35 @@ func _journal_equipment_icon(item: Dictionary) -> String:
 
 func _equipment_effect_summary(item: Dictionary) -> String:
 	var labels := {
-		"attack": "Attack",
-		"defense": "Defense",
-		"max_health": "Max Health",
-		"max_mana": "Max Mana",
-		"move_speed_multiplier": "Move Speed",
+		"attack": "攻擊",
+		"defense": "防禦",
+		"magic_power": "魔力",
+		"max_health": "生命上限",
+		"max_mana": "法力上限",
+		"critical_chance": "暴擊率",
+		"move_speed_multiplier": "移動速度",
+		"shop_discount": "商店折扣",
 	}
 	var parts := PackedStringArray()
 	var effects := item.get("effects", {}) as Dictionary
-	for key in ["attack", "defense", "max_health", "max_mana", "move_speed_multiplier"]:
+	for key in [
+		"attack", "defense", "magic_power", "max_health", "max_mana",
+		"critical_chance", "move_speed_multiplier", "shop_discount",
+	]:
 		if not effects.has(key):
 			continue
 		var value := float(effects[key])
 		parts.append(
 			"%s %s" % [
 				labels[key],
-				("%+.0f%%" % (value * 100.0)) if key == "move_speed_multiplier" else "%+d" % int(value),
+				(
+					"%+.0f%%" % (value * 100.0)
+					if key in ["critical_chance", "move_speed_multiplier", "shop_discount"]
+					else "%+d" % int(value)
+				),
 			]
 		)
-	return " · ".join(parts) if not parts.is_empty() else "No active status modifier"
+	return " · ".join(parts) if not parts.is_empty() else "沒有面板屬性修正"
 
 
 func _inventory_codex_projection() -> Array[Dictionary]:
@@ -3896,12 +4100,12 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 		)
 		projection.append({
 			"id": card_id,
-			"name": String(card.get("name", card_id.capitalize())),
+			"name": _localized_text(card, "name"),
 			"category": category,
 			"kind_label": _codex_kind_label_for_card(card, profile),
-			"description": String(card.get("description", "")),
+			"description": _localized_text(card, "description"),
 			"effect_summary": (
-				"%s, %d attack range" % [
+				"%s、攻擊範圍 %d" % [
 					_card_effect_summary(effect),
 					int(card.get("auto_attack_range", 220)),
 				]
@@ -3926,9 +4130,9 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 		var progression := _named_skill_vfx_progression(recipe)
 		var skill_entry := {
 			"id": skill_id,
-			"name": String(recipe.get("name", skill_id.capitalize())),
+			"name": _localized_text(recipe, "name"),
 			"category": "skills",
-			"kind_label": "LEARNED COMBAT SKILL",
+			"kind_label": "已學會戰鬥招式",
 			"description": _skill_recipe_description(recipe),
 			"effect_summary": _card_effect_summary(recipe.get("effect", {}) as Dictionary),
 			"trigger_summary": _skill_trigger_summary(recipe),
@@ -3956,20 +4160,23 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 				continue
 			if icon_path.is_empty():
 				icon_path = String(card.get("icon_path", ""))
-			sequence_names.append(String(card.get("name", card_id_variant)))
+			sequence_names.append(_localized_text(card, "name"))
 			for tag_variant in card.get("tags", []) as Array:
 				_append_vfx_element(elements, String(tag_variant))
 		var base_effect := recipe.get("base_effect", {}) as Dictionary
+		var finisher_effect_summary := _card_effect_summary(base_effect)
+		if finisher_effect_summary.strip_edges().is_empty():
+			finisher_effect_summary = "效果會讀取三張配方卡的目前等級、裝備與祝福後動態推導。"
 		var progression := _named_skill_vfx_progression(recipe)
 		var finisher_id := String(recipe.get("id", ""))
 		var finisher_entry := {
 			"id": finisher_id,
-			"name": String(recipe.get("name", "Finisher")),
+			"name": String(recipe.get("name", "終結技")),
 			"category": "finishers",
-			"kind_label": "COMBO FINISHER",
+			"kind_label": "具名終結技",
 			"description": String(recipe.get("description", "")),
-			"effect_summary": _card_effect_summary(base_effect),
-			"trigger_summary": "Formula: %s" % " > ".join(sequence_names),
+			"effect_summary": finisher_effect_summary,
+			"trigger_summary": "配方：%s" % " → ".join(sequence_names),
 			"icon_path": icon_path,
 			"preview_kind": "finisher",
 			"named_vfx_id": finisher_id,
@@ -4029,44 +4236,43 @@ func _codex_preview_kind_for_card(card: Dictionary, profile: Dictionary) -> Stri
 func _codex_kind_label_for_card(card: Dictionary, profile: Dictionary) -> String:
 	var category := _codex_category_for_card(card)
 	if category == "attacks":
-		return "BASIC ATTACK"
+		return "基礎攻擊"
 	var effect := card.get("effect", {}) as Dictionary
 	var card_type := String(card.get("type", ""))
 	if category == "infusions":
-		var element := String(profile.get("element", "")).to_upper()
+		var element := _element_display_name(String(profile.get("element", "")))
 		if String(effect.get("target_action", "")) == "dash":
-			return "DASH INFUSION"
-		return "%s ATTACK INFUSION" % element if not element.is_empty() else "ATTACK INFUSION"
+			return "衝刺附魔"
+		return "%s攻擊附魔" % element if not element.is_empty() else "攻擊附魔"
 	match card_type:
 		"healing":
-			return "HEALING TECHNIQUE"
+			return "治療招式"
 		"status":
-			return "CONTROL TECHNIQUE"
+			return "控制招式"
 		"power":
-			return "POWER TECHNIQUE"
+			return "強化招式"
 		"ultimate":
-			return "ULTIMATE TECHNIQUE"
+			return "終極招式"
 		"combo":
-			return "COMBO TECHNIQUE"
+			return "連段招式"
 		"skill":
-			return "AREA SKILL" if float(effect.get("radius", 0.0)) > 0.0 else "COMBAT SKILL"
-	return "%s TECHNIQUE" % card_type.to_upper()
+			return "範圍招式" if float(effect.get("radius", 0.0)) > 0.0 else "戰鬥招式"
+	return "戰鬥招式"
 
 
 func _codex_trigger_summary_for_card(card: Dictionary) -> String:
 	var category := _codex_category_for_card(card)
 	var effect := card.get("effect", {}) as Dictionary
 	if category == "attacks":
-		return "Fires automatically toward enemies in front of the player."
+		return "偵測到角色前方的敵人時自動發射。"
 	if category == "infusions":
-		var target_action := String(effect.get("target_action", "attacks")).replace("_", " ")
-		return "Wraps %s for %.1f seconds when played." % [
+		var target_action := "衝刺" if String(effect.get("target_action", "")) == "dash" else "攻擊"
+		return "打出後使%s獲得 %.1f 秒附魔。" % [
 			target_action,
 			float(effect.get("combo_duration", 0.0)),
 		]
 	var cost := int(card.get("cost", 0))
-	var destination := String(card.get("play_destination", "discard"))
-	return "Play from the combat hand for %d AP; resolves to %s." % [cost, destination]
+	return "從戰鬥手牌打出，消耗 %d AP，效果立即生效。" % cost
 
 
 func _codex_visual_family_for_card(card: Dictionary) -> String:
@@ -4111,100 +4317,139 @@ func _card_effect_summary(effect: Dictionary) -> String:
 	var parts: Array[String] = []
 	var effect_kind := String(effect.get("kind", ""))
 	if effect.has("amount"):
-		var amount_label := "power"
+		var amount_label := "效果"
 		if effect_kind in ["heal", "regeneration"]:
-			amount_label = "health"
+			amount_label = "生命"
 		elif effect_kind in ["gain_energy", "action_points"]:
 			amount_label = "AP"
 		elif effect_kind in ["damage", "area_damage", "damage_bonus"]:
-			amount_label = "damage"
-		parts.append("%d %s" % [int(effect["amount"]), amount_label])
+			amount_label = "傷害"
+		parts.append("%s %d" % [amount_label, int(effect["amount"])])
 	if effect.has("heal"):
-		parts.append("%d health per pulse" % int(effect["heal"]))
+		parts.append("每次恢復 %d 生命" % int(effect["heal"]))
 	if effect.has("pulses"):
-		parts.append("%d pulses" % int(effect["pulses"]))
+		parts.append("生效 %d 次" % int(effect["pulses"]))
 	if effect.has("interval"):
-		parts.append("%.1fs interval" % float(effect["interval"]))
+		parts.append("間隔 %.1f 秒" % float(effect["interval"]))
 	if effect.has("damage_bonus"):
-		parts.append("+%d attack damage" % int(effect["damage_bonus"]))
+		parts.append("攻擊傷害 +%d" % int(effect["damage_bonus"]))
 	if effect.has("radius"):
-		parts.append("%d range" % int(effect["radius"]))
+		parts.append("範圍 %d" % int(effect["radius"]))
 	if effect.has("burn_damage"):
-		parts.append("%d burn damage" % int(effect["burn_damage"]))
+		parts.append("燃燒傷害 %d" % int(effect["burn_damage"]))
 	if effect.has("frost_ratio"):
-		parts.append("%d%% slow" % roundi(float(effect["frost_ratio"]) * 100.0))
+		parts.append("緩速 %d%%" % roundi(float(effect["frost_ratio"]) * 100.0))
 	if effect.has("duration"):
-		parts.append("%.1f second duration" % float(effect["duration"]))
+		parts.append("持續 %.1f 秒" % float(effect["duration"]))
 	if effect.has("status_id"):
-		parts.append(String(effect["status_id"]).replace("_", " ").capitalize())
+		parts.append(_status_display_name(String(effect["status_id"])))
 	for status_variant in effect.get("statuses", []) as Array:
 		var status := status_variant as Dictionary
 		var status_parts: Array[String] = [
-			String(status.get("status_id", "status")).replace("_", " ").capitalize()
+			_status_display_name(String(status.get("status_id", "status")))
 		]
 		if status.has("tier"):
-			status_parts.append("Tier %d" % int(status["tier"]))
+			status_parts.append("階級 %d" % int(status["tier"]))
 		if status.has("ratio"):
 			status_parts.append("%d%%" % roundi(float(status["ratio"]) * 100.0))
 		if status.has("amount"):
-			status_parts.append("%d power" % int(status["amount"]))
+			status_parts.append("效果 %d" % int(status["amount"]))
 		if status.has("duration"):
-			status_parts.append("%.1fs" % float(status["duration"]))
+			status_parts.append("%.1f 秒" % float(status["duration"]))
 		parts.append(" ".join(status_parts))
 	if effect.has("projectile_bonus"):
-		parts.append("+%d sword waves" % int(effect["projectile_bonus"]))
+		parts.append("劍氣波 +%d" % int(effect["projectile_bonus"]))
 	if effect.has("spread_degrees"):
-		parts.append("%.0f degree spread" % float(effect["spread_degrees"]))
+		parts.append("散射角度 %.0f 度" % float(effect["spread_degrees"]))
 	if effect.has("combo_stun"):
-		parts.append("%.2fs stun" % float(effect["combo_stun"]))
+		parts.append("暈眩 %.2f 秒" % float(effect["combo_stun"]))
 	if effect.has("size_multiplier"):
-		parts.append("%.2fx effect size" % float(effect["size_multiplier"]))
+		parts.append("效果尺寸 ×%.2f" % float(effect["size_multiplier"]))
 	if effect.has("attack_range_bonus"):
-		parts.append("+%d attack range" % roundi(float(effect["attack_range_bonus"])))
+		parts.append("攻擊範圍 +%d" % roundi(float(effect["attack_range_bonus"])))
 	if effect.has("attack_interval_multiplier"):
 		parts.append(
-			"%d%% faster attacks"
+			"攻擊速度 +%d%%"
 				% roundi((1.0 - float(effect["attack_interval_multiplier"])) * 100.0)
 		)
 	if effect.has("projectile_speed_multiplier"):
 		parts.append(
-			"+%d%% projectile speed"
+			"彈體速度 +%d%%"
 				% roundi((float(effect["projectile_speed_multiplier"]) - 1.0) * 100.0)
 		)
 	if effect.has("attack_size_multiplier"):
 		parts.append(
-			"+%d%% attack size"
+			"攻擊尺寸 +%d%%"
 				% roundi((float(effect["attack_size_multiplier"]) - 1.0) * 100.0)
 		)
 	if effect.has("defense_bonus"):
-		parts.append("+%d defense" % int(effect["defense_bonus"]))
+		parts.append("防禦 +%d" % int(effect["defense_bonus"]))
 	if effect.has("move_speed_multiplier"):
-		parts.append("+%d%% move speed" % roundi(float(effect["move_speed_multiplier"]) * 100.0))
+		parts.append("移動速度 +%d%%" % roundi(float(effect["move_speed_multiplier"]) * 100.0))
 	if effect.has("ap_regen_bonus"):
-		parts.append("+%.2f AP regeneration" % float(effect["ap_regen_bonus"]))
+		parts.append("AP 回復 +%.2f" % float(effect["ap_regen_bonus"]))
 	if effect.has("ap_max_bonus"):
-		parts.append("+%.0f maximum AP" % float(effect["ap_max_bonus"]))
+		parts.append("AP 上限 +%.0f" % float(effect["ap_max_bonus"]))
 	if effect.has("poison_damage"):
-		parts.append("%d poison damage" % int(effect["poison_damage"]))
+		parts.append("中毒傷害 %d" % int(effect["poison_damage"]))
 	if effect.has("poison_duration"):
-		parts.append("%.1fs poison duration" % float(effect["poison_duration"]))
+		parts.append("中毒持續 %.1f 秒" % float(effect["poison_duration"]))
 	if effect.has("critical_chance"):
-		parts.append("+%d%% critical chance" % roundi(float(effect["critical_chance"]) * 100.0))
+		parts.append("暴擊率 +%d%%" % roundi(float(effect["critical_chance"]) * 100.0))
 	if effect.has("critical_multiplier"):
-		parts.append("%.2fx critical damage" % float(effect["critical_multiplier"]))
+		parts.append("暴擊傷害 ×%.2f" % float(effect["critical_multiplier"]))
 	if effect.has("lifesteal_ratio"):
-		parts.append("%d%% lifesteal" % roundi(float(effect["lifesteal_ratio"]) * 100.0))
+		parts.append("生命竊取 %d%%" % roundi(float(effect["lifesteal_ratio"]) * 100.0))
 	if effect.has("combo_duration"):
-		parts.append("%.1fs infusion" % float(effect["combo_duration"]))
+		parts.append("附魔 %.1f 秒" % float(effect["combo_duration"]))
 	return (
-		", ".join(parts)
+		"、".join(parts)
 		if not parts.is_empty()
-		else effect_kind.replace("_", " ").capitalize()
+		else _effect_kind_display_name(effect_kind)
 	)
 
 
+func _status_display_name(status_id: String) -> String:
+	return {
+		"super_armor": "霸體",
+		"damage_reduction": "傷害減免",
+		"regeneration": "持續恢復",
+		"lifesteal": "生命竊取",
+		"stun": "暈眩",
+		"slow": "緩速",
+	}.get(status_id, "特殊狀態")
+
+
+func _effect_kind_display_name(effect_kind: String) -> String:
+	return {
+		"damage": "造成傷害",
+		"area_damage": "造成範圍傷害",
+		"heal": "恢復生命",
+		"healing_pulses": "持續恢復生命",
+		"regeneration": "持續恢復",
+		"gain_energy": "恢復 AP",
+		"action_points": "調整 AP",
+		"combat_status": "獲得戰鬥狀態",
+		"infusion": "獲得附魔",
+	}.get(effect_kind, "依招式內容動態計算")
+
+
+func _element_display_name(element: String) -> String:
+	return {
+		"water": "水",
+		"fire": "火",
+		"wind": "風",
+		"lightning": "雷",
+		"ice": "冰",
+		"poison": "毒",
+		"light": "光",
+		"dark": "暗",
+		"normal": "無屬性",
+	}.get(element, "")
+
+
 func _skill_recipe_description(recipe: Dictionary) -> String:
-	return "A learned technique occupying %d memory. Build its pattern during combat to activate it automatically." % int(recipe.get("memory_cost", 0))
+	return "已學會的招式，佔用 %d 點記憶容量；在戰鬥中完成條件後自動發動。" % int(recipe.get("memory_cost", 0))
 
 
 func _skill_trigger_summary(recipe: Dictionary) -> String:
@@ -4212,11 +4457,11 @@ func _skill_trigger_summary(recipe: Dictionary) -> String:
 		var names: Array[String] = []
 		for card_id in recipe.get("sequence", []) as Array:
 			var card := card_database.get_card(String(card_id))
-			names.append(String(card.get("name", String(card_id).capitalize())))
-		return "Sequence: %s. Cooldown %.0fs." % [" > ".join(names), float(recipe.get("cooldown_seconds", 0.0))]
-	return "Land %d attacks within %.0fs. Cooldown %.0fs." % [
-		int(recipe.get("attack_count", 0)),
+			names.append(_localized_text(card, "name"))
+		return "順序：%s；冷卻 %.0f 秒。" % [" → ".join(names), float(recipe.get("cooldown_seconds", 0.0))]
+	return "在 %.0f 秒內命中 %d 次；冷卻 %.0f 秒。" % [
 		float(recipe.get("window_seconds", 0.0)),
+		int(recipe.get("attack_count", 0)),
 		float(recipe.get("cooldown_seconds", 0.0)),
 	]
 
@@ -4680,15 +4925,14 @@ func _player_sale_projection() -> Dictionary:
 		return {"status": "empty"}
 	var item_id := StringName(slot.get("item_id", ""))
 	var item := inventory_manager.call("get_equipment", item_id) as Dictionary
+	var item_name := _localized_text(item, "name")
 	return {
 		"item_id": String(item_id),
-		"item_name": String(item.get("name", item_id)),
+		"item_name": item_name,
 		"crafted_count": int(inventory_manager.call("get_equipment_count", item_id)),
 		"status": "customer_ready",
-		"table_label": "%s is displayed on the sales table." % String(
-			item.get("name", item_id)
-		),
-		"customer_label": "A customer is ready to purchase for %d gold." % (
+		"table_label": "%s 已陳列於販售桌。" % item_name,
+		"customer_label": "顧客願以 %d 金幣購買。" % (
 			int(slot.get("quantity", 0)) * int(slot.get("unit_price", 0))
 		),
 	}
@@ -4705,7 +4949,7 @@ func _on_material_offer_requested(
 	ui_control.call("set_offers", _material_store_offer_projection())
 	ui_control.call(
 		"set_transaction_feedback",
-		"Materials delivered to your workshop."
+		"素材已送達你的工坊。"
 		if success else _forge_result_message(StringName(result.get("code", ""))),
 		success
 	)
@@ -4724,7 +4968,7 @@ func _on_blacksmith_craft_requested(
 		if not meta_state.unlocked_cards.has(card_id):
 			meta_state.unlocked_cards.append(card_id)
 	result["message"] = (
-		"Forging complete. The crafted item is ready."
+		"鍛造完成，成品已可使用。"
 		if success else _forge_result_message(StringName(result.get("code", "")))
 	)
 	_persist_forge_progress()
@@ -4748,7 +4992,7 @@ func _on_blacksmith_list_for_sale_requested(
 	) as Dictionary
 	var success := bool(result.get("ok", false))
 	result["message"] = (
-		"Equipment placed on the sales table. A customer has arrived."
+		"裝備已放上販售桌，顧客已經抵達。"
 		if success else _forge_result_message(StringName(result.get("code", "")))
 	)
 	_persist_forge_progress()
@@ -4760,7 +5004,7 @@ func _on_blacksmith_resolve_sale_requested(ui_control: Control) -> void:
 	var result := forge_service.call("resolve_sale") as Dictionary
 	var success := bool(result.get("ok", false))
 	result["message"] = (
-		"Customer purchase complete."
+		"顧客已完成購買。"
 		if success else _forge_result_message(StringName(result.get("code", "")))
 	)
 	_persist_forge_progress()
@@ -4802,7 +5046,7 @@ func _on_blacksmith_upgrade_sword_soul_requested(
 		"ok": success,
 		"code": String(code),
 		"message": (
-			"Sword Soul upgraded to Level %d." % int(target_instance.level)
+			"劍魂已提升至等級 %d。" % int(target_instance.level)
 			if success else _forge_result_message(code)
 		),
 	}
@@ -4936,7 +5180,11 @@ func _discover_equipment_reward() -> String:
 			meta_state.inventory_state = inventory_manager.call("to_dict")
 			if hud != null and hud.has_method("set_objective"):
 				var ability := item.get("special_ability", {}) as Dictionary
-				hud.call("set_objective", "EQUIPMENT DISCOVERED: %s" % String(item.get("name", item_id)), String(ability.get("description", "New equipment discovered.")))
+				hud.call(
+					"set_objective",
+					"發現裝備：%s" % _localized_text(item, "name"),
+					_localized_text(ability, "description")
+				)
 			return String(item_id)
 	return ""
 
@@ -5058,36 +5306,38 @@ func _is_combat_hand_card(card: Dictionary) -> bool:
 	return (
 		String(card.get("type", "")) in ["combo", "healing"]
 		and bool(card.get("combat_hand", true))
+		and bool(combo_finisher_catalog.call("is_skill_eligible", String(card.get("id", ""))))
 	)
 
 
 func _ensure_fixed_combo_loadout(deck_ids: Array[String]) -> Array[String]:
-	var healing_id := ""
-	var other_ids: Array[String] = []
+	var fixed_loadout: Array[String] = []
+	var has_healing := false
 	for card_id in deck_ids:
-		var card_type := String(card_database.get_card(card_id).get("type", ""))
-		if card_type == "healing":
-			if healing_id.is_empty():
-				healing_id = card_id
-			continue
-		if (
-			card_type == "combo"
-			and other_ids.size() < 3
-			and not other_ids.has(card_id)
-		):
-			other_ids.append(card_id)
-	if healing_id.is_empty():
-		healing_id = "healing_light"
-	for fallback_id in [
-		"flame_imbue", "echo_volley", "storm_charge",
-		"battle_rhythm", "guard",
-	]:
-		if other_ids.size() >= 3:
+		if fixed_loadout.size() >= deck_manager.hand_size:
 			break
-		if fallback_id != healing_id and not other_ids.has(fallback_id):
-			other_ids.append(fallback_id)
-	var fixed_loadout: Array[String] = [healing_id]
-	fixed_loadout.append_array(other_ids.slice(0, 3))
+		var card := card_database.get_card(card_id)
+		if not _is_combat_hand_card(card) or fixed_loadout.has(card_id):
+			continue
+		fixed_loadout.append(card_id)
+		has_healing = has_healing or String(card.get("type", "")) == "healing"
+	for fallback_id in [
+		"healing_light", "flame_imbue", "echo_volley", "storm_charge",
+		"battle_rhythm", "guard", "renewal", "verdant_renewal",
+	]:
+		if fixed_loadout.size() >= deck_manager.hand_size:
+			break
+		if fixed_loadout.has(fallback_id):
+			continue
+		fixed_loadout.append(fallback_id)
+		has_healing = has_healing or String(
+			card_database.get_card(fallback_id).get("type", "")
+		) == "healing"
+	if not has_healing:
+		if fixed_loadout.size() >= deck_manager.hand_size:
+			fixed_loadout[fixed_loadout.size() - 1] = "healing_light"
+		else:
+			fixed_loadout.append("healing_light")
 	return fixed_loadout
 
 
@@ -5161,7 +5411,23 @@ func _show_campfire_result(ui_control: Control, message: String) -> void:
 
 func _card_name(card_id: String) -> String:
 	var card := card_database.get_card(card_id)
-	return String(card.get("name", card_id.capitalize()))
+	var localized := _localized_text(card, "name")
+	return localized if not localized.is_empty() else card_id.capitalize()
+
+
+func _localized_text(source: Dictionary, field: String) -> String:
+	var localized := String(source.get("%s_zh" % field, "")).strip_edges()
+	if not localized.is_empty():
+		return localized
+	return String(source.get(field, "")).strip_edges()
+
+
+func _equipment_slot_label(slot: StringName) -> String:
+	return {
+		&"weapon": "武器裝備",
+		&"armor": "防具裝備",
+		&"accessory": "飾品裝備",
+	}.get(slot, "裝備")
 
 
 func _card_upgrade_description(card: Dictionary, target_level: int) -> String:
@@ -5170,18 +5436,18 @@ func _card_upgrade_description(card: Dictionary, target_level: int) -> String:
 			continue
 		var upgrade := upgrade_variant as Dictionary
 		if int(upgrade.get("level", 0)) == target_level:
-			return String(upgrade.get("description", "")).strip_edges()
+			return _localized_text(upgrade, "description")
 	return ""
 
 
 func _card_level_description(card: Dictionary, level: int) -> String:
 	if level <= CardInstance.MIN_LEVEL:
-		return String(card.get("description", "")).strip_edges()
+		return _localized_text(card, "description")
 	var upgraded_description := _card_upgrade_description(card, level)
 	return (
 		upgraded_description
 		if not upgraded_description.is_empty()
-		else String(card.get("description", "")).strip_edges()
+		else _localized_text(card, "description")
 	)
 
 
@@ -5223,12 +5489,12 @@ func _dialogue_text_for(dialogue_id: StringName, display_name: String) -> String
 func _shop_items_for(shop_id: StringName) -> Array[Dictionary]:
 	if shop_id == &"blacksmith":
 		return [
-			{"id": "iron_sword", "name": "Iron Sword", "price": 120, "sell_price": 60, "description": "A reliable starter blade.", "stock": 2},
-			{"id": "guard_boots", "name": "Guard Boots", "price": 85, "sell_price": 42, "description": "Light boots made for long roads.", "stock": 3},
+			{"id": "iron_sword", "name": "鐵劍", "price": 120, "sell_price": 60, "description": "可靠的入門長劍。", "stock": 2},
+			{"id": "guard_boots", "name": "守衛長靴", "price": 85, "sell_price": 42, "description": "適合長途行走的輕便長靴。", "stock": 3},
 		]
 	return [
-		{"id": "travel_bread", "name": "Travel Bread", "price": 12, "sell_price": 6, "description": "Simple food for the road.", "stock": 12},
-		{"id": "town_map", "name": "Town Map", "price": 45, "sell_price": 22, "description": "Marks roads around the prototype town.", "stock": 1},
+		{"id": "travel_bread", "name": "旅人麵包", "price": 12, "sell_price": 6, "description": "適合旅途攜帶的樸實乾糧。", "stock": 12},
+		{"id": "town_map", "name": "城鎮地圖", "price": 45, "sell_price": 22, "description": "標記城鎮周圍的道路。", "stock": 1},
 	]
 
 
@@ -5391,24 +5657,24 @@ func _purchase_forge_shop_offer(
 func _forge_result_message(code: StringName) -> String:
 	match code:
 		&"insufficient_gold":
-			return "You do not have enough gold."
+			return "金幣不足。"
 		&"already_owned":
-			return "This permanent design is already in your workshop."
+			return "工坊已擁有這份永久圖紙。"
 		&"offer_locked", &"blacksmith_level_locked":
-			return "Raise the Eternal Flame or workshop tier to unlock this design."
+			return "提升永恆之火或工坊等級後才能解鎖此圖紙。"
 		&"tool_required":
-			return "Purchase the required forging tool from the Material Store."
+			return "請先在素材行購買所需的鍛造工具。"
 		&"blueprint_required":
-			return "Purchase this design before attempting to forge it."
+			return "請先取得圖紙再進行鍛造。"
 		&"insufficient_resources":
-			return "Your workshop lacks the required materials."
+			return "工坊缺少所需素材。"
 		&"listing_rejected":
-			return "The sales table is occupied or this item cannot be listed."
+			return "販售桌目前已占用，或此物品無法上架。"
 		&"no_active_listing":
-			return "Place crafted equipment on the sales table first."
+			return "請先把已鍛造的裝備放上販售桌。"
 		&"sword_soul_not_owned":
-			return "Forge this Sword Soul before upgrading it."
+			return "請先鍛造這枚劍魂再進行升級。"
 		&"upgrade_rejected":
-			return "This Sword Soul has reached its current upgrade limit."
+			return "這枚劍魂已達目前升級上限。"
 		_:
-			return "The transaction could not be completed."
+			return "交易無法完成。"

@@ -210,9 +210,15 @@ icon、12px 以上招式名與 Healing／Flame／Volley／Storm visual family。
 字體清楚、卡牌能先靠 icon/色族判讀、HUD 不阻擋玩法資訊、動畫沒有引發 layout
 跳位，以及編輯器所見與執行結果一致。
 
+`combo_card_art_contract_test.gd` 由 32 個終結技 recipe 動態推導 20 張唯一公式劍魂，
+檢查每張都有唯一繁中名稱／說明、唯一 generated path、可載入的 256×256 Texture2D，
+且 `AutumnBattleCard` 實際投影相同中文與圖片。Generated raster 最終仍須獨立檢查
+20 張原生圖、44px contact sheet、六解析度完整畫面與一張完整畫面的固定 3×2 六切片。
+
 設定 `AUTUMN_HUD_CAPTURE_DIR` 後執行 `autumn_hud_v3_layout_test.gd`，會由六個
 exact-size `SubViewport` 輸出 `autumn_hud_<width>x<height>.png`，不受桌面工作區
-最大視窗尺寸限制。
+最大視窗尺寸限制。Windows 擷取需使用非 headless 的 compatibility renderer；dummy
+headless renderer 不會送出 `frame_post_draw`，不可把等待超時誤報為 layout failure。
 
 Autumn map 變更至少需執行 `autumn_safe_zone_contract_test.gd`、
 `autumn_modular_route_test.gd`、`battle_map_v2_scene_contract_test.gd`、
@@ -544,10 +550,11 @@ instance.queue_free()
 | Memory Library | capacity 10/14/18/24/30；learned 與 active loadout 分離 |
 | Growth queue | wave new-card 可直接 skip；滿 16 張可 replace/skip；EXP upgrade 五選一、全滿後獨立 fusion；無候選才 fallback；FIFO 不漏頁 |
 | Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一 |
-| Deck/hand | 傳送門前四格直選；Healing 專用格＋3 unique Combo；候選依格篩選並預覽終結技；QWER 使用後保留原 slot |
+| Deck/hand | 傳送門前四格直選；4 unique Healing／Combo 且至少 1 Healing；最後一張 Healing 不可換掉；候選排除重複並預覽終結技；QWER 使用後保留原 slot |
+| Card readability/feedback | 繁中長技能名固定兩行且不撐寬四卡框；六解析度不重疊；只有成功施放的相符 card id 播放短脈衝，重複呼叫重啟、未知 ID 無作用、0.5 秒內回穩 |
 | Basic Attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；有水平走廊目標時自動攻擊；不向上／下追蹤；無目標不消耗 cooldown 或公式 |
-| Combo formula | 只有 Combo 記錄且 Healing 不打斷；精確已學會 AAA/ABC 配方；多招 FIFO 排隊；下一發自動水平攻擊逐一施放；formula stacks 不消耗；各卡效果獨立 1.5 秒，單一效果到期只撤銷自己的 modifier；Combo Chain 維持獨立 2.5 秒 |
-| Divine Gifts | 每 stage/wave 一個必選頁；主神賜提供稱號；全 inventory 合併 mechanics；Lv.3 融合材料退出獎勵池；fusion-only 可 skip |
+| Combo formula | catalog 合法 Combo／Healing 都可記錄；32 個精確已學會 AAA/ABC 配方；順序錯誤不觸發；純治療／防禦支援為零基礎傷害；多招 FIFO 排隊；下一發自動水平攻擊逐一施放；formula stacks 不消耗；各卡效果獨立 1.5 秒，單一效果到期只撤銷自己的 modifier；Combo Chain 維持獨立 2.5 秒 |
+| Divine Gifts | 每 stage/wave 一個必選頁；最多 3 slot；有空位才出新品，滿槽只出既有升級；全 inventory 的中文前綴與 mechanics 依序累加；Lv.3 融合材料退出獎勵池並釋出一格；fusion-only 可 skip；選擇頁與 HUD 不得露出英文名稱／說明 |
 | Growth card readability | upgrade/new/fusion choice 顯示 icon、類型色、AP/level；多效果使用 bullets；六解析度不裁切 |
 | Dash | ↑ 只觸發 Jump；Space 觸發玩家固有 Dash；不進牌庫/手牌、不耗 AP；Dash Combo infusions 使用 `target_action=dash` |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |
@@ -567,8 +574,11 @@ instance.queue_free()
 建議 focused entrypoints 應以 repository 實際存在檔名為準，至少涵蓋
 `card_instance_*`、`card_collection_service_test.gd`、`combat_status_controller_test.gd`、
 `skill_recipe_manager_test.gd`、`growth_choice_queue_test.gd`、
-`card_growth_ui_*` 與 `autumn_hud_v3_*`。最後仍需執行全量 SceneTree tests、
-editor smoke、main smoke 與人工六尺寸截圖/操作檢查。
+`card_growth_ui_*` 與 `autumn_hud_v3_*`。本輪 OB／神賜補全另以
+`combat_ob_completion_contract_test.gd`、
+`combat_ob_finisher_runtime_contract_test.gd` 與 `divine_gift_capacity_contract_test.gd`
+鎖定 32 配方、支援型實際施放、Lv.15 存檔邊界及三格神賜規則。最後仍需執行
+全量 SceneTree tests、editor smoke、main smoke 與人工六尺寸截圖/操作檢查。
 
 ## 18. Future Extension
 

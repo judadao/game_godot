@@ -141,7 +141,7 @@ func _run() -> void:
 		) as Dictionary
 		var effect := finisher.get("effect", {}) as Dictionary
 		_expect(
-			String(finisher.get("name", "")).ends_with("天輪斷")
+			String(finisher.get("name", "")).ends_with("流火雷音")
 				and int(effect.get("amount", 0)) > int(
 					(database.get_card("ember_bolt").get("effect", {}) as Dictionary).get(
 						"amount",

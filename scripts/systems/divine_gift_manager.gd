@@ -4,10 +4,12 @@ extends RefCounted
 const DEFAULT_CATALOG_PATH := "res://data/divine_gifts.json"
 const MAX_LEVEL := 3
 const EVOLVED_MAX_LEVEL := 3
+const MAX_OWNED_GIFTS := 3
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
 
 var _catalog: Dictionary = {}
 var _inventory: Dictionary = {}
+var _acquisition_order: Array[String] = []
 var _next_evolution_id := 1
 var _primary_gift_id := ""
 var _ascended_base_ids: Dictionary = {}
@@ -54,6 +56,7 @@ func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
 
 func reset_run() -> void:
 	_inventory.clear()
+	_acquisition_order.clear()
 	_next_evolution_id = 1
 	_primary_gift_id = ""
 	_ascended_base_ids.clear()
@@ -74,11 +77,8 @@ func get_gift(gift_id: String) -> Dictionary:
 
 func get_inventory() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	for gift_id_variant in _inventory:
-		result.append((_inventory[gift_id_variant] as Dictionary).duplicate(true))
-	result.sort_custom(func(left: Dictionary, right: Dictionary) -> bool:
-		return String(left.get("name", "")) < String(right.get("name", ""))
-	)
+	for gift_id in _ordered_gift_ids():
+		result.append((_inventory[gift_id] as Dictionary).duplicate(true))
 	return result
 
 
@@ -99,6 +99,8 @@ func add_or_upgrade(gift_id: String) -> bool:
 		_inventory[gift_id] = current
 		_primary_gift_id = gift_id
 		return true
+	if _inventory.size() >= MAX_OWNED_GIFTS:
+		return false
 	var definition := _catalog[gift_id] as Dictionary
 	_inventory[gift_id] = {
 		"id": gift_id,
@@ -116,12 +118,14 @@ func add_or_upgrade(gift_id: String) -> bool:
 		"kind": "base",
 		"effects": _effects_for_level(gift_id, 1),
 	}
+	_acquisition_order.append(gift_id)
 	_primary_gift_id = gift_id
 	return true
 
 
 func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 	var choices: Array[Dictionary] = []
+	var has_open_slot := _inventory.size() < MAX_OWNED_GIFTS
 	for gift_id_variant in _catalog:
 		var gift_id := String(gift_id_variant)
 		if _ascended_base_ids.has(gift_id):
@@ -130,7 +134,7 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 		var current_level := int(
 			(_inventory.get(gift_id, {}) as Dictionary).get("level", 0)
 		)
-		if current_level >= MAX_LEVEL:
+		if current_level >= MAX_LEVEL or (current_level == 0 and not has_open_slot):
 			continue
 		choices.append({
 			"gift_id": gift_id,
@@ -188,7 +192,7 @@ func get_fusion_choices() -> Array[Dictionary]:
 				"right_gift_id": right_id,
 				"name": String(identity["name"]),
 				"description": (
-					"Fuse %s and %s. Retain their core fields, then gain new spectacle buffs."
+					"融合「%s」與「%s」，保留兩者核心效果並獲得新的昇華能力。"
 					% [String(left.get("name", left_id)), String(right.get("name", right_id))]
 				),
 				"accent_color": String(identity["accent_color"]),
@@ -238,7 +242,7 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 		"name": String(identity["name"]),
 		"base_name": String(identity["name"]),
 		"description": (
-			"Retains part of both component Gifts and unlocks new effects at every evolved level."
+			"保留兩項神賜的部分效果，並在每次昇華升級時解鎖新能力。"
 		),
 		"icon": "✺",
 		"prefix": _evolved_prefix(left, right),
@@ -256,7 +260,10 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 	}
 	_inventory.erase(left_id)
 	_inventory.erase(right_id)
+	_acquisition_order.erase(left_id)
+	_acquisition_order.erase(right_id)
 	_inventory[evolution_id] = evolved
+	_acquisition_order.append(evolution_id)
 	_ascended_base_ids[left_id] = true
 	_ascended_base_ids[right_id] = true
 	_completed_fusions[fusion_key] = true
@@ -340,9 +347,9 @@ func _evolved_mutations(inherited: Dictionary, level: int) -> Dictionary:
 func _evolved_level_name(base_name: String, level: int) -> String:
 	match level:
 		2:
-			return "Awakened %s" % base_name
+			return "覺醒・%s" % base_name
 		3:
-			return "Transcendent %s" % base_name
+			return "超越・%s" % base_name
 		_:
 			return base_name
 
@@ -354,22 +361,22 @@ func _evolved_identity(elements: Array[String]) -> Dictionary:
 	match key:
 		"fire+lightning":
 			return {
-				"name": "Heavenfire Thunder Cataclysm",
+				"name": "天火雷劫",
 				"accent_color": "#ff6a24",
 			}
 		"dark+ice":
 			return {
-				"name": "Eternal Frost Abyss",
+				"name": "永劫冰淵",
 				"accent_color": "#8b7cff",
 			}
 		"poison+wind":
 			return {
-				"name": "Tempest of the Withering Sky",
+				"name": "枯天風暴",
 				"accent_color": "#55e68a",
 			}
 		_:
 			return {
-				"name": "Prismatic Apotheosis",
+				"name": "萬象神化",
 				"accent_color": "#f05cff",
 			}
 
@@ -409,7 +416,16 @@ func get_primary_gift() -> Dictionary:
 
 
 func get_epithet_prefix() -> String:
-	return String(get_primary_gift().get("prefix", ""))
+	var prefix_stems: Array[String] = []
+	for gift_id in _ordered_gift_ids():
+		var prefix := String(
+			(_inventory[gift_id] as Dictionary).get("prefix", "")
+		).strip_edges()
+		while prefix.ends_with("的"):
+			prefix = prefix.left(prefix.length() - 1).strip_edges()
+		if not prefix.is_empty():
+			prefix_stems.append(prefix)
+	return "" if prefix_stems.is_empty() else "%s的" % "・".join(prefix_stems)
 
 
 func get_finisher_mutations() -> Dictionary:
@@ -489,6 +505,18 @@ func _fusion_key(left_id: String, right_id: String) -> String:
 	return "%s+%s" % ids
 
 
+func _ordered_gift_ids() -> Array[String]:
+	var result: Array[String] = []
+	for gift_id in _acquisition_order:
+		if _inventory.has(gift_id) and not result.has(gift_id):
+			result.append(gift_id)
+	for gift_id_variant in _inventory:
+		var gift_id := String(gift_id_variant)
+		if not result.has(gift_id):
+			result.append(gift_id)
+	return result
+
+
 func _evolved_prefix(left: Dictionary, right: Dictionary) -> String:
 	var elements: Array[String] = [
 		String(left.get("element", "")),
@@ -499,4 +527,6 @@ func _evolved_prefix(left: Dictionary, right: Dictionary) -> String:
 		return "永劫冰獄的"
 	if elements == ["fire", "lightning"]:
 		return "天火雷劫的"
-	return "神域昇華的"
+	if elements == ["poison", "wind"]:
+		return "枯天風暴的"
+	return "萬象神化的"

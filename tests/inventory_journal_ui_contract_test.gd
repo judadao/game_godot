@@ -96,6 +96,29 @@ func _run() -> void:
 		equip_button.pressed.emit()
 		_expect(request_capture[0] == &"iron_sword", "Equip action must emit the selected equipment id.")
 
+	var soul_rows := ui.get_node_or_null(
+		"Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Browser/Entries"
+	) as ItemList
+	var soul_bonus := ui.get_node_or_null(
+		"Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/BonusType"
+	) as Label
+	var soul_ability := ui.get_node_or_null(
+		"Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Effect"
+	) as Label
+	_expect(soul_rows != null and soul_rows.max_columns == 2, "Owned Sword Souls must use the journal's middle space as a two-column shelf.")
+	ui.call("set_sword_souls", [{
+		"instance_id": "ui-contract-soul",
+		"name": "流火附魔",
+		"level": 3,
+		"kind_label": "現有劍魂",
+		"bonus_type": "element",
+		"bonus_type_label": "元素",
+		"description": "讓每一次斬擊帶上火焰。",
+		"ability_summary": "攻擊傷害 +4、附魔 1.5 秒",
+	}])
+	_expect(soul_bonus != null and soul_bonus.text == "加乘類型 · 元素", "Selected Sword Soul must show its projected Chinese bonus-type label.")
+	_expect(soul_ability != null and soul_ability.text.contains("攻擊傷害 +4"), "Selected Sword Soul must show its projected short Chinese ability note.")
+
 	var codex_filter := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter"
 	) as OptionButton

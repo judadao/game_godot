@@ -89,7 +89,7 @@ Town
 進入 Town/hub 的 Autumn portal 只載入安全區。與安全區右側 battle portal 互動時：
 
 1. 先開啟 Deck Builder；
-2. 技能配置正規化為剛好一張 Healing 與三張不重複 Combo；
+2. 技能配置正規化為四張不重複 Healing／Combo，且至少保留一張 Healing；
 3. 從已解鎖 attack cards 選一個獨立 Basic Attack；
 4. 建立新的 `RunState`；
 5. Basic Attack ID 鎖定為本 Run 的選擇，戰鬥中不可切換；
@@ -332,9 +332,9 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 
 目前規則：
 
-- fixed loadout 必須剛好 4 張：1 Healing 與 3 張不重複 Combo；
-- 傳送門前直接顯示 Healing、Combo 1、Combo 2、Combo 3 四格；點格後只列出合法類型；
-- 配置畫面即時列出目前三張 Combo 可完成的已學會終結技；
+- fixed loadout 必須剛好 4 張不重複 Healing／Combo，且至少一張 Healing；
+- 傳送門前四格皆可選兩種類型，候選排除其他格技能，且不得移除最後一張 Healing；
+- 配置畫面即時列出目前四張技能可完成的已學會終結技；
 - Basic Attack 在固定技能之外獨立選擇，必須是已解鎖的 `attack` card；
 - 固定技能整個 Run 不抽換、不輪巡；
 - Meta 預設解鎖 20 張卡；
@@ -363,12 +363,16 @@ cooldown、redraw 或 overflow。舊 pile API 只保留資料相容性，不是�
 | Card Tempo | 最多 +0.96 AP／秒，6 秒未出牌後歸零 |
 
 卡片 cost 大於目前 AP 時不能打出。成功打出後扣除 cost、執行 effect，卡片留在
-原 slot。Basic Attack 永遠免費，不使用 AP/hand 流程。
+原 slot。Basic Attack 永遠免費，不使用 AP/hand 流程。四張卡的視覺框固定，不因
+繁中長名稱或多段神賜前綴改變尺寸；成功打出時對應卡片播放短元素光暈脈衝，AP 不足
+或其他拒絕狀態不播放。所有 20 張能參與終結技的 Combo／Healing 劍魂具有獨立
+暗黑塔羅卡圖，以中央技能圖騰、元素色與舊金星盤在縮圖尺寸先行傳達能力；中文卡名、
+類型、等級、AP 與契印狀態保持 live UI，不得烘進圖像。
 
 ### 6.5 Fixed-hand invariant
 
 - 四個 slot 在 Run 期間不變；
-- exactly one Healing、three unique Combo；
+- four unique Healing／Combo，且至少 one Healing；
 - 沒有 redraw、discard、replacement、overflow 或 Auto Use；
 - Basic Attack 不在 hand。
 
@@ -383,16 +387,16 @@ Basic Attack 不反覆顯示名稱；只有實際造成傷害且沒有施法演�
 
 ### 7.1 Combo cards
 
-`combo` 是固定技能類型。每次使用會永久增加公式用 stack，但該卡提供的 attack
+`combo` 與 catalog 收錄的 `healing` 都可作為終結技公式材料。Combo 每次使用會永久增加公式用 stack，但該卡提供的 attack
 infusion／status 各自只有 1.5 秒基礎持續時間，且彼此獨立倒數。某一效果到期時
 只移除自己的修正並立即以剩餘效果重建攻擊 profile；例如 Giant Arc 到期後尺寸
 回到正常，仍在倒數的 Quickened Cadence 繼續保留攻速。攻擊次數不會消耗這些
-效果。只有 Combo 會進入三格公式；Healing 不進入也不會中斷。三招必須精確
-匹配已學會的 AAA 或有順序 ABC 配方，才會排入對應終結技；不再以任意三招
+效果。Healing 若出現在已定義配方也會進入三格公式。三招必須精確匹配 32 個已學會的
+AAA 或有順序 ABC 配方，才會排入對應終結技；不再以任意三招
 產生同一招式。效果組成為：
 
 ```text
-recipe Finisher base + matched three-Combo combination + every Divine Gift effect
+recipe Finisher base + matched three-card current-level effects + equipment projection + every Divine Gift effect
 ```
 
 完成的終結技以 FIFO queue 保留，下一發自動水平 Basic Attack 逐一施放。施放後
@@ -415,8 +419,8 @@ Echo Volley 增加同一輪的彈體數與可命中目標數，但所有彈體�
 ### 7.2 Divine Gifts
 
 每個 stage/wave 的首次菁英擊殺掉落一次必選神賜頁。神賜是 Run-local；最新取得
-者是主神賜並為原招式附上稱號，例如 `千刃殺` 變成 `絕對零度的千刃殺`，所有
-持有神賜共同提供 mechanics，因此所有不同神賜欄位直接相加、倍率直接相乘，
+者標記為主神賜，而所有持有神賜都依取得順序為原招式附上中文稱號並共同提供
+mechanics，因此所有不同神賜欄位直接相加、倍率直接相乘，
 公式固定為「全部神賜效果＋終結技效果＋前三招 Combo 組合效果」。相同神賜重複
 取得時升級，最高 Lv.3；兩個不同 Lv.3 神賜可融合為 evolved gift。融合後保留
 兩個材料的部分數值與 mechanics，另依 Lv.1–3 逐步加入 `final_burst`、
@@ -424,6 +428,11 @@ Echo Volley 增加同一輪的彈體數與可命中目標數，但所有彈體�
 會回到後續神賜池繼續由 Lv.1 升至 Lv.3，名稱依序轉為 Awakened／Transcendent，
 並使用元素組合專屬名稱與 accent color。融合材料 ascended 後不再進獎勵池，
 同一融合不能反覆發生；fusion-only 頁可略過，因此不會形成無限 modal loop。
+
+神賜 inventory 固定三格。未滿三格時可選新神賜或升級已持有神賜；滿三格後獎勵池
+只保留三格內尚未滿級的升級，不能以新神賜覆蓋舊神賜。融合消耗兩項滿級神賜並生成
+一項昇華神賜，因此會釋出一格。三格內所有 mechanics 與中文稱號前綴持續疊加；
+「主神賜」只標示最近取得者，不取消較早神賜。基礎與昇華神賜名稱、說明皆使用繁中。
 
 正式元素只有 water／fire／wind／lightning／ice／poison／light／dark／normal，
 由 `ElementTaxonomy` 統一命名。每個 base 神賜保留一個 canonical `element`；
@@ -563,7 +572,8 @@ Apprentice Staff 分別為 normal／wind／water。InventoryManager 驗證其屬
 九元素並可投影目前裝備武器的原初屬性；目前沒有證據表示此欄位會自行轉換傷害，
 因此不得把武器身份資料描述成額外 elemental damage。
 
-裝備可購買、裝備、卸下，最高升到 level 3。升級成本由目前 level 計算：
+裝備可購買、裝備、卸下，正式持久化上限為 level 15。目前可執行的精確成本與
+效果曲線只實作到 level 3；Lv.4–15 不外推數值，等 OB 補齊中間素材 authority 與曲線後再開放。現有成本為：
 
 玩家可在古老日記式 InventoryUI 的背包裝備分類檢視持有物並直接送出裝備意圖；
 狀態章節同時呈現 weapon／armor／accessory 的目前結果。該 UI 不建立第二套裝備狀態，
@@ -1009,8 +1019,8 @@ presentation only after a legal horizontal target confirms that the shot will fi
 Combo cards remain in their slot after play. Formula history and stacks persist for the
 entire Run, while each card's attack infusion or status has its own 1.5-second base
 timer. Expiration removes only that card's modifiers, so later overlapping effects
-continue normally. Healing does not enter or interrupt the formula. An exact learned
-three-Combo recipe queues its named Finisher for a later automatic horizontal shot;
+continue normally. Healing enters the formula when it is part of a catalog recipe. An exact learned
+three-card recipe queues its named Finisher for a later automatic horizontal shot;
 multiple Finishers resolve FIFO. The HUD shows formula slots, persistent stacks,
 owned Divine Gifts, Gift-modified names, and the queued ready state.
 

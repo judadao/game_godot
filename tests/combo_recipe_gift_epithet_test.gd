@@ -40,9 +40,11 @@ func _run() -> void:
 	var run := game.get("run_state") as RunState
 
 	game.call("_record_combo_formula", database.get_card("healing_light"))
+	var healing_history := run.temporary_buffs.get("combo_formula_history", []) as Array
 	_expect(
-		(run.temporary_buffs.get("combo_formula_history", []) as Array).is_empty(),
-		"Healing must neither enter nor break the three-Combo formula."
+		healing_history.size() == 1
+			and String((healing_history[0] as Dictionary).get("id", "")) == "healing_light",
+		"Healing must enter and preserve its position in the ordered three-card formula."
 	)
 
 	for _repeat in 3:
@@ -68,8 +70,8 @@ func _run() -> void:
 		database.get_card("ember_bolt")
 	) as Dictionary
 	_expect(
-		String(finisher.get("name", "")) == "絕對零度的千刃殺",
-		"The ice Gift must transform Thousand Blade Kill's displayed identity."
+		String(finisher.get("name", "")) == "絕對零度的千羽相應",
+		"The ice Gift must transform 千羽相應 while preserving the stable recipe identity."
 	)
 	var finisher_effect := finisher.get("effect", {}) as Dictionary
 	_expect(

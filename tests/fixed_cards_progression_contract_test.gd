@@ -48,11 +48,14 @@ func _run() -> void:
 			and bool(card.get("combat_hand", true))
 		)
 	)
+	var restored_has_healing := restored.any(func(card_id: String) -> bool:
+		return String(database.get_card(card_id).get("type", "")) == "healing"
+	)
 	_expect(
 		restored.size() == 4
-			and restored.count("healing_light") == 1
+			and restored_has_healing
 			and restored_are_hand_cards,
-		"Deck builder must migrate a legacy backpack to one Healing plus three unique Combo skills."
+		"Deck builder must migrate a legacy backpack to four unique hand skills with at least one Healing skill."
 	)
 	_expect(
 		String(builder.call("get_auto_attack_card_id")) == "cleave",

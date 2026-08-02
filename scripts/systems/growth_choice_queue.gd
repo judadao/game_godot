@@ -143,7 +143,7 @@ func enqueue_divine_gifts(
 			"action": "divine_fusion",
 			"left_gift_id": left_id,
 			"right_gift_id": right_id,
-			"name": String(fusion.get("name", "Divine Evolution")),
+			"name": String(fusion.get("name", "神賜昇華")),
 			"description": String(fusion.get("description", "")),
 			"type": "divine",
 			"kind": String(fusion.get("kind", "evolved")),

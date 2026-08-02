@@ -10,6 +10,11 @@ signal auto_use_changed(enabled: bool)
 const MAX_SKILL_TOASTS := 3
 const MAX_VISIBLE_COMBO_SKILLS := 3
 const SKILL_TOAST_LIFETIME := 1.5
+const NARROW_TOP_RAIL_WIDTH := 1200.0
+const NARROW_BOSS_PANEL_WIDTH := 312.0
+const NARROW_BOSS_BAR_WIDTH := 280.0
+const DEFAULT_BOSS_PANEL_WIDTH := 380.0
+const DEFAULT_BOSS_BAR_WIDTH := 416.0
 
 @onready var hp_bar: ProgressBar = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow/HPBar
 @onready var hp_value: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow/HPBar/HPValue
@@ -66,6 +71,8 @@ var _vitals_tweens: Dictionary = {}
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_make_display_only(self)
+	get_viewport().size_changed.connect(_apply_top_rail_geometry)
+	_apply_top_rail_geometry()
 	prompt_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hide_boss_health()
 	_card_hand.card_selected.connect(card_selected.emit)
@@ -74,6 +81,16 @@ func _ready() -> void:
 	_redraw_button.pressed.connect(_on_redraw_pressed)
 	_auto_use_toggle.toggled.connect(auto_use_changed.emit)
 	_on_card_group_changed(_card_hand.get_active_group())
+
+
+func _apply_top_rail_geometry() -> void:
+	var narrow := get_viewport_rect().size.x < NARROW_TOP_RAIL_WIDTH
+	_boss_panel.custom_minimum_size.x = (
+		NARROW_BOSS_PANEL_WIDTH if narrow else DEFAULT_BOSS_PANEL_WIDTH
+	)
+	_boss_bar.custom_minimum_size.x = (
+		NARROW_BOSS_BAR_WIDTH if narrow else DEFAULT_BOSS_BAR_WIDTH
+	)
 
 
 func open() -> void:
@@ -152,6 +169,12 @@ func set_material_count(amount: int) -> void:
 func set_cards(cards: Array, energy: float) -> void:
 	_card_hand.set_cards(cards, energy)
 	_set_action_points_projection(energy, maxf(energy, 5.0))
+
+
+func show_card_cast_feedback(card_id: String) -> bool:
+	if _card_hand == null or not _card_hand.has_method("show_card_cast_feedback"):
+		return false
+	return bool(_card_hand.call("show_card_cast_feedback", card_id))
 
 
 func set_action_points(current: float, maximum: float) -> void:
@@ -347,7 +370,8 @@ func set_combo_formula(
 	stacks: Dictionary,
 	finisher_pending: bool,
 	gifts: Array,
-	finisher_queue: Array = []
+	finisher_queue: Array = [],
+	possible_finishers: Array = []
 ) -> void:
 	var formula_names: Array[String] = []
 	for card_variant in formula:
@@ -360,24 +384,37 @@ func set_combo_formula(
 		next_finisher_name = String(
 			(finisher_queue[0] as Dictionary).get("display_name", "")
 		)
+	var possible_names: Array[String] = []
+	for candidate_variant in possible_finishers:
+		if candidate_variant is Dictionary:
+			var candidate_name := String(
+				(candidate_variant as Dictionary).get("display_name", "")
+			).strip_edges()
+			if not candidate_name.is_empty() and not possible_names.has(candidate_name):
+				possible_names.append(candidate_name)
 	_combo_summary.text = (
-		"%s · NEXT AUTO SHOT" % (
+		"%s · 下一次自動攻擊" % (
 			next_finisher_name
 			if not next_finisher_name.is_empty()
-			else "FINISHER READY"
+			else "終結技已就緒"
 		)
 		if finisher_pending
-		else "FORMULA  %d / 3" % formula_names.size()
+		else "配方  %d / 3%s" % [
+			formula_names.size(),
+			(" · 可能：%s" % "／".join(possible_names.slice(0, 3)))
+			if not possible_names.is_empty()
+			else "",
+		]
 	)
 	_combo_milestones.text = (
-		" + ".join(formula_names)
+		" → ".join(formula_names)
 		if not formula_names.is_empty()
-		else "MATCH A LEARNED 3-COMBO RECIPE"
+		else "依序打出三張已學會的 Combo／治療招式"
 	)
 	var signature := "%s|%s|%s" % [
 		",".join(formula_names),
 		str(stacks),
-		"%s|%s" % [str(gifts), str(finisher_queue)],
+		"%s|%s|%s" % [str(gifts), str(finisher_queue), str(possible_finishers)],
 	]
 	if signature == _combo_skills_signature:
 		return
@@ -402,15 +439,15 @@ func set_combo_formula(
 	stack_row.add_theme_font_size_override("font_size", 10)
 	stack_row.add_theme_color_override("font_color", Color(0.86, 0.72, 1.0, 1.0))
 	_combo_skill_rows.add_child(stack_row)
-	for gift_variant in gifts.slice(0, 2):
+	for gift_variant in gifts.slice(0, 3):
 		if not gift_variant is Dictionary:
 			continue
 		var gift := gift_variant as Dictionary
 		var row := Label.new()
-		row.text = "%s%s %s  LV.%d" % [
-			"MAIN · " if bool(gift.get("primary", false)) else "",
+		row.text = "%s%s %s  等級 %d" % [
+			"主神賜 · " if bool(gift.get("primary", false)) else "",
 			String(gift.get("icon", "✦")),
-			String(gift.get("name", "Divine Gift")),
+			String(gift.get("name", "神賜")),
 			int(gift.get("level", 1)),
 		]
 		row.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS

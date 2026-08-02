@@ -4,6 +4,7 @@
     {
       "id": "ember_bolt",
       "name": "Ember Bolt",
+      "name_zh": "餘燼飛矢",
       "type": "attack",
       "rarity": "common",
       "level": 1,
@@ -12,18 +13,20 @@
       "auto_attack_interval": 0.75,
       "auto_attack_range": 260,
       "description": "Deal 16 damage and apply burn.",
+      "description_zh": "造成 16 點傷害，並使目標燃燒。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
       "tags": ["attack", "fire"],
       "combo_tags": ["strike", "fire"],
       "effect": {"kind": "damage", "amount": 16, "burn_damage": 2, "burn_duration": 3.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Damage increases to 21.", "effect": {"amount": 21}},
-        {"level": 3, "description": "The bolt erupts with overwhelming force.", "mechanic_change": "charged_ember", "effect": {"amount": 28}}
+        {"level": 2, "description": "Damage increases to 21.", "description_zh": "傷害提高至 21。", "effect": {"amount": 21}},
+        {"level": 3, "description": "The bolt erupts with overwhelming force.", "description_zh": "飛矢蓄積餘燼之力後爆發，傷害提高至 28。", "mechanic_change": "charged_ember", "effect": {"amount": 28}}
       ]
     },
     {
       "id": "cleave",
       "name": "Cleave",
+      "name_zh": "橫劈",
       "type": "attack",
       "rarity": "common",
       "level": 1,
@@ -32,18 +35,20 @@
       "auto_attack_interval": 1.0,
       "auto_attack_range": 120,
       "description": "Deal 22 damage to nearby enemies.",
+      "description_zh": "對附近敵人造成 22 點傷害。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png",
       "tags": ["attack", "melee", "area"],
       "combo_tags": ["strike", "melee"],
       "effect": {"kind": "area_damage", "amount": 22, "radius": 120},
       "upgrade_effects": [
-        {"level": 2, "description": "Damage increases to 28.", "effect": {"amount": 28}},
-        {"level": 3, "description": "The swing becomes a full visible circle.", "mechanic_change": "full_circle_swing", "effect": {"amount": 28, "arc_degrees": 360}}
+        {"level": 2, "description": "Damage increases to 28.", "description_zh": "傷害提高至 28。", "effect": {"amount": 28}},
+        {"level": 3, "description": "The swing becomes a full visible circle.", "description_zh": "揮擊擴展為完整可見的 360° 圓斬。", "mechanic_change": "full_circle_swing", "effect": {"amount": 28, "arc_degrees": 360}}
       ]
     },
     {
       "id": "inferno_orb",
       "name": "Inferno Orb",
+      "name_zh": "煉獄火球",
       "type": "attack",
       "rarity": "rare",
       "level": 1,
@@ -52,18 +57,20 @@
       "auto_attack_interval": 1.6,
       "auto_attack_range": 180,
       "description": "Deal 36 fire damage in a wide area.",
+      "description_zh": "對大範圍內的敵人造成 36 點火焰傷害。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_03.png",
       "tags": ["attack", "fire", "area"],
       "combo_tags": ["strike", "fire"],
       "effect": {"kind": "area_damage", "amount": 36, "radius": 180, "burn_damage": 4, "burn_duration": 4.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Explosion radius increases.", "effect": {"radius": 220}},
-        {"level": 3, "description": "Leaves a visible burning ground field.", "mechanic_change": "burning_ground", "effect": {"field_damage": 6, "field_duration": 4.0}}
+        {"level": 2, "description": "Explosion radius increases.", "description_zh": "爆炸半徑提高至 220。", "effect": {"radius": 220}},
+        {"level": 3, "description": "Leaves a visible burning ground field.", "description_zh": "留下可見的燃燒地面，持續 4 秒並造成 6 點傷害。", "mechanic_change": "burning_ground", "effect": {"field_damage": 6, "field_duration": 4.0}}
       ]
     },
     {
       "id": "guard",
       "name": "Iron Will",
+      "name_zh": "鋼鐵意志",
       "type": "combo",
       "combo_family": "body",
       "rarity": "common",
@@ -71,20 +78,22 @@
       "max_level": 3,
       "cost": 1,
       "description": "Gain weak super armor for 1.5 seconds.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0001_Shield.png",
+      "description_zh": "獲得弱霸體，持續 1.5 秒。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/guard.png",
       "tags": ["combo", "super_armor"],
       "combo_tags": ["combo", "armor"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "combat_status", "statuses": [{"status_id": "super_armor", "tier": 1, "duration": 1.5}]},
       "upgrade_effects": [
-        {"level": 2, "description": "Super armor stays at 1.5 seconds and gains stronger presence.", "effect": {"statuses": [{"status_id": "super_armor", "tier": 1, "duration": 1.5}]}},
-        {"level": 3, "description": "A visible iron aura resists stronger impacts for 1.5 seconds.", "mechanic_change": "reinforced_super_armor", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 1.5}]}}
+        {"level": 2, "description": "Super armor stays at 1.5 seconds and gains stronger presence.", "description_zh": "弱霸體維持 1.5 秒，受擊回饋更加清楚。", "effect": {"statuses": [{"status_id": "super_armor", "tier": 1, "duration": 1.5}]}},
+        {"level": 3, "description": "A visible iron aura resists stronger impacts for 1.5 seconds.", "description_zh": "生成可見的鐵之光環，獲得強霸體 1.5 秒。", "mechanic_change": "reinforced_super_armor", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 1.5}]}}
       ]
     },
     {
       "id": "iron_skin",
       "name": "Stone Form",
+      "name_zh": "石之形",
       "type": "combo",
       "combo_family": "body",
       "rarity": "uncommon",
@@ -92,20 +101,22 @@
       "max_level": 3,
       "cost": 2,
       "description": "Reduce incoming damage by 30 percent for 1.5 seconds.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0003_Chest.png",
+      "description_zh": "受到的傷害降低 30%，持續 1.5 秒。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/iron_skin.png",
       "tags": ["combo", "damage_reduction", "armor"],
       "combo_tags": ["combo", "armor"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "combat_status", "statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 1.5}]},
       "upgrade_effects": [
-        {"level": 2, "description": "Damage reduction stays at 1.5 seconds.", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 1.5}]}},
-        {"level": 3, "description": "Stone plates visibly orbit for 1.5 seconds.", "mechanic_change": "orbiting_stone_armor", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.35, "duration": 1.5}]}}
+        {"level": 2, "description": "Damage reduction stays at 1.5 seconds.", "description_zh": "減傷維持 30%，持續 1.5 秒。", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 1.5}]}},
+        {"level": 3, "description": "Stone plates visibly orbit for 1.5 seconds.", "description_zh": "減傷提高至 35%，並生成環繞石片，持續 1.5 秒。", "mechanic_change": "orbiting_stone_armor", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.35, "duration": 1.5}]}}
       ]
     },
     {
       "id": "fortress_stance",
       "name": "Unbreakable Stance",
+      "name_zh": "不破架勢",
       "type": "combo",
       "combo_family": "body",
       "rarity": "rare",
@@ -113,6 +124,7 @@
       "max_level": 3,
       "cost": 4,
       "description": "Gain strong super armor and 40 percent damage reduction for 1.5 seconds.",
+      "description_zh": "獲得強霸體與 40% 減傷，持續 1.5 秒。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0001_Shield.png",
       "tags": ["combo", "super_armor", "damage_reduction", "stance"],
       "combo_tags": ["combo", "armor"],
@@ -120,13 +132,14 @@
       "cooldown_seconds": 0.0,
       "effect": {"kind": "combat_status", "statuses": [{"status_id": "super_armor", "tier": 2, "duration": 1.5}, {"status_id": "damage_reduction", "ratio": 0.40, "duration": 1.5}]},
       "upgrade_effects": [
-        {"level": 2, "description": "The stance stays at 1.5 seconds.", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 1.5}, {"status_id": "damage_reduction", "ratio": 0.40, "duration": 1.5}]}},
-        {"level": 3, "description": "Raises a visible unbreakable aura for 1.5 seconds.", "mechanic_change": "unbreakable_aura", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 1.5}, {"status_id": "damage_reduction", "ratio": 0.45, "duration": 1.5}]}}
+        {"level": 2, "description": "The stance stays at 1.5 seconds.", "description_zh": "不破架勢維持 1.5 秒。", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 1.5}, {"status_id": "damage_reduction", "ratio": 0.40, "duration": 1.5}]}},
+        {"level": 3, "description": "Raises a visible unbreakable aura for 1.5 seconds.", "description_zh": "展開可見的不破光環，減傷提高至 45%，持續 1.5 秒。", "mechanic_change": "unbreakable_aura", "effect": {"statuses": [{"status_id": "super_armor", "tier": 2, "duration": 1.5}, {"status_id": "damage_reduction", "ratio": 0.45, "duration": 1.5}]}}
       ]
     },
     {
       "id": "dash_strike",
       "name": "Dash Edge",
+      "name_zh": "衝刺刃",
       "type": "combo",
       "combat_hand": false,
       "rarity": "uncommon",
@@ -134,18 +147,20 @@
       "max_level": 3,
       "cost": 1,
       "description": "For 2.5 seconds, Space Dash cuts through enemies for 10 damage.",
+      "description_zh": "在 2.5 秒內，按下空白鍵衝刺可斬穿敵人，造成 10 點傷害。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0006_Boots.png",
       "tags": ["mobility", "dash", "attack"],
       "combo_tags": ["mobility", "strike"],
       "effect": {"kind": "infusion", "infusion_id": "dash_edge", "target_action": "dash", "combo_duration": 1.5, "damage_bonus": 10},
       "upgrade_effects": [
-        {"level": 2, "description": "Space Dash damage increases to 15.", "effect": {"damage_bonus": 15}},
-        {"level": 3, "description": "Space Dash creates a return slash.", "mechanic_change": "return_slash", "effect": {"return_damage": 10}}
+        {"level": 2, "description": "Space Dash damage increases to 15.", "description_zh": "空白鍵衝刺的傷害提高至 15。", "effect": {"damage_bonus": 15}},
+        {"level": 3, "description": "Space Dash creates a return slash.", "description_zh": "空白鍵衝刺後追加一道返身斬，造成 10 點傷害。", "mechanic_change": "return_slash", "effect": {"return_damage": 10}}
       ]
     },
     {
       "id": "gale_lunge",
       "name": "Gale Drive",
+      "name_zh": "疾風突進",
       "type": "combo",
       "combat_hand": false,
       "rarity": "rare",
@@ -153,90 +168,100 @@
       "max_level": 3,
       "cost": 2,
       "description": "For 2.5 seconds, Space Dash deals 20 damage and leaves a wind trail.",
+      "description_zh": "在 2.5 秒內，按下空白鍵衝刺可造成 20 點傷害，並留下風之軌跡。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png",
       "tags": ["mobility", "dash", "attack", "wind"],
       "combo_tags": ["mobility", "strike", "wind"],
       "effect": {"kind": "infusion", "infusion_id": "gale_drive", "target_action": "dash", "combo_duration": 1.5, "damage_bonus": 20},
       "upgrade_effects": [
-        {"level": 2, "description": "The wind trail deals 6 damage.", "effect": {"trail_damage": 6}},
-        {"level": 3, "description": "The visible wind trail pulls enemies inward.", "mechanic_change": "pulling_wind_trail", "effect": {"pull_strength": 180}}
+        {"level": 2, "description": "The wind trail deals 6 damage.", "description_zh": "風之軌跡造成 6 點傷害。", "effect": {"trail_damage": 6}},
+        {"level": 3, "description": "The visible wind trail pulls enemies inward.", "description_zh": "可見的風之軌跡會以 180 的力量將敵人向內牽引。", "mechanic_change": "pulling_wind_trail", "effect": {"pull_strength": 180}}
       ]
     },
     {
       "id": "concussive_shout",
       "name": "Crimson Caldera",
+      "name_zh": "赤紅熔火",
       "type": "skill",
       "rarity": "uncommon",
       "level": 1,
       "max_level": 3,
       "cost": 4,
       "description": "Detonate a wide firestorm around the player, damaging and burning every nearby enemy.",
+      "description_zh": "在自身周圍引爆大範圍火焰風暴，傷害並燃燒所有附近敵人。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0005_Gloves.png",
       "tags": ["skill", "fire", "area", "ultimate"],
       "combo_tags": ["fire", "area"],
       "effect": {"kind": "area_damage", "amount": 48, "radius": 420, "knockback": 260, "burn_damage": 4, "burn_duration": 4.0},
       "upgrade_effects": [
-        {"level": 2, "description": "The firestorm reaches farther and burns harder.", "effect": {"amount": 62, "radius": 470, "knockback": 300, "burn_damage": 5}},
-        {"level": 3, "description": "Successive flame rings leave a visible scorched field.", "mechanic_change": "caldera_afterburn", "effect": {"amount": 78, "radius": 520, "knockback": 340, "field_damage": 8, "field_duration": 4.0}}
+        {"level": 2, "description": "The firestorm reaches farther and burns harder.", "description_zh": "火焰風暴擴大至 470，傷害提高至 62、擊退提高至 300，燃燒傷害提高至 5。", "effect": {"amount": 62, "radius": 470, "knockback": 300, "burn_damage": 5}},
+        {"level": 3, "description": "Successive flame rings leave a visible scorched field.", "description_zh": "連續火環擴大至 520，造成 78 點傷害與 340 擊退，並留下持續 4 秒、造成 8 點傷害的焦土。", "mechanic_change": "caldera_afterburn", "effect": {"amount": 78, "radius": 520, "knockback": 340, "field_damage": 8, "field_duration": 4.0}}
       ]
     },
     {
       "id": "frost_bind",
       "name": "Glacial Dominion",
+      "name_zh": "冰河領域",
       "type": "skill",
       "rarity": "common",
       "level": 1,
       "max_level": 3,
       "cost": 4,
       "description": "Shatter the ground outward from the player, damaging and slowing every nearby enemy.",
+      "description_zh": "由自身向外震裂地面，傷害並緩速所有附近敵人。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_01.png",
       "tags": ["skill", "control", "frost", "area", "ultimate"],
       "combo_tags": ["control", "frost", "area"],
       "effect": {"kind": "area_slow", "amount": 42, "radius": 460, "knockback": 220, "ratio": 0.45, "duration": 4.0},
       "upgrade_effects": [
-        {"level": 2, "description": "The frozen ground expands farther, shatters harder, and lasts longer.", "effect": {"amount": 56, "radius": 510, "knockback": 250, "duration": 5.0}},
-        {"level": 3, "description": "Ice crystals erupt across the frozen domain and briefly lock enemies in place.", "mechanic_change": "glacial_lock", "effect": {"amount": 70, "radius": 560, "knockback": 290, "freeze_delay": 0.8, "freeze_duration": 1.0}}
+        {"level": 2, "description": "The frozen ground expands farther, shatters harder, and lasts longer.", "description_zh": "凍土擴大至 510，造成 56 點傷害與 250 擊退，並延長至 5 秒。", "effect": {"amount": 56, "radius": 510, "knockback": 250, "duration": 5.0}},
+        {"level": 3, "description": "Ice crystals erupt across the frozen domain and briefly lock enemies in place.", "description_zh": "冰晶遍布 560 範圍，造成 70 點傷害與 290 擊退，並在 0.8 秒後定身敵人 1 秒。", "mechanic_change": "glacial_lock", "effect": {"amount": 70, "radius": 560, "knockback": 290, "freeze_delay": 0.8, "freeze_duration": 1.0}}
       ]
     },
     {
       "id": "shockwave",
       "name": "Shockwave",
+      "name_zh": "震盪波",
       "type": "status",
       "rarity": "uncommon",
       "level": 1,
       "max_level": 3,
       "cost": 2,
       "description": "Stun nearby enemies for 0.6 seconds.",
+      "description_zh": "使附近敵人暈眩 0.6 秒。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Stone.png",
       "tags": ["control", "area"],
       "combo_tags": ["control", "impact"],
       "effect": {"kind": "stun", "duration": 0.6, "radius": 150},
       "upgrade_effects": [
-        {"level": 2, "description": "Stun radius increases.", "effect": {"radius": 190}},
-        {"level": 3, "description": "A second visible shock ring erupts after a delay.", "mechanic_change": "echo_shockwave", "effect": {"echo_delay": 0.5, "echo_stun": 0.35}}
+        {"level": 2, "description": "Stun radius increases.", "description_zh": "暈眩半徑提高至 190。", "effect": {"radius": 190}},
+        {"level": 3, "description": "A second visible shock ring erupts after a delay.", "description_zh": "0.5 秒後引發第二圈可見的震盪波，再暈眩敵人 0.35 秒。", "mechanic_change": "echo_shockwave", "effect": {"echo_delay": 0.5, "echo_stun": 0.35}}
       ]
     },
     {
       "id": "time_snare",
       "name": "Time Snare",
+      "name_zh": "時間羅網",
       "type": "status",
       "rarity": "rare",
       "level": 1,
       "max_level": 3,
       "cost": 4,
       "description": "Greatly slow enemies in an area for four seconds.",
+      "description_zh": "大幅緩速範圍內的敵人，持續 4 秒。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_07.png",
       "tags": ["control", "area", "arcane"],
       "combo_tags": ["control", "arcane"],
       "effect": {"kind": "area_slow", "ratio": 0.7, "duration": 4.0, "radius": 190},
       "upgrade_effects": [
-        {"level": 2, "description": "Field duration increases.", "effect": {"duration": 5.5}},
-        {"level": 3, "description": "The visible field rewinds enemies to their entry point.", "mechanic_change": "position_rewind", "effect": {"rewind_delay": 2.5}}
+        {"level": 2, "description": "Field duration increases.", "description_zh": "領域持續時間延長至 5.5 秒。", "effect": {"duration": 5.5}},
+        {"level": 3, "description": "The visible field rewinds enemies to their entry point.", "description_zh": "可見的時間領域會在 2.5 秒後將敵人送回進入時的位置。", "mechanic_change": "position_rewind", "effect": {"rewind_delay": 2.5}}
       ]
     },
     {
       "id": "healing_light",
       "name": "Healing Light",
+      "name_zh": "治癒之光",
       "type": "healing",
       "combo_family": "healing",
       "rarity": "common",
@@ -244,7 +269,8 @@
       "max_level": 3,
       "cost": 1,
       "description": "Restore 14 health.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_06.png",
+      "description_zh": "立即恢復 14 點生命。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/healing_light.png",
       "tags": ["healing", "restore"],
       "combo_tags": ["support", "light"],
       "card_color": "green",
@@ -252,13 +278,14 @@
       "cooldown_seconds": 0.0,
       "effect": {"kind": "heal", "amount": 14},
       "upgrade_effects": [
-        {"level": 2, "description": "Healing increases to 20.", "effect": {"amount": 20}},
-        {"level": 3, "description": "Visible healing motes jump to the lowest-health ally.", "mechanic_change": "chain_heal", "effect": {"ally_amount": 12, "jumps": 1}}
+        {"level": 2, "description": "Healing increases to 20.", "description_zh": "治療量提高至 20。", "effect": {"amount": 20}},
+        {"level": 3, "description": "Visible healing motes jump to the lowest-health ally.", "description_zh": "治療量維持 20，並跳向生命最低的友方，額外治療 12。", "mechanic_change": "chain_heal", "effect": {"ally_amount": 12, "jumps": 1}}
       ]
     },
     {
       "id": "energy_surge",
       "name": "Energy Cycle",
+      "name_zh": "能量循環",
       "type": "combo",
       "combo_family": "body",
       "rarity": "common",
@@ -267,6 +294,7 @@
       "growth_locked": true,
       "cost": 1,
       "description": "Spend 1 AP to restore 2 AP. Stable cards cannot upgrade or fuse.",
+      "description_zh": "消耗 1 AP，恢復 2 AP。穩定卡無法升級或融合。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_02.png",
       "tags": ["combo", "energy", "stable"],
       "combo_tags": ["combo", "body", "energy"],
@@ -276,6 +304,7 @@
     {
       "id": "renewal",
       "name": "Renewal Spirit",
+      "name_zh": "復甦之靈",
       "type": "healing",
       "combo_family": "healing",
       "rarity": "rare",
@@ -283,7 +312,8 @@
       "max_level": 3,
       "cost": 2,
       "description": "Summon a spirit that heals 10 health three times.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png",
+      "description_zh": "召喚復甦之靈，進行 3 次治療，每次恢復 10 點生命。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/renewal.png",
       "tags": ["healing", "healing_summon", "cleanse"],
       "combo_tags": ["summon", "support"],
       "card_color": "green",
@@ -291,49 +321,54 @@
       "cooldown_seconds": 0.0,
       "effect": {"kind": "healing_pulses", "status_id": "healing_pulses", "heal": 10, "pulses": 3, "interval": 1.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Each healing pulse restores 14 health.", "effect": {"heal": 14}},
-        {"level": 3, "description": "The spirit visibly blooms and cleanses allies in an area.", "mechanic_change": "cleansing_bloom", "effect": {"cleanse": 1, "radius": 140}}
+        {"level": 2, "description": "Each healing pulse restores 14 health.", "description_zh": "每次治療提高至 14。", "effect": {"heal": 14}},
+        {"level": 3, "description": "The spirit visibly blooms and cleanses allies in an area.", "description_zh": "最後綻放淨化之花，移除 140 px 範圍內友方的 1 個減益。", "mechanic_change": "cleansing_bloom", "effect": {"cleanse": 1, "radius": 140}}
       ]
     },
     {
       "id": "battle_focus",
       "name": "Battle Focus",
+      "name_zh": "戰鬥專注",
       "type": "power",
       "rarity": "uncommon",
       "level": 1,
       "max_level": 3,
       "cost": 3,
       "description": "Gain four attack power for this encounter.",
+      "description_zh": "本次戰鬥獲得 4 點攻擊力。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0005_Gloves.png",
       "tags": ["power", "stance"],
       "combo_tags": ["power", "stance"],
       "effect": {"kind": "attack_power", "amount": 4},
       "upgrade_effects": [
-        {"level": 2, "description": "Attack bonus increases to six.", "effect": {"amount": 6}},
-        {"level": 3, "description": "A visible focus mark guarantees the next critical hit.", "mechanic_change": "guaranteed_critical", "effect": {"critical_hits": 1}}
+        {"level": 2, "description": "Attack bonus increases to six.", "description_zh": "攻擊力加成提高至 6。", "effect": {"amount": 6}},
+        {"level": 3, "description": "A visible focus mark guarantees the next critical hit.", "description_zh": "顯現專注印記，使下一次攻擊必定暴擊。", "mechanic_change": "guaranteed_critical", "effect": {"critical_hits": 1}}
       ]
     },
     {
       "id": "flame_aura",
       "name": "Flame Aura",
+      "name_zh": "烈焰光環",
       "type": "power",
       "rarity": "rare",
       "level": 1,
       "max_level": 3,
       "cost": 2,
       "description": "Deal four fire damage per second to nearby enemies.",
+      "description_zh": "每秒對附近敵人造成 4 點火焰傷害。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
       "tags": ["power", "fire", "aura"],
       "combo_tags": ["power", "fire"],
       "effect": {"kind": "damage_aura", "amount": 4, "radius": 110},
       "upgrade_effects": [
-        {"level": 2, "description": "Aura radius increases.", "effect": {"radius": 145}},
-        {"level": 3, "description": "The visible aura launches a flame lash every third tick.", "mechanic_change": "periodic_flame_lash", "effect": {"lash_damage": 12, "tick_interval": 3}}
+        {"level": 2, "description": "Aura radius increases.", "description_zh": "光環半徑提高至 145。", "effect": {"radius": 145}},
+        {"level": 3, "description": "The visible aura launches a flame lash every third tick.", "description_zh": "可見的光環每第 3 次生效時揮出火焰鞭，造成 12 點傷害。", "mechanic_change": "periodic_flame_lash", "effect": {"lash_damage": 12, "tick_interval": 3}}
       ]
     },
     {
       "id": "flame_imbue",
       "name": "Flame Imbue",
+      "name_zh": "烈焰灌注",
       "type": "combo",
       "combo_family": "element",
       "rarity": "rare",
@@ -341,20 +376,22 @@
       "max_level": 3,
       "cost": 3,
       "description": "For 2.5 seconds, attacks gain fire damage and inflict Burn.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
+      "description_zh": "在 1.5 秒內，攻擊附加 4 點火焰傷害，並施加每次 3 點傷害、持續 3 秒的燃燒。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/flame_imbue.png",
       "tags": ["combo", "fire", "infusion"],
       "combo_tags": ["combo", "fire"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "flame", "combo_duration": 1.5, "damage_bonus": 4, "burn_damage": 3, "burn_duration": 3.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Fire bonus increases to six.", "effect": {"damage_bonus": 6}},
-        {"level": 3, "description": "Burn lasts five seconds.", "mechanic_change": "wildfire_infusion", "effect": {"burn_duration": 5.0}}
+        {"level": 2, "description": "Fire bonus increases to six.", "description_zh": "附加火焰傷害提高至 6。", "effect": {"damage_bonus": 6}},
+        {"level": 3, "description": "Burn lasts five seconds.", "description_zh": "燃燒延長至 5 秒，並獲得野火灌注演出。", "mechanic_change": "wildfire_infusion", "effect": {"burn_duration": 5.0}}
       ]
     },
     {
       "id": "frostburst_imbue",
       "name": "Frostburst Imbue",
+      "name_zh": "霜爆灌注",
       "type": "combo",
       "combo_family": "element",
       "rarity": "rare",
@@ -362,20 +399,22 @@
       "max_level": 3,
       "cost": 3,
       "description": "For 2.5 seconds, attacks gain frost damage and Slow.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png",
+      "description_zh": "在 1.5 秒內，攻擊附加 2 點冰霜傷害，並使敵人緩速 30%，持續 2 秒。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/frostburst_imbue.png",
       "tags": ["combo", "frost", "infusion"],
       "combo_tags": ["combo", "frost"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "frost", "combo_duration": 1.5, "damage_bonus": 2, "frost_ratio": 0.30, "frost_duration": 2.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Frost bonus increases to four.", "effect": {"damage_bonus": 4}},
-        {"level": 3, "description": "Slow becomes stronger.", "mechanic_change": "deep_freeze_infusion", "effect": {"frost_ratio": 0.45}}
+        {"level": 2, "description": "Frost bonus increases to four.", "description_zh": "附加冰霜傷害提高至 4。", "effect": {"damage_bonus": 4}},
+        {"level": 3, "description": "Slow becomes stronger.", "description_zh": "緩速提高至 45%，並獲得深凍灌注演出。", "mechanic_change": "deep_freeze_infusion", "effect": {"frost_ratio": 0.45}}
       ]
     },
     {
       "id": "battle_rhythm",
       "name": "Battle Rhythm",
+      "name_zh": "強攻律動",
       "type": "combo",
       "combo_family": "offense",
       "rarity": "rare",
@@ -383,20 +422,22 @@
       "max_level": 3,
       "cost": 1,
       "description": "For 2.5 seconds, attacks deal two extra damage.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0005_Gloves.png",
+      "description_zh": "在 1.5 秒內，攻擊額外造成 2 點傷害。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/battle_rhythm.png",
       "tags": ["combo", "buff", "power"],
       "combo_tags": ["combo", "power"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "rhythm", "combo_duration": 1.5, "damage_bonus": 2},
       "upgrade_effects": [
-        {"level": 2, "description": "Rhythm grants three extra damage.", "effect": {"damage_bonus": 3}},
-        {"level": 3, "description": "Rhythm grants four extra damage.", "mechanic_change": "perfect_rhythm", "effect": {"damage_bonus": 4}}
+        {"level": 2, "description": "Rhythm grants three extra damage.", "description_zh": "額外攻擊傷害提高至 3。", "effect": {"damage_bonus": 3}},
+        {"level": 3, "description": "Rhythm grants four extra damage.", "description_zh": "額外攻擊傷害提高至 4，並獲得完美律動演出。", "mechanic_change": "perfect_rhythm", "effect": {"damage_bonus": 4}}
       ]
     },
     {
       "id": "sweeping_reach",
       "name": "Sweeping Reach",
+      "name_zh": "橫掃延伸",
       "type": "combo",
       "combo_family": "offense",
       "rarity": "common",
@@ -404,20 +445,22 @@
       "max_level": 3,
       "cost": 1,
       "description": "For 2.5 seconds, automatic attacks reach 70 pixels farther.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png",
+      "description_zh": "在 1.5 秒內，自動攻擊距離增加 70 px。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/sweeping_reach.png",
       "tags": ["combo", "range", "infusion"],
       "combo_tags": ["combo", "range"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "reach", "combo_duration": 1.5, "attack_range_bonus": 70.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Attack reach increases by 100 pixels.", "effect": {"attack_range_bonus": 100.0}},
-        {"level": 3, "description": "Wide attack arcs reach 140 pixels farther.", "mechanic_change": "wide_attack_arc", "effect": {"attack_range_bonus": 140.0}}
+        {"level": 2, "description": "Attack reach increases by 100 pixels.", "description_zh": "攻擊距離增加 100 px。", "effect": {"attack_range_bonus": 100.0}},
+        {"level": 3, "description": "Wide attack arcs reach 140 pixels farther.", "description_zh": "攻擊距離增加 140 px，並明顯加寬攻擊弧。", "mechanic_change": "wide_attack_arc", "effect": {"attack_range_bonus": 140.0}}
       ]
     },
     {
       "id": "quickened_cadence",
       "name": "Quickened Cadence",
+      "name_zh": "加速節拍",
       "type": "combo",
       "combo_family": "offense",
       "rarity": "uncommon",
@@ -425,20 +468,22 @@
       "max_level": 3,
       "cost": 2,
       "description": "For 2.5 seconds, automatic attacks occur 18 percent faster.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0005_Gloves.png",
+      "description_zh": "在 1.5 秒內，自動攻擊間隔縮短為原本的 0.82 倍。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/quickened_cadence.png",
       "tags": ["combo", "speed", "infusion"],
       "combo_tags": ["combo", "speed"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "cadence", "combo_duration": 1.5, "attack_interval_multiplier": 0.82},
       "upgrade_effects": [
-        {"level": 2, "description": "Automatic attacks occur 28 percent faster.", "effect": {"attack_interval_multiplier": 0.72}},
-        {"level": 3, "description": "A rapid cadence makes automatic attacks 38 percent faster.", "mechanic_change": "rapid_cadence", "effect": {"attack_interval_multiplier": 0.62}}
+        {"level": 2, "description": "Automatic attacks occur 28 percent faster.", "description_zh": "自動攻擊間隔縮短為原本的 0.72 倍。", "effect": {"attack_interval_multiplier": 0.72}},
+        {"level": 3, "description": "A rapid cadence makes automatic attacks 38 percent faster.", "description_zh": "自動攻擊間隔縮短為原本的 0.62 倍，並獲得快速節拍演出。", "mechanic_change": "rapid_cadence", "effect": {"attack_interval_multiplier": 0.62}}
       ]
     },
     {
       "id": "kinetic_acceleration",
       "name": "Kinetic Acceleration",
+      "name_zh": "動能加速",
       "type": "combo",
       "combo_family": "offense",
       "rarity": "common",
@@ -446,6 +491,7 @@
       "max_level": 3,
       "cost": 1,
       "description": "For 2.5 seconds, attack effects travel 35 percent faster.",
+      "description_zh": "在 2.5 秒內，攻擊效果的飛行速度提高 35%。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png",
       "tags": ["combo", "projectile_speed", "infusion"],
       "combo_tags": ["combo", "speed"],
@@ -453,13 +499,14 @@
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "kinetic", "combo_duration": 1.5, "projectile_speed_multiplier": 1.35},
       "upgrade_effects": [
-        {"level": 2, "description": "Attack effects travel 55 percent faster.", "effect": {"projectile_speed_multiplier": 1.55}},
-        {"level": 3, "description": "Attack effects travel 80 percent faster.", "mechanic_change": "instant_impact", "effect": {"projectile_speed_multiplier": 1.80}}
+        {"level": 2, "description": "Attack effects travel 55 percent faster.", "description_zh": "攻擊效果的飛行速度提高 55%。", "effect": {"projectile_speed_multiplier": 1.55}},
+        {"level": 3, "description": "Attack effects travel 80 percent faster.", "description_zh": "攻擊效果的飛行速度提高 80%，幾乎瞬間命中。", "mechanic_change": "instant_impact", "effect": {"projectile_speed_multiplier": 1.80}}
       ]
     },
     {
       "id": "giant_arc",
       "name": "Giant Arc",
+      "name_zh": "巨型弧斬",
       "type": "combo",
       "combo_family": "offense",
       "rarity": "uncommon",
@@ -467,20 +514,22 @@
       "max_level": 3,
       "cost": 2,
       "description": "For 2.5 seconds, attack size increases by 20 percent.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png",
+      "description_zh": "在 1.5 秒內，攻擊尺寸提高至 1.20 倍。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/giant_arc.png",
       "tags": ["combo", "size", "infusion"],
       "combo_tags": ["combo", "range"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "giant_arc", "combo_duration": 1.5, "attack_size_multiplier": 1.20},
       "upgrade_effects": [
-        {"level": 2, "description": "Attack size increases by 35 percent.", "effect": {"attack_size_multiplier": 1.35}},
-        {"level": 3, "description": "Attack size increases by 55 percent.", "mechanic_change": "colossal_arc", "effect": {"attack_size_multiplier": 1.55}}
+        {"level": 2, "description": "Attack size increases by 35 percent.", "description_zh": "攻擊尺寸提高至 1.35 倍。", "effect": {"attack_size_multiplier": 1.35}},
+        {"level": 3, "description": "Attack size increases by 55 percent.", "description_zh": "攻擊尺寸提高至 1.55 倍，並獲得巨弧演出。", "mechanic_change": "colossal_arc", "effect": {"attack_size_multiplier": 1.55}}
       ]
     },
     {
       "id": "iron_bone",
       "name": "Iron Bone",
+      "name_zh": "鐵骨",
       "type": "combo",
       "combo_family": "body",
       "rarity": "common",
@@ -488,20 +537,22 @@
       "max_level": 3,
       "cost": 1,
       "description": "For 2.5 seconds, gain 2 defense.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
+      "description_zh": "在 1.5 秒內，防禦提高 2。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/iron_bone.png",
       "tags": ["combo", "defense", "infusion"],
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "iron_bone", "combo_duration": 1.5, "defense_bonus": 2},
       "upgrade_effects": [
-        {"level": 2, "description": "Defense bonus increases to 3.", "effect": {"defense_bonus": 3}},
-        {"level": 3, "description": "Defense bonus increases to 5.", "mechanic_change": "tempered_body", "effect": {"defense_bonus": 5}}
+        {"level": 2, "description": "Defense bonus increases to 3.", "description_zh": "防禦加成提高至 3。", "effect": {"defense_bonus": 3}},
+        {"level": 3, "description": "Defense bonus increases to 5.", "description_zh": "防禦加成提高至 5，並獲得淬鍊身軀演出。", "mechanic_change": "tempered_body", "effect": {"defense_bonus": 5}}
       ]
     },
     {
       "id": "fleet_footwork",
       "name": "Fleet Footwork",
+      "name_zh": "疾風步",
       "type": "combo",
       "combo_family": "body",
       "rarity": "common",
@@ -509,20 +560,22 @@
       "max_level": 3,
       "cost": 1,
       "description": "For 2.5 seconds, movement speed increases by 10 percent.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0006_Boots.png",
+      "description_zh": "在 1.5 秒內，移動速度提高 10%。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/fleet_footwork.png",
       "tags": ["combo", "movement", "infusion"],
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "fleet", "combo_duration": 1.5, "move_speed_multiplier": 0.10},
       "upgrade_effects": [
-        {"level": 2, "description": "Movement speed increases by 16 percent.", "effect": {"move_speed_multiplier": 0.16}},
-        {"level": 3, "description": "Movement speed increases by 24 percent.", "mechanic_change": "wind_step", "effect": {"move_speed_multiplier": 0.24}}
+        {"level": 2, "description": "Movement speed increases by 16 percent.", "description_zh": "移動速度提高 16%。", "effect": {"move_speed_multiplier": 0.16}},
+        {"level": 3, "description": "Movement speed increases by 24 percent.", "description_zh": "移動速度提高 24%，移動時留下風痕。", "mechanic_change": "wind_step", "effect": {"move_speed_multiplier": 0.24}}
       ]
     },
     {
       "id": "arcane_breath",
       "name": "Arcane Breath",
+      "name_zh": "奧術吐息",
       "type": "combo",
       "combo_family": "body",
       "rarity": "uncommon",
@@ -530,20 +583,22 @@
       "max_level": 3,
       "cost": 1,
       "description": "For 2.5 seconds, restore 0.25 additional AP per second.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_06.png",
+      "description_zh": "在 1.5 秒內，每秒額外恢復 0.25 AP。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/arcane_breath.png",
       "tags": ["combo", "ap_regen", "infusion"],
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "arcane_breath", "combo_duration": 1.5, "ap_regen_bonus": 0.25},
       "upgrade_effects": [
-        {"level": 2, "description": "Additional AP regeneration increases to 0.4.", "effect": {"ap_regen_bonus": 0.40}},
-        {"level": 3, "description": "Additional AP regeneration increases to 0.6.", "mechanic_change": "overflowing_breath", "effect": {"ap_regen_bonus": 0.60}}
+        {"level": 2, "description": "Additional AP regeneration increases to 0.4.", "description_zh": "每秒額外 AP 回復提高至 0.40。", "effect": {"ap_regen_bonus": 0.40}},
+        {"level": 3, "description": "Additional AP regeneration increases to 0.6.", "description_zh": "每秒額外 AP 回復提高至 0.60，並出現溢流粒子。", "mechanic_change": "overflowing_breath", "effect": {"ap_regen_bonus": 0.60}}
       ]
     },
     {
       "id": "deep_reservoir",
       "name": "Deep Reservoir",
+      "name_zh": "深層蓄能",
       "type": "combo",
       "combo_family": "body",
       "rarity": "rare",
@@ -551,20 +606,22 @@
       "max_level": 3,
       "cost": 2,
       "description": "For 2.5 seconds, maximum AP increases by 1.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
+      "description_zh": "在 1.5 秒內，最大 AP 提高 1。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/deep_reservoir.png",
       "tags": ["combo", "max_ap", "infusion"],
       "combo_tags": ["combo", "body"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "reservoir", "combo_duration": 1.5, "ap_max_bonus": 1.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Maximum AP increases by 2.", "effect": {"ap_max_bonus": 2.0}},
-        {"level": 3, "description": "Maximum AP increases by 3.", "mechanic_change": "limit_break", "effect": {"ap_max_bonus": 3.0}}
+        {"level": 2, "description": "Maximum AP increases by 2.", "description_zh": "最大 AP 提高 2。", "effect": {"ap_max_bonus": 2.0}},
+        {"level": 3, "description": "Maximum AP increases by 3.", "description_zh": "最大 AP 提高 3，並獲得突破上限演出。", "mechanic_change": "limit_break", "effect": {"ap_max_bonus": 3.0}}
       ]
     },
     {
       "id": "venom_edge",
       "name": "Venom Edge",
+      "name_zh": "劇毒刃",
       "type": "combo",
       "combo_family": "element",
       "rarity": "uncommon",
@@ -572,20 +629,22 @@
       "max_level": 3,
       "cost": 2,
       "description": "For 2.5 seconds, attacks poison enemies for 2 damage every 0.75 seconds.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_03.png",
+      "description_zh": "在 1.5 秒內，攻擊使敵人中毒；每 0.75 秒造成 2 點傷害，持續 4 秒。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/venom_edge.png",
       "tags": ["combo", "poison", "infusion"],
       "combo_tags": ["combo", "poison"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "venom", "combo_duration": 1.5, "poison_damage": 2, "poison_duration": 4.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Poison deals 3 damage for 5 seconds.", "effect": {"poison_damage": 3, "poison_duration": 5.0}},
-        {"level": 3, "description": "Poison deals 4 damage for 6 seconds.", "mechanic_change": "virulent_edge", "effect": {"poison_damage": 4, "poison_duration": 6.0}}
+        {"level": 2, "description": "Poison deals 3 damage for 5 seconds.", "description_zh": "中毒傷害提高至 3，持續 5 秒。", "effect": {"poison_damage": 3, "poison_duration": 5.0}},
+        {"level": 3, "description": "Poison deals 4 damage for 6 seconds.", "description_zh": "中毒傷害提高至 4，持續 6 秒，並獲得劇毒演出。", "mechanic_change": "virulent_edge", "effect": {"poison_damage": 4, "poison_duration": 6.0}}
       ]
     },
     {
       "id": "crushing_momentum",
       "name": "Crushing Momentum",
+      "name_zh": "粉碎動能",
       "type": "combo",
       "combo_family": "offense",
       "rarity": "common",
@@ -593,6 +652,7 @@
       "max_level": 3,
       "cost": 2,
       "description": "For 2.5 seconds, automatic attacks deal 5 extra damage.",
+      "description_zh": "在 2.5 秒內，自動攻擊額外造成 5 點傷害。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0000_Weapon.png",
       "tags": ["combo", "power", "infusion"],
       "combo_tags": ["combo", "power"],
@@ -600,13 +660,14 @@
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "momentum", "combo_duration": 1.5, "damage_bonus": 5},
       "upgrade_effects": [
-        {"level": 2, "description": "Damage bonus increases to 7.", "effect": {"damage_bonus": 7}},
-        {"level": 3, "description": "Heavy impact waves add 10 damage.", "mechanic_change": "impact_wave", "effect": {"damage_bonus": 10}}
+        {"level": 2, "description": "Damage bonus increases to 7.", "description_zh": "額外傷害提高至 7。", "effect": {"damage_bonus": 7}},
+        {"level": 3, "description": "Heavy impact waves add 10 damage.", "description_zh": "沉重的衝擊波使額外傷害提高至 10。", "mechanic_change": "impact_wave", "effect": {"damage_bonus": 10}}
       ]
     },
     {
       "id": "keen_focus_combo",
       "name": "Keen Focus",
+      "name_zh": "銳眼專注",
       "type": "combo",
       "combo_family": "offense",
       "rarity": "rare",
@@ -614,6 +675,7 @@
       "max_level": 3,
       "cost": 2,
       "description": "For 2.5 seconds, gain 18 percent critical chance and 1.75x critical damage.",
+      "description_zh": "在 2.5 秒內，獲得 18% 暴擊率與 1.75 倍暴擊傷害。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
       "tags": ["combo", "critical", "infusion"],
       "combo_tags": ["combo", "critical"],
@@ -621,13 +683,14 @@
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "precision", "combo_duration": 1.5, "critical_chance": 0.18, "critical_multiplier": 1.75},
       "upgrade_effects": [
-        {"level": 2, "description": "Critical chance increases to 25 percent.", "effect": {"critical_chance": 0.25}},
-        {"level": 3, "description": "Critical hits deal double damage.", "mechanic_change": "perfect_focus", "effect": {"critical_chance": 0.25, "critical_multiplier": 2.0}}
+        {"level": 2, "description": "Critical chance increases to 25 percent.", "description_zh": "暴擊率提高至 25%。", "effect": {"critical_chance": 0.25}},
+        {"level": 3, "description": "Critical hits deal double damage.", "description_zh": "維持 25% 暴擊率，暴擊傷害提高至 2 倍。", "mechanic_change": "perfect_focus", "effect": {"critical_chance": 0.25, "critical_multiplier": 2.0}}
       ]
     },
     {
       "id": "storm_charge",
       "name": "Storm Charge",
+      "name_zh": "風暴充能",
       "type": "combo",
       "combo_family": "element",
       "rarity": "rare",
@@ -635,20 +698,22 @@
       "max_level": 3,
       "cost": 3,
       "description": "For 2.5 seconds, attacks gain 2 lightning damage and briefly stun.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png",
+      "description_zh": "在 1.5 秒內，攻擊附加 2 點雷電傷害，並使敵人暈眩 0.12 秒。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/storm_charge.png",
       "tags": ["combo", "lightning", "infusion"],
       "combo_tags": ["combo", "lightning"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "storm", "combo_duration": 1.5, "damage_bonus": 2, "combo_stun": 0.12},
       "upgrade_effects": [
-        {"level": 2, "description": "Lightning stun increases to 0.18 seconds.", "effect": {"damage_bonus": 3, "combo_stun": 0.18}},
-        {"level": 3, "description": "Chain lightning briefly stuns every struck enemy.", "mechanic_change": "chain_lightning", "effect": {"damage_bonus": 4, "combo_stun": 0.25}}
+        {"level": 2, "description": "Lightning stun increases to 0.18 seconds.", "description_zh": "雷電傷害提高至 3，暈眩延長至 0.18 秒。", "effect": {"damage_bonus": 3, "combo_stun": 0.18}},
+        {"level": 3, "description": "Chain lightning briefly stuns every struck enemy.", "description_zh": "雷電傷害提高至 4，暈眩延長至 0.25 秒，並觸發連鎖雷擊。", "mechanic_change": "chain_lightning", "effect": {"damage_bonus": 4, "combo_stun": 0.25}}
       ]
     },
     {
       "id": "echo_volley",
       "name": "Echo Volley",
+      "name_zh": "回聲齊射",
       "type": "combo",
       "combo_family": "offense",
       "rarity": "rare",
@@ -656,20 +721,22 @@
       "max_level": 3,
       "cost": 2,
       "description": "For 2.5 seconds, fire 2 projectiles across a 90-degree fan.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
+      "description_zh": "在 1.5 秒內，以 90° 扇形發射 2 枚投射物。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/echo_volley.png",
       "tags": ["combo", "projectile", "amount", "fan", "infusion"],
       "combo_tags": ["combo", "projectile", "fan"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "echo_volley", "combo_duration": 1.5, "projectile_bonus": 1, "spread_degrees": 90.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Fire 4 projectiles across a 180-degree fan.", "effect": {"projectile_bonus": 3, "spread_degrees": 180.0}},
-        {"level": 3, "description": "Fire 8 projectiles in a full 360-degree circle.", "mechanic_change": "circular_echo_volley", "effect": {"projectile_bonus": 7, "spread_degrees": 360.0}}
+        {"level": 2, "description": "Fire 4 projectiles across a 180-degree fan.", "description_zh": "以 180° 扇形發射 4 枚投射物。", "effect": {"projectile_bonus": 3, "spread_degrees": 180.0}},
+        {"level": 3, "description": "Fire 8 projectiles in a full 360-degree circle.", "description_zh": "以 360° 環形發射 8 枚投射物。", "mechanic_change": "circular_echo_volley", "effect": {"projectile_bonus": 7, "spread_degrees": 360.0}}
       ]
     },
     {
       "id": "stoneguard_combo",
       "name": "Counterguard",
+      "name_zh": "反擊守勢",
       "type": "combo",
       "combo_family": "body",
       "rarity": "rare",
@@ -677,20 +744,22 @@
       "max_level": 3,
       "cost": 3,
       "description": "Gain 25 percent damage reduction and retaliation for 1.5 seconds.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
+      "description_zh": "獲得 25% 減傷與 6 點受擊反擊，持續 1.5 秒。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/stoneguard_combo.png",
       "tags": ["combo", "damage_reduction", "retaliation"],
       "combo_tags": ["combo", "armor"],
       "play_destination": "discard",
       "cooldown_seconds": 0.0,
       "effect": {"kind": "combat_status", "statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 1.5}, {"status_id": "retaliation", "amount": 6, "duration": 1.5}]},
       "upgrade_effects": [
-        {"level": 2, "description": "Retaliation increases to eight for 1.5 seconds.", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 1.5}, {"status_id": "retaliation", "amount": 8, "duration": 1.5}]}},
-        {"level": 3, "description": "A visible stone burst answers every hit for 1.5 seconds.", "mechanic_change": "living_counterguard", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 1.5}, {"status_id": "retaliation", "amount": 10, "duration": 1.5}]}}
+        {"level": 2, "description": "Retaliation increases to eight for 1.5 seconds.", "description_zh": "減傷維持 25%，受擊反擊提高至 8，持續 1.5 秒。", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.25, "duration": 1.5}, {"status_id": "retaliation", "amount": 8, "duration": 1.5}]}},
+        {"level": 3, "description": "A visible stone burst answers every hit for 1.5 seconds.", "description_zh": "減傷提高至 30%，受擊反擊提高至 10，並觸發石爆，持續 1.5 秒。", "mechanic_change": "living_counterguard", "effect": {"statuses": [{"status_id": "damage_reduction", "ratio": 0.30, "duration": 1.5}, {"status_id": "retaliation", "amount": 10, "duration": 1.5}]}}
       ]
     },
     {
       "id": "blood_pact_combo",
       "name": "Blood Pact",
+      "name_zh": "血之契約",
       "type": "healing",
       "combo_family": "healing",
       "rarity": "rare",
@@ -698,7 +767,8 @@
       "max_level": 3,
       "cost": 3,
       "description": "For 2.5 seconds, attacks heal for 15 percent of damage.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0005_Gloves.png",
+      "description_zh": "在 2.5 秒內，攻擊造成的傷害有 15% 轉為自身治療。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/blood_pact_combo.png",
       "tags": ["healing", "lifesteal"],
       "combo_tags": ["combo", "support"],
       "card_color": "green",
@@ -706,13 +776,14 @@
       "cooldown_seconds": 0.0,
       "effect": {"kind": "combat_status", "status_id": "lifesteal", "duration": 2.5, "lifesteal_ratio": 0.15},
       "upgrade_effects": [
-        {"level": 2, "description": "Lifesteal increases to 20 percent.", "effect": {"lifesteal_ratio": 0.20}},
-        {"level": 3, "description": "Lifesteal increases to 25 percent.", "mechanic_change": "crimson_feast", "effect": {"lifesteal_ratio": 0.25}}
+        {"level": 2, "description": "Lifesteal increases to 20 percent.", "description_zh": "吸血提高至 20%。", "effect": {"lifesteal_ratio": 0.20}},
+        {"level": 3, "description": "Lifesteal increases to 25 percent.", "description_zh": "吸血提高至 25%，並獲得血宴演出。", "mechanic_change": "crimson_feast", "effect": {"lifesteal_ratio": 0.25}}
       ]
     },
     {
       "id": "verdant_renewal",
       "name": "Verdant Renewal",
+      "name_zh": "翠綠復甦",
       "type": "healing",
       "combo_family": "healing",
       "rarity": "uncommon",
@@ -720,7 +791,8 @@
       "max_level": 3,
       "cost": 2,
       "description": "Regenerate 6 health each second for 5 seconds.",
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png",
+      "description_zh": "每秒恢復 6 點生命，共生效 5 次。",
+      "icon_path": "res://assets/ui/autumn/cards/generated/verdant_renewal.png",
       "tags": ["healing", "regeneration", "nature"],
       "combo_tags": ["support", "nature"],
       "card_color": "green",
@@ -728,13 +800,14 @@
       "cooldown_seconds": 0.0,
       "effect": {"kind": "regeneration", "status_id": "regeneration", "amount": 6, "pulses": 5, "interval": 1.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Each pulse restores 8 health.", "effect": {"amount": 8}},
-        {"level": 3, "description": "A visible green bloom accompanies every healing pulse.", "mechanic_change": "verdant_bloom", "effect": {"amount": 10}}
+        {"level": 2, "description": "Each pulse restores 8 health.", "description_zh": "每次治療提高至 8。", "effect": {"amount": 8}},
+        {"level": 3, "description": "A visible green bloom accompanies every healing pulse.", "description_zh": "每次治療提高至 10，並伴隨可見的翠綠花朵綻放。", "mechanic_change": "verdant_bloom", "effect": {"amount": 10}}
       ]
     },
     {
       "id": "ascendant_combo",
       "name": "Ascendant Combo",
+      "name_zh": "昇華連攜",
       "type": "combo",
       "combo_family": "offense",
       "rarity": "legendary",
@@ -742,6 +815,7 @@
       "max_level": 3,
       "cost": 3,
       "description": "A synthesized Combo that strengthens attacks, body, AP, lifesteal, and all four elements.",
+      "description_zh": "融合而成的連攜，全面強化攻擊、體魄、AP、吸血與四種元素。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
       "tags": ["combo", "fusion", "ascendant", "infusion"],
       "combo_tags": ["combo", "power", "element"],
@@ -749,26 +823,28 @@
       "cooldown_seconds": 0.0,
       "effect": {"kind": "infusion", "infusion_id": "ascendant", "combo_duration": 1.5, "damage_bonus": 6, "attack_range_bonus": 50.0, "attack_interval_multiplier": 0.82, "attack_size_multiplier": 1.25, "projectile_speed_multiplier": 1.35, "critical_chance": 0.12, "critical_multiplier": 1.8, "defense_bonus": 2, "move_speed_multiplier": 0.10, "ap_regen_bonus": 0.30, "ap_max_bonus": 1.0, "lifesteal_ratio": 0.08, "burn_damage": 2, "burn_duration": 3.0, "frost_ratio": 0.20, "frost_duration": 2.0, "poison_damage": 2, "poison_duration": 3.0, "combo_stun": 0.10},
       "upgrade_effects": [
-        {"level": 2, "description": "Every Ascendant bonus becomes stronger.", "effect": {"damage_bonus": 9, "attack_interval_multiplier": 0.74, "attack_size_multiplier": 1.40, "defense_bonus": 3, "ap_regen_bonus": 0.45}},
-        {"level": 3, "description": "Ascendant attacks become a large multi-element storm.", "mechanic_change": "ascendant_storm", "effect": {"damage_bonus": 13, "attack_range_bonus": 90.0, "attack_interval_multiplier": 0.66, "attack_size_multiplier": 1.60, "projectile_speed_multiplier": 1.70, "critical_chance": 0.22, "defense_bonus": 4, "move_speed_multiplier": 0.18, "ap_regen_bonus": 0.65, "ap_max_bonus": 2.0}}
+        {"level": 2, "description": "Every Ascendant bonus becomes stronger.", "description_zh": "全面提升昇華連攜的所有加成。", "effect": {"damage_bonus": 9, "attack_interval_multiplier": 0.74, "attack_size_multiplier": 1.40, "defense_bonus": 3, "ap_regen_bonus": 0.45}},
+        {"level": 3, "description": "Ascendant attacks become a large multi-element storm.", "description_zh": "昇華攻擊化為大範圍的多元素風暴，並進一步提高各項加成。", "mechanic_change": "ascendant_storm", "effect": {"damage_bonus": 13, "attack_range_bonus": 90.0, "attack_interval_multiplier": 0.66, "attack_size_multiplier": 1.60, "projectile_speed_multiplier": 1.70, "critical_chance": 0.22, "defense_bonus": 4, "move_speed_multiplier": 0.18, "ap_regen_bonus": 0.65, "ap_max_bonus": 2.0}}
       ]
     },
     {
       "id": "overdrive",
       "name": "Overdrive",
+      "name_zh": "超載",
       "type": "ultimate",
       "rarity": "legendary",
       "level": 1,
       "max_level": 3,
       "cost": 5,
       "description": "Enter Overdrive, gaining eight attack power at the cost of five health.",
+      "description_zh": "進入超載狀態，以 5 點生命為代價獲得 8 點攻擊力。",
       "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0005_Gloves.png",
       "tags": ["ultimate", "power", "risk"],
       "combo_tags": ["ultimate", "power"],
       "effect": {"kind": "overdrive", "attack_power": 8, "health_cost": 5, "duration": 8.0},
       "upgrade_effects": [
-        {"level": 2, "description": "Overdrive lasts ten seconds.", "effect": {"duration": 10.0}},
-        {"level": 3, "description": "Creates a visible berserk echo that repeats each attack.", "mechanic_change": "attack_echo", "effect": {"echo_damage_ratio": 0.5}}
+        {"level": 2, "description": "Overdrive lasts ten seconds.", "description_zh": "超載持續時間延長至 10 秒。", "effect": {"duration": 10.0}},
+        {"level": 3, "description": "Creates a visible berserk echo that repeats each attack.", "description_zh": "生成可見的狂戰殘影，重複每次攻擊並造成 50% 傷害。", "mechanic_change": "attack_echo", "effect": {"echo_damage_ratio": 0.5}}
       ]
     }
   ]

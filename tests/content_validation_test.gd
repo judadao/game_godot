@@ -47,8 +47,8 @@ func _run() -> void:
 	var finishers := ComboFinisherCatalog.new()
 	_expect(finishers.load_catalog(), "Combo Finisher content must load.")
 	_expect(
-		finishers.get_all_recipes().size() == 5,
-		"Vertical slice must ship five learned three-Combo Finisher recipes."
+		finishers.get_all_recipes().size() == 32,
+		"Runtime must ship the 20 same-card and 12 ordered cross-card OB Finishers."
 	)
 	for finisher in finishers.get_all_recipes():
 		_expect(

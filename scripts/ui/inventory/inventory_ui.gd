@@ -77,6 +77,7 @@ const ELEMENT_CONCEPT_IDS := [
 @onready var soul_icon: TextureRect = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Icon
 @onready var soul_name: Label = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Name
 @onready var soul_kind: Label = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Kind
+@onready var soul_bonus_type: Label = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/BonusType
 @onready var soul_meta: Label = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Meta
 @onready var soul_description: Label = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Description
 @onready var soul_effect: Label = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Effect
@@ -172,19 +173,22 @@ func set_player_status(status: Dictionary) -> void:
 	if not is_node_ready():
 		return
 	var level := maxi(1, int(status.get("level", 1)))
-	var character_class := String(status.get("character_class", "Adventurer"))
-	status_identity.text = "%s  ·  LEVEL %d" % [character_class, level]
+	var character_class: String = String({
+		"Adventurer": "冒險者",
+		"Sword Adept": "劍術行者",
+	}.get(String(status.get("character_class", "Adventurer")), "冒險者"))
+	status_identity.text = "%s  ·  等級 %d" % [character_class, level]
 	var experience := maxi(0, int(status.get("experience", 0)))
 	var required := maxi(1, int(status.get("experience_required", 1)))
 	status_experience.max_value = required
 	status_experience.value = mini(experience, required)
 	status_experience_text.text = "EXP  %s / %s" % [_format_number(experience), _format_number(required)]
 	status_vitals.text = "\n".join(PackedStringArray([
-		"HEALTH     %s / %s" % [_format_number(int(status.get("health", 0))), _format_number(int(status.get("max_health", 0)))],
-		"MANA       %s / %s" % [_format_number(int(status.get("mana", 0))), _format_number(int(status.get("max_mana", 0)))],
-		"ATTACK     %s" % _format_number(int(status.get("attack", 0))),
-		"DEFENSE    %s" % _format_number(int(status.get("defense", 0))),
-		"SPEED      %s" % _format_number(roundi(float(status.get("speed", 0.0)))),
+		"生命       %s / %s" % [_format_number(int(status.get("health", 0))), _format_number(int(status.get("max_health", 0)))],
+		"法力       %s / %s" % [_format_number(int(status.get("mana", 0))), _format_number(int(status.get("max_mana", 0)))],
+		"攻擊       %s" % _format_number(int(status.get("attack", 0))),
+		"防禦       %s" % _format_number(int(status.get("defense", 0))),
+		"速度       %s" % _format_number(roundi(float(status.get("speed", 0.0)))),
 	]))
 
 
@@ -361,7 +365,7 @@ func _refresh_item_list() -> void:
 		_visible_items.append(item)
 		var quantity := int(item.get("quantity", 0))
 		var suffix := "  ×%s" % _format_number(quantity) if quantity > 0 else ""
-		item_list.add_item("%s%s" % [String(item.get("name", "Unknown")), suffix], _load_icon(item, DEFAULT_ITEM_ICON))
+		item_list.add_item("%s%s" % [String(item.get("name", "未知物品")), suffix], _load_icon(item, DEFAULT_ITEM_ICON))
 	if _visible_items.is_empty():
 		_clear_item_details()
 	else:
@@ -373,6 +377,11 @@ func _refresh_equipment_slots() -> void:
 	var by_slot: Dictionary = {}
 	for entry in equipment_entries:
 		by_slot[String(entry.get("slot", ""))] = entry
+	var slot_labels := {
+		"weapon": "武器",
+		"armor": "防具",
+		"accessory": "飾品",
+	}
 	for slot in ["weapon", "armor", "accessory"]:
 		var panel_name: String = String(slot).capitalize()
 		var panel := status_page.get_node("Equipment/%s" % panel_name)
@@ -380,11 +389,16 @@ func _refresh_equipment_slots() -> void:
 		var stats_label := panel.get_node("Row/Text/Stats") as Label
 		var icon_rect := panel.get_node("Row/Icon") as TextureRect
 		var entry := by_slot.get(slot, {}) as Dictionary
+		var slot_label := String(slot_labels.get(slot, "裝備"))
 		if entry.is_empty() or String(entry.get("id", "")).is_empty():
-			name_label.text = "%s  ·  EMPTY" % slot.to_upper()
-			stats_label.text = "No equipment is currently fitted in this slot."
+			name_label.text = "%s  ·  未裝備" % slot_label
+			stats_label.text = "此欄位目前沒有裝備。"
 			continue
-		name_label.text = "%s  ·  %s  ·  LV %d" % [slot.to_upper(), String(entry.get("name", "Unknown")), int(entry.get("level", 1))]
+		name_label.text = "%s  ·  %s  ·  等級 %d" % [
+			slot_label,
+			String(entry.get("name", "未知裝備")),
+			int(entry.get("level", 1)),
+		]
 		stats_label.text = String(entry.get("stats", entry.get("description", "")))
 		var loaded := _load_icon(entry, null)
 		if loaded != null:
@@ -394,9 +408,20 @@ func _refresh_equipment_slots() -> void:
 func _refresh_soul_list() -> void:
 	soul_list.clear()
 	for soul in sword_souls:
-		soul_list.add_item(
-			"%s   LV %d" % [String(soul.get("name", "Unknown Soul")), int(soul.get("level", 1))],
+		var row_index := soul_list.add_item(
+			"[%s] %s" % [
+				String(soul.get("bonus_type_label", "攻擊")),
+				String(soul.get("name", "未知劍魂")),
+			],
 			_load_icon(soul, DEFAULT_SOUL_ICON)
+		)
+		soul_list.set_item_tooltip(
+			row_index,
+			"%s · 等級 %d\n%s" % [
+				String(soul.get("name", "未知劍魂")),
+				int(soul.get("level", 1)),
+				String(soul.get("ability_summary", soul.get("effect_summary", ""))),
+			]
 		)
 	if sword_souls.is_empty():
 		_clear_soul_details()
@@ -416,7 +441,7 @@ func _refresh_codex_list() -> void:
 		if entry_section != section:
 			continue
 		_visible_codex.append(entry)
-		codex_list.add_item(String(entry.get("name", "Unknown discovery")), _load_icon(entry, DEFAULT_ITEM_ICON))
+		codex_list.add_item(String(entry.get("name", "未知紀錄")), _load_icon(entry, DEFAULT_ITEM_ICON))
 	if _visible_codex.is_empty():
 		_clear_codex_details()
 	else:
@@ -429,9 +454,9 @@ func _on_item_selected(index: int) -> void:
 		return
 	selected_index = items.find(_visible_items[index])
 	var item := _visible_items[index]
-	item_name.text = String(item.get("name", "Unknown item"))
-	item_kind.text = String(item.get("kind_label", String(item.get("category", "item")).capitalize()))
-	item_description.text = String(item.get("description", "No description available."))
+	item_name.text = String(item.get("name", "未知物品"))
+	item_kind.text = String(item.get("kind_label", "旅途物品"))
+	item_description.text = String(item.get("description", "尚無說明。"))
 	item_stats.text = String(item.get("stats", ""))
 	var is_equipment := String(item.get("category", "")) == "gear" and not String(item.get("id", "")).is_empty()
 	equip_button.visible = is_equipment
@@ -455,14 +480,17 @@ func _on_soul_selected(index: int) -> void:
 		return
 	var soul := sword_souls[index]
 	soul_icon.texture = _load_icon(soul, DEFAULT_SOUL_ICON)
-	soul_name.text = String(soul.get("name", "Unknown Sword Soul"))
-	soul_kind.text = String(soul.get("kind_label", "OWNED SWORD SOUL"))
-	soul_meta.text = "LEVEL %d / 3  ·  MARK %s" % [
+	soul_name.text = String(soul.get("name", "未知劍魂"))
+	soul_kind.text = String(soul.get("kind_label", "現有劍魂"))
+	soul_bonus_type.text = "加乘類型 · %s" % String(soul.get("bonus_type_label", "攻擊"))
+	soul_meta.text = "等級 %d / 3  ·  印記 %s" % [
 		int(soul.get("level", 1)),
 		String(soul.get("instance_id", "")).right(8).to_upper(),
 	]
-	soul_description.text = String(soul.get("description", "No description available."))
-	soul_effect.text = String(soul.get("effect_summary", ""))
+	soul_description.text = String(soul.get("description", "尚無說明。"))
+	soul_effect.text = "能力札記\n%s" % String(
+		soul.get("ability_summary", soul.get("effect_summary", "依劍魂等級提供戰鬥加乘。"))
+	)
 
 
 func _on_codex_selected(index: int) -> void:
@@ -470,11 +498,11 @@ func _on_codex_selected(index: int) -> void:
 		return
 	var entry := _visible_codex[index]
 	_active_codex_section = String(entry.get("section", "techniques"))
-	codex_name.text = String(entry.get("name", "Unknown discovery"))
-	codex_kind.text = String(entry.get("kind_label", "DISCOVERY"))
-	codex_description.text = String(entry.get("description", "No description available."))
-	codex_effect.text = "EFFECT\n%s" % String(entry.get("effect_summary", "No effect data."))
-	codex_trigger.text = "NOTES\n%s" % String(entry.get("trigger_summary", "Recorded in the travel journal."))
+	codex_name.text = String(entry.get("name", "未知紀錄"))
+	codex_kind.text = String(entry.get("kind_label", "旅途紀錄"))
+	codex_description.text = String(entry.get("description", "尚無說明。"))
+	codex_effect.text = "效果\n%s" % String(entry.get("effect_summary", "尚無效果資料。"))
+	codex_trigger.text = "說明\n%s" % String(entry.get("trigger_summary", "已記錄於旅途日誌。"))
 	if _active_codex_section == "techniques":
 		codex_meta.text = _format_codex_meta(entry)
 		codex_growth.text = _format_codex_growth(entry)
@@ -519,8 +547,8 @@ func _align_codex_detail_lines() -> void:
 
 
 func _clear_item_details() -> void:
-	item_name.text = "No items"
-	item_kind.text = "This page has no entries yet."
+	item_name.text = "尚無物品"
+	item_kind.text = "此頁目前沒有可查看的內容。"
 	item_description.text = ""
 	item_stats.text = ""
 	equip_button.visible = false
@@ -528,8 +556,9 @@ func _clear_item_details() -> void:
 
 func _clear_soul_details() -> void:
 	soul_icon.texture = DEFAULT_SOUL_ICON
-	soul_name.text = "No Sword Souls"
-	soul_kind.text = "Forge or discover a Sword Soul to record it here."
+	soul_name.text = "尚無劍魂"
+	soul_kind.text = "鍛造或發現劍魂後，會記錄於此。"
+	soul_bonus_type.text = "加乘類型 · 未知"
 	soul_meta.text = ""
 	soul_description.text = ""
 	soul_effect.text = ""
@@ -537,8 +566,8 @@ func _clear_soul_details() -> void:
 
 func _clear_codex_details() -> void:
 	_active_codex_section = "techniques"
-	codex_name.text = "No discoveries"
-	codex_kind.text = "This chapter has no recorded entries."
+	codex_name.text = "尚無紀錄"
+	codex_kind.text = "此章目前沒有可查閱的內容。"
 	codex_meta.text = ""
 	codex_growth.text = ""
 	codex_description.text = ""
@@ -632,8 +661,8 @@ func _show_concept_entry(entry: Dictionary) -> void:
 func _format_codex_meta(entry: Dictionary) -> String:
 	var level := clampi(int(entry.get("level", entry.get("card_level", 1))), 1, 3)
 	var stacks := maxi(0, int(entry.get("combo_stack", entry.get("buff_stacks", 0))))
-	return "ELEMENT  %s   ·   LV %d/3   ·   BUFF ×%d" % [
-		_entry_element(entry).to_upper(),
+	return "屬性  %s   ·   等級 %d/3   ·   增益 ×%d" % [
+		_element_display_name(_entry_element(entry)),
 		level,
 		stacks,
 	]
@@ -646,16 +675,16 @@ func _format_codex_growth(entry: Dictionary) -> String:
 	var active_layer := (
 		_display_trait(String(layers[mini(level - 1, layers.size() - 1)]))
 		if not layers.is_empty()
-		else "Base Technique"
+		else "基礎招式"
 	)
-	var growth_lines := PackedStringArray(["EVOLUTION  %s" % active_layer])
+	var growth_lines := PackedStringArray(["進化  %s" % active_layer])
 	var milestones := entry.get("stack_milestones", []) as Array
 	var traits := entry.get("stack_traits", []) as Array
 	for index in mini(milestones.size(), traits.size()):
 		var milestone := int(milestones[index])
 		if milestone > stacks:
 			growth_lines.append(
-				"NEXT STACK  ×%d — %s" % [
+				"下一層  ×%d — %s" % [
 					milestone,
 					_display_trait(String(traits[index])),
 				]
@@ -673,6 +702,20 @@ func _entry_element(entry: Dictionary) -> String:
 	if element == "flame":
 		element = "fire"
 	return element if ELEMENT_CONCEPT_IDS.has(element) else "normal"
+
+
+func _element_display_name(element: String) -> String:
+	return {
+		"water": "水",
+		"fire": "火",
+		"wind": "風",
+		"lightning": "雷",
+		"ice": "冰",
+		"poison": "毒",
+		"light": "光",
+		"dark": "暗",
+		"normal": "普通",
+	}.get(element, "普通")
 
 
 func _display_trait(raw_trait: String) -> String:

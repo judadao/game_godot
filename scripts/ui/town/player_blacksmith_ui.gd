@@ -531,8 +531,8 @@ func _refresh_recipe_detail() -> void:
 		Color(0.50, 0.94, 0.74) if owned
 		else (Color(0.98, 0.78, 0.35) if unlocked else Color(0.95, 0.48, 0.40))
 	)
-	var description := String(recipe.get("description", "Forge this design into a permanent item."))
-	recipe_description.text = "[color=#f0c967][b]Blueprint[/b][/color]\n%s" % description
+	var description := String(recipe.get("description", "將這份圖紙鍛造成永久裝備。"))
+	recipe_description.text = "[color=#f0c967][b]鍛造圖紙[/b][/color]\n%s" % description
 	recipe_cost_label.text = "FORGE COST  ·  %s" % _format_cost(cost)
 	craft_button.disabled = not unlocked
 	craft_button.text = "Forge"
@@ -541,15 +541,26 @@ func _refresh_recipe_detail() -> void:
 	equip_button.disabled = not owned or equipped
 	equip_button.text = "Equipped" if equipped else "Equip"
 	strengthen_button.visible = owned
+	var level_cap := (
+		int(_inventory.call("get_max_equipment_level"))
+		if is_equipment and _inventory_has_method(&"get_max_equipment_level")
+		else 3
+	)
+	var next_cost := (
+		_inventory.call("get_equipment_upgrade_cost", result_id) as Dictionary
+		if is_equipment and _inventory_has_method(&"get_equipment_upgrade_cost")
+		else {}
+	)
 	strengthen_button.disabled = (
-		level >= 3
-		or (is_equipment and not _inventory_has_method(&"upgrade_equipment"))
+		level >= level_cap
+		or (is_equipment and (not _inventory_has_method(&"upgrade_equipment") or next_cost.is_empty()))
 	)
 	strengthen_button.text = (
-		"Max Level" if level >= 3
-		else "Upgrade Sword Soul  ·  Lv.%d" % (level + 1)
+		"已達最高等級" if level >= level_cap
+		else "突破素材尚未開放" if is_equipment and next_cost.is_empty()
+		else "升級劍魂  ·  Lv.%d" % (level + 1)
 		if is_sword_soul
-		else "Strengthen  ·  Lv.%d" % (level + 1)
+		else "強化裝備  ·  Lv.%d" % (level + 1)
 	)
 	if not _has_action_feedback:
 		action_feedback.text = (
@@ -631,7 +642,18 @@ func _project_recipes_from_services() -> Array[Dictionary]:
 		var result: Array[Dictionary] = []
 		for entry in projected:
 			if entry is Dictionary:
-				result.append((entry as Dictionary).duplicate(true))
+				var projection := (entry as Dictionary).duplicate(true)
+				var result_kind := StringName(projection.get("result_kind", projection.get("kind", "")))
+				var result_id := StringName(projection.get("result_id", ""))
+				if result_kind == &"equipment" and _inventory_has_method(&"get_equipment"):
+					var item := _inventory.call("get_equipment", result_id) as Dictionary
+					if not item.is_empty():
+						projection["name"] = _localized_text(item, "name")
+						projection["description"] = "%s\n\n%s" % [
+							_localized_text(item, "description"),
+							_localized_text(item.get("special_ability", {}) as Dictionary, "description"),
+						]
+				result.append(projection)
 		return result
 	if not _inventory_has_method(&"get_equipment_catalog"):
 		return []
@@ -646,7 +668,7 @@ func _project_recipes_from_services() -> Array[Dictionary]:
 		fallback.append({
 			"id": item_id,
 			"result_id": item_id,
-			"name": item.get("name", item_id),
+			"name": _localized_text(item, "name"),
 			"description": _equipment_description(item),
 			"kind": item.get("slot", "equipment"),
 			"tier": item.get("quality_tier", 0),
@@ -658,6 +680,9 @@ func _project_recipes_from_services() -> Array[Dictionary]:
 
 
 func _equipment_description(item: Dictionary) -> String:
+	var localized := _localized_text(item, "description")
+	if not localized.is_empty():
+		return localized
 	var effects := item.get("effects", {}) as Dictionary
 	if effects.is_empty():
 		return "A proven workshop design."
@@ -665,6 +690,11 @@ func _equipment_description(item: Dictionary) -> String:
 	for effect_id in effects:
 		parts.append("%s %+d" % [String(effect_id).capitalize(), int(effects[effect_id])])
 	return "  ·  ".join(parts)
+
+
+func _localized_text(source: Dictionary, field: String) -> String:
+	var localized := String(source.get("%s_zh" % field, "")).strip_edges()
+	return localized if not localized.is_empty() else String(source.get(field, "")).strip_edges()
 
 
 func _recipe_icon(recipe: Dictionary) -> Texture2D:

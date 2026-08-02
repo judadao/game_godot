@@ -475,7 +475,7 @@ Scene group、base signals與固定 child contract缺一不可。
 ```text
 data/cards.json
 → CardDatabase
-→ DeckBuilderUI selects 1 Healing slot + 3 Combo slots + one auto-attack card
+→ DeckBuilderUI selects 4 unique Combo／Healing slots (at least 1 Healing) + one auto-attack card
 → MetaState selected deck / auto_attack_card_id
 → RunState + DeckManager
 → CardHandUI.set_cards()
@@ -963,11 +963,11 @@ CardInstance
 ```
 
 `DeckManager.start_fixed_hand()` 建立本次 Run 唯一的一組四張技能：
-剛好一張 Healing 與三張不重複 Combo。固定手牌只受 AP 限制；使用後留在原 slot，
+四張皆可為不重複的 Healing 或 Combo，且至少保留一張 Healing。固定手牌只受 AP 限制；使用後留在原 slot，
 不進 draw／discard／exhaust／cooldown，也不提供 redraw 或輪抽。
-傳送門前的 `DeckBuilderUI` 直接投影四個固定槽位：slot 0 只接受 Healing，
-slot 1–3 只接受不重複 Combo。選取槽位後，候選清單只顯示相同類型；畫面同步列出
-目前三張 Combo 已學會且可完成的 named Finisher recipes。確認順序就是戰鬥
+傳送門前的 `DeckBuilderUI` 直接投影四個固定槽位；每格都接受已解鎖的 Healing／Combo，
+候選排除其他格已選技能，且不能把牌組最後一張 Healing 換掉。畫面同步列出
+目前四張技能可完成的已學會 named Finisher recipes。確認順序就是戰鬥
 Q／W／E／R 的固定順序。
 `ember_bolt` 僅作為獨立 Basic Attack，不進入手牌、棄牌或 Combo 抽牌循環。`quickstep`
 已從正式卡表移除。玩家固有 Dash 由 `PlayerController` 的 Space action 擁有，
@@ -979,11 +979,13 @@ Basic Attack 不建立額外 CardInstance、不進 hand 或任一牌堆、不花
 `SkillRecipeManager.record_card()`。有效敵人進入角色面向的水平走廊時自動施放；
 沒有合法目標時不消耗 cooldown、Combo 公式或終結技。
 
-只有 Combo 技能會記入三格公式並永久增加對應 Combo stack；Healing 不記入也不
-中斷公式。`ComboFinisherCatalog` 以 `data/combo_finishers.json` 驗證精確且已學會
-的三招配方，支援 AAA 重複招式與有順序的 ABC 複合招式。未學會配方所需的任一
-Combo 技能時不能形成終結技。完成的終結技進入 FIFO queue，下一發自動 Basic
-Attack 逐一施放；效果為「配方終結技基底＋該三招組合＋所有 Divine Gift 效果」。
+只有被 `ComboFinisherCatalog` 收錄為配方材料的 Combo／Healing 技能會記入三格公式；
+Healing 因此可參與治療、防禦與支援型終結技。catalog 以 `data/combo_finishers.json`
+驗證 32 個精確且已學會的三招配方，支援 AAA 重複招式與有順序的 ABC 複合招式，
+並可依一至兩格 prefix 提供不保證完成的候選提示。未學會配方所需的任一技能時不能
+形成終結技。完成的終結技進入 FIFO queue，下一發自動 Basic Attack 逐一施放；
+效果為「配方終結技基底＋該三招的當前等級效果＋裝備 projection＋所有 Divine Gift 效果」。
+純治療／防禦／支援配方的基礎傷害為零，仍透過同一次合法自動攻擊觸發其支援效果。
 施放後只消耗 queue 的第一招，不消耗永久 Combo stacks。
 
 Combo 卡本身提供的 infusion／status 不屬於永久公式狀態：每張卡各自持有 1.5 秒
@@ -992,11 +994,16 @@ Combo 卡本身提供的 infusion／status 不屬於永久公式狀態：每張�
 Chain 仍使用獨立的 2.5 秒視窗，不受卡片效果到期影響。
 
 `DivineGiftManager` 是 Run-local 神賜權威。每個 stage/wave 最多排入一個必選
-神賜頁，避免同關多隻菁英重複開頁。神賜最高三級；最新選取的神賜提供招式稱號，
-例如 `千刃殺` 變成 `絕對零度的千刃殺`，所有持有神賜則共同加入燃燒、冰凍碎裂、
+神賜頁，避免同關多隻菁英重複開頁。神賜最高三級；所有持有神賜依取得順序共同提供招式稱號，
+例如 `千刃殺` 可疊加成多段中文前綴名稱，並共同加入燃燒、冰凍碎裂、
 中毒、雷鏈、迴響或穿透等機制。兩個不同的滿級神賜可融合成 evolved gift；材料
 標記為 ascended 並永久離開本 Run 的獎勵池，已完成的融合不能再次產生。只有融合
 候選的頁面可略過，避免成長流程無限循環。
+
+Run 同時最多持有三項神賜。未滿三項時獎勵可出現新神賜或既有神賜升級；滿三項時
+只能出現目前持有且未滿級的升級選項，直到兩項滿級神賜融合並釋出空位。加入或升級
+任一神賜不得覆蓋其他 slot；效果與中文稱號前綴都依取得順序合併投影，HUD 必須顯示
+三個 slot，不能只顯示最後一項或前兩項。
 
 Dash Edge 與 Gale Drive 保留為 legacy catalog cards，但標記 `combat_hand = false`，
 不進 Deck Builder、預設背包或戰鬥獎勵；其 infusion 仍以

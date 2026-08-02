@@ -24,7 +24,18 @@ func _run() -> void:
 	ui.call("configure", discovered, meta.selected_deck)
 	_expect(int(ui.call("get_selected_count")) == 4, "Deck builder must restore the fixed four-skill loadout.")
 	var restored := ui.call("get_selected_deck") as Array
-	_expect(restored.count("healing_light") == 1, "The fixed loadout must contain exactly one Healing skill.")
+	_expect(_healing_count(database, restored) >= 1, "The fixed loadout must contain at least one Healing skill.")
+	_expect(
+		not restored.has("energy_surge"),
+		"Deck builder must not restore a skill that cannot advance a Finisher recipe."
+	)
+	ui.call("configure", discovered, [
+		"healing_light", "renewal", "verdant_renewal", "storm_charge",
+	])
+	_expect(
+		_healing_count(database, ui.call("get_selected_deck") as Array) == 3,
+		"Deck builder must preserve a legal loadout containing multiple Healing skills."
+	)
 	ui.call("configure", discovered, [
 		"guard", "guard",
 		"cleave", "cleave", "cleave", "cleave",
@@ -33,8 +44,8 @@ func _run() -> void:
 	_expect(
 		clamped.size() == 4
 			and clamped.count("guard") == 1
-			and clamped.count("healing_light") == 1,
-		"Legacy loadouts must become one Healing plus three unique Combo skills."
+			and _healing_count(database, clamped) >= 1,
+		"Legacy loadouts must become four unique combat skills with at least one Healing skill."
 	)
 	_expect(
 		String(ui.call("get_auto_attack_card_id")) == "cleave",
@@ -50,3 +61,11 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _healing_count(database: CardDatabase, card_ids: Array) -> int:
+	var count := 0
+	for card_id in card_ids:
+		if String(database.get_card(String(card_id)).get("type", "")) == "healing":
+			count += 1
+	return count

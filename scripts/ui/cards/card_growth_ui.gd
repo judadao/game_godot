@@ -75,7 +75,7 @@ func present_page(page: Dictionary) -> void:
 	fusion_section.visible = false
 	fallback_section.visible = not fallbacks.is_empty()
 	($SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/SectionTitle as Label).text = (
-		"DIVINE GIFTS"
+		"神賜"
 		if not divine_gifts.is_empty() or not divine_fusions.is_empty()
 		else (
 			"NEW CARDS"
@@ -97,7 +97,7 @@ func present_page(page: Dictionary) -> void:
 		_add_choice_button(fallback_grid, choice, _fallback_text(choice))
 
 	confirm_button.disabled = _choice_buttons.is_empty()
-	confirm_button.text = "CONFIRM CHOICE"
+	confirm_button.text = "確認選擇"
 	var source := String(_page.get("source", "")).to_lower()
 	var can_skip := (
 		(source == "wave" and not new_cards.is_empty())
@@ -111,11 +111,11 @@ func present_page(page: Dictionary) -> void:
 	skip_button.visible = can_skip
 	skip_button.disabled = not can_skip
 	required_hint.text = (
-		"Keep both maximum Gifts, or fuse them."
+		"可保留兩項滿級神賜，或選擇將它們昇華融合。"
 		if source == "divine" and can_skip
-		else "Choose a card, or skip to keep your expedition deck compact."
+		else "選擇一張卡，或略過以維持精簡的遠征牌組。"
 		if can_skip
-		else "A choice is required. This screen cannot be skipped."
+		else "必須完成一項選擇，無法略過此畫面。"
 	)
 	visible = true
 	if not _choice_buttons.is_empty():
@@ -143,7 +143,7 @@ func confirm_selected_choice() -> void:
 		return
 	_confirmed = true
 	confirm_button.disabled = true
-	confirm_button.text = "CHOICE LOCKED"
+	confirm_button.text = "選擇已鎖定"
 	for button in _choice_buttons:
 		button.disabled = true
 	choice_confirmed.emit(_selected_choice_id)
@@ -196,9 +196,9 @@ func _apply_header() -> void:
 			source_label.text = "NEW LV.3 PAIR"
 			instruction_label.text = "Fuse two full-level cards into one stronger Combo, or keep both."
 		"divine":
-			title_label.text = "CHOOSE A DIVINE GIFT"
-			source_label.text = "ELITE BLESSING"
-			instruction_label.text = "Every Gift changes Combo skills and named Finishers."
+			title_label.text = "選擇一項神賜"
+			source_label.text = "菁英祝福"
+			instruction_label.text = "每項神賜都會改變連段招式與具名終結技。"
 		_:
 			title_label.text = "CARD GROWTH"
 			source_label.text = "PENDING CHOICE"
@@ -446,31 +446,31 @@ func _compact_fusion_text(choice: Dictionary) -> String:
 func _compact_divine_gift_text(choice: Dictionary) -> String:
 	var current_level := maxi(0, int(choice.get("level", 0)))
 	var tier_name := (
-		"EVOLVED"
+		"昇華神賜"
 		if String(choice.get("kind", "base")) == "evolved"
-		else "GIFT"
+		else "神賜"
 	)
-	return "%s  %s\n%s · LV.%d → LV.%d\n%s" % [
+	return "%s  %s\n%s · 等級 %d → %d\n%s" % [
 		String(choice.get("icon", "✦")),
-		_choice_name(choice, "name", "gift_id", "Divine Gift"),
+		_choice_name(choice, "name", "gift_id", "神賜"),
 		tier_name,
 		current_level,
 		int(choice.get("next_level", current_level + 1)),
 		_bullet_description(_choice_description(
 			choice,
 			"description",
-			"Changes Combo skills and named Finishers."
+			"改變連段招式與具名終結技。"
 		)),
 	]
 
 
 func _compact_divine_fusion_text(choice: Dictionary) -> String:
-	return "✺  %s\nMAX + MAX → EVOLVED\n%s" % [
-		_choice_name(choice, "name", "choice_id", "Divine Evolution"),
+	return "✺  %s\n滿級 + 滿級 → 昇華\n%s" % [
+		_choice_name(choice, "name", "choice_id", "神賜昇華"),
 		_bullet_description(_choice_description(
 			choice,
 			"description",
-			"Combines both global rules."
+			"融合兩項神賜的整體規則。"
 		)),
 	]
 

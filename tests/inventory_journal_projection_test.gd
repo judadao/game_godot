@@ -41,6 +41,12 @@ func _run() -> void:
 			_expect(not seen_instances.has(instance_id), "Sword Soul projection must not duplicate CardInstance ids.")
 			seen_instances[instance_id] = true
 			_expect(int(soul.get("level", 0)) >= 1, "Every owned Sword Soul must expose its level.")
+			_expect(
+				String(soul.get("bonus_type", "")) in ["attack", "defense", "healing", "element", "mobility", "ap"],
+				"Every owned Sword Soul must project one stable bonus type: %s." % instance_id
+			)
+			_expect(_contains_han(String(soul.get("bonus_type_label", ""))), "Every owned Sword Soul must project a Chinese bonus-type label: %s." % instance_id)
+			_expect(_contains_han(String(soul.get("ability_summary", ""))), "Every owned Sword Soul must project a short Chinese ability note: %s." % instance_id)
 
 	if game.has_method("_inventory_compendium_projection"):
 		var compendium := game.call("_inventory_compendium_projection") as Array
@@ -75,3 +81,11 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _contains_han(value: String) -> bool:
+	for character in value:
+		var code := character.unicode_at(0)
+		if code >= 0x3400 and code <= 0x9fff:
+			return true
+	return false
