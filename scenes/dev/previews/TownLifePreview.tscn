@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/town.tscn" id="1_town"]
+[ext_resource type="Script" path="res://scripts/dev/previews/town_life_preview.gd" id="2_preview"]
+
+[node name="TownLifePreview" type="Node"]
+script = ExtResource("2_preview")
+
+[node name="TownViewport" type="SubViewport" parent="."]
+size = Vector2i(1941, 720)
+render_target_update_mode = 4
+
+[node name="Town" parent="TownViewport" instance=ExtResource("1_town")]
+
+[node name="LifeCamera" type="Camera2D" parent="TownViewport"]
+position = Vector2(970.5, 360)
+enabled = true
+
+[editable path="TownViewport/Town"]

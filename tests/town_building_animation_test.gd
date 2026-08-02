@@ -39,7 +39,10 @@ func _run() -> void:
 	_expect(int(contract.get("metal_glints", 0)) == 4, "Four authored metal glints must remain sparse.")
 	_expect(bool(contract.get("forge_warmth", false)), "Player forge must own animated warmth.")
 	_expect(bool(contract.get("clock_ticks", false)), "Town Hall clock must advance in pixel steps.")
-	_expect(bool(contract.get("blueprint_gear", false)), "Blueprint shop gear must rotate.")
+	_expect(
+		bool(contract.get("blueprint_gear_static", false)),
+		"Blueprint shop gear must remain visible without a rotation animation."
+	)
 	_expect(bool(contract.get("collision_owned", true)) == false, "Building animation must stay visual-only.")
 
 	_assert_windows(animation.get_node_or_null("WindowLights") as Node2D)
@@ -151,16 +154,22 @@ func _assert_mechanical_details(details: Node2D) -> void:
 	if details == null:
 		return
 	var gear := details.get_node_or_null("BlueprintGear") as Node2D
-	_expect(gear != null, "Blueprint shop must retain a rotating gear overlay.")
+	_expect(gear != null, "Blueprint shop must retain a static gear overlay.")
 	if gear == null:
 		return
-	_expect(float(gear.get_meta("step_seconds", 9.0)) <= 0.6, "Blueprint gear rotation must be readable.")
-	var hand_drawn := gear.get_node_or_null("HandDrawnGear") as AnimatedSprite2D
-	_expect(hand_drawn != null, "Blueprint gear must use a hand-drawn AnimatedSprite2D.")
+	_expect(
+		not gear.has_meta("step_seconds"),
+		"Static blueprint gear must not retain rotation timing metadata."
+	)
+	var hand_drawn := gear.get_node_or_null("HandDrawnGear") as Sprite2D
+	_expect(hand_drawn != null, "Blueprint gear must use a static hand-drawn Sprite2D.")
 	if hand_drawn != null:
 		_expect(
-			hand_drawn.sprite_frames.get_frame_count(&"rotate") == 8,
-			"Blueprint gear must retain eight hand-drawn rotation frames."
+			hand_drawn.texture != null
+			and hand_drawn.texture.resource_path.ends_with(
+				"/blueprint_gear_handdrawn/frame_00.png"
+			),
+			"Blueprint gear must display the authored neutral hand-drawn frame."
 		)
 		_expect(
 			hand_drawn.texture_filter == CanvasItem.TEXTURE_FILTER_NEAREST,

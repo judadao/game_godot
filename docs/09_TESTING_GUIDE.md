@@ -341,8 +341,35 @@ Scene directory changes must run these permanent contracts:
   十個群組／零散鳥停棲點與起飛 presentation contract。
 - `tests/town_building_animation_test.gd`：`TownBackdrop` 的 building-animation
   instance、十一組對齊可見玻璃格且錯相低幅微閃的窗光、八幀手繪爐火、七組低幅
-  布料、Town Hall 步進秒針、手繪劍光與手繪旋轉齒輪 presentation contract。
-  視覺驗證需比較兩個時間點的完整畫面與固定 3 × 2 六區，並另檢查劍光事件前後。
+  布料、Town Hall 步進秒針、手繪劍光與不播放旋轉動畫的靜態手繪齒輪
+  presentation contract。
+- `tests/town_sky_cloud_animation_test.gd`：cloud-free 天空的覆蓋與 tint API、八個透明
+  手繪雲物件、邊緣假接縫清理 shader、錯速低幅漂移、完整離場回繞，以及
+  sky／cloud／mountain z-order contract。視覺驗證需比較兩個時間點的完整畫面、各自固定
+  3 × 2 六區、cloud-free 天空原圖及八個實際套用 shader 後的原尺寸雲物件。
+- `tests/town_npc_animation_test.gd`：七個 Town placement 的 dedicated scene link、
+  concept-derived 透明 cutout、stable Visual hierarchy、六個 living NPC 的
+  `AnimatableBody2D`／`TownNPCLife` contract、idle／walk／sit／chat／laugh／happy／sad／
+  surprised／angry atlas rows、生成 idle／walk／chat frame 的非空／無裁切／pose 差異、祭司的四組
+  8 幀完整姿勢成人比例動畫、七個不同 world texture identity、Autumn
+  seated merchant 與 compatibility Merchant，以及 display-only／interactive 邊界。視覺驗證需檢查
+  idle/showcase 兩張 Town full-frame、兩組固定 3 × 2 slices、六張原尺寸 atlas、四個
+  living-Town 時序 full-frame 與九狀態 sheet。
+- `tests/town_npc_life_test.gd`：六個自主 NPC 的 group／home anchor、鄰居配對、走到
+  不重疊的會合點、聊天雙向面向、完成後返回精確原位，以及祭司對女巫的 external lock。
+  行為參數改動後必須以 `TownLifePreview.tscn` 擷取 idle、walk、social-chat、return-home
+  時點，並在最後整合畫面重做固定 3 × 2 六區審查。
+- `tests/priest_town_behavior_test.gd`：祭司 wait-home → walk-to-witch → chat-with-witch →
+  walk-home 循環、精確 home／conversation anchor、左右朝向、四組動畫切換，以及女巫
+  ambient/chat state 的暫停與恢復。行為或停靠位置改動後，需用 graphical renderer 擷取
+  起點、去程、對話、回程與返家畫面，再重做 full-frame 與固定 3 × 2 六區審查。
+- `tests/town_npc_portrait_animation_test.gd`：`TownNPCPortrait` 的 reusable scene/API、
+  四個 Town service/shop consumer、new-character texture path 與動態 state contract。
+  `town_building_ui_layout_test.gd` 設定 `TOWN_BUILDING_UI_CAPTURE_DIR` 時會輸出所有六種
+  required resolutions；人物或裁切改動後必須重審全部輸出。
+- `tests/town_time_of_day_lighting_test.gd`：golden-hour threshold、天空 horizon grade、
+  雲 tint，以及建築／環境／NPC／Portal／Player 同步光色。設定
+  `TOWN_TIME_OF_DAY_CAPTURE_DIR` 時輸出 golden-hour full-frame 與固定 3 × 2 六區供視覺審查。
 - `tests/town_location_label_proximity_test.gd`：六個建築木牌位於建築輪廓上方，
   只接受 Player 進出完整地基 Area 的 signal，離開後全部 hidden。
 - `tests/map_registry_test.gd` and `tests/quick_save_migration_test.gd`：stable and legacy map paths remain loadable.

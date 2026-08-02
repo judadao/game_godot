@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownSkyLayer.tscn" id="1_sky"]
+
+[node name="LegacyTownSkyLayer" instance=ExtResource("1_sky")]

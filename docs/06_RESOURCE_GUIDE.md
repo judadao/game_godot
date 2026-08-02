@@ -42,6 +42,8 @@ pipeline描述成Current。
 | Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
 | Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
 | Generated VFX texture | 24 | `res://assets/generated/vfx/` |
+| Town NPC transparent cutout | 5 | `res://assets/town/npc/characters/` |
+| Town NPC world animation atlas | 7 | `res://assets/town/npc/characters/*_animation_atlas.png` |
 
 十個 JSON：
 
@@ -101,6 +103,33 @@ Generated combat presentation：
   每招由 anticipation、attack、trail、impact、debris 五個 atlas parts 拼裝，
   並以唯一 archetype、beat pattern、三級 evolution layers 與 stack traits
   控制動畫拓樸和成長，不以單一模板只換 motion 名稱。
+
+Town NPC presentation：
+
+- `tools/build_town_character_cutouts.gd` 是 deterministic 背景分離工具；輸入固定為
+  `concept/characters` 的女巫、村長、瘋狂科學家、路人與雜貨店大叔，輸出固定為
+  `assets/town/npc/characters/*_cutout.png`。
+- 輸出必須保留來源 pixel-art 幾何與服裝設計，具有透明背景、無彩色殘邊，且不得把
+  concept 漸層背景帶入 Town 或人物半身框。重新產生後必須重跑 native-detail、Town
+  full-frame、固定 3 × 2 slices 與六解析度服務 UI 視覺審查。
+- `tools/build_town_npc_animation_atlases.gd` 將五張 cutout 縮至 Town 的粗像素頻率，
+  產生初版一般 Town NPC 的 `576×1368` RGBA atlas。每張固定 4 columns × 9 rows，row 順序為
+  idle、walk、sit、chat、laugh、happy、sad、surprised、angry；guard 與 innkeeper
+  必須保留獨立 palette/accessory variant，禁止重新指向 traveler／grocer atlas。
+- 本機、git-ignored 的 `assets/town/npc/characters/source_motion_v2/` 可保存六位角色的
+  原始 chroma generation；版本化的 `motion_strips_v2/` 保存去背後 4 columns × 3 rows
+  完整姿勢動作帶，row 固定為
+  front idle、side walk、side chat。`tools/art/build_town_npc_full_pose_atlases.py` 依透明
+  間隔擷取每格、統一 132 px 人物高度與 `y=144` 腳底線，覆寫正式 atlas 的 row 0／1／3；
+  sit row 另統一為 120 px（包含清楚椅凳）以保留成人頭身，laugh／情緒 row 從
+  `procedural_v1/` 保留。守衛的 retained row 會同步轉為核准的 charcoal uniform。
+  任何來源或 normalization 改動後，
+  必須重建六張 atlas 並重做原尺寸、Town full-frame、時序與固定 3 × 2 slices 審查。
+- 祭司 runtime 使用 `assets/town/npc/priest/pose_strips_v2/` 的四組完整成人骨架動作帶，
+  由 `tools/art/build_priest_animation.py` 依透明間隔擷取完整人物、統一 448 px 原生高度與
+  腳底線，再輸出 `priest_animation_atlas.png` 的 8 columns × 4 rows atlas；row 順序固定為
+  front idle、front chat、side walk、side chat。`parts/` 舊分件只保留為來源紀錄，不得再
+  直接拼成 runtime 幀，以免不同頭身比例或相鄰肢體混入。
 
 ### 1.2 術語
 

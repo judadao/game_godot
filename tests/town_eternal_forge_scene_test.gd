@@ -84,8 +84,8 @@ func _run() -> void:
 				),
 				"Town modular sprites must use replaceable modular sources."
 			)
-		var sky := modular.get_node_or_null("Background/BackgroundSky") as Sprite2D
-		_expect(sky != null, "Town modular scene must own its independent sky layer.")
+		var sky := town.get_node_or_null("ParallaxBackground/Sky/Sky") as Sprite2D
+		_expect(sky != null, "Town backdrop must own its independent sky layer.")
 		if sky != null:
 			var sky_size := sky.texture.get_size() * sky.global_scale.abs()
 			var coverage_left := sky.global_position.x - sky_size.x * 0.5
@@ -100,10 +100,12 @@ func _run() -> void:
 				coverage_top <= 0.5 and coverage_bottom >= 719.5,
 				"Modular Town sky must cover the gameplay viewport height."
 			)
-	_expect(
-		not town.get_node("ParallaxBackground/Sky").visible,
-		"Legacy sky must not cover the locked A Eternal Forge background."
-	)
+		_expect(
+			modular.get_node_or_null("Background/BackgroundSky") == null,
+			"Town modular visuals must not retain a baked sky-and-cloud plate."
+		)
+	_expect(town.get_node("ParallaxBackground/Sky").visible, "Independent Town sky must remain visible.")
+	_expect(town.get_node("ParallaxBackground/Clouds").visible, "Independent Town clouds must remain visible.")
 
 	var identity := town.get_node_or_null("EternalForgeIdentity")
 	_expect(identity != null, "Town must instance the Eternal Forge identity scene.")

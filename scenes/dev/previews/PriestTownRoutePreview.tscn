@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/town.tscn" id="1_town"]
+[ext_resource type="Script" path="res://scripts/dev/previews/priest_town_route_preview.gd" id="2_preview"]
+
+[node name="PriestTownRoutePreview" type="Node2D"]
+script = ExtResource("2_preview")
+
+[node name="Town" parent="." instance=ExtResource("1_town")]
+
+[node name="RouteCamera" type="Camera2D" parent="."]
+position = Vector2(1300, 360)
+enabled = true
+
+[editable path="Town"]

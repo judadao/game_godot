@@ -1,22 +1,35 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/town/rebuild_v2/town_npcs_atlas_v2.png" id="2_atlas"]
-
-[sub_resource type="AtlasTexture" id="Portrait"]
-atlas = ExtResource("2_atlas")
-region = Rect2(930, 54, 300, 590)
+[ext_resource type="Script" path="res://scripts/npc/town_npc_visual.gd" id="1_visual"]
+[ext_resource type="Texture2D" path="res://assets/town/npc/characters/innkeeper_animation_atlas.png" id="2_texture"]
+[ext_resource type="Script" path="res://scripts/npc/town_npc_life.gd" id="3_life"]
 
 [sub_resource type="RectangleShape2D" id="Body"]
 size = Vector2(42, 94)
 
-[node name="Innkeeper" type="StaticBody2D" groups=["NPCs"]]
+[node name="Innkeeper" type="AnimatableBody2D" groups=["NPCs", "town_life_npcs"]]
 collision_layer = 2
 collision_mask = 1
+sync_to_physics = false
+script = ExtResource("3_life")
+roam_radius = 70.0
+social_chance = 0.45
+metadata/character_id = "innkeeper"
 
-[node name="Visual" type="Sprite2D" parent="."]
-texture = SubResource("Portrait")
-offset = Vector2(0, -295)
-scale = Vector2(0.23, 0.23)
+[node name="Visual" type="Node2D" parent="."]
+script = ExtResource("1_visual")
+target_height = 118.0
+ambient_profile = "social"
+phase_offset = 2.1
+
+[node name="VisualRoot" type="Node2D" parent="Visual"]
+
+[node name="BodySprite" type="Sprite2D" parent="Visual/VisualRoot"]
+texture_filter = 1
+texture = ExtResource("2_texture")
+region_enabled = true
+region_rect = Rect2(0, 0, 144, 152)
+flip_h = true
 
 [node name="BodyCollision" type="CollisionShape2D" parent="."]
 position = Vector2(0, -47)

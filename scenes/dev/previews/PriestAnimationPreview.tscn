@@ -1,0 +1,87 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/dev/previews/priest_animation_preview.gd" id="1_preview"]
+[ext_resource type="PackedScene" path="res://scenes/npc/town/PriestAnimatedSprite.tscn" id="2_priest"]
+
+[node name="PriestAnimationPreview" type="Node2D"]
+script = ExtResource("1_preview")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0.055, 0.075, 0.11, 1)
+
+[node name="Title" type="Label" parent="."]
+offset_left = 350.0
+offset_top = 24.0
+offset_right = 930.0
+offset_bottom = 62.0
+theme_override_colors/font_color = Color(0.94, 0.82, 0.48, 1)
+theme_override_font_sizes/font_size = 24
+text = "PRIEST FULL-POSE ANIMATION — 8 FRAMES EACH"
+horizontal_alignment = 1
+
+[node name="Ground" type="ColorRect" parent="."]
+offset_left = 32.0
+offset_top = 636.0
+offset_right = 1248.0
+offset_bottom = 638.0
+mouse_filter = 2
+color = Color(0.56, 0.43, 0.21, 0.72)
+
+[node name="FrontIdleLabel" type="Label" parent="."]
+offset_left = 54.0
+offset_top = 82.0
+offset_right = 270.0
+offset_bottom = 112.0
+theme_override_font_sizes/font_size = 20
+text = "FRONT IDLE"
+horizontal_alignment = 1
+
+[node name="FrontChatLabel" type="Label" parent="."]
+offset_left = 374.0
+offset_top = 82.0
+offset_right = 590.0
+offset_bottom = 112.0
+theme_override_font_sizes/font_size = 20
+text = "FRONT CHAT"
+horizontal_alignment = 1
+
+[node name="SideWalkLabel" type="Label" parent="."]
+offset_left = 694.0
+offset_top = 82.0
+offset_right = 910.0
+offset_bottom = 112.0
+theme_override_font_sizes/font_size = 20
+text = "SIDE WALK"
+horizontal_alignment = 1
+
+[node name="SideChatLabel" type="Label" parent="."]
+offset_left = 1014.0
+offset_top = 82.0
+offset_right = 1230.0
+offset_bottom = 112.0
+theme_override_font_sizes/font_size = 20
+text = "SIDE CHAT"
+horizontal_alignment = 1
+
+[node name="FrontIdle" parent="." instance=ExtResource("2_priest")]
+position = Vector2(160, 636)
+scale = Vector2(0.7, 0.7)
+animation_name = "front_idle"
+
+[node name="FrontChat" parent="." instance=ExtResource("2_priest")]
+position = Vector2(480, 636)
+scale = Vector2(0.7, 0.7)
+animation_name = "front_chat"
+
+[node name="SideWalk" parent="." instance=ExtResource("2_priest")]
+position = Vector2(800, 636)
+scale = Vector2(0.7, 0.7)
+animation_name = "side_walk"
+
+[node name="SideChat" parent="." instance=ExtResource("2_priest")]
+position = Vector2(1120, 636)
+scale = Vector2(0.7, 0.7)
+animation_name = "side_chat"

@@ -128,7 +128,8 @@ Guardian 死亡本身不是最終結算點；玩家回到安全區時才完成�
 Town 是起始 Hub，現有內容包括：
 
 - Player、地形與碰撞；
-- Mayor、村民、守衛、藥水商人、鐵匠與旅店角色；
+- 祭司／Mayor placement、女巫、村民、守衛、藥水商人、鐵匠與旅店角色；祭司會從
+  Town Hall 前往女巫身旁聊天，之後返回原點等待並重複社交循環；
 - Material Yard、Player Blacksmith、Town Hall 專用建築 UI；
 - Town 商品買賣；
 - Autumn、Crystal Caves、Forbidden Graveyard portal；
@@ -636,7 +637,8 @@ progression 仍是獨立 scene authority。替換房屋、地板、火炬或街�
 只改變 presentation，不代表新增服務、互動或玩法。
 所有 Town 分件採 `storybook_handdrawn_pixel_v2`：低飽和苔綠、木褐、砂岩與
 陶瓦為主色，冷苔炭色作環境陰影、暖蜜色作左上主光，藍紫魔法只保留為局部功能
-焦點。背景依 locked A 排版拆成藍天山景 plate、繁盛的中景秋林、西側粗像素
+焦點。背景依 locked A 排版拆成可獨立調色的 cloud-free 天空、八個持續錯速進出畫面的
+透明手繪雲物件、透明群山、繁盛的中景秋林、西側粗像素
 破敗石塔、橫向綠色灌木殘骸帶、右緣針葉樹殘牆群，以及中央秋樹；三個 ruins
 layers 只補邊界、貼地與前景建築後方的淺色空隙，並保持在最大秋樹後方；
 不滅火炬和藍紫旋渦門保留功能辨識度；兩者都使用 refined Base v5 靜態塔身。
@@ -657,7 +659,7 @@ village-stage progression。傳送門 Base v5 不含門洞旋渦、紫色內緣�
 collision 或 hub route。`TownBuildingAnimation.tscn` 為六棟 Base 建築補上局部
 生活感：十一組實際可見窗格持續亮著，只以錯相低幅暖光微閃；鐵匠爐使用八幀手繪火焰
 與拱室內暖光；布料自由端只移動 1px；Town Hall 秒針使用整數像素步進；劍魂商
-劍徽反光與圖紙商齒輪使用透明手繪逐格素材。這些效果不得改動建築輪廓、覆蓋
+劍徽反光使用透明手繪逐格素材，圖紙商齒輪固定顯示手繪中性幀且不旋轉。這些效果不得改動建築輪廓、覆蓋
 NPC、照亮牆面或建立新的互動權威。`TownAmbientAnimation.tscn` 以完整古樹的偶發徐風、
 八組上冠／外冠／前後景樹冠、四組根部藏在屋後的局部枝葉、二十四個單向落地
 單葉、三個可淡出的低矮路緣小堆及十六個鳥停棲點補足
@@ -684,6 +686,19 @@ B2，只提升街景熱鬧程度，不新增交易、NPC、碰撞或互動規則
 街具、浮空旗幟，以及遮住東側建築立面的六個大型 dressing 不顯示。
 六棟建築名稱木牌位於各自最高輪廓上方，預設隱藏；Player 走進該建築完整地基
 範圍時只顯示目前建築，離開後立刻回到無木牌狀態。NPC 經過不觸發。
+
+Town 七個 display-only NPC 全部使用 `concept/characters` 的五套新角色設計；共用
+idle、walk、sit、chat、laugh、happy、sad、surprised、angry presentation state，
+並以七套 world atlas 區分守衛與旅店主人，不在同一畫面複製角色身份。祭司以固定路線
+走到女巫旁聊天再回到 Town Hall；其餘六位會在各自店面／街區附近隨機待機、表達情緒、
+坐下休息、短距離散步，或與可用鄰居保持距離會合、面向彼此聊天後回到原位。每個人的
+自主散步區域會依相鄰 home anchor 切開，至少保留一個人物寬度，避免同基準線互相穿入。
+這些行為只營造活城鎮，
+不擁有 NavMesh、持久 schedule、gameplay dialogue 或建築互動。Autumn safe-zone seated merchant 與 compatibility
+Merchant 也已換成新 atlas hierarchy，仍保留原商店互動。服務 UI 的人物框同步換成這批角色的動態
+半身像。Town root 提供 day／golden-hour 光色同步 API；golden hour 在 normalized
+progress 0.65 後才開始，會一起調整天空、雲、場景物件、NPC、Portal 與 Player，
+但目前沒有自動時鐘，實際時間推進仍由未來 gameplay owner 決定。
 
 Town 不再直接排列各戰區傳送門，也不保留東西 fast travel。唯一的
 `BattleGateway` 進入 `battle_portal_hub.tscn`：大廳左右各兩個戰區入口，中央

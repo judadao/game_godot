@@ -67,7 +67,7 @@ func get_building_animation_contract() -> Dictionary:
 		"metal_glints": metal_glints.get_child_count(),
 		"forge_warmth": forge_warmth.get_node_or_null("HearthCore") != null,
 		"clock_ticks": clock_mechanism.get_node_or_null("MinuteHand") != null,
-		"blueprint_gear": mechanical_details.get_node_or_null("BlueprintGear") != null,
+		"blueprint_gear_static": mechanical_details.get_node_or_null("BlueprintGear") != null,
 		"editor_authored": true,
 		"collision_owned": false,
 	}
@@ -78,7 +78,6 @@ func _update_presentation() -> void:
 	_update_forge_warmth()
 	_update_cloth_motions()
 	_update_clock()
-	_update_mechanical_details()
 	_update_metal_glints()
 
 
@@ -123,14 +122,6 @@ func _update_clock() -> void:
 	var second_index := int(floor(_elapsed / step_seconds)) % CLOCK_MINUTE_POINTS.size()
 	var second_hand := clock_mechanism.get_node("SecondHand") as Line2D
 	second_hand.points = PackedVector2Array([Vector2.ZERO, CLOCK_MINUTE_POINTS[second_index]])
-
-
-func _update_mechanical_details() -> void:
-	var gear := mechanical_details.get_node("BlueprintGear") as Node2D
-	var step_seconds := float(gear.get_meta("step_seconds", 0.55))
-	var hand_drawn := gear.get_node("HandDrawnGear") as AnimatedSprite2D
-	var frame_count := hand_drawn.sprite_frames.get_frame_count(&"rotate")
-	hand_drawn.frame = int(floor(_elapsed / step_seconds)) % frame_count
 
 
 func _update_metal_glints() -> void:

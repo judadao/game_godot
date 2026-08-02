@@ -23,7 +23,11 @@ func _run() -> void:
 		"res://assets/town/rebuild_v2/town_street_atlas_v2.png",
 		"res://assets/town/rebuild_v2/town_buildings_atlas_v2.png",
 		"res://assets/town/rebuild_v2/town_props_portals_atlas_v2.png",
-		"res://assets/town/rebuild_v2/town_npcs_atlas_v2.png",
+		"res://assets/town/npc/characters/mayor_cutout.png",
+		"res://assets/town/npc/characters/witch_cutout.png",
+		"res://assets/town/npc/characters/scientist_cutout.png",
+		"res://assets/town/npc/characters/traveler_cutout.png",
+		"res://assets/town/npc/characters/grocer_cutout.png",
 	]:
 		_expect(ResourceLoader.exists(asset_path), "Missing rebuilt town asset: %s" % asset_path)
 
@@ -68,13 +72,29 @@ func _run() -> void:
 		"Innkeeper",
 	]:
 		var npc := town.get_node("NPCs/%s" % npc_name)
-		var visual := npc if npc is Sprite2D else npc.get_node("Visual")
-		var texture: Texture2D = (visual as Sprite2D).texture
-		var atlas: Texture2D = texture.atlas if texture is AtlasTexture else texture
-		_expect(
-			atlas.resource_path == "res://assets/town/rebuild_v2/town_npcs_atlas_v2.png",
-			"%s must use the rebuilt Town NPC atlas at runtime." % npc_name
-		)
+		var visual := npc.get_node("Visual")
+		if npc_name == "Mayor":
+			var priest_body := visual.get_node("CharacterSprite") as Sprite2D
+			_expect(
+				priest_body.texture.resource_path == "res://assets/town/npc/priest/priest_animation_atlas.png",
+				"Priest must use the approved full-pose animation atlas at runtime."
+			)
+			_expect(
+				npc.get_script() != null
+					and npc.get_script().resource_path == "res://scripts/npc/priest_town_behavior.gd",
+				"Priest must own the Town round-trip behavior controller."
+			)
+		else:
+			var body := visual.get_node("VisualRoot/BodySprite") as Sprite2D
+			_expect(
+				body.texture.resource_path.begins_with("res://assets/town/npc/characters/"),
+				"%s must use a concept/characters-derived transparent cutout at runtime." % npc_name
+			)
+			_expect(
+				visual.get_script() != null
+					and visual.get_script().resource_path == "res://scripts/npc/town_npc_visual.gd",
+				"%s must use the shared Town NPC animation controller." % npc_name
+			)
 
 	var npc_scene_paths := {
 		"Mayor": "res://scenes/npc/town/Mayor.tscn",
@@ -85,7 +105,6 @@ func _run() -> void:
 		"Blacksmith": "res://scenes/npc/town/Blacksmith.tscn",
 		"Innkeeper": "res://scenes/npc/town/Innkeeper.tscn",
 	}
-	var npc_regions: Array[Rect2] = []
 	for npc_name in npc_scene_paths:
 		var npc := town.get_node("NPCs/%s" % npc_name)
 		_expect(
@@ -95,11 +114,16 @@ func _run() -> void:
 		_expect(npc.has_node("Visual"), "%s must own its visual inside the NPC scene." % npc_name)
 		_expect(not npc.is_in_group("Interactives"), "%s must not trigger Town building UI." % npc_name)
 		_expect(not npc.has_node("InteractionArea"), "%s must not own an interaction area." % npc_name)
-		var visual := npc.get_node_or_null("Visual") as Sprite2D
-		if visual != null and visual.texture is AtlasTexture:
-			var region := (visual.texture as AtlasTexture).region
-			_expect(not npc_regions.has(region), "%s must use a unique atlas region." % npc_name)
-			npc_regions.append(region)
+		if npc_name == "Mayor":
+			_expect(
+				npc.get_node_or_null("Visual/CharacterSprite") is Sprite2D,
+				"Priest must retain the dedicated full-pose animated body hierarchy."
+			)
+		else:
+			_expect(
+				npc.get_node_or_null("Visual/VisualRoot/BodySprite") is Sprite2D,
+				"%s must retain the shared animated body hierarchy." % npc_name
+			)
 	_assert_town_building_entrances(town)
 	_expect(
 		not town.has_node("BuildingEntrances/BlueprintResearch"),
@@ -116,12 +140,12 @@ func _run() -> void:
 	)
 	var background_modules := {
 		"Sky": {
-			"scene": "res://scenes/maps/town/legacy/background/TownSkyLayer.tscn",
+			"scene": "res://scenes/maps/town/components/TownSkyLayer.tscn",
 			"minimum_sprites": 1,
 		},
 		"Clouds": {
-			"scene": "res://scenes/maps/town/legacy/background/TownCloudSet.tscn",
-			"minimum_sprites": 4,
+			"scene": "res://scenes/maps/town/components/TownCloudLayer.tscn",
+			"minimum_sprites": 7,
 		},
 		"Mountains": {
 			"scene": "res://scenes/maps/town/legacy/background/TownMountainSet.tscn",

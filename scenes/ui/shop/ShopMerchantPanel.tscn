@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/ui/shop/generated/merchant_counter.png" id="1_merchant"]
+[ext_resource type="PackedScene" path="res://scenes/ui/town/TownNPCPortrait.tscn" id="1_portrait"]
+[ext_resource type="Texture2D" path="res://assets/town/npc/characters/grocer_cutout.png" id="2_grocer"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_portrait"]
 bg_color = Color(0.055, 0.045, 0.035, 1)
@@ -46,11 +47,10 @@ custom_minimum_size = Vector2(218, 252)
 layout_mode = 2
 theme_type_variation = &"TownServicePortrait"
 
-[node name="MerchantPortrait" type="TextureRect" parent="PortraitFrame"]
+[node name="MerchantPortrait" parent="PortraitFrame" instance=ExtResource("1_portrait")]
 layout_mode = 2
-texture = ExtResource("1_merchant")
-expand_mode = 1
-stretch_mode = 5
+character_texture = ExtResource("2_grocer")
+phase_offset = 0.3
 
 [node name="IdentityLabel" type="Label" parent="."]
 layout_mode = 2

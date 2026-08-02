@@ -207,13 +207,16 @@ func _check_contract(contract: Dictionary) -> void:
 			% [contract["name"], node_name]
 		)
 	if contract["name"] == "ShopUI":
-		var portrait := ui.find_child("MerchantPortrait", true, false) as TextureRect
+		var portrait := ui.find_child("MerchantPortrait", true, false) as Control
+		var portrait_texture := portrait.find_child("PortraitTexture", true, false) as TextureRect if portrait != null else null
 		var title := ui.find_child("TitleText", true, false) as Label
 		var title_banner := ui.find_child("TitleBanner", true, false) as TextureRect
 		_expect(
 			portrait != null
-				and portrait.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED,
-			"Shop merchant portraits must remain fully visible instead of using a crop mode."
+				and portrait.clip_contents
+				and portrait_texture != null
+				and portrait_texture.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED,
+			"Shop merchant portraits must use the clipped animated half-body component."
 		)
 		_expect(
 			title != null

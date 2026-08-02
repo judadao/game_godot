@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/town_sky_layer.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/town_sky_cloud_free_v1.png" id="2_sky"]
+[ext_resource type="Shader" path="res://shaders/town_sky_grade.gdshader" id="3_grade"]
+
+[sub_resource type="ShaderMaterial" id="SkyGradeMaterial"]
+shader = ExtResource("3_grade")
+
+[node name="TownSkyLayer" type="Node2D"]
+z_index = -100
+script = ExtResource("1_script")
+metadata/layer_role = "sky"
+metadata/lighting_owner = "town_time_of_day"
+
+[node name="Sky" type="Sprite2D" parent="."]
+position = Vector2(971, 404.5)
+scale = Vector2(1, 1)
+texture_filter = 1
+material = SubResource("SkyGradeMaterial")
+texture = ExtResource("2_sky")
+metadata/cloud_free = true
+metadata/tintable = true

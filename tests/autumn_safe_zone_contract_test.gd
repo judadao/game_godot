@@ -111,7 +111,9 @@ func _run() -> void:
 		)
 		_expect(
 			merchant.has_node("Visual")
-				and (merchant.get_node("Visual") as Sprite2D).texture != null,
+				and merchant.has_node("Visual/VisualRoot/BodySprite")
+				and (merchant.get_node("Visual/VisualRoot/BodySprite") as Sprite2D).texture != null
+				and merchant.get_node("Visual").call("get_active_state") == &"sit",
 			"Seated merchant must use an authored character visual."
 		)
 

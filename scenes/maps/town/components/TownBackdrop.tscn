@@ -1,7 +1,7 @@
 [gd_scene load_steps=12 format=3 uid="uid://br6i1uvyi4wv2"]
 
-[ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownSkyLayer.tscn" id="1_sky"]
-[ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownCloudSet.tscn" id="2_clouds"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownSkyLayer.tscn" id="1_sky"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownCloudLayer.tscn" id="2_clouds"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownMountainSet.tscn" id="3_mountains"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownDistantBuildings.tscn" id="4_buildings"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/legacy/background/TownTreeSet.tscn" id="5_trees"]

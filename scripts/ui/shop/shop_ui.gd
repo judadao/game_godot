@@ -18,8 +18,9 @@ const ITEM_ICON_GEM := preload("res://assets/curated/game_own/items/oga_rpg_item
 const ITEM_ICON_SUPPLY := preload("res://assets/ui/fantasy_icons_16x16/png/Separately/Icon67_1.png")
 const ITEM_ICON_MAP := preload("res://assets/ui/fantasy_icons_16x16/png/Separately/Icon46_1.png")
 const ACTION_ICON_CONFIRM := preload("res://assets/ui/fantasy_icons_16x16/png/Separately/Icon25_1.png")
-const NPC_PORTRAIT_ATLAS := preload("res://assets/town/rebuild_v2/town_npcs_atlas_v2.png")
-const DEFAULT_MERCHANT_PORTRAIT := preload("res://assets/ui/shop/generated/merchant_counter.png")
+const PORTRAIT_WITCH := preload("res://assets/town/npc/characters/witch_cutout.png")
+const PORTRAIT_SCIENTIST := preload("res://assets/town/npc/characters/scientist_cutout.png")
+const PORTRAIT_GROCER := preload("res://assets/town/npc/characters/grocer_cutout.png")
 
 @onready var mode_bar: HBoxContainer = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar
 @onready var buy_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/BuyButton
@@ -29,7 +30,7 @@ const DEFAULT_MERCHANT_PORTRAIT := preload("res://assets/ui/shop/generated/merch
 @onready var merchant_name: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/ModeBar/MerchantName
 @onready var merchant_role: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/SectionLabel
 @onready var merchant_identity: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/IdentityLabel
-@onready var merchant_portrait: TextureRect = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/PortraitFrame/MerchantPortrait
+@onready var merchant_portrait: TownNPCPortrait = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/PortraitFrame/MerchantPortrait
 @onready var merchant_dialogue: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/DialoguePanel/Dialogue
 @onready var merchant_hint: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/MerchantPanel/Hint
 @onready var blueprint_icon: TextureRect = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemListHeader/BlueprintIcon
@@ -117,16 +118,16 @@ func set_shop_context(shop_id: StringName) -> void:
 				"Soulwright Ilyra",
 				"Every sword soul begins as a design.\nChoose the one your forge will awaken.",
 				"Forge and upgrade purchased blueprints at your workshop.",
-				Rect2(330, 54, 280, 590)
+				PORTRAIT_WITCH
 			)
 		&"equipment_blueprint_shop":
 			_apply_shop_identity(
 				"EQUIPMENT BLUEPRINTS",
-				"MASTER DRAFTSWOMAN",
-				"Draftswoman Elara",
-				"A sound weapon starts with a precise plan.\nInspect each design before you invest.",
+				"ARCANE DRAFTSMAN",
+				"Professor Orin",
+				"A sound weapon starts with a precise plan.\nLet us test each design before you invest.",
 				"Each blueprint unlocks a permanent workshop recipe.",
-				Rect2(1940, 54, 172, 590)
+				PORTRAIT_SCIENTIST
 			)
 		&"material_store", &"material_yard":
 			_apply_shop_identity(
@@ -135,7 +136,7 @@ func set_shop_context(shop_id: StringName) -> void:
 				"Quartermaster Brann",
 				"Tools on the left, quality stock on the right.\nTake what your next forge job needs.",
 				"Materials and tools improve as the forge flame grows stronger.",
-				Rect2(620, 54, 300, 590)
+				PORTRAIT_GROCER
 			)
 		_:
 			_apply_shop_identity(
@@ -144,7 +145,7 @@ func set_shop_context(shop_id: StringName) -> void:
 				"Mira",
 				"Welcome, traveler!\nWhat can I get for you?",
 				"Choose a trade mode, then inspect an item.",
-				Rect2()
+				PORTRAIT_GROCER
 			)
 	_apply_context_controls()
 	set_mode("buy" if _is_blueprint_shop() else mode)
@@ -469,7 +470,7 @@ func _apply_shop_identity(
 	display_name: String,
 	dialogue: String,
 	hint: String,
-	atlas_region: Rect2
+	portrait_texture: Texture2D
 ) -> void:
 	title_text.text = window_title
 	merchant_role.text = role
@@ -483,13 +484,8 @@ func _apply_shop_identity(
 	merchant_identity.tooltip_text = display_name
 	merchant_dialogue.text = dialogue
 	merchant_hint.text = hint
-	if atlas_region.size == Vector2.ZERO:
-		merchant_portrait.texture = DEFAULT_MERCHANT_PORTRAIT
-		return
-	var portrait := AtlasTexture.new()
-	portrait.atlas = NPC_PORTRAIT_ATLAS
-	portrait.region = atlas_region
-	merchant_portrait.texture = portrait
+	merchant_portrait.set_character_texture(portrait_texture)
+	merchant_portrait.play_state(&"chat")
 
 
 func _apply_context_controls() -> void:

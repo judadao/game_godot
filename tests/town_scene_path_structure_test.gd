@@ -3,6 +3,8 @@ extends SceneTree
 const ACTIVE_SCENES := [
 	"res://scenes/maps/town/components/TownBackdrop.tscn",
 	"res://scenes/maps/town/components/TownModularVisuals.tscn",
+	"res://scenes/maps/town/components/TownSkyLayer.tscn",
+	"res://scenes/maps/town/components/TownCloudLayer.tscn",
 	"res://scenes/maps/town/components/TownBuildingAnimation.tscn",
 	"res://scenes/maps/town/components/TownWindowGlow.tscn",
 	"res://scenes/maps/town/components/TownArchedWindowGlow.tscn",
@@ -17,7 +19,7 @@ const ACTIVE_SCENES := [
 	"res://scenes/maps/town/editor/TownEternalForgeEditorHUDReference.tscn",
 ]
 const LEGACY_SCENES := [
-	"res://scenes/maps/town/legacy/background/TownSkyLayer.tscn",
+	"res://scenes/maps/town/legacy/background/LegacyTownSkyLayer.tscn",
 	"res://scenes/maps/town/legacy/background/TownCloudSet.tscn",
 	"res://scenes/maps/town/legacy/background/TownMountainSet.tscn",
 	"res://scenes/maps/town/legacy/background/TownDistantBuildings.tscn",

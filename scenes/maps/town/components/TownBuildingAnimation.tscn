@@ -1,4 +1,4 @@
-[gd_scene load_steps=44 format=3]
+[gd_scene load_steps=36 format=3]
 
 [ext_resource type="Script" path="res://scripts/maps/town_building_animation.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownWindowGlow.tscn" id="2_window"]
@@ -25,13 +25,6 @@
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/sword_glint_handdrawn/frame_04.png" id="20_sword_glint_04"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/sword_glint_handdrawn/frame_05.png" id="21_sword_glint_05"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_00.png" id="22_gear_00"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_01.png" id="23_gear_01"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_02.png" id="24_gear_02"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_03.png" id="25_gear_03"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_04.png" id="26_gear_04"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_05.png" id="27_gear_05"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_06.png" id="28_gear_06"]
-[ext_resource type="Texture2D" path="res://assets/town/modular_v3/animation/building/blueprint_gear_handdrawn/frame_07.png" id="29_gear_07"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_forge_hearth"]
 animations = [{
@@ -89,38 +82,6 @@ animations = [{
 "loop": false,
 "name": &"glint",
 "speed": 9.0
-}]
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_blueprint_gear"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": ExtResource("22_gear_00")
-}, {
-"duration": 1.0,
-"texture": ExtResource("23_gear_01")
-}, {
-"duration": 1.0,
-"texture": ExtResource("24_gear_02")
-}, {
-"duration": 1.0,
-"texture": ExtResource("25_gear_03")
-}, {
-"duration": 1.0,
-"texture": ExtResource("26_gear_04")
-}, {
-"duration": 1.0,
-"texture": ExtResource("27_gear_05")
-}, {
-"duration": 1.0,
-"texture": ExtResource("28_gear_06")
-}, {
-"duration": 1.0,
-"texture": ExtResource("29_gear_07")
-}],
-"loop": true,
-"name": &"rotate",
-"speed": 1.8
 }]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_market_awning"]
@@ -408,13 +369,11 @@ z_index = -7
 
 [node name="BlueprintGear" type="Node2D" parent="MechanicalDetails"]
 position = Vector2(1591, 482)
-metadata/step_seconds = 0.55
 
-[node name="HandDrawnGear" type="AnimatedSprite2D" parent="MechanicalDetails/BlueprintGear"]
+[node name="HandDrawnGear" type="Sprite2D" parent="MechanicalDetails/BlueprintGear"]
 scale = Vector2(0.255, 0.255)
 texture_filter = 1
-sprite_frames = SubResource("SpriteFrames_blueprint_gear")
-animation = &"rotate"
+texture = ExtResource("22_gear_00")
 
 [node name="MetalGlints" type="Node2D" parent="."]
 z_index = -7

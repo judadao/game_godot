@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/priest_animated_sprite.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/town/npc/priest/priest_animation_atlas.png" id="2_atlas"]
+
+[node name="PriestAnimatedSprite" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="CharacterSprite" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(0, -256)
+texture = ExtResource("2_atlas")
+hframes = 8
+vframes = 4

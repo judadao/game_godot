@@ -92,10 +92,7 @@ func _run() -> void:
 func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 	var viewport := SubViewport.new()
 	viewport.size = viewport_size
-	var should_capture := (
-		not _capture_directory.is_empty()
-		and viewport_size == Vector2i(1280, 720)
-	)
+	var should_capture := not _capture_directory.is_empty()
 	viewport.render_target_update_mode = (
 		SubViewport.UPDATE_ALWAYS if should_capture else SubViewport.UPDATE_DISABLED
 	)
@@ -249,16 +246,17 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 	if should_capture:
 		await _capture_viewport(
 			viewport,
-			String(descriptor["name"]).to_snake_case()
+			String(descriptor["name"]).to_snake_case(),
+			viewport_size
 		)
 		if descriptor["name"] == "PlayerBlacksmithUI":
 			ui.call("select_blacksmith_service", &"sales_table")
 			await process_frame
-			await _capture_viewport(viewport, "player_blacksmith_sales_table")
+			await _capture_viewport(viewport, "player_blacksmith_sales_table", viewport_size)
 		elif descriptor["name"] == "ShopUI":
 			ui.call("set_shop_context", &"equipment_blueprint_shop")
 			await process_frame
-			await _capture_viewport(viewport, "equipment_blueprint_shop")
+			await _capture_viewport(viewport, "equipment_blueprint_shop", viewport_size)
 
 	await _check_alternate_states(ui, String(descriptor["name"]), window_rect, viewport_size)
 	viewport.queue_free()
@@ -503,7 +501,7 @@ func _check_text_minimum(
 	)
 
 
-func _capture_viewport(viewport: SubViewport, file_stem: String) -> void:
+func _capture_viewport(viewport: SubViewport, file_stem: String, viewport_size: Vector2i) -> void:
 	DirAccess.make_dir_recursive_absolute(_capture_directory)
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	for child in viewport.find_children("*", "CanvasItem", true, false):
@@ -511,7 +509,9 @@ func _capture_viewport(viewport: SubViewport, file_stem: String) -> void:
 	for _frame in 5:
 		await process_frame
 		await RenderingServer.frame_post_draw
-	var capture_path := _capture_directory.path_join("%s_1280x720.png" % file_stem)
+	var capture_path := _capture_directory.path_join(
+		"%s_%dx%d.png" % [file_stem, viewport_size.x, viewport_size.y]
+	)
 	_expect(
 		viewport.get_texture().get_image().save_png(capture_path) == OK,
 		"Visual capture must save to %s." % capture_path

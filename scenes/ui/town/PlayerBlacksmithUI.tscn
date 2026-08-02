@@ -1,7 +1,8 @@
 [gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" uid="uid://bl4jfw2re34g3" path="res://scripts/ui/town/player_blacksmith_ui.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/curated/game_own/world/legacy_fantasy/Character/Idle/Idle-Sheet.png" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/town/TownNPCPortrait.tscn" id="2_portrait"]
+[ext_resource type="Texture2D" path="res://assets/town/npc/characters/scientist_cutout.png" id="13_scientist"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png" id="3_forge"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Ore_04.png" id="4_upgrade"]
 [ext_resource type="Texture2D" path="res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_01.png" id="5_sales"]
@@ -12,10 +13,6 @@
 [ext_resource type="Texture2D" path="res://assets/ui/shop/generated/shop_sign.png" id="10_sign"]
 [ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon1_1.png" id="11_close"]
 [ext_resource type="Theme" path="res://scenes/ui/town/TownServiceFrameTheme.tres" id="12_frame_theme"]
-
-[sub_resource type="AtlasTexture" id="PlayerPortrait"]
-atlas = ExtResource("2_player")
-region = Rect2(0, 0, 64, 80)
 
 [sub_resource type="StyleBoxFlat" id="WindowStyle"]
 content_margin_left = 2.0
@@ -483,35 +480,29 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.64, 0.34, 1)
 theme_override_font_sizes/font_size = 13
-text = "PLAYER FORGEMASTER"
+text = "FORGE RESEARCHER"
 
 [node name="PortraitFrame" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
 custom_minimum_size = Vector2(218, 252)
 layout_mode = 2
 theme_type_variation = &"TownServicePortrait"
 
-[node name="PortraitCenter" type="CenterContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout/PortraitFrame"]
+[node name="ProtagonistPortrait" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout/PortraitFrame" instance=ExtResource("2_portrait")]
 layout_mode = 2
-
-[node name="ProtagonistPortrait" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout/PortraitFrame/PortraitCenter"]
-custom_minimum_size = Vector2(196, 245)
-layout_mode = 2
-texture_filter = 1
-texture = SubResource("PlayerPortrait")
-expand_mode = 3
-stretch_mode = 5
+character_texture = ExtResource("13_scientist")
+phase_offset = 1.8
 
 [node name="ForgemasterName" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.50, 1)
 theme_override_font_sizes/font_size = 20
-text = "THE FORGEKEEPER"
+text = "PROFESSOR ORIN"
 
 [node name="ForgemasterRole" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.58, 0.69, 0.72, 1)
 theme_override_font_sizes/font_size = 13
-text = "MASTER OF THE PRIVATE FORGE"
+text = "ARCANE WORKSHOP ASSISTANT"
 autowrap_mode = 2
 
 [node name="ForgeServiceButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/ServiceRail/ServiceLayout"]

@@ -1152,10 +1152,23 @@ Inventory static header、tabs、lists 與 detail panels 由唯一 owner
 - `ShopMerchantPanel.tscn`
 - `ShopItemRow.tscn`
 
-皆由 ShopUI 使用，無獨立 script/API；interaction由父controller管理。
+皆由 ShopUI 使用；interaction與商品資料綁定仍由父controller管理。
 `ShopItemRow` 已是 icon/name/stock/price 的結構化 row；`ShopDetailPanel` 提供
 preview、可捲動描述、quantity 與 total；`ShopMerchantPanel` 提供 merchant
-portrait、dialogue 與操作提示。
+portrait、dialogue 與操作提示。其 `MerchantPortrait` instance 下述
+`TownNPCPortrait`，而不是自行擁有 atlas region 或動畫 controller。
+
+### 21.6.1 TownNPCPortrait
+
+- Scene：`scenes/ui/town/TownNPCPortrait.tscn`
+- Script：`scripts/ui/town/town_npc_portrait.gd`
+- Consumers：`ShopMerchantPanel`、`MaterialYardUI`、`PlayerBlacksmithUI`、`TownHallUI`
+- API：`set_character_texture()`、`play_state()`、`advance_animation()`、
+  `get_active_state()`、`get_supported_states()`
+- Responsibility：在共同 `218×252` Town service portrait frame 中裁切新 NPC 半身，
+  並以 5 FPS 離散 cadence 呈現 idle、聊天、說笑與情緒 pose。
+- Boundary：只擁有人物 texture、裁切與 presentation transform；姓名、台詞、商店
+  context、交易與 focus 仍由各 screen owner 管理。
 
 ### 21.7 Town building service screens
 
@@ -1521,6 +1534,19 @@ the HUD never reads gameplay state directly.
 
 ## 33. Town Eternal Forge Components
 
+### TownNPCLife / TownNPCVisual
+
+- Scripts：`res://scripts/npc/town_npc_life.gd`、`res://scripts/npc/town_npc_visual.gd`
+- Consumers：Town traveler、witch、guard、item merchant、blacksmith、innkeeper scenes
+- Status：Current — Active Runtime Presentation
+- Responsibility：`TownNPCLife` 在各角色 authored home 附近選擇待機、坐下休息、情緒、散步與
+  鄰居社交，協調會合、互相面對聊天及返回原位；`TownNPCVisual` 只播放 4 × 9 atlas
+  state、逐格 cadence 與左右面向。
+- Coordination：`town_life_npcs` group 只用於尋找可用鄰居；祭司對女巫的專屬路線使用
+  external-interaction lock，期間不得讓女巫同時接受另一個社交配對。
+- Boundary：不擁有建築互動、商店、gameplay dialogue、NavMesh、quest 或 persistent
+  schedule；TownBuildingEntrances 與既有 Game controller 仍是互動 authority。
+
 ### TownModularVisuals
 
 - Scene：`res://scenes/maps/town/components/TownModularVisuals.tscn`
@@ -1538,7 +1564,7 @@ the HUD never reads gameplay state directly.
   `TownPortalSet/BattleGateway` 擁有，碰撞、NPC 與 progression 不移入此 scene。
 - Visual style：`res://data/town_visual_style.json` 定義
   `storybook_handdrawn_pixel_v2` 的手繪墨線、紙張顆粒、木石色盤與統一光向；
-  `town_style_direction_a_locked.png` 是正式構圖基準。藍天山景 plate、
+  `town_style_direction_a_locked.png` 是正式構圖基準。獨立天空、透明手繪雲、群山、
   生成的繁盛秋林 canopy、西側粗像素破敗石塔、橫向灌木殘骸帶、右緣針葉樹
   殘牆群與中央秋樹，共用
   `a_locked_autumn_green_ruins_layers_v3` 素材規則；專用綠色 ruins layer
@@ -1566,6 +1592,27 @@ the HUD never reads gameplay state directly.
 - Design handoff：`tools/build_town_modular_figma_board.py` 讀取同一 JSON 與分件
   source，產生單頁 board；第一區鎖定 Image #2，第二區才放重組候選及可選取
   素材庫。候選未經核准不得切回 runtime。
+
+### TownSkyLayer / TownCloudLayer
+
+- Scenes：`res://scenes/maps/town/components/TownSkyLayer.tscn`、
+  `res://scenes/maps/town/components/TownCloudLayer.tscn`
+- Scripts：`res://scripts/maps/town_sky_layer.gd`、
+  `res://scripts/maps/town_cloud_layer.gd`
+- Owner：`TownBackdrop`
+- Status：Current — Active Runtime Presentation
+- Sky contract：`TownSkyLayer/Sky` 是唯一 cloud-free 天空物件，覆蓋 `1942 × 720`
+  gameplay world；`set_sky_tint(Color)` 只做乘色，`set_sky_grade(Color, strength)` 使用
+  `town_sky_grade.gdshader` 做 horizon-weighted color grade。Town root 的
+  `set_time_of_day_progress()`／`set_time_of_day_preset()` 是同步 owner，未來時間系統只需
+  呼叫該 API，不得分別搜尋各 layer。
+- Cloud contract：八個獨立 `Sprite2D` 重用四張核准透明手繪雲，使用至少四種
+  `7–18 px/s` 速度、`0–4 px` 垂直漂移與畫面外回繞，禁止退化成同步移動的整張雲幕。
+  `res://shaders/cloud_edge_cleanup.gdshader` 只在透明素材左右邊緣移除孤立碎點與過薄的
+  水平假接縫，不得平滑、重繪或切斷主雲色塊。
+  `set_cloud_tint(Color)` 由 Town 全域 time-of-day API 同步呼叫。
+- Layering：`Sky z=-100`、`Clouds z=-98`、透明群山 `z=-95`；雲必須在天空前、
+  山稜後，且不得建立 collision、interaction、NPC 或 progression authority。
 
 ### TownEternalFlameAnimation
 
@@ -1616,12 +1663,12 @@ the HUD never reads gameplay state directly.
   鐵匠爐暖光與手繪火焰、七組布料自由端、Town Hall 秒針、劍魂商劍徽反光與
   圖紙商齒輪。`TownWindowGlow.tscn` 只遮罩玻璃格；窗戶保持常亮，以不同週期和
   相位進行約 10–15% 的暖色微閃，不可同步明滅或照亮牆面。
-- Asset contract：鐵匠爐沿用八幀手繪火焰；劍徽反光與齒輪使用
-  `assets/town/modular_v3/animation/building/` 下的透明手繪逐格素材、nearest
-  filtering 與固定像素 pivot。禁止以 `Line2D`、`Polygon2D` 或平滑 shader
-  代替這兩組 raster 動畫。
+- Asset contract：鐵匠爐沿用八幀手繪火焰；劍徽反光使用
+  `assets/town/modular_v3/animation/building/` 下的透明手繪逐格素材，齒輪只使用同目錄
+  的手繪中性幀。兩者維持 nearest filtering 與固定像素 pivot，禁止以 `Line2D`、
+  `Polygon2D` 或平滑 shader 代替 raster 素材。
 - Motion contract：布料只允許固定上緣後的 1px 整數位移；秒針以整數像素位置
-  跳動；齒輪以離散手繪幀旋轉；劍光為短促事件且大部分時間 hidden。
+  跳動；齒輪保持靜態且不得播放旋轉動畫；劍光為短促事件且大部分時間 hidden。
 - Boundary：只擁有 presentation，不建立 collision、interaction、NPC、
   service route 或 Town progression。
 

@@ -30,7 +30,6 @@ const REQUIRED_SOURCES := {
 	"res://assets/town/modular_v2/buildings/sword_soul_shop_base_v3.png": true,
 	"res://assets/town/modular_v2/buildings/blueprint_research_base_v3.png": true,
 	"res://assets/town/modular_v2/buildings/east_residence_base_v3.png": true,
-	"res://assets/town/modular_v3/background/town_a_background_plate.png": true,
 	"res://assets/town/modular_v1/background/mountain_layer.png": true,
 	"res://assets/town/modular_v1/background/castle_layer.png": true,
 	"res://assets/town/modular_v1/ground/stone_road_tile.png": true,

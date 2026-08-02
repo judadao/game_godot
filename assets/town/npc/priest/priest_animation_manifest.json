@@ -1,0 +1,37 @@
+{
+  "version": 3,
+  "character": "priest",
+  "identity_reference": "res://concept/characters/村長.png",
+  "construction": "reviewed_full_pose_strips",
+  "adult_head_heights": 6.5,
+  "runtime_target_height_px": 120,
+  "pose_strips": {
+    "front_idle": "res://assets/town/npc/priest/pose_strips_v2/front_idle.png",
+    "front_chat": "res://assets/town/npc/priest/pose_strips_v2/front_chat.png",
+    "side_walk": "res://assets/town/npc/priest/pose_strips_v2/side_walk.png",
+    "side_chat": "res://assets/town/npc/priest/pose_strips_v2/side_chat.png"
+  },
+  "parts": {
+    "front": "res://assets/town/npc/priest/parts/priest_front_parts.png",
+    "side": "res://assets/town/npc/priest/parts/priest_side_parts.png"
+  },
+  "atlas": "res://assets/town/npc/priest/priest_animation_atlas.png",
+  "frame_size": [384, 512],
+  "columns": 8,
+  "rows": 4,
+  "animations": {
+    "front_idle": {"row": 0, "frames": 8, "fps": 6.0, "loop": true},
+    "front_chat": {"row": 1, "frames": 8, "fps": 8.0, "loop": true},
+    "side_walk": {"row": 2, "frames": 8, "fps": 10.0, "loop": true},
+    "side_chat": {"row": 3, "frames": 8, "fps": 8.0, "loop": true}
+  },
+  "body_groups": ["head", "chest", "abdomen", "left_arm", "right_arm", "lower_robe", "legs"],
+  "generation": {
+    "method": "built-in imagegen full-pose strips with local chroma-key extraction",
+    "source_background": "#00ff00",
+    "source_boards_retained": true,
+    "legacy_modular_parts_used_in_runtime_atlas": false,
+    "disconnected_generation_islands_removed": true,
+    "temporal_review": "two-phase gait and single-arc conversation gestures"
+  }
+}

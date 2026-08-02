@@ -6,8 +6,8 @@ const FORBIDDEN_VISIBLE_FOREST_SOURCES := [
 	"res://concept/town/can_use/background/parallax_forest_strip_v3.png",
 ]
 const EXPECTED_SOURCE_BY_ID := {
-	"background_sky":
-		"res://assets/town/modular_v3/background/town_a_background_plate.png",
+	"background_mountains":
+		"res://assets/town/modular_v1/background/mountain_layer.png",
 	"background_forest":
 		"res://assets/town/modular_v3/background/autumn_forest_canopy_base_v2.png",
 	"background_green_ruins":
@@ -96,10 +96,6 @@ const EXPECTED_SOURCE_REGION_BY_ID := {
 	"ground_transition_hall": [545, 16, 548, 101],
 	"ground_transition_east_shops": [1234, 20, 799, 96],
 }
-const OLD_BACKGROUND_LAYER_IDS := [
-	"background_mountains",
-	"background_distant_city",
-]
 const REPEATED_GROUND_PREFIXES := [
 	"ground_bridge_wall_",
 	"ground_stone_road_",
@@ -144,11 +140,10 @@ func _run() -> void:
 		return
 
 	var entries_by_id := _index_entries(layout.get("layers", []))
-	_assert_a_background_plate(entries_by_id)
+	_assert_separated_background_layers(entries_by_id)
 	_assert_autumn_forest_canopy(entries_by_id)
 	_assert_green_ruins_midground(entries_by_id)
 	_assert_locked_autumn_tree_material(entries_by_id)
-	_assert_old_background_layers_hidden(entries_by_id)
 	_assert_repeated_ground_visible(entries_by_id)
 	_assert_ground_overlays_hidden(entries_by_id)
 	_assert_landmark_aspect_ratios(entries_by_id)
@@ -181,19 +176,26 @@ func _index_entries(layers_variant: Variant) -> Dictionary:
 	return entries_by_id
 
 
-func _assert_a_background_plate(entries_by_id: Dictionary) -> void:
-	var background := _require_entry(entries_by_id, "background_sky")
-	if background.is_empty():
+func _assert_separated_background_layers(entries_by_id: Dictionary) -> void:
+	_expect(
+		not entries_by_id.has("background_sky"),
+		"Town modular layout must not retain the baked sky-and-cloud plate."
+	)
+	var mountains := _require_entry(entries_by_id, "background_mountains")
+	if mountains.is_empty():
 		return
 	_expect(
-		String(background.get("source", ""))
-			== String(EXPECTED_SOURCE_BY_ID["background_sky"]),
-		"Town must use the clean approved A background plate as its exact sky source."
+		String(mountains.get("source", ""))
+			== String(EXPECTED_SOURCE_BY_ID["background_mountains"]),
+		"Separated Town sky must restore the authored transparent mountain layer."
 	)
-	_expect(
-		bool(background.get("visible", false)),
-		"The clean approved A background plate must remain visible."
-	)
+	_expect(bool(mountains.get("visible", false)), "Separated Town mountains must remain visible.")
+	var distant_city := _require_entry(entries_by_id, "background_distant_city")
+	if not distant_city.is_empty():
+		_expect(
+			not bool(distant_city.get("visible", true)),
+			"Legacy distant-city layer must remain hidden."
+		)
 
 
 func _assert_locked_autumn_tree_material(entries_by_id: Dictionary) -> void:
@@ -304,17 +306,6 @@ func _assert_green_ruins_midground(entries_by_id: Dictionary) -> void:
 			and String(west_edge_ownership.get("mode", "")) == "none",
 		"The boundary tower, debris strip, and edge clusters must remain visual-only."
 	)
-
-
-func _assert_old_background_layers_hidden(entries_by_id: Dictionary) -> void:
-	for entry_id in OLD_BACKGROUND_LAYER_IDS:
-		var entry := _require_entry(entries_by_id, entry_id)
-		if entry.is_empty():
-			continue
-		_expect(
-			not bool(entry.get("visible", true)),
-			"Legacy Town background layer must remain hidden: %s" % entry_id
-		)
 
 
 func _assert_repeated_ground_visible(entries_by_id: Dictionary) -> void:

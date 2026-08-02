@@ -35,12 +35,6 @@ position = Vector2(1700, 702)
 [node name="ParallaxBackground" parent="." unique_id=1600227815 instance=ExtResource("2_backdrop")]
 position = Vector2(0, 0)
 
-[node name="Sky" parent="ParallaxBackground" index="0"]
-visible = false
-
-[node name="Clouds" parent="ParallaxBackground" index="1"]
-visible = false
-
 [node name="Mountains" parent="ParallaxBackground" index="2" unique_id=1144931803]
 visible = false
 position = Vector2(23, 8)

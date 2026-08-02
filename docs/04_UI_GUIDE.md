@@ -639,7 +639,7 @@ HUDLayer
 
 - Material Yard：左側店長肖像，中欄 Materials／Forge Tools offers，右欄商品、
   持有量、火炬 Tier、數量與購買。
-- Player Blacksmith：左側主角肖像；Forge 依圖紙鍛造 equipment／Sword Soul，
+- Player Blacksmith：左側鍛造研究員肖像；Forge 依圖紙鍛造 equipment／Sword Soul，
   Workshop Upgrade 解鎖鍛造上限，Sales Table 顯示商品、顧客與 `+GOLD` 回饋。
 - Town Hall：左側村長肖像，中欄只保留 Overview／Hall Upgrade，右欄顯示當前
   village stage 或下一級成本。
@@ -653,6 +653,13 @@ Town Hall、Material Yard、Player Blacksmith、Sword Soul Blueprint Shop 與
 Equipment Blueprint Shop 使用同一套功能建築大框架。共同 presentation 由
 `TownServiceFrameTheme.tres` 擁有，包括 window、portrait、title 與 Close button
 variations；各 screen 不得以 local override 改寫這四個共同部分。
+
+四種 screen 的人物框都 instance `TownNPCPortrait.tscn`。此 component 以同一套
+`concept/characters` 透明角色圖呈現固定半身裁切，提供 5 FPS idle／chat／laugh 與
+happy／sad／surprised／angry pose cadence；`ShopUI.set_shop_context()` 只切換角色 texture
+與 presentation state，不得動態重建 portrait hierarchy。Material Yard 使用雜貨店大叔、
+Player Blacksmith 使用瘋狂科學家、Town Hall 使用村長、Sword Soul／Equipment Blueprint
+分別使用女巫／瘋狂科學家。
 
 共同 geometry 為 `1040×640` window、`58px` header、header 下方 `10px` 間距、
 `218px` 左側人物欄、`218×252` 人物框與 `270px` 中間功能／catalog 欄；欄間距

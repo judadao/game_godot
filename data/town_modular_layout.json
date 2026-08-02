@@ -13,29 +13,13 @@
   },
   "layers": [
     {
-      "id": "background_sky",
-      "category": "background",
-      "source": "res://assets/town/modular_v3/background/town_a_background_plate.png",
-      "position": [971, 404.5],
-      "target_size": [1942, 809],
-      "z_index": -100,
-      "visible": true,
-      "interaction_ownership": {
-        "mode": "none",
-        "owner_scene": "",
-        "node_path": "",
-        "interaction_id": "",
-        "service_id": ""
-      }
-    },
-    {
       "id": "background_mountains",
       "category": "background",
       "source": "res://assets/town/modular_v1/background/mountain_layer.png",
       "position": [971, 334],
       "target_size": [1942, 540],
       "z_index": -95,
-      "visible": false,
+      "visible": true,
       "interaction_ownership": {
         "mode": "none",
         "owner_scene": "",

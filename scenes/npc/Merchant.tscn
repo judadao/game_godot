@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/npc/merchant.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://concept/town/can_use/npc/npc_npc_archetype_003.png" id="2_texture"]
+[ext_resource type="Texture2D" path="res://assets/town/npc/characters/grocer_animation_atlas.png" id="2_texture"]
+[ext_resource type="Script" path="res://scripts/npc/town_npc_visual.gd" id="3_visual"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(46, 92)
@@ -19,9 +20,19 @@ display_name = "Item Merchant"
 dialogue_id = &"item_merchant_greeting"
 shop_id = &"general_store"
 
-[node name="Visual" type="Sprite2D" parent="."]
+[node name="Visual" type="Node2D" parent="."]
+script = ExtResource("3_visual")
+target_height = 118.0
+ambient_profile = "merchant"
+phase_offset = 0.8
+
+[node name="VisualRoot" type="Node2D" parent="Visual"]
+
+[node name="BodySprite" type="Sprite2D" parent="Visual/VisualRoot"]
+texture_filter = 1
 texture = ExtResource("2_texture")
-offset = Vector2(0, -82)
+region_enabled = true
+region_rect = Rect2(0, 0, 144, 152)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -46)

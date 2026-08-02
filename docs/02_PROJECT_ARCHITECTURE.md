@@ -193,8 +193,8 @@ Town canonical content 維持 `1942 × 720` Eternal Forge gameplay world 與
 `y=672` baseline。`res://data/town_modular_layout.json` 定義
 `1942 × 809` source canvas 上由 layout 列出的可替換物件，
 `tools/build_town_modular_scene.py` 將其生成為 editor 與 runtime 共用的
-`TownModularVisuals.tscn`；`TownBackdrop/ModularVisuals` 是目前 presentation
-authority。核准的 Image #2 保留在 hidden
+`TownModularVisuals.tscn`；`TownBackdrop/ModularVisuals` 與獨立的
+`TownSkyLayer`／`TownCloudLayer` 共同組成目前 presentation authority。核准的 Image #2 保留在 hidden
 `TownBackdrop/EternalForgeConcept` 作背景、比例與整體構圖 reference。
 `tools/build_town_modular_figma_board.py` 產生單頁 Figma board，並以同一 layout
 輸出完整重組預覽與可單獨選取的分件素材庫。
@@ -202,7 +202,12 @@ Town 視覺統一採用 `data/town_visual_style.json` 的
 `storybook_handdrawn_pixel_v2`：手繪不規則墨線、紙張顆粒、低飽和木石色、
 冷苔綠陰影與左上暖蜜色主光。正式排版權威是
 `concept/town/main_horizontal_concept/town_style_direction_a_locked.png`。
-`town_a_background_plate.png` 提供藍天、白雲與群山；屋頂後方另疊
+天空改由 `TownSkyLayer.tscn` 的 cloud-free `town_sky_cloud_free_v1.png` 獨立提供，並以
+`set_sky_tint()`／`set_sky_grade()` 提供日照時段調色邊界；Town root 的
+`set_time_of_day_progress()` 在 0.65 後同步將天空 horizon color grade、雲、建築、環境動畫、
+NPC、Portal 與 Player 推向 golden-hour 光色，預設不自行推進時間。`TownCloudLayer.tscn` 使用八個可獨立選取的
+透明手繪雲物件，以不同水平速度與低幅垂直漂移循環進出地圖。群山則由
+`TownModularVisuals/background_mountains` 的透明 `mountain_layer.png` 提供；屋頂後方另疊
 `autumn_forest_canopy_base_v2.png` 的繁盛秋林與
 `autumn_ancient_tree_base_v2.png` 主樹。前景建築與秋林之間另有 visual-only
 `green_ruins_boundary_tower_base_v4.png`、
@@ -250,8 +255,9 @@ scale 的 `0.48`，落地停留後原地淡出，不在半空 loop 或逆向飛�
 十一組實際可見窗格遮罩保持常亮，只以錯相、低幅的暖色火光變化補足室內生命感；遮罩
 必須限制在玻璃內，不得照亮石牆或木框。鐵匠爐使用既有手繪 8 幀火焰與局部
 暖光；布料只在固定支點做 1px 整數位移。Town Hall 秒針以整數像素步進，劍魂商
-劍徽反光與圖紙商齒輪則使用手繪逐格透明素材，不得以向量線條或 runtime
-重建取代。此 component 不擁有碰撞、互動或建築 progression。
+劍徽反光使用手繪逐格透明素材，圖紙商齒輪固定顯示手繪中性幀且不播放旋轉動畫；
+兩者不得以向量線條或 runtime 重建取代。此 component 不擁有碰撞、互動或建築
+progression。
 八塊道路與八塊橋牆組成唯一可見地板。道路視覺面從 `y=660`
 開始，與維持在 `y=672` 的角色、建築與互動基準重疊 12 px，避免腳下與地基露出
 背景縫隙。建築與道路間另由一張三模組透明 atlas 以五段 source-region crop
@@ -624,8 +630,32 @@ service；修改 mappings或處理順序時須用實際 run驗證。
 - 通用 NPC/Merchant scene可使用 `StaticBody2D` + `Interactives` group。
 - Town NPC由 `scenes/maps/town/components/TownNPCs.tscn` 組合，且是
   display-only；Town 互動由 `TownBuildingEntrances` 負責。
-- 沒有 NPC navigation、schedule、AI movement或persistent NPC state。
+- 七個 Town placement 維持各自 dedicated scene；祭司以外的六個 Town NPC 根節點為
+  `AnimatableBody2D` + `TownNPCLife`，其 `Visual` 使用 `TownNPCVisual`。角色透明圖由
+  `concept/characters` 的五個核准設計產生，再建立六套 world-scale 4 幀 × 9 狀態
+  atlas；idle、side walk、side chat 使用獨立生成的完整成人姿勢，sit／laugh／情緒 row
+  保留相同角色身份的既有 authored poses。守衛與旅店主人有獨立服色、長矛／帽子與
+  texture identity，不會在同一 Town 畫面複製 traveler／grocer。runtime 不再引用舊
+  `town_npcs_atlas_v2.png`。
+- 穩定 placement `NPCs/Mayor` 現由祭司角色呈現：`Mayor.tscn` 保留外部 scene/path
+  compatibility，但根節點是 `AnimatableBody2D`，由 `PriestTownBehavior` 驅動
+  wait-home、walk-to-witch、chat-with-witch、walk-home 循環；`Visual` 使用獨立
+  8 columns × 4 rows 完整姿勢祭司 atlas；每個 row 由獨立的 8 幀成人骨架動作帶組成，
+  舊版異同比例分件不得再直接組成 runtime 幀。祭司在女巫右側停靠、面向女巫聊天，結束後
+  回到原點正面等待；女巫的 ambient state 只在對話期間暫停並於離開時恢復。
+  祭司移動時使用比一般 NPC baseline 前移 46 px 的 foreground lane 與較高 z-index，
+  避免穿過正在散步、坐下或交談的自主 NPC 身體。
+- `TownNPCVisual` 以 5 FPS 離散手繪 cadence 提供 idle、walk、sit、chat、laugh、
+  happy、sad、surprised、angry，並只負責 atlas state 與面向。`TownNPCLife` 是六個
+  Town NPC 的位置／社交 authority：在 authored home 附近隨機散步、坐下休息、抽取情緒、尋找
+  可用鄰居、保持間距走到會合點、面向彼此聊天，再返回精確 home anchor。
+- `TownNPCLife` 是 session-local presentation simulation，不使用 NavMesh、不進入存檔，
+  不新增建築互動或對話權威。祭司仍由 `PriestTownBehavior` 單獨控制；祭司接近女巫時
+  透過 external-interaction lock 暫停女巫的自主行為，離開後恢復。
 - Merchant只發 intent signal；stock/economy由 `Game` 管理。
+- Production Autumn safe-zone 的 `SeatedTrailMerchant` 與 compatibility
+  `scenes/npc/Merchant.tscn` 也使用相同 atlas animation hierarchy；前者固定為 sit，
+  並保留原有 interaction/shop signal authority。
 
 ### 9.3 Dialogue — Partial
 

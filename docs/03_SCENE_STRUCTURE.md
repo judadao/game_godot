@@ -185,8 +185,11 @@ Town canonical scene另有：
 - camera/map metadata
 
 Town gameplay world 維持 `1942 × 720` 與 `y=672` baseline。
-`TownBackdrop/ModularVisuals` 顯示核准的 Base 分件組圖，是 runtime
-presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
+`TownBackdrop/Sky` 與 `TownBackdrop/Clouds` 分別 instance
+`TownSkyLayer.tscn` 與 `TownCloudLayer.tscn`；前者只擁有可調色的 cloud-free 天空，
+後者擁有八個錯速、低幅垂直漂移並離場回繞的透明手繪雲物件。
+`TownBackdrop/ModularVisuals` 顯示核准的群山與其餘 Base 分件組圖；三者共同組成 runtime
+presentation authority。`TownBackdrop/EternalForgeConcept` 保留核准的
 `town_style_direction_a_locked.png` 作 hidden composition reference。
 `TownBackdrop/EternalFlameAnimation` 另以
 `TownEternalFlameAnimation.tscn` 疊在不滅火炬 Base v5 塔身上。`FireLayers`
@@ -202,8 +205,9 @@ presentation authority；`TownBackdrop/EternalForgeConcept` 保留核准的
 靜態 Base 不含旋渦、紫色內緣光或晶石 emission。
 `TownBackdrop/BuildingAnimation` instance `TownBuildingAnimation.tscn`，在
 `ModularVisuals` 之後疊加窗格火光、鐵匠爐手繪火焰、布料自由端、Town Hall
-秒針、劍徽手繪反光與圖紙商手繪齒輪。所有節點均為 editor-authored visual-only
-overlay；窗光只微幅錯相變色且不得離開玻璃格，布料只允許整數像素低幅位移。
+秒針、劍徽手繪反光與圖紙商靜態手繪齒輪。齒輪固定顯示中性幀，不播放旋轉動畫。
+所有節點均為 editor-authored visual-only overlay；窗光只微幅錯相變色且不得離開
+玻璃格，布料只允許整數像素低幅位移。
 `TownBackdrop/AmbientAnimation` instance
 `TownAmbientAnimation.tscn`；`CanopyLayers/AncientTreeWind` 以完整古樹與
 固定為零的 root-anchored shader 保存正確樹幹方向與穩定基底；
@@ -356,6 +360,10 @@ Current composition：
 - active：`scenes/maps/town/components/TownBackdrop.tscn`
 - linked active presentation component：
   `scenes/maps/town/components/TownModularVisuals.tscn`
+- linked active sky component：
+  `scenes/maps/town/components/TownSkyLayer.tscn`
+- linked active cloud component：
+  `scenes/maps/town/components/TownCloudLayer.tscn`
 - linked active landmark animation component：
   `scenes/maps/town/components/TownEternalFlameAnimation.tscn`
 - linked active building animation component：
@@ -382,9 +390,15 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 - `TownModularVisuals` 的已登錄來源素材遵循
   `data/town_visual_style.json`；中央古樹保有自己的 source 與 object ID，
   可獨立替換且不建立 collision。
-- `background_sky` 使用
-  `assets/town/modular_v3/background/town_a_background_plate.png`，提供
-  locked A 的藍天、白雲與群山；`background_forest` 改用生成的
+- `TownSkyLayer/Sky` 使用 cloud-free
+  `assets/town/modular_v3/background/town_sky_cloud_free_v1.png`，可透過
+  `set_sky_tint()` 獨立調色，或由 Town root 的 `set_time_of_day_progress()` 透過
+  `town_sky_grade.gdshader` 套用上方保留藍色、地平線偏暖的 golden-hour grade；同一 API
+  也同步調整雲、`TownBackdrop` 其餘直接 visual children、Buildings、Ground、Props、
+  Portals、NPCs、EternalForgeIdentity 與 Player。此 API 不擁有時鐘，也不自動推進；
+  `TownCloudLayer` 的八個 Sprite2D 重用四張透明手繪雲，以 `7–18 px/s` 錯速向右移動、
+  `0–4 px` 低幅上下漂移並在完整離場後從左側回繞。`background_mountains` 使用透明
+  `mountain_layer.png`，不得再恢復烘焙天空與白雲的 background plate；`background_forest` 改用生成的
   `autumn_forest_canopy_base_v2.png` 填滿屋頂後方空隙，中央大秋樹使用
   `autumn_ancient_tree_base_v2.png`。`background_green_ruins` 使用專用
   `green_ruins_boundary_tower_base_v4.png` 將粗像素破敗古塔放在西側邊界，且移除
@@ -602,6 +616,42 @@ Town NPC variant可override：
 - Merchant的`shop_id`
 
 Override不應改掉base child names或group。
+
+一般 Town display-only NPC scene 的穩定移動／視覺樹為：
+
+```text
+TownNpcName (AnimatableBody2D, TownNPCLife, town_life_npcs)
+├── Visual (TownNPCVisual)
+│   └── VisualRoot (Node2D)
+│       └── BodySprite (Sprite2D, transparent concept cutout)
+└── CollisionShape2D
+```
+
+`TownNPCLife` 只在 authored home 附近驅動 idle／rest／emote／wander／social-walk／
+social-chat／return-home，配對時保留 100 px 左右間距並令雙方互相面對；不建立 NavMesh、
+save state 或 gameplay dialogue。`Visual` 支援 idle／walk／sit／chat／laugh 與
+happy／sad／surprised／angry，並接受 life controller 的狀態與左右面向。Town 建築互動
+仍只由 `TownBuildingEntrances` 擁有；不得在這七個 display NPC 加回 `InteractionArea`。
+`BodySprite` 使用 `144×152` cell、4 columns × 9 rows 的 world animation atlas；每個 state
+切換自己的 atlas row；idle／walk／chat row 必須是完整姿勢逐格，不能退回單張高解析
+cutout 的整體位移。`SeatedTrailMerchant`
+與 compatibility Merchant 允許保留 `InteractionArea`，但其 `Visual` hierarchy 相同。
+
+祭司保留外部節點路徑 `NPCs/Mayor`，但使用下列專屬移動／視覺樹：
+
+```text
+Mayor (AnimatableBody2D, PriestTownBehavior)
+├── Visual (PriestAnimatedSprite)
+│   └── CharacterSprite (Sprite2D, 8 columns × 4 rows)
+└── BodyCollision (CollisionShape2D)
+```
+
+`PriestTownBehavior` 是祭司往返女巫的唯一移動 authority；不得由 Town root 或
+`TownNPCVisual` 重複更新祭司位置。外部 `Mayor` 名稱只保留 scene/path compatibility，
+角色素材與 `metadata/character_id` 為 `priest`。女巫進入祭司對話時由
+`TownNPCLife.set_external_interaction()` 暫停自主配對與走動，避免兩套 authority 競爭；
+祭司移動段使用 `foreground_lane_offset = 46`、`walk_speed = 100` 與 `z_index = 2`
+穿越街道，降低停留在其他 NPC home anchor 正前方的時間。
 
 ### 8.3 Portal rule
 
