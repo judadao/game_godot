@@ -27,6 +27,8 @@ const SOCIAL_SEQUENCE_STATES: Array[StringName] = [
 ]
 const AMBIENT_EMOTE_STATES: Array[StringName] = [&"laugh", &"happy"]
 const CANCELLED_PARTNER_RETRY_SECONDS := 8.0
+const SOCIAL_MEETING_SEARCH_STEP := 16.0
+const SOCIAL_MEETING_SEARCH_STEPS := 64
 const ROLE_ACTIVITY_NAMES := {
 	"traveler": &"watch_square",
 	"witch": &"check_charms",
@@ -38,10 +40,13 @@ const ROLE_ACTIVITY_NAMES := {
 const ROLE_ACTIVITY_FALLBACK_STATES := {
 	"traveler": &"idle",
 	"witch": &"happy",
-	"guard": &"angry",
+	"guard": &"idle",
 	"grocer": &"happy",
 	"scientist": &"surprised",
 	"innkeeper": &"chat",
+}
+const ROLE_ACTIVITY_VISUAL_STATES := {
+	"guard": &"idle_look",
 }
 const ROLE_ARCHETYPES := {
 	"traveler": &"social",
@@ -68,8 +73,11 @@ const WORK_ROLES: Array[String] = ["witch", "guard", "grocer", "scientist", "inn
 @export_range(0.0, 1.0, 0.01) var social_chance := 0.34
 @export_range(0.0, 0.3, 0.01) var role_activity_chance := 0.18
 @export_range(8.0, 180.0, 1.0) var recent_partner_cooldown_seconds := 75.0
+@export_range(0.0, 300.0, 1.0) var minimum_social_recovery_seconds := 60.0
 @export_range(4.0, 30.0, 0.5) var minimum_role_recovery_seconds := 10.0
 @export_range(4.0, 30.0, 0.5) var maximum_role_recovery_seconds := 16.0
+@export_range(0.0, 1.0, 0.01) var idle_gesture_chance := 0.28
+@export_range(80.0, 220.0, 1.0) var social_scene_clearance := 120.0
 
 @onready var npc_visual: TownNPCVisual = $Visual
 
@@ -279,6 +287,9 @@ func set_external_interaction(active: bool, partner_position := Vector2.ZERO) ->
 	_external_lock = false
 	npc_visual.ambient_enabled = _external_previous_ambient
 	_partner = null
+	_interaction_cooldown_remaining = maxf(
+		_interaction_cooldown_remaining, minimum_social_recovery_seconds
+	)
 	_set_state(STATE_IDLE)
 	_state_timer = _next_idle_duration()
 
@@ -331,6 +342,8 @@ func _choose_next_activity() -> void:
 
 
 func _try_begin_social_pair() -> bool:
+	if _interaction_cooldown_remaining > 0.0:
+		return false
 	var best_partner: TownNPCLife
 	var best_relationship_count := 2147483647
 	var best_distance := INF
@@ -360,19 +373,107 @@ func _try_begin_social_pair() -> bool:
 	if not is_instance_valid(best_partner):
 		return false
 	var pair_spacing := _prepare_social_interaction(best_partner)
-	var midpoint := (position.x + best_partner.position.x) * 0.5
-	var self_is_left := position.x <= best_partner.position.x
+	var meeting := _resolve_clear_social_targets(best_partner, pair_spacing)
+	if meeting.is_empty():
+		_clear_prepared_social_interaction(best_partner)
+		return false
 	_begin_social_walk(
 		best_partner,
-		midpoint + (-pair_spacing if self_is_left else pair_spacing),
+		float(meeting["self_target_x"]),
 		get_instance_id() < best_partner.get_instance_id()
 	)
 	best_partner._begin_social_walk(
 		self,
-		midpoint + (pair_spacing if self_is_left else -pair_spacing),
+		float(meeting["partner_target_x"]),
 		get_instance_id() > best_partner.get_instance_id()
 	)
 	return true
+
+
+func _resolve_clear_social_targets(other: TownNPCLife, pair_spacing: float) -> Dictionary:
+	if not is_instance_valid(other) or get_parent() == null:
+		return {}
+	var midpoint := (position.x + other.position.x) * 0.5
+	var minimum_center := minf(position.x, other.position.x) + pair_spacing
+	var maximum_center := maxf(position.x, other.position.x) - pair_spacing
+	if minimum_center > maximum_center:
+		return {}
+	var required_clearance := maxf(
+		social_scene_clearance, other.social_scene_clearance
+	)
+	var center_offsets: Array[float] = [0.0]
+	for step_index in range(1, SOCIAL_MEETING_SEARCH_STEPS + 1):
+		center_offsets.append(-SOCIAL_MEETING_SEARCH_STEP * step_index)
+		center_offsets.append(SOCIAL_MEETING_SEARCH_STEP * step_index)
+	var self_is_left := position.x <= other.position.x
+	for center_offset in center_offsets:
+		var center := midpoint + center_offset
+		if center < minimum_center or center > maximum_center:
+			continue
+		var left_target := center - pair_spacing
+		var right_target := center + pair_spacing
+		if not _social_targets_are_clear(
+			other, left_target, right_target, required_clearance
+		):
+			continue
+		return {
+			"self_target_x": left_target if self_is_left else right_target,
+			"partner_target_x": right_target if self_is_left else left_target,
+		}
+	return {}
+
+
+func _social_targets_are_clear(
+	other: TownNPCLife,
+	left_target: float,
+	right_target: float,
+	required_clearance: float
+) -> bool:
+	for sibling in get_parent().get_children():
+		if sibling == self or sibling == other or not sibling is Node2D:
+			continue
+		var third := sibling as Node2D
+		if not third.is_in_group("NPCs"):
+			continue
+		if (
+			absf(third.position.x - left_target) < required_clearance
+			or absf(third.position.x - right_target) < required_clearance
+		):
+			return false
+		if third.has_method("get_home_position"):
+			var third_home := third.call("get_home_position") as Vector2
+			if (
+				absf(third_home.x - left_target) < required_clearance
+				or absf(third_home.x - right_target) < required_clearance
+			):
+				return false
+		if third is TownNPCLife:
+			var third_life := third as TownNPCLife
+			if third_life._is_in_social_sequence():
+				var reserved_x := third_life._target_position.x
+				if (
+					absf(reserved_x - left_target) < required_clearance
+					or absf(reserved_x - right_target) < required_clearance
+				):
+					return false
+	return true
+
+
+func _is_in_social_sequence() -> bool:
+	return _state == STATE_SOCIAL_WALK or SOCIAL_SEQUENCE_STATES.has(_state)
+
+
+func _clear_prepared_social_interaction(other: TownNPCLife) -> void:
+	_active_interaction_id = &""
+	_active_interaction_cooldown_seconds = 8.0
+	_interaction_sequence.clear()
+	_social_reaction = &""
+	if not is_instance_valid(other):
+		return
+	other._active_interaction_id = &""
+	other._active_interaction_cooldown_seconds = 8.0
+	other._interaction_sequence.clear()
+	other._social_reaction = &""
 
 
 func _begin_social_walk(next_partner: TownNPCLife, target_x: float, leader: bool) -> void:
@@ -486,7 +587,9 @@ func _finish_social_pair() -> void:
 	_last_completed_interaction_id = completed_interaction_id
 	_increment_relationship(finished_partner)
 	_mark_partner_cooldown(finished_partner, recent_partner_cooldown_seconds)
-	_interaction_cooldown_remaining = completed_cooldown
+	_interaction_cooldown_remaining = maxf(
+		completed_cooldown, minimum_social_recovery_seconds
+	)
 	_active_interaction_id = &""
 	_active_interaction_cooldown_seconds = 8.0
 	_partner = null
@@ -499,7 +602,10 @@ func _finish_social_pair() -> void:
 		finished_partner._last_completed_interaction_id = completed_interaction_id
 		finished_partner._increment_relationship(self)
 		finished_partner._mark_partner_cooldown(self, finished_partner.recent_partner_cooldown_seconds)
-		finished_partner._interaction_cooldown_remaining = completed_cooldown
+		finished_partner._interaction_cooldown_remaining = maxf(
+			completed_cooldown,
+			finished_partner.minimum_social_recovery_seconds
+		)
 		finished_partner._active_interaction_id = &""
 		finished_partner._active_interaction_cooldown_seconds = 8.0
 		finished_partner._partner = null
@@ -550,13 +656,13 @@ func _set_state(next_state: StringName) -> void:
 			if not _current_character_action.is_empty():
 				_play_visual(_current_character_action, _role_activity_fallback_state())
 			else:
-				_play_visual(&"work", _role_activity_fallback_state())
+				_play_visual(_role_activity_visual_state(), _role_activity_fallback_state())
 		STATE_EMOTE:
 			var ambient_emote := _choose_ambient_emote()
 			_last_ambient_emote = ambient_emote
 			_play_visual(ambient_emote, &"idle_look")
 		_:
-			_play_visual(&"idle_look", &"idle")
+			_play_visual(_choose_idle_visual_state(), &"idle")
 	life_state_changed.emit(_state)
 
 
@@ -872,6 +978,16 @@ func _role_activity_for_character() -> StringName:
 
 func _role_activity_fallback_state() -> StringName:
 	return ROLE_ACTIVITY_FALLBACK_STATES.get(_character_id(), &"idle")
+
+
+func _role_activity_visual_state() -> StringName:
+	return ROLE_ACTIVITY_VISUAL_STATES.get(_character_id(), &"work")
+
+
+func _choose_idle_visual_state() -> StringName:
+	if _rng.randf() > idle_gesture_chance:
+		return &"idle"
+	return &"idle_look"
 
 
 func _character_id() -> String:

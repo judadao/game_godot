@@ -14,7 +14,9 @@ sync_to_physics = false
 script = ExtResource("3_life")
 roam_radius = 65.0
 social_radius = 1200.0
-social_chance = 0.38
+social_chance = 0.12
+recent_partner_cooldown_seconds = 150.0
+minimum_social_recovery_seconds = 150.0
 metadata/character_id = "witch"
 
 [node name="Visual" type="Node2D" parent="."]

@@ -95,6 +95,11 @@ func _test_runtime_player() -> void:
 		_expect(int(priest.call("get_animation_row")) == row, "%s must map to atlas row %d." % [ACTIONS[row], row])
 	_expect(bool(priest.call("play_animation", &"share_goods", true)), "share_goods alias must be playable.")
 	_expect(int(priest.call("get_animation_row")) == 6, "share_goods must reuse the approved comfort/item handoff row.")
+	_expect(bool(priest.call("play_animation", &"side_idle", true)), "Priest must expose a calm non-front idle gesture.")
+	priest.call("advance_animation", 2.1)
+	_expect(int(priest.call("get_frame_index")) == 0, "Priest side idle must settle on its calm three-quarter pose.")
+	priest.call("advance_animation", 4.0)
+	_expect(int(priest.call("get_frame_index")) == 0, "Priest side idle must hold instead of looping like a GIF.")
 	priest.queue_free()
 
 

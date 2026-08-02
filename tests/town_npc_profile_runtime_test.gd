@@ -22,6 +22,14 @@ func _run() -> void:
 		"Profile residents need long idle windows for a relaxed Town cadence."
 	)
 	_expect(
+		witch.social_chance <= 0.12,
+		"Witch must use a low-frequency social initiation cadence."
+	)
+	_expect(
+		float(witch.get("minimum_social_recovery_seconds")) >= 120.0,
+		"Witch must keep a long global recovery after both initiated and received conversations."
+	)
+	_expect(
 		scientist.minimum_role_recovery_seconds >= 10.0
 		and scientist.maximum_role_recovery_seconds >= 16.0,
 		"Scientist needs a long recovery window between authored work actions."

@@ -126,6 +126,9 @@ Town NPC presentation：
   會同步轉為核准的 charcoal uniform。
   `motion_strips_v3/` 為六位居民加入 lookout／stretch／greet／role-work 四列完整姿勢，
   並保存兩位 visitor 的角色 base／額外動作來源；builder 將四列寫入 atlas row 9–12。
+  runtime 的 row 9–12 與 emotion rows 以 2 FPS one-shot 播放後停留，不得使用共同 5 FPS
+  無限循環。Guard 的 row 12 有抬手與長槍位移，只保留為素材，不得用作 ambient 執勤；執勤
+  使用 row 9 calm lookout。Grocer 等居民的非正面 idle 同樣使用 row 9。
   同目錄的八份 `*_emotion.png` 為六位居民與兩位 visitor 提供各自的 laugh／happy／sad／
   surprised／angry 完整姿勢列，依序寫入 atlas row 4–8。這些 authored emotion frames
   一律 normalized 至 132 px、腳底 `y=144`；runtime 不得再額外套逐幀縮放、上下 bob 或
@@ -149,7 +152,8 @@ Town NPC presentation：
   由 `tools/art/build_priest_animation.py` 依透明間隔擷取完整人物、統一 448 px 原生高度與
   腳底線，再輸出 `priest_animation_atlas.png` 的 8 columns × 8 rows atlas；row 順序固定為
   front idle、front chat、side walk、side chat、prayer、bless、comfort/share_goods、
-  courage。`parts/` 舊分件只保留為來源紀錄，不得再
+  courage。`side_idle` runtime alias 只取 side-chat row 的 0→1→0 calm 三分之四姿勢並停留，
+  不新增 atlas row，也不得循環成聊天動作。`parts/` 舊分件只保留為來源紀錄，不得再
   直接拼成 runtime 幀，以免不同頭身比例或相鄰肢體混入。
 
 ### 1.2 術語

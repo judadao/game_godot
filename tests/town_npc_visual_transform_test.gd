@@ -38,6 +38,21 @@ func _run() -> void:
 				"%s must keep the authored foot baseline instead of bobbing the whole body." % state
 			)
 
+	for gesture in [&"idle_look", &"idle_stretch"]:
+		visual.play_state(gesture)
+		visual.advance_animation(1.6)
+		var held := visual.get_animation_snapshot() as Dictionary
+		_expect(
+			int(held.get("frame", -1)) == 3,
+			"%s must play once before holding a readable non-front idle pose." % gesture
+		)
+		visual.advance_animation(4.1)
+		var later := visual.get_animation_snapshot() as Dictionary
+		_expect(
+			int(later.get("frame", -1)) == 3,
+			"%s must hold instead of repeating like a short GIF." % gesture
+		)
+
 	actor.queue_free()
 	await process_frame
 	if _failures.is_empty():

@@ -139,7 +139,7 @@ func _assert_npc_scene(npc_name: String, scene_path: String) -> void:
 	if visual.has_method("play_state") and visual.has_method("advance_animation"):
 		visual.call("play_state", &"idle")
 		var before := visual.call("get_animation_snapshot") as Dictionary
-		visual.call("advance_animation", 0.45)
+		visual.call("advance_animation", 1.1)
 		var after := visual.call("get_animation_snapshot") as Dictionary
 		_expect(before != after, "%s idle must use multiple authored cadence poses." % npc_name)
 		for state in REQUIRED_STATES:
@@ -241,6 +241,43 @@ func _capture_review_frames() -> void:
 	await process_frame
 	await process_frame
 	_save_review_frame(viewport, capture_directory.path_join("town_npcs_idle"))
+	var priest_review_visual := town.get_node("NPCs/Mayor/Visual")
+	town.get_node("NPCs/Mayor").set_process(false)
+	priest_review_visual.set_process(false)
+	priest_review_visual.call("play_animation", &"side_idle", true)
+	priest_review_visual.call("advance_animation", 0.8)
+	for npc_name in NPC_SCENE_PATHS:
+		if npc_name == "Mayor":
+			continue
+		var idle_actor := town.get_node("NPCs/%s" % npc_name) as TownNPCLife
+		idle_actor.life_enabled = false
+		idle_actor.set_process(false)
+		idle_actor.npc_visual.ambient_enabled = false
+		idle_actor.npc_visual.play_state(&"idle_look")
+		idle_actor.npc_visual.advance_animation(0.8)
+	await process_frame
+	await process_frame
+	_save_review_frame(viewport, capture_directory.path_join("town_idle_gesture_motion"))
+	priest_review_visual.call("advance_animation", 1.2)
+	for npc_name in NPC_SCENE_PATHS:
+		if npc_name != "Mayor":
+			town.get_node("NPCs/%s/Visual" % npc_name).call("advance_animation", 1.2)
+	await process_frame
+	await process_frame
+	_save_review_frame(viewport, capture_directory.path_join("town_idle_gesture_hold"))
+	priest_review_visual.call("advance_animation", 4.0)
+	for npc_name in NPC_SCENE_PATHS:
+		if npc_name != "Mayor":
+			town.get_node("NPCs/%s/Visual" % npc_name).call("advance_animation", 4.0)
+	await process_frame
+	await process_frame
+	_save_review_frame(viewport, capture_directory.path_join("town_idle_gesture_late_hold"))
+	var guard_review := town.get_node("NPCs/Guard") as TownNPCLife
+	guard_review.request_role_activity(8.0)
+	guard_review.npc_visual.advance_animation(1.6)
+	await process_frame
+	await process_frame
+	_save_review_frame(viewport, capture_directory.path_join("town_guard_duty"))
 	var showcase_states: Array[StringName] = [
 		&"sit", &"chat", &"laugh", &"happy", &"sad", &"surprised", &"angry",
 	]
@@ -291,6 +328,46 @@ func _capture_review_frames() -> void:
 	await process_frame
 	await process_frame
 	_save_review_frame(viewport, capture_directory.path_join("town_profile_runtime"))
+	for npc_name in NPC_SCENE_PATHS:
+		if npc_name == "Mayor":
+			continue
+		var social_actor := town.get_node("NPCs/%s" % npc_name) as TownNPCLife
+		social_actor.life_enabled = false
+		social_actor.call("_cancel_social_pair")
+		social_actor.idle_gesture_chance = 0.0
+		social_actor.call("_set_state", &"idle")
+	priest_visual.call("play_animation", &"front_idle", true)
+	priest_visual.call("set_frame_for_review", 0)
+	var clearance_witch := town.get_node("NPCs/EquipmentBlueprintMerchant") as TownNPCLife
+	var clearance_scientist := town.get_node("NPCs/Blacksmith") as TownNPCLife
+	clearance_witch.call("_set_state", &"idle")
+	clearance_scientist.call("_set_state", &"idle")
+	clearance_witch.set("_interaction_cooldown_remaining", 0.0)
+	clearance_scientist.set("_interaction_cooldown_remaining", 0.0)
+	clearance_witch.life_enabled = true
+	clearance_scientist.life_enabled = true
+	clearance_witch.social_radius = 2000.0
+	clearance_witch.walk_speed = 10000.0
+	clearance_scientist.walk_speed = 10000.0
+	_expect(
+		bool(clearance_witch.call("_try_begin_social_pair")),
+		"Clearance review pair must reserve a safe witch/scientist meeting."
+	)
+	for _step in range(160):
+		if (
+			clearance_witch.get_life_state() == &"social_chat"
+			and clearance_scientist.get_life_state() == &"social_chat"
+		):
+			break
+		clearance_witch.advance_life(0.05)
+		clearance_scientist.advance_life(0.05)
+	_expect(
+		clearance_witch.get_life_state() == &"social_chat",
+		"Clearance review pair must reach its safe conversation pose."
+	)
+	await process_frame
+	await process_frame
+	_save_review_frame(viewport, capture_directory.path_join("town_social_clearance"))
 	viewport.queue_free()
 	await process_frame
 	await _save_state_sheet(capture_directory)

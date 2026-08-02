@@ -196,10 +196,31 @@ func _run() -> void:
 	_expect(witch.position == witch_home, "External interaction lock must prevent autonomous wandering.")
 	witch.set_external_interaction(false)
 	_expect(witch.get_life_state() == &"idle", "Releasing external chat must restore autonomous idle.")
+	_expect(
+		float(witch.get("_interaction_cooldown_remaining"))
+		>= float(witch.get("minimum_social_recovery_seconds")),
+		"Priest/external conversations must count toward the witch's global social recovery."
+	)
+	_expect(
+		not bool(witch.call("_try_begin_social_pair")),
+		"Global social recovery must block the witch from initiating with a different resident."
+	)
 
 	for actor in actors:
 		actor.life_enabled = false
 	var scientist := town.get_node("NPCs/Blacksmith") as TownNPCLife
+	witch.life_enabled = true
+	scientist.life_enabled = true
+	scientist.social_radius = 2000.0
+	_expect(
+		not bool(scientist.call("_try_begin_social_pair"))
+		and witch.get_social_partner() == null
+		and scientist.get_social_partner() == null,
+		"Another resident must not invite the witch during her global social recovery."
+	)
+	witch.life_enabled = false
+	scientist.life_enabled = false
+	witch.advance_life(200.0)
 	witch.life_enabled = true
 	scientist.life_enabled = true
 	witch.social_chance = 1.0
@@ -210,11 +231,17 @@ func _run() -> void:
 	scientist.walk_speed = 600.0
 	town.call("set_time_of_day_progress", 0.0)
 	witch.advance_life(10.0)
+	_expect(
+		witch.get_life_state() == &"social_walk"
+		and scientist.get_life_state() == &"social_walk",
+		"Witch and scientist must still retain an occasional profile-backed meeting."
+	)
+	_assert_social_target_clearance(witch, scientist, town.get_node("NPCs"))
 	_advance_pair_until_state(witch, scientist, &"idle")
 	witch.life_enabled = false
 	scientist.life_enabled = false
-	witch.advance_life(100.0)
-	scientist.advance_life(100.0)
+	witch.advance_life(200.0)
+	scientist.advance_life(200.0)
 	witch.life_enabled = true
 	scientist.life_enabled = true
 	witch.advance_life(10.0)
@@ -245,12 +272,9 @@ func _run() -> void:
 			actor.get_life_state() == &"role_activity",
 			"%s must expose its daily activity as an observable life state." % actor.name
 		)
-	var expected_guard_work := (
-		&"work" if guard.npc_visual.get_supported_states().has(&"work") else &"angry"
-	)
 	_expect(
-		guard.npc_visual.get_active_state() == expected_guard_work,
-		"The guard must visibly survey the street while on duty."
+		guard.npc_visual.get_active_state() == &"idle_look",
+		"The guard must calmly survey the street without a work pose that reads as being hit."
 	)
 	_expect(role_activities.size() == 6, "All six residents must expose role-specific daily activity contracts.")
 	var unique_role_activities: Array[StringName] = []
@@ -271,6 +295,34 @@ func _advance_pair_until_state(first: TownNPCLife, second: TownNPCLife, state: S
 		first.advance_life(0.05)
 		second.advance_life(0.05)
 	_expect(false, "Social pair must reach %s without stalling." % state)
+
+
+func _assert_social_target_clearance(
+	first: TownNPCLife,
+	second: TownNPCLife,
+	npc_root: Node
+) -> void:
+	var first_target := first.get("_target_position") as Vector2
+	var second_target := second.get("_target_position") as Vector2
+	var required_clearance := maxf(
+		float(first.get("social_scene_clearance")),
+		float(second.get("social_scene_clearance"))
+	)
+	for child in npc_root.get_children():
+		if child == first or child == second or not child is Node2D:
+			continue
+		var third := child as Node2D
+		if not third.is_in_group("NPCs"):
+			continue
+		var nearest_target_distance := minf(
+			absf(third.position.x - first_target.x),
+			absf(third.position.x - second_target.x)
+		)
+		_expect(
+			nearest_target_distance >= required_clearance,
+			"Social meeting targets must stay %.0fpx away from third NPC %s, got %.1fpx."
+			% [required_clearance, third.name, nearest_target_distance]
+		)
 
 
 func _finish() -> void:

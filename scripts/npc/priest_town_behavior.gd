@@ -38,6 +38,7 @@ var _active_daily_activity: StringName = &"prayer"
 var _last_daily_activity: StringName
 var _home_activity_duration := 6.0
 var _visit_cooldown_remaining := 0.0
+var _wait_pose_index := 0
 
 
 func _ready() -> void:
@@ -158,7 +159,7 @@ func _enter_state(next_state: StringName) -> void:
 	match _state:
 		STATE_WAIT_HOME:
 			z_index = 0
-			_set_visual(&"front_idle", 1.0)
+			_set_visual(_next_wait_animation(), 1.0)
 		STATE_HOME_ACTIVITY:
 			z_index = 0
 			_set_visual(_active_daily_activity, 1.0)
@@ -233,6 +234,12 @@ func _next_visit_cooldown() -> float:
 	var minimum := minf(minimum_visit_cooldown_seconds, maximum_visit_cooldown_seconds)
 	var maximum := maxf(minimum_visit_cooldown_seconds, maximum_visit_cooldown_seconds)
 	return _rng.randf_range(minimum, maximum)
+
+
+func _next_wait_animation() -> StringName:
+	var animation := &"front_idle" if _wait_pose_index % 2 == 0 else &"side_idle"
+	_wait_pose_index += 1
+	return animation
 
 
 func _set_visual(animation: StringName, facing_sign: float) -> void:

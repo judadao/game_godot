@@ -45,16 +45,17 @@ func _make_resident_group(prefix: String) -> Array[TownNPCLife]:
 	var group := Node2D.new()
 	root.add_child(group)
 	var residents: Array[TownNPCLife] = []
+	var positions := [0.0, 400.0, 200.0]
 	for index in range(3):
 		var resident := RESIDENT_SCENE.instantiate() as TownNPCLife
-		resident.position = Vector2(float(index) * 80.0, 0.0)
+		resident.position = Vector2(positions[index], 0.0)
 		resident.set_meta("character_id", "%s_%d" % [prefix, index])
 		group.add_child(resident)
 		residents.append(resident)
 	await process_frame
 	for resident in residents:
 		resident.set_process(false)
-		resident.social_radius = 240.0
+		resident.social_radius = 500.0
 	return residents
 
 

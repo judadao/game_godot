@@ -43,8 +43,15 @@ func _run() -> void:
 	_expect(priest.call("get_behavior_state") == &"home_activity", "The priest must not interrupt a busy witch.")
 	witch.set_external_interaction(false)
 	priest.call("advance_behavior", 6.1)
-	priest.call("advance_behavior", 0.11)
-	_expect(priest.call("get_behavior_state") == &"walk_to_witch", "At noon the priest may visit an available witch.")
+	_expect(
+		priest.call("get_behavior_state") != &"walk_to_witch",
+		"The priest must respect the witch's recovery after another conversation."
+	)
+	witch.life_enabled = false
+	witch.advance_life(150.1)
+	witch.life_enabled = true
+	_advance_until_state(priest, &"walk_to_witch")
+	_expect(priest.call("get_behavior_state") == &"walk_to_witch", "At noon the priest may visit a recovered witch.")
 
 	_advance_until_state(priest, &"wait_home")
 	priest.call("advance_behavior", 0.11)

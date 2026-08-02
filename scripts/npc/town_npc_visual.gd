@@ -57,6 +57,13 @@ const CHARACTER_STATE_ROWS := {
 const CHARACTER_ACTION_FRAME_RATE := 2.0
 const CHARACTER_ACTION_SETTLE_SECONDS := 4.0
 const SETTLED_IDLE_FRAME_RATE := 1.0
+const GESTURE_FRAME_RATE := 2.0
+const CALM_LOOP_FRAME_RATE := 1.0
+const SOCIAL_LOOP_FRAME_RATE := 2.0
+const GESTURE_HOLD_STATES: Array[StringName] = [
+	STATE_IDLE_LOOK, STATE_IDLE_STRETCH, STATE_GREET, STATE_WORK,
+	STATE_LAUGH, STATE_HAPPY, STATE_SAD, STATE_SURPRISED, STATE_ANGRY,
+]
 const LEFT_FACING_DIRECTIONAL_CHARACTERS: Array[StringName] = [&"witch"]
 
 @export_range(80.0, 160.0, 1.0) var target_height := 118.0
@@ -111,8 +118,10 @@ func advance_animation(delta: float) -> void:
 			)) % 4
 		else:
 			_pose_frame = mini(int(floor(_elapsed * CHARACTER_ACTION_FRAME_RATE)), 3)
+	elif _is_gesture_hold_state(_active_state):
+		_pose_frame = mini(int(floor(_elapsed * GESTURE_FRAME_RATE)), 3)
 	else:
-		_pose_frame = int(floor(_elapsed * FRAME_RATE)) % 4
+		_pose_frame = int(floor(_elapsed * _loop_frame_rate(_active_state))) % 4
 	if ambient_enabled:
 		_ambient_timer -= step
 		if _ambient_timer <= 0.0:
@@ -124,8 +133,15 @@ func play_state(state: StringName) -> bool:
 	if not get_supported_states().has(state):
 		return false
 	_active_state = state
-	_elapsed = 0.0 if _is_character_action_state(state) else phase_offset
-	_pose_frame = 0 if _is_character_action_state(state) else int(floor(_elapsed * FRAME_RATE)) % 4
+	var starts_from_first_frame := (
+		_is_character_action_state(state) or _is_gesture_hold_state(state)
+	)
+	_elapsed = 0.0 if starts_from_first_frame else phase_offset
+	_pose_frame = (
+		0
+		if starts_from_first_frame
+		else int(floor(_elapsed * _loop_frame_rate(state))) % 4
+	)
 	_apply_pose()
 	return true
 
@@ -171,22 +187,27 @@ func _advance_ambient_state() -> void:
 	var sequence := _ambient_sequence()
 	_ambient_index = (_ambient_index + 1) % sequence.size()
 	_active_state = sequence[_ambient_index]
-	_elapsed = phase_offset
-	_ambient_timer = 1.6 if _active_state != STATE_IDLE else _ambient_interval()
+	_elapsed = 0.0 if _is_gesture_hold_state(_active_state) else phase_offset
+	_ambient_timer = (
+		5.5
+		if _is_gesture_hold_state(_active_state)
+		else 3.0 if _active_state != STATE_IDLE
+		else _ambient_interval()
+	)
 
 
 func _ambient_sequence() -> Array[StringName]:
 	match ambient_profile:
 		"social":
-			return [STATE_IDLE, STATE_IDLE_LOOK, STATE_CHAT, STATE_GREET, STATE_LAUGH, STATE_HAPPY, STATE_WALK]
+			return [STATE_IDLE, STATE_IDLE_LOOK, STATE_CHAT, STATE_GREET, STATE_HAPPY, STATE_WALK]
 		"merchant":
-			return [STATE_IDLE, STATE_WORK, STATE_CHAT, STATE_IDLE_STRETCH, STATE_LAUGH, STATE_SURPRISED]
+			return [STATE_IDLE, STATE_IDLE_LOOK, STATE_WORK, STATE_CHAT, STATE_GREET]
 		"scholar":
-			return [STATE_IDLE, STATE_WORK, STATE_IDLE_LOOK, STATE_CHAT, STATE_SURPRISED, STATE_LAUGH]
+			return [STATE_IDLE, STATE_IDLE_LOOK, STATE_WORK, STATE_CHAT, STATE_HAPPY]
 		"guard":
-			return [STATE_IDLE, STATE_IDLE_LOOK, STATE_WALK, STATE_WORK, STATE_GREET, STATE_CHAT]
+			return [STATE_IDLE, STATE_IDLE_LOOK, STATE_WALK, STATE_GREET, STATE_CHAT]
 		_:
-			return [STATE_IDLE, STATE_IDLE_LOOK, STATE_IDLE_STRETCH, STATE_CHAT, STATE_HAPPY]
+			return [STATE_IDLE, STATE_IDLE_LOOK, STATE_CHAT, STATE_HAPPY]
 
 
 func _ambient_interval() -> float:
@@ -279,6 +300,18 @@ func _character_state_rows() -> Dictionary:
 
 func _is_character_action_state(state: StringName) -> bool:
 	return _character_state_rows().has(state)
+
+
+func _is_gesture_hold_state(state: StringName) -> bool:
+	return GESTURE_HOLD_STATES.has(state) and not _is_character_action_state(state)
+
+
+func _loop_frame_rate(state: StringName) -> float:
+	if state in [STATE_IDLE, STATE_SIT]:
+		return CALM_LOOP_FRAME_RATE
+	if state == STATE_CHAT:
+		return SOCIAL_LOOP_FRAME_RATE
+	return FRAME_RATE
 
 
 func _has_character_action_settled() -> bool:

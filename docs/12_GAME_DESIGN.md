@@ -699,7 +699,8 @@ bob 或旋轉情緒幀。女巫與科學家另有四列角色專屬工作姿勢�
 女巫空閒時，以 `y=672`／`z_index=0` 走到女巫左側 95 px；兩人面對面聊天後沿同一 baseline
 回 Town Hall，舊的前景繞行不再使用。其餘六位居民會在各自店面／街區附近
 待機、表達情緒、做符合身份的悠閒工作、坐下休息或短距離散步；社交時先保留 partner、
-走到 catalog 指定距離，
+走到 catalog 指定距離，且兩個 meeting targets 與第三位 NPC 的目前、home 或已預留社交位置
+至少保持 120 px；附近沒有安全位置時放棄邀請，不在其他居民面前重疊聊天。
 依序打招呼、聊天／談工作、產生情緒反應、道別，再回到精確 home。初次見面偏好 greet；
 熟人可依角色選擇 discuss_work，golden hour 可一起 watch_sky。familiarity 與 cooldown 都是
 session-local，不形成持久 schedule。每次本地活動後有明確 idle recovery，無事件環境不會
@@ -708,7 +709,11 @@ session-local，不形成持久 schedule。每次本地活動後有明確 idle r
 事件觸發。科學家的專屬動作播放一次、短暫停在完成姿勢後回到慢速細微待機，day-period work
 仍至少停留 14–20 秒，
 malfunction 只供明確失敗事件；一般居民 idle 為 5.5–10 秒、role recovery 為 10–16 秒，
-社交聊天基準約 7 秒且最近 partner 冷卻 75 秒，營造悠閒而非狀態輪播的節奏。散步區域依
+社交聊天基準約 7 秒且最近 partner 冷卻 75 秒。一般 idle／sit 為 1 FPS，look／stretch／
+greet／work／emotion gesture 以 2 FPS 播放一次後停留；idle 只有約 28% 機率做一次非正面
+look，避免反覆轉頭。守衛執勤使用 calm lookout，不使用容易讀成受擊的 work row；祭司在
+front idle 與 calm side idle 間交替。女巫主動社交率為 12%，任何 autonomous／external chat
+後至少休息 150 秒，營造悠閒而非狀態輪播的節奏。散步區域依
 相鄰 home anchor 切開，至少保留一個人物
 寬度，避免同基準線互相穿入。
 

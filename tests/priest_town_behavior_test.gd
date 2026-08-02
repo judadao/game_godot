@@ -32,11 +32,6 @@ func _run() -> void:
 	witch_visual.set_process(false)
 	witch_visual.set("ambient_enabled", true)
 	witch_visual.call("play_state", &"idle")
-	var expected_released_witch_state := (
-		&"idle_look"
-		if (witch_visual.call("get_supported_states") as Array).has(&"idle_look")
-		else &"idle"
-	)
 	town.call("set_time_of_day_progress", 0.40)
 
 	var home := priest.call("get_home_position") as Vector2
@@ -86,15 +81,15 @@ func _run() -> void:
 	_expect(StringName(visual.get("animation_name")) == &"side_walk", "Return travel must use side walk.")
 	_expect(visual.scale.x < 0.0, "Returning priest must face home.")
 	_expect(
-		witch_visual.call("get_active_state") == expected_released_witch_state,
+		[&"idle", &"idle_look"].has(witch_visual.call("get_active_state")),
 		"Witch must resume the supported autonomous idle policy after the conversation."
 	)
 	_expect(bool(witch_visual.get("ambient_enabled")), "Witch ambient animation must resume after chatting.")
 
 	_advance_until_state(priest, &"wait_home")
 	_expect(priest.position == home, "Priest must return to the exact home marker.")
-	_expect(StringName(visual.get("animation_name")) == &"front_idle", "Returned priest must resume front idle.")
-	_expect(visual.scale.x > 0.0, "Returned front-facing priest must clear the side-view flip.")
+	_expect(StringName(visual.get("animation_name")) == &"side_idle", "Returned priest must alternate into a calm non-front idle.")
+	_expect(visual.scale.x > 0.0, "Returned priest idle must clear the return-walk flip.")
 	_expect(priest.z_index == 0, "Returned priest must restore the shared NPC depth layer.")
 	_expect(int(priest.call("get_completed_cycles")) == 1, "Priest must record one complete social round trip.")
 
