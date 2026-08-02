@@ -203,9 +203,19 @@ Town 視覺統一採用 `data/town_visual_style.json` 的
 冷苔綠陰影與左上暖蜜色主光。正式排版權威是
 `concept/town/main_horizontal_concept/town_style_direction_a_locked.png`。
 天空改由 `TownSkyLayer.tscn` 的 cloud-free `town_sky_cloud_free_v1.png` 獨立提供，並以
-`set_sky_tint()`／`set_sky_grade()` 提供日照時段調色邊界；Town root 的
-`set_time_of_day_progress()` 在 0.65 後同步將天空 horizon color grade、雲、建築、環境動畫、
-NPC、Portal 與 Player 推向 golden-hour 光色，預設不自行推進時間。`TownCloudLayer.tscn` 使用八個可獨立選取的
+`set_sky_tint()`／`set_sky_atmosphere()` 提供日照時段調色邊界；Town root 的
+`set_time_of_day_progress()` 將 normalized day 映射為時鐘，15:00 漸入、16:00–17:30 維持
+golden-hour 峰值、18:00 收在藍色天頂與暖粉橘地平線的 sunset afterglow；此 presentation
+只涵蓋夕陽段，不延伸為完整日夜循環。天空 gradient、雲的暖面／冷影、
+場景／角色／emissive 分層 tint 與 HUD 下方的 `TownAtmosphere` split-tone grade 由同一 owner
+同步；`transition_to_time_of_day_hour()` 提供平滑動態過渡，預設 Town presentation 為 17:00。
+`TownAtmosphere` 另以固定左至右、略向下的低角度夕陽光束統一所有 world visuals，並從移動雲物件
+取樣三組扁長、破邊的低頻影場，只作用於城鎮表面；shader ray 使用 world offset，Camera 移動只做
+1:1 世界換算，不會放大成跟隨玩家的暗球。全域 grade 只做低強度色溫收斂，物件受光改用保黑位的
+乘法曝光與亮度材質反應，使石、木、布、樹葉、角色與地面保留原色，同時共享暖亮面／冷背光；
+CanvasLayer 10 以上 UI 不受影響。`TownAmbientAnimation` 會接收同一 sunset weight，讓分層秋葉以
+獨立 phase 微幅擺動並產生局部暖陽 shimmer，樹幹、樹根與 branch pivot 保持固定。
+`TownCloudLayer.tscn` 使用八個可獨立選取的
 透明手繪雲物件，以不同水平速度與低幅垂直漂移循環進出地圖。群山則由
 `TownModularVisuals/background_mountains` 的透明 `mountain_layer.png` 提供；屋頂後方另疊
 `autumn_forest_canopy_base_v2.png` 的繁盛秋林與

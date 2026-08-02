@@ -12,6 +12,9 @@
 shader = ExtResource("6_tree_shader")
 shader_parameter/wind_strength = 0.0
 shader_parameter/wind_phase = 0.0
+shader_parameter/sunset_light_strength = 0.0
+shader_parameter/shimmer_time = 0.0
+shader_parameter/shimmer_phase = 0.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_canopy_ul"]
 atlas = ExtResource("3_canopy")

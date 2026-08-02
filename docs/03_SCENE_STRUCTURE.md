@@ -393,9 +393,18 @@ presentation 隱藏；不得在此新增新 Town 視覺。
 - `TownSkyLayer/Sky` 使用 cloud-free
   `assets/town/modular_v3/background/town_sky_cloud_free_v1.png`，可透過
   `set_sky_tint()` 獨立調色，或由 Town root 的 `set_time_of_day_progress()` 透過
-  `town_sky_grade.gdshader` 套用上方保留藍色、地平線偏暖的 golden-hour grade；同一 API
-  也同步調整雲、`TownBackdrop` 其餘直接 visual children、Buildings、Ground、Props、
-  Portals、NPCs、EternalForgeIdentity 與 Player。此 API 不擁有時鐘，也不自動推進；
+  `town_sky_grade.gdshader` 與 `town_sky_wash.gdshader` 套用藍色天頂、金橘地平線與向西移動的
+  夕陽餘暉；同一 API 也同步調整雲的暖面／冷影、`TownBackdrop` 其餘 visual children、
+  Buildings、Ground、Props、Portals、NPCs、EternalForgeIdentity、Player，以及 layer 5 的
+  `TownAtmosphere/ColorGrade`。Presentation 只處理 15:00–18:00 夕陽區間，16:00–17:30 是
+  最長的 full-gold plateau，18:00 收在暖粉橘 sunset afterglow；
+  `transition_to_time_of_day_hour()` 可在任意時長內動態 tween。ColorGrade 的低角度
+  sunset shafts 固定由左往右穿過所有 world objects；live clouds 只驅動三組扁長破邊的低頻柔影，
+  Camera 位移為 1:1 世界換算，禁止加速或形成跟隨玩家的黑球。sky blue rejection 會避免陰影壓暗天空，
+  Portal／flame 等 emissive 也保留辨識度。全域 cozy grade 維持低強度，主要光感來自保黑位的材質乘光、
+  暖亮面與冷背光，因此建築、樹、街道、NPC 與道具保留各自原色。`AmbientAnimation` 另把 sunset weight
+  傳給古樹與分層 foliage，使葉簇以獨立 phase 微幅搖曳並改變暖陽亮面，固定樹幹與 branch pivot。
+  HUD layer 10 與 Menu layer 20 不受 map color grade 影響。
   `TownCloudLayer` 的八個 Sprite2D 重用四張透明手繪雲，以 `7–18 px/s` 錯速向右移動、
   `0–4 px` 低幅上下漂移並在完整離場後從左側回繞。`background_mountains` 使用透明
   `mountain_layer.png`，不得再恢復烘焙天空與白雲的 background plate；`background_forest` 改用生成的

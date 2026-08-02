@@ -389,9 +389,14 @@ Scene directory changes must run these permanent contracts:
   四個 Town service/shop consumer、new-character texture path 與動態 state contract。
   `town_building_ui_layout_test.gd` 設定 `TOWN_BUILDING_UI_CAPTURE_DIR` 時會輸出所有六種
   required resolutions；人物或裁切改動後必須重審全部輸出。
-- `tests/town_time_of_day_lighting_test.gd`：golden-hour threshold、天空 horizon grade、
-  雲 tint，以及建築／環境／NPC／Portal／Player 同步光色。設定
-  `TOWN_TIME_OF_DAY_CAPTURE_DIR` 時輸出 golden-hour full-frame 與固定 3 × 2 六區供視覺審查。
+- `tests/town_time_of_day_lighting_test.gd`：15:00 onset、17:00 peak、18:00 dusk、天空
+  zenith／horizon gradient、雲暖面／冷影、Town split-tone atmosphere，以及
+  左→右低角度夕陽、live cloud shadow movement、建築／環境／NPC／Portal／Player 同步光色。
+  設定 `TOWN_TIME_OF_DAY_CAPTURE_DIR` 時輸出多個時鐘節點的 full-frame、固定 3 × 2 六區、
+  15 分鐘 contact sheet、同一 17:00 下的五段雲影與三段 foliage-breeze 序列、sunlight／cloud-shadow
+  diagnostic mask，以及由 `game.tscn` 載入真正 `TownMap.tscn` 的 runtime full-frame／六區／contact sheet／
+  洋紅 world-shadow layer diagnostic。Runtime 雲影需同時輸出 t00／t10（短期無閃爍）與 t60／t120
+  （長期慢速跨越建築區）；不得為了短序列可讀而加速或加深，也不得以 isolated Town 截圖取代主流程驗收。
 - `tests/town_location_label_proximity_test.gd`：六個建築木牌位於建築輪廓上方，
   只接受 Player 進出完整地基 Area 的 signal，離開後全部 hidden。
 - `tests/map_registry_test.gd` and `tests/quick_save_migration_test.gd`：stable and legacy map paths remain loadable.

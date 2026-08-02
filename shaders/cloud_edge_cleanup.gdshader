@@ -6,6 +6,13 @@ uniform float minimum_vertical_coverage : hint_range(1.0, 9.0) = 9.0;
 uniform float left_disconnected_cut : hint_range(0.0, 0.25) = 0.0;
 uniform float right_wisp_cut : hint_range(0.75, 1.0) = 1.0;
 uniform vec4 cloud_tint : source_color = vec4(1.0);
+uniform vec4 cloud_shadow_tint : source_color = vec4(1.0);
+uniform vec4 cloud_light_tint : source_color = vec4(1.0);
+uniform float cloud_lighting_strength : hint_range(0.0, 1.0) = 0.0;
+uniform float variant_strength : hint_range(0.0, 1.0) = 0.0;
+uniform float variant_phase : hint_range(0.0, 6.2832) = 0.0;
+uniform float variant_peak_cut : hint_range(0.0, 0.2) = 0.0;
+uniform float variant_tail_cut : hint_range(-0.25, 0.25) = 0.0;
 
 void fragment() {
 	vec4 sampled = texture(TEXTURE, UV);
@@ -50,5 +57,45 @@ void fragment() {
 		sampled.r = max(sampled.r, sampled.g * 0.8);
 		sampled.b = min(sampled.b, sampled.g * 1.12);
 	}
+	float hand_painted_light = smoothstep(0.12, 0.9, 1.0 - UV.x) * 0.62
+		+ smoothstep(0.2, 0.9, 1.0 - UV.y) * 0.38;
+	vec3 directional_tint = mix(cloud_shadow_tint.rgb, cloud_light_tint.rgb, clamp(hand_painted_light, 0.0, 1.0));
+	sampled.rgb *= mix(vec3(1.0), directional_tint, cloud_lighting_strength);
+	// Erode a few source pixels from different directions. This preserves the
+	// hand-drawn contour instead of carving obvious geometric crop lines.
+	float erosion_pixels = variant_strength * (
+		2.5 + variant_peak_cut * 20.0 + abs(variant_tail_cut) * 10.0
+	);
+	float horizontal_bias = 0.5 + 0.5 * sin(variant_phase);
+	float left_support = texture(
+		TEXTURE,
+		UV - vec2(erosion_pixels * mix(0.48, 1.08, horizontal_bias), 0.0)
+			* TEXTURE_PIXEL_SIZE
+	).a;
+	float right_support = texture(
+		TEXTURE,
+		UV + vec2(erosion_pixels * mix(1.08, 0.48, horizontal_bias), 0.0)
+			* TEXTURE_PIXEL_SIZE
+	).a;
+	float top_support = texture(
+		TEXTURE,
+		UV - vec2(0.0, erosion_pixels * mix(0.58, 1.0, horizontal_bias))
+			* TEXTURE_PIXEL_SIZE
+	).a;
+	float bottom_support = texture(
+		TEXTURE,
+		UV + vec2(0.0, erosion_pixels * mix(1.0, 0.58, horizontal_bias))
+			* TEXTURE_PIXEL_SIZE
+	).a;
+	float silhouette_support = min(
+		min(left_support, right_support),
+		min(top_support, bottom_support)
+	);
+	float silhouette_keep = step(0.1, silhouette_support);
+	sampled.a *= mix(
+		1.0,
+		silhouette_keep,
+		step(0.001, variant_strength)
+	);
 	COLOR = sampled * cloud_tint;
 }

@@ -1672,12 +1672,24 @@ the HUD never reads gameplay state directly.
 - Owner：`TownBackdrop`
 - Status：Current — Active Runtime Presentation
 - Sky contract：`TownSkyLayer/Sky` 是唯一 cloud-free 天空物件，覆蓋 `1942 × 720`
-  gameplay world；`set_sky_tint(Color)` 只做乘色，`set_sky_grade(Color, strength)` 使用
-  `town_sky_grade.gdshader` 做 horizon-weighted color grade。Town root 的
-  `set_time_of_day_progress()`／`set_time_of_day_preset()` 是同步 owner，未來時間系統只需
-  呼叫該 API，不得分別搜尋各 layer。
+  gameplay world；`set_sky_tint(Color)` 只做乘色，`set_sky_atmosphere(...)` 同步驅動
+  `town_sky_grade.gdshader` 與保留原筆觸的半透明 `town_sky_wash.gdshader`。Town root 的
+  `set_time_of_day_progress()`／`set_time_of_day_hour()`／`transition_to_time_of_day_hour()`
+  是同步 owner；只呈現 15:00–18:00 夕陽段：15:00 漸入、16:00–17:30 full-gold plateau、
+  18:00 暖粉橘 afterglow。未來時間系統不得分別搜尋各 layer。
+- Lighting contract：`TownAtmosphere` 固定在 CanvasLayer 5，使用 luminance split tone 讓亮部偏金、
+  暗部偏冷紫，並保持在 HUD layer 10／Menu layer 20 下方。場景、actor 與 portal/flame emissive
+  使用不同 tint，禁止回退為全 Town 同一橘色乘色。低角度 sunset shafts 的方向固定為左→右下，
+  ray pattern 以 world offset 錨定；`refresh_cloud_shadows()` 從 live clouds 取樣三組扁長、破邊的低頻冷影，
+  Camera 只做 1:1 世界換算。陰影覆蓋樹冠、建築、角色、道具與街道，但以 sky-blue／emissive rejection
+  排除天空、Portal 與 flame，且不得形成硬邊、黑球、貼紙輪廓、跟隨玩家或遮住 HUD。全域 grade／palette
+  balance 必須保持次要；主要受光使用保黑位的材質乘法曝光，保留石、木、布、葉片與白袍的辨識色。
+- Foliage lighting contract：`AmbientAnimation.set_sunset_lighting_strength()` 接收 Town root 的夕陽權重，
+  古樹與分層 foliage 使用獨立 phase 的微風與葉面 shimmer；只調整既有暖色葉片，禁止抬黑、整片同步閃黃、
+  移動樹幹／樹根或 branch pivot。
 - Cloud contract：八個獨立 `Sprite2D` 重用四張核准透明手繪雲，使用至少四種
   `7–18 px/s` 速度、`0–4 px` 垂直漂移與畫面外回繞，禁止退化成同步移動的整張雲幕。
+  後四朵必須以自然的小尺度輪廓變體形成至少六種可辨 silhouette；禁止巨大內凹、刀切直線、尖三角或假 seam。
   `res://shaders/cloud_edge_cleanup.gdshader` 只在透明素材左右邊緣移除孤立碎點與過薄的
   水平假接縫，不得平滑、重繪或切斷主雲色塊。
   `set_cloud_tint(Color)` 由 Town 全域 time-of-day API 同步呼叫。

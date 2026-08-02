@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://dw3j7rocm1qmn"]
+[gd_scene load_steps=7 format=3 uid="uid://dw3j7rocm1qmn"]
 
 [ext_resource type="Script" uid="uid://ddj80fyybrukd" path="res://scripts/maps/town_editor_preview.gd" id="1_preview"]
 [ext_resource type="PackedScene" uid="uid://br6i1uvyi4wv2" path="res://scenes/maps/town/components/TownBackdrop.tscn" id="2_backdrop"]
@@ -11,6 +11,11 @@
 [ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownWorldCollision.tscn" id="9_collision"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownEternalForgeIdentity.tscn" id="10_identity"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownBuildingEntrances.tscn" id="11_entrances"]
+[ext_resource type="Shader" path="res://shaders/town_atmosphere_grade.gdshader" id="12_atmosphere"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_town_atmosphere"]
+resource_local_to_scene = true
+shader = ExtResource("12_atmosphere")
 
 [node name="Town" type="Node2D" unique_id=296374039]
 script = ExtResource("1_preview")
@@ -101,6 +106,20 @@ metadata/layer_role = "interaction"
 position = Vector2(220, 702)
 
 [node name="WorldCollision" parent="." unique_id=477183193 instance=ExtResource("9_collision")]
+
+[node name="TownAtmosphere" type="CanvasLayer" parent="."]
+layer = 5
+metadata/lighting_owner = "town_time_of_day"
+metadata/presentation_mode = "dynamic_split_tone_grade"
+
+[node name="ColorGrade" type="ColorRect" parent="TownAtmosphere"]
+material = SubResource("ShaderMaterial_town_atmosphere")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [editable path="ParallaxBackground"]
 [editable path="ParallaxBackground/Clouds"]

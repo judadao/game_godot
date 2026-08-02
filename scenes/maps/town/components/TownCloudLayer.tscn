@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/maps/town_cloud_layer.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/town/background_modules/cloud_01.png" id="2_cloud_01"]
@@ -25,6 +25,41 @@ shader_parameter/left_disconnected_cut = 0.25
 resource_local_to_scene = true
 shader = ExtResource("6_edge_cleanup")
 shader_parameter/left_disconnected_cut = 0.07
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cloud_01_variant"]
+resource_local_to_scene = true
+shader = ExtResource("6_edge_cleanup")
+shader_parameter/variant_strength = 0.82
+shader_parameter/variant_phase = 0.6
+shader_parameter/variant_peak_cut = 0.1
+shader_parameter/variant_tail_cut = 0.07
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cloud_03_variant"]
+resource_local_to_scene = true
+shader = ExtResource("6_edge_cleanup")
+shader_parameter/left_disconnected_cut = 0.25
+shader_parameter/variant_strength = 0.86
+shader_parameter/variant_phase = 2.2
+shader_parameter/variant_peak_cut = 0.14
+shader_parameter/variant_tail_cut = -0.08
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cloud_02_variant"]
+resource_local_to_scene = true
+shader = ExtResource("6_edge_cleanup")
+shader_parameter/left_disconnected_cut = 0.2
+shader_parameter/variant_strength = 0.78
+shader_parameter/variant_phase = 4.0
+shader_parameter/variant_peak_cut = 0.1
+shader_parameter/variant_tail_cut = -0.16
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cloud_04_variant"]
+resource_local_to_scene = true
+shader = ExtResource("6_edge_cleanup")
+shader_parameter/left_disconnected_cut = 0.07
+shader_parameter/variant_strength = 0.9
+shader_parameter/variant_phase = 5.1
+shader_parameter/variant_peak_cut = 0.12
+shader_parameter/variant_tail_cut = -0.14
 
 [node name="TownCloudLayer" type="Node2D"]
 z_index = -98
@@ -79,9 +114,9 @@ metadata/sway_phase = 4.1
 
 [node name="Cloud05" type="Sprite2D" parent="."]
 position = Vector2(1180, 142)
-scale = Vector2(0.82, 0.82)
+scale = Vector2(0.76, 0.76)
 texture_filter = 1
-material = SubResource("ShaderMaterial_cloud_01_cleanup")
+material = SubResource("ShaderMaterial_cloud_01_variant")
 texture = ExtResource("2_cloud_01")
 metadata/drift_speed = 10.5
 metadata/sway_amplitude = 2.5
@@ -90,9 +125,9 @@ metadata/sway_phase = 5.3
 
 [node name="Cloud06" type="Sprite2D" parent="."]
 position = Vector2(1510, 258)
-scale = Vector2(-0.62, 0.62)
+scale = Vector2(-0.57, 0.57)
 texture_filter = 1
-material = SubResource("ShaderMaterial_cloud_03_cleanup")
+material = SubResource("ShaderMaterial_cloud_03_variant")
 texture = ExtResource("4_cloud_03")
 metadata/drift_speed = 16.5
 metadata/sway_amplitude = 1.5
@@ -101,9 +136,9 @@ metadata/sway_phase = 0.9
 
 [node name="Cloud07" type="Sprite2D" parent="."]
 position = Vector2(1810, 98)
-scale = Vector2(0.86, 0.86)
+scale = Vector2(0.93, 0.93)
 texture_filter = 1
-material = SubResource("ShaderMaterial_cloud_02_cleanup")
+material = SubResource("ShaderMaterial_cloud_02_variant")
 texture = ExtResource("3_cloud_02")
 metadata/drift_speed = 11.3
 metadata/sway_amplitude = 3.5
@@ -112,9 +147,9 @@ metadata/sway_phase = 3.6
 
 [node name="Cloud08" type="Sprite2D" parent="."]
 position = Vector2(2150, 206)
-scale = Vector2(-0.68, 0.68)
+scale = Vector2(-0.79, 0.79)
 texture_filter = 1
-material = SubResource("ShaderMaterial_cloud_04_cleanup")
+material = SubResource("ShaderMaterial_cloud_04_variant")
 texture = ExtResource("5_cloud_04")
 metadata/drift_speed = 13.5
 metadata/sway_amplitude = 2.0

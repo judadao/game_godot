@@ -59,6 +59,7 @@ func _assert_cloud_contract() -> void:
 	root.add_child(layer)
 	var clouds: Array[Sprite2D] = []
 	var speeds: Dictionary = {}
+	var silhouette_signatures: Dictionary = {}
 	for child in layer.get_children():
 		var cloud := child as Sprite2D
 		_expect(cloud != null, "%s must be an independently placeable cloud Sprite2D." % child.name)
@@ -78,6 +79,14 @@ func _assert_cloud_contract() -> void:
 			and cleanup_material.shader.resource_path == CLOUD_EDGE_SHADER,
 			"%s must remove source-edge specks, false seam tails, and chroma fringe at render time." % cloud.name
 		)
+		var silhouette_signature := "%s|%.3f|%.3f|%.3f|%.3f" % [
+			source,
+			_shader_float(cleanup_material, &"variant_strength"),
+			_shader_float(cleanup_material, &"variant_phase"),
+			_shader_float(cleanup_material, &"variant_peak_cut"),
+			_shader_float(cleanup_material, &"variant_tail_cut"),
+		]
+		silhouette_signatures[silhouette_signature] = true
 		var speed := float(cloud.get_meta("drift_speed", 0.0))
 		_expect(speed >= 7.0 and speed <= 18.0, "%s must drift at a calm readable speed." % cloud.name)
 		speeds[speed] = true
@@ -88,6 +97,7 @@ func _assert_cloud_contract() -> void:
 		)
 	_expect(clouds.size() >= 7, "Town needs enough independent clouds for continuous entrances and exits.")
 	_expect(speeds.size() >= 4, "Clouds must use staggered speeds instead of moving as one sheet.")
+	_expect(silhouette_signatures.size() >= 6, "Town clouds must expose at least six genuinely distinct rendered silhouettes.")
 	if not clouds.is_empty():
 		var sample := clouds[0]
 		var before := sample.position
@@ -144,6 +154,13 @@ func _count_sprites(node: Node) -> int:
 	for child in node.get_children():
 		count += _count_sprites(child)
 	return count
+
+
+func _shader_float(material: ShaderMaterial, parameter: StringName) -> float:
+	if material == null:
+		return 0.0
+	var value: Variant = material.get_shader_parameter(parameter)
+	return float(value) if value != null else 0.0
 
 
 func _capture_review_frames() -> void:

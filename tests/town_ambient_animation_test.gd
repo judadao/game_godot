@@ -188,6 +188,10 @@ func _assert_scene_contract() -> void:
 		"Canopy clusters must retain sparse motion between gusts."
 	)
 	_expect(
+		bool(contract.get("sunset_leaf_shimmer", false)),
+		"Autumn canopy motion must modulate warm-leaf highlights during sunset."
+	)
+	_expect(
 		float(contract.get("idle_wait_min", 0.0)) >= 40.0
 			and is_equal_approx(float(contract.get("bird_visual_scale", 0.0)), 0.065),
 		"Birds must remain visibly perched and use a small readable silhouette."
@@ -205,6 +209,16 @@ func _assert_scene_contract() -> void:
 			)
 			ambient.call("_apply_wind_pose", 0.5)
 			var tree_material := tree.material as ShaderMaterial
+			_expect(
+				ambient.has_method("set_sunset_lighting_strength"),
+				"Town ambient foliage must accept the root sunset-lighting weight."
+			)
+			if ambient.has_method("set_sunset_lighting_strength"):
+				ambient.call("set_sunset_lighting_strength", 1.0)
+				_expect(
+					float(tree_material.get_shader_parameter("sunset_light_strength")) > 0.9,
+					"Ancient autumn leaves must receive warm directional shimmer at golden hour."
+				)
 			_expect(
 				is_zero_approx(
 					float(tree_material.get_shader_parameter("wind_strength"))

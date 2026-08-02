@@ -47,6 +47,7 @@ var _wind_wait := 6.0
 var _wind_duration := 4.0
 var _wind_direction := 1.0
 var _ambient_time := 0.0
+var _sunset_lighting_strength := 0.0
 var _player_search_timer := 0.0
 var _player: Node2D
 var _canopy_clusters: Array[Dictionary] = []
@@ -61,6 +62,7 @@ var _rng := RandomNumberGenerator.new()
 func _ready() -> void:
 	_rng.randomize()
 	_wind_wait = _rng.randf_range(calm_wait_min, calm_wait_max)
+	_tree_material = ancient_tree.material as ShaderMaterial
 	for child in $CanopyLayers/CanopyClusters.get_children():
 		if child is Node2D:
 			_register_canopy_cluster(child as Node2D)
@@ -70,7 +72,7 @@ func _ready() -> void:
 	for child in house_sway_layers.get_children():
 		if child is Node2D:
 			_register_forest_sway_cluster(child as Node2D)
-	_tree_material = ancient_tree.material as ShaderMaterial
+	_apply_sunset_lighting_to_material(_tree_material, 0.0)
 	for child in canopy_layers.get_children():
 		if child is Sprite2D and String(child.name).begins_with("LeafDrift"):
 			_register_leaf_stream(child as Sprite2D)
@@ -120,6 +122,7 @@ func get_ambient_contract() -> Dictionary:
 		"ancient_tree_source": ancient_tree.texture.resource_path,
 		"tree_base_static": true,
 		"calm_canopy_motion": true,
+		"sunset_leaf_shimmer": true,
 		"canopy_clusters": _canopy_clusters.size(),
 		"forest_sway_clusters": forest_sway_layers.get_child_count(),
 		"house_sway_clusters": house_sway_layers.get_child_count(),
@@ -144,6 +147,23 @@ func get_ambient_contract() -> Dictionary:
 	}
 
 
+func set_sunset_lighting_strength(strength: float) -> void:
+	_sunset_lighting_strength = clampf(strength, 0.0, 1.0)
+	_apply_sunset_lighting_to_material(_tree_material, 0.0)
+	for layer in _canopy_clusters:
+		_apply_sunset_lighting_to_material(
+			layer.get("foliage_material") as ShaderMaterial,
+			float(layer["phase"])
+		)
+	for layer in _forest_sway_clusters:
+		for sprite_layer_variant in layer["sprite_layers"] as Array:
+			var sprite_layer := sprite_layer_variant as Dictionary
+			_apply_sunset_lighting_to_material(
+				sprite_layer.get("foliage_material") as ShaderMaterial,
+				float(layer["phase"]) + float(sprite_layer["sway_gain"])
+			)
+
+
 func force_bird_takeoff(bird_name: StringName) -> void:
 	for bird_index in _birds.size():
 		var bird: Dictionary = _birds[bird_index]
@@ -156,16 +176,20 @@ func force_bird_takeoff(bird_name: StringName) -> void:
 
 
 func _register_canopy_cluster(pivot: Node2D) -> void:
+	var phase := float(pivot.get_meta("phase", 0.0))
+	var foliage_sprite := pivot.get_node_or_null("Sprite") as Sprite2D
+	var foliage_material := _create_foliage_material(foliage_sprite, phase)
 	_canopy_clusters.append({
 		"pivot": pivot,
 		"base_position": pivot.position,
 		"base_rotation": pivot.rotation,
 		"max_rotation": float(pivot.get_meta("max_rotation", 0.012)),
 		"gust_delay": float(pivot.get_meta("gust_delay", 0.0)),
-		"phase": float(pivot.get_meta("phase", 0.0)),
+		"phase": phase,
 		"calm_period": float(pivot.get_meta("calm_period", 4.8)),
 		"rustle_period": float(pivot.get_meta("rustle_period", 6.5)),
 		"calm_gain": float(pivot.get_meta("calm_gain", 1.0)),
+		"foliage_material": foliage_material,
 	})
 
 
@@ -175,10 +199,18 @@ func _register_forest_sway_cluster(pivot: Node2D) -> void:
 		if not child is Sprite2D:
 			continue
 		var sprite := child as Sprite2D
+		var material_phase := (
+			float(pivot.get_meta("phase", 0.0))
+			+ float(sprite.get_meta("sway_gain", 0.65))
+		)
 		sprite_layers.append({
 			"sprite": sprite,
 			"base_rotation": sprite.rotation,
 			"sway_gain": float(sprite.get_meta("sway_gain", 0.65)),
+			"foliage_material": _create_foliage_material(
+				sprite,
+				material_phase
+			),
 		})
 	_forest_sway_sprite_layer_count += sprite_layers.size()
 	_forest_sway_clusters.append({
@@ -391,6 +423,10 @@ func _stabilize_tree_base(phase: float) -> void:
 	if _tree_material != null:
 		_tree_material.set_shader_parameter("wind_strength", 0.0)
 		_tree_material.set_shader_parameter("wind_phase", phase)
+		_tree_material.set_shader_parameter(
+			"shimmer_time",
+			_ambient_time
+		)
 
 
 func _apply_canopy_transform(
@@ -403,6 +439,16 @@ func _apply_canopy_transform(
 	var max_rotation := float(layer["max_rotation"])
 	pivot.rotation = base_rotation + strength * max_rotation
 	pivot.position = base_position
+	var foliage_material := layer.get("foliage_material") as ShaderMaterial
+	if foliage_material != null:
+		foliage_material.set_shader_parameter(
+			"shimmer_time",
+			_ambient_time + float(layer["phase"])
+		)
+		foliage_material.set_shader_parameter(
+			"wind_phase",
+			strength * 0.65 + float(layer["phase"])
+		)
 
 
 func _apply_forest_patch_transform(
@@ -429,6 +475,48 @@ func _apply_forest_patch_transform(
 			sprite_base_rotation
 			+ strength * max_rotation * (sway_gain - pivot_gain)
 		)
+		var foliage_material := (
+			sprite_layer.get("foliage_material") as ShaderMaterial
+		)
+		if foliage_material != null:
+			foliage_material.set_shader_parameter(
+				"shimmer_time",
+				_ambient_time + float(layer["phase"]) + sway_gain
+			)
+			foliage_material.set_shader_parameter(
+				"wind_phase",
+				strength * 0.48 + float(layer["phase"]) + sway_gain
+			)
+
+
+func _create_foliage_material(
+	sprite: Sprite2D,
+	phase: float
+) -> ShaderMaterial:
+	if sprite == null or _tree_material == null:
+		return null
+	var foliage_material := _tree_material.duplicate() as ShaderMaterial
+	if foliage_material == null:
+		return null
+	foliage_material.resource_local_to_scene = true
+	foliage_material.set_shader_parameter("wind_strength", 0.0)
+	foliage_material.set_shader_parameter("shimmer_phase", phase)
+	sprite.material = foliage_material
+	_apply_sunset_lighting_to_material(foliage_material, phase)
+	return foliage_material
+
+
+func _apply_sunset_lighting_to_material(
+	material: ShaderMaterial,
+	phase: float
+) -> void:
+	if material == null:
+		return
+	material.set_shader_parameter(
+		"sunset_light_strength",
+		_sunset_lighting_strength
+	)
+	material.set_shader_parameter("shimmer_phase", phase)
 
 
 func _update_leaf_stream(leaf_index: int, delta: float) -> void:

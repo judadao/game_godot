@@ -51,6 +51,19 @@ func set_cloud_tint(tint: Color) -> void:
 				shader_material.set_shader_parameter("cloud_tint", tint)
 
 
+func set_cloud_lighting(shadow_tint: Color, light_tint: Color, strength: float) -> void:
+	for child in get_children():
+		var cloud := child as Sprite2D
+		if cloud == null:
+			continue
+		var shader_material := cloud.material as ShaderMaterial
+		if shader_material == null:
+			continue
+		shader_material.set_shader_parameter("cloud_shadow_tint", shadow_tint)
+		shader_material.set_shader_parameter("cloud_light_tint", light_tint)
+		shader_material.set_shader_parameter("cloud_lighting_strength", clampf(strength, 0.0, 1.0))
+
+
 func get_cloud_motion_contract() -> Dictionary:
 	var speed_count: Dictionary = {}
 	var cloud_count := 0

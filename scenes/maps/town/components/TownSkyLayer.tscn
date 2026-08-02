@@ -1,11 +1,16 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/maps/town_sky_layer.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/town/modular_v3/background/town_sky_cloud_free_v1.png" id="2_sky"]
 [ext_resource type="Shader" path="res://shaders/town_sky_grade.gdshader" id="3_grade"]
+[ext_resource type="Shader" path="res://shaders/town_sky_wash.gdshader" id="4_wash"]
 
 [sub_resource type="ShaderMaterial" id="SkyGradeMaterial"]
 shader = ExtResource("3_grade")
+
+[sub_resource type="ShaderMaterial" id="SkyWashMaterial"]
+resource_local_to_scene = true
+shader = ExtResource("4_wash")
 
 [node name="TownSkyLayer" type="Node2D"]
 z_index = -100
@@ -21,3 +26,11 @@ material = SubResource("SkyGradeMaterial")
 texture = ExtResource("2_sky")
 metadata/cloud_free = true
 metadata/tintable = true
+
+[node name="SkyWash" type="ColorRect" parent="."]
+z_index = 1
+material = SubResource("SkyWashMaterial")
+offset_right = 1942.0
+offset_bottom = 809.0
+mouse_filter = 2
+metadata/presentation_mode = "dynamic_zenith_horizon_wash"
