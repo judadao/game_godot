@@ -18,6 +18,7 @@ const HEAD_BAND_END := 40
 const TORSO_BAND_START := 42
 const TORSO_BAND_END := 88
 const MAX_CORE_ALPHA_SPREAD_RATIO := 1.4
+const MAX_HEAD_CORE_REFERENCE_RATIO := 1.33
 const SPEAR_SAMPLE_END_Y := 132
 const MIN_SPEAR_LENGTH := 112
 const MAX_SPEAR_SLOPE_X := 30
@@ -93,6 +94,27 @@ func _assert_atlas_proportions(character_name: String) -> void:
 		image.get_size() == Vector2i(CELL_SIZE.x * FRAME_COUNT, CELL_SIZE.y * STATE_COUNT),
 		"%s atlas must remain a 4x13 grid." % character_name
 	)
+	var idle_head_core_areas: Array[int] = []
+	for column in FRAME_COUNT:
+		var idle_frame := image.get_region(Rect2i(
+			column * CELL_SIZE.x,
+			0,
+			CELL_SIZE.x,
+			CELL_SIZE.y
+		))
+		var idle_used := idle_frame.get_used_rect()
+		if idle_used.has_area():
+			idle_head_core_areas.append(_count_core_alpha(
+				idle_frame,
+				idle_used.position.y + HEAD_BAND_START,
+				idle_used.position.y + HEAD_BAND_END
+			))
+	idle_head_core_areas.sort()
+	var idle_head_reference := 0.0
+	if idle_head_core_areas.size() == FRAME_COUNT:
+		idle_head_reference = (
+			idle_head_core_areas[1] + idle_head_core_areas[2]
+		) * 0.5
 	for row in EMOTION_ROWS:
 		var heights: Array[int] = []
 		var widths: Array[int] = []
@@ -112,9 +134,22 @@ func _assert_atlas_proportions(character_name: String) -> void:
 				continue
 			heights.append(used.size.y)
 			widths.append(used.size.x)
-			head_core_areas.append(_count_core_alpha(
+			var head_core_area := _count_core_alpha(
 				frame, used.position.y + HEAD_BAND_START, used.position.y + HEAD_BAND_END
-			))
+			)
+			head_core_areas.append(head_core_area)
+			if idle_head_reference > 0.0:
+				_expect(
+					float(head_core_area) / idle_head_reference <= MAX_HEAD_CORE_REFERENCE_RATIO,
+					"%s row %d frame %d head core must remain within %.2fx of idle adult proportions; got %.3fx."
+					% [
+						character_name,
+						row,
+						column,
+						MAX_HEAD_CORE_REFERENCE_RATIO,
+						float(head_core_area) / idle_head_reference,
+					]
+				)
 			torso_core_areas.append(_count_core_alpha(
 				frame, used.position.y + TORSO_BAND_START, used.position.y + TORSO_BAND_END
 			))
