@@ -3,6 +3,7 @@
   "recipes": [
     {
       "id": "silent_battle_rhythm", "name": "戰律希聲",
+      "icon_path": "res://assets/ui/finishers/generated/silent_battle_rhythm.png",
       "sequence": ["battle_rhythm", "battle_rhythm", "battle_rhythm"],
       "required_skills": ["battle_rhythm"], "role": "offense",
       "description": "凝聚本輪攻擊節奏，連續打出三次遞增重擊，最後一擊重演本輪最高傷害。",
@@ -10,6 +11,7 @@
     },
     {
       "id": "horizon_stream", "name": "天際流光",
+      "icon_path": "res://assets/ui/finishers/generated/horizon_stream.png",
       "sequence": ["sweeping_reach", "sweeping_reach", "sweeping_reach"],
       "required_skills": ["sweeping_reach"], "role": "offense",
       "description": "生成橫跨戰場的水平斬線聚攏敵人，再以反向斬線造成破韌。",
@@ -17,6 +19,7 @@
     },
     {
       "id": "sudden_rain_cadence", "name": "驟雨繁音",
+      "icon_path": "res://assets/ui/finishers/generated/sudden_rain_cadence.png",
       "sequence": ["quickened_cadence", "quickened_cadence", "quickened_cadence"],
       "required_skills": ["quickened_cadence"], "role": "offense",
       "description": "把壓縮的攻擊間隔化為驟雨般的多段追擊，同時結算積蓄的斬擊。",
@@ -24,6 +27,7 @@
     },
     {
       "id": "falling_moon_arc", "name": "月輪垂光",
+      "icon_path": "res://assets/ui/finishers/generated/falling_moon_arc.png",
       "sequence": ["giant_arc", "giant_arc", "giant_arc"],
       "required_skills": ["giant_arc"], "role": "offense",
       "description": "巨型弧光從上方墜落劈開姿態，隨後以環形衝擊擊退周圍敵人。",
@@ -31,6 +35,7 @@
     },
     {
       "id": "thousand_blade_kill", "name": "千羽相應",
+      "icon_path": "res://assets/ui/finishers/generated/thousand_blade_kill.png",
       "sequence": ["echo_volley", "echo_volley", "echo_volley"],
       "required_skills": ["echo_volley"], "role": "offense",
       "description": "全向放出多層回聲刃並在邊界折返，後續回聲會逐步增幅。",
@@ -39,6 +44,7 @@
 
     {
       "id": "still_mountain", "name": "靜岳無移",
+      "icon_path": "res://assets/ui/finishers/generated/still_mountain.png",
       "sequence": ["guard", "guard", "guard"],
       "required_skills": ["guard"], "role": "defense",
       "description": "短暫進入不可擊倒狀態，承受的硬直與擊退會在結束時化為震地波。",
@@ -46,6 +52,7 @@
     },
     {
       "id": "stone_ring_guard", "name": "石環守一",
+      "icon_path": "res://assets/ui/finishers/generated/stone_ring_guard.png",
       "sequence": ["iron_skin", "iron_skin", "iron_skin"],
       "required_skills": ["iron_skin"], "role": "defense",
       "description": "石片封成護體結界吸收多次攻擊，破碎後反射追蹤碎石。",
@@ -53,6 +60,7 @@
     },
     {
       "id": "tempered_bones", "name": "金骨含章",
+      "icon_path": "res://assets/ui/finishers/generated/tempered_bones.png",
       "sequence": ["iron_bone", "iron_bone", "iron_bone"],
       "required_skills": ["iron_bone"], "role": "defense",
       "description": "大幅提高防禦並免疫破防，減免的傷害在結束時轉為破韌拳影。",
@@ -60,6 +68,7 @@
     },
     {
       "id": "trackless_gale", "name": "扶搖無跡",
+      "icon_path": "res://assets/ui/finishers/generated/trackless_gale.png",
       "sequence": ["fleet_footwork", "fleet_footwork", "fleet_footwork"],
       "required_skills": ["fleet_footwork"], "role": "hybrid",
       "description": "化為三道風痕穿越敵陣，行進路徑會延遲爆出風刃。",
@@ -67,6 +76,7 @@
     },
     {
       "id": "enduring_arcane_breath", "name": "綿息若存",
+      "icon_path": "res://assets/ui/finishers/generated/enduring_arcane_breath.png",
       "sequence": ["arcane_breath", "arcane_breath", "arcane_breath"],
       "required_skills": ["arcane_breath"], "role": "support",
       "description": "星脈倒流並急速回復 AP，首次耗盡時再回復部分 AP。",
@@ -74,6 +84,7 @@
     },
     {
       "id": "inexhaustible_reservoir", "name": "靈泉不窮",
+      "icon_path": "res://assets/ui/finishers/generated/inexhaustible_reservoir.png",
       "sequence": ["deep_reservoir", "deep_reservoir", "deep_reservoir"],
       "required_skills": ["deep_reservoir"], "role": "support",
       "description": "暫時突破 AP 上限並補滿，未消耗的力量轉成護盾。",
@@ -81,6 +92,7 @@
     },
     {
       "id": "returning_counterguard", "name": "返照歸身",
+      "icon_path": "res://assets/ui/finishers/generated/returning_counterguard.png",
       "sequence": ["stoneguard_combo", "stoneguard_combo", "stoneguard_combo"],
       "required_skills": ["stoneguard_combo"], "role": "defense",
       "description": "展開反擊領域記錄來襲招式，結束時由石像逐一重演並返還。",
@@ -89,6 +101,7 @@
 
     {
       "id": "inferno_cremation", "name": "流火照夜",
+      "icon_path": "res://assets/ui/finishers/generated/inferno_cremation.png",
       "sequence": ["flame_imbue", "flame_imbue", "flame_imbue"],
       "required_skills": ["flame_imbue"], "role": "element",
       "description": "點燃全場既有燃燒層數形成移動火界，燃燒目標倒下時向外爆發。",
@@ -96,6 +109,7 @@
     },
     {
       "id": "frozen_burial", "name": "履霜凝華",
+      "icon_path": "res://assets/ui/finishers/generated/frozen_burial.png",
       "sequence": ["frostburst_imbue", "frostburst_imbue", "frostburst_imbue"],
       "required_skills": ["frostburst_imbue"], "role": "element",
       "description": "將霜緩敵人封入冰棺，重擊冰棺時會引發連鎖碎裂。",
@@ -103,6 +117,7 @@
     },
     {
       "id": "thunder_prison_pierce", "name": "雷動春醒",
+      "icon_path": "res://assets/ui/finishers/generated/thunder_prison_pierce.png",
       "sequence": ["storm_charge", "storm_charge", "storm_charge"],
       "required_skills": ["storm_charge"], "role": "element",
       "description": "雷柱建立反覆跳躍的雷區，最後由中央雷槍貫穿敵陣。",
@@ -110,6 +125,7 @@
     },
     {
       "id": "orchid_corrosion", "name": "蘭芷成蝕",
+      "icon_path": "res://assets/ui/finishers/generated/orchid_corrosion.png",
       "sequence": ["venom_edge", "venom_edge", "venom_edge"],
       "required_skills": ["venom_edge"], "role": "element",
       "description": "結算部分剩餘毒傷並綻放腐花，敵人倒下時擴散毒霧並治療友方。",
@@ -118,6 +134,7 @@
 
     {
       "id": "sunbearing_dawn", "name": "朝光載陽",
+      "icon_path": "res://assets/ui/finishers/generated/sunbearing_dawn.png",
       "sequence": ["healing_light", "healing_light", "healing_light"],
       "required_skills": ["healing_light"], "role": "healing",
       "description": "強光依序治療最低生命目標，溢補轉為護盾並保留一次復起力量。",
@@ -125,6 +142,7 @@
     },
     {
       "id": "returning_spring_spirits", "name": "春靈來復",
+      "icon_path": "res://assets/ui/finishers/generated/returning_spring_spirits.png",
       "sequence": ["renewal", "renewal", "renewal"],
       "required_skills": ["renewal"], "role": "healing",
       "description": "復甦之靈巡行戰場持續治療與淨化，巡禮完成時綻放全隊治療。",
@@ -132,6 +150,7 @@
     },
     {
       "id": "shared_bloodline", "name": "同枝共脈",
+      "icon_path": "res://assets/ui/finishers/generated/shared_bloodline.png",
       "sequence": ["blood_pact_combo", "blood_pact_combo", "blood_pact_combo"],
       "required_skills": ["blood_pact_combo"], "role": "healing",
       "description": "連結全隊生命形成共享吸血，並共同承擔一次致命傷害。",
@@ -139,6 +158,7 @@
     },
     {
       "id": "evergreen_court", "name": "青庭長春",
+      "icon_path": "res://assets/ui/finishers/generated/evergreen_court.png",
       "sequence": ["verdant_renewal", "verdant_renewal", "verdant_renewal"],
       "required_skills": ["verdant_renewal"], "role": "healing",
       "description": "展開持續治療庭園，滿血者獲得傷害增幅，低血者提高治療與減傷。",
@@ -147,6 +167,7 @@
 
     {
       "id": "silent_feather_cadence", "name": "希聲繁羽",
+      "icon_path": "res://assets/ui/finishers/generated/silent_feather_cadence.png",
       "sequence": ["battle_rhythm", "quickened_cadence", "echo_volley"],
       "required_skills": ["battle_rhythm", "quickened_cadence", "echo_volley"], "role": "offense",
       "description": "把加速攻擊的節拍灌入回聲齊射，讓每一發回聲依節奏追擊。",
@@ -154,6 +175,7 @@
     },
     {
       "id": "skyward_returning_feathers", "name": "天光回羽",
+      "icon_path": "res://assets/ui/finishers/generated/skyward_returning_feathers.png",
       "sequence": ["sweeping_reach", "giant_arc", "echo_volley"],
       "required_skills": ["sweeping_reach", "giant_arc", "echo_volley"], "role": "offense",
       "description": "先以大弧聚敵，再讓八方向回聲刃折返斬向中心。",
@@ -161,6 +183,7 @@
     },
     {
       "id": "guarding_reflection", "name": "守一返照",
+      "icon_path": "res://assets/ui/finishers/generated/guarding_reflection.png",
       "sequence": ["guard", "iron_skin", "stoneguard_combo"],
       "required_skills": ["guard", "iron_skin", "stoneguard_combo"], "role": "defense",
       "description": "建立不動石城吸收領域內攻擊，再依原方向與屬性返還。",
@@ -168,6 +191,7 @@
     },
     {
       "id": "gale_reservoir", "name": "扶搖泉湧",
+      "icon_path": "res://assets/ui/finishers/generated/gale_reservoir.png",
       "sequence": ["fleet_footwork", "arcane_breath", "deep_reservoir"],
       "required_skills": ["fleet_footwork", "arcane_breath", "deep_reservoir"], "role": "support",
       "description": "移動時沿路生成 AP 星脈，拾取後突破上限並延長下一個 Combo。",
@@ -175,6 +199,7 @@
     },
     {
       "id": "balanced_elements", "name": "水火既濟",
+      "icon_path": "res://assets/ui/finishers/generated/balanced_elements.png",
       "sequence": ["flame_imbue", "frostburst_imbue", "storm_charge"],
       "required_skills": ["flame_imbue", "frostburst_imbue", "storm_charge"], "role": "element",
       "description": "依序引發熱震、凍結與感電，最後把三種狀態捲成循環天候。",
@@ -182,6 +207,7 @@
     },
     {
       "id": "heavenly_wheel_sever", "name": "流火雷音",
+      "icon_path": "res://assets/ui/finishers/generated/heavenly_wheel_sever.png",
       "sequence": ["flame_imbue", "echo_volley", "storm_charge"],
       "required_skills": ["flame_imbue", "echo_volley", "storm_charge"], "role": "element",
       "description": "火焰開路、回聲分裂、雷擊收尾，形成向前旋轉的三層攻擊。",
@@ -189,6 +215,7 @@
     },
     {
       "id": "frost_orchid_flame", "name": "霜蘭流火",
+      "icon_path": "res://assets/ui/finishers/generated/frost_orchid_flame.png",
       "sequence": ["frostburst_imbue", "venom_edge", "flame_imbue"],
       "required_skills": ["frostburst_imbue", "venom_edge", "flame_imbue"], "role": "element",
       "description": "冰封保存毒層，火焰碎冰時一次釋放，死亡區域隨後綻放腐花。",
@@ -196,6 +223,7 @@
     },
     {
       "id": "sunlit_spring_court", "name": "春庭載陽",
+      "icon_path": "res://assets/ui/finishers/generated/sunlit_spring_court.png",
       "sequence": ["healing_light", "renewal", "verdant_renewal"],
       "required_skills": ["healing_light", "renewal", "verdant_renewal"], "role": "healing",
       "description": "光、靈與自然形成三層治療陣，依序淨化、治療並將溢補轉為護盾。",
@@ -203,6 +231,7 @@
     },
     {
       "id": "returning_shared_pulse", "name": "同脈來復",
+      "icon_path": "res://assets/ui/finishers/generated/returning_shared_pulse.png",
       "sequence": ["blood_pact_combo", "healing_light", "renewal"],
       "required_skills": ["blood_pact_combo", "healing_light", "renewal"], "role": "healing",
       "description": "先以血契承擔傷害，再由慈光與復甦之靈把生命返還給低血目標。",
@@ -210,6 +239,7 @@
     },
     {
       "id": "guarding_shared_pulse", "name": "守一共脈",
+      "icon_path": "res://assets/ui/finishers/generated/guarding_shared_pulse.png",
       "sequence": ["guard", "blood_pact_combo", "stoneguard_combo"],
       "required_skills": ["guard", "blood_pact_combo", "stoneguard_combo"], "role": "defense",
       "description": "承受攻擊時不退，讓反擊傷害同時治療最低生命友方。",
@@ -217,6 +247,7 @@
     },
     {
       "id": "gale_moon_arc", "name": "扶搖月輪",
+      "icon_path": "res://assets/ui/finishers/generated/gale_moon_arc.png",
       "sequence": ["fleet_footwork", "sweeping_reach", "giant_arc"],
       "required_skills": ["fleet_footwork", "sweeping_reach", "giant_arc"], "role": "offense",
       "description": "高速繞場留下圓形斬線，最後以巨弧從圓心向外切開。",
@@ -224,6 +255,7 @@
     },
     {
       "id": "breathing_thunder_echo", "name": "綿息雷音",
+      "icon_path": "res://assets/ui/finishers/generated/breathing_thunder_echo.png",
       "sequence": ["arcane_breath", "storm_charge", "echo_volley"],
       "required_skills": ["arcane_breath", "storm_charge", "echo_volley"], "role": "hybrid",
       "description": "以 AP 星脈供能雷陣，讓每枚回聲彈都成為一次落雷位置。",

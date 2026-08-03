@@ -86,6 +86,28 @@ func _apply_visual_profile() -> void:
 	if core == null or accent == null or ring == null:
 		return
 	match item_id:
+		&"money_bag":
+			core.color = Color(0.46, 0.22, 0.06)
+			accent.color = Color(1.0, 0.82, 0.22)
+			ring.default_color = Color(1.0, 0.72, 0.12, 0.95)
+			core.polygon = PackedVector2Array([
+				Vector2(-8.0, -16.0), Vector2(8.0, -16.0),
+				Vector2(5.0, -10.0), Vector2(14.0, 1.0),
+				Vector2(12.0, 14.0), Vector2(0.0, 18.0),
+				Vector2(-12.0, 14.0), Vector2(-14.0, 1.0),
+				Vector2(-5.0, -10.0),
+			])
+		&"material_bag":
+			core.color = Color(0.18, 0.32, 0.24)
+			accent.color = Color(0.5, 0.94, 0.56)
+			ring.default_color = Color(0.42, 0.88, 0.5, 0.95)
+			core.polygon = PackedVector2Array([
+				Vector2(-9.0, -16.0), Vector2(9.0, -16.0),
+				Vector2(6.0, -9.0), Vector2(15.0, 0.0),
+				Vector2(13.0, 15.0), Vector2(0.0, 19.0),
+				Vector2(-13.0, 15.0), Vector2(-15.0, 0.0),
+				Vector2(-6.0, -9.0),
+			])
 		&"experience_magnet":
 			core.color = Color(0.16, 0.82, 1.0)
 			accent.color = Color(0.9, 1.0, 1.0)

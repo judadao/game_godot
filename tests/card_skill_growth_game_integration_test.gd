@@ -84,13 +84,20 @@ func _run() -> void:
 			and deck.discard_pile.is_empty(),
 		"Combat skills must spend AP while remaining in their fixed slots."
 	)
-	run.add_experience(run.experience_required * 2)
-	game.call("_on_experience_collected", 0)
+	game.call("_on_experience_collected", run.experience_required)
+	await process_frame
 	await process_frame
 	_expect(
-		game.get_open_ui("CardGrowthUI") == null,
-		"EXP must not open card upgrade or fusion pages during combat."
+		game.get_open_ui("CardGrowthUI") != null,
+		"Every EXP level must open the Blessing growth modal."
 	)
+	var level_page := (game.get("growth_choice_queue") as GrowthChoiceQueue).peek()
+	var level_only := true
+	for choice_variant in level_page.get("choices", []) as Array:
+		level_only = level_only and String((choice_variant as Dictionary).get("action", "")) == "divine_gift"
+	_expect(level_only, "EXP growth must offer only new or upgraded Blessings.")
+	(game.get_open_ui("CardGrowthUI") as Control).call("confirm_selected_choice")
+	await process_frame
 	game.call("_on_elite_defeated", Vector2.ZERO)
 	await process_frame
 	await process_frame
@@ -105,9 +112,9 @@ func _run() -> void:
 			and String(choice.get("action", "")).begins_with("divine_")
 		)
 	_expect(
-		String(page.get("source", "")) == "divine"
+		String(page.get("source", "")) == "elite"
 			and divine_only,
-		"Every reachable in-combat growth choice must be a Divine Gift action."
+		"Elite loot must offer only Blessing upgrade or fusion actions."
 	)
 	paused = false
 	game.queue_free()

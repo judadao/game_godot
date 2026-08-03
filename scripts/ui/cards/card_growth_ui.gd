@@ -111,7 +111,6 @@ func present_page(page: Dictionary) -> void:
 	var source := String(_page.get("source", "")).to_lower()
 	var can_skip := (
 		(source == "wave" and not new_cards.is_empty())
-		or (source == "fusion_followup" and not fusions.is_empty())
 		or (
 			source == "divine"
 			and divine_gifts.is_empty()
@@ -184,31 +183,29 @@ func _apply_header() -> void:
 			instruction_label.text = "Add one card to this expedition deck."
 		"experience":
 			var has_fallback := _page_has_action("fallback")
-			var has_upgrade := _page_has_action("upgrade")
-			var has_fusion := _page_has_action("fusion")
 			title_label.text = (
-				"CHOOSE RESOURCES"
+				"選擇一份成長資源"
 				if has_fallback
-				else ("CHOOSE AN UPGRADE" if has_upgrade else "CHOOSE A FUSION")
+				else "選擇新的祝福或提升祝福"
 			)
-			source_label.text = "EXPERIENCE GROWTH"
+			source_label.text = "角色升等"
 			instruction_label.text = (
-				"No card can grow. Choose one permanent resource bundle."
+				"所有祝福都已達上限，抽取金錢或素材作為本次成長。"
 				if has_fallback
-				else (
-					"Choose one of five unfinished cards to level up."
-					if has_upgrade
-					else "Fuse one pair of full-level cards."
-				)
+				else "選擇尚未持有的新祝福，或提升一項目前擁有的祝福。"
 			)
-		"fusion_followup":
-			title_label.text = "EVOLVE COMBO?"
-			source_label.text = "NEW LV.3 PAIR"
-			instruction_label.text = "Fuse two full-level cards into one stronger Combo, or keep both."
 		"divine":
 			title_label.text = "選擇一項神賜"
 			source_label.text = "菁英祝福"
 			instruction_label.text = "每項神賜都會改變連段招式與具名終結技。"
+		"elite":
+			title_label.text = "選擇菁英戰利品"
+			source_label.text = "階段菁英"
+			instruction_label.text = "提升已持有的祝福，或融合兩項滿級祝福。"
+		"boss":
+			title_label.text = "選擇首領戰利品"
+			source_label.text = "BOSS 獎勵"
+			instruction_label.text = "提升已持有的祝福，或融合兩項滿級祝福。"
 		_:
 			title_label.text = "CARD GROWTH"
 			source_label.text = "PENDING CHOICE"

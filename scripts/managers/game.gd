@@ -67,7 +67,7 @@ const JOURNAL_EQUIPMENT_ICON_ROOT := "res://assets/curated/game_own/items/oga_rp
 const JOURNAL_ITEM_ICONS := {
 	"travel_bread": JOURNAL_ICON_ROOT + "Icon69_1_2.png",
 	"town_map": JOURNAL_ICON_ROOT + "Icon45_1_2.png",
-	"iron_sword": JOURNAL_EQUIPMENT_ICON_ROOT + "DefaultSet_0000_Weapon.png",
+	"iron_sword": "res://assets/ui/equipment/generated/iron_sword.png",
 	"guard_boots": JOURNAL_EQUIPMENT_ICON_ROOT + "DefaultSet_0006_Boots.png",
 	"soul_edge": JOURNAL_EQUIPMENT_ICON_ROOT + "StealSet_0000_Weapon.png",
 	"shard_charm": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
@@ -797,8 +797,10 @@ func _wire_encounter_directors() -> void:
 		_connect_if_present(director, &"experience_gem_spawned", &"_on_experience_gem_spawned")
 		_connect_if_present(director, &"survival_time_changed", &"_on_survival_time_changed")
 		_connect_if_present(director, &"boss_spawned", &"_on_survival_boss_spawned")
+		_connect_if_present(director, &"boss_defeated", &"_on_survival_boss_defeated")
 		_connect_if_present(director, &"boss_stage_completed", &"_on_boss_stage_completed")
 		_connect_if_present(director, &"elite_defeated", &"_on_elite_defeated")
+		_connect_if_present(director, &"reward_bag_collected", &"_on_reward_bag_collected")
 		if director.has_method("start_encounter") and not bool(director.get("_running")):
 			director.call_deferred("start_encounter")
 
@@ -849,6 +851,25 @@ func _on_survival_boss_spawned(
 	_wire_boss_hud()
 
 
+func _on_survival_boss_defeated(
+	_world_position: Vector2,
+	_completion_boss: bool
+) -> void:
+	if not run_state.active:
+		return
+	call_deferred("_show_combat_blessing_choices", "boss")
+
+
+func _on_reward_bag_collected(_kind: StringName, reward: Dictionary) -> void:
+	if not run_state.active:
+		return
+	for resource_variant in reward:
+		var resource_id := String(resource_variant)
+		var amount := int(reward[resource_variant])
+		if amount > 0:
+			run_state.add_reward(resource_id, amount)
+
+
 func _on_boss_stage_completed() -> void:
 	if not run_state.active:
 		return
@@ -876,8 +897,10 @@ func _on_experience_gem_spawned(gem: Node, _value: int) -> void:
 
 
 func _on_experience_collected(value: int) -> void:
-	run_state.add_experience(value)
+	var queued_levels := run_state.add_experience(value)
 	_update_hud_player_identity()
+	if queued_levels > 0:
+		call_deferred("_enqueue_experience_growth")
 
 
 func _on_elite_defeated(_world_position: Vector2) -> void:
@@ -896,7 +919,7 @@ func _on_elite_defeated(_world_position: Vector2) -> void:
 	rewarded[stage_key] = true
 	run_state.temporary_buffs["divine_rewarded_stages"] = rewarded
 	run_state.elite_defeated = true
-	call_deferred("_show_divine_gift_choices")
+	call_deferred("_show_combat_blessing_choices", "elite")
 
 
 func _current_divine_stage_key() -> String:
@@ -911,44 +934,25 @@ func _current_divine_stage_key() -> String:
 	return "%s:%d" % [map_path, event_number]
 
 
-func _show_divine_gift_choices() -> void:
+func _show_combat_blessing_choices(source: String) -> void:
 	if not run_state.active:
 		return
-	var rewards := divine_gift_manager.call("get_reward_choices", 3) as Array
+	var upgrades := divine_gift_manager.call("get_upgrade_choices", 3) as Array
 	var fusions := divine_gift_manager.call("get_fusion_choices") as Array
-	if growth_choice_queue.call("enqueue_divine_gifts", rewards, fusions):
+	if growth_choice_queue.call(
+		"enqueue_combat_blessing_reward",
+		source,
+		upgrades,
+		fusions
+	):
 		call_deferred("_open_next_growth_choice")
 
 
 func _enqueue_experience_growth() -> void:
 	if run_state.pending_level_ups <= 0 or not growth_choice_queue.is_empty():
 		return
-	var upgrades: Array[Dictionary] = []
-	for instance in run_state.card_instances:
-		if (
-			instance.is_fixed()
-			or instance.is_growth_locked()
-			or instance.level >= CardInstance.MAX_LEVEL
-		):
-			continue
-		var card := card_database.get_card(instance.card_id)
-		upgrades.append({
-			"instance_id": instance.instance_id,
-			"card_id": instance.card_id,
-			"name": _card_name(instance.card_id),
-			"level": instance.level,
-			"type": String(card.get("type", "")),
-			"cost": int(card.get("cost", 0)),
-			"icon_path": String(card.get("icon_path", "")),
-			"card_color": String(card.get("card_color", "")),
-			"description": _card_level_description(card, instance.level),
-			"upgrade_description": _card_upgrade_description(
-				card,
-				instance.level + 1
-			),
-		})
-	var fusions := _available_fusions_with_names()
-	if not growth_choice_queue.enqueue_experience_growth(upgrades, fusions):
+	var blessings := divine_gift_manager.call("get_reward_choices", 3) as Array
+	if not growth_choice_queue.call("enqueue_experience_blessings", blessings):
 		return
 	call_deferred("_open_next_growth_choice")
 
@@ -984,7 +988,6 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 			break
 	if selected.is_empty():
 		return
-	var selected_action := String(selected.get("action", ""))
 	if (
 		String(selected.get("action", "")) == "new_card"
 		and _get_run_deck_size() >= CardCollectionService.MAX_EXPEDITION_CARDS
@@ -1002,13 +1005,13 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 		return
 	if String(page.get("source", "")) == "experience":
 		run_state.consume_pending_level()
-	if selected_action == "upgrade":
-		growth_choice_queue.enqueue_optional_fusions(_available_fusions_with_names())
 	close_ui(ui_control)
 	_refresh_card_hand()
 	_update_hud_player_identity()
 	if not growth_choice_queue.is_empty():
 		call_deferred("_open_next_growth_choice")
+	elif run_state.pending_level_ups > 0:
+		call_deferred("_enqueue_experience_growth")
 
 
 func _on_growth_reward_skipped(ui_control: Control) -> void:
@@ -1017,24 +1020,6 @@ func _on_growth_reward_skipped(ui_control: Control) -> void:
 	close_ui(ui_control)
 	if not growth_choice_queue.is_empty():
 		call_deferred("_open_next_growth_choice")
-
-
-func _available_fusions_with_names() -> Array[Dictionary]:
-	var fusions := evolution_manager.find_available_fusions(run_state.card_instances)
-	for fusion in fusions:
-		fusion["left_name"] = _card_name(String(fusion.get("left_card_id", "")))
-		fusion["right_name"] = _card_name(String(fusion.get("right_card_id", "")))
-		var result_card := card_database.get_card(String(fusion.get("result_card_id", "")))
-		fusion["result_name"] = String(result_card.get(
-			"name",
-			_card_name(String(fusion.get("result_card_id", "")))
-		))
-		fusion["type"] = String(result_card.get("type", "combo"))
-		fusion["cost"] = int(result_card.get("cost", 0))
-		fusion["icon_path"] = String(result_card.get("icon_path", ""))
-		fusion["card_color"] = String(result_card.get("card_color", ""))
-		fusion["description"] = String(result_card.get("description", ""))
-	return fusions
 
 
 func _open_reward_replacement(choice_id: String, card_id: String) -> void:
@@ -4177,22 +4162,41 @@ func _inventory_enemy_codex_projection() -> Array[Dictionary]:
 
 func _inventory_sword_soul_codex_projection() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
+	var forge_recipes_by_card_id: Dictionary = {}
 	for recipe_variant in forge_catalog.call("get_all_recipes") as Array:
 		var recipe := recipe_variant as Dictionary
 		if StringName(recipe.get("result_kind", "")) != &"sword_soul":
 			continue
-		var card_id := StringName(recipe.get("result_id", ""))
-		var card := card_database.get_card(String(card_id))
+		forge_recipes_by_card_id[String(recipe.get("result_id", ""))] = recipe
+	for card_variant in card_database.get_all_cards():
+		var card := card_variant as Dictionary
+		var card_id := StringName(card.get("id", ""))
 		var progress := _sword_soul_progress(card_id)
+		var unlocked := meta_state.unlocked_cards.has(String(card_id))
+		var forge_recipe := forge_recipes_by_card_id.get(String(card_id), {}) as Dictionary
+		var acquisition_summary := (
+			"取得方式：鍛造圖紙 · 鐵匠鋪等級 %d"
+				% int(forge_recipe.get("required_blacksmith_level", 1))
+			if not forge_recipe.is_empty()
+			else (
+				"取得狀態：已解鎖，可在劍魂選擇中使用。"
+				if unlocked
+				else "取得狀態：尚未解鎖。"
+			)
+		)
 		result.append({
 			"section": "sword_souls",
 			"id": String(card_id),
 			"name": _localized_text(card, "name"),
-			"kind_label": "劍魂圖紙",
+			"kind_label": "已解鎖劍魂" if unlocked else "未解鎖劍魂",
 			"description": _localized_text(card, "description"),
 			"effect_summary": _card_effect_summary(card.get("effect", {}) as Dictionary),
-			"trigger_summary": "鍛造圖紙 · 鐵匠鋪等級 %d" % int(recipe.get("required_blacksmith_level", 1)),
-			"meta_summary": "持有 %s · 等級 %d / 3" % ["是" if bool(progress.get("owned", false)) else "否", int(progress.get("level", 0))],
+			"trigger_summary": acquisition_summary,
+			"meta_summary": "解鎖 %s · 持有 %s · 等級 %d / 3" % [
+				"是" if unlocked else "否",
+				"是" if bool(progress.get("owned", false)) else "否",
+				int(progress.get("level", 0)),
+			],
 			"icon_path": String(card.get("icon_path", JOURNAL_ICON_ROOT + "Icon41_1_2.png")),
 		})
 	result.sort_custom(func(left: Dictionary, right: Dictionary) -> bool: return String(left.get("name", "")) < String(right.get("name", "")))
@@ -4234,6 +4238,9 @@ func _inventory_equipment_codex_projection() -> Array[Dictionary]:
 
 
 func _journal_equipment_icon(item: Dictionary) -> String:
+	var icon_path := String(item.get("icon_path", "")).strip_edges()
+	if not icon_path.is_empty():
+		return icon_path
 	var item_id := String(item.get("id", ""))
 	if JOURNAL_ITEM_ICONS.has(item_id):
 		return String(JOURNAL_ITEM_ICONS[item_id])
@@ -4336,6 +4343,7 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"description": _skill_recipe_description(recipe),
 			"effect_summary": _card_effect_summary(recipe.get("effect", {}) as Dictionary),
 			"trigger_summary": _skill_trigger_summary(recipe),
+			"icon_path": String(recipe.get("icon_path", "")),
 			"preview_kind": "passive_skill",
 			"named_vfx_id": skill_id,
 			"visual_family": _codex_visual_family_for_effect(
@@ -4352,7 +4360,7 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 		if not _is_finisher_recipe_learned(recipe):
 			continue
 		var elements: Array[String] = []
-		var icon_path := ""
+		var icon_path := String(recipe.get("icon_path", ""))
 		var sequence_names: Array[String] = []
 		for card_id_variant in recipe.get("sequence", []) as Array:
 			var card := card_database.get_card(String(card_id_variant))

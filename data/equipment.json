@@ -10,6 +10,7 @@
   "equipment": [
     {
       "id": "iron_sword",
+      "icon_path": "res://assets/ui/equipment/generated/iron_sword.png",
       "name": "Iron Sword",
       "name_zh": "鐵劍",
       "description_zh": "一把重量適中、沒有紋章的量產鐵劍。刃上有七處修補痕，握柄卻只磨損了一側。",
@@ -21,6 +22,7 @@
     },
     {
       "id": "hunter_bow",
+      "icon_path": "res://assets/ui/equipment/generated/hunter_bow.png",
       "name": "Hunter Bow",
       "name_zh": "獵弓",
       "description_zh": "以秋林心材製成的短弓。弓背刻著風向，而非獵物數量。",
@@ -32,6 +34,7 @@
     },
     {
       "id": "apprentice_staff",
+      "icon_path": "res://assets/ui/equipment/generated/apprentice_staff.png",
       "name": "Apprentice Staff",
       "name_zh": "學徒法杖",
       "description_zh": "杖身太短、導魔環略歪，卻總能在持有者力竭前多擠出一點魔力。",
@@ -43,6 +46,7 @@
     },
     {
       "id": "leather_armor",
+      "icon_path": "res://assets/ui/equipment/generated/leather_armor.png",
       "name": "Leather Armor",
       "name_zh": "皮甲",
       "description_zh": "由不同顏色皮片拼成，肩帶縫了又拆，顯然轉手過許多人。",
@@ -53,6 +57,7 @@
     },
     {
       "id": "chain_armor",
+      "icon_path": "res://assets/ui/equipment/generated/chain_armor.png",
       "name": "Chain Armor",
       "name_zh": "鎖甲",
       "description_zh": "沉重鎖環上混著天界銀與地界黑鐵，兩種材料本應互相排斥。",
@@ -63,6 +68,7 @@
     },
     {
       "id": "mage_robe",
+      "icon_path": "res://assets/ui/equipment/generated/mage_robe.png",
       "name": "Mage Robe",
       "name_zh": "法師長袍",
       "description_zh": "袍內寫滿失敗公式，外側則被人仔細染成莊重的深藍色。",
@@ -73,6 +79,7 @@
     },
     {
       "id": "swift_ring",
+      "icon_path": "res://assets/ui/equipment/generated/swift_ring.png",
       "name": "Swift Ring",
       "name_zh": "迅捷戒",
       "description_zh": "戒面沒有寶石，只有一道像是向前延伸的刻痕。",
@@ -90,6 +97,7 @@
     },
     {
       "id": "vitality_charm",
+      "icon_path": "res://assets/ui/equipment/generated/vitality_charm.png",
       "name": "Vitality Charm",
       "name_zh": "生命護符",
       "description_zh": "內部塞著乾草、糖紙與一小截繃帶，沒有任何昂貴材料。",
@@ -100,6 +108,7 @@
     },
     {
       "id": "focus_amulet",
+      "icon_path": "res://assets/ui/equipment/generated/focus_amulet.png",
       "name": "Focus Amulet",
       "name_zh": "專注護符",
       "description_zh": "中央鏡片有一道裂縫，透過它看東西反而比完整時清楚。",
@@ -118,6 +127,7 @@
     },
     {
       "id": "merchant_seal",
+      "icon_path": "res://assets/ui/equipment/generated/merchant_seal.png",
       "name": "Merchant Seal",
       "name_zh": "商旅印章",
       "description_zh": "蓋出的圖案不是家徽，而是一扇半開的門。",

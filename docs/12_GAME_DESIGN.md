@@ -225,7 +225,7 @@ pool，但 HUD 只投影剩餘時間、威脅數與 Final Rush，不顯示隱藏
 
 | 經過時間 | 排程事件 |
 |---:|---|
-| 45 秒起、每 45 秒至 495 秒 | 各生成一隻 Crimson Grove Elite；擊殺後取得 Divine Gift |
+| 45 秒起、每 45 秒至 495 秒 | 各生成一隻 Crimson Grove Elite；擊殺後可升級或融合神賜 |
 | 300、480 秒 | 生成一隻不負責結算的 Heartwood Harbinger |
 | 剩餘 60 秒 | 進入 Final Rush，立即追加 Elite 與 Harbinger |
 | Final Rush | 每 15 秒追加 Elite；每 30 秒追加 Harbinger |
@@ -259,7 +259,7 @@ Gem 生成時先向外短暫散射並落回地面，讓範圍技清場直接形�
 寶石使用高前景層級、青色背光與脈衝亮點，必須能在怪海和秋季地景上清楚辨識。
 每次敵人受擊都要在敵人本體上顯示白閃、壓縮回彈與傷害飄字；致死攻擊改為
 金色粒子爆散及快速放大淡出，讓範圍清場能逐隻回報命中與擊殺。
-每隻 Elite 死亡都會遞增獨立 reward event，並開啟一次 Divine Gift 選擇；
+每隻 Elite 死亡都會遞增獨立 reward event，並開啟一次既有神賜升級／融合選擇；
 同一倒數內的後續 Elite 不會再被舊 wave／stage key 誤判成重複獎勵。
 六種普通敵人的原始 archetype 維持 4–16 HP、零防禦；runtime 開場套用 8 倍生命，
 因此 Moth 為 32 HP、Hopper 為 64 HP、Sprout／Thornling 為 80 HP、Shaman 為 96 HP、
@@ -277,6 +277,13 @@ Elite 維持 85 HP，基礎大招不能單次擊殺；Guardian 仍是獨立耐�
 
 Pickup 在 180 像素內會追蹤玩家，未拾取時 18 秒後消失；Elite、Harbinger 與
 completion Guardian 不進普通掉落擲骰，保留各自既有獎勵責任。
+
+錢袋與素材袋沿用相同的實體追蹤／拾取生命週期，但使用獨立擲骰。普通怪、Elite、
+Boss 的錢袋機率分別為 6%、65%、90%；只有 Elite／Boss 可擲素材袋，機率分別為
+45%、85%。素材袋 payload 由死亡 archetype 決定：Sprout／Thornling 為
+`autumn_wood`，Hopper／Charger 為 `stone`，Moth／Shaman 為 `magic_shard`，
+Crimson Elite／Guardian 為 `autumn_core`。拾取後才加入 Run reward summary；同一袋
+只能結算一次。
 
 ### 5.3 Guardian
 
@@ -429,7 +436,8 @@ Combo chain 到 3／6／9 時，projectile presentation 分別加入環繞刃光
 
 ### 7.2 Divine Gifts
 
-每個 stage/wave 的首次菁英擊殺掉落一次必選神賜頁。神賜是 Run-local；最新取得
+每次角色升等都開啟一次必選神賜頁，可選未持有的新神賜或升級既有神賜。菁英與 Boss
+擊殺則開啟戰利品頁，只列既有神賜升級或合法融合，不提供新品。神賜是 Run-local；最新取得
 者標記為主神賜，而所有持有神賜都依取得順序為原招式附上中文稱號並共同提供
 mechanics，因此所有不同神賜欄位直接相加、倍率直接相乘，
 公式固定為「全部神賜效果＋終結技效果＋前三招 Combo 組合效果」。相同神賜重複
@@ -438,7 +446,7 @@ mechanics，因此所有不同神賜欄位直接相加、倍率直接相乘，
 `chain_lightning`、`death_spread`、額外 echo、範圍與元素傷害。Evolved gift
 會回到後續神賜池繼續由 Lv.1 升至 Lv.3，名稱依序轉為 Awakened／Transcendent，
 並使用元素組合專屬名稱與 accent color。融合材料 ascended 後不再進獎勵池，
-同一融合不能反覆發生；fusion-only 頁可略過，因此不會形成無限 modal loop。
+同一融合不能反覆發生；一般 EXP 頁永遠不提供融合。
 
 神賜 inventory 固定三格。未滿三格時可選新神賜或升級已持有神賜；滿三格後獎勵池
 只保留三格內尚未滿級的升級，不能以新神賜覆蓋舊神賜。融合消耗兩項滿級神賜並生成
@@ -486,11 +494,11 @@ Core、Edge、Accent、Debris 四層各自顯現與消退，不能用一張整�
 掉落與碰撞立即結算，但 Fire／Ice 的敵人影像會分別保留到其衝擊點，再依元素色盤
 進入 dissolve／burst，讓收尾與招式本體成為同一段動作。
 
-### 7.5 Meta card upgrade 與 fusion
+### 7.5 Legacy card fusion service
 
-EXP growth 對個別 `CardInstance` 升級，最高 Lv.3；同 card ID 的兩張卡可有不同
-level。fusion 必須明確選兩張不同的 Lv.3 instances，消耗兩張材料並建立一張
-Lv.1 結果，牌組淨減一：
+`EvolutionManager` 與 `CardCollectionService.fuse()` 仍保留舊資料相容與原子交易測試，
+但 production EXP／菁英／Boss growth 不再投影 card fusion。正式戰鬥內的 merge 指
+Divine Gift 昇華，且只從菁英／Boss loot page 可到達。舊 recipe 資料如下：
 
 | Lv.3 material A | Lv.3 material B | Lv.1 result |
 |---|---|---|
@@ -521,7 +529,7 @@ contract。Dash Edge 與 Gale Drive 標記為 `combat_hand = false`，不再由�
 ### 8.1 Experience
 
 一般敵人死亡產生 ExperienceGem。收集後呼叫 `RunState.add_experience()`；經驗只記錄
-Run 進度，不再於戰鬥中開啟卡牌升級頁。
+Run 進度；每次跨級都增加 `pending_level_ups` 並依序開啟 Blessing 成長頁。
 
 Run 初始：
 
@@ -544,9 +552,10 @@ Autumn combat HUD 必須持續顯示目前 XP、下一級門檻與 `NEXT` 尚缺
 
 ### 8.2 In-run choices
 
-一般 EXP 與 wave 開始不提供新卡、卡牌升級或卡牌融合。唯一的戰鬥內 build
-成長是菁英掉落的 Divine Gift。`CardGrowthUI` 只重用 modal 外殼，神賜頁以
-icon、短名稱、等級與最多三點效果呈現；可融合時同頁列出合法 evolved gift。
+一般 EXP 不提供新卡、卡牌升級或融合，而是每一級從新神賜／既有神賜升級中選一項。
+當所有可用神賜都滿級時，該頁改抽金錢或素材。菁英與 Boss 戰利品只列既有神賜
+升級／合法 evolved gift 融合。`CardGrowthUI` 以來源標籤、符印、短名稱、等級與最多
+三點效果呈現，同一 FIFO 逐頁處理跨級事件。
 
 ## 9. 城鎮、資源與裝備
 
@@ -1133,7 +1142,7 @@ Reviewer 必須確認：
 - [ ] Backpack 維持 1–16 張普通卡，auto attack 獨立且 Run 內鎖定。
 - [ ] Hand、draw、discard 與 overflow 的 instance identity 一致。
 - [ ] AP cost、regen 與 redraw 行為有測試。
-- [ ] XP 跨級 queue 與 CardGrowth upgrade/fusion/fallback 有測試。
+- [ ] XP 跨級 Blessing queue、菁英／Boss merge gating 與 all-max fallback 有測試。
 - [ ] Combo status cards、passive attack skill、fusion 各自有明確 contract。
 - [ ] Equipment 實際 consumer 與文件一致。
 - [ ] Campfire／Merchant 的 UI 可到達行為與文件一致。
@@ -1216,13 +1225,11 @@ Any UI registered with `pause_game = true` pauses the SceneTree before its
 new-card rewards, full-deck replacement, discard, and other combat modals.
 Closing the final pausing modal resumes world processing.
 
-### Post-upgrade synthesis and combat readability
+### Elite/Boss Blessing synthesis and combat readability
 
-When an individual upgrade creates or leaves at least two distinct non-fixed
-Lv.3 card instances, growth immediately queues an optional fusion follow-up.
-Authored recipes keep their unique results. Any otherwise unmatched Lv.3 pair
-can synthesize `Ascendant Combo`, a Lv.1 legendary Combo that combines attack,
-body, AP, lifesteal, and elemental bonuses. Skipping preserves both materials.
+Only elite or boss loot may expose synthesis. Two distinct Lv.3 Divine Gifts
+can merge into one Lv.1 evolved gift; EXP level-up pages never enqueue a fusion
+follow-up. If every Blessing is already maxed, EXP offers money/material draws.
 
 Every enemy damage event must match a visible warning. Standard enemies and
 legacy Autumn Slimes show their attack reach throughout wind-up and a separate

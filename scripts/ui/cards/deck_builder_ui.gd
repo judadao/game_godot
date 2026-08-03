@@ -8,6 +8,13 @@ signal canceled
 const SLOT_COUNT := 4
 const MIN_HEALING_COUNT := 1
 const SLOT_ROLES := ["技能 1", "技能 2", "技能 3", "技能 4"]
+const GEOMETRY_SCRIPT := preload("res://scripts/ui/cards/loadout_card_geometry.gd")
+const INK := Color(0.010, 0.014, 0.021, 0.985)
+const INK_RAISED := Color(0.025, 0.030, 0.042, 0.985)
+const OLD_GOLD := Color(0.67, 0.49, 0.22, 1.0)
+const BRIGHT_GOLD := Color(1.0, 0.84, 0.46, 1.0)
+const HEALING_ACCENT := Color(0.56, 0.84, 0.45, 1.0)
+const COMBO_ACCENT := Color(0.69, 0.52, 0.86, 1.0)
 
 var _catalog: Array[Dictionary] = []
 var _counts: Dictionary = {}
@@ -22,6 +29,8 @@ var _slot_buttons: Array[Button] = []
 var _title_label: Label
 var _hint_label: Label
 var _choice_grid: GridContainer
+var _choice_scroll: ScrollContainer
+var _loadout_panel: PanelContainer
 var _choice_header: Label
 var _detail_label: Label
 var _recipe_summary: Label
@@ -36,6 +45,9 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_finisher_catalog.load_catalog()
 	_build_layout()
+	_apply_responsive_scale()
+	if not get_viewport().size_changed.is_connected(_apply_responsive_scale):
+		get_viewport().size_changed.connect(_apply_responsive_scale)
 	_refresh_all()
 
 
@@ -195,29 +207,32 @@ func _build_layout() -> void:
 	add_child(shade)
 
 	var panel := PanelContainer.new()
+	_loadout_panel = panel
 	panel.name = "LoadoutPanel"
 	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.position = Vector2(-490, -330)
-	panel.size = Vector2(980, 660)
+	panel.position = Vector2(-520, -340)
+	panel.size = Vector2(1040, 680)
+	panel.add_theme_stylebox_override("panel", _panel_style())
 	shade.add_child(panel)
 
 	var margin := MarginContainer.new()
 	margin.name = "Margin"
-	margin.add_theme_constant_override("margin_left", 24)
-	margin.add_theme_constant_override("margin_right", 24)
+	margin.add_theme_constant_override("margin_left", 28)
+	margin.add_theme_constant_override("margin_right", 28)
 	margin.add_theme_constant_override("margin_top", 18)
 	margin.add_theme_constant_override("margin_bottom", 18)
 	panel.add_child(margin)
 
 	var column := VBoxContainer.new()
 	column.name = "Column"
-	column.add_theme_constant_override("separation", 8)
+	column.add_theme_constant_override("separation", 7)
 	margin.add_child(column)
 
 	_title_label = Label.new()
 	_title_label.name = "Title"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_title_label.add_theme_font_size_override("font_size", 24)
+	_title_label.add_theme_font_size_override("font_size", 26)
+	_title_label.add_theme_color_override("font_color", Color(1.0, 0.91, 0.68))
 	column.add_child(_title_label)
 
 	_hint_label = Label.new()
@@ -226,9 +241,19 @@ func _build_layout() -> void:
 	_hint_label.add_theme_color_override("font_color", Color(0.72, 0.78, 0.82))
 	column.add_child(_hint_label)
 
+	var type_legend := HBoxContainer.new()
+	type_legend.name = "TypeLegend"
+	type_legend.alignment = BoxContainer.ALIGNMENT_CENTER
+	type_legend.add_theme_constant_override("separation", 20)
+	column.add_child(type_legend)
+	_add_legend_chip(type_legend, "✚  治療 HEALING  ·  至少保留 1 張", HEALING_ACCENT)
+	_add_legend_chip(type_legend, "◆  連段 COMBO  ·  組成終結技", COMBO_ACCENT)
+	_add_legend_chip(type_legend, "先點上方卡槽，再從下方替換", BRIGHT_GOLD)
+
 	_auto_attack_selector = OptionButton.new()
 	_auto_attack_selector.name = "BasicAttackSelector"
 	_auto_attack_selector.custom_minimum_size = Vector2(0, 40)
+	_auto_attack_selector.add_theme_font_size_override("font_size", 16)
 	_auto_attack_selector.item_selected.connect(_on_auto_attack_selected)
 	column.add_child(_auto_attack_selector)
 
@@ -240,19 +265,24 @@ func _build_layout() -> void:
 	for slot_index in SLOT_COUNT:
 		var slot := Button.new()
 		slot.name = "SkillSlot%d" % (slot_index + 1)
-		slot.custom_minimum_size = Vector2(215, 100)
+		slot.custom_minimum_size = Vector2(232, 126)
 		slot.toggle_mode = true
 		slot.focus_mode = Control.FOCUS_ALL
+		slot.clip_contents = true
+		slot.text = ""
 		slot.pressed.connect(select_slot.bind(slot_index))
 		slots.add_child(slot)
+		_build_slot_visual(slot)
 		_slot_buttons.append(slot)
 
 	_choice_header = Label.new()
 	_choice_header.name = "ChoiceHeader"
 	_choice_header.add_theme_font_size_override("font_size", 16)
+	_choice_header.add_theme_color_override("font_color", BRIGHT_GOLD)
 	column.add_child(_choice_header)
 
 	var scroll := ScrollContainer.new()
+	_choice_scroll = scroll
 	scroll.name = "SkillChoiceScroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -267,14 +297,14 @@ func _build_layout() -> void:
 
 	_detail_label = Label.new()
 	_detail_label.name = "SelectedSkillDetail"
-	_detail_label.custom_minimum_size = Vector2(0, 38)
+	_detail_label.custom_minimum_size = Vector2(0, 34)
 	_detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_detail_label.add_theme_color_override("font_color", Color(0.76, 0.82, 0.86))
 	column.add_child(_detail_label)
 
 	_recipe_summary = Label.new()
 	_recipe_summary.name = "RecipeSummary"
-	_recipe_summary.custom_minimum_size = Vector2(0, 32)
+	_recipe_summary.custom_minimum_size = Vector2(0, 30)
 	_recipe_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_recipe_summary.add_theme_color_override("font_color", Color(0.84, 0.65, 1.0))
 	column.add_child(_recipe_summary)
@@ -304,6 +334,229 @@ func _build_layout() -> void:
 	_apply_context()
 
 
+func _apply_responsive_scale() -> void:
+	if _loadout_panel == null:
+		return
+	var viewport_size := Vector2(get_viewport_rect().size)
+	var scale_factor := clampf(
+		minf(viewport_size.x / 1280.0, viewport_size.y / 720.0),
+		1.0,
+		1.75
+	)
+	_loadout_panel.pivot_offset = _loadout_panel.size * 0.5
+	_loadout_panel.scale = Vector2.ONE * scale_factor
+
+
+func _panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = INK
+	style.border_color = OLD_GOLD.lightened(0.12)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(6)
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.82)
+	style.shadow_size = 0 if DisplayServer.get_name() == "headless" else 18
+	return style
+
+
+func _add_legend_chip(parent: Container, text_value: String, color: Color) -> void:
+	var label := Label.new()
+	label.text = text_value
+	label.add_theme_font_size_override("font_size", 13)
+	label.add_theme_color_override("font_color", color)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(color.r * 0.08, color.g * 0.08, color.b * 0.08, 0.82)
+	style.border_color = Color(color.r, color.g, color.b, 0.42)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(3)
+	style.content_margin_left = 9.0
+	style.content_margin_right = 9.0
+	style.content_margin_top = 4.0
+	style.content_margin_bottom = 4.0
+	label.add_theme_stylebox_override("normal", style)
+	parent.add_child(label)
+
+
+func _build_slot_visual(slot: Button) -> void:
+	var geometry := GEOMETRY_SCRIPT.new() as Control
+	geometry.name = "Geometry"
+	geometry.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	geometry.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot.add_child(geometry)
+
+	var visual := Control.new()
+	visual.name = "Visual"
+	visual.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot.add_child(visual)
+
+	var icon_frame := Panel.new()
+	icon_frame.name = "IconFrame"
+	icon_frame.position = Vector2(14, 20)
+	icon_frame.size = Vector2(72, 72)
+	icon_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	visual.add_child(icon_frame)
+
+	var icon := TextureRect.new()
+	icon.name = "Icon"
+	icon.position = Vector2(18, 24)
+	icon.size = Vector2(64, 64)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	visual.add_child(icon)
+
+	_add_visual_label(visual, "Role", Vector2(94, 13), Vector2(124, 20), 12)
+	_add_visual_label(visual, "Type", Vector2(94, 34), Vector2(124, 20), 12)
+	var name_label := _add_visual_label(visual, "Name", Vector2(94, 55), Vector2(124, 42), 17)
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_add_visual_label(visual, "Cost", Vector2(94, 98), Vector2(70, 20), 14)
+	var state_label := _add_visual_label(visual, "State", Vector2(158, 98), Vector2(60, 20), 11)
+	state_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+
+
+func _build_choice_visual(choice: Button) -> void:
+	var visual := Control.new()
+	visual.name = "Visual"
+	visual.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	choice.add_child(visual)
+	var icon := TextureRect.new()
+	icon.name = "Icon"
+	icon.position = Vector2(8, 6)
+	icon.size = Vector2(42, 42)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	visual.add_child(icon)
+	_add_visual_label(visual, "Type", Vector2(60, 5), Vector2(270, 18), 11)
+	_add_visual_label(visual, "Name", Vector2(60, 23), Vector2(310, 25), 16)
+	var cost := Label.new()
+	cost.name = "Cost"
+	cost.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	cost.position = Vector2(-86, 0)
+	cost.size = Vector2(74, 54)
+	cost.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	cost.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	cost.add_theme_font_size_override("font_size", 14)
+	cost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	visual.add_child(cost)
+
+
+func _apply_choice_visual(choice: Button, card: Dictionary, selected: bool) -> void:
+	var accent := _card_accent(card)
+	var visual := choice.get_node("Visual") as Control
+	var icon := visual.get_node("Icon") as TextureRect
+	var type_label := visual.get_node("Type") as Label
+	var name_label := visual.get_node("Name") as Label
+	var cost_label := visual.get_node("Cost") as Label
+	icon.texture = _load_card_texture(card)
+	type_label.text = "%s%s" % [
+		_card_type_text(card),
+		"  ·  已配置" if selected else "",
+	]
+	type_label.add_theme_color_override("font_color", accent.lightened(0.18))
+	name_label.text = _display_name(card, String(card.get("id", "")))
+	name_label.add_theme_color_override("font_color", Color(0.94, 0.89, 0.78))
+	cost_label.text = "AP  %d" % int(card.get("cost", 0))
+	cost_label.add_theme_color_override("font_color", BRIGHT_GOLD)
+	_apply_button_styles(choice, accent, selected, true)
+
+
+func _add_visual_label(
+	parent: Control,
+	label_name: String,
+	position_value: Vector2,
+	size_value: Vector2,
+	font_size: int
+) -> Label:
+	var label := Label.new()
+	label.name = label_name
+	label.position = position_value
+	label.size = size_value
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", font_size)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(label)
+	return label
+
+
+func _button_style(accent: Color, selected: bool, compact: bool = false) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = INK_RAISED.lerp(Color(accent.r * 0.10, accent.g * 0.08, accent.b * 0.10, 1.0), 0.24)
+	style.border_color = (
+		BRIGHT_GOLD.lightened(0.10)
+		if selected
+		else OLD_GOLD.lerp(accent, 0.22).lightened(0.05)
+	)
+	style.set_border_width_all(3 if selected else 1)
+	style.set_corner_radius_all(4)
+	style.shadow_color = (
+		Color(BRIGHT_GOLD.r, BRIGHT_GOLD.g, BRIGHT_GOLD.b, 0.34)
+		if selected
+		else Color(0.0, 0.0, 0.0, 0.62)
+	)
+	style.shadow_size = 0 if DisplayServer.get_name() == "headless" else (8 if selected else 3)
+	if compact:
+		style.content_margin_left = 4.0
+		style.content_margin_right = 4.0
+	return style
+
+
+func _apply_button_styles(button: Button, accent: Color, selected: bool, compact: bool = false) -> void:
+	var normal := _button_style(accent, selected, compact)
+	var hover := _button_style(accent.lightened(0.18), true, compact)
+	var disabled := _button_style(accent.darkened(0.22), selected, compact)
+	disabled.bg_color = disabled.bg_color.darkened(0.16)
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", hover)
+	button.add_theme_stylebox_override("focus", hover)
+	button.add_theme_stylebox_override("disabled", disabled)
+	for color_key in ["font_color", "font_hover_color", "font_pressed_color", "font_disabled_color"]:
+		button.add_theme_color_override(color_key, Color.TRANSPARENT)
+
+
+func _load_card_texture(card: Dictionary) -> Texture2D:
+	var icon_path := String(card.get("icon_path", ""))
+	if icon_path.is_empty() or not ResourceLoader.exists(icon_path):
+		return null
+	return load(icon_path) as Texture2D
+
+
+func _load_card_thumbnail(card: Dictionary, thumbnail_size: int) -> Texture2D:
+	var source := _load_card_texture(card)
+	if source == null:
+		return null
+	var image := source.get_image()
+	if image == null or image.is_empty():
+		return source
+	image.resize(thumbnail_size, thumbnail_size, Image.INTERPOLATE_LANCZOS)
+	return ImageTexture.create_from_image(image)
+
+
+func _card_accent(card: Dictionary) -> Color:
+	if String(card.get("type", "")) == "healing":
+		return HEALING_ACCENT
+	var card_id := String(card.get("id", ""))
+	if "flame" in card_id or "fire" in card_id:
+		return Color(0.96, 0.43, 0.20, 1.0)
+	if "frost" in card_id or "ice" in card_id:
+		return Color(0.48, 0.78, 0.94, 1.0)
+	if "storm" in card_id or "lightning" in card_id:
+		return Color(0.38, 0.72, 0.92, 1.0)
+	if "venom" in card_id or "poison" in card_id:
+		return Color(0.55, 0.82, 0.36, 1.0)
+	if "echo" in card_id:
+		return Color(0.67, 0.50, 0.91, 1.0)
+	return COMBO_ACCENT
+
+
+func _card_type_text(card: Dictionary) -> String:
+	return "✚  治療 HEALING" if String(card.get("type", "")) == "healing" else "◆  連段 COMBO"
+
+
 func _apply_context() -> void:
 	if _title_label == null or _hint_label == null or _confirm_button == null:
 		return
@@ -331,34 +584,68 @@ func _refresh_slots() -> void:
 	for slot_index in _slot_buttons.size():
 		var slot := _slot_buttons[slot_index]
 		var card := _find_catalog_card(_slot_card_ids[slot_index])
-		var icon := _card_icon(card)
-		slot.text = "%s  %s\n%s\nAP %d" % [
-			icon,
-			SLOT_ROLES[slot_index],
+		var selected := slot_index == _active_slot_index
+		var accent := _card_accent(card)
+		slot.text = ""
+		slot.button_pressed = selected
+		slot.modulate = Color.WHITE
+		slot.tooltip_text = "%s\n%s\nAP %d\n\n點擊後可在下方替換" % [
 			_display_name(card, "選擇技能"),
+			_display_description(card),
 			int(card.get("cost", 0)),
 		]
-		slot.button_pressed = slot_index == _active_slot_index
-		slot.modulate = (
-			Color(0.72, 1.0, 0.78)
-			if String(card.get("type", "")) == "healing"
-			else Color(0.90, 0.76, 1.0)
+		var visual := slot.get_node("Visual") as Control
+		var icon := visual.get_node("Icon") as TextureRect
+		var role := visual.get_node("Role") as Label
+		var type_label := visual.get_node("Type") as Label
+		var name_label := visual.get_node("Name") as Label
+		var cost_label := visual.get_node("Cost") as Label
+		var state_label := visual.get_node("State") as Label
+		icon.texture = _load_card_texture(card)
+		role.text = "%02d  ·  %s" % [slot_index + 1, SLOT_ROLES[slot_index]]
+		role.add_theme_color_override("font_color", Color(0.80, 0.72, 0.57))
+		type_label.text = _card_type_text(card)
+		type_label.add_theme_color_override("font_color", accent.lightened(0.18))
+		name_label.text = _display_name(card, "選擇技能")
+		name_label.add_theme_color_override("font_color", Color(1.0, 0.91, 0.72))
+		cost_label.text = "AP  %d" % int(card.get("cost", 0))
+		cost_label.add_theme_color_override("font_color", BRIGHT_GOLD)
+		state_label.text = "替換中" if selected else "點選"
+		state_label.add_theme_color_override(
+			"font_color",
+			BRIGHT_GOLD if selected else Color(0.58, 0.61, 0.66)
 		)
-		if slot_index == _active_slot_index:
-			slot.modulate = Color(1.0, 0.82, 0.38)
+		var icon_style := StyleBoxFlat.new()
+		icon_style.bg_color = Color(0.005, 0.007, 0.010, 0.98)
+		icon_style.border_color = Color(accent.r, accent.g, accent.b, 0.70)
+		icon_style.set_border_width_all(1)
+		icon_style.set_corner_radius_all(3)
+		(visual.get_node("IconFrame") as Panel).add_theme_stylebox_override("panel", icon_style)
+		(slot.get_node("Geometry") as Control).call(
+			"set_card_state",
+			accent,
+			selected,
+			String(card.get("id", ""))
+		)
+		_apply_button_styles(slot, accent, selected)
 
 
 func _rebuild_choices() -> void:
 	if _choice_grid == null:
 		return
 	for child in _choice_grid.get_children():
+		_choice_grid.remove_child(child)
 		child.queue_free()
 	_visible_choice_ids.clear()
 	var protects_last_healing := _slot_holds_last_healing(_active_slot_index)
 	_choice_header.text = (
-		"💚 選擇治療技能 · 先在其他槽配置治療，才能更換為 Combo"
+		"✚  此槽是最後一張治療：先在其他槽配置治療，才能換成 Combo"
 		if protects_last_healing
-		else "◆ 選擇治療或 Combo 技能"
+		else "選擇替換卡  ·  綠色＝治療  /  紫色與元素色＝Combo"
+	)
+	_choice_header.add_theme_color_override(
+		"font_color",
+		HEALING_ACCENT.lightened(0.18) if protects_last_healing else BRIGHT_GOLD
 	)
 	for card in _catalog:
 		if not _is_card_valid_for_slot(card, _active_slot_index):
@@ -372,17 +659,19 @@ func _rebuild_choices() -> void:
 		_visible_choice_ids.append(card_id)
 		var choice := Button.new()
 		choice.name = "Choice_%s" % card_id
-		choice.text = "%s  %s     AP %d" % [
-			_card_icon(card),
-			_display_name(card, card_id),
-			int(card.get("cost", 0)),
-		]
-		choice.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		choice.custom_minimum_size = Vector2(445, 44)
+		choice.text = ""
+		choice.custom_minimum_size = Vector2(480, 54)
+		choice.clip_contents = true
 		choice.tooltip_text = _display_description(card)
 		choice.disabled = _slot_card_ids[_active_slot_index] == card_id
 		choice.pressed.connect(_on_choice_pressed.bind(card_id))
+		choice.focus_entered.connect(_preview_choice.bind(card_id, choice))
+		choice.mouse_entered.connect(_preview_choice.bind(card_id, choice))
+		choice.mouse_exited.connect(_restore_active_detail)
 		_choice_grid.add_child(choice)
+		_build_choice_visual(choice)
+		_apply_choice_visual(choice, card, choice.disabled)
+	_wire_choice_focus_navigation()
 	var selected := _find_catalog_card(_slot_card_ids[_active_slot_index])
 	_update_detail(selected)
 
@@ -391,14 +680,47 @@ func _on_choice_pressed(card_id: String) -> void:
 	choose_card_for_active_slot(card_id)
 
 
+func _preview_choice(card_id: String, choice: Control) -> void:
+	_update_detail(_find_catalog_card(card_id))
+	if _choice_scroll != null:
+		_choice_scroll.call_deferred("ensure_control_visible", choice)
+
+
+func _restore_active_detail() -> void:
+	_update_detail(_find_catalog_card(_slot_card_ids[_active_slot_index]))
+
+
+func _wire_choice_focus_navigation() -> void:
+	var choices := _choice_grid.get_children()
+	for index in choices.size():
+		var choice := choices[index] as Button
+		if choice.disabled:
+			continue
+		if index % 2 == 1 and not (choices[index - 1] as Button).disabled:
+			choice.focus_neighbor_left = choice.get_path_to(choices[index - 1])
+		elif index + 1 < choices.size() and not (choices[index + 1] as Button).disabled:
+			choice.focus_neighbor_right = choice.get_path_to(choices[index + 1])
+		var upper := index - 2
+		while upper >= 0 and (choices[upper] as Button).disabled:
+			upper -= 2
+		if upper >= 0:
+			choice.focus_neighbor_top = choice.get_path_to(choices[upper])
+		var lower := index + 2
+		while lower < choices.size() and (choices[lower] as Button).disabled:
+			lower += 2
+		if lower < choices.size():
+			choice.focus_neighbor_bottom = choice.get_path_to(choices[lower])
+
+
 func _update_detail(card: Dictionary) -> void:
 	if _detail_label == null:
 		return
-	_detail_label.text = "%s  %s — %s" % [
-		_card_icon(card),
+	_detail_label.text = "%s  ·  %s  —  %s" % [
+		_card_type_text(card),
 		_display_name(card, "尚未選擇技能"),
 		_display_description(card),
 	]
+	_detail_label.add_theme_color_override("font_color", _card_accent(card).lightened(0.18))
 
 
 func _refresh_recipe_summary() -> void:
@@ -459,10 +781,13 @@ func _rebuild_auto_attack_selector() -> void:
 		var index := _auto_attack_selector.item_count
 		var card_id := String(card.get("id", ""))
 		_auto_attack_selector.add_item(
-			"🎯 自動水平攻擊 — %s"
+			"自動攻擊  ·  %s"
 			% _display_name(card, card_id)
 		)
 		_auto_attack_selector.set_item_metadata(index, card_id)
+		var card_texture := _load_card_thumbnail(card, 28)
+		if card_texture != null:
+			_auto_attack_selector.set_item_icon(index, card_texture)
 		if card_id == _auto_attack_card_id:
 			selected_index = index
 	if _auto_attack_selector.item_count <= 0:

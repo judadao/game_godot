@@ -43,55 +43,33 @@ func enqueue_wave_blessing(cards: Array[Dictionary]) -> bool:
 	return true
 
 
-func enqueue_experience_growth(upgrades: Array[Dictionary], fusions: Array[Dictionary]) -> bool:
+func enqueue_experience_blessings(rewards: Array[Dictionary]) -> bool:
 	var event_id := _claim_event_id()
-	var choices: Array[Dictionary] = []
-	var seen_choice_ids: Dictionary = {}
-	var upgrade_choices: Array[Dictionary] = []
-	for upgrade in upgrades:
-		var instance_id := String(upgrade.get("instance_id", ""))
-		if instance_id.is_empty() or int(upgrade.get("level", 0)) >= 3:
-			continue
-		_append_unique_choice(upgrade_choices, seen_choice_ids, {
-			"choice_id": "exp:%d:upgrade:%s" % [event_id, instance_id],
-			"action": "upgrade",
-			"instance_id": instance_id,
-			"card_id": String(upgrade.get("card_id", "")),
-			"name": String(upgrade.get("name", "")),
-			"level": int(upgrade.get("level", 1)),
-			"type": String(upgrade.get("type", "")),
-			"cost": int(upgrade.get("cost", 0)),
-			"icon_path": String(upgrade.get("icon_path", "")),
-			"card_color": String(upgrade.get("card_color", "")),
-			"description": String(upgrade.get("description", "")),
-			"upgrade_description": String(upgrade.get("upgrade_description", "")),
-		})
-	upgrade_choices.shuffle()
-	for choice in upgrade_choices.slice(
-		0,
-		mini(MAX_EXPERIENCE_CHOICES, upgrade_choices.size())
-	):
-		choices.append(choice)
+	var choices := _divine_gift_choices(event_id, rewards, "level")
 	if choices.is_empty():
-		choices = _fusion_choices(event_id, fusions)
-	if choices.is_empty():
-		for index in FALLBACK_REWARDS.size():
-			choices.append({
-				"choice_id": "exp:%d:fallback:%d" % [event_id, index],
-				"action": "fallback",
-				"reward": FALLBACK_REWARDS[index].duplicate(true),
-			})
+		choices = _fallback_choices(event_id)
 	_entries.append(_make_entry(event_id, "experience", choices))
 	queue_changed.emit(_entries.size())
 	return true
 
 
-func enqueue_optional_fusions(fusions: Array[Dictionary]) -> bool:
+func enqueue_combat_blessing_reward(
+	source: String,
+	upgrades: Array[Dictionary],
+	fusions: Array[Dictionary]
+) -> bool:
+	var normalized_source := source.to_lower()
+	if normalized_source not in ["elite", "boss"]:
+		return false
 	var event_id := _claim_event_id()
-	var choices := _fusion_choices(event_id, fusions)
+	var choices := _divine_gift_choices(event_id, upgrades, normalized_source)
+	for fusion_choice in _divine_fusion_choices(event_id, fusions, normalized_source):
+		if choices.size() >= MAX_EXPERIENCE_CHOICES:
+			break
+		choices.append(fusion_choice)
 	if choices.is_empty():
 		return false
-	_entries.append(_make_entry(event_id, "fusion_followup", choices))
+	_entries.append(_make_entry(event_id, normalized_source, choices))
 	queue_changed.emit(_entries.size())
 	return true
 
@@ -101,66 +79,11 @@ func enqueue_divine_gifts(
 	fusions: Array[Dictionary]
 ) -> bool:
 	var event_id := _claim_event_id()
-	var choices: Array[Dictionary] = []
-	for index in rewards.size():
+	var choices := _divine_gift_choices(event_id, rewards, "divine")
+	for fusion_choice in _divine_fusion_choices(event_id, fusions, "divine"):
 		if choices.size() >= MAX_EXPERIENCE_CHOICES:
 			break
-		var reward := rewards[index]
-		var gift_id := String(reward.get("gift_id", ""))
-		if gift_id.is_empty():
-			continue
-		choices.append({
-			"choice_id": "divine:%d:gift:%s" % [event_id, gift_id],
-			"action": "divine_gift",
-			"gift_id": gift_id,
-			"name": String(reward.get("name", gift_id)),
-			"description": String(reward.get("description", "")),
-			"icon": String(reward.get("icon", "✦")),
-			"element": String(reward.get("element", "normal")),
-			"elements": (reward.get("elements", []) as Array).duplicate(),
-			"current_effects": (
-				reward.get("current_effects", {}) as Dictionary
-			).duplicate(true),
-			"next_effects": (
-				reward.get("next_effects", {}) as Dictionary
-			).duplicate(true),
-			"finisher_mutations": (
-				reward.get("finisher_mutations", {}) as Dictionary
-			).duplicate(true),
-			"level": int(reward.get("level", 0)),
-			"next_level": int(reward.get("next_level", 1)),
-			"type": "divine",
-			"kind": String(reward.get("kind", "base")),
-			"accent_color": String(reward.get("accent_color", "")),
-			"card_color": (
-				"prismatic"
-				if String(reward.get("kind", "base")) == "evolved"
-				else "gold"
-			),
-		})
-	for fusion in fusions:
-		if choices.size() >= MAX_EXPERIENCE_CHOICES:
-			break
-		var left_id := String(fusion.get("left_gift_id", ""))
-		var right_id := String(fusion.get("right_gift_id", ""))
-		if left_id.is_empty() or right_id.is_empty() or left_id == right_id:
-			continue
-		choices.append({
-			"choice_id": "divine:%d:fusion:%s:%s" % [
-				event_id,
-				left_id,
-				right_id,
-			],
-			"action": "divine_fusion",
-			"left_gift_id": left_id,
-			"right_gift_id": right_id,
-			"name": String(fusion.get("name", "神賜昇華")),
-			"description": String(fusion.get("description", "")),
-			"type": "divine",
-			"kind": String(fusion.get("kind", "evolved")),
-			"accent_color": String(fusion.get("accent_color", "#f05cff")),
-			"card_color": "prismatic",
-		})
+		choices.append(fusion_choice)
 	if choices.is_empty():
 		return false
 	_entries.append(_make_entry(event_id, "divine", choices))
@@ -214,7 +137,7 @@ func skip_optional_reward() -> Dictionary:
 		return {}
 	var entry := _entries[0]
 	var source := String(entry.get("source", ""))
-	if source not in ["wave", "fusion_followup", "divine"]:
+	if source not in ["wave", "divine"]:
 		return {}
 	var resolution := {
 		"action": "skip",
@@ -256,45 +179,76 @@ func _make_entry(event_id: int, source: String, choices: Array[Dictionary]) -> D
 	}
 
 
-func _append_unique_choice(
-	choices: Array[Dictionary],
-	seen_choice_ids: Dictionary,
-	choice: Dictionary
-) -> void:
-	var choice_id := String(choice.get("choice_id", ""))
-	if choice_id.is_empty() or seen_choice_ids.has(choice_id):
-		return
-	seen_choice_ids[choice_id] = true
-	choices.append(choice)
-
-
-func _fusion_choices(event_id: int, fusions: Array[Dictionary]) -> Array[Dictionary]:
+func _divine_gift_choices(
+	event_id: int,
+	rewards: Array[Dictionary],
+	prefix: String
+) -> Array[Dictionary]:
 	var choices: Array[Dictionary] = []
-	var seen_choice_ids: Dictionary = {}
-	for fusion in fusions:
+	for reward in rewards:
 		if choices.size() >= MAX_EXPERIENCE_CHOICES:
 			break
-		var left_id := String(fusion.get("left_instance_id", ""))
-		var right_id := String(fusion.get("right_instance_id", ""))
-		var result_id := String(fusion.get("result_card_id", ""))
-		if left_id.is_empty() or right_id.is_empty() or left_id == right_id or result_id.is_empty():
+		var gift_id := String(reward.get("gift_id", ""))
+		if gift_id.is_empty():
 			continue
-		_append_unique_choice(choices, seen_choice_ids, {
-			"choice_id": "fusion:%d:%s:%s:%s" % [event_id, left_id, right_id, result_id],
-			"action": "fusion",
-			"recipe_id": String(fusion.get("recipe_id", result_id)),
-			"left_instance_id": left_id,
-			"right_instance_id": right_id,
-			"left_card_id": String(fusion.get("left_card_id", "")),
-			"right_card_id": String(fusion.get("right_card_id", "")),
-			"left_name": String(fusion.get("left_name", "")),
-			"right_name": String(fusion.get("right_name", "")),
-			"result_card_id": result_id,
-			"result_name": String(fusion.get("result_name", fusion.get("name", ""))),
-			"type": String(fusion.get("type", "combo")),
-			"cost": int(fusion.get("cost", 0)),
-			"icon_path": String(fusion.get("icon_path", "")),
-			"card_color": String(fusion.get("card_color", "")),
+		choices.append({
+			"choice_id": "%s:%d:gift:%s" % [prefix, event_id, gift_id],
+			"action": "divine_gift",
+			"gift_id": gift_id,
+			"name": String(reward.get("name", gift_id)),
+			"description": String(reward.get("description", "")),
+			"icon": String(reward.get("icon", "✦")),
+			"element": String(reward.get("element", "normal")),
+			"elements": (reward.get("elements", []) as Array).duplicate(),
+			"current_effects": (reward.get("current_effects", {}) as Dictionary).duplicate(true),
+			"next_effects": (reward.get("next_effects", {}) as Dictionary).duplicate(true),
+			"finisher_mutations": (reward.get("finisher_mutations", {}) as Dictionary).duplicate(true),
+			"level": int(reward.get("level", 0)),
+			"next_level": int(reward.get("next_level", 1)),
+			"type": "divine",
+			"kind": String(reward.get("kind", "base")),
+			"accent_color": String(reward.get("accent_color", "")),
+			"card_color": (
+				"prismatic"
+				if String(reward.get("kind", "base")) == "evolved"
+				else "gold"
+			),
+		})
+	return choices
+
+
+func _divine_fusion_choices(
+	event_id: int,
+	fusions: Array[Dictionary],
+	prefix: String
+) -> Array[Dictionary]:
+	var choices: Array[Dictionary] = []
+	for fusion in fusions:
+		var left_id := String(fusion.get("left_gift_id", ""))
+		var right_id := String(fusion.get("right_gift_id", ""))
+		if left_id.is_empty() or right_id.is_empty() or left_id == right_id:
+			continue
+		choices.append({
+			"choice_id": "%s:%d:fusion:%s:%s" % [prefix, event_id, left_id, right_id],
+			"action": "divine_fusion",
+			"left_gift_id": left_id,
+			"right_gift_id": right_id,
+			"name": String(fusion.get("name", "神賜昇華")),
 			"description": String(fusion.get("description", "")),
+			"type": "divine",
+			"kind": String(fusion.get("kind", "evolved")),
+			"accent_color": String(fusion.get("accent_color", "#f05cff")),
+			"card_color": "prismatic",
+		})
+	return choices
+
+
+func _fallback_choices(event_id: int) -> Array[Dictionary]:
+	var choices: Array[Dictionary] = []
+	for index in FALLBACK_REWARDS.size():
+		choices.append({
+			"choice_id": "exp:%d:fallback:%d" % [event_id, index],
+			"action": "fallback",
+			"reward": FALLBACK_REWARDS[index].duplicate(true),
 		})
 	return choices

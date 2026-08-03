@@ -30,6 +30,7 @@ const GENERATED_ICONS := {
 	"echo_volley": preload("res://assets/ui/autumn/cards/generated/echo_volley.png"),
 	"storm_charge": preload("res://assets/ui/autumn/cards/generated/storm_charge.png"),
 }
+const GENERATED_ICON_ROOT := "res://assets/ui/autumn/cards/generated/"
 const VISUAL_FAMILY_BY_ID := {
 	"healing_light": "HEALING",
 	"flame_imbue": "FLAME",
@@ -219,7 +220,7 @@ func configure(card: Dictionary, shortcut: String, affordable: bool) -> void:
 		)
 		_icon.texture_filter = (
 			CanvasItem.TEXTURE_FILTER_LINEAR
-			if generated_icon != null
+			if generated_icon != null or icon_path.begins_with(GENERATED_ICON_ROOT)
 			else CanvasItem.TEXTURE_FILTER_NEAREST
 		)
 	set_row_active(true, affordable)

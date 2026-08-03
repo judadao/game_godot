@@ -165,7 +165,7 @@ State/system instances由 `Game` 建立並持有，不加入 SceneTree：
 | `deck_manager` | `DeckManager` | CardInstance 的 draw/hand/discard/exhaust/cooldown 與 AP |
 | `card_collection_service` | `CardCollectionService` | 協調 MetaState／RunState／DeckManager 的 add／fuse／remove 與 collection snapshot／rollback |
 | `skill_recipe_manager` | `SkillRecipeManager` | 已裝備的攻擊 recipe、視窗、進度與 cooldown |
-| `growth_choice_queue` | `GrowthChoiceQueue` | wave/EXP 成長事件的單一 FIFO queue |
+| `growth_choice_queue` | `GrowthChoiceQueue` | wave、EXP Blessing、菁英／Boss loot 的單一 FIFO queue |
 | `inventory_manager` | unnamed `RefCounted` script | resources/equipment runtime model |
 | `town_manager` | unnamed `RefCounted` script | building levels/village stage |
 
@@ -386,7 +386,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `CardCollectionService` | `scripts/systems/card_collection_service.gd` | `is_configured`, `get_deck_size`, `get_copy_count`, `add_persistent_card`, `fuse`, `remove_instance`, `capture_state`, `restore_state` |
 | `CardInstance` | `scripts/systems/card_instance.gd` | `instance_id`, `card_id`, `level`, `is_fixed`, `is_growth_locked`, `to_dict`, `from_dict` |
 | `SkillRecipeManager` | `scripts/systems/skill_recipe_manager.gd` | `load_catalog`, `configure_loadout`, `record_card`, `tick`, `reset_runtime` |
-| `GrowthChoiceQueue` | `scripts/systems/growth_choice_queue.gd` | `enqueue_wave_blessing`, `enqueue_experience_growth`, `peek`, `resolve` |
+| `GrowthChoiceQueue` | `scripts/systems/growth_choice_queue.gd` | `enqueue_wave_blessing`, `enqueue_experience_blessings`, `enqueue_combat_blessing_reward`, `peek`, `resolve` |
 | `ElementTaxonomy` | `scripts/systems/element_taxonomy.gd` | `get_all`, `normalize`, `is_valid`, `get_color`；武器、神賜與戰鬥 VFX 共用的元素命名權威 |
 | `ElementalGroundTrailCatalog` | `scripts/systems/elemental_ground_trail_catalog.gd` | 驗證火／冰／毒地面路徑 profile、四象限 atlas 與 visual budget |
 | `SaveService` | `scripts/systems/save_service.gd` | `save_meta`, `load_meta` |
@@ -403,7 +403,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json` | 依精確 Skill／Finisher id、唯一 archetype 與 beat pattern 組合五種圖集部件；`play()` 另接收 evolution level 與 buff stacks 以增加結構層，不擁有傷害判定 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
-| `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | single countdown、scheduled Elite/Boss、Final Rush、XP gem |
+| `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | single countdown、scheduled Elite/Boss、Final Rush、XP gem、money/material bags |
 | `EnemyBase` | `scripts/monsters/enemy_base.gd` | archetype、attack、damage、status、reset；大招致死立即結算玩法，再以 unscaled `impact_hold → dissolve → burst` 保留可讀消滅演出 |
 | `AutumnGuardian` | `scripts/monsters/autumn_guardian.gd` | boss phases/pattern profiles |
 | `Hurtbox` | `scripts/combat/hurtbox.gd` | `receive_hit()` adapter |
@@ -616,6 +616,9 @@ service；修改 mappings或處理順序時須用實際 run驗證。
   `8→16` spawn batch、定時 Elite／Boss 與 Final Rush 的唯一 authority；普通怪死亡會
   立即排入補怪，普通怪 HP 倍率沿 timeline 由 `8.0→20.0`，只有 00:00 completion
   Guardian 可完成 Run。
+- 同一 director 擲骰並生成實體 reward bag：normal／elite／boss 都有各自 money chance；
+  只有 elite／boss 擁有 material chance。material payload 由死亡 enemy archetype 映射，
+  收集後只以 `reward_bag_collected` 將明確 resource dictionary 交給 `Game`。
 - `EnemyBase` 統一處理玩家實體接觸傷害：使用 `Player.take_hit()` 的完整防禦流程、
   每敵獨立冷卻；`ContactDamageArea` 監聽 Player Hurtbox，預警期間若已接觸命中，
   同一 attack generation 的 impact 不再重複扣血。
@@ -1003,12 +1006,13 @@ Combo 卡本身提供的 infusion／status 不屬於永久公式狀態：每張�
 Chain 使用依總 Combo 收緊的獨立接續視窗，不受卡片效果到期影響：1–3 層為 2.0 秒，
 第 4 層為 1.3 秒，之後每層減少 0.1 秒，最低 0.6 秒；專注護符最後加上 0.5 秒。
 
-`DivineGiftManager` 是 Run-local 神賜權威。每個 stage/wave 最多排入一個必選
-神賜頁，避免同關多隻菁英重複開頁。神賜最高三級；所有持有神賜依取得順序共同提供招式稱號，
+`DivineGiftManager` 是 Run-local 神賜權威。每個 EXP level 排入一個新神賜／既有
+神賜升級頁；每次菁英與 Boss defeat 則排入一個既有升級／融合 loot page。
+神賜最高三級；所有持有神賜依取得順序共同提供招式稱號，
 例如 `千刃殺` 可疊加成多段中文前綴名稱，並共同加入燃燒、冰凍碎裂、
 中毒、雷鏈、迴響或穿透等機制。兩個不同的滿級神賜可融合成 evolved gift；材料
-標記為 ascended 並永久離開本 Run 的獎勵池，已完成的融合不能再次產生。只有融合
-候選的頁面可略過，避免成長流程無限循環。
+標記為 ascended 並永久離開本 Run 的獎勵池，已完成的融合不能再次產生。一般 EXP
+頁不得出現融合；融合只屬於菁英／Boss loot source。
 
 Run 同時最多持有三項神賜。未滿三項時獎勵可出現新神賜或既有神賜升級；滿三項時
 只能出現目前持有且未滿級的升級選項，直到兩項滿級神賜融合並釋出空位。加入或升級
@@ -1043,16 +1047,15 @@ active skill 必須是 learned 的子集。`RunState.card_instances` 是 expedit
 
 ### 21.3 成長與 UI ownership
 
-`GrowthChoiceQueue` 將 Elite Divine Gift 與其他 growth event 排成單一 FIFO。
-每次 Elite defeat 使用遞增 event key，只能 enqueue 一頁 mandatory Divine Gift；
-EXP 優先隨機抽最多五張未滿級 instance 形成 upgrade page，全部滿級後
-才提供獨立 fusion page。fusion 消耗兩張材料並加入一張 Lv.1 結果，牌組淨減一。
+`GrowthChoiceQueue` 將 EXP Blessing、Elite/Boss Blessing loot 與其他 growth event
+排成單一 FIFO。每次 EXP level 必須 enqueue 一頁新神賜／既有升級；所有神賜都沒有
+可用成長時，才提供 75 gold、12 wood + 8 stone、或 4 magic shards fallback。
+每次 Elite/Boss defeat 則只 enqueue 既有神賜升級與合法 Lv.3 神賜融合，不提供新品。
 wave reward page 可由玩家直接 Skip 以維持精簡牌組；選牌後若遇到 16 張上限，
 由 `Game` 開啟 replacement modal，原子執行 remove-one/add-one，或再次 Skip。
-若沒有合法 upgrade/fusion，
-才提供 75 gold、12 wood + 8 stone、或 4 magic shards 的永久 fallback。
 
-`Game` resolve choice、處理單張 upgrade／fallback、同步 Meta DTO 並提交 save。
+`Game` resolve choice、處理 Divine Gift／fusion／fallback；Divine Gift inventory 保持
+Run-local，fallback 仍同步 Meta DTO 並提交 save。
 `CardCollectionService` 驗證共享 CardInstance identity 與 fusion recipe，原子執行
 new-card／fusion／exact removal，並提供 collection snapshot／restore 給 save
 failure rollback。它不擁有 AP、出牌、cooldown tick 或 UI。

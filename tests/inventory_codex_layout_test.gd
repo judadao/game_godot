@@ -54,7 +54,7 @@ func _check_size(viewport_size: Vector2i) -> void:
 			"effect_summary": "16 damage, 2 burn damage, 260 attack range",
 			"trigger_summary": "Fires automatically toward enemies in front of the player.",
 			"preview_kind": "basic_attack", "elements": [],
-			"icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
+			"icon_path": "res://assets/ui/autumn/cards/generated/ember_bolt.png",
 		},
 		{
 			"id": "flame_imbue", "name": "Flame Imbue", "category": "infusions",
@@ -63,7 +63,7 @@ func _check_size(viewport_size: Vector2i) -> void:
 			"effect_summary": "+4 attack damage, 3 burn damage",
 			"trigger_summary": "Wraps your attacks for 2.5 seconds.",
 			"preview_kind": "attack_aura", "elements": ["flame"], "intensity": 3,
-			"icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
+			"icon_path": "res://assets/ui/autumn/cards/generated/flame_imbue.png",
 		},
 		{
 			"id": "frost_bind", "name": "Glacial Dominion", "category": "skills",

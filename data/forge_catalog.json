@@ -89,7 +89,7 @@
       "quantity": 1,
       "price": 100,
       "required_flame_tier": 0,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png"
+      "icon_path": "res://assets/ui/autumn/cards/generated/flame_imbue.png"
     },
     {
       "id": "sword_soul_blueprint_frostburst_imbue",
@@ -102,7 +102,7 @@
       "quantity": 1,
       "price": 125,
       "required_flame_tier": 1,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Wood_Planks.png"
+      "icon_path": "res://assets/ui/autumn/cards/generated/frostburst_imbue.png"
     },
     {
       "id": "sword_soul_blueprint_storm_charge",
@@ -115,7 +115,7 @@
       "quantity": 1,
       "price": 150,
       "required_flame_tier": 2,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png"
+      "icon_path": "res://assets/ui/autumn/cards/generated/storm_charge.png"
     },
     {
       "id": "sword_soul_blueprint_venom_edge",
@@ -128,7 +128,7 @@
       "quantity": 1,
       "price": 175,
       "required_flame_tier": 2,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_03.png"
+      "icon_path": "res://assets/ui/autumn/cards/generated/venom_edge.png"
     },
     {
       "id": "equipment_blueprint_iron_sword",
@@ -141,7 +141,7 @@
       "quantity": 1,
       "price": 70,
       "required_flame_tier": 0,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png"
+      "icon_path": "res://assets/ui/equipment/generated/iron_sword.png"
     },
     {
       "id": "equipment_blueprint_hunter_bow",
@@ -154,7 +154,7 @@
       "quantity": 1,
       "price": 80,
       "required_flame_tier": 0,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png"
+      "icon_path": "res://assets/ui/equipment/generated/hunter_bow.png"
     },
     {
       "id": "equipment_blueprint_leather_armor",
@@ -167,7 +167,7 @@
       "quantity": 1,
       "price": 65,
       "required_flame_tier": 0,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0003_Chest.png"
+      "icon_path": "res://assets/ui/equipment/generated/leather_armor.png"
     },
     {
       "id": "equipment_blueprint_vitality_charm",
@@ -180,7 +180,7 @@
       "quantity": 1,
       "price": 75,
       "required_flame_tier": 0,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_06.png"
+      "icon_path": "res://assets/ui/equipment/generated/vitality_charm.png"
     },
     {
       "id": "equipment_blueprint_apprentice_staff",
@@ -193,7 +193,7 @@
       "quantity": 1,
       "price": 105,
       "required_flame_tier": 1,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0000_Weapon.png"
+      "icon_path": "res://assets/ui/equipment/generated/apprentice_staff.png"
     },
     {
       "id": "equipment_blueprint_chain_armor",
@@ -206,7 +206,7 @@
       "quantity": 1,
       "price": 115,
       "required_flame_tier": 1,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0003_Chest.png"
+      "icon_path": "res://assets/ui/equipment/generated/chain_armor.png"
     },
     {
       "id": "equipment_blueprint_mage_robe",
@@ -219,7 +219,7 @@
       "quantity": 1,
       "price": 110,
       "required_flame_tier": 1,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png"
+      "icon_path": "res://assets/ui/equipment/generated/mage_robe.png"
     },
     {
       "id": "equipment_blueprint_swift_ring",
@@ -232,7 +232,7 @@
       "quantity": 1,
       "price": 100,
       "required_flame_tier": 1,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0006_Boots.png"
+      "icon_path": "res://assets/ui/equipment/generated/swift_ring.png"
     },
     {
       "id": "equipment_blueprint_focus_amulet",
@@ -245,7 +245,7 @@
       "quantity": 1,
       "price": 145,
       "required_flame_tier": 2,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png"
+      "icon_path": "res://assets/ui/equipment/generated/focus_amulet.png"
     },
     {
       "id": "equipment_blueprint_merchant_seal",
@@ -258,7 +258,7 @@
       "quantity": 1,
       "price": 190,
       "required_flame_tier": 2,
-      "icon_path": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_07.png"
+      "icon_path": "res://assets/ui/equipment/generated/merchant_seal.png"
     }
   ],
   "recipes": [

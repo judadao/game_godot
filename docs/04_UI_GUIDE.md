@@ -566,7 +566,9 @@ HUDLayer
   左頁使用雙欄劍魂格填滿書脊前的可用空間，右頁只呈現 Game projection 提供的
   `bonus_type_label` 與短中文 `ability_summary`，UI 不自行推算攻擊／防禦／治療／
   元素／機動／AP 類型
-- 圖鑑依招式／敵人／劍魂／裝備篩選；敵人是 catalog reference，不是假造 discovery
+- 圖鑑依招式／敵人／劍魂／裝備篩選；劍魂章列出 `cards.json` 全部 38 個正式劍魂，
+  不得只列四個鍛造圖紙，並分別標示解鎖、持有、等級與取得狀態；敵人是 catalog
+  reference，不是假造 discovery
 - 所有章節內容保留 32px painted page-curl safe inset；圖鑑長內容在固定 detail viewport
   內捲動，viewport 下方另保留 26px 無繪製 footer 與內容 BottomInset，不讓最後一行
   落入書頁捲邊或顯示半行
@@ -1165,9 +1167,10 @@ and each card uses `EXPAND_FILL` to match its parent slot in both axes. Hover fe
 rise vertically but must not scale horizontally into an adjacent slot. Autumn cards use a
 `148–320px` responsive minimum height.
 Healing／Flame／Volley／Storm identification stays in the artwork, category tab, and restrained accent,
-not a saturated full-card frame. 所有 20 張可投入終結技公式的
-Combo／Healing 劍魂都使用 `assets/ui/autumn/cards/generated/<card_id>.png` 的獨立
-256×256 暗黑塔羅插畫。插畫必須填滿卡面主視覺區，不可退化為中央小 icon；四張戰鬥牌共用
+not a saturated full-card frame. 所有 38 張正式 card 都使用
+`assets/ui/autumn/cards/generated/<card_id>.png` 的獨立 256×256 暗黑塔羅插畫，
+並在縮放到 HUD 時使用 linear filtering，避免雕刻線稿出現 nearest 鋸齒。插畫必須填滿
+卡面主視覺區，不可退化為中央小 icon；四張戰鬥牌共用
 1173×1341 的 7:8 透明塔羅參考稿提供比例；runtime 外框由
 `battle_card_geometric_frame.gd` 以可調整的雙層金線、橢圓拱弧、側柱、銘牌與圓章繪製。
 烏鴉、藤蔓煙霧維持同尺寸獨立透明層，元素色只節制地投射到右上種類符號，不額外畫表格框或霓虹邊框。
@@ -1231,15 +1234,22 @@ Deck Builder 以四個可點選槽位呈現固定手牌，不使用全卡表 `�
 四格都可選不重複的 Healing／Combo，整組至少保留一張 Healing；最後一張 Healing
 不得直接換成 Combo。點槽位後，下方候選排除另外三格已選技能。畫面必須以中文名稱
 與說明即時列出目前四張技能能完成的已學會終結技，並用 `×3` 或箭頭保留精確順序。
+槽位與候選列都直接顯示 catalog 圖示；Healing 使用綠色十字與綠框，Combo 使用紫色
+類型標籤及元素 accent。選中槽位使用明亮金框，槽位背景持續播放雙框、環形刻度與
+巡行亮點組成的 code-native 金色幾何動畫。面板在 1280×720 以上依 viewport 等比放大，
+上限 1.75 倍，避免高解析度畫面退化成難讀的小視窗。
+候選列的 mouse hover 與 keyboard focus 都必須立即更新下方效果預覽；鍵盤上下移動到
+ScrollContainer 可視範圍外時，清單必須自動捲動讓焦點項完整可見。
 另有 Basic Attack selector；它不是四格手牌之一，
 UI 必須明示所選 attack 會在 Run 開始後鎖定、免費、自動水平攻擊。
 
-每個 stage/wave 的首次菁英掉落使用既有 `CardGrowthUI` modal shell，但內容是
-Divine Gift，不是卡牌升級：`DivineGiftChoiceCard` 以大型符印、短名稱、等級變化、
+每次角色升等使用既有 `CardGrowthUI` modal shell，內容只包含新神賜或既有神賜升級；
+菁英與 Boss 戰利品頁則只包含既有神賜升級或合法昇華融合。`DivineGiftChoiceCard`
+以大型符印、短名稱、等級變化、
 中文效果分類、短 lore 與 2–3 條具體 next effect／終結技 mechanics 呈現；選中項使用
-實心 badge、粗金框與金色光暈，並在確認鈕上方同步「已選」效果摘要。存在兩個不同
-滿級神賜時，同頁提供融合選項；若頁面只有融合選項則
-允許略過，避免 modal 反覆開啟。
+實心 badge、粗金框與金色光暈，並在確認鈕上方同步「已選」效果摘要。只有菁英／Boss
+來源且存在兩個不同滿級神賜時才可提供融合；一般 EXP 頁永不提供融合。所有可取得
+神賜都滿級且沒有新選項時，EXP 頁改顯示金錢或素材 fallback。
 
 玩家可見文案使用「神賜／菁英祝福／昇華」，名稱、說明、階級與融合名稱皆為繁中。
 Autumn HUD 固定容納並顯示三個神賜 slot；滿三項時選擇頁只列既有神賜升級，不得用
@@ -1267,7 +1277,8 @@ Combo Chain 清單、四格 Deck Builder、interaction prompt 與 world-safe are
 
 ## 34. Card Growth Modal
 
-`res://scenes/ui/cards/CardGrowthUI.tscn` 是 wave blessing 與 EXP growth 的單一 modal。
+`res://scenes/ui/cards/CardGrowthUI.tscn` 是 wave reward、EXP Blessing 與菁英／Boss
+Blessing loot 的單一 modal。
 舊 `LevelUpUI` 與 Autumn Blessing popup 不再是這條流程的 authority。
 
 Growth choice card 必須以卡牌類型色、catalog icon、AP／level 關鍵資料協助掃讀。
@@ -1275,14 +1286,15 @@ Growth choice card 必須以卡牌類型色、catalog icon、AP／level 關鍵�
 tooltip。Icon、顏色與 description 由 queue payload 投影，UI 不反查或修改 catalog。
 
 - wave page 只顯示 new card。
-- EXP upgrade page 只隨機顯示最多五張未滿級 instances；全部卡片滿級後才另開
-  最多五組合法 Lv.3 fusion page；沒有合法 growth 時才顯示三種永久資源 fallback。
+- EXP page 只隨機顯示最多三項新神賜／既有神賜升級；全部神賜皆無可用成長時才顯示
+  三種金錢／素材 fallback。
+- Elite／Boss page 只顯示既有神賜升級與合法 Lv.3 神賜融合，不得加入未持有的新神賜。
 - 五個成長選項固定為上排三張、下排兩張置中，不使用可捲動的全牌清單。
 - wave new-card page 一律提供 `Skip Reward`，讓玩家可維持精簡牌組；若玩家選牌但
   已達 16 張上限，則改開 replacement modal，可替換一張現有卡或再次 Skip。
-- new-card 選項直接標示 type、AP cost 與基礎效果；upgrade 選項直接標示目前效果
+- new-card 選項直接標示 type、AP cost 與基礎效果；神賜選項直接標示目前效果
   與下一級變化，不得只把完整說明藏在 tooltip。
-- UI 必須清楚標示 instance level、兩張 fusion 材料與 Lv.1 結果。
+- UI 必須清楚標示神賜 level、兩項融合材料與 Lv.1 昇華結果。
 - `CardGrowthUI` 只 emit choice intent，不能直接改 deck、Meta 或 inventory。
 - modal 開啟期間 gameplay clock、AP、skill cooldowns、status、skills、waves 與 projectile
   都必須暫停；UI 保持 always-processing 與可操作 focus。

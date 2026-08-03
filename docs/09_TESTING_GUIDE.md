@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 118 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 155 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -55,7 +55,8 @@ Inventory／Codex focused coverage：
   `INVENTORY_CODEX_CAPTURE_VIEW=live|concept` 選擇展示模式，再搭配 capture path/size
   產生 Vulkan 視覺比較基準。
   實際 Game projection 可用 `INVENTORY_CODEX_PROJECTION_CAPTURE_PATH` 擷取，
-  不得只驗證手寫 UI fixture。
+  並以 `INVENTORY_CODEX_PROJECTION_SECTION=techniques|enemies|sword_souls|equipment`
+  指定圖鑑章節；不得只驗證手寫 UI fixture。
 
 ## 3. 測試分層
 
@@ -217,6 +218,17 @@ Healing／Flame／Volley／Storm visual family。另須以超長公式、終結�
 檢查每張都有唯一繁中名稱／說明、唯一 generated path、可載入的 256×256 Texture2D，
 且 `AutumnBattleCard` 實際投影相同中文與圖片。Generated raster 最終仍須獨立檢查
 20 張原生圖、44px contact sheet、六解析度完整畫面與一張完整畫面的固定 3×2 六切片。
+
+`generated_catalog_icon_contract_test.gd` 另檢查完整 38 cards、4 skills、32 finishers
+與 10 equipment（共 84 張）各自擁有依 ID 命名、唯一、可載入的 256×256 generated
+icon，並驗證所有 generated card art 在 `AutumnBattleCard` 使用 linear filtering。
+最終視覺審查需看四類 native contact sheet、44／52px 縮圖、實際 Combat HUD 與
+Inventory 六解析度 full frames，以及代表 full frame 的固定 3×2 六切片。
+
+`blessing_loot_progression_test.gd` 鎖定 EXP Blessing-only、all-max fallback、
+Elite／Boss merge gating、三類敵人的 money roll、Elite／Boss-only material roll、
+monster-specific payload 與實體 bag 單次收集。`deck_builder_four_slot_test.gd` 另驗證
+候選 keyboard focus 自動捲動，以及 hover／focus 即時效果預覽。
 
 設定 `AUTUMN_HUD_CAPTURE_DIR` 後執行 `autumn_hud_v3_layout_test.gd`，會由七個
 exact-size `SubViewport` 輸出 `autumn_hud_<width>x<height>.png`，不受桌面工作區
@@ -560,14 +572,15 @@ instance.queue_free()
 | Run XP pacing | 六種普通怪各只提供 1 XP，1 XP 不得因最小 gem shard 數膨脹成 2；Run 首級門檻 100，後續為 `ceil(previous × 1.30 + 25)`，大量 XP 仍以 while 完整排入 level-up queue |
 | Skill recipe | attack-only、multi-hit 一次 event、8 秒 window、count/exact sequence reset、獨立 cooldown |
 | Memory Library | capacity 10/14/18/24/30；learned 與 active loadout 分離 |
-| Growth queue | wave new-card 可直接 skip；滿 16 張可 replace/skip；EXP upgrade 五選一、全滿後獨立 fusion；無候選才 fallback；FIFO 不漏頁 |
-| Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一 |
-| Deck/hand | 傳送門前四格直選；4 unique Healing／Combo 且至少 1 Healing；最後一張 Healing 不可換掉；候選排除重複並預覽終結技；QWER 使用後保留原 slot |
+| Growth queue | wave new-card 可直接 skip；EXP 每級必開新／升級神賜且不得融合；神賜全滿才 fallback；菁英／Boss 只列既有神賜升級／融合；FIFO 不漏頁 |
+| Fusion | 只由菁英／Boss loot page 提供兩項不同 Lv.3 神賜融合；材料退出獎勵池並生成 Lv.1 evolved gift |
+| Deck/hand | 傳送門前四格直選；4 unique Healing／Combo 且至少 1 Healing；最後一張 Healing 不可換掉；候選排除重複並預覽終結技；圖示、類型色與金色幾何動畫可辨；hover／keyboard focus 即時預覽效果，向下越界自動捲動；面板於高解析度等比放大；QWER 使用後保留原 slot |
 | Card readability/feedback | 繁中長技能名固定兩行、超出省略且 tooltip 保留完整名稱，不撐寬四卡框；七解析度不重疊；compatibility `BackRow` hidden 且不保留高度，code-native 7:8 金色幾何框與條件式透明裝飾層由 CardStage 頂緣到底緣雙軸填滿四等分 slot、主插畫占主要視覺；hover 不橫向放大；combat halo hidden，外框亮帶持續沿可調拱弧／側柱充能、主圖背後 60 根粗且保有留白的 360° sacred-geometry 日芒以雙頻波形大幅伸縮、維持圓形整體輪廓且四卡相位錯開；日芒使用不歸零的連續時間值，外框跨界亮帶同時繪製尾端與起點，循環接縫不得抖動；兩者使用全域時間軸，出招重投影不得歸零；右側長公式固定欄寬 ellipsis；只有成功施放的相符 card id 播放約 0.42 秒最上層儀式弧光、12 根短放射刻線、三圓章閃光與主圖 punch，無矩形遮罩且不重置底層循環；重複呼叫重啟、未知 ID 無作用、0.5 秒內回穩；透明裝飾素材另檢查 1173×1341、alpha 與共享對位 |
 | Combat input hierarchy | 隱藏舊 `ActionStrip`；`SPACE 衝刺` 位於 FooterRail；手牌頂緣貼齊 CardStage；二十張公式劍魂的 catalog 基礎 AP 統一為 2，裝備只可把 Combo 投影降至最低 1；卡面共用 Noto Serif TC 優先的襯線 stack，短招式名保持大字、長名稱最低 12px 且獨占暖墨底部卷軸，插畫在分類框上緣前結束；Q/W/E/R 位於左上 32–36px 圓章且至少 18px；右上顯示種類 icon；AP cost 位於右下 34–38px 圓章且只顯示至少 20px 的數字；中文分類使用四邊舊金框暖墨 tab 且至少 60% 卡寬，Combo 卡在同一 tab 顯示自己的 `目前層數/有效上限`，不另加 stack seal；不得新增表格線、全卡不透明色塊或霓虹外框 |
 | Attack geometry | 戰前獨立 Basic Attack、Run lock、0 AP、不進牌堆；方向劍氣以 53px 半高、Combo／stack 1–3 倍 size clamp 與 1.00／1.10／1.22／1.36 spectacle scale 建立前向膠囊掃掠形狀，依 hurtbox 中心／半徑相交並讓沿途每個唯一敵人受傷一次；每方向 VFX 只追到最遠合法目標；圓形攻擊以 radius 與 hurtbox 相交，Dash 以移動線段膠囊相交；形狀外、角色背後不受傷；無目標不消耗 cooldown 或公式 |
 | Combo formula | catalog 合法 Combo／Healing 都可記錄；32 個精確已學會 AAA/ABC 配方；順序錯誤不觸發；純治療／防禦支援為零基礎傷害；多招 FIFO 排隊；下一發自動水平攻擊逐一施放；formula stacks 不消耗；各卡效果維持獨立 1.5 秒，單一效果到期只撤銷自己的 modifier；Combo Chain 依總 Combo 動態收緊：1–3 層為 2.0 秒，第 4 層為 1.3 秒，之後每層減少 0.1 秒，最低 0.6 秒；專注護符最後加上 0.5 秒；每個劍魂基礎上限 5，裝備／神賜可提高但全域硬上限 10，效果數、增傷 chain、卡面與提示必須共用同一有效上限 |
-| Divine Gifts | 每 stage/wave 一個必選頁；最多 3 slot；有空位才出新品，滿槽只出既有升級；全 inventory 的中文前綴與 mechanics 依序累加；Lv.3 融合材料退出獎勵池並釋出一格；fusion-only 可 skip；選擇頁與 HUD 不得露出英文名稱／說明 |
+| Divine Gifts | 每個 EXP level 必選新／升級；菁英／Boss 必選既有升級／融合；最多 3 slot；全 inventory 的中文前綴與 mechanics 依序累加；Lv.3 融合材料退出獎勵池並釋出一格；選擇頁與 HUD 不得露出英文名稱／說明 |
+| Reward bags | normal／elite／boss 各自有可測 money roll；只有 elite／boss 有 material roll；素材 ID 由 monster archetype 決定；實體 bag 收集只 emit／結算一次 |
 | Growth card readability | upgrade/new/fusion choice 顯示 icon、類型色、AP/level；神賜使用 88px 符印、中文效果分類、2–3 條 next effect/mechanics、獨立 selected badge 與摘要；七解析度不裁切 |
 | Dash | ↑ 只觸發 Jump；Space 觸發玩家固有 Dash；不進牌庫/手牌、不耗 AP；Dash Combo infusions 使用 `target_action=dash` |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |

@@ -95,6 +95,17 @@ func _run() -> void:
 		_expect(inventory_ui != null, "Runtime projection capture requires the real Inventory UI.")
 		if inventory_ui != null:
 			inventory_ui.call("set_mode", &"codex")
+			var capture_section := OS.get_environment("INVENTORY_CODEX_PROJECTION_SECTION")
+			if not capture_section.is_empty():
+				var filter := inventory_ui.get_node(
+					"Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter"
+				) as OptionButton
+				for filter_index in filter.item_count:
+					if String(filter.get_item_metadata(filter_index)) != capture_section:
+						continue
+					filter.select(filter_index)
+					filter.item_selected.emit(filter_index)
+					break
 			inventory_ui.call("select_codex_entry", "guard")
 			await create_timer(0.18).timeout
 			await RenderingServer.frame_post_draw

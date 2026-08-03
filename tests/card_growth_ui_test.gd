@@ -95,9 +95,9 @@ func _run() -> void:
 	ui.call("present_page", experience_page)
 	await process_frame
 	_expect(not skip_button.visible, "Experience upgrades must remain mandatory and must not expose the new-card Skip action.")
-	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "CHOOSE AN UPGRADE", "EXP growth must identify the unfinished-card upgrade page.")
+	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "選擇新的祝福或提升祝福", "EXP growth must identify the mandatory Blessing page.")
 	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection") as Control).visible, "EXP pages must expose individual upgrades.")
-	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection") as Control).visible, "EXP upgrade and fusion choices must share one compact five-card layout.")
+	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection") as Control).visible, "EXP Blessing growth must never expose the legacy fusion section.")
 	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection") as Control).visible, "Fallback resources must stay hidden while growth exists.")
 	_expect(ui.call("get_choice_button_count") == 2, "The compact upgrade layout must retain both supplied unfinished cards.")
 	_expect(_all_text(ui).contains("LV.2"), "Upgrade choices must show the selected instance level.")
@@ -132,21 +132,12 @@ func _run() -> void:
 			"result_name": "Unbreakable Stance",
 		}],
 	}
+	fusion_page["source"] = "elite"
 	ui.call("present_page", fusion_page)
 	await process_frame
-	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "CHOOSE A FUSION", "Full-level fusion must use a separate page.")
+	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "選擇菁英戰利品", "Merge choices must identify elite loot as their source.")
 	_expect(_all_text(ui).contains("LV.3 + LV.3"), "Fusion choices must make both full-level materials explicit.")
 	_expect(_all_text(ui).contains("LV.1"), "Fusion choices must show that the result returns at level one.")
-	fusion_page["source"] = "fusion_followup"
-	ui.call("present_page", fusion_page)
-	await process_frame
-	_expect(
-		(ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text
-			== "EVOLVE COMBO?",
-		"A newly completed Lv.3 pair must explain the optional Combo evolution."
-	)
-	_expect(skip_button.visible and not skip_button.disabled, "Post-upgrade fusion must be skippable.")
-
 	var divine_page := {
 		"event_id": 15,
 		"source": "divine",
@@ -265,7 +256,7 @@ func _run() -> void:
 	}
 	ui.call("present_page", fallback_page)
 	await process_frame
-	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "CHOOSE RESOURCES", "Fallback pages must clearly identify resource rewards.")
+	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title") as Label).text == "選擇一份成長資源", "Fallback pages must clearly identify resource rewards.")
 	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection") as Control).visible, "Fallback pages must not show an empty upgrade section.")
 	_expect(not (ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection") as Control).visible, "Fallback pages must not show an empty fusion section.")
 	_expect((ui.get_node("SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection") as Control).visible, "Fallback pages must expose the three resource bundles.")

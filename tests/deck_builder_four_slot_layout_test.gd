@@ -42,6 +42,7 @@ func _run() -> void:
 		builder.call("configure", database.get_all_cards(), [
 			"healing_light", "flame_imbue", "echo_volley", "storm_charge",
 		])
+		builder.call("select_slot", 1)
 		await process_frame
 		var panel := builder.get_node("Shade/LoadoutPanel") as Control
 		var panel_rect := _canvas_rect(panel)
@@ -61,6 +62,12 @@ func _run() -> void:
 			_expect(
 				panel_rect.encloses(_canvas_rect(slot as Control)),
 				"Every skill slot must remain inside the panel at %s." % viewport_size
+			)
+			var slot_control := slot as Control
+			var icon := slot_control.get_node("Visual/Icon") as TextureRect
+			_expect(
+				_canvas_rect(slot_control).encloses(_canvas_rect(icon)),
+				"Every iconified slot image must stay inside its card at %s." % viewport_size
 			)
 		var scroll := builder.get_node(
 			"Shade/LoadoutPanel/Margin/Column/SkillChoiceScroll"

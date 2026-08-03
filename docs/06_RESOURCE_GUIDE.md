@@ -461,8 +461,10 @@ Validation：
 
 ### 5.3 Runtime application
 
-`EvolutionManager` 只查詢 recipe，不直接 mutation deck。`GrowthChoiceQueue`
-建立 EXP fusion choice；`Game` 驗證 Growth choice、管理 pause 與 save transaction。
+`EvolutionManager` 只查詢 legacy card recipe，不直接 mutation deck。production
+`GrowthChoiceQueue` 不再從 EXP、Elite 或 Boss 建立 card fusion choice；正式 merge 是
+Divine Gift 昇華，且只由 Elite／Boss loot page 建立。`Game` 仍管理 pause 與
+save transaction。
 `CardCollectionService.fuse()` 再驗證 recipe 與三個 authority 的共享 identity，
 原子移除兩張不同 Lv.3 材料並加入一張 Lv.1 result；任一步失敗都 restore
 collection snapshot。這個 ownership 不可移入 UI。
@@ -744,6 +746,10 @@ canonical value 不翻譯。Manager 同時最多保存三項 inventory entry：�
 並加入一項 evolved entry，因此釋出一格。所有 inventory entry 的 effects、mutation
 與 prefix 依取得順序聚合，不得由 primary entry 覆蓋。
 
+來源 gating 由 `GrowthChoiceQueue` 負責：EXP 使用 `get_reward_choices()`，只投影新神賜
+／既有升級且無候選時 fallback；Elite／Boss 使用 `get_upgrade_choices()` 加上
+`get_fusion_choices()`，不得投影未持有的新神賜。一般 EXP 永遠不包含 fusion action。
+
 `data/combo_finishers.json` 每筆 recipe 包含穩定 `id`、中文 `name`／`description`、
 `role`、精確三項 `sequence`、`required_skills` 與 `base_effect`。
 `ComboFinisherCatalog` 只匹配相同順序的完整三招；AAA 與 ABC 都是合法配方，
@@ -752,9 +758,14 @@ Healing 可作為正式材料，但任何 required skill 未學會時不得排�
 
 `cards.json` 與 `equipment.json` 保留 canonical 英文 `name`／`description`，並以
 `name_zh`／`description_zh` 提供玩家可見繁中投影；stable ID、戰鬥數值與存檔 key
-不因在地化改名。任何出現在 `combo_finishers.json.sequence` 的 Combo／Healing 卡，
-`icon_path` 必須是唯一的 `res://assets/ui/autumn/cards/generated/<card_id>.png`，格式固定
-256×256；圖片不含文字、數字、AP、快捷鍵或外框。完整 prompt set 記錄於
+不因在地化改名。每一張正式 card 的 `icon_path` 必須是唯一的
+`res://assets/ui/autumn/cards/generated/<card_id>.png`；`skills.json`、
+`combo_finishers.json` 與 `equipment.json` 也分別持有唯一的
+`res://assets/ui/skills/generated/<skill_id>.png`、
+`res://assets/ui/finishers/generated/<finisher_id>.png` 與
+`res://assets/ui/equipment/generated/<equipment_id>.png`。所有圖示固定 256×256，
+不含文字、數字、AP、快捷鍵或 UI 外框；裝備圖示使用透明背景，其餘戰鬥圖示
+延續 midnight-black／antique-gold 劍魂語言。完整劍魂 prompt 基準記錄於
 `docs/art_concepts/combo_card_tarot_v1.md`。InventoryManager 的裝備持久化正式允許 Lv.1–15，但目前只有
 Lv.1→2、Lv.2→3 成本與截至 Lv.3 的效果曲線有 runtime authority。Lv.4–15 會保留
 存檔等級，但不得外推屬性或捏造突破成本；鐵匠鋪以「突破素材尚未開放」停用操作。

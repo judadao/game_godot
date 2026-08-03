@@ -10,12 +10,25 @@ signal survival_time_changed(
 )
 signal elite_spawned(elite: Node, remaining: float)
 signal boss_spawned(boss: Node, completion_boss: bool, remaining: float)
+signal boss_defeated(world_position: Vector2, completion_boss: bool)
 signal boss_stage_completed
 signal experience_gem_spawned(gem: Node, value: int)
 signal survival_pickup_spawned(pickup: Node, item_id: StringName)
 signal survival_pickup_collected(item_id: StringName)
+signal reward_bag_spawned(pickup: Node, kind: StringName, reward: Dictionary)
+signal reward_bag_collected(kind: StringName, reward: Dictionary)
 
 const OPENING_SPAWN_COUNT := 24
+const MONSTER_MATERIALS := {
+	"sprout": "autumn_wood",
+	"hopper": "stone",
+	"moth_swarm": "magic_shard",
+	"thornling": "autumn_wood",
+	"charger": "stone",
+	"grove_shaman": "magic_shard",
+	"elite": "autumn_core",
+	"guardian": "autumn_core",
+}
 
 @export_range(30.0, 1800.0, 1.0) var survival_duration := 600.0
 @export_range(10.0, 120.0, 1.0) var final_rush_duration := 60.0
@@ -48,6 +61,11 @@ const OPENING_SPAWN_COUNT := 24
 @export var experience_gem_scene: PackedScene = preload("res://scenes/combat/ExperienceGem.tscn")
 @export var survival_pickup_scene: PackedScene = preload("res://scenes/combat/SurvivalPickup.tscn")
 @export_range(0.0, 1.0, 0.005) var normal_pickup_drop_chance := 0.16
+@export_range(0.0, 1.0, 0.005) var normal_money_bag_chance := 0.06
+@export_range(0.0, 1.0, 0.005) var elite_money_bag_chance := 0.65
+@export_range(0.0, 1.0, 0.005) var boss_money_bag_chance := 0.90
+@export_range(0.0, 1.0, 0.005) var elite_material_bag_chance := 0.45
+@export_range(0.0, 1.0, 0.005) var boss_material_bag_chance := 0.85
 @export var spawn_around_player := false
 @export var spawn_route_left := 0.0
 @export var spawn_route_right := 0.0
@@ -390,7 +408,9 @@ func _on_survival_enemy_defeated(
 		return
 	var reward_position := (enemy as Node2D).global_position if enemy is Node2D else global_position
 	_active_enemies.erase(enemy)
-	var is_elite := String(enemy.get_meta("encounter_archetype_id", "")) == "elite"
+	var archetype_id := StringName(enemy.get_meta("encounter_archetype_id", ""))
+	var is_elite := archetype_id == &"elite"
+	var reward_role := &"boss" if is_boss else (&"elite" if is_elite else &"normal")
 	if _running and not is_boss and _time_remaining > 0.0:
 		_spawn_remaining = minf(_spawn_remaining, 0.05)
 	if is_elite:
@@ -398,6 +418,9 @@ func _on_survival_enemy_defeated(
 		elite_defeated.emit(reward_position)
 	elif not is_boss:
 		_try_spawn_survival_pickup(reward_position)
+	_try_spawn_reward_bags(reward_position, reward_role, archetype_id, gold)
+	if is_boss:
+		boss_defeated.emit(reward_position, completion_boss)
 	_gold += maxi(0, gold)
 	if not completion_boss:
 		_spawn_experience_burst(
@@ -504,6 +527,68 @@ func roll_survival_pickup(roll: float) -> StringName:
 	return &"swift_fruit"
 
 
+func get_monster_material(archetype_id: StringName) -> StringName:
+	return StringName(MONSTER_MATERIALS.get(String(archetype_id), "autumn_wood"))
+
+
+func roll_reward_bags(
+	role: StringName,
+	money_roll: float,
+	material_roll: float,
+	archetype_id: StringName,
+	gold_reward: int
+) -> Array[Dictionary]:
+	var rewards: Array[Dictionary] = []
+	var money_chance := normal_money_bag_chance
+	if role == &"elite":
+		money_chance = elite_money_bag_chance
+	elif role == &"boss":
+		money_chance = boss_money_bag_chance
+	if money_roll >= 0.0 and money_roll < clampf(money_chance, 0.0, 1.0):
+		var gold_amount := maxi(3, roundi(float(maxi(1, gold_reward)) * (
+			1.0 if role != &"normal" else 0.5
+		)))
+		rewards.append({"kind": "money", "reward": {"gold": gold_amount}})
+	if role not in [&"elite", &"boss"]:
+		return rewards
+	var material_chance := (
+		elite_material_bag_chance if role == &"elite" else boss_material_bag_chance
+	)
+	if material_roll >= 0.0 and material_roll < clampf(material_chance, 0.0, 1.0):
+		var material_id := get_monster_material(archetype_id)
+		rewards.append({
+			"kind": "material",
+			"reward": {String(material_id): 1 if role == &"elite" else 2},
+		})
+	return rewards
+
+
+func _try_spawn_reward_bags(
+	at_position: Vector2,
+	role: StringName,
+	archetype_id: StringName,
+	gold_reward: int
+) -> void:
+	var rewards := roll_reward_bags(
+		role,
+		_rng.randf(),
+		_rng.randf(),
+		archetype_id,
+		gold_reward
+	)
+	for index in rewards.size():
+		var bag := rewards[index]
+		var kind := StringName(bag.get("kind", ""))
+		var reward := (bag.get("reward", {}) as Dictionary).duplicate(true)
+		var offset := Vector2(float(index * 34 - 17), -8.0)
+		_spawn_survival_pickup(
+			&"money_bag" if kind == &"money" else &"material_bag",
+			at_position + offset,
+			reward,
+			kind
+		)
+
+
 func _try_spawn_survival_pickup(at_position: Vector2) -> Node:
 	var item_id := roll_survival_pickup(_rng.randf())
 	if item_id == &"":
@@ -511,7 +596,12 @@ func _try_spawn_survival_pickup(at_position: Vector2) -> Node:
 	return _spawn_survival_pickup(item_id, at_position)
 
 
-func _spawn_survival_pickup(item_id: StringName, at_position: Vector2) -> Node:
+func _spawn_survival_pickup(
+	item_id: StringName,
+	at_position: Vector2,
+	reward: Dictionary = {},
+	reward_kind: StringName = &""
+) -> Node:
 	if survival_pickup_scene == null:
 		return null
 	var pickup := survival_pickup_scene.instantiate()
@@ -525,9 +615,27 @@ func _spawn_survival_pickup(item_id: StringName, at_position: Vector2) -> Node:
 			get_tree().get_first_node_in_group("Player") as Node2D
 		)
 	if pickup.has_signal("collected"):
-		pickup.connect("collected", _on_survival_pickup_collected, CONNECT_ONE_SHOT)
+		if reward.is_empty():
+			pickup.connect("collected", _on_survival_pickup_collected, CONNECT_ONE_SHOT)
+		else:
+			pickup.connect(
+				"collected",
+				_on_reward_bag_collected.bind(reward_kind, reward),
+				CONNECT_ONE_SHOT
+			)
 	survival_pickup_spawned.emit(pickup, item_id)
+	if not reward.is_empty():
+		reward_bag_spawned.emit(pickup, reward_kind, reward.duplicate(true))
 	return pickup
+
+
+func _on_reward_bag_collected(
+	_item_id: StringName,
+	_collector: Node,
+	kind: StringName,
+	reward: Dictionary
+) -> void:
+	reward_bag_collected.emit(kind, reward.duplicate(true))
 
 
 func _on_survival_pickup_collected(item_id: StringName, collector: Node) -> void:

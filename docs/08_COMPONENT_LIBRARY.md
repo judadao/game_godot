@@ -1472,12 +1472,14 @@ the HUD never reads gameplay state directly.
   - `get_visual_family() -> String`
 - Responsibility: present a structured dark-fantasy card while keeping
   the root `Button` as the single input and focus owner. The fixed Autumn hand
-  maps to generated 256×256 text-free source art under
+  maps every formal card to generated 256×256 text-free source art under
   `res://assets/ui/autumn/cards/generated/`, composes it with aligned 1173×1341
   celestial-halo, spectral-raven, and vines/smoke layers, adds an adjustable code-native
   geometric frame with globally timed gold charge and a 60-ray 360-degree sacred-geometry
   sunburst behind black-keyed card art（combat hides the concentric halo layer）, stretches that 7:8 composition to the authored battle slot, and exposes
   Healing／Flame／Volley／Storm visual families.
+- Filtering: generated card paths use linear filtering at HUD scale; curated pixel-art
+  fallbacks remain nearest-filtered.
 - Typography: `CardName`／metadata／shortcut／AP 共用 `Noto Serif TC` 優先的繁中
   襯線 stack；短招式名以 17–18px 顯示，長名稱最低 12px 且獨占底部卷軸名牌，類型顯示「連段／治療」而不是
   `COMBO／HEALING`。
@@ -1513,10 +1515,16 @@ the HUD never reads gameplay state directly.
 - Signals:
   - `loadout_confirmed(deck_ids: Array[String], auto_attack_card_id: String)`
   - legacy `deck_confirmed` remains compatibility-only
-- Responsibility: select 1–16 ordinary backpack cards and one independent
-  unlocked attack card for auto attack
+- Responsibility: select exactly four unique Healing／Combo skills, including
+  at least one Healing, plus one independent unlocked auto-attack card
 - Rule: auto attack does not consume a deck slot；the selector is unavailable
   during an active Run
+- Presentation: catalog icons、green Healing／purple Combo cues、selected gold
+  state and animated double-frame／ring／traveling-light geometry；the centered
+  panel scales from 1.0 to 1.75 across the required viewports
+- Interaction: candidate hover or keyboard focus previews the exact Sword Soul
+  effect immediately；focus navigation owns explicit two-column neighbors and
+  calls `ScrollContainer.ensure_control_visible()` when moving off-screen
 
 ### CombatStatusController
 
@@ -1558,7 +1566,9 @@ the HUD never reads gameplay state directly.
 - Owner: `Game/MenuLayer` while the growth queue is non-empty
 - Signal: `choice_confirmed(choice_id: String)`
 - Responsibility: render one `GrowthChoiceQueue` page and expose a single
-  selected choice; it does not mutate deck, fusion materials, Meta or resources
+  selected choice; EXP pages show new／upgraded Blessings, elite／boss pages show
+  owned Blessing upgrades／merges, and all-max EXP pages show resource fallback.
+  It does not mutate Blessing inventory, fusion materials, Meta or resources
 - Layout: at most five normal growth choices, centered as three cards above two cards；
   Divine Gift 的三個直接選項則等寬填滿第一列
 - Responsive modal: width follows the safe viewport up to 1580px；height stays within

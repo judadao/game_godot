@@ -20,74 +20,40 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	game.set("save_service", SuccessfulSaveService.new())
-	game.call("_begin_autumn_run", [
-		"guard", "iron_skin", "flame_imbue", "frostburst_imbue",
-		"battle_rhythm", "sweeping_reach", "quickened_cadence", "healing_light",
-	])
-	var run := game.get("run_state") as RunState
-	var upgrade_target: CardInstance
-	for instance in run.card_instances:
-		if instance.is_fixed():
-			continue
-		instance.level = CardInstance.MAX_LEVEL
-		if upgrade_target == null:
-			upgrade_target = instance
-	upgrade_target.level = CardInstance.MAX_LEVEL - 1
-	run.pending_level_ups = 1
-	(game.get("growth_choice_queue") as GrowthChoiceQueue).clear()
-	game.call("_enqueue_experience_growth")
-	await process_frame
-	await process_frame
-
-	var first_page := (game.get("growth_choice_queue") as GrowthChoiceQueue).peek()
-	var upgrade_choice := (first_page.get("choices", []) as Array)[0] as Dictionary
-	var growth_ui := game.get_open_ui("CardGrowthUI") as Control
-	_expect(
-		String(upgrade_choice.get("action", "")) == "upgrade"
-			and String(upgrade_choice.get("instance_id", "")) == upgrade_target.instance_id,
-		"The final Lv.2 card must be the upgrade choice."
-	)
-	growth_ui.call("select_choice", String(upgrade_choice.get("choice_id", "")))
-	growth_ui.call("confirm_selected_choice")
+	game.call("_begin_autumn_run")
+	var gifts := game.get("divine_gift_manager") as RefCounted
+	for gift_id in ["resonant_grace", "boundless_font"]:
+		for _level in 3:
+			_expect(bool(gifts.call("add_or_upgrade", gift_id)), "Fusion materials must reach Lv.3.")
+	game.call("_on_elite_defeated", Vector2.ZERO)
 	await process_frame
 	await process_frame
 
 	var fusion_queue := game.get("growth_choice_queue") as GrowthChoiceQueue
 	var fusion_page := fusion_queue.peek()
 	var fusion_choices := fusion_page.get("choices", []) as Array
-	var offers_ascendant := false
-	var ascendant_choice: Dictionary = {}
+	var fusion_choice: Dictionary = {}
 	for choice_variant in fusion_choices:
-		if String((choice_variant as Dictionary).get("result_card_id", "")) == "ascendant_combo":
-			offers_ascendant = true
-			ascendant_choice = (choice_variant as Dictionary).duplicate(true)
+		if String((choice_variant as Dictionary).get("action", "")) == "divine_fusion":
+			fusion_choice = (choice_variant as Dictionary).duplicate(true)
 			break
-	_expect(upgrade_target.level == CardInstance.MAX_LEVEL, "The selected card must reach Lv.3 first.")
+	var growth_ui := game.get_open_ui("CardGrowthUI") as Control
 	_expect(
-		String(fusion_page.get("source", "")) == "fusion_followup"
-			and offers_ascendant,
-		"Creating a second Lv.3 card must immediately offer stronger Combo synthesis."
+		growth_ui != null
+			and String(fusion_page.get("source", "")) == "elite"
+			and not fusion_choice.is_empty(),
+		"Only elite or boss loot may offer a Blessing merge."
 	)
-	var fusion_ui := game.get_open_ui("CardGrowthUI") as Control
-	var skip_button := fusion_ui.get_node(
-		"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/SkipButton"
-	) as Button
-	_expect(skip_button.visible and paused, "Fusion follow-up must be pausing and optional.")
-	fusion_ui.call("select_choice", String(ascendant_choice.get("choice_id", "")))
-	fusion_ui.call("confirm_selected_choice")
+	growth_ui.call("select_choice", String(fusion_choice.get("choice_id", "")))
+	growth_ui.call("confirm_selected_choice")
 	await process_frame
-	var ascendant_instances := run.card_instances.filter(
-		func(instance: CardInstance) -> bool:
-			return instance.card_id == "ascendant_combo"
-	)
+	var inventory := gifts.call("get_inventory") as Array
 	_expect(
-		ascendant_instances.size() == 1
-			and (ascendant_instances[0] as CardInstance).level == CardInstance.MIN_LEVEL
-			and run.get_card_instance(String(ascendant_choice.get("left_instance_id", ""))) == null
-			and run.get_card_instance(String(ascendant_choice.get("right_instance_id", ""))) == null,
-		"Choosing synthesis must consume the two Lv.3 instances and create one Lv.1 Ascendant Combo."
+		inventory.size() == 1
+			and String((inventory[0] as Dictionary).get("kind", "")) == "evolved",
+		"Choosing elite loot merge must consume two Lv.3 Blessings and create one evolved Blessing."
 	)
-	_expect(fusion_queue.is_empty() and not paused, "Finishing fusion must resume combat.")
+	_expect(fusion_queue.is_empty() and not paused, "Finishing elite fusion must resume combat.")
 
 	game.queue_free()
 	await process_frame

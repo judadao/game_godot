@@ -52,6 +52,7 @@ func _run() -> void:
 		var compendium := game.call("_inventory_compendium_projection") as Array
 		var sections := {"techniques": 0, "enemies": 0, "sword_souls": 0, "equipment": 0}
 		var seen_ids: Dictionary = {}
+		var sword_soul_ids: Dictionary = {}
 		for entry_variant in compendium:
 			var entry := entry_variant as Dictionary
 			var section := String(entry.get("section", ""))
@@ -62,11 +63,23 @@ func _run() -> void:
 			seen_ids[entry_id] = true
 			if sections.has(section):
 				sections[section] = int(sections[section]) + 1
+			if section == "sword_souls":
+				sword_soul_ids[String(entry.get("id", ""))] = true
 			var icon_path := String(entry.get("icon_path", ""))
 			_expect(not icon_path.is_empty() and load(icon_path) is Texture2D, "Every compendium row needs a loadable icon: %s." % entry_id)
 		_expect(int(sections["enemies"]) == 7, "Enemy codex must project the seven authoritative autumn archetypes.")
 		_expect(int(sections["equipment"]) == 10, "Equipment codex must project the ten authoritative equipment definitions.")
-		_expect(int(sections["sword_souls"]) >= 4, "Sword Soul codex must include every forge catalog design.")
+		var card_database := game.get("card_database") as CardDatabase
+		var all_cards := card_database.get_all_cards()
+		_expect(
+			int(sections["sword_souls"]) == all_cards.size(),
+			"Sword Soul codex must list all 38 selectable Sword Souls, not only four forge blueprints."
+		)
+		for card in all_cards:
+			_expect(
+				sword_soul_ids.has(String(card.get("id", ""))),
+				"Sword Soul codex must include catalog card: %s." % card.get("id", "")
+			)
 		_expect(int(sections["techniques"]) > 0, "Technique codex must preserve discovered moves.")
 
 	game.queue_free()

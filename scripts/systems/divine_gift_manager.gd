@@ -196,6 +196,16 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 	return choices.slice(0, mini(maxi(0, maximum), choices.size()))
 
 
+func get_upgrade_choices(maximum: int = 3) -> Array[Dictionary]:
+	var choices: Array[Dictionary] = []
+	for reward in get_reward_choices(_catalog.size() + _inventory.size()):
+		if int(reward.get("level", 0)) <= 0:
+			continue
+		choices.append(reward.duplicate(true))
+	choices.shuffle()
+	return choices.slice(0, mini(maxi(0, maximum), choices.size()))
+
+
 func get_fusion_choices() -> Array[Dictionary]:
 	var maximum_ids: Array[String] = []
 	for gift_id_variant in _inventory:

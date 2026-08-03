@@ -535,10 +535,10 @@ func _configure_ui(ui: Control, ui_name: String) -> bool:
 			if not ui.has_method(StringName(method_name)):
 				return false
 		var icon_paths := [
-			"res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png",
-			"res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0001_Shield.png",
-			"res://assets/curated/game_own/items/oga_rpg_item_icons/Potions/PotionHp_Small.png",
-			"res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
+			"res://assets/ui/autumn/cards/generated/flame_imbue.png",
+			"res://assets/ui/autumn/cards/generated/frostburst_imbue.png",
+			"res://assets/ui/equipment/generated/iron_sword.png",
+			"res://assets/ui/equipment/generated/vitality_charm.png",
 		]
 		var blueprint_names := [
 			"Flame Imbue Blueprint",

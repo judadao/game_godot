@@ -42,6 +42,39 @@ func _run() -> void:
 		builder.has_node("Shade/LoadoutPanel/Margin/Column/RecipeSummary"),
 		"Portal loadout must explain which named Finishers the four slots enable."
 	)
+	_expect(
+		builder.has_node("Shade/LoadoutPanel/Margin/Column/TypeLegend"),
+		"Portal loadout must explain Healing and Combo colors before selection."
+	)
+	var slot_row := builder.get_node(
+		"Shade/LoadoutPanel/Margin/Column/LoadoutSlots"
+	) as HBoxContainer
+	for slot_variant in slot_row.get_children():
+		var slot := slot_variant as Button
+		_expect(slot.text.is_empty(), "Loadout slots must use icon cards instead of multiline button text.")
+		_expect(
+			slot.has_node("Geometry")
+				and slot.get_node("Geometry").has_method("get_geometry_state")
+				and bool(slot.get_node("Geometry").call("get_geometry_state").get("animated", false)),
+			"Every loadout card must own animated antique-gold ritual geometry."
+		)
+		_expect(
+			slot.has_node("Visual/Icon")
+				and (slot.get_node("Visual/Icon") as TextureRect).texture != null,
+			"Every loadout slot must show its authoritative Sword Soul icon."
+		)
+		_expect(
+			slot.has_node("Visual/Type") and slot.has_node("Visual/Cost"),
+			"Every loadout slot must expose type-color and AP labels."
+		)
+	var auto_attack_selector := builder.get_node(
+		"Shade/LoadoutPanel/Margin/Column/BasicAttackSelector"
+	) as OptionButton
+	_expect(
+		auto_attack_selector.item_count > 0
+			and auto_attack_selector.get_item_icon(0) != null,
+		"Auto attack selector must use the authoritative attack icon."
+	)
 	var slots := builder.call("get_slot_card_ids") as Array
 	_expect(
 		slots == [
@@ -51,7 +84,18 @@ func _run() -> void:
 	)
 
 	builder.call("select_slot", 1)
+	await process_frame
 	var mixed_choices := builder.call("get_visible_choice_ids") as Array
+	var choice_grid := builder.get_node(
+		"Shade/LoadoutPanel/Margin/Column/SkillChoiceScroll/SkillChoices"
+	) as GridContainer
+	var first_choice := choice_grid.get_child(0) as Button
+	_expect(
+		first_choice.text.is_empty()
+			and first_choice.has_node("Visual/Icon")
+			and (first_choice.get_node("Visual/Icon") as TextureRect).texture != null,
+		"Skill choices must be icon cards with readable art instead of emoji-only text."
+	)
 	_expect(
 		_has_card_type(database, mixed_choices, "healing")
 			and _has_card_type(database, mixed_choices, "combo"),
@@ -60,6 +104,33 @@ func _run() -> void:
 	_expect(
 		_not_any_present(mixed_choices, NON_FINISHER_SKILL_IDS),
 		"Four-slot choices must exclude skills that cannot advance a Finisher recipe."
+	)
+	var choice_scroll := builder.get_node(
+		"Shade/LoadoutPanel/Margin/Column/SkillChoiceScroll"
+	) as ScrollContainer
+	var last_choice := choice_grid.get_child(choice_grid.get_child_count() - 1) as Button
+	var last_choice_id := String(mixed_choices[-1])
+	var detail := builder.get_node(
+		"Shade/LoadoutPanel/Margin/Column/SelectedSkillDetail"
+	) as Label
+	choice_scroll.scroll_vertical = 0
+	last_choice.grab_focus()
+	await process_frame
+	await process_frame
+	await process_frame
+	_expect(
+		last_choice.has_focus() and choice_scroll.scroll_vertical > 0,
+		"Keyboard focus moving down the Sword Soul grid must auto-scroll the viewport."
+	)
+	_expect(
+		detail.text.contains(_display_name(database.get_card(last_choice_id))),
+		"Keyboard focus must preview the focused Sword Soul effect before confirmation."
+	)
+	first_choice.mouse_entered.emit()
+	await process_frame
+	_expect(
+		detail.text.contains(_display_name(database.get_card(String(mixed_choices[0])))),
+		"Mouse hover must preview the hovered Sword Soul effect before confirmation."
 	)
 	_expect(
 		not bool(builder.call("choose_card_for_active_slot", "energy_surge")),
@@ -162,6 +233,13 @@ func _not_any_present(card_ids: Array, excluded_ids: Array) -> bool:
 		if excluded_ids.has(String(card_id)):
 			return false
 	return true
+
+
+func _display_name(card: Dictionary) -> String:
+	return String(card.get(
+		"display_name_zh_tw",
+		card.get("name_zh", card.get("name", card.get("id", "")))
+	))
 
 
 func _with_chinese_display_names(

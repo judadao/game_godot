@@ -31,16 +31,16 @@ const RESOURCE_LABELS := {
 	&"autumn_core": "Cores",
 }
 const EQUIPMENT_ICON_PATHS := {
-	&"iron_sword": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png",
-	&"hunter_bow": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0000_Weapon.png",
-	&"apprentice_staff": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0000_Weapon.png",
-	&"leather_armor": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0003_Chest.png",
-	&"chain_armor": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/StealSet_0003_Chest.png",
-	&"mage_robe": "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/BlueSet_0003_Chest.png",
-	&"swift_ring": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_05.png",
-	&"vitality_charm": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_01.png",
-	&"focus_amulet": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_06.png",
-	&"merchant_seal": "res://assets/curated/game_own/items/oga_rpg_item_icons/Crafting/Gem_04.png",
+	&"iron_sword": "res://assets/ui/equipment/generated/iron_sword.png",
+	&"hunter_bow": "res://assets/ui/equipment/generated/hunter_bow.png",
+	&"apprentice_staff": "res://assets/ui/equipment/generated/apprentice_staff.png",
+	&"leather_armor": "res://assets/ui/equipment/generated/leather_armor.png",
+	&"chain_armor": "res://assets/ui/equipment/generated/chain_armor.png",
+	&"mage_robe": "res://assets/ui/equipment/generated/mage_robe.png",
+	&"swift_ring": "res://assets/ui/equipment/generated/swift_ring.png",
+	&"vitality_charm": "res://assets/ui/equipment/generated/vitality_charm.png",
+	&"focus_amulet": "res://assets/ui/equipment/generated/focus_amulet.png",
+	&"merchant_seal": "res://assets/ui/equipment/generated/merchant_seal.png",
 }
 const SLOT_LABELS := {
 	&"weapon": "Weapon",
