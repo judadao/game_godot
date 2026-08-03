@@ -54,15 +54,27 @@ func _run() -> void:
 	off_axis_target.add_to_group("Enemies")
 	current_map.add_child(off_axis_target)
 	off_axis_target.global_position = player.global_position + Vector2(100.0, 100.0)
+	var middle_target := DamageTarget.new()
+	middle_target.add_to_group("Enemies")
+	current_map.add_child(middle_target)
+	middle_target.global_position = player.global_position + Vector2(170.0, 0.0)
+	var far_target := DamageTarget.new()
+	far_target.add_to_group("Enemies")
+	current_map.add_child(far_target)
+	far_target.global_position = player.global_position + Vector2(240.0, 0.0)
 
 	var forward_health := forward_target.health
 	var off_axis_health := off_axis_target.health
+	var middle_health := middle_target.health
+	var far_health := far_target.health
 	game.set("_auto_attack_remaining", 0.0)
 	game.call("_tick_auto_attack", 0.0)
 	_expect(
 		forward_target.health < forward_health
+			and middle_target.health < middle_health
+			and far_target.health < far_health
 			and off_axis_target.health == off_axis_health,
-		"Automatic attacks must damage only targets inside the forward horizontal corridor."
+		"A visible sword wave must pierce every enemy along its forward corridor without hitting off-axis targets."
 	)
 	_expect(
 		player.call("get_active_animation") == &"attack",
@@ -84,11 +96,40 @@ func _run() -> void:
 		forward_target.health < health_after_first,
 		"Automatic fire must repeat after its cooldown while a horizontal target exists."
 	)
+	forward_target.queue_free()
+	off_axis_target.queue_free()
+	middle_target.queue_free()
+	far_target.queue_free()
+	await process_frame
+
+	var run := game.get("run_state") as RunState
+	run.temporary_buffs["combo_chain_count"] = 12
+	var widened_target := DamageTarget.new()
+	widened_target.add_to_group("Enemies")
+	current_map.add_child(widened_target)
+	widened_target.global_position = player.global_position + Vector2(160.0, 40.0)
+	var widened_health := widened_target.health
+	game.set("_auto_attack_remaining", 0.0)
+	game.call("_tick_auto_attack", 0.0)
+	_expect(
+		widened_target.health < widened_health,
+		"A target visibly swept by a doubled Combo attack must take damage in the full automatic-fire flow."
+	)
+	widened_target.queue_free()
+	await process_frame
+	run.temporary_buffs["combo_chain_count"] = 0
+	forward_target = DamageTarget.new()
+	forward_target.add_to_group("Enemies")
+	current_map.add_child(forward_target)
+	forward_target.global_position = player.global_position + Vector2(100.0, 0.0)
+	off_axis_target = DamageTarget.new()
+	off_axis_target.add_to_group("Enemies")
+	current_map.add_child(off_axis_target)
+	off_axis_target.global_position = player.global_position + Vector2(100.0, 100.0)
 
 	var database := game.get("card_database") as CardDatabase
 	for card_id in ["flame_imbue", "echo_volley", "storm_charge"]:
 		game.call("_record_combo_formula", database.get_card(card_id))
-	var run := game.get("run_state") as RunState
 	_expect(
 		bool(run.temporary_buffs.get("finisher_pending", false)),
 		"A learned three-Combo recipe must queue its named Finisher."

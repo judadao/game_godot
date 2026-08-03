@@ -16,11 +16,11 @@ func _run() -> void:
 		"The defense card type must be removed from the catalog."
 	)
 
-	_expect_card(database, "guard", "Iron Will", "combo", 1, "discard", 0.0)
+	_expect_card(database, "guard", "Iron Will", "combo", 2, "discard", 0.0)
 	_expect_card(database, "iron_skin", "Stone Form", "combo", 2, "discard", 0.0)
 	_expect_card(database, "fortress_stance", "Unbreakable Stance", "combo", 4, "discard", 0.0)
-	_expect_card(database, "stoneguard_combo", "Counterguard", "combo", 3, "discard", 0.0)
-	_expect_card(database, "healing_light", "Healing Light", "healing", 1, "discard", 0.0)
+	_expect_card(database, "stoneguard_combo", "Counterguard", "combo", 2, "discard", 0.0)
+	_expect_card(database, "healing_light", "Healing Light", "healing", 2, "discard", 0.0)
 	_expect_healing_card(database, "renewal")
 	_expect_healing_card(database, "blood_pact_combo")
 	_expect_healing_card(database, "verdant_renewal")

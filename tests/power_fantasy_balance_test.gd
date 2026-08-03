@@ -64,15 +64,39 @@ func _run() -> void:
 		"The first in-run blessing must arrive at forty-five seconds and continue regularly."
 	)
 	_expect(
-		director.base_density_cap >= 30
-			and director.maximum_density_cap >= 120
-			and director.base_spawn_batch >= 5
-			and director.maximum_spawn_batch >= 12
+		director.base_density_cap >= 40
+			and director.maximum_density_cap >= 140
+			and director.base_spawn_batch >= 8
+			and director.maximum_spawn_batch >= 16
 			and director.final_rush_density_bonus >= 40
-			and director.base_spawn_interval <= 0.55
-			and director.minimum_spawn_interval <= 0.15,
-		"Survival countdown must begin dense, grow continuously, and spike during Final Rush."
+			and director.base_spawn_interval <= 0.40
+			and director.minimum_spawn_interval <= 0.10,
+		"Survival countdown must begin as a dense horde, refill rapidly, and spike during Final Rush."
 	)
+	_expect(
+		director.spawn_perimeter_min <= 680.0
+			and director.spawn_perimeter_max <= 820.0
+			and director.spawn_perimeter_max > director.spawn_perimeter_min
+			and director.recycle_distance <= 1200.0,
+		"Horde enemies must enter from a close readable perimeter instead of spawning far off-screen."
+	)
+	_expect(
+		director.has_method("get_current_normal_health_multiplier"),
+		"Survival director must expose one authoritative normal-enemy health curve."
+	)
+	if director.has_method("get_current_normal_health_multiplier"):
+		director.set("_survival_elapsed", 0.0)
+		var opening_health_scale := float(director.call("get_current_normal_health_multiplier"))
+		director.set("_survival_elapsed", director.survival_duration * 0.5)
+		var middle_health_scale := float(director.call("get_current_normal_health_multiplier"))
+		director.set("_survival_elapsed", director.survival_duration)
+		var ending_health_scale := float(director.call("get_current_normal_health_multiplier"))
+		_expect(
+			is_equal_approx(opening_health_scale, 8.0)
+				and middle_health_scale >= 14.0
+				and ending_health_scale >= 20.0,
+			"Normal enemies must open at 8x health and grow smoothly to 20x so first-minute Combo cannot erase every role at the screen edge."
+		)
 	_expect(
 		director.normal_enemy_unlocks.size() >= 6
 			and not director.normal_enemy_unlocks.has("elite"),
@@ -93,9 +117,8 @@ func _run() -> void:
 			"Normal horde enemies must not pad their low health with defense."
 		)
 		_expect(
-			normal_archetype.experience_reward >= 1
-				and normal_archetype.experience_reward <= 3,
-			"Every normal enemy must drop one low-value gem so crowd kills create the XP payoff."
+			normal_archetype.experience_reward == 1,
+			"Every normal enemy must grant exactly one XP before elite and boss rewards."
 		)
 	var fire_ultimate := database.get_card("concussive_shout")
 	var frost_ultimate := database.get_card("frost_bind")
@@ -104,8 +127,10 @@ func _run() -> void:
 	var frost_effect := frost_ultimate.get("effect", {}) as Dictionary
 	var baseline_effect := baseline_attack.get("effect", {}) as Dictionary
 	_expect(
-		maximum_normal_health <= int(baseline_effect.get("amount", 0)),
-		"Every normal horde enemy must die to one unupgraded basic attack."
+		(enemy_catalog[&"moth_swarm"] as EnemyArchetype).max_health
+			<= int(baseline_effect.get("amount", 0))
+			and maximum_normal_health <= int(baseline_effect.get("amount", 0)),
+		"Raw archetypes remain fragile data; the survival director owns their runtime durability growth."
 	)
 	_expect(
 		int(fire_effect.get("amount", 0)) >= maximum_normal_health
@@ -140,7 +165,7 @@ func _run() -> void:
 				0.4,
 				false
 			) == &"stuck",
-			"Enemies that stop making horizontal progress must jump free."
+			"Enemies that stop making horizontal progress against terrain must jump free."
 		)
 		_expect(
 			navigation_enemy.call(
@@ -151,6 +176,18 @@ func _run() -> void:
 			) == &"obstacle",
 			"Enemies walking into route relief must jump over the obstacle."
 		)
+	_expect(
+		navigation_enemy.has_method("is_navigation_actor_blocker"),
+		"Navigation recovery must distinguish actors from terrain obstacles."
+	)
+	if navigation_enemy.has_method("is_navigation_actor_blocker"):
+		var blocking_player := Node2D.new()
+		blocking_player.add_to_group("Player")
+		_expect(
+			bool(navigation_enemy.call("is_navigation_actor_blocker", blocking_player)),
+			"Touching the player must suppress navigation jumping instead of looking like a wall."
+		)
+		blocking_player.free()
 	_expect(
 		navigation_enemy.has_method("get_pursuit_jump_reason"),
 		"Enemy pursuit must expose a target-aware walk-or-jump decision."
@@ -171,8 +208,8 @@ func _run() -> void:
 				&"leap",
 				Vector2(180.0, 0.0),
 				72.0
-			) == &"pounce",
-			"Leap enemies may mix a pounce into a longer same-level pursuit."
+			) == &"",
+			"Leap enemies approaching on the player's level must close distance before pouncing."
 		)
 		_expect(
 			navigation_enemy.call(

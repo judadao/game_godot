@@ -19,6 +19,41 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	var geometry := load("res://scripts/combat/attack_geometry.gd") as GDScript
+	_expect(geometry != null, "Shared attack-shape geometry must load.")
+	if geometry != null:
+		_expect(
+			bool(geometry.call(
+				"directional_sweep_contains",
+				Vector2.ZERO, Vector2(100.0, 0.0), Vector2(50.0, 52.0), 0.0, 53.0
+			)),
+			"Directional sword energy must include points inside its swept blade silhouette."
+		)
+		_expect(
+			not bool(geometry.call(
+				"directional_sweep_contains",
+				Vector2.ZERO, Vector2(100.0, 0.0), Vector2(50.0, 54.0), 0.0, 53.0
+			)),
+			"Directional sword energy must exclude points beyond its visible blade height."
+		)
+		_expect(
+			bool(geometry.call(
+				"directional_sweep_contains",
+				Vector2.ZERO, Vector2(100.0, 0.0), Vector2(120.0, 30.0), 0.0, 53.0
+			))
+				and not bool(geometry.call(
+					"directional_sweep_contains",
+					Vector2.ZERO, Vector2(100.0, 0.0), Vector2(-1.0, 0.0), 0.0, 53.0
+				)),
+			"The moving blade must use a rounded forward cap without damaging behind the player."
+		)
+		_expect(
+			bool(geometry.call(
+				"radial_contains",
+				Vector2.ZERO, Vector2(60.0, 0.0), 12.0, 50.0
+			)),
+			"Circular attacks must intersect the target hurtbox instead of testing only its root point."
+		)
 	var database := CardDatabase.new()
 	_expect(database.load_catalog(), "Projectile Combo contract requires the production catalog.")
 	_expect(
@@ -61,6 +96,10 @@ func _run() -> void:
 		float(basic_attack.get("attack_size_multiplier", 1.0)) >= 2.0,
 		"Combo Chain may still amplify damage, range, and spectacle."
 	)
+	_expect(
+		game.has_method("_get_auto_attack_hit_half_width"),
+		"Automatic attacks must expose one authoritative hit width derived from their visible size."
+	)
 	var player := game.get("player") as Node2D
 	var forward_target := DamageTarget.new()
 	forward_target.position = player.global_position + Vector2(100.0, 0.0)
@@ -69,6 +108,67 @@ func _run() -> void:
 	rear_target.position = player.global_position + Vector2(-100.0, 0.0)
 	root.add_child(rear_target)
 	player.call("set_facing_direction", 1)
+	if game.has_method("_get_auto_attack_hit_half_width"):
+		var enlarged_half_width := float(game.call(
+			"_get_auto_attack_hit_half_width",
+			basic_attack
+		))
+		var enlarged_visual_target := DamageTarget.new()
+		enlarged_visual_target.global_position = (
+			player.global_position + Vector2(160.0, 40.0)
+		)
+		root.add_child(enlarged_visual_target)
+		var enlarged_match := game.call(
+			"_match_targets_to_attack_directions",
+			[enlarged_visual_target],
+			1,
+			0.0,
+			260.0,
+			enlarged_half_width
+		) as Array
+		_expect(
+			enlarged_half_width >= 88.0
+				and enlarged_match.size() == 1
+				and enlarged_match[0] == enlarged_visual_target,
+			"An enemy swept by a doubled Combo attack must be inside the matching damage corridor."
+		)
+		var outside_visual_target := DamageTarget.new()
+		outside_visual_target.global_position = (
+			player.global_position + Vector2(160.0, 103.0)
+		)
+		root.add_child(outside_visual_target)
+		var outside_match := game.call(
+			"_match_targets_to_attack_directions",
+			[outside_visual_target], 1, 0.0, 260.0, enlarged_half_width
+		) as Array
+		_expect(
+			outside_match.size() == 1 and outside_match[0] == null,
+			"An enemy beyond the enlarged Combo edge must remain outside its damage corridor."
+		)
+		var range_edge_target := DamageTarget.new()
+		range_edge_target.global_position = (
+			player.global_position + Vector2(260.0, 40.0)
+		)
+		root.add_child(range_edge_target)
+		var range_edge_match := game.call(
+			"_match_targets_to_attack_directions",
+			[range_edge_target], 1, 0.0, 260.0, enlarged_half_width
+		) as Array
+		var range_edge_endpoint := game.call(
+			"_auto_attack_target_endpoint",
+			range_edge_target, 0, 1, 0.0, 260.0
+		) as Vector2
+		_expect(
+			range_edge_match.size() == 1
+				and range_edge_match[0] == range_edge_target
+				and range_edge_endpoint.is_equal_approx(
+					game.call("_auto_attack_origin") + Vector2(260.0, 0.0)
+				),
+			"Range and VFX endpoint must use the same forward projection for off-axis targets."
+		)
+		enlarged_visual_target.queue_free()
+		outside_visual_target.queue_free()
+		range_edge_target.queue_free()
 	var forward_assignments := game.call(
 		"_match_targets_to_attack_directions",
 		[rear_target, forward_target],
@@ -118,6 +218,26 @@ func _run() -> void:
 	_expect(
 		downward_match.size() == 1 and downward_match[0] == null,
 		"Horizontal combat must not auto-hit enemies on a platform below."
+	)
+	var radial_target := DamageTarget.new()
+	root.add_child(radial_target)
+	radial_target.global_position = player.global_position + Vector2(-80.0, 0.0)
+	_expect(
+		bool(game.call(
+			"_is_target_in_auto_attack_shape",
+			radial_target,
+			database.get_card("cleave"),
+			120.0,
+			53.0
+		))
+			and not bool(game.call(
+				"_is_target_in_auto_attack_shape",
+				radial_target,
+				database.get_card("ember_bolt"),
+				260.0,
+				53.0
+			)),
+		"Radial and directional attacks must use their own shapes instead of one shared rectangle."
 	)
 	forward_target.queue_free()
 	rear_target.queue_free()
@@ -246,6 +366,7 @@ func _run() -> void:
 	feedback.queue_free()
 	off_ray_target.queue_free()
 	below_target.queue_free()
+	radial_target.queue_free()
 	runner.queue_free()
 	for target in damage_targets:
 		(target as Node).queue_free()

@@ -280,18 +280,18 @@ func _assert_route_wide_spawning(map: Node) -> void:
 			"Route-wide enemy spawn must remain inside battle bounds."
 		)
 		_expect(
-			distance_from_player >= 720.0 and distance_from_player <= 1040.0,
-			"Enemies must enter from outside the camera perimeter instead of appearing onscreen."
+			distance_from_player >= 680.0 and distance_from_player <= 820.0,
+			"Enemies must enter from a close offscreen perimeter so pressure arrives promptly."
 		)
 	var recycled_enemy := enemies[0] as Node2D
 	recycled_enemy.global_position = player.global_position + Vector2(1800.0, 0.0)
-	director.advance_survival(0.51)
+	director.advance_survival(0.36)
 	var recycled_distance := absf(
 		recycled_enemy.global_position.x - player.global_position.x
 	)
 	_expect(
-		recycled_distance >= 720.0 and recycled_distance <= 1040.0,
-		"Distant enemies must recycle to the offscreen perimeter so nearby pressure continues."
+		recycled_distance >= 680.0 and recycled_distance <= 820.0,
+		"Distant enemies must recycle to the close offscreen perimeter so nearby pressure continues."
 	)
 	_expect(
 		bool(recycled_enemy.get_meta("persistent_pursuit", false)),

@@ -238,6 +238,11 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 				% index
 		)
 		_expect(not stack_seal.visible, "Battle cards must omit permanent stack counts from the compact face.")
+		if String((_sample_cards()[index] as Dictionary).get("type", "")) == "combo":
+			_expect(
+				role_label.text.contains("%d/5" % int((_sample_cards()[index] as Dictionary).get("combo_stack", 0))),
+				"Each Sword Soul card must show its own current Combo count and cap in the category cartouche."
+			)
 		_expect(
 			type_gem.visible
 				and not type_gem.text.is_empty()
@@ -511,10 +516,10 @@ func _contains_han(text: String) -> bool:
 
 func _sample_cards() -> Array:
 	return [
-		{"id": "flame_imbue", "name": "煉獄業火萬象焚天劍魂灌注之式", "type": "combo", "description": "Add flame.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 2},
+		{"id": "flame_imbue", "name": "煉獄業火萬象焚天劍魂灌注之式", "type": "combo", "description": "Add flame.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 2},
 		{"id": "echo_volley", "name": "無盡迴響千羽齊射破空追魂之式", "type": "combo", "description": "Add projectiles.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 1},
-		{"id": "storm_charge", "name": "天罰雷霆風暴萬鈞充能劍魂之式", "type": "combo", "description": "Add storm.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 3},
-		{"id": "healing_light", "name": "春庭朝光翠綠萬物復甦療癒之式", "type": "healing", "description": "Restore health.", "cost": 1, "level": 1, "fixed": true},
+		{"id": "storm_charge", "name": "天罰雷霆風暴萬鈞充能劍魂之式", "type": "combo", "description": "Add storm.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 3},
+		{"id": "healing_light", "name": "春庭朝光翠綠萬物復甦療癒之式", "type": "healing", "description": "Restore health.", "cost": 2, "level": 1, "fixed": true},
 	]
 
 

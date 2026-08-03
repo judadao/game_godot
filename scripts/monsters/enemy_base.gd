@@ -25,10 +25,15 @@ const STANDARD_DEATH_CLEANUP := 0.25
 @export var horde_separation_radius := 64.0
 @export var horde_separation_weight := 1.25
 @export var horde_separation_refresh := 0.12
+@export_range(0.05, 1.0, 0.05) var contact_damage_multiplier := 0.35
+@export_range(0.1, 3.0, 0.05) var contact_damage_cooldown := 0.80
+@export var contact_damage_knockback := 140.0
+@export_range(0.05, 0.5, 0.01) var hit_knockback_duration := 0.16
 
 @onready var visual: CanvasItem = get_node_or_null("Visual") as CanvasItem
 @onready var health_fill: ColorRect = get_node_or_null("HealthBar/Fill") as ColorRect
 @onready var hurtbox: Area2D = get_node_or_null("Hurtbox") as Area2D
+@onready var contact_damage_area: Area2D = get_node_or_null("ContactDamageArea") as Area2D
 @onready var attack_feedback: EnemyAttackFeedback = get_node_or_null("AttackFeedback") as EnemyAttackFeedback
 @onready var damage_number: Label = get_node_or_null("DamageNumber") as Label
 @onready var death_burst: CPUParticles2D = get_node_or_null("DeathBurst") as CPUParticles2D
@@ -56,6 +61,11 @@ var _navigation_jump_remaining := 0.0
 var _navigation_stalled_seconds := 0.0
 var _separation_refresh_remaining := 0.0
 var _cached_separation_bias := 0.0
+var _contact_damage_remaining := 0.0
+var _contact_hit_attack_generation := -1
+var _base_max_health := 1
+var _hit_knockback_remaining := 0.0
+var _hit_knockback_velocity := 0.0
 var _hit_tween: Tween
 var _damage_number_tween: Tween
 var _pending_hit_presentation: Dictionary = {}
@@ -87,6 +97,7 @@ func apply_archetype(data: Resource) -> void:
 	archetype = data
 	archetype_id = data.get("archetype_id") as StringName
 	health = int(data.get("max_health"))
+	_base_max_health = health
 	_pattern_index = 0
 	_dying = false
 	_pending_hit_presentation.clear()
@@ -94,8 +105,25 @@ func apply_archetype(data: Resource) -> void:
 	_death_presentation_phase = &""
 	_death_presentation_active = false
 	_defeat_gameplay_settled = false
+	_contact_damage_remaining = 0.0
+	_contact_hit_attack_generation = -1
+	_hit_knockback_remaining = 0.0
+	_hit_knockback_velocity = 0.0
 	_apply_visual()
 	_update_health_bar()
+
+
+func apply_survival_health_multiplier(multiplier: float) -> int:
+	if archetype == null or _dying:
+		return 0
+	var safe_multiplier := maxf(1.0, multiplier)
+	var scaled_maximum := maxi(1, roundi(float(_base_max_health) * safe_multiplier))
+	archetype.set("max_health", scaled_maximum)
+	health = scaled_maximum
+	set_meta("survival_health_multiplier", safe_multiplier)
+	health_changed.emit(health, scaled_maximum)
+	_update_health_bar()
+	return scaled_maximum
 
 
 func _physics_process(delta: float) -> void:
@@ -107,13 +135,23 @@ func _physics_process(delta: float) -> void:
 	_update_poison(delta)
 	_navigation_jump_remaining = maxf(0.0, _navigation_jump_remaining - delta)
 	_separation_refresh_remaining = maxf(0.0, _separation_refresh_remaining - delta)
+	_contact_damage_remaining = maxf(0.0, _contact_damage_remaining - delta)
+	_hit_knockback_remaining = maxf(0.0, _hit_knockback_remaining - delta)
 	if not is_on_floor():
 		velocity.y += gravity * delta
 	_cooldown = maxf(0.0, _cooldown - delta)
 	if target == null or not is_instance_valid(target):
 		target = get_tree().get_first_node_in_group("Player") as Node2D
+	if _stun_remaining > 0.0:
 		velocity.x = 0.0
-	elif _stun_remaining > 0.0:
+	elif _hit_knockback_remaining > 0.0:
+		var knockback_ratio := clampf(
+			_hit_knockback_remaining / maxf(0.001, hit_knockback_duration),
+			0.0,
+			1.0
+		)
+		velocity.x = _hit_knockback_velocity * lerpf(0.35, 1.0, knockback_ratio)
+	elif target == null:
 		velocity.x = 0.0
 	else:
 		_update_behavior()
@@ -121,6 +159,7 @@ func _physics_process(delta: float) -> void:
 	var previous_x := global_position.x
 	var wanted_horizontal_motion := absf(velocity.x) > 1.0
 	move_and_slide()
+	_apply_contact_damage_from_collisions()
 	if not was_on_floor and is_on_floor():
 		_navigation_jump_remaining = maxf(
 			_navigation_jump_remaining,
@@ -129,8 +168,59 @@ func _physics_process(delta: float) -> void:
 	_update_navigation_recovery(delta, previous_x, wanted_horizontal_motion)
 
 
+func _apply_contact_damage_from_collisions() -> int:
+	if contact_damage_area != null:
+		for overlapping_area in contact_damage_area.get_overlapping_areas():
+			if overlapping_area == null:
+				continue
+			var overlap_target := overlapping_area.get_parent()
+			var overlap_applied := _try_apply_contact_damage(overlap_target)
+			if overlap_applied > 0:
+				return overlap_applied
+	for collision_index in get_slide_collision_count():
+		var collision := get_slide_collision(collision_index)
+		if collision == null:
+			continue
+		var applied := _try_apply_contact_damage(collision.get_collider())
+		if applied > 0:
+			return applied
+	return 0
+
+
+func _try_apply_contact_damage(collider: Object) -> int:
+	if (
+		_dying
+		or _contact_damage_remaining > 0.0
+		or archetype == null
+		or not collider is Node
+		or not (collider as Node).is_in_group("Player")
+		or not (collider as Node).has_method("take_hit")
+	):
+		return 0
+	var damage := maxi(
+		1,
+		roundi(float(archetype.get("attack_damage")) * contact_damage_multiplier)
+	)
+	var applied := int((collider as Node).call(
+		"take_hit",
+		damage,
+		global_position,
+		contact_damage_knockback,
+		false,
+		self
+	))
+	if applied > 0:
+		_contact_damage_remaining = contact_damage_cooldown
+		_cooldown = maxf(_cooldown, contact_damage_cooldown)
+		if _attacking:
+			_contact_hit_attack_generation = _attack_generation
+	else:
+		_contact_damage_remaining = 0.08
+	return applied
+
+
 func _update_behavior() -> void:
-	if archetype == null or _attacking:
+	if archetype == null or _attacking or _hit_knockback_remaining > 0.0:
 		return
 	var distance := global_position.distance_to(target.global_position)
 	var attack_range := float(archetype.get("attack_range"))
@@ -179,11 +269,7 @@ func _update_behavior() -> void:
 	):
 		velocity.x = steering * float(archetype.get("speed")) * _movement_multiplier()
 		velocity.y = -navigation_jump_velocity * 0.72
-		_navigation_jump_remaining = (
-			maxf(navigation_jump_cooldown, 1.1)
-			if pursuit_jump_reason == &"pounce"
-			else navigation_jump_cooldown
-		)
+		_navigation_jump_remaining = navigation_jump_cooldown
 	else:
 		velocity.x = steering * float(archetype.get("speed")) * _movement_multiplier()
 	if visual != null:
@@ -235,10 +321,38 @@ func get_navigation_jump_reason(
 	return &""
 
 
+func is_navigation_actor_blocker(collider: Object) -> bool:
+	if collider == null:
+		return false
+	if collider == target:
+		return true
+	return (
+		collider is Node
+		and (
+			(collider as Node).is_in_group("Player")
+			or (collider as Node).is_in_group("Enemies")
+		)
+	)
+
+
+func _get_navigation_collision_state() -> Dictionary:
+	var state := {"actor": false, "terrain": false}
+	for collision_index in get_slide_collision_count():
+		var collision := get_slide_collision(collision_index)
+		if collision == null or absf(collision.get_normal().x) < 0.5:
+			continue
+		var collider := collision.get_collider()
+		if is_navigation_actor_blocker(collider):
+			state["actor"] = true
+		elif collider is StaticBody2D or collider is TileMapLayer:
+			state["terrain"] = true
+	return state
+
+
 func get_pursuit_jump_reason(
 	behavior: StringName,
 	target_offset: Vector2,
-	attack_range: float
+	_attack_range: float
 ) -> StringName:
 	if behavior != &"leap":
 		return &""
@@ -247,11 +361,6 @@ func get_pursuit_jump_reason(
 		and absf(target_offset.x) <= platform_target_horizontal_range
 	):
 		return &"platform"
-	if (
-		absf(target_offset.y) <= platform_target_height
-		and absf(target_offset.x) >= attack_range * 1.6
-	):
-		return &"pounce"
 	return &""
 
 
@@ -265,23 +374,29 @@ func _update_navigation_recovery(
 		or not is_instance_valid(target)
 		or _attacking
 		or _stun_remaining > 0.0
+		or _hit_knockback_remaining > 0.0
 	):
 		_navigation_stalled_seconds = 0.0
 		return
 	if is_on_floor() and wanted_horizontal_motion:
 		var horizontal_progress := absf(global_position.x - previous_x)
-		if horizontal_progress < 0.5:
+		var minimum_progress := maxf(0.05, absf(velocity.x) * delta * 0.25)
+		if horizontal_progress < minimum_progress:
 			_navigation_stalled_seconds += delta
 		else:
 			_navigation_stalled_seconds = 0.0
-	elif not is_on_floor():
+	else:
 		_navigation_stalled_seconds = 0.0
 	if not is_on_floor() or _navigation_jump_remaining > 0.0:
+		return
+	var collision_state := _get_navigation_collision_state()
+	if bool(collision_state["actor"]):
+		_navigation_stalled_seconds = 0.0
 		return
 	var reason := get_navigation_jump_reason(
 		target.global_position - global_position,
 		_navigation_stalled_seconds,
-		is_on_wall()
+		bool(collision_state["terrain"])
 	)
 	if reason == &"":
 		return
@@ -326,6 +441,10 @@ func _begin_attack() -> void:
 		return
 	if attack_feedback != null:
 		attack_feedback.show_impact(pattern, _attack_reach(pattern), direction)
+	_contact_damage_remaining = maxf(
+		_contact_damage_remaining,
+		contact_damage_cooldown
+	)
 	_apply_attack_pattern(pattern, direction)
 	attack_performed.emit(pattern)
 	_attacking = false
@@ -343,6 +462,8 @@ func _apply_attack_pattern(pattern: StringName, telegraphed_direction: float = 0
 			damage = int(round(damage * 0.8))
 		&"cleave":
 			damage = int(round(damage * 1.2))
+	if _contact_hit_attack_generation == _attack_generation:
+		return
 	var target_offset := target.global_position - global_position
 	var inside_telegraphed_side := (
 		is_zero_approx(telegraphed_direction)
@@ -384,7 +505,10 @@ func take_hit(raw_damage: int, source_position: Vector2, knockback: float = 180.
 		return 0
 	var applied := maxi(1, raw_damage - int(archetype.get("defense")))
 	health = maxi(0, health - applied)
-	velocity.x = signf(global_position.x - source_position.x) * knockback
+	if health > 0 and knockback > 0.0:
+		_hit_knockback_velocity = signf(global_position.x - source_position.x) * knockback
+		_hit_knockback_remaining = hit_knockback_duration
+		velocity.x = _hit_knockback_velocity
 	health_changed.emit(health, int(archetype.get("max_health")))
 	_update_health_bar()
 	var hit_presentation := _pending_hit_presentation.duplicate(true)
@@ -827,6 +951,10 @@ func reset_encounter(spawn_position: Vector2) -> void:
 	_navigation_stalled_seconds = 0.0
 	_separation_refresh_remaining = 0.0
 	_cached_separation_bias = 0.0
+	_contact_damage_remaining = 0.0
+	_contact_hit_attack_generation = -1
+	_hit_knockback_remaining = 0.0
+	_hit_knockback_velocity = 0.0
 	health = int(archetype.get("max_health"))
 	position = spawn_position
 	velocity = Vector2.ZERO

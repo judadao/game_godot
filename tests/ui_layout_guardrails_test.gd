@@ -219,9 +219,9 @@ func _check_root_override_survives_initialization() -> void:
 
 func _sample_cards() -> Array[Dictionary]:
 	return [
-		{"name": "Iron Will", "type": "combo", "description": "Gain super armor.", "cost": 1, "level": 1},
-		{"name": "Healing Light", "type": "healing", "description": "Restore health.", "cost": 1, "level": 1},
-		{"name": "Flame Imbue", "type": "combo", "description": "Future attacks gain flame.", "cost": 3, "level": 1},
+		{"name": "Iron Will", "type": "combo", "description": "Gain super armor.", "cost": 2, "level": 1},
+		{"name": "Healing Light", "type": "healing", "description": "Restore health.", "cost": 2, "level": 1},
+		{"name": "Flame Imbue", "type": "combo", "description": "Future attacks gain flame.", "cost": 2, "level": 1},
 		{"name": "Verdant Renewal", "type": "healing", "description": "Gain regeneration.", "cost": 2, "level": 1},
 	]
 

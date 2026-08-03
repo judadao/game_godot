@@ -1,5 +1,17 @@
 extends SceneTree
 
+class FeedbackHUD:
+	extends Control
+	var combo_feedback: Array[Dictionary] = []
+	var cast_feedback_ids: Array[String] = []
+
+	func show_combo_popup(skill_name: String, combo_count: int) -> void:
+		combo_feedback.append({"name": skill_name, "count": combo_count})
+
+	func show_card_cast_feedback(card_id: String) -> void:
+		cast_feedback_ids.append(card_id)
+
+
 var _failures := 0
 
 
@@ -33,6 +45,62 @@ func _run() -> void:
 		game.call("_on_card_selected", 0)
 		_expect(deck.hand.size() == 4, "Playing cards repeatedly must retain the same four slots.")
 	var run := game.get("run_state") as RunState
+	run.temporary_buffs["active_infusions"] = []
+	run.temporary_buffs["combo_levels"] = {}
+	run.temporary_buffs["infusion_effects"] = []
+	run.temporary_buffs["combo_chain_count"] = 0
+	run.temporary_buffs["combo_chain_remaining"] = 0.0
+	run.temporary_buffs["combo_chain_skills"] = {}
+	run.temporary_buffs["combo_chain_order"] = []
+	_expect(
+		int(game.call("_get_combo_stack_cap")) == 5,
+		"Each Sword Soul must start with a five-stack Combo cap."
+	)
+	var cap_test_card := database_card(game, "flame_imbue")
+	for _stack_index in 7:
+		game.call("_record_combo_chain", cap_test_card)
+	var capped_skills := run.temporary_buffs.get("combo_chain_skills", {}) as Dictionary
+	_expect(
+		int(capped_skills.get("烈焰灌注", 0)) == 5
+			and int(run.temporary_buffs.get("combo_chain_count", 0)) == 5,
+		"Repeated casts must stop the individual Sword Soul and effective damage chain at five stacks."
+	)
+	var inventory := game.get("inventory_manager") as RefCounted
+	if not bool(inventory.call("has_equipment", &"focus_amulet")):
+		inventory.call("add_equipment", &"focus_amulet")
+	_expect(
+		bool(inventory.call("has_equipment", &"focus_amulet"))
+			and bool(inventory.call("equip", &"focus_amulet")),
+		"The Combo-cap equipment must be equippable for the combat contract."
+	)
+	_expect(
+		int(game.call("_get_combo_stack_cap")) == 10,
+		"Focus Amulet must raise the Sword Soul Combo cap from five to the hard maximum of ten."
+	)
+	run.temporary_buffs["active_infusions"] = []
+	run.temporary_buffs["combo_levels"] = {}
+	run.temporary_buffs["infusion_effects"] = []
+	run.temporary_buffs["combo_chain_count"] = 0
+	run.temporary_buffs["combo_chain_skills"] = {}
+	run.temporary_buffs["combo_chain_order"] = []
+	for _stack_index in 10:
+		_expect(
+			bool(game.call("_resolve_combo_card", cap_test_card)),
+			"Equipment must permit the Sword Soul effect to reach ten stacks."
+		)
+	_expect(
+		not bool(game.call("_resolve_combo_card", cap_test_card)),
+		"The ten-stack hard cap must reject an eleventh hidden effect stack."
+	)
+	capped_skills = run.temporary_buffs.get("combo_chain_skills", {}) as Dictionary
+	_expect(
+		int(capped_skills.get("烈焰灌注", 0)) == 10
+			and int(run.temporary_buffs.get("combo_chain_count", 0)) == 10
+			and int((run.temporary_buffs.get("combo_levels", {}) as Dictionary).get("flame", 0)) == 10
+			and (run.temporary_buffs.get("infusion_effects", []) as Array).size() == 10,
+		"Equipment may extend the UI, damage chain, and actual effect to ten stacks, but never beyond ten."
+	)
+	inventory.call("unequip", &"accessory")
 	run.temporary_buffs["active_infusions"] = []
 	run.temporary_buffs["combo_levels"] = {}
 	run.temporary_buffs["infusion_effects"] = []
@@ -155,7 +223,7 @@ func _run() -> void:
 
 	deck.start_fixed_hand(["flame_imbue", "frostburst_imbue", "battle_rhythm", "healing_light"], 5.0)
 	var flame := deck.play_from_hand(0)
-	_expect(not flame.is_empty() and is_equal_approx(deck.energy, 2.0), "Flame Imbue must be an ordinary three-AP hand play.")
+	_expect(not flame.is_empty() and is_equal_approx(deck.energy, 3.0), "Every Sword Soul must use the shared two-AP base cost.")
 	_expect(bool(game.call("_resolve_combo_card", flame)), "Playing Flame Imbue must activate its persistent infusion.")
 	_expect(deck.hand[0] == "flame_imbue" and deck.discard_pile.is_empty(), "A played Combo card must remain in its fixed slot.")
 	deck.energy = 5.0
@@ -167,13 +235,18 @@ func _run() -> void:
 	)
 	var chain_skills := run.temporary_buffs.get("combo_chain_skills", {}) as Dictionary
 	_expect(
-		int(chain_skills.get("Flame Imbue", 0)) == 2,
-		"Combo Chain must retain per-skill stack counts for the persistent HUD list."
+		int(chain_skills.get("烈焰灌注", 0)) == 2,
+		"Combo feedback must retain the localized per-Sword-Soul stack count."
 	)
-	for _stack_index in 7:
+	for _stack_index in 3:
 		_expect(
 			bool(game.call("_resolve_combo_card", database_card(game, "flame_imbue"))),
-			"Combo effects must continue stacking toward the chain milestones."
+			"A Sword Soul must continue stacking until its default cap of five."
+		)
+	for _overflow_index in 4:
+		_expect(
+			not bool(game.call("_resolve_combo_card", database_card(game, "flame_imbue"))),
+			"A single Sword Soul must reject stacks beyond its effective cap."
 		)
 	var milestone_attack := game.call(
 		"_apply_combo_infusions_to_card",
@@ -181,16 +254,51 @@ func _run() -> void:
 	) as Dictionary
 	var milestone_effect := milestone_attack.get("effect", {}) as Dictionary
 	_expect(
-		int(run.temporary_buffs.get("combo_chain_count", 0)) >= 9
-			and float(milestone_effect.get("lifesteal_ratio", 0.0)) >= 0.05
-			and float(milestone_effect.get("combo_stun", 0.0)) >= 0.15,
-		"Nine Combo stacks must unlock Power, Lifesteal, and Stun milestones."
+		int(run.temporary_buffs.get("combo_chain_count", 0)) == 5
+			and float(milestone_effect.get("lifesteal_ratio", 0.0)) < 0.05
+			and float(milestone_effect.get("combo_stun", 0.0)) < 0.15,
+		"Spamming one Sword Soul must stop at five and cannot reach the stronger multi-Soul milestones alone."
 	)
-	var frost := deck.play_from_hand(1)
-	_expect(frost.is_empty(), "An unaffordable Combo card must remain in hand.")
+	var original_hud := game.get("hud") as Control
+	var feedback_hud := FeedbackHUD.new()
+	root.add_child(feedback_hud)
+	game.set("hud", feedback_hud)
+	var energy_before_rejected_cast := deck.energy
+	game.call("_on_card_selected", 0)
+	var capped_feedback := (
+		feedback_hud.combo_feedback.back()
+		if not feedback_hud.combo_feedback.is_empty()
+		else {}
+	) as Dictionary
+	_expect(
+		is_equal_approx(deck.energy, energy_before_rejected_cast)
+			and feedback_hud.cast_feedback_ids.is_empty()
+			and String(capped_feedback.get("name", "")) == "烈焰灌注"
+			and int(capped_feedback.get("count", 0)) == 5,
+		"Pressing a capped Sword Soul must repeat only the capped left label, without spending AP or playing a false card-cast animation."
+	)
+	deck.energy = 1.0
+	game.call("_on_card_selected", 1)
+	_expect(
+		is_equal_approx(deck.energy, 1.0)
+			and feedback_hud.cast_feedback_ids.is_empty(),
+		"An unaffordable Sword Soul key press must not spend AP or play the successful-cast UI animation."
+	)
 	deck.energy = 5.0
-	frost = deck.play_from_hand(1)
-	_expect(bool(game.call("_resolve_combo_card", frost)), "Playing Frostburst Imbue must activate its persistent infusion.")
+	game.call("_on_card_selected", 1)
+	_expect(
+		feedback_hud.cast_feedback_ids == ["frostburst_imbue"]
+			and deck.energy < 5.0
+			and int((run.temporary_buffs.get("combo_levels", {}) as Dictionary).get("frost", 0)) == 1,
+		"Only a confirmed Sword Soul cast may spend AP, apply its effect, and dispatch the card UI animation."
+	)
+	game.set("hud", original_hud)
+	feedback_hud.queue_free()
+	var frost := database_card(game, "frostburst_imbue")
+	_expect(
+		(run.temporary_buffs.get("active_infusions", []) as Array).has("frost"),
+		"The confirmed Frostburst cast must activate its infusion."
+	)
 	var rhythm := deck.play_from_hand(2)
 	_expect(bool(game.call("_resolve_combo_card", rhythm)), "Non-element Combo cards must also resolve run buffs.")
 	_expect(
@@ -211,7 +319,10 @@ func _run() -> void:
 		infused_elements.has("flame") and infused_elements.has("frost"),
 		"Flame and Frost Combo stacks must visibly recolor the automatic attack."
 	)
-	_expect(bool(game.call("_resolve_combo_card", database_card(game, "flame_imbue"))), "Flame must reach max level.")
+	_expect(
+		not bool(game.call("_resolve_combo_card", database_card(game, "flame_imbue"))),
+		"Flame must remain capped instead of accepting another hidden stack."
+	)
 	_expect(bool(game.call("_resolve_combo_card", database_card(game, "frostburst_imbue"))), "Frost must gain a second level.")
 	_expect(bool(game.call("_resolve_combo_card", database_card(game, "frostburst_imbue"))), "Frost must reach max level.")
 	var active_combos := game.get("run_state").temporary_buffs.get("active_infusions", []) as Array

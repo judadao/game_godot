@@ -12,6 +12,7 @@ const SUPPORTED_EFFECTS := [
 const ELEMENT_TAXONOMY_SCRIPT := preload(
 	"res://scripts/systems/element_taxonomy.gd"
 )
+const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
 
 var _element_taxonomy: RefCounted = ELEMENT_TAXONOMY_SCRIPT.new()
 
@@ -58,24 +59,42 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 				int(effect.get("projectile_count", effect.get("projectiles", 1)))
 			)
 			var direction_count := maxi(1, int(effect.get("direction_count", projectile_count)))
-			var selected := _nearest_targets(
-				caster,
-				targets,
-				maxi(1, int(effect.get("target_count", direction_count)))
+			var directional_sweep := (
+				String(effect.get("damage_mode", "")) == "directional_sweep_once"
+			)
+			var selected := (
+				targets.duplicate()
+				if directional_sweep
+				else _nearest_targets(
+					caster,
+					targets,
+					maxi(1, int(effect.get("target_count", direction_count)))
+				)
 			)
 			var resolved_projectile_count := (
 				mini(projectile_count, selected.size())
 				if float(effect.get("spread_degrees", 0.0)) > 0.0
 				else projectile_count
 			)
-			_damage_projectile_volley(
-				caster,
-				selected,
-				int(effect.get("amount", 0)),
-				result,
-				resolved_projectile_count,
-				hit_presentation
-			)
+			if directional_sweep:
+				_damage_targets(
+					caster,
+					selected,
+					int(effect.get("amount", 0)),
+					result,
+					1,
+					80.0,
+					hit_presentation
+				)
+			else:
+				_damage_projectile_volley(
+					caster,
+					selected,
+					int(effect.get("amount", 0)),
+					result,
+					resolved_projectile_count,
+					hit_presentation
+				)
 			_apply_infused_statuses(selected, effect)
 			_apply_finisher_mutations(
 				caster,
@@ -484,6 +503,11 @@ func _targets_in_radius(caster: Node, targets: Array, radius: float) -> Array:
 	var result: Array = []
 	for target in targets:
 		if target is Node2D and is_instance_valid(target):
-			if (caster as Node2D).global_position.distance_to((target as Node2D).global_position) <= radius:
+			if ATTACK_GEOMETRY.radial_contains(
+				(caster as Node2D).global_position,
+				ATTACK_GEOMETRY.target_center(target as Node2D),
+				ATTACK_GEOMETRY.target_radius(target as Node2D),
+				radius
+			):
 				result.append(target)
 	return result

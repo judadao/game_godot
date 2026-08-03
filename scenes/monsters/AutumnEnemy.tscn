@@ -44,6 +44,15 @@ script = ExtResource("2_hurtbox")
 position = Vector2(0, -28)
 shape = SubResource("BodyShape")
 
+[node name="ContactDamageArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ContactDamageArea"]
+position = Vector2(0, -28)
+shape = SubResource("BodyShape")
+
 [node name="AttackFeedback" type="Node2D" parent="."]
 position = Vector2(0, -30)
 z_index = 4

@@ -185,6 +185,13 @@ func configure(card: Dictionary, shortcut: String, affordable: bool) -> void:
 		family_label,
 		String(TYPE_DISPLAY_NAMES.get(_card_type, TYPE_DISPLAY_NAMES["CARD"])),
 	]
+	if _card_type == "COMBO":
+		family_and_type = "%s%s · %d/%d" % [
+			family_label,
+			String(TYPE_DISPLAY_NAMES["COMBO"]),
+			combo_stack,
+			maxi(1, int(card.get("combo_stack_cap", 5))),
+		]
 	_type_label.text = family_and_type
 	_level.text = str(combo_stack)
 	_level.visible = false

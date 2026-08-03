@@ -55,10 +55,36 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 		{"name": "Iron Will", "count": 2},
 		{"name": "Flame Imbue", "count": 3},
 	])
+	_expect(
+		hud.has_method("show_combo_popup"),
+		"Autumn HUD must expose transient left-side Combo feedback at %s." % viewport_size
+	)
+	if hud.has_method("show_combo_popup"):
+		hud.call("show_combo_popup", "烈焰灌注", 1)
 	await process_frame
 	await process_frame
 
 	var screen := Rect2(Vector2.ZERO, Vector2(viewport_size))
+	var combo_popup := hud.get_node_or_null("ComboPopupAnchor/ComboPopup") as Label
+	_expect(combo_popup != null and combo_popup.visible, "Combo popup must become visible at %s." % viewport_size)
+	if combo_popup != null:
+		var popup_rect := _canvas_rect(combo_popup)
+		_expect(
+			screen.encloses(popup_rect)
+				and popup_rect.get_center().x < float(viewport_size.x) * 0.30
+				and popup_rect.end.y < float(viewport_size.y) * 0.66,
+			"Combo popup must stay in the left gameplay field above the card dock at %s." % viewport_size
+		)
+		var first_combo_size := combo_popup.get_theme_font_size("font_size")
+		hud.call("show_combo_popup", "烈焰灌注", 10)
+		var high_combo_size := combo_popup.get_theme_font_size("font_size")
+		_expect(
+			combo_popup.text == "烈焰灌注  ×10"
+				and high_combo_size > first_combo_size
+				and high_combo_size <= 26,
+			"Each Sword Soul popup must identify its Chinese name and stay below 27px at %s." % viewport_size
+		)
+		hud.call("show_combo_popup", "烈焰灌注", 5)
 	var bottom_stage := hud.get_node("BottomStage") as HBoxContainer
 	var bottom_rect := _canvas_rect(bottom_stage)
 	var player_vitals := hud.get_node("BottomStage/PlayerVitals") as Control
@@ -278,6 +304,17 @@ func _check_projection_behavior() -> void:
 	await process_frame
 	hud.call("set_cards", _sample_cards(), 5.0)
 	await process_frame
+	hud.call("show_combo_popup", "烈焰灌注", 5)
+	var transient_combo := hud.get_node("ComboPopupAnchor/ComboPopup") as Label
+	_expect(
+		transient_combo.visible and transient_combo.text == "烈焰灌注  ×5",
+		"Combo increments must immediately show the corresponding Sword Soul and its own count."
+	)
+	await create_timer(1.2).timeout
+	_expect(
+		not transient_combo.visible,
+		"Combo popup must rise, fade, and release the gameplay field after its short cue."
+	)
 	var hand := hud.get_node("BottomStage/CardStage/AutumnCardHandUI") as CardHandUI
 	var graphical_pixel_check := DisplayServer.get_name() != "headless"
 	var before_cast := Image.new()
@@ -446,8 +483,8 @@ func _check_projection_behavior() -> void:
 
 func _sample_cards() -> Array[Dictionary]:
 	return [
-		{"id": "healing_light", "name": "春庭朝光翠綠復甦", "type": "healing", "description": "Recover.", "cost": 1, "level": 1, "fixed": true},
-		{"id": "flame_imbue", "name": "煉獄業火萬象灌注", "type": "combo", "description": "Gain flame.", "cost": 3, "level": 1, "fixed": true, "combo_stack": 3},
+		{"id": "healing_light", "name": "春庭朝光翠綠復甦", "type": "healing", "description": "Recover.", "cost": 2, "level": 1, "fixed": true},
+		{"id": "flame_imbue", "name": "煉獄業火萬象灌注", "type": "combo", "description": "Gain flame.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 3},
 		{"id": "echo_volley", "name": "無盡迴響千羽齊射", "type": "combo", "description": "Add projectiles.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 2},
 		{"id": "storm_charge", "name": "天罰雷霆風暴充能", "type": "combo", "description": "Add storm.", "cost": 2, "level": 1, "fixed": true, "combo_stack": 1},
 		{"id": "gale_lunge", "name": "Gale Lunge", "type": "attack", "description": "Dash.", "cost": 2, "level": 3},

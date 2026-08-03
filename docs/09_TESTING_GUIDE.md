@@ -553,22 +553,27 @@ instance.queue_free()
 | Migration | schema v6 會移除 retired Quickstep，且舊 payload deterministic、idempotent；card/skill/auto-attack 修復可驗證 |
 | Cooldown/exhaust | cooldown 到期回 discard；exhaust 不回收；pause 時 timer 不動 |
 | Status | source refresh、最高 armor tier、reduction cap 60%、unblockable bypass、regen/lifesteal |
-| Enemy pursuit | 玩家同層時一般 archetype 步行；Leap 近身不連跳、遠距可撲跳、玩家在可達上方才爬台跳；落地有重新判斷緩衝 |
+| Enemy pursuit | 玩家同層時所有 archetype 都先步行貼近並進入攻擊；Leap 不以撲跳起手；navigation recovery 必須從 slide collider 排除 Player／Enemies，只有真實地形障礙、卡住或玩家在可達上方時才跳，且 stalled 門檻依 `velocity × delta` 計算；落地有重新判斷緩衝 |
+| Enemy contact damage | EnemyBase 的 `ContactDamageArea` 以 layer 0／mask 8 持續監聽 Player Hurtbox；實體接觸傷害為 archetype attack damage × 0.35，必須經 `Player.take_hit()` 套用防禦、格擋、無敵幀、擊退與反傷；每敵 0.8 秒獨立冷卻，預警期間接觸仍會命中，但同一 attack generation 的 impact 不得重複扣血 |
+| Survival pressure | 開場 24 隻；alive cap 40→140、batch 8→16、interval 0.40→0.09 秒；普通怪死亡後 0.05 秒內排入補怪；生成／回收使用玩家前後 680–820px perimeter，1200px 外回收且每 0.35 秒檢查 |
+| Enemy durability/knockback | 普通怪 HP 倍率沿 600 秒 timeline 由 8.0 平滑提高到 20.0；開場 runtime HP 為 Moth 32、Hopper 64、Sprout／Thornling 80、Shaman 96、Charger 128，使第一分鐘約 40 傷 Combo 普攻只直接清掉 Moth；只有未死亡目標建立 0.16 秒 hit-knockback state，且 pursuit／navigation recovery 不得在下一幀覆寫水平擊退 |
+| Run XP pacing | 六種普通怪各只提供 1 XP，1 XP 不得因最小 gem shard 數膨脹成 2；Run 首級門檻 100，後續為 `ceil(previous × 1.30 + 25)`，大量 XP 仍以 while 完整排入 level-up queue |
 | Skill recipe | attack-only、multi-hit 一次 event、8 秒 window、count/exact sequence reset、獨立 cooldown |
 | Memory Library | capacity 10/14/18/24/30；learned 與 active loadout 分離 |
 | Growth queue | wave new-card 可直接 skip；滿 16 張可 replace/skip；EXP upgrade 五選一、全滿後獨立 fusion；無候選才 fallback；FIFO 不漏頁 |
 | Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一 |
 | Deck/hand | 傳送門前四格直選；4 unique Healing／Combo 且至少 1 Healing；最後一張 Healing 不可換掉；候選排除重複並預覽終結技；QWER 使用後保留原 slot |
 | Card readability/feedback | 繁中長技能名固定兩行、超出省略且 tooltip 保留完整名稱，不撐寬四卡框；七解析度不重疊；compatibility `BackRow` hidden 且不保留高度，code-native 7:8 金色幾何框與條件式透明裝飾層由 CardStage 頂緣到底緣雙軸填滿四等分 slot、主插畫占主要視覺；hover 不橫向放大；combat halo hidden，外框亮帶持續沿可調拱弧／側柱充能、主圖背後 60 根粗且保有留白的 360° sacred-geometry 日芒以雙頻波形大幅伸縮、維持圓形整體輪廓且四卡相位錯開；日芒使用不歸零的連續時間值，外框跨界亮帶同時繪製尾端與起點，循環接縫不得抖動；兩者使用全域時間軸，出招重投影不得歸零；右側長公式固定欄寬 ellipsis；只有成功施放的相符 card id 播放約 0.42 秒最上層儀式弧光、12 根短放射刻線、三圓章閃光與主圖 punch，無矩形遮罩且不重置底層循環；重複呼叫重啟、未知 ID 無作用、0.5 秒內回穩；透明裝飾素材另檢查 1173×1341、alpha 與共享對位 |
-| Combat input hierarchy | 隱藏舊 `ActionStrip`；`SPACE 衝刺` 位於 FooterRail；手牌頂緣貼齊 CardStage；卡面共用 Noto Serif TC 優先的襯線 stack，短招式名保持大字、長名稱最低 12px 且獨占暖墨底部卷軸，插畫在分類框上緣前結束；Q/W/E/R 位於左上 32–36px 圓章且至少 18px；右上顯示種類 icon；AP cost 位於右下 34–38px 圓章且只顯示至少 20px 的數字；中文分類使用四邊舊金框暖墨 tab 且至少 60% 卡寬；戰鬥卡不顯示 stack；不得新增表格線、全卡不透明色塊或霓虹外框 |
-| Basic Attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；有水平走廊目標時自動攻擊；不向上／下追蹤；無目標不消耗 cooldown 或公式 |
-| Combo formula | catalog 合法 Combo／Healing 都可記錄；32 個精確已學會 AAA/ABC 配方；順序錯誤不觸發；純治療／防禦支援為零基礎傷害；多招 FIFO 排隊；下一發自動水平攻擊逐一施放；formula stacks 不消耗；各卡效果獨立 1.5 秒，單一效果到期只撤銷自己的 modifier；Combo Chain 維持獨立 2.5 秒 |
+| Combat input hierarchy | 隱藏舊 `ActionStrip`；`SPACE 衝刺` 位於 FooterRail；手牌頂緣貼齊 CardStage；二十張公式劍魂的 catalog 基礎 AP 統一為 2，裝備只可把 Combo 投影降至最低 1；卡面共用 Noto Serif TC 優先的襯線 stack，短招式名保持大字、長名稱最低 12px 且獨占暖墨底部卷軸，插畫在分類框上緣前結束；Q/W/E/R 位於左上 32–36px 圓章且至少 18px；右上顯示種類 icon；AP cost 位於右下 34–38px 圓章且只顯示至少 20px 的數字；中文分類使用四邊舊金框暖墨 tab 且至少 60% 卡寬，Combo 卡在同一 tab 顯示自己的 `目前層數/有效上限`，不另加 stack seal；不得新增表格線、全卡不透明色塊或霓虹外框 |
+| Attack geometry | 戰前獨立 Basic Attack、Run lock、0 AP、不進牌堆；方向劍氣以 53px 半高、Combo／stack 1–3 倍 size clamp 與 1.00／1.10／1.22／1.36 spectacle scale 建立前向膠囊掃掠形狀，依 hurtbox 中心／半徑相交並讓沿途每個唯一敵人受傷一次；每方向 VFX 只追到最遠合法目標；圓形攻擊以 radius 與 hurtbox 相交，Dash 以移動線段膠囊相交；形狀外、角色背後不受傷；無目標不消耗 cooldown 或公式 |
+| Combo formula | catalog 合法 Combo／Healing 都可記錄；32 個精確已學會 AAA/ABC 配方；順序錯誤不觸發；純治療／防禦支援為零基礎傷害；多招 FIFO 排隊；下一發自動水平攻擊逐一施放；formula stacks 不消耗；各卡效果維持獨立 1.5 秒，單一效果到期只撤銷自己的 modifier；Combo Chain 依總 Combo 動態收緊：1–3 層為 2.0 秒，第 4 層為 1.3 秒，之後每層減少 0.1 秒，最低 0.6 秒；專注護符最後加上 0.5 秒；每個劍魂基礎上限 5，裝備／神賜可提高但全域硬上限 10，效果數、增傷 chain、卡面與提示必須共用同一有效上限 |
 | Divine Gifts | 每 stage/wave 一個必選頁；最多 3 slot；有空位才出新品，滿槽只出既有升級；全 inventory 的中文前綴與 mechanics 依序累加；Lv.3 融合材料退出獎勵池並釋出一格；fusion-only 可 skip；選擇頁與 HUD 不得露出英文名稱／說明 |
 | Growth card readability | upgrade/new/fusion choice 顯示 icon、類型色、AP/level；神賜使用 88px 符印、中文效果分類、2–3 條 next effect/mechanics、獨立 selected badge 與摘要；七解析度不裁切 |
 | Dash | ↑ 只觸發 Jump；Space 觸發玩家固有 Dash；不進牌庫/手牌、不耗 AP；Dash Combo infusions 使用 `target_action=dash` |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |
 | HUD authority | Autumn 只有一個 HUD root；hand 在 `CardStage`；Town HUD identity 不變 |
 | HUD projection | status/objective 左上、boss/toast 上中、bottom stage 完整；toast max 3/1.5 秒/duplicate refresh |
+| Combo popup | 個別劍魂 Combo 每次遞增時左側顯示「中文劍魂名 ×N」；1 次為 18px、隨次數平方根成長且上限 26px；位置永遠在左側 30% 與 66% gameplay boundary 上方，0.95 秒內小幅 punch、上浮、淡出並可安全重啟；達上限後重複施放不得再假裝遞增 |
 
 六解析度 geometry test 要逐一 assert：
 

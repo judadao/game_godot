@@ -14,12 +14,23 @@ func _run() -> void:
 		not database.has_card("quickstep"),
 		"Intrinsic Dash must not be duplicated as a Quickstep card in the production catalog."
 	)
+	var finisher_catalog := ComboFinisherCatalog.new()
+	_expect(finisher_catalog.load_catalog(), "Sword Soul formula catalog must load.")
+	var sword_soul_count := 0
 	for card in database.get_all_cards():
+		if finisher_catalog.is_skill_eligible(String(card.get("id", ""))):
+			sword_soul_count += 1
+			_expect(
+				int(card.get("cost", -1)) == 2,
+				"Every battle Sword Soul must use the shared two-AP base cost: %s."
+				% card.get("id", "")
+			)
 		var effect := card.get("effect", {}) as Dictionary
 		_expect(
 			String(effect.get("kind", "")) not in ["dash", "dash_damage"],
 			"Production cards must not provide a direct Dash effect: %s." % card.get("id", "")
 		)
+	_expect(sword_soul_count == 20, "The formula catalog must expose exactly twenty battle Sword Souls.")
 
 	var deck := DeckManager.new(database)
 	deck.set_protected_cards([])

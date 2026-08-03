@@ -88,6 +88,10 @@ func _run() -> void:
 		)
 	_expect(bool(director.call("start_encounter")), "Survival encounter must start.")
 	_expect(
+		(director.call("get_active_enemies") as Array).size() == 24,
+		"Survival must open with a twenty-four-enemy pressure wave."
+	)
+	_expect(
 		not director.has_signal("phase_time_changed"),
 		"Survival runtime must not expose the retired phase timer contract."
 	)
@@ -104,7 +108,12 @@ func _run() -> void:
 	_expect(first_normal != null, "Survival must begin with ordinary enemies.")
 	if first_normal != null:
 		var archetype := first_normal.get("archetype") as EnemyArchetype
-		expected_normal_shards = maxi(2, archetype.experience_reward)
+		expected_normal_shards = archetype.experience_reward
+		_expect(
+			float(first_normal.get_meta("survival_health_multiplier", 0.0)) == 8.0,
+			"Opening horde enemies must receive the 8x survival health floor."
+		)
+		director.set("_spawn_remaining", 10.0)
 		director.call(
 			"_on_survival_enemy_defeated",
 			first_normal,
@@ -112,6 +121,10 @@ func _run() -> void:
 			archetype.gold_reward,
 			false,
 			false
+		)
+		_expect(
+			float(director.get("_spawn_remaining")) <= 0.05,
+			"Defeating a normal enemy must immediately arm a refill pass instead of leaving a lull."
 		)
 	_expect(
 		experience_drop_values.size() == expected_normal_shards
@@ -220,6 +233,17 @@ func _run() -> void:
 			"Experience magnet must immediately collect every active experience gem."
 		)
 		collector.queue_free()
+	var late_sprout := director.call(
+		"_spawn_survival_enemy",
+		&"sprout",
+		false
+	) as EnemyBase
+	_expect(
+		late_sprout != null
+			and int(late_sprout.health) == 200
+			and int(late_sprout.archetype.max_health) == 200,
+		"A normal enemy spawned at the end of the timeline must receive the 20x health scale."
+	)
 	director.queue_free()
 	await process_frame
 	quit(0 if _failures == 0 else 1)

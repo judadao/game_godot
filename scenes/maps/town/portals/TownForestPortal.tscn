@@ -13,7 +13,7 @@ collision_layer = 0
 show_default_visual = false
 display_name = "Autumn Forest"
 portal_tint = Color(0.49, 0.95, 0.61, 1)
-target_scene_path = "res://scenes/maps/autumn_safe_zone.tscn"
+target_scene_path = "res://scenes/maps/autumn_forest.tscn"
 interaction_id = &"forest_portal"
 prompt_text = "Travel"
 

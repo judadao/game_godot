@@ -15,6 +15,8 @@ signal experience_gem_spawned(gem: Node, value: int)
 signal survival_pickup_spawned(pickup: Node, item_id: StringName)
 signal survival_pickup_collected(item_id: StringName)
 
+const OPENING_SPAWN_COUNT := 24
+
 @export_range(30.0, 1800.0, 1.0) var survival_duration := 600.0
 @export_range(10.0, 120.0, 1.0) var final_rush_duration := 60.0
 @export var scheduled_elite_times: Array[float] = [
@@ -24,14 +26,17 @@ signal survival_pickup_collected(item_id: StringName)
 @export var scheduled_boss_times: Array[float] = [300.0, 480.0]
 @export_range(2.0, 60.0, 0.5) var final_rush_elite_interval := 15.0
 @export_range(5.0, 60.0, 0.5) var final_rush_boss_interval := 30.0
-@export_range(1, 120, 1) var base_density_cap := 30
-@export_range(1, 160, 1) var maximum_density_cap := 120
+@export_range(1, 120, 1) var base_density_cap := 40
+@export_range(1, 200, 1) var maximum_density_cap := 140
 @export_range(0, 80, 1) var final_rush_density_bonus := 40
-@export_range(0.05, 5.0, 0.05) var base_spawn_interval := 0.55
-@export_range(0.05, 5.0, 0.01) var minimum_spawn_interval := 0.12
-@export_range(0.1, 1.0, 0.05) var final_rush_spawn_interval_multiplier := 0.5
-@export_range(1, 16, 1) var base_spawn_batch := 5
-@export_range(1, 20, 1) var maximum_spawn_batch := 12
+@export_range(0.05, 5.0, 0.05) var base_spawn_interval := 0.40
+@export_range(0.05, 5.0, 0.01) var minimum_spawn_interval := 0.09
+@export_range(0.1, 1.0, 0.05) var final_rush_spawn_interval_multiplier := 0.45
+@export_range(1, 16, 1) var base_spawn_batch := 8
+@export_range(1, 20, 1) var maximum_spawn_batch := 16
+@export_range(1.0, 20.0, 0.1) var base_normal_health_multiplier := 8.0
+@export_range(1.0, 30.0, 0.1) var maximum_normal_health_multiplier := 20.0
+@export_range(0.25, 2.0, 0.05) var normal_health_curve_exponent := 0.85
 @export var normal_enemy_unlocks: Dictionary = {
 	"sprout": 0.0,
 	"hopper": 0.0,
@@ -47,10 +52,10 @@ signal survival_pickup_collected(item_id: StringName)
 @export var spawn_route_left := 0.0
 @export var spawn_route_right := 0.0
 @export var spawn_floor_y := 470.0
-@export var spawn_perimeter_min := 720.0
-@export var spawn_perimeter_max := 1040.0
-@export var recycle_distance := 1500.0
-@export var recycle_interval := 0.5
+@export var spawn_perimeter_min := 680.0
+@export var spawn_perimeter_max := 820.0
+@export var recycle_distance := 1200.0
+@export var recycle_interval := 0.35
 
 var _time_remaining := 0.0
 var _spawn_remaining := 0.0
@@ -106,7 +111,7 @@ func start_encounter() -> bool:
 	_disengage_remaining = -1.0
 	_spawn_positions.clear()
 	_rng.seed = int(Time.get_ticks_usec() ^ get_instance_id())
-	_spawn_until_cap(mini(16, get_current_density_cap()))
+	_spawn_until_cap(mini(OPENING_SPAWN_COUNT, get_current_density_cap()))
 	encounter_started.emit(1)
 	_emit_survival_time()
 	return true
@@ -157,6 +162,14 @@ func get_current_density_cap() -> int:
 
 func get_current_alive_cap() -> int:
 	return get_current_density_cap()
+
+
+func get_current_normal_health_multiplier() -> float:
+	return lerpf(
+		base_normal_health_multiplier,
+		maxf(base_normal_health_multiplier, maximum_normal_health_multiplier),
+		pow(_timeline_progress(), normal_health_curve_exponent)
+	)
 
 
 func get_survival_elapsed() -> float:
@@ -352,6 +365,11 @@ func _spawn_survival_enemy(
 		_spawn_positions[enemy.get_instance_id()] = (enemy as Node2D).position
 	if not is_boss and enemy.has_method("configure_archetype"):
 		enemy.call("configure_archetype", archetype_id)
+	if not is_boss and enemy.has_method("apply_survival_health_multiplier"):
+		enemy.call(
+			"apply_survival_health_multiplier",
+			get_current_normal_health_multiplier()
+		)
 	if enemy.has_signal("defeated"):
 		enemy.connect(
 			"defeated",
@@ -373,6 +391,8 @@ func _on_survival_enemy_defeated(
 	var reward_position := (enemy as Node2D).global_position if enemy is Node2D else global_position
 	_active_enemies.erase(enemy)
 	var is_elite := String(enemy.get_meta("encounter_archetype_id", "")) == "elite"
+	if _running and not is_boss and _time_remaining > 0.0:
+		_spawn_remaining = minf(_spawn_remaining, 0.05)
 	if is_elite:
 		_elite_defeat_count += 1
 		elite_defeated.emit(reward_position)
@@ -457,8 +477,12 @@ func _spawn_experience_burst(
 	minimum_shards: int = 1
 ) -> void:
 	var safe_minimum := maxi(1, minimum_shards)
-	var distributed_total := maxi(safe_minimum, total_value)
-	var shard_count := clampi(distributed_total, safe_minimum, 12)
+	var distributed_total := maxi(1, total_value)
+	var shard_count := clampi(
+		distributed_total,
+		mini(safe_minimum, distributed_total),
+		12
+	)
 	var base_value := distributed_total / shard_count
 	var remainder := distributed_total % shard_count
 	for shard_index in shard_count:

@@ -24,36 +24,57 @@ func _run() -> void:
 				float((flame_effects[0] as Dictionary).get("remaining_seconds", 0.0)),
 				1.5
 			),
-		"Each Combo card effect must own an independent 1.5-second lifetime."
+		"Each Combo card effect must keep its independent 1.5-second lifetime."
 	)
 	_expect(
 		is_equal_approx(
 			float(run.temporary_buffs.get("combo_chain_remaining", 0.0)),
-			2.5
+			2.0
 		),
-		"Skill-triggering Combo Chain must retain its separate 2.5-second window."
+		"The first three total Combo stacks must use the forgiving two-second chain window."
+	)
+	_expect(
+		is_equal_approx(float(game.call("_combo_chain_duration_for_count", 3)), 2.0)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 4)), 1.3)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 5)), 1.2)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 10)), 0.7)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 11)), 0.6)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 12)), 0.6)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 1, 0.5)), 2.5)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 4, 0.5)), 1.8)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 10, 0.5)), 1.2)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 11, 0.5)), 1.1),
+		"Combo Chain must tighten from 1.3 seconds after stack three and keep a 0.6-second floor."
 	)
 	game.call("_tick_combo_effects", 1.49)
 	_expect(
 		not (run.temporary_buffs.get("infusion_effects", []) as Array).is_empty(),
-		"A Combo card effect must remain active immediately before 1.5 seconds."
+		"A Combo card effect must remain active immediately before its own timer expires."
 	)
 	game.call("_tick_combo_effects", 0.02)
 	_expect(
 		(run.temporary_buffs.get("infusion_effects", []) as Array).is_empty()
 			and int(run.temporary_buffs.get("combo_chain_count", 0)) == 1,
-		"Combo card effects must expire at 1.5 seconds without shortening Combo Chain."
+		"The card effect must expire without clearing the two-second opening chain window."
 	)
-	game.call("_tick_combo_effects", 1.0)
+	game.call("_tick_combo_effects", 0.50)
 	_expect(
-		int(run.temporary_buffs.get("combo_chain_count", 0)) == 0,
-		"Combo Chain must expire on its original independent timer."
+		(run.temporary_buffs.get("infusion_effects", []) as Array).is_empty()
+			and int(game.call("_combo_chain_stack_for_card", flame)) == 0,
+		"The opening Combo Chain and corresponding Sword Soul count must clear after two seconds."
 	)
 	_expect(bool(game.call("_resolve_combo_card", flame)), "A repeated Combo card must add an overlapping stack.")
 	_expect(bool(game.call("_resolve_combo_card", flame)), "Rapid repeated Combo cards must stack while both timers are active.")
+	_expect(bool(game.call("_resolve_combo_card", flame)), "The third opening Combo must remain valid.")
+	_expect(bool(game.call("_resolve_combo_card", flame)), "The fourth Combo must enter the pressure window.")
 	_expect(
-		int((run.temporary_buffs.get("combo_levels", {}) as Dictionary).get("flame", 0)) == 2,
-		"Repeated effects must stack during their overlapping 1.5-second lifetimes."
+		int((run.temporary_buffs.get("combo_levels", {}) as Dictionary).get("flame", 0)) == 4
+			and int(run.temporary_buffs.get("combo_chain_count", 0)) == 4
+			and is_equal_approx(
+				float(run.temporary_buffs.get("combo_chain_remaining", 0.0)),
+				1.3
+			),
+		"The fourth successful Combo must use the post-increment total and reset to 1.3 seconds."
 	)
 	run.temporary_buffs["active_infusions"] = []
 	run.temporary_buffs["combo_levels"] = {}
@@ -81,17 +102,35 @@ func _run() -> void:
 	var inventory := game.get("inventory_manager") as RefCounted
 	inventory.call("add_equipment", &"focus_amulet")
 	inventory.call("equip", &"focus_amulet")
+	run.temporary_buffs["active_infusions"] = []
+	run.temporary_buffs["combo_levels"] = {}
+	run.temporary_buffs["infusion_effects"] = []
+	run.temporary_buffs["combo_chain_count"] = 0
+	run.temporary_buffs["combo_chain_remaining"] = 0.0
 	var discounted_flame := game.call("_card_for_cast", "flame_imbue") as Dictionary
 	var discounted_rhythm := game.call("_card_for_cast", "battle_rhythm") as Dictionary
-	_expect(int(discounted_flame.get("cost", 0)) == 2, "Combo equipment must reduce a three-AP Combo card by one.")
+	_expect(int(discounted_flame.get("cost", 0)) == 1, "Combo equipment must reduce a two-AP Sword Soul by one.")
 	_expect(int(discounted_rhythm.get("cost", 0)) == 1, "Combo AP discount must never lower a card below one AP.")
 	var cost_deck := DeckManager.new(game.get("card_database") as CardDatabase)
 	cost_deck.start(["flame_imbue"], 5.0)
 	_expect(not cost_deck.play_from_hand(0, int(discounted_flame.get("cost", 0))).is_empty(), "Projected Combo cost must remain playable.")
-	_expect(is_equal_approx(cost_deck.energy, 3.0), "Playing through DeckManager must spend the equipment-adjusted Combo AP.")
+	_expect(is_equal_approx(cost_deck.energy, 4.0), "Playing through DeckManager must spend the equipment-adjusted Combo AP.")
 
 	var frost := (game.get("card_database") as CardDatabase).get_card("frostburst_imbue")
 	_expect(bool(game.call("_resolve_combo_card", frost)), "A second timed Combo type must activate.")
+	var equipped_effects := run.temporary_buffs.get("infusion_effects", []) as Array
+	_expect(
+		equipped_effects.size() == 1
+			and is_equal_approx(
+				float((equipped_effects[0] as Dictionary).get("remaining_seconds", 0.0)),
+				2.0
+			)
+			and is_equal_approx(
+				float(run.temporary_buffs.get("combo_chain_remaining", 0.0)),
+				2.5
+			),
+		"Focus Amulet must extend the opening effect and chain windows to 2.0 and 2.5 seconds."
+	)
 	_expect(
 		(run.temporary_buffs.get("active_infusions", []) as Array).has("frost"),
 		"A second Combo type must join the prepared attack."

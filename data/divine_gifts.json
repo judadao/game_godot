@@ -79,9 +79,9 @@
       "finisher_mutations": {"frost_ratio": 0.65, "frost_duration": 4.5, "shatter": true},
       "icon": "∞",
       "effects_by_level": [
-        {"combo_stack_cap_bonus": 3, "finisher_history_bonus": 0},
-        {"combo_stack_cap_bonus": 6, "finisher_history_bonus": 1},
-        {"combo_stack_cap_bonus": 12, "finisher_history_bonus": 2}
+        {"combo_stack_cap_bonus": 2, "finisher_history_bonus": 0},
+        {"combo_stack_cap_bonus": 3, "finisher_history_bonus": 1},
+        {"combo_stack_cap_bonus": 5, "finisher_history_bonus": 2}
       ]
     }
   ]

@@ -108,11 +108,12 @@
       "effects": {"critical_chance": 0.05, "max_mana": 5},
       "special_ability": {
         "id": "steady_focus",
-        "description": "Attack cards deal +1 damage; Combo cards cost 1 less AP and last 0.5 seconds longer.",
-        "description_zh": "攻擊卡額外造成 1 點傷害；Combo 卡消耗減少 1 AP，持續時間延長 0.5 秒。",
+        "description": "Attack cards deal +1 damage; Combo cards cost 1 less AP, card effects and chain windows last 0.5 seconds longer, and each Sword Soul gains +5 maximum Combo stacks.",
+        "description_zh": "攻擊卡額外造成 1 點傷害；Combo 卡消耗減少 1 AP、卡片效果與連段窗口延長 0.5 秒，且每個劍魂的 Combo 上限增加 5 層。",
         "card_damage_bonus": 1,
         "combo_cost_reduction": 1,
-        "combo_duration_bonus": 0.5
+        "combo_duration_bonus": 0.5,
+        "combo_stack_cap_bonus": 5
       }
     },
     {

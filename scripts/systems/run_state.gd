@@ -1,10 +1,14 @@
 class_name RunState
 extends RefCounted
 
+const INITIAL_EXPERIENCE_REQUIRED := 100
+const EXPERIENCE_REQUIREMENT_MULTIPLIER := 1.30
+const EXPERIENCE_REQUIREMENT_FLAT_GROWTH := 25.0
+
 var active := false
 var level := 1
 var experience := 0
-var experience_required := 30
+var experience_required := INITIAL_EXPERIENCE_REQUIRED
 var pending_level_ups := 0
 var energy := 5.0
 var max_energy := 5.0
@@ -69,7 +73,10 @@ func add_experience(amount: int) -> int:
 		level += 1
 		pending_level_ups += 1
 		queued += 1
-		experience_required = int(ceil(float(experience_required) * 1.25 + 10.0))
+		experience_required = int(ceil(
+			float(experience_required) * EXPERIENCE_REQUIREMENT_MULTIPLIER
+				+ EXPERIENCE_REQUIREMENT_FLAT_GROWTH
+		))
 	return queued
 
 
@@ -161,7 +168,7 @@ func _reset_transient() -> void:
 	active = false
 	level = 1
 	experience = 0
-	experience_required = 30
+	experience_required = INITIAL_EXPERIENCE_REQUIRED
 	pending_level_ups = 0
 	energy = max_energy
 	starting_deck.clear()

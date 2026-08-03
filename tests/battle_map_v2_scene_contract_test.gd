@@ -48,6 +48,12 @@ func _run() -> void:
 	if director != null:
 		_expect(bool(director.get("route_wide_encounter")), "Director engagement must follow enemies across the long route.")
 		_expect(bool(director.get("spawn_around_player")), "Director must spawn around the current player position.")
+		_expect(
+			int(director.get("base_density_cap")) >= 40
+				and float(director.get("base_spawn_interval")) <= 0.40
+				and int(director.get("base_spawn_batch")) >= 8,
+			"The authoritative battle scene must inherit the dense, fast-refill horde defaults."
+		)
 	for portal_path in ["WestSafePortal", "EastSafePortal"]:
 		var portal := map.get_node_or_null(portal_path)
 		_expect(portal != null, "%s must exist." % portal_path)

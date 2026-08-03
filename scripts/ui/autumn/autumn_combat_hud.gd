@@ -15,6 +15,9 @@ const NARROW_BOSS_PANEL_WIDTH := 312.0
 const NARROW_BOSS_BAR_WIDTH := 280.0
 const DEFAULT_BOSS_PANEL_WIDTH := 380.0
 const DEFAULT_BOSS_BAR_WIDTH := 416.0
+const COMBO_POPUP_DURATION := 0.95
+const COMBO_POPUP_MIN_FONT_SIZE := 18
+const COMBO_POPUP_MAX_FONT_SIZE := 26
 
 @onready var hp_bar: ProgressBar = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow/HPBar
 @onready var hp_value: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow/HPBar/HPValue
@@ -47,6 +50,7 @@ const DEFAULT_BOSS_BAR_WIDTH := 416.0
 @onready var _auto_use_toggle: CheckButton = $BottomStage/CardStage/ActionStrip/AutoUse
 @onready var _group_label: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/InputStrip/GroupBadge
 @onready var _survival_timer_label: Label = $FooterRail/FooterRow/SurvivalTimerLabel
+@onready var _combo_popup: Label = $ComboPopupAnchor/ComboPopup
 
 var _toast_by_key: Dictionary = {}
 var _toast_order: Array[String] = []
@@ -66,6 +70,7 @@ var _projected_experience_required := 1
 var _projected_action_points := 0.0
 var _last_emphasized_action_points := 0.0
 var _vitals_tweens: Dictionary = {}
+var _combo_popup_tween: Tween
 
 
 func _ready() -> void:
@@ -81,6 +86,7 @@ func _ready() -> void:
 	_redraw_button.pressed.connect(_on_redraw_pressed)
 	_auto_use_toggle.toggled.connect(auto_use_changed.emit)
 	_on_card_group_changed(_card_hand.get_active_group())
+	_combo_popup.visible = false
 
 
 func _apply_top_rail_geometry() -> void:
@@ -533,6 +539,60 @@ func set_combo_chain(
 		row.add_theme_font_size_override("font_size", 11)
 		row.add_theme_color_override("font_color", Color(0.86, 0.72, 1.0, 1.0))
 		_combo_skill_rows.add_child(row)
+
+
+func show_combo_popup(skill_name: String, combo_count: int) -> void:
+	var safe_count := maxi(0, combo_count)
+	var safe_name := skill_name.strip_edges()
+	if _combo_popup_tween != null and _combo_popup_tween.is_valid():
+		_combo_popup_tween.kill()
+	if safe_count <= 0 or safe_name.is_empty():
+		_combo_popup.visible = false
+		return
+	_combo_popup.text = "%s  ×%d" % [safe_name, safe_count]
+	_combo_popup.add_theme_font_size_override(
+		"font_size",
+		_get_combo_popup_font_size(safe_count)
+	)
+	_combo_popup.tooltip_text = _combo_popup.text
+	_combo_popup.visible = true
+	_render_combo_popup_progress(0.0)
+	_combo_popup_tween = create_tween()
+	_combo_popup_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_combo_popup_tween.set_trans(Tween.TRANS_QUAD)
+	_combo_popup_tween.set_ease(Tween.EASE_OUT)
+	_combo_popup_tween.tween_method(
+		_render_combo_popup_progress,
+		0.0,
+		1.0,
+		COMBO_POPUP_DURATION
+	)
+	_combo_popup_tween.tween_callback(func() -> void:
+		_combo_popup.visible = false
+		_combo_popup.position = Vector2.ZERO
+		_combo_popup.scale = Vector2.ONE
+	)
+
+
+func _get_combo_popup_font_size(combo_count: int) -> int:
+	var growth := roundi(sqrt(float(maxi(0, combo_count - 1))) * 2.0)
+	return clampi(
+		COMBO_POPUP_MIN_FONT_SIZE + growth,
+		COMBO_POPUP_MIN_FONT_SIZE,
+		COMBO_POPUP_MAX_FONT_SIZE
+	)
+
+
+func _render_combo_popup_progress(progress: float) -> void:
+	var safe_progress := clampf(progress, 0.0, 1.0)
+	var punch_progress := minf(1.0, safe_progress / 0.22)
+	var settle_progress := clampf((safe_progress - 0.22) / 0.20, 0.0, 1.0)
+	var punch_scale := lerpf(0.96, 1.03, punch_progress)
+	var settled_scale := lerpf(punch_scale, 1.0, settle_progress)
+	var fade_progress := clampf((safe_progress - 0.52) / 0.48, 0.0, 1.0)
+	_combo_popup.position = Vector2(0.0, lerpf(4.0, -6.0, safe_progress))
+	_combo_popup.scale = Vector2.ONE * settled_scale
+	_combo_popup.modulate = Color(1.0, 0.78, 0.30, 1.0 - fade_progress)
 
 
 func _configure_clipped_feed_label(label: Label) -> void:

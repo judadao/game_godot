@@ -303,10 +303,11 @@ Town portal ownership 已收斂為 `TownPortalSet/BattleGateway`。它只前往
 portal slots 擁有，中央 `BossPortalAnchor` 是無互動、無 scene target 的未來尾王
 定位點。
 
-Autumn 現在拆為 safe zone 與 battle route。Town/hub 的 Autumn portal 先進入
-`AutumnSafeZoneMap`；安全區由左至右配置 Town return、Player spawn、可重複使用
-的營火、非阻擋坐姿商人及 battle portal，完整收在單一 1280px gameplay viewport。
-battle portal 才開啟 Deck Builder 並開始 Run。戰鬥 route 為
+Autumn 現在拆為 safe zone 與 battle route。Town/hub 的 Autumn portal 直接開啟
+Deck Builder；確認 loadout 後建立 Run、載入 `AutumnBattleMapV2`，並由
+`AutumnRunDirector` 立即啟動 encounter，不再先停留 `AutumnSafeZoneMap`。安全區仍由
+左至右配置 Town return、Player spawn、可重複使用的營火、非阻擋坐姿商人及 battle
+portal，完整收在單一 1280px gameplay viewport，並作為戰鬥 route 的撤退／結算目的地。戰鬥 route 為
 `24 × 440 = 10560` pixels，由 `AutumnRouteGenerator` 先規劃低地、中台、高台與
 平原區段，再以短 transition chunks 連接。浮空平台以 1–2 chunks 群組及 1–2
 chunks 空白交替，只提供可選路線，不得成為前進必要條件。兩端 portal 都回到安全
@@ -604,14 +605,22 @@ service；修改 mappings或處理順序時須用實際 run驗證。
 
 - Autumn battle route 使用 `SurvivalWaveDirector`；安全區沒有 encounter director。
 - 長路線的 enemy spawn 以 Player 為錨點並限制在 route bounds，engagement
-  distance 以最近存活 enemy 計算，不以 director 原點計算。
-- 端點附近若單側沒有至少 340px 淨空，spawn 必須改用另一側，不得 clamp 到 Player
+  distance 以最近存活 enemy 計算，不以 director 原點計算；普通怪使用玩家前後
+  `680–820px` 的近鏡頭外 perimeter，超過 `1200px` 時回收。
+- 端點附近若單側沒有至少 680px 淨空，spawn 必須改用另一側，不得 clamp 到 Player
   身上。`GeneratedRoute.route_seed` 可供 remote inspector 取得以重現地圖。
 - 程序平台段與 flat breathing-room chunk 必須交錯；Player 按 ↓ 時只可穿越
   `one_way_collision` 平台，不得穿越 continuous floor。
 - director runtime-spawn enemy/guardian/experience gem。
-- `SurvivalWaveDirector` 是 180 秒倒數、連續 density curve、定時 Elite／Boss 與
-  Final Rush 的唯一 authority；只有 00:00 completion Guardian 可完成 Run。
+- `SurvivalWaveDirector` 是 600 秒倒數、開場 24 隻、`40→140` 連續 density curve、
+  `8→16` spawn batch、定時 Elite／Boss 與 Final Rush 的唯一 authority；普通怪死亡會
+  立即排入補怪，普通怪 HP 倍率沿 timeline 由 `8.0→20.0`，只有 00:00 completion
+  Guardian 可完成 Run。
+- `EnemyBase` 統一處理玩家實體接觸傷害：使用 `Player.take_hit()` 的完整防禦流程、
+  每敵獨立冷卻；`ContactDamageArea` 監聽 Player Hurtbox，預警期間若已接觸命中，
+  同一 attack generation 的 impact 不再重複扣血。
+- `EnemyBase` 的非致命受擊會進入 0.16 秒 knockback state；這段期間 pursuit 不可覆寫
+  水平擊退速度，死亡目標不建立這個狀態。
 - `Enemies`、`EncounterDirectors` groups用於 target與wiring。
 - card effect透過 capability methods，例如 `take_hit()`、`add_block()`、
   `restore_health()`、`apply_status()`。
@@ -991,7 +1000,8 @@ Healing 因此可參與治療、防禦與支援型終結技。catalog 以 `data/
 Combo 卡本身提供的 infusion／status 不屬於永久公式狀態：每張卡各自持有 1.5 秒
 基礎倒數，時間到只移除該張卡的 runtime modifier，並由剩餘效果重建攻擊 profile。
 因此尺寸、速度、射程與元素等重疊效果可在不同時間獨立恢復。技能觸發用 Combo
-Chain 仍使用獨立的 2.5 秒視窗，不受卡片效果到期影響。
+Chain 使用依總 Combo 收緊的獨立接續視窗，不受卡片效果到期影響：1–3 層為 2.0 秒，
+第 4 層為 1.3 秒，之後每層減少 0.1 秒，最低 0.6 秒；專注護符最後加上 0.5 秒。
 
 `DivineGiftManager` 是 Run-local 神賜權威。每個 stage/wave 最多排入一個必選
 神賜頁，避免同關多隻菁英重複開頁。神賜最高三級；所有持有神賜依取得順序共同提供招式稱號，
@@ -1073,4 +1083,7 @@ AutumnHUD
 ```
 
 Town HUD 不受影響。Autumn skill toast 最多三筆、顯示約 1.5 秒後淡出；相同 skill
-重複觸發刷新既有 toast。HUD 不顯示常駐 recipe progress。
+重複觸發刷新既有 toast。Combo chain 每次遞增時由 `Game._record_combo_chain()` 依
+中文劍魂名稱分開計數，再呼叫 HUD 的 `show_combo_popup(skill_name, count)`；左側以
+18–26px 顯示該劍魂與自己的層數，並於 0.95 秒上浮淡出。卡面分類框同步顯示
+`目前層數/有效上限`；HUD 不顯示常駐 recipe progress。

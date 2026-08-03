@@ -42,6 +42,13 @@ func _run() -> void:
 	var unlocked_totals := inventory.call("get_special_ability_totals") as Dictionary
 	_expect(float(unlocked_totals.get("dash_distance_bonus", 0.0)) > 0.0, "Unlocked equipment must add Dash distance.")
 	_expect(float(unlocked_totals.get("dash_evasion_bonus", 0.0)) > 0.0, "Unlocked equipment must add evasion time.")
+	_expect(bool(inventory.call("add_equipment", &"focus_amulet")), "Focus Amulet must be ownable.")
+	_expect(bool(inventory.call("equip", &"focus_amulet")), "Focus Amulet must equip in the accessory slot.")
+	var focus_totals := inventory.call("get_special_ability_totals") as Dictionary
+	_expect(
+		int(focus_totals.get("combo_stack_cap_bonus", 0)) == 5,
+		"Focus Amulet must explicitly provide the five-stack equipment cap bonus."
+	)
 
 	var game := (load("res://scenes/game/game.tscn") as PackedScene).instantiate()
 	root.add_child(game)

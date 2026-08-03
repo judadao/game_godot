@@ -1,6 +1,8 @@
 class_name AutoAttackFeedback
 extends Node2D
 
+const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
+
 signal finished
 signal impact_reached(did_hit: bool, combo_tier: int)
 
@@ -115,10 +117,9 @@ func play(
 	_visual_colors = _colors_for_elements(_visual_elements)
 	# Sword energy keeps a white core. Elements remain independent silhouette layers.
 	_accent = Color.WHITE
-	_attack_size_multiplier = clampf(
-		attack_size_multiplier * (1.0 + minf(10.0, float(_stack_count)) * 0.035),
-		1.0,
-		3.0
+	_attack_size_multiplier = ATTACK_GEOMETRY.resolve_size_scale(
+		attack_size_multiplier,
+		_stack_count
 	)
 	premium_crescent_layer.call(
 		"configure",
@@ -957,7 +958,9 @@ func _draw_energy_blade_sprite(center: Vector2, direction: Vector2) -> void:
 	var frame_index := get_current_energy_blade_frame()
 	var source_rect := _energy_blade_source_rect(frame_index)
 	var pulse := 1.0 + sin(_travel_progress * PI) * 0.05
-	var combo_spectacle_scale := float([1.0, 1.10, 1.22, 1.36][_combo_tier])
+	var combo_spectacle_scale := ATTACK_GEOMETRY.resolve_combo_spectacle_scale(
+		_combo_tier * 3
+	)
 	var launch_scale := lerpf(0.78, 1.0, smoothstep(0.10, 0.34, _travel_progress))
 	var width := (
 		176.0

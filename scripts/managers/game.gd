@@ -51,12 +51,15 @@ const CARD_TEMPO_POWER_CARD_DRAIN := 4
 const COMBAT_CAMERA_SAFE_OFFSET_Y := 90.0
 const MAX_COMBO_ABILITIES := 8
 const MAX_COMBO_LEVEL := 3
-const MAX_COMBO_EFFECT_STACKS := 12
-const MAX_COMBO_CHAIN := 99
-const COMBO_CHAIN_DURATION := 2.5
+const BASE_COMBO_STACK_CAP := 5
+const MAX_COMBO_STACK_CAP := 10
+const COMBO_CHAIN_OPENING_DURATION := 2.0
+const COMBO_CHAIN_PRESSURE_DURATION := 1.3
+const COMBO_CHAIN_DURATION_STEP := 0.1
+const COMBO_CHAIN_MIN_DURATION := 0.6
 const DEFAULT_COMBO_DURATION := 1.5
 const MAX_COMBO_EFFECT_DURATION := 2.0
-const MAX_COMBO_DURATION := 3.0
+const MAX_COMBO_DURATION := 2.5
 const DEFAULT_AUTO_ATTACK_CARD_ID := "ember_bolt"
 const DEFAULT_AUTO_ATTACK_INTERVAL := 1.0
 const JOURNAL_ICON_ROOT := "res://assets/ui/fantasy_icons_16x16/png/Separately/"
@@ -81,7 +84,8 @@ const JOURNAL_ENEMY_ICONS := {
 	"charge": JOURNAL_ICON_ROOT + "Icon58_1_2.png",
 	"elite": JOURNAL_ICON_ROOT + "Icon40_1_2.png",
 }
-const AUTO_ATTACK_HIT_HALF_WIDTH := 44.0
+const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
+const AUTO_ATTACK_HIT_HALF_WIDTH := 53.0
 const COMBO_FINISHER_DAMAGE := 28
 const COMBO_FINISHER_RANGE := 420.0
 const COMBO_FORMULA_LENGTH := 3
@@ -1448,6 +1452,12 @@ func _on_card_selected(index: int) -> void:
 		return
 	var instance := deck_manager.hand_instances[index]
 	var projected_card := _card_for_cast(instance)
+	if (
+		String(projected_card.get("type", "")) == "combo"
+		and not _can_resolve_combo_card(projected_card)
+	):
+		_show_combo_stack_limit_feedback(projected_card)
+		return
 	var card := deck_manager.play_from_hand(
 		index,
 		int(projected_card.get("cost", 0)),
@@ -1593,14 +1603,16 @@ func _try_basic_attack() -> bool:
 		)
 	var targets := _get_combat_targets()
 	var attack_range := maxf(1.0, float(card.get("auto_attack_range", 220.0)))
+	var hit_half_width := _get_auto_attack_hit_half_width(card)
 	targets = targets.filter(func(target: Variant) -> bool:
 		return (
 			target is Node2D
 			and is_instance_valid(target)
-			and _is_target_in_forward_corridor(
+			and _is_target_in_auto_attack_shape(
 				target as Node2D,
+				card,
 				attack_range,
-				AUTO_ATTACK_HIT_HALF_WIDTH
+				hit_half_width
 			)
 		)
 	)
@@ -1621,11 +1633,13 @@ func _try_basic_attack() -> bool:
 			targets,
 			direction_count,
 			spread_degrees,
-			attack_range
+			attack_range,
+			hit_half_width
 		)
-		cast_targets = direction_assignments.filter(func(candidate: Variant) -> bool:
-			return candidate is Node2D and is_instance_valid(candidate)
-		)
+		cast_targets = targets
+		var corridor_effect := (card.get("effect", {}) as Dictionary).duplicate(true)
+		corridor_effect["damage_mode"] = "directional_sweep_once"
+		card["effect"] = corridor_effect
 	else:
 		direction_assignments = _nearest_combat_targets(
 			targets,
@@ -1680,20 +1694,20 @@ func _try_basic_attack() -> bool:
 					int(health_before.get(feedback_target.get_instance_id(), 0))
 					- _read_health(feedback_target)
 				)
-			var visual_distance := attack_range
-			if feedback_target != null:
-				visual_distance = minf(
-					attack_range,
-					(player as Node2D).global_position.distance_to(
-						feedback_target.global_position
-					)
-				)
 			var visual_endpoint := _auto_attack_direction_endpoint(
 				direction_index,
 				direction_count,
 				spread_degrees,
-				visual_distance
+				attack_range
 			)
+			if feedback_target != null:
+				visual_endpoint = _auto_attack_target_endpoint(
+					feedback_target,
+					direction_index,
+					direction_count,
+					spread_degrees,
+					attack_range
+				)
 			var feedback_card := card.duplicate(true)
 			var visual_profile := (
 				feedback_card.get("combo_visual_profile", {}) as Dictionary
@@ -1758,7 +1772,8 @@ func _match_targets_to_attack_directions(
 	targets: Array,
 	direction_count: int,
 	spread_degrees: float,
-	attack_range: float
+	attack_range: float,
+	hit_half_width: float = AUTO_ATTACK_HIT_HALF_WIDTH
 ) -> Array:
 	var resolved_count := maxi(1, direction_count)
 	var assignments: Array = []
@@ -1770,9 +1785,6 @@ func _match_targets_to_attack_directions(
 		if (
 			target_variant is Node2D
 			and is_instance_valid(target_variant)
-			and (player as Node2D).global_position.distance_to(
-				(target_variant as Node2D).global_position
-			) <= attack_range
 		):
 			candidates.append(target_variant as Node2D)
 	var attack_origin := _auto_attack_origin()
@@ -1788,15 +1800,18 @@ func _match_targets_to_attack_directions(
 			if offset.is_zero_approx():
 				continue
 			var travel_distance := offset.dot(direction)
-			if travel_distance < 0.0 or travel_distance > attack_range:
+			if not _is_target_in_directional_sweep(
+				candidate,
+				attack_range,
+				hit_half_width,
+				direction
+			):
 				continue
 			var distance_from_ray := absf(offset.cross(direction))
-			if distance_from_ray > AUTO_ATTACK_HIT_HALF_WIDTH:
-				continue
 			possible_matches.append({
 				"direction_index": direction_index,
 				"target": candidate,
-				"score": distance_from_ray * attack_range + travel_distance,
+				"score": distance_from_ray * attack_range - travel_distance,
 			})
 	possible_matches.sort_custom(func(left: Dictionary, right: Dictionary) -> bool:
 		return float(left["score"]) < float(right["score"])
@@ -1828,6 +1843,31 @@ func _auto_attack_direction_endpoint(
 			spread_degrees
 		) * maxf(0.0, attack_range)
 	)
+
+
+func _auto_attack_target_endpoint(
+	target: Node2D,
+	direction_index: int,
+	direction_count: int,
+	spread_degrees: float,
+	attack_range: float
+) -> Vector2:
+	if target == null or not is_instance_valid(target):
+		return _auto_attack_direction_endpoint(
+			direction_index,
+			direction_count,
+			spread_degrees,
+			attack_range
+		)
+	var origin := _auto_attack_origin()
+	var direction := _auto_attack_direction_vector(
+		direction_index,
+		direction_count,
+		spread_degrees
+	)
+	var target_offset := _combat_target_aim_position(target) - origin
+	var travel_distance := clampf(target_offset.dot(direction), 0.0, attack_range)
+	return origin + direction * travel_distance
 
 
 func _auto_attack_direction_vector(
@@ -1868,8 +1908,7 @@ func _auto_attack_origin() -> Vector2:
 
 
 func _combat_target_aim_position(target: Node2D) -> Vector2:
-	var collision := target.get_node_or_null("Hurtbox/CollisionShape2D") as Node2D
-	return collision.global_position if collision != null else target.global_position
+	return ATTACK_GEOMETRY.target_center(target)
 
 
 func _is_target_in_forward_corridor(
@@ -1879,13 +1918,71 @@ func _is_target_in_forward_corridor(
 ) -> bool:
 	if not player is Node2D or target == null or not is_instance_valid(target):
 		return false
-	var direction := _auto_attack_direction_vector(0, 1, 0.0)
-	var offset := _combat_target_aim_position(target) - _auto_attack_origin()
-	var travel_distance := offset.dot(direction)
+	return _is_target_in_directional_sweep(
+		target,
+		attack_range,
+		half_height,
+		_auto_attack_direction_vector(0, 1, 0.0)
+	)
+
+
+func _is_target_in_auto_attack_shape(
+	target: Node2D,
+	card: Dictionary,
+	attack_range: float,
+	blade_half_height: float
+) -> bool:
+	if not player is Node2D or target == null or not is_instance_valid(target):
+		return false
+	var effect := card.get("effect", {}) as Dictionary
+	if String(effect.get("kind", "")) == "area_damage":
+		return ATTACK_GEOMETRY.radial_contains(
+			(player as Node2D).global_position,
+			_combat_target_aim_position(target),
+			_combat_target_hit_radius(target),
+			float(effect.get("radius", attack_range))
+		)
+	return _is_target_in_forward_corridor(
+		target,
+		attack_range,
+		blade_half_height
+	)
+
+
+func _is_target_in_directional_sweep(
+	target: Node2D,
+	attack_range: float,
+	blade_half_height: float,
+	direction: Vector2
+) -> bool:
+	if not player is Node2D or target == null or not is_instance_valid(target):
+		return false
+	var origin := _auto_attack_origin()
+	var endpoint := origin + direction.normalized() * maxf(0.0, attack_range)
+	return ATTACK_GEOMETRY.directional_sweep_contains(
+		origin,
+		endpoint,
+		_combat_target_aim_position(target),
+		_combat_target_hit_radius(target),
+		blade_half_height
+	)
+
+
+func _combat_target_hit_radius(target: Node2D) -> float:
+	return ATTACK_GEOMETRY.target_radius(target)
+
+
+func _get_auto_attack_hit_half_width(card: Dictionary) -> float:
+	var visual_profile := card.get("combo_visual_profile", {}) as Dictionary
+	var resolved_scale := ATTACK_GEOMETRY.resolve_size_scale(
+		float(card.get("attack_size_multiplier", 1.0)),
+		int(visual_profile.get("stack_count", 0))
+	)
+	var combo_count := int(run_state.temporary_buffs.get("combo_chain_count", 0))
 	return (
-		travel_distance >= 0.0
-		and travel_distance <= attack_range
-		and absf(offset.cross(direction)) <= half_height
+		ATTACK_GEOMETRY.ENERGY_BLADE_HALF_HEIGHT
+		* resolved_scale
+		* ATTACK_GEOMETRY.resolve_combo_spectacle_scale(combo_count)
 	)
 
 
@@ -2099,6 +2196,9 @@ func _on_hand_overflow_confirmed(indices: Array[int], ui_control: Control) -> vo
 func _resolve_combo_card(card: Dictionary) -> bool:
 	if card.is_empty() or String(card.get("type", "")) != "combo":
 		return false
+	if not _can_resolve_combo_card(card):
+		_show_combo_stack_limit_feedback(card)
+		return false
 	_record_combo_chain(card)
 	var effect := card.get("effect", {}) as Dictionary
 	if String(effect.get("kind", "")) != "infusion":
@@ -2116,7 +2216,7 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 	var levels_variant: Variant = run_state.temporary_buffs.get("combo_levels", {})
 	var levels: Dictionary = levels_variant if levels_variant is Dictionary else {}
 	var current_level := int(levels.get(infusion_id, 0))
-	if current_level >= MAX_COMBO_EFFECT_STACKS:
+	if current_level >= _get_combo_stack_cap():
 		return false
 	levels[infusion_id] = current_level + 1
 	run_state.temporary_buffs["combo_levels"] = levels
@@ -2124,13 +2224,9 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 	var effects: Array = effects_variant if effects_variant is Array else []
 	var timed_effect := effect.duplicate(true)
 	var equipment_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
-	timed_effect["remaining_seconds"] = maxf(
-		0.1,
-		minf(
-			MAX_COMBO_EFFECT_DURATION,
-			float(effect.get("combo_duration", DEFAULT_COMBO_DURATION))
-			+ float(equipment_specials.get("combo_duration_bonus", 0.0))
-		)
+	timed_effect["remaining_seconds"] = _combo_effect_duration(
+		float(effect.get("combo_duration", DEFAULT_COMBO_DURATION)),
+		float(equipment_specials.get("combo_duration_bonus", 0.0))
 	)
 	timed_effect["persistent"] = false
 	effects.append(timed_effect)
@@ -2138,6 +2234,65 @@ func _resolve_combo_card(card: Dictionary) -> bool:
 	_try_evolve_combo_abilities()
 	_refresh_combo_runtime_modifiers()
 	return true
+
+
+func _combo_effect_duration(base_duration: float, bonus_duration: float = 0.0) -> float:
+	return maxf(
+		0.1,
+		minf(MAX_COMBO_EFFECT_DURATION, base_duration + bonus_duration)
+	)
+
+
+func _combo_chain_duration_for_count(
+	total_combo: int,
+	bonus_duration: float = 0.0
+) -> float:
+	var normalized_combo := maxi(1, total_combo)
+	var base_duration := COMBO_CHAIN_OPENING_DURATION
+	if normalized_combo > 3:
+		base_duration = maxf(
+			COMBO_CHAIN_MIN_DURATION,
+			COMBO_CHAIN_PRESSURE_DURATION
+			- COMBO_CHAIN_DURATION_STEP * float(normalized_combo - 4)
+		)
+	return minf(
+		MAX_COMBO_DURATION,
+		base_duration + maxf(0.0, bonus_duration)
+	)
+
+
+func _can_resolve_combo_card(card: Dictionary) -> bool:
+	if card.is_empty() or String(card.get("type", "")) != "combo":
+		return false
+	var effect := card.get("effect", {}) as Dictionary
+	if String(effect.get("kind", "")) != "infusion":
+		return true
+	var infusion_id := String(effect.get("infusion_id", ""))
+	if infusion_id.is_empty():
+		return false
+	var active_variant: Variant = run_state.temporary_buffs.get("active_infusions", [])
+	var active: Array = active_variant if active_variant is Array else []
+	if not active.has(infusion_id) and active.size() >= MAX_COMBO_ABILITIES:
+		return false
+	var levels_variant: Variant = run_state.temporary_buffs.get("combo_levels", {})
+	var levels: Dictionary = levels_variant if levels_variant is Dictionary else {}
+	return int(levels.get(infusion_id, 0)) < _get_combo_stack_cap()
+
+
+func _show_combo_stack_limit_feedback(card: Dictionary) -> void:
+	var effect := card.get("effect", {}) as Dictionary
+	if String(effect.get("kind", "")) != "infusion":
+		return
+	var infusion_id := String(effect.get("infusion_id", ""))
+	var levels := run_state.temporary_buffs.get("combo_levels", {}) as Dictionary
+	var stack_cap := _get_combo_stack_cap()
+	if infusion_id.is_empty() or int(levels.get(infusion_id, 0)) < stack_cap:
+		return
+	var skill_name := _localized_text(card, "name")
+	if skill_name.is_empty():
+		skill_name = String(card.get("id", "劍魂"))
+	if hud != null and hud.has_method("show_combo_popup"):
+		hud.call("show_combo_popup", skill_name, stack_cap)
 
 
 func _record_combo_formula(card: Dictionary) -> Dictionary:
@@ -2167,10 +2322,7 @@ func _record_combo_formula(card: Dictionary) -> Dictionary:
 			meaningful_tags.append(tag)
 	if meaningful_tags.is_empty():
 		meaningful_tags.append(String(card.get("id", "combo")))
-	var stack_cap := MAX_COMBO_EFFECT_STACKS + maxi(
-		0,
-		int(gift_effects.get("combo_stack_cap_bonus", 0))
-	)
+	var stack_cap := _get_combo_stack_cap()
 	for tag in meaningful_tags:
 		stacks[tag] = mini(stack_cap, int(stacks.get(tag, 0)) + stack_gain)
 	run_state.temporary_buffs["persistent_combo_stacks"] = stacks
@@ -2225,6 +2377,22 @@ func _record_combo_formula(card: Dictionary) -> Dictionary:
 	}
 
 
+func _get_combo_stack_cap() -> int:
+	var equipment_specials := inventory_manager.call(
+		"get_special_ability_totals"
+	) as Dictionary
+	var gift_effects := divine_gift_manager.call("get_global_effects") as Dictionary
+	var bonus := (
+		maxi(0, int(equipment_specials.get("combo_stack_cap_bonus", 0)))
+		+ maxi(0, int(gift_effects.get("combo_stack_cap_bonus", 0)))
+	)
+	return clampi(
+		BASE_COMBO_STACK_CAP + bonus,
+		BASE_COMBO_STACK_CAP,
+		MAX_COMBO_STACK_CAP
+	)
+
+
 func _is_finisher_recipe_learned(recipe: Dictionary) -> bool:
 	var required_variant: Variant = recipe.get(
 		"required_skills",
@@ -2253,6 +2421,21 @@ func _combo_stack_for_card(card: Dictionary) -> int:
 			continue
 		maximum = maxi(maximum, int(stacks.get(tag, 0)))
 	return maximum
+
+
+func _combo_chain_stack_for_card(card: Dictionary) -> int:
+	var skill_name := _localized_text(card, "name")
+	if skill_name.is_empty():
+		skill_name = String(card.get("id", ""))
+	var skills := run_state.temporary_buffs.get(
+		"combo_chain_skills",
+		{}
+	) as Dictionary
+	return clampi(
+		int(skills.get(skill_name, 0)),
+		0,
+		_get_combo_stack_cap()
+	)
 
 
 func _build_formula_finisher(
@@ -2490,22 +2673,34 @@ func _consume_finisher_formula() -> void:
 
 
 func _record_combo_chain(card: Dictionary) -> void:
-	var current := int(run_state.temporary_buffs.get("combo_chain_count", 0))
-	var next := mini(MAX_COMBO_CHAIN, current + 1)
 	var equipment_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
-	run_state.temporary_buffs["combo_chain_count"] = next
-	run_state.temporary_buffs["combo_chain_remaining"] = (
-		minf(
-			MAX_COMBO_DURATION,
-			COMBO_CHAIN_DURATION
-			+ float(equipment_specials.get("combo_duration_bonus", 0.0))
-		)
-	)
-	_last_combo_name = String(card.get("name", card.get("id", "Combo")))
+	var stack_cap := _get_combo_stack_cap()
+	_last_combo_name = _localized_text(card, "name")
+	if _last_combo_name.is_empty():
+		_last_combo_name = String(card.get("id", "劍魂"))
 	var skills_variant: Variant = run_state.temporary_buffs.get("combo_chain_skills", {})
 	var skills: Dictionary = skills_variant if skills_variant is Dictionary else {}
-	skills[_last_combo_name] = int(skills.get(_last_combo_name, 0)) + 1
-	run_state.temporary_buffs["combo_chain_skills"] = skills
+	if (
+		int(run_state.temporary_buffs.get("combo_chain_count", 0)) <= 0
+		or float(run_state.temporary_buffs.get("combo_chain_remaining", 0.0)) <= 0.0
+	):
+		skills = {}
+		run_state.temporary_buffs["combo_chain_order"] = []
+	var current_skill_count := maxi(0, int(skills.get(_last_combo_name, 0)))
+	var next_skill_count := mini(stack_cap, current_skill_count + 1)
+	if next_skill_count > current_skill_count:
+		skills[_last_combo_name] = next_skill_count
+		run_state.temporary_buffs["combo_chain_skills"] = skills
+	if hud != null and hud.has_method("show_combo_popup"):
+		hud.call("show_combo_popup", _last_combo_name, next_skill_count)
+	var total := 0
+	for count_variant in skills.values():
+		total += clampi(int(count_variant), 0, stack_cap)
+	run_state.temporary_buffs["combo_chain_count"] = total
+	run_state.temporary_buffs["combo_chain_remaining"] = _combo_chain_duration_for_count(
+		total,
+		float(equipment_specials.get("combo_duration_bonus", 0.0))
+	)
 	var order_variant: Variant = run_state.temporary_buffs.get("combo_chain_order", [])
 	var order: Array = order_variant if order_variant is Array else []
 	order.erase(_last_combo_name)
@@ -2572,6 +2767,7 @@ func _tick_combo_effects(delta: float) -> bool:
 			run_state.temporary_buffs["combo_chain_count"] = 0
 			run_state.temporary_buffs["combo_chain_skills"] = {}
 			run_state.temporary_buffs["combo_chain_order"] = []
+			_refresh_card_hand()
 	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
 	if not effects_variant is Array:
 		return changed
@@ -2592,7 +2788,9 @@ func _tick_combo_effects(delta: float) -> bool:
 			continue
 		var remaining := float(timed_effect.get(
 			"remaining_seconds",
-			timed_effect.get("combo_duration", DEFAULT_COMBO_DURATION)
+			_combo_effect_duration(
+				float(timed_effect.get("combo_duration", DEFAULT_COMBO_DURATION))
+			)
 		)) - delta
 		if remaining <= 0.0:
 			changed = true
@@ -2645,7 +2843,7 @@ func _rebuild_combo_state_from_effects(effects: Array) -> void:
 		if infusion_id.is_empty():
 			continue
 		levels[infusion_id] = mini(
-			MAX_COMBO_EFFECT_STACKS,
+			_get_combo_stack_cap(),
 			int(levels.get(infusion_id, 0)) + 1
 		)
 	var active: Array = []
@@ -2955,12 +3153,13 @@ func _on_player_dash_performed(_start_position: Vector2, _end_position: Vector2)
 	var targets := _get_combat_targets().filter(func(target: Variant) -> bool:
 		if not target is Node2D or not is_instance_valid(target):
 			return false
-		var closest := Geometry2D.get_closest_point_to_segment(
-			(target as Node2D).global_position,
+		return ATTACK_GEOMETRY.directional_sweep_contains(
 			_start_position,
-			_end_position
+			_end_position,
+			ATTACK_GEOMETRY.target_center(target as Node2D),
+			ATTACK_GEOMETRY.target_radius(target as Node2D),
+			80.0
 		)
-		return (target as Node2D).global_position.distance_to(closest) <= 80.0
 	)
 	if targets.is_empty():
 		return
@@ -3500,7 +3699,8 @@ func _refresh_card_hand() -> void:
 	var cards: Array[Dictionary] = []
 	for instance in deck_manager.hand_instances:
 		var card := _card_for_cast(instance)
-		card["combo_stack"] = _combo_stack_for_card(card)
+		card["combo_stack"] = _combo_chain_stack_for_card(card)
+		card["combo_stack_cap"] = _get_combo_stack_cap()
 		card["fixed"] = (
 			deck_manager.fixed_hand_mode
 			or bool(card.get("growth_locked", false))

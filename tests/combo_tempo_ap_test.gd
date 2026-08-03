@@ -32,7 +32,7 @@ func _run() -> void:
 	var run := game.get("run_state") as RunState
 	deck.energy = 0.0
 
-	var one_ap_refund := float(game.call("_apply_card_tempo", database.get_card("guard")))
+	var one_ap_refund := float(game.call("_apply_card_tempo", database.get_card("energy_surge")))
 	_expect(is_equal_approx(one_ap_refund, 0.35), "A one-AP card must immediately refund 0.35 AP.")
 	_expect(is_equal_approx(deck.energy, 0.35), "The one-AP tempo refund must reach the live deck energy.")
 	_expect(int(run.temporary_buffs.get("card_tempo_stacks", 0)) == 2, "A one-AP card must build two tempo stacks.")
@@ -50,12 +50,12 @@ func _run() -> void:
 	)
 
 	var energy_before_heavy := deck.energy
-	var heavy_refund := float(game.call("_apply_card_tempo", database.get_card("flame_imbue")))
+	var heavy_refund := float(game.call("_apply_card_tempo", database.get_card("ascendant_combo")))
 	_expect(is_zero_approx(heavy_refund), "A three-AP power card must not refund AP.")
 	_expect(is_equal_approx(deck.energy, energy_before_heavy), "A power card must not change AP after its normal cost is paid.")
 	_expect(int(run.temporary_buffs.get("card_tempo_stacks", 0)) == 4, "A three-AP power card must spend four tempo stacks.")
 
-	var discounted_heavy := database.get_card("flame_imbue")
+	var discounted_heavy := database.get_card("ascendant_combo")
 	discounted_heavy["cost"] = 2
 	game.call("_apply_card_tempo", discounted_heavy)
 	_expect(
@@ -69,11 +69,11 @@ func _run() -> void:
 	_expect(is_zero_approx(float(game.call("_get_card_tempo_regen_bonus"))), "Expired tempo must stop increasing AP regeneration.")
 
 	deck.start(["guard", "guard", "guard", "guard"], 5.0)
-	deck.energy = 1.0
+	deck.energy = 2.0
 	game.call("_on_card_selected", 0)
 	_expect(
-		is_equal_approx(deck.energy, 0.35)
-			and int(run.temporary_buffs.get("card_tempo_stacks", 0)) == 2,
+		is_equal_approx(deck.energy, 0.15)
+			and int(run.temporary_buffs.get("card_tempo_stacks", 0)) == 1,
 		"Playing a basic Combo through the combat hand must spend AP, refund tempo AP, and build tempo."
 	)
 

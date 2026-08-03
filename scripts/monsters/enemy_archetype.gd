@@ -38,17 +38,17 @@ static func autumn_catalog() -> Dictionary:
 		),
 		&"thornling": _make(
 			&"thornling", "Thornling", &"ranged",
-			10, 9, 0, 62.0, 520.0, 240.0, 1.35, 0.55, 2, 7,
+			10, 9, 0, 62.0, 520.0, 240.0, 1.35, 0.55, 1, 7,
 			[&"thorn_volley"], Color(0.42, 0.62, 0.18), Vector2(0.82, 0.82)
 		),
 		&"charger": _make(
 			&"charger", "Bark Charger", &"charge",
-			16, 14, 0, 135.0, 500.0, 82.0, 1.8, 0.7, 3, 10,
+			16, 14, 0, 135.0, 500.0, 82.0, 1.8, 0.7, 1, 10,
 			[&"rush"], Color(0.55, 0.25, 0.1), Vector2(1.12, 1.05)
 		),
 		&"grove_shaman": _make(
 			&"grove_shaman", "Grove Shaman", &"ranged",
-			12, 12, 0, 58.0, 580.0, 300.0, 1.55, 0.62, 3, 9,
+			12, 12, 0, 58.0, 580.0, 300.0, 1.55, 0.62, 1, 9,
 			[&"thorn_volley"], Color(0.38, 0.82, 0.34), Vector2(0.96, 1.08)
 		),
 		&"elite": _make(

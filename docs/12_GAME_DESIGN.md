@@ -72,10 +72,9 @@
 ```text
 Town
   → 從建築地基開啟材料行、主角鐵匠鋪、村長家、劍魂商服務
-  → 進入 Autumn 安全區，在營火休息或向旅商購物
-  → 從安全區右側進入 Autumn battle portal
+  → 在 battle portal hub 選擇 Autumn portal
   → Deck Builder 選擇 1–16 張普通遠征牌與一個獨立 auto attack
-  → 開始 Autumn Run
+  → 直接載入 Autumn battle route 並開始 Autumn Run
   → 四個限時生存階段
   → Guardian 階段
   → Guardian 死亡
@@ -86,7 +85,7 @@ Town
 
 ### 2.2 Run 的開始
 
-進入 Town/hub 的 Autumn portal 只載入安全區。與安全區右側 battle portal 互動時：
+與 Town/hub 的 Autumn portal 互動時直接開啟 Deck Builder，不先載入安全區：
 
 1. 先開啟 Deck Builder；
 2. 技能配置正規化為四張不重複 Healing／Combo，且至少保留一張 Healing；
@@ -204,8 +203,8 @@ Player 根節點為 `CharacterBody2D`，已實作：
 ### 4.3 Encounter leash
 
 Autumn encounter 的 engage radius 為 720，leash radius 為 980。長路線以最近存活
-enemy 計算 engagement；敵人在玩家前後 720–1040px 的視野外 perimeter、且不超出
-route bounds 的位置生成。距離玩家超過 1500px 的一般怪會回收到新的 perimeter
+enemy 計算 engagement；敵人在玩家前後 680–820px 的近鏡頭外 perimeter、且不超出
+route bounds 的位置生成。距離玩家超過 1200px 的一般怪會回收到新的 perimeter
 位置。玩家離開外圈後開始六秒警告：
 
 - 在倒數結束前返回會取消重置；
@@ -217,9 +216,12 @@ route bounds 的位置生成。距離玩家超過 1500px 的一般怪會回收�
 ### 5.1 生存倒數
 
 `SurvivalWaveDirector` 使用單一 600 秒倒數，不再公開或依賴 survival phase。
-普通敵人的 alive cap 由 30 連續提高到 120，spawn batch 由 5 提高到 12，
-spawn interval 由 0.55 秒連續縮短到 0.12 秒。Enemy role 依經過時間逐步加入
+開場先生成 24 隻普通敵人；alive cap 由 40 連續提高到 140，spawn batch 由 8 提高到 16，
+spawn interval 由 0.40 秒連續縮短到 0.09 秒。普通怪死亡時會在 0.05 秒內排入補怪，Enemy role 依經過時間逐步加入
 pool，但 HUD 只投影剩餘時間、威脅數與 Final Rush，不顯示隱藏的 unlock threshold。
+普通怪的基礎生命倍率在開場為 8.0，依同一條生存時間軸平滑提高，於 10:00 達到
+20.0；Moth 仍是相對脆弱怪，其餘角色即使面對前段 Combo／暴擊也有機會進入
+畫面中段，並以連續命中與擊退形成交戰。
 
 | 經過時間 | 排程事件 |
 |---:|---|
@@ -242,22 +244,27 @@ Final Rush 額外增加 40 alive cap、縮短普通 spawn interval 並提高 bat
 - ranged；
 - charge；
 - elite 行為；
+- 實體碰撞傷害為 archetype 攻擊力的 35%，沿用玩家防禦、格擋、無敵幀、擊退與反傷；
+- 每隻怪有獨立 0.8 秒接觸冷卻；預警期間碰撞仍會受傷，但同一輪招式結算不再重複扣血；
+- 普通怪未死亡時保留 0.16 秒短擊退，不會在下一幀立刻被追擊速度覆蓋；
 - 追擊高處玩家時主動跳上 one-way platform；
 - 撞牆或水平停滯時自動跳躍脫困；
 - slow、stun、burn 狀態。
 
-每隻一般敵人死亡至少會產生 2 顆實體 `ExperienceGem`；原本 2–3 XP 的獎勵
-拆成等量 1 XP 小寶石，Elite／Boss 則拆成最多 12 顆。
+每隻一般敵人死亡只產生 1 顆、價值 1 XP 的實體 `ExperienceGem`；不得因視覺分片
+把 1 XP 膨脹成 2 XP。Elite／Boss 仍依總值拆成最多 12 顆。
 Gem 生成時先向外短暫散射並落回地面，讓範圍技清場直接形成可見的經驗雨；
 之後只在 72 像素內吸引玩家、30 像素內收集，移動速度由 180 加速至 520。
-大量低價 Gem 的總和才是 Run 經驗成長來源，不得改回少量高價獎勵。
+大量低價 Gem 的總和才是 Run 經驗成長來源，但配合高密度怪群必須維持每怪 1 XP。
 寶石使用高前景層級、青色背光與脈衝亮點，必須能在怪海和秋季地景上清楚辨識。
 每次敵人受擊都要在敵人本體上顯示白閃、壓縮回彈與傷害飄字；致死攻擊改為
 金色粒子爆散及快速放大淡出，讓範圍清場能逐隻回報命中與擊殺。
 每隻 Elite 死亡都會遞增獨立 reward event，並開啟一次 Divine Gift 選擇；
 同一倒數內的後續 Elite 不會再被舊 wave／stage key 誤判成重複獎勵。
-六種普通敵人維持 4–16 HP、零防禦的 horde contract；未升級的 16 傷
-Ember Bolt 就能一擊擊殺任何普通怪，所有範圍攻擊也能直接掃除普通怪群。
+六種普通敵人的原始 archetype 維持 4–16 HP、零防禦；runtime 開場套用 8 倍生命，
+因此 Moth 為 32 HP、Hopper 為 64 HP、Sprout／Thornling 為 80 HP、Shaman 為 96 HP、
+Charger 為 128 HP。第一分鐘常見約 40 傷 Combo 普攻只會直接清掉 Moth，其餘角色
+需要後續命中並會短暫擊退，不再於畫面邊緣抹除整群。
 Elite 維持 85 HP，基礎大招不能單次擊殺；Guardian 仍是獨立耐久關卡。
 
 普通敵人死亡時有 16% 機率生成 `SurvivalPickup`，掉落採單一權威權重表：
@@ -387,8 +394,11 @@ Basic Attack 不反覆顯示名稱；只有實際造成傷害且沒有施法演�
 
 ### 7.1 Combo cards
 
-`combo` 與 catalog 收錄的 `healing` 都可作為終結技公式材料。Combo 每次使用會永久增加公式用 stack，但該卡提供的 attack
-infusion／status 各自只有 1.5 秒基礎持續時間，且彼此獨立倒數。某一效果到期時
+`combo` 與 catalog 收錄的 `healing` 都可作為終結技公式材料。每個劍魂的 Combo
+基礎上限為 5 層；裝備與神賜可提高有效上限，但任何來源相加後都不得超過 10 層。
+專注護符提供 +5 上限，因此可將單一劍魂由 5 層提高至 10 層。傷害 chain、限時效果、
+永久公式 stack、卡面層數與 HUD 提示皆讀取同一有效上限。Combo 每次使用會永久增加公式用 stack，但該卡提供的 attack
+infusion／status 各自維持 1.5 秒，且彼此獨立倒數。某一效果到期時
 只移除自己的修正並立即以剩餘效果重建攻擊 profile；例如 Giant Arc 到期後尺寸
 回到正常，仍在倒數的 Quickened Cadence 繼續保留攻速。攻擊次數不會消耗這些
 效果。Healing 若出現在已定義配方也會進入三格公式。三招必須精確匹配 32 個已學會的
@@ -410,10 +420,11 @@ recipe Finisher base + matched three-card current-level effects + equipment proj
 冷霧纏繞；雙元素可同時顯示。這些卡都只消耗 AP，不使用 card cooldown。
 Combo chain 到 3／6／9 時，projectile presentation 分別加入環繞刃光、雙重殘影
 與爆發星芒；這些層級只改視覺，不額外建立隱藏傷害。
-沒有 Echo Volley 時，Basic Attack 固定為單方向、單發、單目標基本型態。
-Echo Volley 增加同一輪的彈體數與可命中目標數，但所有彈體仍沿角色面向的水平
-戰鬥走廊前進。攻擊不向最近敵人重新瞄準，也不在飛行途中追蹤；走廊外與角色
-背後的敵人不受傷。有合法水平目標時自動射擊；沒有目標時不消耗 cooldown、
+沒有 Echo Volley 時，Basic Attack 固定為單方向、單發的貫穿劍氣；同一個
+劍氣形狀沿途掃過的每個敵人各受傷一次。Echo Volley 增加同一輪的彈體數，
+但重疊劍氣不會讓同一敵人重複承受基礎傷害。攻擊不向最近敵人重新瞄準，
+也不在飛行途中追蹤；劍氣形狀外與角色背後的敵人不受傷。有合法目標時
+自動射擊；沒有目標時不消耗 cooldown、
 公式或已排隊的終結技。
 
 ### 7.2 Divine Gifts
@@ -516,13 +527,13 @@ Run 初始：
 
 - level = 1；
 - experience = 0；
-- experience required = 40。
+- experience required = 100。
 
 下一級門檻公式：
 
 ```text
-initial_required = 30
-next_required = ceil(previous_required * 1.25 + 10)
+initial_required = 100
+next_required = ceil(previous_required * 1.30 + 25)
 ```
 
 一次取得大量經驗可跨多級，每一級加入 `pending_level_ups`，不會只保留一次升級。
@@ -879,6 +890,9 @@ S／↓ 不負責攻擊；`card_group_1` 與 `card_group_2` InputMap actions 已
 - 單組四張 Combo／Healing 手牌；每張以大型 semantic icon、招式名與
   Healing／Flame／Volley／Storm 色族協助即時辨識；
 - 持續顯示總層數、剩餘時間與技能分項的 Combo Chain 清單；
+- 每張 Combo 卡的分類框顯示該劍魂自己的 `目前層數/有效上限`；
+- 每次個別劍魂 Combo 增加時，左側玩法區短暫顯示「中文劍魂名 ×N」；字級由 18px
+  隨次數緩升、最高 26px，並在 0.95 秒內小幅放大、上浮與淡出；
 - Guardian health；
 - interaction prompt；
 - Run Result、Level Up、Discard、Deck Builder modal。
@@ -905,6 +919,8 @@ Game (Node)                         scenes/game/game.tscn
 │       └── EastSafePortal
 ├── HUDLayer (CanvasLayer)
 │   └── HUD (AutumnHUD)
+│       ├── ComboPopupAnchor (Control)
+│       │   └── ComboPopup (Label)
 │       └── AutumnCardHandUI (Control)
 ├── MenuLayer (CanvasLayer)
 │   ├── DeckBuilderUI (Control)     created when opened
@@ -944,7 +960,7 @@ func add_experience(amount: int) -> int:
 		pending_level_ups += 1
 		queued += 1
 		experience_required = int(
-			ceil(float(experience_required) * 1.25 + 10.0)
+			ceil(float(experience_required) * 1.30 + 25.0)
 		)
 	return queued
 ```
@@ -997,7 +1013,9 @@ Deck Builder 在戰前從已解鎖 attack cards 選一個 Basic Attack，與四�
 - 有合法水平目標時依 catalog interval 自動發射；
 - 不建立出牌事件，因此不推進 `SkillRecipeManager` 的 count/sequence；
 - 可使用所選 attack card 的有效 level/equipment projection；
-- 固定沿玩家面向發射，傷害只判定在可見彈道的水平窄射線走廊內；
+- 固定沿玩家面向發射；方向劍氣使用與 106px 主刃高度、Combo 尺寸、stack
+  及 Combo spectacle 同源的前向膠囊掃掠形狀，沿途每個 hurtbox 只結算一次；
+- 圓形爆發使用 radius 與 hurtbox 圓形相交，Dash 攻擊使用起終點膠囊相交；
 - 無效選擇 fallback 到已解鎖的有效 attack。
 
 Dash 是玩家固有 action：↑ 只觸發 Jump，Space 觸發 Dash。Dash 不建立
@@ -1017,22 +1035,31 @@ presentation only after a legal horizontal target confirms that the shot will fi
 ### Persistent Combo formula and timed card effects
 
 Combo cards remain in their slot after play. Formula history and stacks persist for the
-entire Run, while each card's attack infusion or status has its own 1.5-second base
-timer. Expiration removes only that card's modifiers, so later overlapping effects
+entire Run, while each card's attack infusion or status has its own 1.5-second timer.
+Expiration removes only that card's modifiers, so later overlapping effects
 continue normally. Healing enters the formula when it is part of a catalog recipe. An exact learned
 three-card recipe queues its named Finisher for a later automatic horizontal shot;
 multiple Finishers resolve FIFO. The HUD shows formula slots, persistent stacks,
 owned Divine Gifts, Gift-modified names, and the queued ready state.
 
-`combo_cost_reduction` still applies with a minimum cost of 1 AP. Legacy
-`combo_duration_bonus` extends both the separate 2.5-second Combo Chain window and
-the 1.5-second card-effect timer, capped at 3.0 and 2.0 seconds respectively.
+All twenty formula-eligible Sword Souls use a shared base cost of `2 AP`. Equipment
+may still apply `combo_cost_reduction` to Combo cards, with a minimum final cost of
+`1 AP`; Healing cards keep their catalog cost.
+
+The Combo Chain uses a separate pressure curve based on total active Combo stacks. Counts
+one through three receive a 2.0-second continuation window; count four starts at 1.3
+seconds, then each additional count removes 0.1 seconds down to a 0.6-second floor.
+Legacy `combo_duration_bonus` is added after that curve. Focus Amulet therefore adds 0.5
+seconds to the current chain window and extends the independent card effect to 2.0 seconds.
 
 ### Card tempo and AP flow
 
 Base AP regeneration is `0.95 AP/second`. Low-cost Combo and Healing cards build
 a separate six-second card-tempo window so sustained play accelerates the hand
 without making high-impact cards self-sustaining:
+
+The normal four-slot Sword Soul hand therefore follows the catalog-cost 2 branch:
+each successful play adds one tempo stack and immediately refunds `0.15 AP`.
 
 - a catalog-cost 1 card adds two tempo stacks and immediately refunds `0.35 AP`;
 - a catalog-cost 2 card adds one tempo stack and immediately refunds `0.15 AP`;
@@ -1232,11 +1259,12 @@ Combo 的攻擊提高採每三層一階：每階增加當前基礎攻擊 amount 
 ### Horde-first difficulty
 
 Autumn survival uses enemy density and mixed roles instead of weakening the
-player. The ten-minute countdown continuously grows concurrent caps `30 → 120`
-and spawn batches `5 → 12`; Final Rush adds another 40 cap plus scheduled Elites and
+player. The ten-minute countdown opens with 24 enemies, continuously grows concurrent
+caps `40 → 140` and spawn batches `8 → 16`; Final Rush adds another 40 cap plus scheduled Elites and
 Harbingers. Amber Moth Swarm adds fragile high-speed pressure while Grove
-Shaman adds long-range support. Normal roles stay low-health and defense-free so
-area ultimates erase a crowd at once. Elite is never part of the random normal pool.
+Shaman adds long-range support. Normal roles stay defense-free; their `8.0 → 20.0`
+timeline health scale preserves fragile early crowds while letting later survivors
+absorb follow-up hits and show knockback. Elite is never part of the random normal pool.
 自動普攻命中時以世界空間短彈道、命中環、實際傷害數字與 `COMBO ×N / POWER +N`
 直接呈現本次強化，讓玩家不必只靠 HUD 判斷是否生效。
 中性普通攻擊的主形狀是朝前方凸出的白青色 `)` 型空心月牙劍氣，由 core blade、

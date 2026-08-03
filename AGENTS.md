@@ -70,6 +70,11 @@ under their map folder; stable compatibility entries remain directly under
 split under `scripts/`, such as `scripts/player/player_controller.gd` and
 `scripts/managers/game.gd`.
 
+### Project Terminology
+
+- `OB` refers to the story-design workspace at `concept/story/game_story/`
+  unless the user explicitly provides a different meaning or path.
+
 ## 3. Build, Test, and Development Commands
 
 Open the project in Godot from this directory:
