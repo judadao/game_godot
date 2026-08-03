@@ -1487,6 +1487,8 @@ the HUD never reads gameplay state directly.
   `IconStage` 必須在中文分類框上緣前結束；中文分類使用四邊舊金框的暖墨 tab 且至少佔 60% 卡寬。
   `CardName` 銘牌右界依 AP 圓章位置計算，最多兩行、超出省略，完整名稱保留於 tooltip。四張牌不得新增
   表格分隔線、全卡不透明色塊或元素色霓虹外框。
+- Cast feedback: 成功施放後只有相符 card id 的卡片播放約 0.42 秒最上層儀式弧光、
+  12 根短放射刻線、三圓章閃光與主圖 punch；不得使用矩形遮罩，也不得重置日芒或外框的全域相位。
 
 ### AutumnCardHandUI renderer
 

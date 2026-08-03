@@ -268,6 +268,14 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 				and card.has_method("is_cast_feedback_active"),
 			"Every Autumn card must expose short cast-feedback behavior."
 		)
+		var cast_feedback := card.get_node("CastFeedback") as Control
+		_expect(
+			cast_feedback.has_method("get_feedback_state")
+				and int((cast_feedback.call("get_feedback_state") as Dictionary).get("burst_ticks", 0)) >= 12
+				and bool((cast_feedback.call("get_feedback_state") as Dictionary).get("no_rectangular_overlay", false))
+				and cast_feedback.z_index >= 20,
+			"Card cast feedback must be a visible top-layer ritual arc animation without a rectangular overlay."
+		)
 		_expect(
 			card.has_method("get_frame_design_state"),
 			"Every Autumn card must expose its code-native ritual-frame contract."

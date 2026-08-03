@@ -279,17 +279,59 @@ func _check_projection_behavior() -> void:
 	hud.call("set_cards", _sample_cards(), 5.0)
 	await process_frame
 	var hand := hud.get_node("BottomStage/CardStage/AutumnCardHandUI") as CardHandUI
+	var graphical_pixel_check := DisplayServer.get_name() != "headless"
+	var before_cast := Image.new()
+	if graphical_pixel_check:
+		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+		await process_frame
+		await RenderingServer.frame_post_draw
+		before_cast = viewport.get_texture().get_image()
 	_expect(
 		bool(hud.call("show_card_cast_feedback", "flame_imbue")),
 		"A successful cast projection must find and pulse its matching fixed card."
 	)
 	var flame_card := hand.get_card_button(1)
 	var healing_card := hand.get_card_button(0)
+	var flame_feedback := flame_card.get_node("CastFeedback") as Control
+	var healing_feedback := healing_card.get_node("CastFeedback") as Control
 	_expect(
 		bool(flame_card.call("is_cast_feedback_active"))
 			and not bool(healing_card.call("is_cast_feedback_active")),
 		"Cast feedback must emphasize only the matching Combo/Healing card."
 	)
+	var feedback_state := flame_feedback.call("get_feedback_state") as Dictionary
+	_expect(
+		flame_feedback.visible
+			and not healing_feedback.visible
+			and float(feedback_state.get("intensity", 0.0)) > 0.0
+			and bool(feedback_state.get("top_layer", false))
+			and bool(feedback_state.get("ritual_arcs", false))
+			and int(feedback_state.get("burst_ticks", 0)) >= 12
+			and bool(feedback_state.get("medallion_flash", false))
+			and bool(feedback_state.get("no_rectangular_overlay", false)),
+		"The matching card must show a visible top-layer ritual UI cast animation, not a near-transparent panel."
+	)
+	if graphical_pixel_check:
+		await create_timer(0.08).timeout
+		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+		await process_frame
+		await RenderingServer.frame_post_draw
+		var during_cast := viewport.get_texture().get_image()
+		var flame_delta := _image_region_difference(
+			before_cast,
+			during_cast,
+			_canvas_rect(flame_card)
+		)
+		var healing_delta := _image_region_difference(
+			before_cast,
+			during_cast,
+			_canvas_rect(healing_card)
+		)
+		_expect(
+			flame_delta >= healing_delta * 1.15 + 0.004,
+			"The matching card must produce a clearly larger visible pixel change than an untargeted card; target=%.4f control=%.4f."
+				% [flame_delta, healing_delta]
+		)
 	_expect(
 		bool(hud.call("show_card_cast_feedback", "flame_imbue")),
 		"Repeated casts must safely restart the same short card pulse."
@@ -300,7 +342,8 @@ func _check_projection_behavior() -> void:
 	)
 	await create_timer(0.5).timeout
 	_expect(
-		not bool(flame_card.call("is_cast_feedback_active")),
+		not bool(flame_card.call("is_cast_feedback_active"))
+			and not flame_feedback.visible,
 		"Card cast feedback must settle quickly without becoming a cooldown overlay."
 	)
 
@@ -415,6 +458,33 @@ func _sample_cards() -> Array[Dictionary]:
 
 func _canvas_rect(control: Control) -> Rect2:
 	return control.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, control.size)
+
+
+func _image_region_difference(first: Image, second: Image, region: Rect2) -> float:
+	if first.is_empty() or second.is_empty() or first.get_size() != second.get_size():
+		return 0.0
+	var image_size := first.get_size()
+	var start := Vector2i(
+		clampi(int(floorf(region.position.x)), 0, image_size.x),
+		clampi(int(floorf(region.position.y)), 0, image_size.y)
+	)
+	var end := Vector2i(
+		clampi(int(ceilf(region.end.x)), start.x, image_size.x),
+		clampi(int(ceilf(region.end.y)), start.y, image_size.y)
+	)
+	var difference := 0.0
+	var samples := 0
+	for y in range(start.y, end.y, 2):
+		for x in range(start.x, end.x, 2):
+			var first_color := first.get_pixel(x, y)
+			var second_color := second.get_pixel(x, y)
+			difference += (
+				absf(first_color.r - second_color.r)
+				+ absf(first_color.g - second_color.g)
+				+ absf(first_color.b - second_color.b)
+			) / 3.0
+			samples += 1
+	return difference / float(maxi(1, samples))
 
 
 func _expect(condition: bool, message: String) -> void:

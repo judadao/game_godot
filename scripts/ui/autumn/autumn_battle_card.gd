@@ -80,7 +80,7 @@ const TYPE_DISPLAY_NAMES := {
 const FRAME_GOLD := Color(0.67, 0.52, 0.30, 1.0)
 const FRAME_OLD_GOLD := Color(0.34, 0.25, 0.15, 1.0)
 const FRAME_INK := Color(0.010, 0.012, 0.017, 0.995)
-const CAST_FEEDBACK_DURATION := 0.34
+const CAST_FEEDBACK_DURATION := 0.42
 
 var _card_id := ""
 var _card_type := "CARD"
@@ -116,7 +116,7 @@ var _cast_intensity := 0.0
 @onready var _cost_inner_ring: Panel = $CardContent/CostRow/APInnerRing
 @onready var _cost_value: Label = $CardContent/CostRow/CostValue
 @onready var _lock_badge: Label = $LockBadge
-@onready var _cast_feedback: Panel = $CastFeedback
+@onready var _cast_feedback: Control = $CastFeedback
 
 
 func _ready() -> void:
@@ -134,7 +134,10 @@ func _process(delta: float) -> void:
 	var breath := (sin(_animation_phase) + 1.0) * 0.5
 	if _tarot_frame != null:
 		_tarot_frame.scale = Vector2.ONE
-		_tarot_frame.call("set_energy", 0.94 if _hovered else 0.58 + breath * 0.20)
+		_tarot_frame.call(
+			"set_energy",
+			1.0 if _cast_intensity > 0.001 else (0.94 if _hovered else 0.58 + breath * 0.20)
+		)
 	if _halo_layer != null:
 		_halo_layer.visible = false
 	if _raven_layer != null:
@@ -146,8 +149,15 @@ func _process(delta: float) -> void:
 	if _sun_wave != null:
 		_sun_wave.call("set_energy", 0.92 if _hovered else 0.58 + breath * 0.18)
 	if _icon != null and _icon.visible:
-		var art_scale := 1.0 + breath * (0.009 if _hovered else 0.004)
+		var cast_punch := sin((1.0 - _cast_intensity) * PI) if _cast_intensity > 0.001 else 0.0
+		var art_scale := 1.0 + breath * (0.009 if _hovered else 0.004) + cast_punch * 0.055
 		_icon.scale = Vector2.ONE * art_scale
+	var cast_accent := FAMILY_ACCENTS.get(_visual_family, FAMILY_ACCENTS["CARD"]) as Color
+	var cast_flash := clampf(_cast_intensity * 0.72, 0.0, 0.72)
+	var flash_controls: Array[CanvasItem] = [_shortcut, _type_gem, _cost_value]
+	for flash_control in flash_controls:
+		if flash_control != null:
+			flash_control.self_modulate = Color.WHITE.lerp(cast_accent.lightened(0.42), cast_flash)
 	queue_redraw()
 
 
@@ -234,7 +244,7 @@ func _cache_nodes() -> void:
 	_cost_inner_ring = get_node("CardContent/CostRow/APInnerRing") as Panel
 	_cost_value = get_node("CardContent/CostRow/CostValue") as Label
 	_lock_badge = get_node("LockBadge") as Label
-	_cast_feedback = get_node("CastFeedback") as Panel
+	_cast_feedback = get_node("CastFeedback") as Control
 	_sync_adaptive_layout()
 
 
@@ -347,10 +357,8 @@ func play_cast_feedback() -> void:
 		_visual_family,
 		FAMILY_ACCENTS["CARD"]
 	) as Color
-	_cast_feedback.add_theme_stylebox_override(
-		"panel",
-		_make_cast_feedback_style(accent)
-	)
+	_cast_feedback.call("set_accent", accent)
+	_cast_feedback.call("set_intensity", 1.0)
 	_cast_feedback.visible = true
 	_cast_feedback.modulate = Color(1.0, 1.0, 1.0, 0.0)
 	_cast_feedback.scale = Vector2(0.96, 0.96)
@@ -453,6 +461,7 @@ func _finish_cast_feedback() -> void:
 	if _cast_feedback == null:
 		return
 	_cast_feedback.visible = false
+	_cast_feedback.call("set_intensity", 0.0)
 	_cast_feedback.modulate = Color.WHITE
 	_cast_feedback.scale = Vector2.ONE
 	_cast_intensity = 0.0
@@ -461,6 +470,8 @@ func _finish_cast_feedback() -> void:
 
 func _set_cast_intensity(value: float) -> void:
 	_cast_intensity = clampf(value, 0.0, 1.0)
+	if _cast_feedback != null and _cast_feedback.has_method("set_intensity"):
+		_cast_feedback.call("set_intensity", _cast_intensity)
 	queue_redraw()
 
 
@@ -625,17 +636,6 @@ func _make_cost_inner_ring(accent: Color) -> StyleBoxFlat:
 	style.border_color = FRAME_OLD_GOLD.lerp(accent, 0.16).lightened(0.04)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(19)
-	return style
-
-
-func _make_cast_feedback_style(accent: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(accent.r, accent.g, accent.b, 0.015)
-	style.border_color = Color(0.0, 0.0, 0.0, 0.0)
-	style.set_border_width_all(0)
-	style.set_corner_radius_all(0)
-	style.shadow_color = Color(0.0, 0.0, 0.0, 0.0)
-	style.shadow_size = 0
 	return style
 
 

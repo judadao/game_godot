@@ -1191,8 +1191,9 @@ positions or resize these cards from gameplay code.
 技能名稱由 AP 圓章位置動態計算專屬銘牌右界，短名稱保持大字、長名稱固定在兩行文字區內 wrap，
 超出時以省略號截斷，tooltip 保留完整名稱；任何繁中長名稱、神賜疊加
 前綴或字型 fallback 都不得改變卡框尺寸。成功施放後由 Game 在 AP 扣除與效果確認後
-呼叫 HUD 的 `show_card_cast_feedback(card_id)`；Hand 只對相符卡片播放約 0.34 秒的
-元素色描邊／光暈脈衝。AP 不足、未知 ID 或拒絕施放不能播放，重複施放則安全重啟
+呼叫 HUD 的 `show_card_cast_feedback(card_id)`；Hand 只對相符卡片播放約 0.42 秒的
+最上層元素色儀式弧光、12 根短放射刻線、三圓章閃光與主圖 punch。動畫不得使用近透明矩形 panel，
+也不得重置底層日芒／外框的全域循環。AP 不足、未知 ID 或拒絕施放不能播放，重複施放則安全重啟
 同一 tween。這是 presentation feedback，不是 cooldown 或第二套戰鬥狀態。
 
 `PlayerVitals` owns the always-visible XP projection. `set_experience(current,

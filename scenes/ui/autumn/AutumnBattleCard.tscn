@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/autumn/autumn_battle_card.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/ui/autumn/battle_card_geometric_frame.gd" id="2_geometric_frame"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/autumn/cards/layers/battle_card_vines_smoke_v1.png" id="5_vines"]
 [ext_resource type="Script" path="res://scripts/ui/autumn/battle_card_sun_wave.gd" id="7_sun_wave"]
 [ext_resource type="Shader" path="res://assets/ui/autumn/cards/layers/battle_card_art_black_key.gdshader" id="8_art_key"]
+[ext_resource type="Script" path="res://scripts/ui/autumn/battle_card_cast_feedback.gd" id="9_cast_feedback"]
 
 [sub_resource type="SystemFont" id="SystemFont_card_serif"]
 font_names = PackedStringArray("Noto Serif TC", "Noto Serif CJK TC", "PMingLiU", "serif")
@@ -46,7 +47,7 @@ text = "契印"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CastFeedback" type="Panel" parent="."]
+[node name="CastFeedback" type="Control" parent="."]
 visible = false
 z_index = 20
 layout_mode = 1
@@ -60,6 +61,7 @@ offset_bottom = -1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("9_cast_feedback")
 
 [node name="CardContent" type="Control" parent="."]
 layout_mode = 1
