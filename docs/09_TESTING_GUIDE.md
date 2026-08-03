@@ -202,11 +202,14 @@ AutumnHUD（含內嵌 CardHandUI）至少驗證以下視窗尺寸：
 - 2560×1440
 - 1152×720（較窄比例；現有 guardrail suite）
 - 2560×1080（較寬比例）
+- 2864×1080（玩家回報的超寬回歸尺寸）
 
 自動測試應檢查安全區、地圖 viewport、卡牌操作區、焦點、遮擋與螢幕邊界。Autumn
 HUD 還要檢查 XP 的 current／required／NEXT remaining projection、HP／AP／XP／level
-短暫 emphasis 會回復穩定狀態，以及四張 fixed cards 都有至少 48px 的不同 semantic
-icon、12px 以上招式名與 Healing／Flame／Volley／Storm visual family。人工驗證則確認
+短暫 emphasis 會回復穩定狀態，以及四張 fixed cards 都與等寬 slot 寬高誤差不超過
+1px、完整吃滿 `FrontRow`、主插畫至少覆蓋 72% 卡寬與 42% 卡高、12px 以上招式名，以及
+Healing／Flame／Volley／Storm visual family。另須以超長公式、終結技與神賜名稱確認
+右側 `ActivityFeed` rect 不變，所有單行 projection 均裁切並提供 tooltip。人工驗證則確認
 字體清楚、卡牌能先靠 icon/色族判讀、HUD 不阻擋玩法資訊、動畫沒有引發 layout
 跳位，以及編輯器所見與執行結果一致。
 
@@ -215,10 +218,15 @@ icon、12px 以上招式名與 Healing／Flame／Volley／Storm visual family。
 且 `AutumnBattleCard` 實際投影相同中文與圖片。Generated raster 最終仍須獨立檢查
 20 張原生圖、44px contact sheet、六解析度完整畫面與一張完整畫面的固定 3×2 六切片。
 
-設定 `AUTUMN_HUD_CAPTURE_DIR` 後執行 `autumn_hud_v3_layout_test.gd`，會由六個
+設定 `AUTUMN_HUD_CAPTURE_DIR` 後執行 `autumn_hud_v3_layout_test.gd`，會由七個
 exact-size `SubViewport` 輸出 `autumn_hud_<width>x<height>.png`，不受桌面工作區
 最大視窗尺寸限制。Windows 擷取需使用非 headless 的 compatibility renderer；dummy
 headless renderer 不會送出 `frame_post_draw`，不可把等待超時誤報為 layout failure。
+
+設定 `CARD_GROWTH_CAPTURE_DIR` 後執行 `card_growth_ui_layout_test.gd`，會輸出七種
+`card_growth_divine_<width>x<height>.png`。神賜頁必須人工確認大型符印、三張卡等寬、
+2–3 條具體效果、selected／focus 差異與 `SelectionSummary`；1152×720 不得裁字，
+1920／2864 寬螢幕則由 responsive modal 使用可用空間。
 
 Autumn map 變更至少需執行 `autumn_safe_zone_contract_test.gd`、
 `autumn_modular_route_test.gd`、`battle_map_v2_scene_contract_test.gd`、
@@ -551,11 +559,12 @@ instance.queue_free()
 | Growth queue | wave new-card 可直接 skip；滿 16 張可 replace/skip；EXP upgrade 五選一、全滿後獨立 fusion；無候選才 fallback；FIFO 不漏頁 |
 | Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一 |
 | Deck/hand | 傳送門前四格直選；4 unique Healing／Combo 且至少 1 Healing；最後一張 Healing 不可換掉；候選排除重複並預覽終結技；QWER 使用後保留原 slot |
-| Card readability/feedback | 繁中長技能名固定兩行且不撐寬四卡框；六解析度不重疊；只有成功施放的相符 card id 播放短脈衝，重複呼叫重啟、未知 ID 無作用、0.5 秒內回穩 |
+| Card readability/feedback | 繁中長技能名固定兩行且不撐寬四卡框；七解析度不重疊；compatibility `BackRow` hidden 且不保留高度，黑金卡框由 CardStage 頂緣到底緣雙軸填滿四等分 slot、滿版主插畫；hover 不橫向放大；右側長公式固定欄寬 ellipsis；只有成功施放的相符 card id 播放短脈衝，重複呼叫重啟、未知 ID 無作用、0.5 秒內回穩 |
+| Combat input hierarchy | 隱藏舊 `ActionStrip`；`SPACE 衝刺` 位於 FooterRail；手牌頂緣貼齊 CardStage；卡面共用 Noto Serif TC 優先的襯線 stack，招式名至少 16px／獨立不透明名牌至少 34px，插畫在名牌上緣結束；Q/W/E/R 為 20–24px 高、12–13px 字級、1px 框／至多 2px 陰影且完整嵌入 28–32px HeaderBand 左側的鍵印；AP cost 為 42–46px、至少 22px 數字、1px 框／至多 2px 陰影的雙層古幣章；類型只顯示中文 |
 | Basic Attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；有水平走廊目標時自動攻擊；不向上／下追蹤；無目標不消耗 cooldown 或公式 |
 | Combo formula | catalog 合法 Combo／Healing 都可記錄；32 個精確已學會 AAA/ABC 配方；順序錯誤不觸發；純治療／防禦支援為零基礎傷害；多招 FIFO 排隊；下一發自動水平攻擊逐一施放；formula stacks 不消耗；各卡效果獨立 1.5 秒，單一效果到期只撤銷自己的 modifier；Combo Chain 維持獨立 2.5 秒 |
 | Divine Gifts | 每 stage/wave 一個必選頁；最多 3 slot；有空位才出新品，滿槽只出既有升級；全 inventory 的中文前綴與 mechanics 依序累加；Lv.3 融合材料退出獎勵池並釋出一格；fusion-only 可 skip；選擇頁與 HUD 不得露出英文名稱／說明 |
-| Growth card readability | upgrade/new/fusion choice 顯示 icon、類型色、AP/level；多效果使用 bullets；六解析度不裁切 |
+| Growth card readability | upgrade/new/fusion choice 顯示 icon、類型色、AP/level；神賜使用 88px 符印、中文效果分類、2–3 條 next effect/mechanics、獨立 selected badge 與摘要；七解析度不裁切 |
 | Dash | ↑ 只觸發 Jump；Space 觸發玩家固有 Dash；不進牌庫/手牌、不耗 AP；Dash Combo infusions 使用 `target_action=dash` |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |
 | HUD authority | Autumn 只有一個 HUD root；hand 在 `CardStage`；Town HUD identity 不變 |

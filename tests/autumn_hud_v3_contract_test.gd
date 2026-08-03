@@ -63,6 +63,7 @@ func _run() -> void:
 			"BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack",
 			"FooterRail",
 			"FooterRail/FooterRow/SurvivalTimerLabel",
+			"FooterRail/FooterRow/DashHint",
 		]:
 			_expect(
 				autumn_hud.has_node(node_path),
@@ -86,6 +87,10 @@ func _run() -> void:
 		_expect(
 			not autumn_hud.has_node("BottomStage/CardStage/ActionStrip/CooldownStrip"),
 			"AutumnHUD must use AP instead of a card cooldown strip."
+		)
+		_expect(
+			not (autumn_hud.get_node("BottomStage/CardStage/ActionStrip") as Control).visible,
+			"The obsolete upper action strip must stay hidden so combat cards can expand upward."
 		)
 		_expect(autumn_hud.has_node("InteractionPanel"), "AutumnHUD must contain its interaction prompt.")
 		var prompt := autumn_hud.get_node_or_null("InteractionPanel")

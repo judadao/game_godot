@@ -8,11 +8,14 @@ const TOWN_HAND_PATH := "res://scenes/ui/town/TownCardHandUI.tscn"
 const TOWN_RENDERER_PATH := "res://scripts/ui/cards/card_hand_ui.gd"
 const REQUIRED_CARD_NODES := [
 	"CardContent/Shortcut",
+	"CardContent/HeaderBand",
 	"CardContent/CardName",
+	"CardContent/NameBand",
 	"CardContent/CardType",
 	"CardContent/IconStage",
 	"CardContent/IconStage/IconFrame",
 	"CardContent/Level",
+	"CardContent/CostRow/APSeal",
 	"CardContent/CostRow/CostLabel",
 	"CardContent/CostRow/CostValue",
 	"LockBadge",
@@ -25,6 +28,7 @@ const VIEWPORTS := [
 	Vector2i(1920, 1080),
 	Vector2i(2560, 1080),
 	Vector2i(2560, 1440),
+	Vector2i(2864, 1080),
 ]
 
 var _failures := 0
@@ -109,13 +113,16 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 			)
 			var lock_badge := card.get_node("LockBadge") as Control
 			_expect(lock_badge.visible, "Reusable fixed cards must show the lock badge.")
-		var aspect := card.size.x / maxf(1.0, card.size.y)
+		var slot := card.get_parent() as Control
 		_expect(
-			aspect >= 0.68 and aspect <= 0.78,
-			"Card %d must keep a tall 0.68-0.78 aspect ratio at %s; got %.3f." % [
+			slot != null
+				and absf(card.size.x - slot.size.x) <= 1.0
+				and absf(card.size.y - slot.size.y) <= 1.0,
+			"Card %d must stretch to fill its authored hand slot at %s; card=%s slot=%s." % [
 				index,
 				viewport_size,
-				aspect,
+				card.size,
+				slot.size if slot != null else Vector2.ZERO,
 			]
 		)
 		_expect(
@@ -129,15 +136,82 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 		var card_name := card.get_node("CardContent/CardName") as Label
 		var role_label := card.get_node("CardContent/CardType") as Label
 		var icon := card.get_node("CardContent/IconStage/Icon") as TextureRect
+		var shortcut := card.get_node("CardContent/Shortcut") as Label
+		var header_band := card.get_node("CardContent/HeaderBand") as Panel
+		var name_band := card.get_node("CardContent/NameBand") as Panel
+		var cost_label := card.get_node("CardContent/CostRow/CostLabel") as Label
+		var cost_row := card.get_node("CardContent/CostRow") as Control
+		var cost_seal := card.get_node("CardContent/CostRow/APSeal") as Panel
+		var cost_value := card.get_node("CardContent/CostRow/CostValue") as Label
 		_expect(
-			card_name.get_theme_font_size("font_size") >= 12,
-			"Card %d name must use at least 12px text at %s." % [index, viewport_size]
+			shortcut.size.y >= 20.0
+				and shortcut.size.y <= 24.0
+				and shortcut.position.y >= 4.0
+				and shortcut.get_theme_font_size("font_size") >= 12
+				and shortcut.get_theme_font_size("font_size") <= 13,
+			"Q/W/E/R prompts must use a restrained inset key seal, not an oversized floating button."
+		)
+		_expect(
+			_canvas_rect(header_band).encloses(_canvas_rect(shortcut))
+				and header_band.size.y >= 28.0
+				and header_band.size.y <= 32.0
+				and shortcut.position.x <= 12.0,
+			"Shortcut seals must be embedded inside the card's top contract band."
+		)
+		var shortcut_style := shortcut.get_theme_stylebox("normal") as StyleBoxFlat
+		_expect(
+			shortcut_style != null
+				and shortcut_style.border_width_left == 1
+				and shortcut_style.shadow_size <= 2,
+			"Shortcut seals must use thin engraved brass without neon glow."
+		)
+		var serif_font := card_name.get_theme_font("font") as SystemFont
+		_expect(
+			serif_font != null and serif_font.font_names.has("Noto Serif TC"),
+			"Chinese card typography must use the approved Traditional Chinese serif stack."
+		)
+		_expect(
+			shortcut.get_theme_font("font") == serif_font
+				and role_label.get_theme_font("font") == serif_font
+				and cost_label.get_theme_font("font") == serif_font
+				and cost_value.get_theme_font("font") == serif_font,
+			"Title, metadata, shortcut, and AP must share one deliberate serif typography family."
+		)
+		_expect(
+			not role_label.text.contains("COMBO") and not role_label.text.contains("HEALING"),
+			"Visible card metadata must use Chinese type names instead of mixed English labels."
+		)
+		_expect(
+			card_name.get_theme_font_size("font_size") >= 16
+				and card_name.size.y >= 34.0
+				and name_band.size.y >= 34.0,
+			"Card %d name must be a prominent 16px+ serif title at %s." % [index, viewport_size]
+		)
+		_expect(
+			_canvas_rect(icon).end.y <= _canvas_rect(name_band).position.y + 0.5
+				and _canvas_rect(name_band).encloses(_canvas_rect(card_name)),
+			"Card %d artwork must end before its dedicated opaque name band at %s."
+				% [index, viewport_size]
 		)
 		_expect(
 			card_name.autowrap_mode == TextServer.AUTOWRAP_ARBITRARY
 				and card_name.max_lines_visible == 2
 				and card_name.clip_text,
 			"Long Chinese skill names must wrap inside a controlled two-line card title at %s." % viewport_size
+		)
+		var cost_style := cost_seal.get_theme_stylebox("panel") as StyleBoxFlat
+		_expect(
+			cost_row.size.x >= 42.0
+				and cost_row.size.x <= 46.0
+				and cost_row.size.y >= 42.0
+				and cost_row.size.y <= 46.0
+				and cost_value.get_theme_font_size("font_size") >= 22
+				and cost_style != null
+				and cost_style.border_width_left == 1
+				and cost_style.shadow_size <= 2
+				and cost_style.corner_radius_top_left >= 18,
+			"Card %d AP cost must be a compact engraved medallion without neon glow."
+				% index
 		)
 		_expect(
 			card.has_method("play_cast_feedback")
@@ -154,27 +228,30 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 				int(frame_state.get("frame_layers", 0)) >= 3
 					and int(frame_state.get("ritual_rings", 0)) >= 3
 					and int(frame_state.get("corner_marks", 0)) == 4
-					and bool(frame_state.get("name_plate", false)),
-				"Card %d must use layered gold framing, ritual geometry, four corner marks, and a name plate." % index
+					and bool(frame_state.get("name_plate", false))
+					and bool(frame_state.get("full_artwork", false))
+					and bool(frame_state.get("monochrome_gold", false)),
+				"Card %d must use full artwork inside a monochrome-gold tarot frame." % index
 			)
 		var normal_style := card.get_theme_stylebox("normal") as StyleBoxFlat
 		_expect(
 			normal_style != null
 				and normal_style.bg_color.get_luminance() < 0.20
-				and normal_style.border_width_left >= 3
-				and normal_style.shadow_size >= 6,
-			"Card %d must keep a dark-fantasy body with a strong outlined silhouette." % index
+				and normal_style.border_width_left <= 2
+				and normal_style.shadow_size <= 4,
+			"Card %d must use restrained engraved framing instead of a thick luminous outline." % index
 		)
 		_expect(
 			icon.visible
 				and icon.texture != null
-				and icon.size.x >= 46.0
-				and icon.size.y >= 46.0,
-			"Card %d must show a dominant generated skill icon at %s." % [index, viewport_size]
+				and icon.size.x >= card.size.x * 0.72
+				and icon.size.y >= card.size.y * 0.34,
+			"Card %d artwork must dominate the tarot face instead of remaining a small icon at %s."
+				% [index, viewport_size]
 		)
 		_expect(
-			role_label.text.contains("COMBO") or role_label.text.contains("HEALING"),
-			"Card %d must preserve its gameplay type beside the visual family at %s." % [index, viewport_size]
+			role_label.text.contains("連段") or role_label.text.contains("治療"),
+			"Card %d must preserve its localized gameplay type beside the visual family at %s." % [index, viewport_size]
 		)
 		_expect(
 			_contains_han(role_label.text),
@@ -188,6 +265,62 @@ func _verify_viewport(viewport_size: Vector2i) -> void:
 				not _canvas_rect(previous).intersects(_canvas_rect(card)),
 				"Long Chinese names must not stretch adjacent card frames into overlap at %s." % viewport_size
 			)
+	var front_row := hand.get_node(
+		"CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows/FrontRow"
+	) as HBoxContainer
+	var back_row := hand.get_node(
+		"CardSafeArea/BottomMargin/BottomRow/HandSlot/CardRows/BackRow"
+	) as HBoxContainer
+	var hand_slot := hand.get_node(
+		"CardSafeArea/BottomMargin/BottomRow/HandSlot"
+	) as Control
+	_expect(
+		not back_row.visible
+			and absf(front_row.position.y - hand_slot.position.y) <= 1.0
+			and absf(front_row.size.y - hand_slot.size.y) <= 1.0,
+		"The unused back row must not reserve vertical space; the active hand must rise to fill "
+			+ "the complete card stage at %s; front=%s slot=%s." % [
+				viewport_size,
+				Rect2(front_row.position, front_row.size),
+				Rect2(hand_slot.position, hand_slot.size),
+			]
+	)
+	var first_slot := front_row.get_child(0) as Control
+	var last_slot := front_row.get_child(3) as Control
+	var slot_span := last_slot.position.x + last_slot.size.x - first_slot.position.x
+	_expect(
+		absf(slot_span - front_row.size.x) <= 1.0,
+		"Four authored slots must consume the full FrontRow width at %s; slots=%.1f row=%.1f."
+			% [viewport_size, slot_span, front_row.size.x]
+	)
+	for index in 3:
+		var current_slot := front_row.get_child(index) as Control
+		var next_slot := front_row.get_child(index + 1) as Control
+		_expect(
+			absf(current_slot.size.x - next_slot.size.x) <= 1.0,
+			"All four hand slots must remain equal-width at %s." % viewport_size
+		)
+
+	# A full-width card cannot grow horizontally on hover without invading its neighbour.
+	hand.call("_set_card_hover", 1, true, false)
+	for index in 3:
+		_expect(
+			not _canvas_rect(hand.get_card_button(index)).intersects(
+				_canvas_rect(hand.get_card_button(index + 1))
+			),
+			"Hover feedback must not overlap adjacent full-width cards at %s." % viewport_size
+		)
+	hand.call("_set_card_hover", 1, false, false)
+	if viewport_size.x >= 1920:
+		var hand_rect := _canvas_rect(hand)
+		var first_card_rect := _canvas_rect(hand.get_card_button(0))
+		var last_card_rect := _canvas_rect(hand.get_card_button(3))
+		var occupied_span := last_card_rect.end.x - first_card_rect.position.x
+		_expect(
+			occupied_span >= hand_rect.size.x * 0.98,
+			"Four sword-soul slots must fill the wide hand region at %s; occupied %.1f of %.1f px."
+				% [viewport_size, occupied_span, hand_rect.size.x]
+		)
 	var families: Array[String] = []
 	for index in 4:
 		families.append(String(hand.get_card_button(index).call("get_visual_family")))

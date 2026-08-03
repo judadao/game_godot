@@ -1420,12 +1420,22 @@ Required semantic children:
 - `BottomStage/CardStage/AutumnCardHandUI`
 - `BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack`
 - `FooterRail`
+- `FooterRail/FooterRow/DashHint`
 
 `ComboSkillRows` 是固定高度、會裁切溢位的 projection viewport；最多只投影最近
-三種 Combo 能力，技能數量不得回推並放大 `ActivityFeed` 或 `BottomStage`。
+三種 Combo 能力。`ComboSummary`、`ComboMilestones` 與所有 runtime rows 必須設定
+`clip_text` 與 ellipsis，並以 tooltip 保留完整字串；技能或終結技名稱不得回推並放大
+`ActivityFeed` 或 `BottomStage`。
+
+`ActionStrip` 是為既有 scene path 保留的隱藏 compatibility subtree，不占 runtime
+高度。`SPACE 衝刺` 必須由 `FooterRail/FooterRow/DashHint` 投影，讓手牌吃滿
+`CardStage` 的上緣到下緣。
 
 `AutumnCardHandUI` 是 HUD 內的 presentation subtree，不是可被 map 或 `Game`
-另外 adopt 的 sibling authority。
+另外 adopt 的 sibling authority。其 `FrontRow` 固定含四個等寬 slot，compatibility
+`BackRow` 必須 hidden 且不參與垂直 stretch；slot 負責橫向分布，card renderer 以
+`EXPAND_FILL` 同時吃滿 slot 寬高，不鎖定牌面比例；黑金塔羅
+框與滿版主插畫跟著 slot 響應，hover 只上浮、不橫向放大侵入相鄰格。
 
 `PlayerVitals` projects HP, AP, level, and XP supplied by `Game`. XP displays
 `current / required · NEXT remaining` with a cyan progress bar. HP loss, AP
@@ -1460,20 +1470,30 @@ the HUD never reads gameplay state directly.
   - `set_affordable(affordable: bool)`
   - `set_hovered(hovered: bool)`
   - `get_visual_family() -> String`
-- Responsibility: present a tall, structured dark-fantasy card while keeping
+- Responsibility: present a structured dark-fantasy card while keeping
   the root `Button` as the single input and focus owner. The fixed Autumn hand
   maps to generated 256×256 text-free source art under
-  `res://assets/ui/autumn/cards/generated/`, displays at least a 48px semantic
-  icon, keeps the action name at 12px or larger, and exposes
+  `res://assets/ui/autumn/cards/generated/`, stretches its frame to the authored
+  slot while keeping the artwork centered in the dominant art stage, keeps the
+  action name at 12px or larger, and exposes
   Healing／Flame／Volley／Storm visual families.
+- Typography: `CardName`／metadata／shortcut／AP 共用 `Noto Serif TC` 優先的繁中
+  襯線 stack；招式名至少 16px 且名牌高度至少 32px，類型顯示「連段／治療」而不是
+  `COMBO／HEALING`。
+- Input/AP hierarchy: `Shortcut` 使用 20–24px 高、12–13px 字級的薄舊金鍵印，完整嵌入
+  28–32px `HeaderBand` 左側並與右側契印文字共線；不得跨出卡框。`IconStage` 必須在
+  不透明 `NameBand` 上緣結束，至少 34px 高的招式名空間不得和圖片重疊。`CostRow` 將
+  小型 `AP` 標記與至少 22px 數字整合成 42–46px 雙層古幣章。
+  兩者邊框皆為 1px，陰影不得超過 2px，也不得使用元素色霓虹光圈。
 
 ### AutumnCardHandUI renderer
 
 - Script: `res://scripts/ui/autumn/autumn_card_hand_ui.gd`
 - Owner: `AutumnHUD/BottomStage/CardStage`
 - Responsibility: create AutumnBattleCard instances in the single active
-  scene-authored `FrontRow`, keep the compatibility `BackRow` empty, calculate
-  responsive `148–196px` card heights with a `0.72` aspect ratio, and apply
+  scene-authored `FrontRow`, keep the compatibility `BackRow` hidden with no reserved height, distribute
+  four equal `MarginContainer` slots across the entire hand width, calculate a
+  responsive `148–320px` minimum height without an aspect-ratio lock, and apply
   affordability/hover presentation
 - Input contract: Q/W/E/R play the single four-card Combo／Healing hand；no group-toggle input
 - Exclusion: auto attack is not a card button and has no hand/global index
@@ -1535,10 +1555,27 @@ the HUD never reads gameplay state directly.
 - Signal: `choice_confirmed(choice_id: String)`
 - Responsibility: render one `GrowthChoiceQueue` page and expose a single
   selected choice; it does not mutate deck, fusion materials, Meta or resources
-- Layout: at most five growth choices, centered as three cards above two cards
+- Layout: at most five normal growth choices, centered as three cards above two cards；
+  Divine Gift 的三個直接選項則等寬填滿第一列
+- Responsive modal: width follows the safe viewport up to 1580px；height stays within
+  620–680px so wide／high displays do not create an unfinished empty gulf below the cards
 - Replaces: Autumn Blessing popup and `LevelUpUI` in the card-growth flow
 - Choice presentation: semantic card color、catalog icon、compact AP/level header，
   current/next effects use bullet lines; tooltip retains the complete display text.
+
+### DivineGiftChoiceCard
+
+- Scene: `res://scenes/ui/cards/DivineGiftChoiceCard.tscn`
+- Script: `res://scripts/ui/cards/divine_gift_choice_card.gd`
+- Owner: `CardGrowthUI` 的 Divine Gift page only
+- Responsibility: 以近黑褐卡身、舊金雙框、環形秘儀紋與大型符印呈現一項神賜；
+  顯示中文名稱、等級變化、效果類型、短 lore 與 2–3 條由 `next_effects`／
+  `finisher_mutations` 投影的具體數值或 mechanics。
+- Selection contract: selected card 使用實心「已選」badge、4px 金框與至少 10px
+  金色光暈；hover／keyboard focus 不得偽裝成已選狀態。`SelectionSummary` 同步顯示
+  所選名稱與前兩項效果，完整資訊保留在 tooltip。
+- Boundary: component 只格式化 queue 已提供的 projection，不讀 catalog、不計算或套用
+  Divine Gift 戰鬥效果。
 
 ### SkillToastStack
 

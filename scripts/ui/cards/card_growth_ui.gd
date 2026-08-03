@@ -5,8 +5,12 @@ signal choice_confirmed(choice_id: String)
 signal reward_skipped
 
 const MAX_GROWTH_CHOICES := 5
+const DIVINE_GIFT_CHOICE_SCENE := preload(
+	"res://scenes/ui/cards/DivineGiftChoiceCard.tscn"
+)
 
 @onready var title_label: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Title
+@onready var modal_panel: PanelContainer = $SafeMargin/ModalCenter/ModalPanel
 @onready var source_label: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Source
 @onready var instruction_label: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Instruction
 @onready var upgrade_section: VBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection
@@ -15,6 +19,7 @@ const MAX_GROWTH_CHOICES := 5
 @onready var fusion_section: VBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection
 @onready var fallback_section: VBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection
 @onready var fallback_grid: GridContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection/FallbackGrid
+@onready var selection_summary: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/SelectionSummary
 @onready var required_hint: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/RequiredHint
 @onready var skip_button: Button = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/SkipButton
 @onready var confirm_button: Button = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/ConfirmButton
@@ -22,6 +27,7 @@ const MAX_GROWTH_CHOICES := 5
 var _page: Dictionary = {}
 var _choice_buttons: Array[Button] = []
 var _choice_ids: Dictionary = {}
+var _choice_data_by_id: Dictionary = {}
 var _selected_choice_id := ""
 var _confirmed := false
 var _choice_icon_cache: Dictionary = {}
@@ -32,6 +38,9 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	confirm_button.pressed.connect(confirm_selected_choice)
 	skip_button.pressed.connect(skip_reward)
+	_apply_responsive_modal_geometry()
+	if not get_viewport().size_changed.is_connected(_apply_responsive_modal_geometry):
+		get_viewport().size_changed.connect(_apply_responsive_modal_geometry)
 
 
 func present_page(page: Dictionary) -> void:
@@ -74,6 +83,7 @@ func present_page(page: Dictionary) -> void:
 	upgrade_section.visible = upgrade_section.visible or not fusions.is_empty()
 	fusion_section.visible = false
 	fallback_section.visible = not fallbacks.is_empty()
+	selection_summary.visible = not divine_gifts.is_empty() or not divine_fusions.is_empty()
 	($SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/SectionTitle as Label).text = (
 		"神賜"
 		if not divine_gifts.is_empty() or not divine_fusions.is_empty()
@@ -224,47 +234,56 @@ func _add_choice_button(parent: Control, choice: Dictionary, display_text: Strin
 	if choice_id.is_empty() or _choice_ids.has(choice_id):
 		return
 	_choice_ids[choice_id] = true
-	var button := Button.new()
+	_choice_data_by_id[choice_id] = choice.duplicate(true)
+	var is_divine := String(choice.get("action", "")).begins_with("divine_")
+	var button := (
+		DIVINE_GIFT_CHOICE_SCENE.instantiate() as Button
+		if is_divine
+		else Button.new()
+	)
 	button.name = "Choice%d" % (_choice_buttons.size() + 1)
-	button.custom_minimum_size = Vector2(280.0, 148.0)
 	button.size_flags_horizontal = (
-		Control.SIZE_SHRINK_CENTER
-		if parent is HBoxContainer
-		else Control.SIZE_EXPAND_FILL
+		Control.SIZE_EXPAND_FILL
+		if is_divine or not parent is HBoxContainer
+		else Control.SIZE_SHRINK_CENTER
 	)
 	button.focus_mode = Control.FOCUS_ALL
 	button.toggle_mode = true
-	button.text = display_text
-	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	button.add_theme_font_size_override("font_size", 12)
-	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	button.tooltip_text = _choice_tooltip(choice, display_text)
-	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	var icon_path := String(choice.get("icon_path", "")).strip_edges()
-	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
-		button.icon = _load_choice_icon(icon_path)
 	var accent := _choice_accent(choice)
 	button.set_meta("semantic_color", accent)
-	var normal_style := StyleBoxFlat.new()
-	normal_style.bg_color = Color(accent.r * 0.16, accent.g * 0.16, accent.b * 0.16, 0.98)
-	normal_style.border_color = Color(accent, 0.9)
-	normal_style.set_border_width_all(2)
-	normal_style.set_corner_radius_all(7)
-	normal_style.content_margin_left = 10.0
-	normal_style.content_margin_right = 10.0
-	var selected_style := normal_style.duplicate() as StyleBoxFlat
-	selected_style.bg_color = Color(accent.r * 0.28, accent.g * 0.28, accent.b * 0.28, 1.0)
-	selected_style.border_color = accent.lightened(0.22)
-	selected_style.set_border_width_all(3)
-	button.add_theme_stylebox_override("normal", normal_style)
-	button.add_theme_stylebox_override("hover", selected_style)
-	button.add_theme_stylebox_override("pressed", selected_style)
-	button.add_theme_stylebox_override("focus", selected_style)
-	button.add_theme_color_override("font_color", accent.lightened(0.42))
 	button.set_meta("choice_id", choice_id)
 	button.pressed.connect(_select_choice.bind(choice_id))
 	parent.add_child(button)
+	if is_divine:
+		button.call("configure", choice, _divine_effect_lines(choice))
+	else:
+		button.custom_minimum_size = Vector2(280.0, 148.0)
+		button.text = display_text
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.add_theme_font_size_override("font_size", 12)
+		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		button.tooltip_text = _choice_tooltip(choice, display_text)
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		var icon_path := String(choice.get("icon_path", "")).strip_edges()
+		if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+			button.icon = _load_choice_icon(icon_path)
+		var normal_style := StyleBoxFlat.new()
+		normal_style.bg_color = Color(accent.r * 0.16, accent.g * 0.16, accent.b * 0.16, 0.98)
+		normal_style.border_color = Color(accent, 0.9)
+		normal_style.set_border_width_all(2)
+		normal_style.set_corner_radius_all(7)
+		normal_style.content_margin_left = 10.0
+		normal_style.content_margin_right = 10.0
+		var selected_style := normal_style.duplicate() as StyleBoxFlat
+		selected_style.bg_color = Color(accent.r * 0.28, accent.g * 0.28, accent.b * 0.28, 1.0)
+		selected_style.border_color = accent.lightened(0.22)
+		selected_style.set_border_width_all(3)
+		button.add_theme_stylebox_override("normal", normal_style)
+		button.add_theme_stylebox_override("hover", selected_style)
+		button.add_theme_stylebox_override("pressed", selected_style)
+		button.add_theme_stylebox_override("focus", selected_style)
+		button.add_theme_color_override("font_color", accent.lightened(0.42))
 	_choice_buttons.append(button)
 
 
@@ -291,18 +310,36 @@ func _load_choice_icon(icon_path: String) -> Texture2D:
 	return icon
 
 
+func _apply_responsive_modal_geometry() -> void:
+	if modal_panel == null:
+		return
+	var viewport_size := get_viewport_rect().size
+	var available := Vector2(
+		maxf(900.0, viewport_size.x - 72.0),
+		maxf(560.0, viewport_size.y - 72.0)
+	)
+	modal_panel.custom_minimum_size = Vector2(
+		minf(available.x, clampf(viewport_size.x * 0.82, 1040.0, 1580.0)),
+		minf(available.y, clampf(viewport_size.y * 0.78, 620.0, 680.0))
+	)
+
+
 func _select_choice(choice_id: String) -> void:
 	if _confirmed or choice_id.is_empty():
 		return
 	var found := false
 	for button in _choice_buttons:
 		var is_selected := String(button.get_meta("choice_id", "")) == choice_id
-		button.button_pressed = is_selected
+		if button.has_method("set_selected_state"):
+			button.call("set_selected_state", is_selected)
+		else:
+			button.button_pressed = is_selected
 		found = found or is_selected
 	if not found:
 		return
 	_selected_choice_id = choice_id
 	confirm_button.disabled = false
+	_update_selection_summary()
 
 
 func _clear_choice_buttons() -> void:
@@ -311,6 +348,7 @@ func _clear_choice_buttons() -> void:
 			button.free()
 	_choice_buttons.clear()
 	_choice_ids.clear()
+	_choice_data_by_id.clear()
 
 
 func _wire_focus_navigation() -> void:
@@ -456,11 +494,7 @@ func _compact_divine_gift_text(choice: Dictionary) -> String:
 		tier_name,
 		current_level,
 		int(choice.get("next_level", current_level + 1)),
-		_bullet_description(_choice_description(
-			choice,
-			"description",
-			"改變連段招式與具名終結技。"
-		)),
+		"\n".join(_divine_effect_lines(choice)),
 	]
 
 
@@ -473,6 +507,97 @@ func _compact_divine_fusion_text(choice: Dictionary) -> String:
 			"融合兩項神賜的整體規則。"
 		)),
 	]
+
+
+func _update_selection_summary() -> void:
+	if not selection_summary.visible or not _choice_data_by_id.has(_selected_choice_id):
+		return
+	var choice := _choice_data_by_id[_selected_choice_id] as Dictionary
+	var lines := _divine_effect_lines(choice)
+	selection_summary.text = "已選：%s｜%s" % [
+		_choice_name(choice, "name", "gift_id", "神賜"),
+		"　".join(lines.slice(0, 2)),
+	]
+	selection_summary.tooltip_text = "%s\n%s" % [
+		String(choice.get("description", "")),
+		"\n".join(lines),
+	]
+
+
+func _divine_effect_lines(choice: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var effects := choice.get("next_effects", {}) as Dictionary
+	var effect_order := [
+		"combo_stack_bonus",
+		"combo_effect_multiplier",
+		"combo_ap_refund",
+		"combo_element_bonus",
+		"combo_speed_bonus",
+		"combo_stack_cap_bonus",
+		"finisher_damage_multiplier",
+		"finisher_heal",
+		"finisher_element_damage",
+		"finisher_size_multiplier",
+		"finisher_history_bonus",
+	]
+	for key_variant in effect_order:
+		var key := String(key_variant)
+		if not effects.has(key):
+			continue
+		var value: Variant = effects[key]
+		match key:
+			"combo_stack_bonus":
+				lines.append("◆ 連段疊層 +%d" % int(value))
+			"combo_effect_multiplier":
+				lines.append("✦ 連段效果 +%d%%" % roundi((float(value) - 1.0) * 100.0))
+			"combo_ap_refund":
+				lines.append("↺ 每次連段返還 AP %.2f" % float(value))
+			"combo_element_bonus":
+				lines.append("◇ 連段元素加值 +%d" % int(value))
+			"combo_speed_bonus":
+				lines.append("» 連段速度 +%d%%" % roundi(float(value) * 100.0))
+			"combo_stack_cap_bonus":
+				lines.append("∞ 連段疊層上限 +%d" % int(value))
+			"finisher_damage_multiplier":
+				lines.append("⚔ 終結技傷害 +%d%%" % roundi((float(value) - 1.0) * 100.0))
+			"finisher_heal":
+				lines.append("♥ 終結技回復生命 +%d" % int(value))
+			"finisher_element_damage":
+				lines.append("⚡ 終結技元素傷害 +%d" % int(value))
+			"finisher_size_multiplier":
+				lines.append("◎ 終結技範圍 +%d%%" % roundi((float(value) - 1.0) * 100.0))
+			"finisher_history_bonus":
+				lines.append("◈ 終結技額外讀取 %d 段公式" % int(value))
+		if lines.size() >= 3:
+			break
+	var mechanic := _divine_mechanic_line(choice.get("finisher_mutations", {}) as Dictionary)
+	if not mechanic.is_empty() and lines.size() < 3:
+		lines.append(mechanic)
+	if lines.is_empty():
+		lines.append("✦ %s" % _key_point(_choice_description(
+			choice,
+			"description",
+			"改變連段招式與具名終結技。"
+		)))
+	if lines.size() == 1:
+		lines.append("⚔ 強化具名終結技的特殊機制")
+	return lines
+
+
+func _divine_mechanic_line(mutations: Dictionary) -> String:
+	if bool(mutations.get("final_burst", false)):
+		return "🔥 終結技附加灼燒與最終爆裂"
+	if int(mutations.get("finisher_echoes", 0)) > 0:
+		return "↻ 終結技額外迴響 %d 次" % int(mutations["finisher_echoes"])
+	if bool(mutations.get("death_spread", false)) or mutations.has("poison_damage"):
+		return "☠ 終結技附加中毒並可擴散"
+	if bool(mutations.get("chain_lightning", false)):
+		return "⚡ 終結技觸發連鎖雷擊"
+	if bool(mutations.get("piercing", false)):
+		return "➤ 終結技可貫穿，速度 ×%.1f" % float(mutations.get("speed_multiplier", 1.0))
+	if bool(mutations.get("shatter", false)):
+		return "❄ 終結技附加凍結與碎裂"
+	return ""
 
 
 func _bullet_description(description: String) -> String:

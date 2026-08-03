@@ -531,11 +531,13 @@ HUDLayer
 
 - 每組最多 4 張 visible cards。
 - shared Town compact card minimum 為 `82×78`；Autumn fixed hand 使用
-  `148–196px` 高的 tall cards 與 `0.72` width-to-height ratio。
+  `148–320px` 的最低高度，實際寬高直接跟隨等分 slot，不鎖定牌面比例。
 - bottom safe area 為 viewport 高度的 25%。
-- 四張 Combo／Healing 手牌固定放在 `FrontRow` 並接收 Q/W/E/R；`BackRow` 保持空白。
-- Autumn 每張 card 使用至少 `48×48` 的 semantic spell icon；名稱不得小於
-  12px，Healing／Flame／Volley／Storm 必須有可掃讀的獨立色族。
+- 四張 Combo／Healing 手牌固定放在 `FrontRow` 的四個等寬 `MarginContainer`
+  slot 並接收 Q/W/E/R；不使用的 `BackRow` 必須 hidden 且不得保留任何垂直 stretch
+  空間，讓 `FrontRow` 從 `CardStage` 頂緣一路填到底緣。寬螢幕不得把四張卡重新聚成中央一團。
+- Autumn 每張 card 以覆蓋至少 72% 卡寬、42% 卡高的主插畫作為掃讀焦點；名稱不得
+  小於 12px，Healing／Flame／Volley／Storm 以插畫與小面積元素色保留辨識度。
 - hover 仍在 viewport 內。
 - cards 不遮 HUD status/quest/progress。
 - viewport size change 重新 layout。
@@ -1125,19 +1127,22 @@ AutumnHUD
 ├── BottomStage
     ├── PlayerVitals
     ├── CardStage
-    │   ├── ActionStrip
-    │   │   ├── ActionSpacer
-    │   │   └── RedrawHand
+    │   ├── ActionStrip（legacy authored subtree；runtime hidden）
     │   └── AutumnCardHandUI
     └── ActivityFeed
         └── SkillToastStack
 └── FooterRail
+    ├── SurvivalTimerLabel
+    ├── DashHint（SPACE 衝刺）
+    └── NavigationHints
 ```
 
 目前目標固定在左上，金錢與 magic shard 位於右上，Boss health 使用上方中央的暫時空間。
 底部從 viewport 的 66% 開始，依序放玩家狀態、目前／門檻／距離下一級的 XP、
 即時小數 AP、目前四張牌及右側
-activity feed，最下方保留 survival countdown/navigation rail。倒數使用 `MM:SS`，
+activity feed，最下方保留 survival countdown／Space Dash／navigation rail。舊
+`ActionStrip` 保留 authored compatibility path 但 runtime 隱藏，手牌因此直接延伸到
+`CardStage` 頂端。倒數使用 `MM:SS`，
 最後 30 秒切換紅橙色 `FINAL RUSH`，00:00 顯示 `FINAL BOSS`。不可恢復常駐 combo/recipe 或
 status progress panel。skill toast 最多三筆、約 1.5 秒淡出；相同技能重複觸發
 刷新既有 toast。viewport 寬度低於 1200px 時，Boss panel／bar 會縮為 312／280px，
@@ -1154,15 +1159,26 @@ labels use `MOUSE_FILTER_IGNORE`.
 `CardStage`。Scene 只建立單組四張 Combo／Healing card buttons，不再存在 inactive group
 或 A/S、LT/RT 切組流程。
 
-Card height is derived from the lower-HUD height and hand-column width. The
-renderer preserves a `0.72` width-to-height ratio and updates the negative
-card dimensions on viewport resize. Autumn cards are `148–196px` high, reserve
-a `48px` semantic icon, and use Healing／Flame／Volley／Storm color families so
-the player can identify the action before reading its name. 所有 20 張可投入終結技公式的
+Card minimum height is derived from the lower-HUD height. The renderer does not
+preserve a card aspect ratio: four authored equal-width slots consume the full hand region,
+and each card uses `EXPAND_FILL` to match its parent slot in both axes. Hover feedback may
+rise vertically but must not scale horizontally into an adjacent slot. Autumn cards use a
+`148–320px` responsive minimum height.
+Healing／Flame／Volley／Storm identification stays in the artwork and restrained accent,
+not a saturated full-card frame. 所有 20 張可投入終結技公式的
 Combo／Healing 劍魂都使用 `assets/ui/autumn/cards/generated/<card_id>.png` 的獨立
-256×256 暗黑塔羅插畫；外框則由 `AutumnBattleCard` 以深墨卡身、三層舊金／元素框線、
-四角契印與同心秘儀環即時繪製，不能烘進 PNG。Do not add per-resolution card
+256×256 暗黑塔羅插畫。插畫必須填滿卡面主視覺區，不可退化為中央小 icon；外框則由
+`AutumnBattleCard` 以近黑墨色卡身、舊金主框、節制的元素色、四角契印與同心秘儀環
+即時繪製，對齊古老黑金塔羅的層次，不能烘進 PNG。Do not add per-resolution card
 positions or resize these cards from gameplay code.
+
+卡面文字使用 `Noto Serif TC` 優先的繁中襯線字族；招式名至少 16px、使用 32px 以上
+深墨名牌，並高於類型與 AP 的資訊層級。Q／W／E／R 使用 22–26px 高、13–14px 字級的
+薄舊金鍵印，完整收在 28–32px 高的頂部契約銘條左側，與右側「契印」共用基準線，
+不得跨出卡框或做成漂浮的大型發光按鈕。主插畫必須在獨立不透明 `NameBand` 上緣結束，
+招式名由至少 34px 高的名牌獨占，不得再覆蓋圖片。AP 消耗則把
+小型 `AP` 標記與至少 22px 的數字整合在卡片右下角 42–46px 雙層古幣章內；外框 1px、
+陰影至多 2px，且不可依元素色產生霓虹光圈。
 
 技能名稱固定在兩行文字區內 wrap，超出時以省略號截斷；任何繁中長名稱、神賜疊加
 前綴或字型 fallback 都不得改變卡框尺寸。成功施放後由 Game 在 AP 扣除與效果確認後
@@ -1192,11 +1208,14 @@ checks the horizontal corridor in the player's facing direction.
 equipment-modified AP cost 必須在 affordability 與 input check 前 projection 到 card。
 戰鬥卡只由 AP 限制，打出後留在原 slot；HUD 不顯示 draw、discard、redraw 或
 Auto Use control。卡片以短類型、icon、AP 與永久 stack 為主，不顯示
-START／LINK／FINISH 等角色說明。
+START／LINK／FINISH 等角色說明。AP 消耗是決策核心，必須使用至少 18px 數字、
+高對比深底金框 badge，不能降回與等級同尺寸的次要文字。
 右側 `ComboSkillRows` 顯示三格終結技公式、永久 stacks、持有神賜與 FIFO
 終結技 queue；被 catalog 收錄的 Healing 也能進入公式。輸入一至兩招時可顯示
 最多三個仍可能完成的配方，但必須明示這是候選提示而非已完成招式。公式完成時必須突出實際招式全名，例如
 `絕對零度的千刃殺 · NEXT AUTO SHOT`，後續排隊招式仍須可讀。
+`ActivityFeed`、公式標題、公式步驟與 runtime rows 都是固定欄寬的單行 projection；
+超長中文名稱使用 ellipsis 並把完整內容放在 tooltip，不得把右欄或 `BottomStage` 撐寬。
 
 Deck Builder 以四個可點選槽位呈現固定手牌，不使用全卡表 `＋／－` 計數器：
 四格都可選不重複的 Healing／Combo，整組至少保留一張 Healing；最後一張 Healing
@@ -1206,8 +1225,10 @@ Deck Builder 以四個可點選槽位呈現固定手牌，不使用全卡表 `�
 UI 必須明示所選 attack 會在 Run 開始後鎖定、免費、自動水平攻擊。
 
 每個 stage/wave 的首次菁英掉落使用既有 `CardGrowthUI` modal shell，但內容是
-Divine Gift，不是卡牌升級：顯示 icon、短名稱、等級、最多三點效果，主稱號神賜
-標記 `MAIN`。存在兩個不同滿級神賜時，同頁提供融合選項；若頁面只有融合選項則
+Divine Gift，不是卡牌升級：`DivineGiftChoiceCard` 以大型符印、短名稱、等級變化、
+中文效果分類、短 lore 與 2–3 條具體 next effect／終結技 mechanics 呈現；選中項使用
+實心 badge、粗金框與金色光暈，並在確認鈕上方同步「已選」效果摘要。存在兩個不同
+滿級神賜時，同頁提供融合選項；若頁面只有融合選項則
 允許略過，避免 modal 反覆開啟。
 
 玩家可見文案使用「神賜／菁英祝福／昇華」，名稱、說明、階級與融合名稱皆為繁中。
@@ -1225,6 +1246,9 @@ Autumn HUD 固定容納並顯示三個神賜 slot；滿三項時選擇頁只列�
 - 1920×1080
 - 2560×1080
 - 2560×1440
+
+另以玩家回報的 2864×1080 超寬視窗作為回歸尺寸，確認四個 slot 確實橫向填滿
+CardStage，右側長文字不會反推中央欄位。
 
 每個尺寸都要確認 top-left stack、top-center stack、bottom stage、單列四張 cards、
 Combo Chain 清單、四格 Deck Builder、interaction prompt 與 world-safe area

@@ -566,6 +566,7 @@ theme_override_constants/separation = 5
 mouse_filter = 2
 
 [node name="ActionStrip" type="HBoxContainer" parent="BottomStage/CardStage"]
+visible = false
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 theme_override_constants/separation = 7
@@ -617,6 +618,7 @@ custom_minimum_size = Vector2(270, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 25.0
+clip_contents = true
 theme_override_styles/panel = SubResource("BronzePanel")
 mouse_filter = 2
 
@@ -631,6 +633,7 @@ mouse_filter = 2
 [node name="FeedRows" type="VBoxContainer" parent="BottomStage/ActivityFeed/FeedMargin"]
 layout_mode = 2
 theme_override_constants/separation = 6
+clip_contents = true
 mouse_filter = 2
 
 [node name="InputStrip" type="HBoxContainer" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
@@ -643,27 +646,39 @@ size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.94, 0.83, 0.61, 1)
 theme_override_font_sizes/font_size = 11
 text = "Q / W / E / R   COMBO + HEALING"
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="DashBadge" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows/InputStrip"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.74, 0.75, 1)
 theme_override_font_sizes/font_size = 10
 text = "SPACE"
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="Divider" type="HSeparator" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
 layout_mode = 2
 
 [node name="ComboSummary" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.78, 0.48, 1, 1)
 theme_override_font_sizes/font_size = 13
 text = "COMBO CHAIN  —"
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="ComboMilestones" type="Label" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
+custom_minimum_size = Vector2(0, 14)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.62, 0.68, 0.7, 1)
 theme_override_font_sizes/font_size = 9
 text = "3 POWER  ·  6 LIFESTEAL  ·  9 STUN"
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="ComboSkillRows" type="Control" parent="BottomStage/ActivityFeed/FeedMargin/FeedRows"]
 custom_minimum_size = Vector2(0, 58)
@@ -728,6 +743,17 @@ size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.96, 0.87, 0.68, 1)
 theme_override_font_sizes/font_size = 14
 text = "03:00  SURVIVE"
+vertical_alignment = 1
+
+[node name="DashHint" type="Label" parent="FooterRail/FooterRow"]
+custom_minimum_size = Vector2(118, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.34, 1)
+theme_override_colors/font_outline_color = Color(0.08, 0.035, 0.01, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 12
+text = "SPACE  衝刺"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="NavigationHints" type="Label" parent="FooterRail/FooterRow"]

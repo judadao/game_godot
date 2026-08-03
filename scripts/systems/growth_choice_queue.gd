@@ -116,6 +116,17 @@ func enqueue_divine_gifts(
 			"name": String(reward.get("name", gift_id)),
 			"description": String(reward.get("description", "")),
 			"icon": String(reward.get("icon", "✦")),
+			"element": String(reward.get("element", "normal")),
+			"elements": (reward.get("elements", []) as Array).duplicate(),
+			"current_effects": (
+				reward.get("current_effects", {}) as Dictionary
+			).duplicate(true),
+			"next_effects": (
+				reward.get("next_effects", {}) as Dictionary
+			).duplicate(true),
+			"finisher_mutations": (
+				reward.get("finisher_mutations", {}) as Dictionary
+			).duplicate(true),
 			"level": int(reward.get("level", 0)),
 			"next_level": int(reward.get("next_level", 1)),
 			"type": "divine",

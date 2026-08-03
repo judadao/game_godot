@@ -8,6 +8,7 @@ const VIEWPORT_SIZES := [
 	Vector2i(1920, 1080),
 	Vector2i(2560, 1080),
 	Vector2i(2560, 1440),
+	Vector2i(2864, 1080),
 ]
 const REQUIRED_AUTHORED_PATHS := [
 	"Backdrop",
@@ -24,10 +25,12 @@ const REQUIRED_AUTHORED_PATHS := [
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/BottomRow",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection",
+	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/SelectionSummary",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/ConfirmButton",
 ]
 
 var _failures := 0
+var _capture_directory := ""
 
 
 func _initialize() -> void:
@@ -35,6 +38,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	_capture_directory = OS.get_environment("CARD_GROWTH_CAPTURE_DIR")
 	_check_authored_contract()
 	for viewport_size in VIEWPORT_SIZES:
 		await _check_viewport(viewport_size)
@@ -109,6 +113,49 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	)
 	_expect(ui.get_viewport().gui_get_focus_owner() is Button, "A presented page must establish keyboard/gamepad focus at %s." % viewport_size)
 
+	ui.call("present_page", _divine_gift_page())
+	await process_frame
+	await process_frame
+	var divine_buttons := ui.call("get_choice_buttons") as Array
+	_expect(divine_buttons.size() == 3, "Divine Gift pages must keep three direct choices at %s." % viewport_size)
+	for button_variant in divine_buttons:
+		var gift_button := button_variant as Button
+		_expect(
+			panel_rect.encloses(_canvas_rect(gift_button))
+				and gift_button.custom_minimum_size.y >= 240.0,
+			"Ornate Divine Gift cards must remain fully inside the modal at %s." % viewport_size
+		)
+	var summary := ui.get_node(
+		"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/SelectionSummary"
+	) as Label
+	_expect(
+		summary.visible
+			and summary.text.contains("已選")
+			and summary.text.contains("連段"),
+		"Divine Gift selection summary must remain visible and concrete at %s." % viewport_size
+	)
+	if viewport_size.y >= 900:
+		panel_rect = _canvas_rect(panel)
+		var first_gift_rect := _canvas_rect(divine_buttons[0] as Control)
+		var summary_rect := _canvas_rect(summary)
+		_expect(
+			panel_rect.size.y <= 700.0
+				and summary_rect.position.y - first_gift_rect.end.y <= 140.0,
+			"Large viewports must not create an unfinished empty gulf below Divine Gift cards at %s."
+				% viewport_size
+		)
+	if not _capture_directory.is_empty():
+		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+		await process_frame
+		await RenderingServer.frame_post_draw
+		var capture_path := _capture_directory.path_join(
+			"card_growth_divine_%dx%d.png" % [viewport_size.x, viewport_size.y]
+		)
+		_expect(
+			viewport.get_texture().get_image().save_png(capture_path) == OK,
+			"Divine Gift visual capture must save at %s." % viewport_size
+		)
+
 	viewport.queue_free()
 	await process_frame
 
@@ -139,6 +186,60 @@ func _dense_experience_page() -> Dictionary:
 			"result_card_id": "result-%d" % index,
 		})
 	return {"event_id": 99, "source": "experience", "choices": choices}
+
+
+func _divine_gift_page() -> Dictionary:
+	return {
+		"event_id": 100,
+		"source": "divine",
+		"choices": [
+			{
+				"choice_id": "divine:100:gift:celestial_momentum",
+				"action": "divine_gift",
+				"gift_id": "celestial_momentum",
+				"name": "天穹疾勢",
+				"description": "每次連段都會加快戰鬥節奏，使具名終結技更大、更快。",
+				"icon": "»",
+				"element": "wind",
+				"level": 0,
+				"next_level": 1,
+				"next_effects": {"combo_speed_bonus": 0.04, "finisher_size_multiplier": 1.10},
+				"finisher_mutations": {"piercing": true, "speed_multiplier": 1.5},
+				"type": "divine",
+				"card_color": "gold",
+			},
+			{
+				"choice_id": "divine:100:gift:echoing_will",
+				"action": "divine_gift",
+				"gift_id": "echoing_will",
+				"name": "迴響意志",
+				"description": "強化每次連段，並使具名終結技追加一次迴響。",
+				"icon": "↻",
+				"element": "dark",
+				"level": 0,
+				"next_level": 1,
+				"next_effects": {"combo_effect_multiplier": 1.08, "finisher_damage_multiplier": 1.08},
+				"finisher_mutations": {"finisher_echoes": 1, "echo_decay": 0.7},
+				"type": "divine",
+				"card_color": "gold",
+			},
+			{
+				"choice_id": "divine:100:gift:boundless_font",
+				"action": "divine_gift",
+				"gift_id": "boundless_font",
+				"name": "萬毒源泉",
+				"description": "每次連段返還 AP，具名終結技則會恢復生命。",
+				"icon": "◆",
+				"element": "poison",
+				"level": 0,
+				"next_level": 1,
+				"next_effects": {"combo_ap_refund": 0.10, "finisher_heal": 2},
+				"finisher_mutations": {"poison_damage": 3, "poison_duration": 5.0},
+				"type": "divine",
+				"card_color": "gold",
+			},
+		],
+	}
 
 
 func _canvas_rect(control: Control) -> Rect2:

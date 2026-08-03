@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/autumn/autumn_battle_card.gd" id="1_script"]
+
+[sub_resource type="SystemFont" id="SystemFont_card_serif"]
+font_names = PackedStringArray("Noto Serif TC", "Noto Serif CJK TC", "PMingLiU", "serif")
+font_weight = 500
 
 [node name="AutumnBattleCard" type="Button"]
 custom_minimum_size = Vector2(84, 116)
@@ -11,6 +15,7 @@ flat = false
 script = ExtResource("1_script")
 
 [node name="LockBadge" type="Label" parent="."]
+z_index = 7
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -23,8 +28,9 @@ grow_horizontal = 0
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.84, 0.36, 1)
 theme_override_colors/font_outline_color = Color(0.08, 0.035, 0.005, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 8
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = SubResource("SystemFont_card_serif")
+theme_override_font_sizes/font_size = 9
 text = "契印"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -44,72 +50,126 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="CardContent" type="VBoxContainer" parent="."]
+[node name="CardContent" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 7.0
-offset_top = 3.0
+offset_top = 4.0
 offset_right = -7.0
-offset_bottom = -3.0
+offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/separation = 0
+
+[node name="HeaderBand" type="Panel" parent="CardContent"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 28.0
+grow_horizontal = 2
+mouse_filter = 2
 
 [node name="Shortcut" type="Label" parent="CardContent"]
-custom_minimum_size = Vector2(24, 16)
-layout_mode = 2
-size_flags_horizontal = 4
+z_index = 8
+custom_minimum_size = Vector2(28, 20)
+layout_mode = 1
+offset_left = 8.0
+offset_top = 4.0
+offset_right = 36.0
+offset_bottom = 24.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.91, 0.68, 1)
 theme_override_colors/font_outline_color = Color(0.035, 0.02, 0.01, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 11
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = SubResource("SystemFont_card_serif")
+theme_override_font_sizes/font_size = 12
 text = "Q"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="IconStage" type="CenterContainer" parent="CardContent"]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-size_flags_vertical = 3
+[node name="IconStage" type="Control" parent="CardContent"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 28.0
+offset_bottom = -82.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+clip_contents = true
 
 [node name="IconFrame" type="Panel" parent="CardContent/IconStage"]
-custom_minimum_size = Vector2(54, 54)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="Icon" type="TextureRect" parent="CardContent/IconStage"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-expand_mode = 3
+expand_mode = 1
 stretch_mode = 5
 
 [node name="Glyph" type="Label" parent="CardContent/IconStage"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.76, 0.30, 1)
 theme_override_colors/font_outline_color = Color(0.035, 0.02, 0.01, 1)
 theme_override_constants/outline_size = 4
+theme_override_fonts/font = SubResource("SystemFont_card_serif")
 theme_override_font_sizes/font_size = 32
 text = "⚔"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="NameBand" type="Panel" parent="CardContent"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -82.0
+offset_bottom = -44.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
 [node name="CardName" type="Label" parent="CardContent"]
-custom_minimum_size = Vector2(0, 32)
-layout_mode = 2
-size_flags_horizontal = 3
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -82.0
+offset_bottom = -44.0
+grow_horizontal = 2
+grow_vertical = 0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.98, 0.92, 0.80, 1)
 theme_override_colors/font_outline_color = Color(0.035, 0.02, 0.01, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 12
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = SubResource("SystemFont_card_serif")
+theme_override_font_sizes/font_size = 16
 text = "Ember Bolt"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -119,49 +179,115 @@ clip_text = true
 text_overrun_behavior = 3
 
 [node name="CardType" type="Label" parent="CardContent"]
-custom_minimum_size = Vector2(0, 14)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 0.72
+anchor_bottom = 1.0
+offset_top = -43.0
+offset_bottom = -27.0
+grow_horizontal = 2
+grow_vertical = 0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.91, 0.77, 0.50, 1)
+theme_override_fonts/font = SubResource("SystemFont_card_serif")
 theme_override_font_sizes/font_size = 9
 text = "劍魂 · COMBO"
 horizontal_alignment = 1
 vertical_alignment = 1
+clip_text = true
 text_overrun_behavior = 3
 
 [node name="Level" type="Label" parent="CardContent"]
-custom_minimum_size = Vector2(0, 12)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 0.52
+anchor_bottom = 1.0
+offset_top = -24.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.88, 0.82, 0.70, 1)
-theme_override_font_sizes/font_size = 8
+theme_override_fonts/font = SubResource("SystemFont_card_serif")
+theme_override_font_sizes/font_size = 9
 text = "等級 1"
 horizontal_alignment = 1
 vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
 
-[node name="CostRow" type="HBoxContainer" parent="CardContent"]
-custom_minimum_size = Vector2(0, 14)
-layout_mode = 2
+[node name="CostRow" type="Control" parent="CardContent"]
+z_index = 6
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -48.0
+offset_top = -47.0
+offset_right = -4.0
+offset_bottom = -3.0
+grow_horizontal = 0
+grow_vertical = 0
 mouse_filter = 2
-alignment = 1
-theme_override_constants/separation = 4
+
+[node name="APSeal" type="Panel" parent="CardContent/CostRow"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="APInnerRing" type="Panel" parent="CardContent/CostRow"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="CostLabel" type="Label" parent="CardContent/CostRow"]
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 3.0
+offset_bottom = 15.0
+grow_horizontal = 2
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.77, 0.68, 0.52, 1)
-theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(0.82, 0.69, 0.44, 1)
+theme_override_colors/font_outline_color = Color(0.035, 0.02, 0.01, 1)
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = SubResource("SystemFont_card_serif")
+theme_override_font_sizes/font_size = 7
 text = "AP"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CostValue" type="Label" parent="CardContent/CostRow"]
-custom_minimum_size = Vector2(14, 14)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 10.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.88, 0.47, 1)
 theme_override_colors/font_outline_color = Color(0.035, 0.02, 0.01, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 11
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = SubResource("SystemFont_card_serif")
+theme_override_font_sizes/font_size = 22
 text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1

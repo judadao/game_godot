@@ -3,13 +3,12 @@ class_name AutumnCardHandUI
 extends CardHandUI
 
 const AUTUMN_CARD_SCENE := preload("res://scenes/ui/autumn/AutumnBattleCard.tscn")
-const AUTUMN_CARD_ASPECT := 0.72
 const ACTIVE_SCALE := Vector2.ONE
 const INACTIVE_SCALE := Vector2(0.94, 0.94)
 const ACTIVE_MODULATE := Color.WHITE
 const INACTIVE_MODULATE := Color(0.43, 0.40, 0.37, 0.72)
 const AUTUMN_HOVER_RISE := 9.0
-const AUTUMN_HOVER_SCALE := Vector2(1.055, 1.055)
+const AUTUMN_HOVER_SCALE := Vector2.ONE
 
 
 func set_cards(cards: Array, energy: float) -> void:
@@ -95,7 +94,11 @@ func _refresh() -> void:
 		var card := _cards[global_index]
 		var local_index := global_index % CARDS_PER_GROUP
 		var button := _build_card_button(card, local_index, global_index)
-		_front_row.add_child(button)
+		var slot := _front_row.get_child(local_index) as MarginContainer
+		if slot == null:
+			push_error("Autumn card slot %d is missing." % local_index)
+			continue
+		slot.add_child(button)
 		_buttons.append(button)
 	_group_label.text = "COMBO + HEALING"
 	_capture_after_container_sort()
@@ -105,8 +108,8 @@ func _build_card_button(card: Dictionary, local_index: int, global_index: int) -
 	var button := AUTUMN_CARD_SCENE.instantiate() as Button
 	button.name = "Card_%d" % global_index
 	button.custom_minimum_size = _responsive_card_size()
-	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	button.mouse_filter = Control.MOUSE_FILTER_STOP
 	button.focus_mode = Control.FOCUS_ALL
 	button.set_meta("global_card_index", global_index)
@@ -192,8 +195,11 @@ func _on_viewport_size_changed() -> void:
 
 func _apply_responsive_geometry() -> void:
 	var card_size := _responsive_card_size()
+	_back_row.visible = false
+	_back_row.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_back_row.custom_minimum_size.y = 0.0
 	_front_row.custom_minimum_size.y = card_size.y
+	_front_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var card_rows := _back_row.get_parent() as VBoxContainer
 	card_rows.add_theme_constant_override("separation", 0)
 
@@ -201,9 +207,6 @@ func _apply_responsive_geometry() -> void:
 func _responsive_card_size() -> Vector2:
 	var viewport_size := get_viewport_rect().size
 	var safe_height := maxf(112.0, viewport_size.y * 0.28 - 45.0)
-	var hand_width := maxf(360.0, viewport_size.x * 0.50 - 30.0)
 	var height_from_hud := safe_height * 0.94
-	var width_limit := (hand_width - 18.0) / float(CARDS_PER_GROUP)
-	var height_from_width := width_limit / AUTUMN_CARD_ASPECT
-	var card_height := clampf(minf(height_from_hud, height_from_width), 148.0, 196.0)
-	return Vector2(roundf(card_height * AUTUMN_CARD_ASPECT), roundf(card_height))
+	var card_height := clampf(height_from_hud, 148.0, 320.0)
+	return Vector2(0.0, roundf(card_height))

@@ -147,6 +147,113 @@ func _run() -> void:
 	)
 	_expect(skip_button.visible and not skip_button.disabled, "Post-upgrade fusion must be skippable.")
 
+	var divine_page := {
+		"event_id": 15,
+		"source": "divine",
+		"choices": [
+			{
+				"choice_id": "divine:15:gift:celestial_momentum",
+				"action": "divine_gift",
+				"gift_id": "celestial_momentum",
+				"name": "天穹疾勢",
+				"description": "每次連段都會加快戰鬥節奏，使具名終結技更大、更快。",
+				"icon": "»",
+				"element": "wind",
+				"level": 0,
+				"next_level": 1,
+				"next_effects": {"combo_speed_bonus": 0.04, "finisher_size_multiplier": 1.10},
+				"finisher_mutations": {"piercing": true, "speed_multiplier": 1.5},
+				"type": "divine",
+				"card_color": "gold",
+			},
+			{
+				"choice_id": "divine:15:gift:echoing_will",
+				"action": "divine_gift",
+				"gift_id": "echoing_will",
+				"name": "迴響意志",
+				"description": "強化每次連段，並使具名終結技追加一次迴響。",
+				"icon": "↻",
+				"element": "dark",
+				"level": 0,
+				"next_level": 1,
+				"next_effects": {"combo_effect_multiplier": 1.08, "finisher_damage_multiplier": 1.08},
+				"finisher_mutations": {"finisher_echoes": 1, "echo_decay": 0.7},
+				"type": "divine",
+				"card_color": "gold",
+			},
+			{
+				"choice_id": "divine:15:gift:boundless_font",
+				"action": "divine_gift",
+				"gift_id": "boundless_font",
+				"name": "萬毒源泉",
+				"description": "每次連段返還 AP，具名終結技則會恢復生命。",
+				"icon": "◆",
+				"element": "poison",
+				"level": 0,
+				"next_level": 1,
+				"next_effects": {"combo_ap_refund": 0.10, "finisher_heal": 2},
+				"finisher_mutations": {"poison_damage": 3, "poison_duration": 5.0},
+				"type": "divine",
+				"card_color": "gold",
+			},
+		],
+	}
+	ui.call("present_page", divine_page)
+	await process_frame
+	var divine_buttons := ui.call("get_choice_buttons") as Array
+	_expect(divine_buttons.size() == 3, "Divine Gift pages must project three direct choices.")
+	for button_variant in divine_buttons:
+		var gift_button := button_variant as Button
+		var gift_name := gift_button.get_node("CardContent/Header/Identity/Name") as Label
+		_expect(
+			gift_button.has_method("get_effect_bullet_count")
+				and int(gift_button.call("get_effect_bullet_count")) >= 2,
+			"Each Divine Gift card must expose at least two scannable effect bullets."
+		)
+		_expect(
+			gift_button.get_node_or_null("CardContent/Header/GiftIcon") is Label
+				and (gift_button.get_node("CardContent/Header/GiftIcon") as Label).custom_minimum_size.x >= 84.0
+				and (gift_button.get_node("CardContent/Header/GiftIcon") as Label).get_theme_font_size("font_size") >= 48
+				and gift_button.custom_minimum_size.y >= 264.0,
+			"Each Divine Gift card must use a large authored icon and ornate tall presentation."
+		)
+		_expect(
+			gift_name.is_visible_in_tree()
+				and gift_name.size.y >= 32.0
+				and not gift_name.text.strip_edges().is_empty(),
+			"Each Divine Gift name must stay visibly readable before selection."
+		)
+	var selected_gift := divine_buttons[0] as Button
+	var selected_style := selected_gift.get_theme_stylebox("pressed") as StyleBoxFlat
+	_expect(
+		(selected_gift.get_node("SelectedBadge") as Label).visible
+			and selected_style != null
+			and selected_style.border_width_left >= 4
+			and selected_style.shadow_size >= 10,
+		"The selected Divine Gift must stay visibly stronger than hover or keyboard focus."
+	)
+	var selection_summary := ui.get_node_or_null(
+		"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/SelectionSummary"
+	) as Label
+	_expect(
+		selection_summary != null,
+		"Divine Gift pages must author a selected-effect summary."
+	)
+	if selection_summary != null:
+		_expect(
+			selection_summary.text.contains("已選")
+			and selection_summary.text.contains("天穹疾勢")
+			and selection_summary.text.contains("連段"),
+			"The selected Divine Gift must project its name and concrete effect beside confirmation."
+		)
+	ui.call("select_choice", "divine:15:gift:echoing_will")
+	await process_frame
+	if selection_summary != null:
+		_expect(
+			selection_summary.text.contains("迴響意志"),
+			"Changing Divine Gift selection must immediately update the selected-effect summary."
+		)
+
 	var fallback_page := {
 		"event_id": 13,
 		"source": "experience",

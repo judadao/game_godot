@@ -8,6 +8,7 @@ const VIEWPORT_SIZES := [
 	Vector2i(1920, 1080),
 	Vector2i(2560, 1080),
 	Vector2i(2560, 1440),
+	Vector2i(2864, 1080),
 ]
 const BOTTOM_REGIONS := [
 	"PlayerVitals",
@@ -99,6 +100,49 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 		_canvas_rect(activity_feed).is_equal_approx(activity_rect_before_dense_combo),
 		"Dense Combo abilities must not resize the ActivityFeed frame at %s." % viewport_size
 	)
+	var long_formula_name := "萬象終焉天穹雷火迴響神化之劍魂"
+	var activity_rect_before_long_formula := _canvas_rect(activity_feed)
+	hud.call("set_combo_formula", [
+		{"name": long_formula_name + "之一"},
+		{"name": long_formula_name + "之二"},
+	], {"lightning": 999, "projectile": 888, "regeneration": 777}, false, [
+		{
+			"primary": true,
+			"icon": "✦",
+			"name": long_formula_name + "主神賜覺醒萬象神化",
+			"level": 3,
+		},
+	], [], [
+		{"display_name": long_formula_name + "終結技候選"},
+	])
+	await process_frame
+	await process_frame
+	var combo_summary := hud.get_node(
+		"BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboSummary"
+	) as Label
+	var combo_milestones := hud.get_node(
+		"BottomStage/ActivityFeed/FeedMargin/FeedRows/ComboMilestones"
+	) as Label
+	_expect(
+		_canvas_rect(activity_feed).is_equal_approx(activity_rect_before_long_formula),
+		"Long formula, finisher, and gift names must not resize ActivityFeed at %s." % viewport_size
+	)
+	_expect(
+		combo_summary.clip_text
+			and combo_milestones.clip_text
+			and combo_summary.text_overrun_behavior == TextServer.OVERRUN_TRIM_ELLIPSIS
+			and combo_milestones.text_overrun_behavior == TextServer.OVERRUN_TRIM_ELLIPSIS,
+		"Right-side formula headers must use fixed one-line ellipsis at %s." % viewport_size
+	)
+	for row_variant in combo_rows.get_children():
+		if row_variant is Label:
+			var row := row_variant as Label
+			_expect(
+				row.clip_text
+					and row.text_overrun_behavior == TextServer.OVERRUN_TRIM_ELLIPSIS,
+				"Dynamic formula rows must clip long names without changing panel width at %s."
+					% viewport_size
+			)
 	bottom_rect = _canvas_rect(bottom_stage)
 	_expect(
 		absf(bottom_rect.position.y - float(viewport_size.y) * 0.66 - 6.0) <= 5.0,
@@ -148,8 +192,20 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	)
 
 	var hand := hud.get_node("BottomStage/CardStage/AutumnCardHandUI") as CardHandUI
+	var card_stage := hud.get_node("BottomStage/CardStage") as VBoxContainer
+	var action_strip := hud.get_node("BottomStage/CardStage/ActionStrip") as HBoxContainer
 	var redraw := hud.get_node("BottomStage/CardStage/ActionStrip/RedrawHand") as Button
 	var auto_use := hud.get_node("BottomStage/CardStage/ActionStrip/AutoUse") as CheckButton
+	var footer_dash := hud.get_node_or_null("FooterRail/FooterRow/DashHint") as Label
+	_expect(
+		not action_strip.visible
+			and footer_dash != null
+			and footer_dash.visible
+			and footer_dash.text.contains("SPACE")
+			and footer_dash.text.contains("衝刺"),
+		"Space Dash guidance must move from above the cards into the footer controls at %s."
+			% viewport_size
+	)
 	_expect(
 		redraw.mouse_filter == Control.MOUSE_FILTER_STOP,
 		"Redraw must remain mouse-interactive at %s." % viewport_size
@@ -164,6 +220,11 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 		"Card cooldown UI must remain removed at %s." % viewport_size
 	)
 	_expect(hand.get_card_button_count() == 4, "Embedded Autumn hand must render only the active four-card group at %s." % viewport_size)
+	_expect(
+		_canvas_rect(hand).position.y <= _canvas_rect(card_stage).position.y + 2.0,
+		"Removing the upper Dash strip must let the hand expand to the top of CardStage at %s."
+			% viewport_size
+	)
 	for index in hand.get_card_button_count():
 		var card := hand.get_card_button(index)
 		var card_rect := _canvas_rect(card)

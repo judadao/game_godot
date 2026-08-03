@@ -344,6 +344,7 @@ func show_skill_toast(
 		label = Label.new()
 		label.name = "SkillToast_%s" % _safe_node_name(key)
 		label.custom_minimum_size = Vector2(0.0, 34.0)
+		_configure_clipped_feed_label(label)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		label.add_theme_font_size_override("font_size", 13)
@@ -358,6 +359,7 @@ func show_skill_toast(
 		existing_tween.kill()
 	_toast_tween_by_key.erase(key)
 	label.text = display_name if not display_name.strip_edges().is_empty() else skill_id
+	label.tooltip_text = label.text
 	label.modulate = accent
 	_feed_empty_state.visible = false
 	_toast_generation[key] = int(_toast_generation.get(key, 0)) + 1
@@ -411,6 +413,8 @@ func set_combo_formula(
 		if not formula_names.is_empty()
 		else "依序打出三張已學會的 Combo／治療招式"
 	)
+	_combo_summary.tooltip_text = _combo_summary.text
+	_combo_milestones.tooltip_text = _combo_milestones.text
 	var signature := "%s|%s|%s" % [
 		",".join(formula_names),
 		str(stacks),
@@ -435,7 +439,7 @@ func set_combo_formula(
 		if not stack_pairs.is_empty()
 		else "STACKS  —"
 	)
-	stack_row.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_configure_clipped_feed_label(stack_row)
 	stack_row.add_theme_font_size_override("font_size", 10)
 	stack_row.add_theme_color_override("font_color", Color(0.86, 0.72, 1.0, 1.0))
 	_combo_skill_rows.add_child(stack_row)
@@ -450,7 +454,7 @@ func set_combo_formula(
 			String(gift.get("name", "神賜")),
 			int(gift.get("level", 1)),
 		]
-		row.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		_configure_clipped_feed_label(row)
 		row.add_theme_font_size_override("font_size", 10)
 		row.add_theme_color_override("font_color", Color(1.0, 0.82, 0.34, 1.0))
 		_combo_skill_rows.add_child(row)
@@ -491,9 +495,12 @@ func set_combo_chain(
 	if flow_count <= 0 and not finisher_ready:
 		_combo_summary.text = "COMBO  ▶ START"
 		_combo_milestones.text = "▶ START  →  ＋ LINK  →  ★ FINISH"
+		_combo_summary.tooltip_text = _combo_summary.text
+		_combo_milestones.tooltip_text = _combo_milestones.text
 		if rebuild_rows:
 			var empty := Label.new()
 			empty.text = "REACTION CARDS KEEP YOUR ROUTE"
+			_configure_clipped_feed_label(empty)
 			empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			empty.add_theme_font_size_override("font_size", 10)
 			empty.add_theme_color_override("font_color", Color(0.34, 0.44, 0.46, 1.0))
@@ -509,6 +516,8 @@ func set_combo_chain(
 		if finisher_ready
 		else "NEXT  ＋ LINK"
 	)
+	_combo_summary.tooltip_text = _combo_summary.text
+	_combo_milestones.tooltip_text = _combo_milestones.text
 	if not rebuild_rows:
 		return
 	for skill_variant in skills.slice(0, MAX_VISIBLE_COMBO_SKILLS):
@@ -520,10 +529,18 @@ func set_combo_chain(
 			String(skill.get("name", "Combo")),
 			maxi(1, int(skill.get("count", 1))),
 		]
-		row.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		_configure_clipped_feed_label(row)
 		row.add_theme_font_size_override("font_size", 11)
 		row.add_theme_color_override("font_color", Color(0.86, 0.72, 1.0, 1.0))
 		_combo_skill_rows.add_child(row)
+
+
+func _configure_clipped_feed_label(label: Label) -> void:
+	label.custom_minimum_size.x = 0.0
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.clip_text = true
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.tooltip_text = label.text
 
 
 func set_interaction_prompt(

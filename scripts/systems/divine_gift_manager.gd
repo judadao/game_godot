@@ -136,12 +136,22 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 		)
 		if current_level >= MAX_LEVEL or (current_level == 0 and not has_open_slot):
 			continue
+		var current_effects: Dictionary = (
+			_effects_for_level(gift_id, current_level)
+			if current_level > 0
+			else {}
+		)
 		choices.append({
 			"gift_id": gift_id,
 			"name": String(definition.get("name", gift_id)),
 			"description": String(definition.get("description", "")),
 			"icon": String(definition.get("icon", "✦")),
 			"element": String(definition.get("element", "normal")),
+			"current_effects": current_effects,
+			"next_effects": _effects_for_level(gift_id, current_level + 1),
+			"finisher_mutations": (
+				definition.get("finisher_mutations", {}) as Dictionary
+			).duplicate(true),
 			"level": current_level,
 			"next_level": current_level + 1,
 			"action": "divine_gift",
@@ -155,6 +165,9 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 			or int(evolved.get("level", 0)) >= int(evolved.get("max_level", 0))
 		):
 			continue
+		var evolved_level := int(evolved.get("level", 1))
+		var inherited_effects := evolved.get("inherited_effects", {}) as Dictionary
+		var inherited_mutations := evolved.get("inherited_mutations", {}) as Dictionary
 		choices.append({
 			"gift_id": gift_id,
 			"name": String(evolved.get("name", gift_id)),
@@ -162,9 +175,20 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 			"icon": String(evolved.get("icon", "✺")),
 			"element": String(evolved.get("element", "normal")),
 			"elements": (evolved.get("elements", []) as Array).duplicate(),
+			"current_effects": (
+				evolved.get("effects", {}) as Dictionary
+			).duplicate(true),
+			"next_effects": _evolved_effects(
+				inherited_effects,
+				evolved_level + 1
+			),
+			"finisher_mutations": _evolved_mutations(
+				inherited_mutations,
+				evolved_level + 1
+			),
 			"accent_color": String(evolved.get("accent_color", "#f05cff")),
-			"level": int(evolved.get("level", 1)),
-			"next_level": int(evolved.get("level", 1)) + 1,
+			"level": evolved_level,
+			"next_level": evolved_level + 1,
 			"action": "divine_gift",
 			"kind": "evolved",
 		})
