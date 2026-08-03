@@ -90,7 +90,7 @@ func _run() -> void:
 		ui.has_method("set_codex_view_mode")
 			and ui.has_method("get_codex_view_mode")
 			and ui.has_method("get_active_concept_region"),
-		"Discovery Codex must expose live-VFX and concept-art view modes."
+		"Discovery Codex must retain its live-preview compatibility diagnostics."
 	)
 	if ui.has_method("set_codex_view_mode"):
 		ui.call("set_codex_view_mode", &"concept")
@@ -99,12 +99,12 @@ func _run() -> void:
 			"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/ConceptView"
 		) as TextureRect
 		_expect(
-			ui.call("get_codex_view_mode") == &"concept"
+			ui.call("get_codex_view_mode") == &"live"
 				and concept != null
-				and concept.visible
-				and not preview.visible
-				and (ui.call("get_active_concept_region") as Rect2).has_area(),
-			"Concept mode must replace the live preview with the selected skill's cropped concept art."
+				and not concept.visible
+				and preview.visible
+				and not (ui.call("get_active_concept_region") as Rect2).has_area(),
+			"Retired concept effects must not re-enter the player-facing Codex or replace current live VFX."
 		)
 	var meta := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Meta"

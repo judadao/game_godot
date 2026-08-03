@@ -572,17 +572,22 @@ HUDLayer
 - 所有章節內容保留 32px painted page-curl safe inset；圖鑑長內容在固定 detail viewport
   內捲動，viewport 下方另保留 26px 無繪製 footer 與內容 BottomInset，不讓最後一行
   落入書頁捲邊或顯示半行
-- Codex 左側 basic attacks／skills／infusions／finishers 列表；右上可在 `LIVE VFX`
-  與 `CONCEPT ART` 間切換，右下顯示效果／觸發說明
-- 命名 Skill／Finisher 的 concept view 依 stable id 裁切專屬概念列；其他條目依
-  `water/fire/wind/lightning/ice/poison/light/dark/normal` 正式元素裁切九宮格素材
+- Codex 左側 basic attacks／skills／infusions／finishers 列表；右側只顯示現役
+  `LIVE VFX`，退役 concept boards 不得重新進入玩家圖鑑；下方顯示效果／觸發說明
 - 詳情區必須投影目前元素、`LV 1–3` 進化層、Buff stack 與下一個 stack milestone，
   不得在 UI 內另行推算技能規則
 - `InventoryCodexPreview` 等待 Container 提供有效尺寸後才生成 production VFX；
   劍氣使用 preview-local 起點／終點，resize 時重建，不能混入 viewport stretch
-  座標或逃出 `clip_contents`
+  座標或逃出 `clip_contents`。Live frame 邏輯高度至少 `320px`；命名終結技依
+  `380px` authored diameter、完整水平 travel 與 `0.82` ground anchor 自動縮放、
+  左移方向性起點並貼齊預覽地面；Codex fit 不受舊 `preview_scale` 的縮小上限限制，
+  世界方向位移在圖鑑中最多壓縮為 `220px`（不改戰鬥距離），並在安全範圍內放到最大，
+  不能只放大外框後繼續裁掉或縮小招式
 - Basic Attack 預覽維持白青中性月牙；卡片本身的 fire／ice tag 不等同已啟用
   Combo infusion，只有 infusion／Finisher preview 能傳入元素層
+- `風暴充能` 不使用泛用 attack-aura 預覽；圖鑑在同一 live frame 實例化 production
+  `StormChargeVFX`，以 frame 的地面線作 y=0 cast anchor，完整播放左右接地、雙腿導電、
+  劍根／劍身鎖定、右向分叉與同路徑回縮；resize 時重建且不得裁掉接地流或劍端分支
 - discovery projection 包含每張已解鎖 card、每個已學 passive Skill 與每個已解鎖
   Finisher，stable id 不得重複
 - 治療、防禦、能量、移動、控制及強化技使用對應的 code-native `technique`
@@ -597,8 +602,8 @@ HUDLayer
   `set_sword_souls()`、`set_codex_entries()`、`set_mode()`
 - `equip_requested(item_id)` 只送出使用者意圖；`Game` 是唯一 mutation owner，成功後
   重新注入背包、狀態、裝備與圖鑑 projection
-- `set_codex_view_mode()` 在 production VFX 與 concept art 間切換；沒有可用素材時
-  必須安全退回 live view
+- `set_codex_view_mode()` 僅保留舊 caller 的相容入口，任何傳入模式都固定回到
+  production live VFX；concept tab、crop 與舊效果板不可重新顯示
 - inventory category 與 codex category 都執行實際篩選
 - `ItemList` 提供 mouse/keyboard selection
 
@@ -1225,8 +1230,10 @@ START／LINK／FINISH 等角色說明。AP 消耗是決策核心，必須使用�
 高對比深底金框 badge，不能降回與等級同尺寸的次要文字。
 右側 `ComboSkillRows` 顯示三格終結技公式、永久 stacks、持有神賜與 FIFO
 終結技 queue；被 catalog 收錄的 Healing 也能進入公式。輸入一至兩招時可顯示
-最多三個仍可能完成的配方，但必須明示這是候選提示而非已完成招式。公式完成時必須突出實際招式全名，例如
-`絕對零度的千刃殺 · NEXT AUTO SHOT`，後續排隊招式仍須可讀。
+最多三個仍可能完成的配方，但必須明示這是候選提示而非已完成招式。公式完成時，
+第一行必須先顯示不含冠名的招式名稱（例如 `千刃殺 · 下一次自動攻擊`），第二行才顯示
+祝福冠名（例如 `祝福冠名 · 絕對零度的`）；後續排隊招式仍須可讀。完整冠名招式名保留在
+tooltip，不得讓長前綴先占滿第一行而把招式名稱裁成 ellipsis。
 `ActivityFeed`、公式標題、公式步驟與 runtime rows 都是固定欄寬的單行 projection；
 超長中文名稱使用 ellipsis 並把完整內容放在 tooltip，不得把右欄或 `BottomStage` 撐寬。
 

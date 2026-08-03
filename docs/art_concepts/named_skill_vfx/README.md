@@ -5,8 +5,12 @@ from `/home/judd/Downloads/` were used only as motion-language references
 (pixel-art timing, slash arcs, projectile trails, burst/debris rhythm). Do not
 copy their characters, poses, sprite layouts, watermarks, text, or exact shapes.
 
-This concept folder follows `data/named_skill_vfx_profiles.json`; if this README
-and that JSON disagree, the JSON profile is the authority.
+The five atlas-base identities in this folder follow
+`data/named_skill_vfx_profiles.json`. The complete 32-Finisher runtime identity
+set follows `data/finisher_vfx_identities.json` and the detailed continuous-action
+storyboards under `docs/art_concepts/finisher_choreography/`; runtime data is the
+authority when a shared atlas base and a Finisher-specific geometry identity
+differ.
 
 ## Output files
 
@@ -15,6 +19,13 @@ and that JSON disagree, the JSON profile is the authority.
 | `finishers_concept_board_v1.png` | Five Combo Finisher identities: anticipation, travel/attack, impact, and Lv1/Lv2/Lv3 structural growth. |
 | `triggers_concept_board_v2.png` | Four named trigger identities aligned to current profile elements: wind, fire, lightning, water. |
 | `element_progression_stack_board_v2.png` | Formal nine-element vocabulary plus reusable Lv/stack layering grammar. |
+
+The five Finisher rows are legacy reference underlays, not the complete runtime
+catalog and not visible during a Finisher. Each final move resolves a twelve-frame painted
+object sequence under `assets/generated/vfx/finisher_parts_v4/`; this is the visible
+construction, deformation, impact, and residue authority. Its square semantic material
+plate is a design reference and stays hidden at runtime. Every contour must belong to the named object;
+generic rings, ticks, grids, icon echoes, and decorative line fill are prohibited.
 
 Removed from workspace because they used the wrong taxonomy:
 
@@ -35,24 +46,26 @@ language for this concept set. `lightning` and `light` are separate elements.
 `normal` means pure sword pressure, white-cyan kinetic force, and metal glints;
 it must not default to fire.
 
-## Named skill mapping
+## Legacy atlas trigger mapping
+
+The five Finisher rows formerly listed here are retired concept-board records.
+They are not runtime identities and must not be used as construction guidance.
+All 32 current Finishers are enumerated in
+`data/finisher_vfx_identities.json`; their exact silhouettes and continuous
+actions are specified in `docs/art_concepts/finisher_choreography/`.
 
 | ID | Display | Kind | Element | Archetype | Lv1 → Lv2 → Lv3 structure | Stack milestones |
 |---|---|---|---|---|---|---|
-| `thousand_blade_kill` | 千刃殺 | Finisher | `normal` | `blade_storm_lane` | `cross_cut_seed` → `orbiting_blade_ring` → `thousand_edge_execution` | 0/3/6/9: single execution arc → triple afterimage fan → six-blade crossfire → nine-blade storm crown |
-| `inferno_cremation` | 焚天滅 | Finisher | `fire` | `compression_detonation` | `ember_core` → `caldera_ring` → `cremation_pillar` | 0/3/6/9: sealed ember → three flame satellites → sixfold magma fissure → ninefold sunburst |
-| `thunder_prison_pierce` | 雷獄穿心 | Finisher | `lightning` | `rail_prison` | `prison_lance` → `lightning_bar_cells` → `judgement_thunder_gate` | 0/3/6/9: single charge spear → three locking sigils → six chain crossbars → ninefold prison break |
-| `heavenly_wheel_sever` | 天輪斷 | Finisher | `normal` | `orbiting_wheel` | `half_wheel` → `dual_orbit_wheels` → `celestial_guillotine_halo` | 0/3/6/9: single wheel cut → three orbit marks → six-spoke halo → nine heavenly wheels |
-| `frozen_burial` | 霜葬 | Finisher | `ice` | `descending_tomb` | `frost_coffin` → `burial_spikes` → `glacial_mausoleum` | 0/3/6/9: single frost seal → three coffin runes → six grave spikes → ninefold whiteout tomb |
 | `iron_momentum` | Iron Momentum | Trigger | `wind` | `armor_lock` | `iron_guard_plate` → `tempered_counter_ring` → `fortress_lock` | 0/2/4/5: single guard flash → double temper band → four-plate bastion → five-hit fortress lock |
 | `ember_reprise` | Ember Reprise | Trigger | `fire` | `returning_arc` | `returning_ember` → `echo_flame_arc` → `phoenix_reprise` | 0/2/4/6: single return spark → double echo orbit → fourfold rekindle → sixfold phoenix reprise |
 | `battle_tempo` | Battle Tempo | Trigger | `lightning` | `rhythm_pulse` | `tempo_tick` → `syncopated_rhythm_ring` → `war_cadence_overdrive` | 0/2/5/8: single tempo tick → double offbeat echo → five-note acceleration → eight-beat overdrive |
 | `grand_strategy` | Grand Strategy | Trigger | `water` | `tactical_ward` | `tactical_node` → `linked_command_grid` → `grand_constellation` | 0/3/6/9: single command node → three linked orders → six-point control grid → ninefold strategy constellation |
 
-## Modular part breakdown
+## Legacy trigger modular part breakdown
 
-Keep runtime assembly modular. Each named skill can be decomposed into these
-atlas-friendly parts:
+This atlas-friendly row model applies only to the four named triggers. Finishers
+must not use it: they use the exclusive ten-layer semantic-material choreography
+described in `docs/art_concepts/finisher_choreography/README.md`.
 
 1. `anticipation`: cue shape before power release. Examples: blade funnel,
    ember core, lightning cage, frost seal, water command node, wind guard flash.
@@ -72,7 +85,7 @@ atlas-friendly parts:
 8. `element_overlay`: one of the nine formal elements.
 9. `silhouette_mask`: same-frame mask for tint, combo, and buff overlays.
 
-Recommended runtime row model:
+Recommended trigger runtime row model:
 
 ```text
 row = named_vfx_id
@@ -82,7 +95,9 @@ overlays = level_overlay + stack_overlay + element_overlay + silhouette_mask
 
 ## Prompt record
 
-### Finishers v1 prompt
+### Archived Finishers v1 prompt
+
+Historical prompt record only. It is not a runtime or art-direction authority.
 
 Create an original high-polish pixel-art VFX concept board on a dark neutral
 game-preview background. Show five distinct finisher rows, each with three beats

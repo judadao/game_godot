@@ -62,6 +62,17 @@ func _run() -> void:
 			"Flame Imbue must use compact player feedback without screen title or slow motion."
 		)
 
+		var storm_charge := game.call(
+			"_resolve_combat_vfx_profile",
+			database.get_card("storm_charge")
+		) as Dictionary
+		_expect(
+			String(storm_charge.get("special_vfx_id", "")) == "storm_charge"
+				and bool(storm_charge.get("attack_aura", false))
+				and not bool(storm_charge.get("ultimate", false)),
+			"Storm Charge must keep its infusion rules while routing cast feedback to the dedicated stationary VFX."
+		)
+
 		var thousand_blade := game.call(
 			"_resolve_combat_vfx_profile",
 			{
@@ -156,6 +167,10 @@ func _run() -> void:
 	_expect(
 		instance.get("elemental_ground_trail_scene") is PackedScene,
 		"Game must preload the reusable elemental ground-trail presentation scene."
+	)
+	_expect(
+		instance.get("storm_charge_vfx_scene") is PackedScene,
+		"Game must preload the dedicated stationary Storm Charge presentation scene."
 	)
 	instance.free()
 	game.free()

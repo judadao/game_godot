@@ -672,6 +672,7 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
 [node name="ViewTabs" type="HBoxContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
+visible = false
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 theme_override_constants/separation = 5
@@ -697,13 +698,13 @@ theme_override_styles/pressed = SubResource("tab_pressed")
 text = "CONCEPT ART"
 
 [node name="Preview" type="Control" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
-custom_minimum_size = Vector2(0, 152)
+custom_minimum_size = Vector2(0, 320)
 layout_mode = 2
 script = ExtResource("2")
 
 [node name="ConceptView" type="TextureRect" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
 visible = false
-custom_minimum_size = Vector2(0, 152)
+custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
 mouse_filter = 2
 texture_filter = 1
@@ -712,7 +713,7 @@ stretch_mode = 5
 
 [node name="StaticIcon" type="TextureRect" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
 visible = false
-custom_minimum_size = Vector2(0, 152)
+custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
 mouse_filter = 2
 texture_filter = 1

@@ -9,7 +9,7 @@ pipeline描述成Current。
 
 1. [目的、現況與術語](#1-目的現況與術語)
 2. [資料分層與 Ownership](#2-資料分層與-ownership)
-3. [現有十一個 JSON Catalog](#3-現有十一個-json-catalog)
+3. [現有十三個 Runtime／Gameplay JSON Catalog](#3-現有十三個-runtimegameplay-json-catalog)
 4. [Card Data 與 CardDatabase](#4-card-data-與-carddatabase)
 5. [Fusion Recipe 與 EvolutionManager](#5-fusion-recipe-與-evolutionmanager)
 6. [Equipment Data 與 Inventory Runtime State](#6-equipment-data-與-inventory-runtime-state)
@@ -36,18 +36,19 @@ pipeline描述成Current。
 
 | 類型 | 數量 | Path |
 |---|---:|---|
-| Gameplay JSON | 11 | `res://data/*.json` |
+| JSON data files | 15 | `res://data/*.json` |
 | Gameplay `.tres` / `.res` | 0 | 無 |
 | `resources/` content | 0；空目錄不保留 placeholder | 無 |
 | Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
 | Scene sub-resources | 多個 | StyleBox、Shape等內嵌於`.tscn` |
-| Generated VFX texture | 24 | `res://assets/generated/vfx/` |
+| Generated VFX texture | 91 | `res://assets/generated/vfx/`（含 32 張 Finisher material、32 張 12 格 sequence 與 Storm Charge component/source plates） |
 | Generated inventory journal frame | 1 | `res://assets/ui/inventory/generated/inventory_journal_spread_v1.png` |
 | Generated Combo／Healing card art | 20 | `res://assets/ui/autumn/cards/generated/<card_id>.png` |
 | Town NPC transparent cutout | 5 | `res://assets/town/npc/characters/` |
 | Town NPC world animation atlas | 9 | `res://assets/town/npc/characters/*_animation_atlas.png`、`res://assets/town/npc/priest/priest_animation_atlas.png` |
 
-十一個 JSON：
+十五個 JSON data files（其中十三個是 runtime／gameplay catalog，另外兩個是 Town
+authoring descriptors）：
 
 - `res://data/cards.json`
 - `res://data/evolutions.json`
@@ -58,8 +59,12 @@ pipeline描述成Current。
 - `res://data/combo_finishers.json`
 - `res://data/forge_catalog.json`
 - `res://data/named_skill_vfx_profiles.json`
+- `res://data/finisher_vfx_identities.json`
 - `res://data/elemental_ground_trail_profiles.json`
 - `res://data/town_npc_interactions.json`
+- `res://data/town_npc_character_profiles.json`
+- `res://data/town_modular_layout.json`
+- `res://data/town_visual_style.json`
 
 Generated combat presentation：
 
@@ -102,10 +107,22 @@ Generated combat presentation：
 - `SkillCastPresentation` 只以透明元素洗色、短促 impact flash、能量導線與
   可換行大字表現出招，不使用實心中央 UI 卡片。Major cast 才啟用邊緣壓暗，
   一般 Combo 維持正常時間流速。
-- `NamedSkillVFXCatalog` 驗證五個 Finisher 與四個 trigger 的獨立資料身份。
-  每招由 anticipation、attack、trail、impact、debris 五個 atlas parts 拼裝，
-  並以唯一 archetype、beat pattern、三級 evolution layers 與 stack traits
-  控制動畫拓樸和成長，不以單一模板只換 motion 名稱。
+- `StormChargeVFX.tscn` 是 `storm_charge` 的專用 code-native 2.5D 資產。戰鬥與圖鑑
+  共用 scene；五個節拍依序為左右 ground gather、雙腿 conduction、手與劍身 lock、
+  sword-rooted rightward contact、same-circuit residual。主要輪廓由十一條固定語意路徑
+  組成完整導電物件：主幹使用 10/4/1.4px 外暈／能量體／白芯，次分支使用 6/3/1px，
+  每條都能追溯至地面、肢體或劍身，不是隨機 scribble 或離體 projectile；atlas 只保留
+  次要地痕／粒子來源，全程水平位移為零。
+- `NamedSkillVFXCatalog` 將 32 個 Finisher recipe、32 個逐招 visual identity、32 張
+  semantic material plates、32 組十二格手繪物件序列、五個 legacy Finisher atlas 基底與四個 trigger profile 合併為
+  runtime profiles。Trigger 才拼裝 Charge／Attack／Trail／Impact／Debris；Finisher
+  隱藏全部 legacy atlas parts 與 icon echoes，改由 `FinisherGeometryCore` 疊加七個
+  storyboard／material planes、手繪 sprite object 與三個 bounded `CPUParticles2D` layers。逐招具體物件、
+  cadence、particle flow、light energy／motif 與三色光影來自分鏡與 identity；共享的
+  `finisher_semantic_material.gdshader` 避免每次播放重建 shader RID，不以共用基底退化成換色。
+  所有層都是 CanvasItem
+  2.5D；profile diagnostic 固定 `presentation_mode = "2_5d"`，不建立 Node3D／Camera3D／
+  SubViewport rendering path。
 
 Generated inventory presentation：
 
@@ -239,7 +256,7 @@ UI setter/configure API
 如果getter回傳catalog內部reference，consumer可能污染所有後續讀取。Current
 `CardDatabase.get_card()`與`get_all_cards()`已回傳deep copies。
 
-## 3. 現有十一個 JSON Catalog
+## 3. 現有十三個 Runtime／Gameplay JSON Catalog
 
 | JSON | Loader | Root field | Current validated content |
 |---|---|---|---|
@@ -252,6 +269,7 @@ UI setter/configure API
 | `combo_finishers.json` | `ComboFinisherCatalog` | `recipes` | 32 個精確三招終結技配方 |
 | `forge_catalog.json` | `ForgeCatalog` | `material_offers`, `equipment_recipes`, `sword_soul_recipes` | Town 鍛造 offer 與 recipe |
 | `named_skill_vfx_profiles.json` | `NamedSkillVFXCatalog` | `profiles` | 5 個 Finisher＋4 個 trigger 的差異化模組 VFX |
+| `finisher_vfx_identities.json` | `NamedSkillVFXCatalog` | `finishers` | 32 個 Finisher 的 base profile、元素、cadence、beat pattern 與 geometry／particle／light identity |
 | `elemental_ground_trail_profiles.json` | `ElementalGroundTrailCatalog` | `profiles` | 火焰路徑、冰裂分岔與毒灘的四槽 atlas 拼裝資料 |
 | `town_npc_interactions.json` | `TownNPCInteractionCatalog` | `interactions` | 9 種 Town presentation interaction、雙方 animation sequence、角色／archetype selector、距離、cooldown 與 weight |
 | `town_npc_character_profiles.json` | `TownNPCCharacterProfileCatalog` | `profiles` | 祭司、女巫、科學家的六時段 presentation rhythm、logical locations、專屬 action 與 partner interaction allowlist |
@@ -280,6 +298,7 @@ schema、ID、selector、sequence 與 deterministic query 另由
 - `town_upgrades.json`：目前沒有schema_version field
 - `divine_gifts.json`：目前沒有 schema_version field
 - `combo_finishers.json`：`schema_version = 2`
+- `finisher_vfx_identities.json`：`schema_version = 1`
 - `town_npc_interactions.json`：`schema_version = 1`；loader 要求 exact version 並採
   all-or-nothing validation，目前沒有 migration
 
@@ -313,8 +332,17 @@ element；不得用 `evolved` 等新字串取代材料屬性。
 
 ### 3.4 Named Skill VFX profile contract
 
-`data/named_skill_vfx_profiles.json` 的每筆 profile 除 atlas、crop、motion 與 timing
-外，必須包含：
+`NamedSkillVFXCatalog` 的 Finisher runtime profile 不是單一 JSON 的重複資料，而是由：
+
+```text
+combo_finishers.json recipe
++ finisher_vfx_identities.json identity
++ named_skill_vfx_profiles.json reusable base profile
+→ validated runtime Finisher profile
+```
+
+`data/named_skill_vfx_profiles.json` 的五個 Finisher 基底與四個 trigger profile 除
+atlas、crop、motion 與 timing 外，必須包含：
 
 - `element`：正式 ElementTaxonomy ID。
 - `archetype`：九招之一的唯一動畫拓樸；catalog 不接受重複或未支援值。
@@ -323,7 +351,36 @@ element；不得用 `evolved` 等新字串取代材料屬性。
 - `stack_milestones`：由 0 開始、嚴格遞增的非負整數。
 - `stack_traits`：與 milestones 等長的獨立視覺語彙。
 
-九種 supported archetypes 依五個 Finisher、四個 trigger 的 catalog 順序為：
+`data/finisher_vfx_identities.json` 則必須與 32 個 recipe ID 一對一，且每筆包含：
+
+- `base_profile`：指向五個可重用 Finisher atlas 基底之一。
+- `element`：正式 ElementTaxonomy ID。
+- `cadence` 與嚴格遞增的 `beat_pattern`：定義 anticipation、impact、afterglow 的節拍身份。
+- `geometry_identity`：非空 `motif`，以及可選的 secondary motif／orientation。
+- `particle_identity`：非空 `motif`、1–256 的 authored count、spread 與 gravity。
+- `light_identity`：非空 `motif`、至少三色 palette、bloom 與 contrast；catalog 會將
+  bloom 正規化為 runtime `energy`，並把相同 palette deep-copy 給 geometry／particles。
+
+Catalog 同時由 recipe 投影完全一致的繁中 `display_name`、`icon_path`、`role`，加入
+獨立 `material_path`、`storyboard_path`、`semantic_object`、deterministic
+`identity_seed`、`presentation_mode = "2_5d"` 與六層基底可見 layer stack。實際持有的
+祝福依穩定 inventory 順序去重，最多三個；每個祝福新增一個具來源位置的粒子層與
+一個 `PointLight2D`，融合／進化祝福不得拆成重複 overlay，因此總可見層最多十二。
+32 個
+Finisher 的三種 identity 組合必須
+可區分，但不要求建立 32 個 renderer class；共享基底必須透過 motif、seed、cadence、
+圖示與 palette 產生不同構圖。
+
+Finisher 可見物件序列存放於 `assets/generated/vfx/finisher_parts_v4/`。每張圖為 4×3、
+十二個依閱讀順序排列的連續逐格動作：生成、成形、蓄勢、運動、命中、變形與殘留。
+Runtime 一次只顯示一格，不以 cross-fade 假造動畫。十二格共用水平接地基準，整張
+sprite 不旋轉；重力物件垂直升降、沿地物件水平前進，遠近只由 scale、遮擋、間距與
+z-order 表示。禁止恢復成 `_draw()` 扁平 polygon、重複卡片 tile、斜向整條 lane，
+或顯示／搬移完整 material plate。Source atlas 每格四邊先保留 20px 純黑留白；runtime
+不使用 mipmap，並由每格四邊再內縮至少 6px，涵蓋 glow shader 的 4px 取樣與 linear
+filtering 餘量，避免分格線、相鄰格或貼邊物件形成黑色／灰色截斷。
+
+九種 supported archetypes 依五個 Finisher 基底、四個 trigger 的 catalog 順序為：
 
 ```text
 blade_storm_lane
@@ -341,7 +398,19 @@ Catalog 採 all-or-nothing validation，getter 回傳 deep copy。Runtime
 `NamedSkillVFX.play()` 接收 `evolution_level` 與 `buff_stacks`，再以 profile 的
 archetype、beat pattern 與 milestone tier 增加 presentation parts、節拍與拓樸；
 `evolution_layers`／`stack_traits` 同時提供經 validation 的招式成長 identity
-signature。這些資料不修改 gameplay damage/status authority。
+signature。Finisher 另建立 `FinisherGeometryCore`，固定隱藏七個完整 material planes，
+只顯示 authored body、tight/wide glow 與三個 bounded particle layers，並讓 runtime diagnostics 回傳逐招 identity、
+storyboard、semantic object、legacy-atlas 關閉狀態、base layer count 與 total layer count。
+`Game._build_formula_finisher()` 另將目前實際持有的 Divine Gifts 依取得順序投影為
+`combo_visual_profile.blessing_overlays`；以 Gift id 去重、上限三項。每項保留 level、
+canonical `elements`、kind、evolved component ids 與 accent color。融合後只投影新的
+evolved Gift 一層，不再重複投影已離開 inventory 的兩個 base Gifts。
+`FinisherGeometryCore` 為每項 overlay 建立一個具元素來源輪廓的粒子 pass 與一個對應
+光色的 `PointLight2D` pass；火舌、冰晶、分岔雷片、毒孢、風葉、暗月牙與融合棱晶
+必須可由 diagnostics 區分，不能以共用線條或圓環代替。
+2.5D 深度只以 CanvasItem `z_index`、前後景 scale／parallax、材質遮擋、rim light 與
+back light 表現；禁止以真 3D 或 SubViewport 取代這個資料契約。
+這些資料與節點只擁有 presentation，不修改 gameplay damage/status authority。
 
 ## 4. Card Data 與 CardDatabase
 

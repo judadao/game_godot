@@ -621,11 +621,18 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
 - script：`scripts/ui/inventory/inventory_codex_preview.gd`
 - owner：`scenes/ui/inventory/InventoryUI.tscn`
 - API：`show_entry()`、`get_active_entry_id()`、`get_preview_kind()`
-- reuse：`ElementalAttackAura`、`FireUltimateVFX`、`IceUltimateVFX`
+- reuse：`ElementalAttackAura`、`FireUltimateVFX`、`IceUltimateVFX`、`NamedSkillVFX`、
+  `StormChargeVFX`
 - boundary：只顯示 projection，不計算傷害、不解鎖 discovery、不 mutation save
-- sibling presentation：owner 以 `LIVE VFX／CONCEPT ART` tabs 切換此 component 與
-  stable-id／element 對應的 cropped `AtlasTexture`；元素、進化層與 Buff milestone
-  一律來自 Game projection
+- sibling presentation：玩家圖鑑只顯示此 production `LIVE VFX` component；舊
+  concept boards 與 tabs 維持隱藏。元素、進化層與 Buff milestone 一律來自 Game
+  projection
+- fit contract：live frame 邏輯高度至少 `320px`；命名終結技以 authored diameter、
+  完整 travel 與 `0.82` ground anchor 計算縮放／起點，不受舊 `preview_scale` 縮小上限
+  限制；圖鑑可把 world directional travel 壓到最多 `220px`，但不可改戰鬥移動距離，
+  所有主體和軌跡須放到最大安全尺寸並留在 clip rect
+- storm contract：`preview_kind = storm_charge` 時實例化 production 專用 scene，位置固定
+  為預覽水平中央與 floor y，不得退回 attack aura 或玩家攻擊 sheet
 - tooltip/quantity/selection由父層注入。
 - 無 empty/disabled/locked state API。
 - 20 slots固定。
@@ -648,7 +655,7 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
 - empty/selection/focus：每頁 deterministic initial focus；同一時間恰好一個 page visible
 - safe area：底部保留 32px page-curl inset；Codex Info 的 Panel 內嵌 vertical
   ScrollContainer、26px unpainted footer 與 scroll-content BottomInset
-- visual boundary：招式使用 `InventoryCodexPreview`／concept crop；其他圖鑑分類使用
+- visual boundary：招式使用 `InventoryCodexPreview`；其他圖鑑分類使用
   static icon，不 runtime 偽造技能 VFX
 
 ## 13. HealthBar
@@ -1425,7 +1432,8 @@ Required semantic children:
 `ComboSkillRows` 是固定高度、會裁切溢位的 projection viewport；最多只投影最近
 三種 Combo 能力。`ComboSummary`、`ComboMilestones` 與所有 runtime rows 必須設定
 `clip_text` 與 ellipsis，並以 tooltip 保留完整字串；技能或終結技名稱不得回推並放大
-`ActivityFeed` 或 `BottomStage`。
+`ActivityFeed` 或 `BottomStage`。有待施放終結技時，`ComboSummary` 只投影招式名稱，
+`ComboMilestones` 另行投影祝福冠名；完整冠名名稱只放在 tooltip。
 
 `ActionStrip` 是為既有 scene path 保留的隱藏 compatibility subtree，不占 runtime
 高度。`SPACE 衝刺` 必須由 `FooterRail/FooterRow/DashHint` 投影，讓手牌吃滿

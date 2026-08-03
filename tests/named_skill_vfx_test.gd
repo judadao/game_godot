@@ -62,7 +62,7 @@ func _run() -> void:
 	var catalog: RefCounted = catalog_script.new()
 	_expect(bool(catalog.call("load_catalog")), "Named skill VFX profile data must load.")
 	var profiles := catalog.call("get_all_profiles") as Array
-	_expect(profiles.size() == 9, "All five finishers and four named triggers need profiles.")
+	_expect(profiles.size() == 36, "All 32 finishers and four named triggers need profiles.")
 
 	var atlas_rows: Dictionary = {}
 	var archetypes: Dictionary = {}
@@ -162,6 +162,21 @@ func _run() -> void:
 	effect.call("play", "thunder_prison_pierce", 1, 1.0, true)
 	_expect(String(effect.call("get_profile_id")) == "thunder_prison_pierce", "Scene must retain exact skill identity.")
 	_expect(int(effect.call("get_part_count")) == 5, "Runtime scene must assemble five authored sprite parts.")
+	var preview_state := effect.call("get_finisher_debug_state") as Dictionary
+	_expect(
+		float(preview_state.get("directional_travel_distance", 999.0)) <= 220.0,
+		"Codex previews must compress long world travel enough to keep the authored object readable."
+	)
+	var runtime_effect := vfx_scene.instantiate()
+	viewport.add_child(runtime_effect)
+	runtime_effect.call("play", "thunder_prison_pierce", 1, 1.0, false)
+	var runtime_state := runtime_effect.call("get_finisher_debug_state") as Dictionary
+	_expect(
+		float(runtime_state.get("directional_travel_distance", 0.0))
+			> float(preview_state.get("directional_travel_distance", 0.0)),
+		"Codex travel compression must not shorten the same Finisher in combat."
+	)
+	runtime_effect.queue_free()
 	_expect(
 		effect.has_method("get_closing_stage_order")
 			and effect.has_method("get_post_impact_decay_ratio")
@@ -222,6 +237,17 @@ func _run() -> void:
 	_expect(
 		String(resolved.get("named_vfx_id", "")) == "thousand_blade_kill",
 		"Combat mapping must preserve the exact Finisher identity."
+	)
+	var storm_resolved := game.call("_resolve_combat_vfx_profile", {
+		"id": "storm_charge",
+		"name": "風暴充能",
+		"type": "combo",
+		"tags": ["combo", "lightning", "infusion"],
+		"effect": {"kind": "infusion", "infusion_id": "storm"},
+	}) as Dictionary
+	_expect(
+		String(storm_resolved.get("special_vfx_id", "")) == "storm_charge",
+		"Storm Charge combat mapping must select its dedicated in-place charge animation."
 	)
 	game.free()
 	_finish()
@@ -310,7 +336,7 @@ func _capture_contact_sheet(
 
 func _finish() -> void:
 	if _failures == 0:
-		print("PASS: nine named skills use unique modular VFX profiles")
+		print("PASS: 32 finishers and four named triggers use modular VFX profiles")
 	quit(1 if _failures > 0 else 0)
 
 

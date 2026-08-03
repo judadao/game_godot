@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 155 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 157 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -49,11 +49,14 @@ Inventory／Codex focused coverage：
   Finisher 的唯一 projection、完整說明、preview kind，以及命名技能的元素／進化／
   Buff milestone metadata。
 - `inventory_codex_ui_test.gd`：分頁、projection、selection、production VFX preview
-  ownership、live/concept 切換與 concept crop。
-- `inventory_codex_layout_test.gd`：六解析度 panel/list/active visual/explanation geometry。
+  ownership，以及退役 concept controls 永遠隱藏、相容入口固定回到 live view。
+- `inventory_codex_layout_test.gd`：六解析度 panel/list/active visual/explanation geometry，
+  並逐一實例化全部 32 個 Finisher，驗證 `320px` live frame 的水平完整 travel、
+  垂直完整主體、地面錨點與最小可讀占比；world travel 超過 `220px` 時只在 Codex
+  壓縮，測試另鎖定實戰距離不得跟著縮短。
   可用 `INVENTORY_CODEX_CAPTURE_ENTRY` 指定普通攻擊、Combo、Skill 或 Finisher，
-  `INVENTORY_CODEX_CAPTURE_VIEW=live|concept` 選擇展示模式，再搭配 capture path/size
-  產生 Vulkan 視覺比較基準。
+  再搭配 capture path/size 產生 Vulkan 的 live VFX 視覺比較基準；舊的
+  `INVENTORY_CODEX_CAPTURE_VIEW` 不得使 concept art 回到玩家畫面。
   實際 Game projection 可用 `INVENTORY_CODEX_PROJECTION_CAPTURE_PATH` 擷取，
   並以 `INVENTORY_CODEX_PROJECTION_SECTION=techniques|enemies|sword_souls|equipment`
   指定圖鑑章節；不得只驗證手寫 UI fixture。
@@ -214,6 +217,9 @@ Healing／Flame／Volley／Storm visual family。另須以超長公式、終結�
 字體清楚、卡牌能先靠 icon/色族判讀、HUD 不阻擋玩法資訊、動畫沒有引發 layout
 跳位，以及編輯器所見與執行結果一致。
 
+待施放終結技的長名稱回歸還必須確認：第一行以裸招式名開頭且不含祝福冠名，第二行
+完整顯示或裁切祝福冠名，第一行 tooltip 保留「冠名＋招式名」的完整字串。
+
 `combo_card_art_contract_test.gd` 由 32 個終結技 recipe 動態推導 20 張唯一公式劍魂，
 檢查每張都有唯一繁中名稱／說明、唯一 generated path、可載入的 256×256 Texture2D，
 且 `AutumnBattleCard` 實際投影相同中文與圖片。Generated raster 最終仍須獨立檢查
@@ -265,14 +271,104 @@ Combat VFX 修改至少執行
 路徑端點、visual budget、unscaled fresh／active／decay 與自動清理；大招致死
 演出另執行 `ultimate_enemy_defeat_presentation_test.gd`，確認 gameplay／碰撞／
 獎勵立即結算，但敵人保留到 Fire／Ice impact delay 後才 dissolve／burst。
-命名技能另執行
-`named_skill_vfx_test.gd`，驗證五個終結技、四個觸發技各自擁有唯一 atlas row、
-五個可拼裝部件、精確 ID、正式 element、九種唯一 archetype、各自不同且遞增的
-`beat_pattern`、三級 `evolution_layers` 與對齊的
-`stack_milestones`／`stack_traits`。`named_skill_vfx_evolution_test.gd`
-另驗證 `play()` 收到 evolution level／buff stacks、Lv.3＋多層 Buff 會增加實際
-parts，而不是只放大或加亮同一模板；anticipation／impact／decay 時序仍由
-`named_skill_vfx_test.gd` 保護。
+命名技能另執行 `named_skill_vfx_test.gd` 與 `named_skill_vfx_evolution_test.gd`，
+保護五個 atlas Finisher 基底、四個 trigger、五個可拼裝 parts、正式 element、
+archetype、beat pattern、三級 evolution、stack progression 與收尾時序。
+`storm_charge_vfx_test.gd` 另驗證專用 scene 的五個依序節拍、至少十條固定語意導電
+路徑、10/4/1.4px 主幹與 6/3/1px 次分支三層光階、原地 anchor、水平位移零、
+劍身相連的右向 contact、單一高潮與同路徑單調回縮，以及 level 1–3 只增加有界
+粒子／結構細節。`named_skill_vfx_test.gd` 與
+`inventory_codex_projection_test.gd` 必須同時確認 `storm_charge` 投影專用
+`special_vfx_id`／preview kind；圖鑑 layout test 還需實例化同一 scene 並貼齊預覽地面。
+Graphical 5-beat contact sheet 是必要視覺證據；只有結構 PASS、但仍呈現細線菱形／鋸齒
+或泛用 projectile 時，不得接受。
+`finisher_named_vfx_catalog_test.gd` 再由 `combo_finishers.json` 動態驗證全部 32 招：
+每個 recipe 都能解析 profile，繁中名稱／icon path／role 完全一致，geometry／particle／
+light identity 完整且組合可區分，粒子 count 維持 1–256；每招還必須有唯一
+`material_path`、存在的 `storyboard_path` 與非空 `semantic_object`。Runtime scene 能
+播放並回傳精確 identity、`presentation_mode = "2_5d"`、有意義輪廓以及 legacy atlas／
+icon echo 關閉狀態；另必須解析可載入的 4×3 手繪物件 sequence、十二個 authored frames、
+固定 `ground_anchor_ratio = 0.82`、source position 為原點、source rotation 為零，並回報
+`procedural_flat_object = false` 與 `crossfade_slideshow = false`。
+`FinisherGeometryCore` 固定隱藏七個完整 material／semantic planes，只顯示三個手繪
+物件 body／chromatic glow layers 與三個 particle layers，基底共六層；最多三個實際
+持有祝福各自再增加一個 source particle 與一個 `PointLight2D`，融合／進化祝福仍只算
+一個 overlay，總可見層上限十二。Source atlas 每格四邊必須保留 20px 純黑安全留白；
+runtime frame 使用無 mipmap 的 linear filtering，並再將每格邊緣內縮至少 6px，必須
+排除 registration guide、相鄰格與 glow shader 4px footprint 造成的黑線切斷。
+Charge／Attack／Trail／Impact／Debris 只供 trigger，
+不得混入 Finisher。結構測試另驗證每張 material plate 可解碼、至少 1024×1024 正方形、
+四角維持 additive 用純黑留白且畫面內確實存在可讀亮部；這些檢查不取代人工美術審查。
+`auto_attack_feedback_test.gd` 另要求 `combo_visual_profile.finisher = true` 時共通劍氣、
+premium crescent 與元素 projectile layers 全部關閉，只保留命中 timing 與文字回饋。
+
+每招的 `profile.choreography` 另是多部件連續動作的資料 authority，必須包含
+`family`、`spawn_primitives`、`piece_count`、`formation`、`paths`、`impact` 與
+`residue`。Catalog contract 要求至少六個 choreography families、至少十二種不重複的
+出生／路徑／接觸／餘韻 signature，且每招資料至少列出三個語意組成部件。Runtime
+diagnostics 必須在 anticipation／travel／contact／afterglow 四段回傳不同
+`phase_signature`，並證明 `full_plate_travel = false`；單張完整 semantic plate 整體搬移、
+只做縮放或 opacity 變化都不符合這項合約。
+
+設定 `FINISHER_VFX_CAPTURE_DIR` 後，`finisher_vfx_visual_capture_test.gd` 會輸出四張
+1920×1080 review sheets；每張以 4×2 顯示八招，每格並排 anticipation／travel／
+contact／afterglow，並附 recipe icon、繁中名、role 與 ID。相同 capture directory 的
+`native/` 另輸出 128 張 `720×405` 的
+`<finisher_id>_<anticipation|travel|contact|afterglow>_native.png`；每張使用
+`preview = false` 的實戰 scale、Lv.3／9 stacks 與深色戰鬥背景，保留不遮住效果的小型
+繁中名／ID 標籤。Capture test 會比較相鄰關鍵幀的 sampled pixel difference、效果
+centroid、bounds 與 12×6 occupancy，要求每段都有可見影像差異與語意剪影變化；只檢查
+「非空」不算通過。四張 sheets 只負責跨招式／跨時序比較，不能取代這 128 張
+native-detail sequence evidence。無 env 時此測試 headless PASS；真正擷取不得使用
+`--headless`，因 dummy
+renderer 不會送出 `frame_post_draw`。Windows 範例：
+
+相同 capture directory 的 `motion/` 另輸出 32 張 1440×810 的
+`<finisher_id>_motion_12f.png`。每張固定 4×3 排列完整十二格 runtime 時序；capture
+會驗證十二個 authored frame index 全部出現。獨立 reviewer 必須檢查每一張，確認
+接地線水平、整體未旋轉、動作連續且沒有用單一斜線 lane 代替透視。
+
+每張 sheet 同時輸出 `<sheet_name>_slices/`，內容固定為 3 欄×2 列的六張等分原像素
+slice；獨立 reviewer 必須逐張檢查，不能只看縮小後的完整 sheet。
+
+```powershell
+$env:FINISHER_VFX_CAPTURE_DIR = 'D:\tmp\finisher_vfx_review'
+& 'D:\JUDD\game\game_godot_with_git_20260802_233641\godot\Godot_v4.7.1-stable_win64.exe\Godot_v4.7.1-stable_win64_console.exe' `
+  --path . --rendering-method gl_compatibility `
+  --script res://tests/finisher_vfx_visual_capture_test.gd
+Remove-Item Env:FINISHER_VFX_CAPTURE_DIR
+```
+
+### 6.1 Finisher VFX 原創品質門檻
+
+「高階 2D JRPG／Octopath-level」在本專案只表示品質門檻：清楚的 anticipation
+silhouette、受控的環境壓暗、具材質層次的能量匯聚、單一明確 impact 焦點、節制的
+volumetric light 與可讀 afterglow。它不是複製特定作品的授權；禁止重製任何角色、
+徽記、招式構圖、鏡位、逐幀 timing、粒子輪廓、配色序列或其他受保護視覺資產。
+本專案的實作門檻固定為純 CanvasItem 2.5D：review 必須先看得到由線條／幾何構成的
+由手繪 sprite poses 組成的具體語意物件，再看到 construction、travel、contact、transformation、residue 的連續
+因果；同時保有一致的 z-depth、前中後景 scale／parallax、rim light 與 back light。
+主要運動、裂痕與殘留必須沿地圖地面的水平基準；垂直分量只能來自物件本身合理的
+升起、墜落或生長。整張 sprite 禁止旋轉，遠近只能以 scale、遮擋、間距與 z-order
+表示。十二格必須是連續重畫的動作，不得以照片 cross-fade 或單一斜線 lane 代替動畫。
+Generic ground sigil、同心圓、鐘面刻度、放射網格、icon echo 與無來源線條都視為失敗，且不得出現
+Node3D／Camera3D／3D mesh 或 SubViewport 離屏渲染依賴。
+
+獨立 reviewer 必須逐格檢查四張 sheets 的 32 招與四個連續時間點，再逐張檢查
+`native/` 的 128 個實戰比例關鍵幀與 `motion/` 的 32 張十二格 runtime sheets，並確認：
+
+- 名稱、圖示、storyboard 的具體物件、粒子物理來源、palette 與 light motif 語意一致。
+- 每條線屬於物件輪廓、運動路徑或受力結果；不可只是填空的幾何裝飾。
+- 只看剪影與節奏仍可分辨同基底招式，不能只靠換 hue。
+- anticipation 不提前爆白；impact 有主次光階；afterglow 能清楚收束而非突然消失。
+- travel 明確移動或組裝語意部件，contact 明確變形／破壞；四格不得只是同一張完成圖
+  的縮放、淡入與粒子 dissolve。
+- bloom、粒子與細線沒有淹沒玩家／敵人輪廓，也沒有噪點、假接縫、破碎幾何或
+  無意義重複。
+- 任何 geometry、particle count、palette、scale、位置、z-order 或 timing 修改後，
+  四張 sheets、128 張 native sequence、32 張 motion sheets 與實際戰鬥 full-frame 都必須重新 review；
+  Critical／Important finding 清零前不得提交。
+
 元素資料變更另執行 `element_taxonomy_test.gd`，確認唯一正式列表為
 water／fire／wind／lightning／ice／poison／light／dark／normal、legacy aliases
 只在邊界正規化、每把武器有有效 `primal_element`、base blessing 使用 canonical

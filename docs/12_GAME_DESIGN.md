@@ -434,6 +434,11 @@ Combo chain 到 3／6／9 時，projectile presentation 分別加入環繞刃光
 自動射擊；沒有目標時不消耗 cooldown、
 公式或已排隊的終結技。
 
+`風暴充能` 施放瞬間不是一顆高速飛行物：左右地面雷流先匯入雙腳，再沿雙腿、持劍手
+與整把劍依序接成一條可追蹤電路；唯一高潮只從劍身主幹的中後段長出右向分叉，沒有
+離體彈頭。高潮後所有分支沿同一路徑回縮並留下短暫貼身餘電。整段固定在玩家周圍；
+後續攻擊附雷仍由原 Combo infusion 規則處理，presentation 不自行造成傷害或暈眩。
+
 ### 7.2 Divine Gifts
 
 每次角色升等都開啟一次必選神賜頁，可選未持有的新神賜或升級既有神賜。菁英與 Boss
@@ -1050,6 +1055,12 @@ continue normally. Healing enters the formula when it is part of a catalog recip
 three-card recipe queues its named Finisher for a later automatic horizontal shot;
 multiple Finishers resolve FIFO. The HUD shows formula slots, persistent stacks,
 owned Divine Gifts, Gift-modified names, and the queued ready state.
+
+具名 Finisher 會同時讀取本 Run 實際持有的所有 Divine Gifts，而不是只讀目前標記的
+primary Gift。最多三項 Gift 依取得順序各自增加一組元素來源粒子與對應光色；同一 Gift
+不得重複疊層。evolved Gift 以單一昇華層保留其 component elements、等級與融合強調色，
+已被融合移除的 base Gifts 不再另外顯示。這些疊層只改變 presentation，不建立第二套
+傷害、狀態或融合 authority。
 
 All twenty formula-eligible Sword Souls use a shared base cost of `2 AP`. Equipment
 may still apply `combo_cost_reduction` to Combo cards, with a minimum final cost of

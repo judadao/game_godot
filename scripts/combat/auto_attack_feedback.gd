@@ -84,6 +84,7 @@ var _spread_degrees := 0.0
 var _did_hit := false
 var _elemental_aura: Node2D
 var _combo_tier := 0
+var _suppress_attack_geometry := false
 
 
 func play(
@@ -113,6 +114,7 @@ func play(
 	_spread_degrees = clampf(float(visual_profile.get("spread_degrees", 0.0)), 0.0, 360.0)
 	_did_hit = damage > 0
 	_combo_tier = clampi(combo_count / 3, 0, 3)
+	_suppress_attack_geometry = bool(visual_profile.get("finisher", false))
 	_visual_elements = _normalize_elements(visual_profile.get("elements", []) as Array)
 	_visual_colors = _colors_for_elements(_visual_elements)
 	# Sword energy keeps a white core. Elements remain independent silhouette layers.
@@ -127,6 +129,7 @@ func play(
 		_attack_size_multiplier,
 		_combo_tier
 	)
+	premium_crescent_layer.visible = not _suppress_attack_geometry
 	premium_crescent_layer.call("set_progress", _travel_progress, _impact_progress)
 	damage_label.text = "%s%d" % ["CRIT  -" if critical else "-", maxi(0, damage)]
 	damage_label.add_theme_color_override("font_color", _accent)
@@ -179,7 +182,13 @@ func get_damage_text() -> String:
 
 
 func get_visual_layer_count() -> int:
+	if _suppress_attack_geometry:
+		return 0
 	return _visual_colors.size() + (1 if _lifesteal else 0)
+
+
+func is_attack_geometry_suppressed() -> bool:
+	return _suppress_attack_geometry
 
 
 func get_attack_scale() -> float:
@@ -308,7 +317,7 @@ func attach_elemental_aura(
 	elements: Array,
 	intensity: int
 ) -> void:
-	if aura_scene == null or elements.is_empty():
+	if _suppress_attack_geometry or aura_scene == null or elements.is_empty():
 		return
 	if _elemental_aura != null and is_instance_valid(_elemental_aura):
 		_elemental_aura.queue_free()
@@ -322,6 +331,8 @@ func attach_elemental_aura(
 
 
 func _draw() -> void:
+	if _suppress_attack_geometry:
+		return
 	var direction := _target_offset.normalized()
 	if direction.is_zero_approx():
 		direction = Vector2.RIGHT

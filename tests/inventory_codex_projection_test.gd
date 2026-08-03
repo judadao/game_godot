@@ -35,6 +35,7 @@ func _run() -> void:
 				"fire_ultimate",
 				"ice_ultimate",
 				"finisher",
+				"storm_charge",
 			],
 			"Every discovered technique needs a supported preview: %s." % entry_id
 		)
@@ -79,6 +80,11 @@ func _run() -> void:
 	_expect(
 		String((entries_by_id.get("battle_rhythm", {}) as Dictionary).get("category", "")) == "infusions",
 		"Non-elemental attack infusions must no longer disappear from the codex."
+	)
+	_expect(
+		String((entries_by_id.get("storm_charge", {}) as Dictionary).get("preview_kind", ""))
+			== "storm_charge",
+		"Storm Charge must preview its dedicated in-place animation instead of a generic attack aura."
 	)
 	for skill_card_id in ["guard", "healing_light", "energy_surge", "blood_pact_combo"]:
 		_expect(

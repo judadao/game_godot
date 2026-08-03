@@ -46,7 +46,7 @@ func _check_size(viewport_size: Vector2i) -> void:
 	var ui := (load("res://scenes/ui/inventory/InventoryUI.tscn") as PackedScene).instantiate()
 	viewport.add_child(ui)
 	await process_frame
-	ui.call("set_codex_entries", [
+	var codex_entries: Array[Dictionary] = [
 		{
 			"id": "ember_bolt", "name": "Ember Bolt", "category": "attacks",
 			"kind_label": "BASIC ATTACK",
@@ -64,6 +64,14 @@ func _check_size(viewport_size: Vector2i) -> void:
 			"trigger_summary": "Wraps your attacks for 2.5 seconds.",
 			"preview_kind": "attack_aura", "elements": ["flame"], "intensity": 3,
 			"icon_path": "res://assets/ui/autumn/cards/generated/flame_imbue.png",
+		},
+		{
+			"id": "storm_charge", "name": "風暴充能", "category": "infusions",
+			"kind_label": "雷霆攻擊灌注", "description": "將雷流聚回身體與武器。",
+			"effect_summary": "附加雷電傷害與短暫暈眩",
+			"trigger_summary": "施放時原地完成充能，後續攻擊帶電。",
+			"preview_kind": "storm_charge", "element": "lightning", "level": 3,
+			"icon_path": "res://assets/ui/autumn/cards/generated/storm_charge.png",
 		},
 		{
 			"id": "frost_bind", "name": "Glacial Dominion", "category": "skills",
@@ -86,7 +94,43 @@ func _check_size(viewport_size: Vector2i) -> void:
 				"sixfold_magma_fissure", "ninefold_sunburst",
 			],
 		},
-	])
+		{
+			"id": "frozen_burial", "name": "Frozen Burial",
+			"category": "finishers", "kind_label": "COMBO FINISHER",
+			"description": "Raise and seal one continuous ice coffin around the target.",
+			"effect_summary": "Grounded ice construction and vertical fracture",
+			"trigger_summary": "Formula: Frost > Frost > Frost",
+			"preview_kind": "finisher", "elements": ["ice"], "intensity": 5,
+			"named_vfx_id": "frozen_burial",
+			"element": "ice", "level": 3, "combo_stack": 7,
+		},
+	]
+	var finisher_ids := PackedStringArray(["inferno_cremation", "frozen_burial"])
+	var catalog: RefCounted = (load("res://scripts/systems/named_skill_vfx_catalog.gd") as Script).new()
+	_expect(bool(catalog.call("load_catalog")), "Codex fit test requires the production named VFX catalog.")
+	for profile_variant in catalog.call("get_all_profiles") as Array:
+		var profile := profile_variant as Dictionary
+		if String(profile.get("kind", "")) != "finisher":
+			continue
+		var profile_id := String(profile.get("id", ""))
+		if finisher_ids.has(profile_id):
+			continue
+		finisher_ids.append(profile_id)
+		codex_entries.append({
+			"id": profile_id,
+			"name": String(profile.get("display_name", profile_id)),
+			"category": "finishers",
+			"kind_label": "COMBO FINISHER",
+			"description": String(profile.get("semantic_object", profile_id)),
+			"effect_summary": "Production live named VFX",
+			"trigger_summary": "Fit-contract coverage",
+			"preview_kind": "finisher",
+			"named_vfx_id": profile_id,
+			"element": String(profile.get("element", "normal")),
+			"level": 3,
+			"combo_stack": 7,
+		})
+	ui.call("set_codex_entries", codex_entries)
 	ui.call("set_mode", &"codex")
 	ui.call("open")
 	var selected_entry_id := (
@@ -107,20 +151,22 @@ func _check_size(viewport_size: Vector2i) -> void:
 	var preview := panel.get_node("Margin/Layout/Pages/CodexPage/Details/Preview") as Control
 	var concept := panel.get_node("Margin/Layout/Pages/CodexPage/Details/ConceptView") as Control
 	var info := panel.get_node("Margin/Layout/Pages/CodexPage/Details/Info") as Control
-	var active_view := concept if _capture_view == &"concept" else preview
+	var active_view := preview
 	var screen := Rect2(Vector2.ZERO, Vector2(viewport_size))
 	_expect(screen.encloses(_rect(panel)), "Panel must remain on-screen at %s." % viewport_size)
 	_expect(
 		not _rect(browser).intersects(_rect(active_view)),
 		"Discovery list must not overlap the active visual at %s." % viewport_size
 	)
-	_expect(
-		_rect(view_tabs).end.y <= _rect(active_view).position.y,
-		"View tabs must remain above the active visual at %s." % viewport_size
-	)
+	_expect(not view_tabs.visible and not concept.visible, "Retired concept-effect controls must stay hidden at %s." % viewport_size)
 	_expect(
 		_rect(active_view).end.y <= _rect(info).position.y,
 		"Active visual must remain above explanation at %s." % viewport_size
+	)
+	_expect(
+		preview.size.y >= 316.0,
+		"Discovery live VFX frame must reserve enough height to read a complete move at %s."
+			% viewport_size
 	)
 	var effect_origin_offset := (
 		preview.call("get_effect_origin_offset_from_preview_center") as Vector2
@@ -161,11 +207,85 @@ func _check_size(viewport_size: Vector2i) -> void:
 		not capture_path.is_empty()
 		and (not _capture_dir.is_empty() or viewport_size == _capture_size)
 	):
-		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 		await create_timer(_capture_delay).timeout
+		# Container relayout can restart a resize-sensitive preview at a slightly
+		# different frame on each viewport size.  Seek dedicated deterministic
+		# effects back to the requested evidence time so multi-resolution captures
+		# compare the same choreography beat instead of six unrelated replay frames.
+		if selected_entry_id == "storm_charge":
+			preview.call("_spawn_effect")
+			preview.set("_effect_preview_size", preview.size)
+			var captured_effect_variant: Variant = preview.get("_effect")
+			if is_instance_valid(captured_effect_variant):
+				var captured_effect := captured_effect_variant as Node2D
+				if captured_effect != null and captured_effect.has_method("debug_set_elapsed"):
+					captured_effect.call("debug_set_elapsed", _capture_delay)
+		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 		await process_frame
 		await RenderingServer.frame_post_draw
 		_expect(viewport.get_texture().get_image().save_png(capture_path) == OK, "Visual capture must save.")
+	for named_entry_id in finisher_ids:
+		ui.call("select_codex_entry", named_entry_id)
+		await process_frame
+		await process_frame
+		var named_mode := String(preview.call("get_named_effect_spatial_mode"))
+		var named_position := preview.call("get_effect_local_position") as Vector2
+		_expect(
+			is_equal_approx(named_position.y, float(preview.call("get_preview_floor_y"))),
+			"Named Finisher preview must anchor its authored ground contact to the preview floor at %s: %s."
+				% [viewport_size, named_entry_id]
+		)
+		_expect(
+			float(preview.call("get_named_effect_estimated_horizontal_span"))
+				<= preview.size.x - 16.0,
+			"Named Finisher preview must fit its object and full travel path inside the display frame at %s: %s."
+				% [viewport_size, named_entry_id]
+		)
+		_expect(
+			float(preview.call("get_named_effect_estimated_vertical_span"))
+				<= preview.size.y - 16.0,
+			"Named Finisher preview must fit the complete authored object vertically at %s: %s."
+				% [viewport_size, named_entry_id]
+		)
+		_expect(
+			float(preview.call("get_named_effect_estimated_vertical_span"))
+				>= preview.size.y * 0.72,
+			"Named Finisher preview must fill enough of the display frame to remain readable at %s: %s."
+				% [viewport_size, named_entry_id]
+		)
+		_expect(
+			not bool(preview.call("character_uses_attack_sheet")),
+			"Named Finisher preview must not obscure its authored move with the old white attack crescent at %s: %s."
+				% [viewport_size, named_entry_id]
+		)
+		if named_mode == "directional_forward":
+			_expect(
+				named_position.x < preview.size.x * 0.5,
+				"Directional Finisher preview must start left of center to reserve its forward travel at %s: %s."
+					% [viewport_size, named_entry_id]
+			)
+		else:
+			_expect(
+				is_equal_approx(named_position.x, preview.size.x * 0.5),
+				"Player-centered Finisher preview must stay centered at %s: %s."
+					% [viewport_size, named_entry_id]
+			)
+	ui.call("select_codex_entry", "storm_charge")
+	await process_frame
+	await process_frame
+	_expect(
+		bool(preview.call("is_dedicated_storm_charge_active")),
+		"Storm Charge Codex preview must instantiate its dedicated stationary VFX at %s."
+			% viewport_size
+	)
+	_expect(
+		is_equal_approx(
+			(preview.call("get_effect_local_position") as Vector2).y,
+			float(preview.call("get_preview_floor_y"))
+		),
+		"Storm Charge Codex preview must stay attached to the preview ground at %s."
+			% viewport_size
+	)
 	ui.queue_free()
 	viewport.queue_free()
 	await process_frame

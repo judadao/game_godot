@@ -134,7 +134,7 @@ func _run() -> void:
 	var codex_bottom_inset := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/BottomInset"
 	) as Control
-	_expect(codex_preview != null and codex_preview.custom_minimum_size.y <= 152.0, "Codex preview must leave enough height for a complete final detail line.")
+	_expect(codex_preview != null and codex_preview.custom_minimum_size.y >= 320.0, "Codex live preview must reserve enough height to show a complete authored move.")
 	_expect(codex_footer_safe != null and codex_footer_safe.custom_minimum_size.y >= 26.0, "Codex details need an unpainted safe footer below the clipped scroll viewport.")
 	_expect(codex_bottom_inset != null and codex_bottom_inset.custom_minimum_size.y >= 28.0, "Codex scroll content needs bottom space so the final line can rise above the footer mask.")
 	for category in ["techniques", "enemies", "sword_souls", "equipment"]:

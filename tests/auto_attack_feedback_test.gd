@@ -240,6 +240,27 @@ func _run() -> void:
 		"Sword waves must follow a left-facing attack target."
 	)
 	left_feedback.queue_free()
+	var finisher_feedback := FEEDBACK_SCENE.instantiate()
+	root.add_child(finisher_feedback)
+	await process_frame
+	finisher_feedback.play(
+		Vector2(40.0, 160.0),
+		Vector2(240.0, 160.0),
+		32,
+		9,
+		12,
+		false,
+		1.0,
+		1.0,
+		{"finisher": true, "finisher_name": "流火照夜", "elements": ["fire"]}
+	)
+	_expect(
+		bool(finisher_feedback.call("is_attack_geometry_suppressed"))
+			and int(finisher_feedback.call("get_visual_layer_count")) == 0
+			and not (finisher_feedback.get_node("PremiumCrescentLayer") as Node2D).visible,
+		"A Finisher with its own authored action must suppress the generic sword-wave geometry."
+	)
+	finisher_feedback.queue_free()
 	await create_timer(0.20).timeout
 	_expect(
 		(feedback.get_node("DamageLabel") as Label).visible

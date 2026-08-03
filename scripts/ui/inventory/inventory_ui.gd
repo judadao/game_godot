@@ -14,42 +14,15 @@ const MODE_SWORD_SOULS := &"sword_souls"
 const MODE_CODEX := &"codex"
 const LEGACY_MODE_INVENTORY := &"inventory"
 const CODEX_VIEW_LIVE := &"live"
-const CODEX_VIEW_CONCEPT := &"concept"
+const SUPPORTED_ELEMENTS := [
+	"water", "fire", "wind", "lightning", "ice", "poison", "light", "dark", "normal",
+]
 const DEFAULT_ITEM_ICON := preload(
 	"res://assets/ui/fantasy_icons_16x16/png/Separately/Icon48_1_2.png"
 )
 const DEFAULT_SOUL_ICON := preload(
 	"res://assets/ui/fantasy_icons_16x16/png/Separately/Icon41_1_2.png"
 )
-const FINISHER_CONCEPT_BOARD := preload(
-	"res://docs/art_concepts/named_skill_vfx/finishers_concept_board_v1.png"
-)
-const TRIGGER_CONCEPT_BOARD := preload(
-	"res://docs/art_concepts/named_skill_vfx/triggers_concept_board_v2.png"
-)
-const ELEMENT_CONCEPT_BOARD := preload(
-	"res://docs/art_concepts/named_skill_vfx/element_progression_stack_board_v2.png"
-)
-const FINISHER_CONCEPT_IDS := [
-	"thousand_blade_kill",
-	"inferno_cremation",
-	"thunder_prison_pierce",
-	"heavenly_wheel_sever",
-	"frozen_burial",
-]
-const FINISHER_CONCEPT_BOUNDS := [0.0, 205.0, 405.0, 585.0, 780.0, 1024.0]
-const TRIGGER_CONCEPT_IDS := [
-	"iron_momentum",
-	"ember_reprise",
-	"battle_tempo",
-	"grand_strategy",
-]
-const TRIGGER_CONCEPT_BOUNDS := [0.0, 258.0, 464.0, 668.0, 916.0]
-const ELEMENT_CONCEPT_IDS := [
-	"water", "fire", "wind",
-	"lightning", "ice", "poison",
-	"light", "dark", "normal",
-]
 
 @onready var main_panel: Control = $Center/MainPanel
 @onready var gold_label: Label = $Center/MainPanel/Margin/Layout/Header/Gold
@@ -129,7 +102,8 @@ func _ready() -> void:
 	soul_list.item_selected.connect(_on_soul_selected)
 	codex_list.item_selected.connect(_on_codex_selected)
 	live_vfx_button.pressed.connect(set_codex_view_mode.bind(CODEX_VIEW_LIVE))
-	concept_art_button.pressed.connect(set_codex_view_mode.bind(CODEX_VIEW_CONCEPT))
+	concept_art_button.get_parent().visible = false
+	concept_view.visible = false
 	codex_scroll.resized.connect(_schedule_codex_detail_alignment)
 	codex_content.resized.connect(_schedule_codex_detail_alignment)
 	_populate_filters()
@@ -294,24 +268,17 @@ func get_selected_codex_id() -> String:
 	return String(_visible_codex[selected[0]].get("id", ""))
 
 
-func set_codex_view_mode(mode: StringName) -> void:
+func set_codex_view_mode(_mode: StringName) -> void:
 	var is_technique := _active_codex_section == "techniques"
+	_codex_view_mode = CODEX_VIEW_LIVE
 	live_vfx_button.disabled = not is_technique
-	concept_art_button.disabled = not is_technique or concept_view.texture == null
+	concept_art_button.disabled = true
+	concept_art_button.get_parent().visible = false
 	static_icon.visible = not is_technique
-	if not is_technique:
-		preview.visible = false
-		concept_view.visible = false
-		live_vfx_button.button_pressed = false
-		concept_art_button.button_pressed = false
-		return
-	var wants_concept := mode == CODEX_VIEW_CONCEPT and concept_view.texture != null
-	_codex_view_mode = CODEX_VIEW_CONCEPT if wants_concept else CODEX_VIEW_LIVE
-	preview.visible = _codex_view_mode == CODEX_VIEW_LIVE
-	concept_view.visible = _codex_view_mode == CODEX_VIEW_CONCEPT
-	static_icon.visible = false
-	live_vfx_button.button_pressed = _codex_view_mode == CODEX_VIEW_LIVE
-	concept_art_button.button_pressed = _codex_view_mode == CODEX_VIEW_CONCEPT
+	preview.visible = is_technique
+	concept_view.visible = false
+	live_vfx_button.button_pressed = is_technique
+	concept_art_button.button_pressed = false
 
 
 func get_codex_view_mode() -> StringName:
@@ -506,7 +473,8 @@ func _on_codex_selected(index: int) -> void:
 	if _active_codex_section == "techniques":
 		codex_meta.text = _format_codex_meta(entry)
 		codex_growth.text = _format_codex_growth(entry)
-		_show_concept_entry(entry)
+		concept_view.texture = null
+		_active_concept_region = Rect2()
 		preview.call("show_entry", entry)
 	else:
 		codex_meta.text = String(entry.get("meta_summary", ""))
@@ -624,40 +592,6 @@ func _to_dictionary_array(source: Array) -> Array[Dictionary]:
 	return result
 
 
-func _show_concept_entry(entry: Dictionary) -> void:
-	var entry_id := String(entry.get("named_vfx_id", entry.get("id", "")))
-	var board: Texture2D
-	var region := Rect2()
-	var index := FINISHER_CONCEPT_IDS.find(entry_id)
-	if index >= 0:
-		board = FINISHER_CONCEPT_BOARD
-		var start_y := float(FINISHER_CONCEPT_BOUNDS[index])
-		var end_y := float(FINISHER_CONCEPT_BOUNDS[index + 1])
-		region = Rect2(0.0, start_y, float(board.get_width()), end_y - start_y)
-	else:
-		index = TRIGGER_CONCEPT_IDS.find(entry_id)
-		if index >= 0:
-			board = TRIGGER_CONCEPT_BOARD
-			var start_y := float(TRIGGER_CONCEPT_BOUNDS[index])
-			var end_y := float(TRIGGER_CONCEPT_BOUNDS[index + 1])
-			region = Rect2(0.0, start_y, float(board.get_width()), end_y - start_y)
-		else:
-			board = ELEMENT_CONCEPT_BOARD
-			var element_index := ELEMENT_CONCEPT_IDS.find(_entry_element(entry))
-			element_index = element_index if element_index >= 0 else ELEMENT_CONCEPT_IDS.size() - 1
-			var cell_size := float(board.get_width()) / 3.0
-			region = Rect2(
-				Vector2(float(element_index % 3), float(element_index / 3)) * cell_size,
-				Vector2(cell_size, cell_size)
-			)
-	var cropped := AtlasTexture.new()
-	cropped.atlas = board
-	cropped.region = region
-	cropped.filter_clip = true
-	concept_view.texture = cropped
-	_active_concept_region = region
-
-
 func _format_codex_meta(entry: Dictionary) -> String:
 	var level := clampi(int(entry.get("level", entry.get("card_level", 1))), 1, 3)
 	var stacks := maxi(0, int(entry.get("combo_stack", entry.get("buff_stacks", 0))))
@@ -701,7 +635,7 @@ func _entry_element(entry: Dictionary) -> String:
 			element = String(elements[0]).to_lower()
 	if element == "flame":
 		element = "fire"
-	return element if ELEMENT_CONCEPT_IDS.has(element) else "normal"
+	return element if SUPPORTED_ELEMENTS.has(element) else "normal"
 
 
 func _element_display_name(element: String) -> String:

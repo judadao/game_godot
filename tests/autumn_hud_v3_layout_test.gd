@@ -169,6 +169,30 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 				"Dynamic formula rows must clip long names without changing panel width at %s."
 					% viewport_size
 			)
+	var pending_move_name := "流火照夜"
+	var pending_epithet := long_formula_name + "主神賜覺醒的"
+	hud.call("set_combo_formula", [], {}, true, [], [{
+		"name": pending_move_name,
+		"epithet": pending_epithet,
+		"display_name": pending_epithet + pending_move_name,
+	}])
+	await process_frame
+	_expect(
+		combo_summary.text.begins_with(pending_move_name)
+			and not combo_summary.text.contains(pending_epithet),
+		"Pending finisher must lead with the move name without its long blessing epithet at %s."
+			% viewport_size
+	)
+	_expect(
+		combo_milestones.text.contains(pending_epithet),
+		"Pending finisher blessing epithet must occupy the separate second row at %s."
+			% viewport_size
+	)
+	_expect(
+		combo_summary.tooltip_text == pending_epithet + pending_move_name,
+		"Pending finisher tooltip must preserve its complete titled name at %s."
+			% viewport_size
+	)
 	bottom_rect = _canvas_rect(bottom_stage)
 	_expect(
 		absf(bottom_rect.position.y - float(viewport_size.y) * 0.66 - 6.0) <= 5.0,

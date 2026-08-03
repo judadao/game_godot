@@ -5,6 +5,7 @@ signal impact(profile_id: String, shake_strength: float, hit_stop: float)
 signal finished(profile_id: String)
 
 const CATALOG_SCRIPT := preload("res://scripts/systems/named_skill_vfx_catalog.gd")
+const FINISHER_GEOMETRY_CORE_SCRIPT := preload("res://scripts/combat/finisher_geometry_core.gd")
 const PART_NODE_NAMES := [&"Charge", &"Attack", &"Trail", &"Impact", &"Debris"]
 const STAGE_ANTICIPATION := &"anticipation"
 const STAGE_EXECUTION := &"execution"
@@ -15,6 +16,7 @@ const DEFAULT_STACK_MILESTONES := [3, 6, 9]
 const POST_IMPACT_DECAY_RATIO := 0.18
 const TAIL_HOLD_RATIO := 0.12
 const MIN_TAIL_HOLD_DURATION := 0.06
+const CODEX_PREVIEW_MAX_DIRECTIONAL_TRAVEL := 220.0
 const CLOSING_STAGE_IMPACT_SNAP := &"impact_snap"
 const CLOSING_STAGE_COHESIVE_DECAY := &"cohesive_decay"
 const CLOSING_STAGE_TAIL_HOLD := &"tail_hold"
@@ -45,6 +47,9 @@ var _buff_stacks := 0
 var _buff_stack_tier := 0
 var _animation_archetype := &""
 var _tail_progress := 0.0
+var _finisher_geometry_core: Node2D
+var _finisher_spatial_mode := &"player_centered"
+var _finisher_travel_distance := 0.0
 
 
 func _ready() -> void:
@@ -72,10 +77,8 @@ func play(
 	if profile.is_empty():
 		push_error("Unknown named skill VFX profile: %s" % profile_id)
 		return
-	var atlas := load(String(profile.get("atlas_path", ""))) as Texture2D
-	if atlas == null:
-		push_error("Named skill VFX atlas failed to load: %s" % profile.get("atlas_path", ""))
-		return
+	_active = false
+	set_process(false)
 	_reset_parts()
 	_profile = profile
 	_profile_id = profile_id
@@ -94,7 +97,35 @@ func play(
 		else float(profile.get("scale", 1.0)) * clampf(intensity, 0.75, 1.45)
 	)
 	scale = Vector2(float(_direction) * _active_scale, _active_scale)
-	_apply_atlas_parts(atlas)
+	if _is_finisher_profile():
+		_ensure_finisher_geometry_core()
+		var authored_target := _vector_from_profile("target")
+		_finisher_spatial_mode = _resolve_finisher_spatial_mode(profile)
+		var authored_travel_distance := clampf(absf(authored_target.x), 180.0, 360.0)
+		_finisher_travel_distance = (
+			minf(authored_travel_distance, CODEX_PREVIEW_MAX_DIRECTIONAL_TRAVEL)
+			if preview
+			else authored_travel_distance
+		)
+		_finisher_geometry_core.position = Vector2.ZERO
+		var runtime_profile := profile.duplicate(true)
+		runtime_profile["runtime_evolution_level"] = _evolution_level
+		runtime_profile["runtime_buff_stacks"] = _buff_stacks
+		if not bool(_finisher_geometry_core.call("configure", runtime_profile)):
+			return
+		# Finishers are exclusively storyboard/material driven. The five legacy
+		# atlas parts and their icon-like evolution echoes remain trigger-only.
+		for sprite in _sprites:
+			_set_alpha(sprite, 0.0)
+			sprite.visible = false
+		_rebuild_accent_sprites()
+	else:
+		_clear_finisher_geometry_core()
+		var atlas := load(String(profile.get("atlas_path", ""))) as Texture2D
+		if atlas == null:
+			push_error("Named skill VFX atlas failed to load: %s" % profile.get("atlas_path", ""))
+			return
+		_apply_atlas_parts(atlas)
 	_elapsed = 0.0
 	_progress = 0.0
 	_tail_progress = 0.0
@@ -118,7 +149,46 @@ func get_part_count() -> int:
 
 
 func get_active_layer_count() -> int:
+	if _is_finisher_profile():
+		return _finisher_core_layer_count()
 	return _sprites.size() + _accent_sprites.size()
+
+
+func get_geometry_identity() -> Dictionary:
+	return (_profile.get("geometry_identity", {}) as Dictionary).duplicate(true)
+
+
+func get_particle_identity() -> Dictionary:
+	return (_profile.get("particle_identity", {}) as Dictionary).duplicate(true)
+
+
+func get_light_identity() -> Dictionary:
+	return (_profile.get("light_identity", {}) as Dictionary).duplicate(true)
+
+
+func get_base_visual_layer_count() -> int:
+	if _finisher_geometry_core != null and is_instance_valid(_finisher_geometry_core):
+		return int(_finisher_geometry_core.call("get_base_visual_layer_count"))
+	return (_profile.get("layer_stack", []) as Array).size()
+
+
+func get_total_visual_layer_count() -> int:
+	return get_active_layer_count()
+
+
+func get_finisher_debug_state() -> Dictionary:
+	if _finisher_geometry_core == null or not is_instance_valid(_finisher_geometry_core):
+		return {}
+	var state := (_finisher_geometry_core.call("get_debug_state") as Dictionary).duplicate(true)
+	var legacy_visible := false
+	for sprite in _sprites:
+		legacy_visible = legacy_visible or (sprite.visible and sprite.modulate.a > 0.002)
+	state["legacy_atlas_visible"] = legacy_visible
+	state["legacy_accent_count"] = _accent_sprites.size()
+	state["runtime_target_offset"] = _finisher_geometry_core.position
+	state["spatial_mode"] = String(_finisher_spatial_mode)
+	state["directional_travel_distance"] = _finisher_travel_distance
+	return state
 
 
 func get_evolution_level() -> int:
@@ -252,6 +322,7 @@ func _apply_atlas_parts(atlas: Texture2D) -> void:
 		)
 		region.filter_clip = true
 		_sprites[column].texture = region
+		_sprites[column].visible = true
 	_rebuild_accent_sprites()
 
 
@@ -261,6 +332,8 @@ func _rebuild_accent_sprites() -> void:
 			sprite.visible = false
 			sprite.queue_free()
 	_accent_sprites.clear()
+	if _is_finisher_profile():
+		return
 	if _sprites.size() < 5:
 		return
 	var accent_count := mini(
@@ -327,7 +400,11 @@ func _apply_progress(value: float) -> void:
 			float(_profile.get("shake_strength", 0.0)),
 			float(_profile.get("hit_stop", 0.0))
 		)
-	_layout_parts(anticipation_ratio, impact_ratio, impact_end)
+	if not _is_finisher_profile():
+		_layout_parts(anticipation_ratio, impact_ratio, impact_end)
+	if _finisher_geometry_core != null and is_instance_valid(_finisher_geometry_core):
+		_update_finisher_spatial_position(_progress)
+		_finisher_geometry_core.call("set_progress", _progress)
 
 
 func _layout_parts(anticipation_ratio: float, impact_ratio: float, impact_end: float) -> void:
@@ -432,9 +509,35 @@ func _set_tail_hold_progress(value: float) -> void:
 	_progress = 1.0
 	_stage_name = STAGE_DECAY
 	_layout_tail_hold()
+	if _finisher_geometry_core != null and is_instance_valid(_finisher_geometry_core):
+		_update_finisher_spatial_position(1.0)
+		_finisher_geometry_core.call("set_progress", lerpf(0.92, 0.995, _tail_progress))
+
+
+func _resolve_finisher_spatial_mode(profile: Dictionary) -> StringName:
+	var role := String(profile.get("role", "offense"))
+	var geometry_identity := profile.get("geometry_identity", {}) as Dictionary
+	var orientation := String(geometry_identity.get("orientation", "forward"))
+	if orientation in ["forward", "horizontal"]:
+		return &"directional_forward"
+	if role == "offense" and orientation == "inward":
+		return &"directional_forward"
+	return &"player_centered"
+
+
+func _update_finisher_spatial_position(progress: float) -> void:
+	if _finisher_geometry_core == null or not is_instance_valid(_finisher_geometry_core):
+		return
+	if _finisher_spatial_mode == &"directional_forward":
+		var travel := smoothstep(0.08, 0.72, clampf(progress, 0.0, 1.0))
+		_finisher_geometry_core.position = Vector2(_finisher_travel_distance * travel, 0.0)
+	else:
+		_finisher_geometry_core.position = Vector2.ZERO
 
 
 func _layout_tail_hold() -> void:
+	if _is_finisher_profile():
+		return
 	if _sprites.size() < 5:
 		return
 	var source := _vector_from_profile("source")
@@ -788,17 +891,48 @@ func _set_alpha(sprite: Sprite2D, alpha: float) -> void:
 	sprite.modulate = Color(1.0, 1.0, 1.0, clampf(alpha, 0.0, 1.0))
 
 
+func _ensure_finisher_geometry_core() -> void:
+	if _finisher_geometry_core != null and is_instance_valid(_finisher_geometry_core):
+		return
+	_finisher_geometry_core = FINISHER_GEOMETRY_CORE_SCRIPT.new() as Node2D
+	_finisher_geometry_core.name = "FinisherGeometryCore"
+	add_child(_finisher_geometry_core)
+	move_child(_finisher_geometry_core, 0)
+
+
+func _clear_finisher_geometry_core() -> void:
+	if _finisher_geometry_core == null or not is_instance_valid(_finisher_geometry_core):
+		_finisher_geometry_core = null
+		return
+	remove_child(_finisher_geometry_core)
+	_finisher_geometry_core.free()
+	_finisher_geometry_core = null
+
+
+func _finisher_core_layer_count() -> int:
+	if _finisher_geometry_core == null or not is_instance_valid(_finisher_geometry_core):
+		return 0
+	return int(_finisher_geometry_core.call("get_active_layer_count"))
+
+
+func _is_finisher_profile() -> bool:
+	return String(_profile.get("kind", "")) == "finisher"
+
+
 func _reset_parts() -> void:
 	for sprite in _sprites:
 		sprite.position = Vector2.ZERO
 		sprite.scale = Vector2.ONE
 		sprite.rotation = 0.0
 		_set_alpha(sprite, 0.0)
+		sprite.visible = false
 	for sprite in _accent_sprites:
 		sprite.position = Vector2.ZERO
 		sprite.scale = Vector2.ONE
 		sprite.rotation = 0.0
 		_set_alpha(sprite, 0.0)
+	if _finisher_geometry_core != null and is_instance_valid(_finisher_geometry_core):
+		_finisher_geometry_core.call("reset")
 	visible = false
 
 
@@ -807,8 +941,10 @@ func _finish() -> void:
 		return
 	_active = false
 	set_process(false)
-	finished.emit(_profile_id)
+	var completed_profile_id := _profile_id
 	if auto_free:
+		finished.emit(completed_profile_id)
 		queue_free()
 	else:
 		_reset_parts()
+		finished.emit(completed_profile_id)

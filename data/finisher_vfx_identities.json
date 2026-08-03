@@ -1,0 +1,2380 @@
+{
+  "schema_version": 2,
+  "choreography_schema": {
+    "contract": "Each finisher is assembled from independently animated semantic pieces. The source material plate may texture pieces, but it must never move as one intact picture.",
+    "required_fields": [
+      "family",
+      "spawn_primitives",
+      "piece_count",
+      "formation",
+      "paths",
+      "impact",
+      "residue"
+    ]
+  },
+  "choreography_profiles": {
+    "silent_battle_rhythm": {
+      "family": "forged_rib_acceleration",
+      "spawn_primitives": [
+        "bronze_blade_rib",
+        "weld_seam",
+        "copper_pressure_smoke"
+      ],
+      "piece_count": {
+        "hero_ribs": 3,
+        "weld_chips": 9
+      },
+      "formation": "three unequal ribs forge rear-to-front from the same diagonal pressure groove",
+      "paths": [
+        "rib_1 short forward sweep",
+        "rib_2 catches and nests over rib_1",
+        "rib_3 accelerates through both into one heavy crescent"
+      ],
+      "impact": "largest rib nose flattens, three heat cracks travel backward, nested ribs shear metal chips only to the exit side",
+      "residue": "one cooling copper cut scar, three rotating forged chips, grounded ember powder"
+    },
+    "horizon_stream": {
+      "family": "horizon_shear_reversal",
+      "spawn_primitives": [
+        "ivory_horizon_segment",
+        "compressed_air_sheet",
+        "reverse_prism_crescent"
+      ],
+      "piece_count": {
+        "line_segments": 7,
+        "pressure_sheets": 2,
+        "reverse_blades": 1
+      },
+      "formation": "short horizontal segments stitch into one thick horizon before the counter-cut exists",
+      "paths": [
+        "horizon extends left-to-right",
+        "air sheets pull toward the line",
+        "one foreground crescent returns right-to-left and diagonally through it"
+      ],
+      "impact": "crossing point pinches instead of blooming, horizon separates into upper and lower sheets, prism slabs peel horizontally",
+      "residue": "straight gold afterline, two relaxing cloud sheets, drifting prism plates"
+    },
+    "sudden_rain_cadence": {
+      "family": "staggered_blade_downpour",
+      "spawn_primitives": [
+        "wet_blue_steel_blade",
+        "water_skin",
+        "ground_mist"
+      ],
+      "piece_count": {
+        "rear_blades": 3,
+        "middle_blades": 6,
+        "hero_blades": 3
+      },
+      "formation": "three depth groups condense overhead with unequal length, pitch and spacing",
+      "paths": [
+        "rear triplet falls",
+        "middle group follows after a beat gap",
+        "three hero blades cross the near plane and converge on one low zone"
+      ],
+      "impact": "blade tips pierce before their water skins overturn into one broad low crown; hero tips chip without turning into ice",
+      "residue": "three half-dissolved embedded tips, deep blue puddle, heavy drops and ground-hugging vapor"
+    },
+    "falling_moon_arc": {
+      "family": "lunar_guillotine_descent",
+      "spawn_primitives": [
+        "cratered_moonstone_slab",
+        "gold_cutting_underside",
+        "moonrock_fragment"
+      ],
+      "piece_count": {
+        "moon_fragments": 1,
+        "hero_debris": 7,
+        "ground_waves": 1
+      },
+      "formation": "one incomplete thick crescent grows from a gold cutting edge and filled moonstone plates overhead",
+      "paths": [
+        "rear mist stretches downward",
+        "crescent falls steeply with scale parallax",
+        "foreground moon chips overtake the body after contact"
+      ],
+      "impact": "underside compresses into a short contact edge, cracks climb the moon face and one lower corner is physically removed",
+      "residue": "half-crescent erodes to silver grit, cratered slabs tumble, one low elliptical ground pressure wave thins out"
+    },
+    "thousand_blade_kill": {
+      "family": "feather_blade_boundary_return",
+      "spawn_primitives": [
+        "forged_feather_blade",
+        "hinged_spine",
+        "curved_return_trail"
+      ],
+      "piece_count": {
+        "hero_feathers": 5,
+        "middle_feathers": 8,
+        "rear_feathers": 12
+      },
+      "formation": "one engraved hero feather splits into asymmetric front/middle/rear flocks, never a radial wheel",
+      "paths": [
+        "small rear blades launch outward",
+        "hero blades bend at offscreen boundary joints",
+        "return batches curve back from distinct depths and increasing scale"
+      ],
+      "impact": "spines enter one compact slit first, barbs split into amplifying cutters, two return trajectories cross without a round burst",
+      "residue": "unreturned feathers skim the boundary, two narrowing silver tracks, old-gold barb chips"
+    },
+    "still_mountain": {
+      "family": "load_bearing_mountain_release",
+      "spawn_primitives": [
+        "black_slate_plate",
+        "dark_iron_seam",
+        "amber_fault"
+      ],
+      "piece_count": {
+        "mountain_plates": 15,
+        "front_fault_slabs": 6
+      },
+      "formation": "wide grounded base interlocks upward into an asymmetric cold peak",
+      "paths": [
+        "base plates settle inward under gravity",
+        "middle strata compress once per stored hit",
+        "only front fault slabs hinge outward at release"
+      ],
+      "impact": "peak stays fixed while the base fault lifts a low fan of heavy plates; no circular shockwave",
+      "residue": "plates fall by weight, jagged hot fault cools to iron, amber grit crawls along the ground"
+    },
+    "stone_ring_guard": {
+      "family": "irregular_guard_orbit_counter",
+      "spawn_primitives": [
+        "basalt_guard_block",
+        "bronze_clamp",
+        "gold_mineral_core"
+      ],
+      "piece_count": {
+        "guard_blocks": 9,
+        "tracking_fragments": 5
+      },
+      "formation": "unequal blocks lock one at a time around a functional breach with real front/rear occlusion",
+      "paths": [
+        "rear blocks seat first",
+        "foreground block depresses along the incoming vector",
+        "broken pieces leave through the breach then curve slightly toward the recorded attacker"
+      ],
+      "impact": "most-hit block splits along bedding and its clamp straightens into a launch rail",
+      "residue": "intact blocks drop sequentially, tracked fragments leave short mineral dust, spent clamps remain on ground"
+    },
+    "tempered_bones": {
+      "family": "ribcage_to_knuckle_transformation",
+      "spawn_primitives": [
+        "tempered_rib",
+        "segmented_spine",
+        "sternum_plate"
+      ],
+      "piece_count": {
+        "rib_pairs": 5,
+        "spine_segments": 7,
+        "knuckle_face": 1
+      },
+      "formation": "spine locks first, paired ribs forge top-to-bottom, sternum closes the defensive cage",
+      "paths": [
+        "each absorbed hit bends and tempers one rib",
+        "ribs release bottom-to-top and nest into five fingers",
+        "sternum and spine telescope forward as fist face and forearm"
+      ],
+      "impact": "knuckle face dents and forge-cracks, throwing only metal armor slabs along the punch axis",
+      "residue": "fist unfolds into cooling ribs, quench scales rotate down, one dark-red heat streak remains"
+    },
+    "trackless_gale": {
+      "family": "three_lane_delayed_shear",
+      "spawn_primitives": [
+        "paired_pressure_membrane",
+        "wind_beak",
+        "ground_leaf"
+      ],
+      "piece_count": {
+        "lanes": 3,
+        "membranes_per_lane": 2,
+        "hero_leaves": 7
+      },
+      "formation": "three offset air corridors occupy rear, middle and foreground depths with black center seams",
+      "paths": [
+        "rear corridor crosses first",
+        "middle and foreground corridors intersect at different heights",
+        "each passed corridor closes from both sides in the same delayed order"
+      ],
+      "impact": "membranes meet into thick cyan blades and unzip forward one lane at a time, never simultaneously",
+      "residue": "three refractive air seams rebound by depth, sourced leaves and dust lose lift and fall"
+    },
+    "enduring_arcane_breath": {
+      "family": "reverse_flow_breath_core",
+      "spawn_primitives": [
+        "indigo_mana_silk",
+        "gold_star_node",
+        "reserve_breath_pearl"
+      ],
+      "piece_count": {
+        "silk_streams": 2,
+        "travel_nodes": 9,
+        "pearls": 1
+      },
+      "formation": "opposed silk streams wrap a short double helix around a deliberately dark reserve chamber",
+      "paths": [
+        "far nodes reverse along the helix",
+        "silks tighten in breathing pulses rather than constant spin",
+        "filled strands melt inward and leave one stable glass pearl"
+      ],
+      "impact": "condensation seals the outer breath; inner gold reserve flips and exhales one shorter warm pulse only on reprise",
+      "residue": "small indigo pearl retains a visible gold seed, wet silk tails recoil and sparse star sand returns outward"
+    },
+    "inexhaustible_reservoir": {
+      "family": "basin_column_overflow_shield",
+      "spawn_primitives": [
+        "mineral_basin_plate",
+        "feeding_water_tongue",
+        "volumetric_spring_column",
+        "shield_water_skin"
+      ],
+      "piece_count": {
+        "basin_plates": 5,
+        "feed_streams": 2,
+        "shield_skins": 2
+      },
+      "formation": "asymmetric mineral plates assemble low while two water tongues feed a deep center",
+      "paths": [
+        "water level rises inside the basin",
+        "one thick column pushes upward and forks at its crest",
+        "excess folds outward and downward into one or two curved skins according to reserve"
+      ],
+      "impact": "incoming force dents the water skin and grows a sourced crown at that dent before elastic recovery",
+      "residue": "shield drains in heavy beads back to the basin, gold edge darkens, thin wet patch remains"
+    },
+    "returning_counterguard": {
+      "family": "guardian_slab_recorded_replay",
+      "spawn_primitives": [
+        "ivory_guardian_slab",
+        "load_bearing_ridge",
+        "counter_wedge"
+      ],
+      "piece_count": {
+        "slab_panels": 6,
+        "counter_wedges": 3
+      },
+      "formation": "unequal trapezoid panels key onto two ridges and lock around a narrow central seam",
+      "paths": [
+        "slab inclines to receive each hit",
+        "one wedge rotates to each recorded source vector",
+        "wedges eject back-to-front along those same vectors"
+      ],
+      "impact": "wedge tips flatten and crumble into fist-sized stone while compressed amber force escapes as directional fans",
+      "residue": "three parallel rubble furrows, cooling metal skins, one weathering guard stump"
+    },
+    "inferno_cremation": {
+      "family": "hunting_lava_river_cremation",
+      "spawn_primitives": [
+        "molten_fire_puddle",
+        "obsidian_crust_plate",
+        "white_hot_blade_spine"
+      ],
+      "piece_count": {
+        "burn_puddles": 5,
+        "river_branches": 3,
+        "blade_spines": 1
+      },
+      "formation": "burn stacks pool into unequal liquid masses that join as one S-shaped ground river",
+      "paths": [
+        "river bends between burning targets with outside-bank inertia",
+        "current narrows and climbs into a pursuing blade",
+        "blade wraps the fallen target then collapses upward into a cremation column"
+      ],
+      "impact": "stored heat compresses inside the column and ejects a grounded lava fan with liquid, slag and smoke",
+      "residue": "S-shaped black crust, slowly moving orange seams, porous slag coughing short smoke"
+    },
+    "frozen_burial": {
+      "family": "coffin_plate_chain_fracture",
+      "spawn_primitives": [
+        "trapezoid_ice_plate",
+        "cobalt_storage_spine",
+        "ground_frost_ridge"
+      ],
+      "piece_count": {
+        "coffin_plates": 7,
+        "chain_coffins": 3,
+        "hero_shards": 9
+      },
+      "formation": "side plates rise from the feet, shoulder plates clamp next and one pointed cap seals last",
+      "paths": [
+        "frost ridge crawls to nearby targets",
+        "main coffin contracts under stored force",
+        "zigzag crack runs down the spine, rebounds upward, then transmits along the ground ridge"
+      ],
+      "impact": "plates hinge outward in six-to-nine thick pieces; each linked coffin repeats dent, fracture and hinge in order",
+      "residue": "thick translucent slabs, embedded cobalt spine, zigzag frost groove, edge meltwater"
+    },
+    "thunder_prison_pierce": {
+      "family": "pillar_prison_to_rail_spear",
+      "spawn_primitives": [
+        "black_blue_pillar_base",
+        "thick_plasma_column",
+        "conductive_groove",
+        "condensed_lightning_spear"
+      ],
+      "piece_count": {
+        "pillars": 5,
+        "jump_arcs": 6,
+        "rail_spears": 1
+      },
+      "formation": "irregular bases open at staggered depth and grow five unequal plasma columns around an open corridor",
+      "paths": [
+        "arcs jump pillar-to-pillar and carve a groove at each contact",
+        "column cores drain through grooves toward one gold spear blank",
+        "spear accelerates diagonally through the open corridor"
+      ],
+      "impact": "spear telescopes into a narrow cut, splitting the contact plane into a V while columns collapse behind it",
+      "residue": "long scorched trench, smoking bases, glassy charged shell plates and two final grounded jumps"
+    },
+    "orchid_corrosion": {
+      "family": "poison_orchid_bidirectional_release",
+      "spawn_primitives": [
+        "braided_poison_stem",
+        "waxy_orchid_petal",
+        "swollen_toxin_sac",
+        "healing_sepal"
+      ],
+      "piece_count": {
+        "petals": 5,
+        "healing_sepals": 2,
+        "feed_streams": 4
+      },
+      "formation": "poison streams braid into a bent stem; unequal fleshy petals open one by one around a weighted sac",
+      "paths": [
+        "flower folds toward poisoned enemy and siphons inward",
+        "loaded stem whips upward and petals turn enemy faces outward",
+        "sac vents low toward enemies while two intact sepals recoil toward allies"
+      ],
+      "impact": "sac splits along three veins, petals tear into heavy acid drops, sepals flatten into clean dew sheets",
+      "residue": "bubbling enemy puddle and collapsed violet flesh opposite two clear ally droplets; stem dehydrates black"
+    },
+    "sunbearing_dawn": {
+      "family": "sequential_dawn_heal_to_leaf_shell",
+      "spawn_primitives": [
+        "sectioned_dawn_beam",
+        "leaf_cup",
+        "shield_leaf",
+        "revival_seed"
+      ],
+      "piece_count": {
+        "beam_slabs": 3,
+        "shield_leaves": 6,
+        "seeds": 1
+      },
+      "formation": "offset light slabs make a movable beam; two soft leaves form the first recipient cup",
+      "paths": [
+        "beam seeks lowest health, narrows, then slides by a broken line to the next ally",
+        "overflow spills over each cup and is caught by leaves bottom-to-top",
+        "beam returns to first ally and lowers the seed into the shell"
+      ],
+      "impact": "external force cracks the leaf shell without exploding; seed sends a short sprout through that crack",
+      "residue": "two or three leaf shadows per ally, one tangible seed and fresh sprout on the revival holder"
+    },
+    "returning_spring_spirits": {
+      "family": "three_spirit_patrol_returning_bloom",
+      "spawn_primitives": [
+        "water_leaf_spirit",
+        "seed_fiber_tail",
+        "purified_mud_bead",
+        "water_leaf_bud"
+      ],
+      "piece_count": {
+        "spirits": 3,
+        "mud_beads": 3,
+        "flower_leaves": 5
+      },
+      "formation": "one large and two small faceless water bodies wrap around veined leaf spines",
+      "paths": [
+        "small spirit cleanses feet in foreground",
+        "main spirit spirals once outside the body and hands off to next ally",
+        "three routes meet as an open bud at the final station"
+      ],
+      "impact": "mud beads are thrown down; bud drinks, swells and opens five leaves into a grounded healing wave that returns along the patrol path",
+      "residue": "three sprouts pin drained mud beads, clear drops soak into route, gray cleanse shells crack to powder"
+    },
+    "shared_bloodline": {
+      "family": "living_root_lifeline_intercept",
+      "spawn_primitives": [
+        "fiber_root_branch",
+        "transparent_blood_channel",
+        "forked_crystal_connector",
+        "mother_branch"
+      ],
+      "piece_count": {
+        "team_branches": 6,
+        "liquid_channels": 3,
+        "mother_branches": 2
+      },
+      "formation": "uneven roots grow from team positions and braid into a grounded trunk, with upper branches left deliberately open",
+      "paths": [
+        "captured blood enters one root tip",
+        "visible liquid divides with wider flow toward low-health branches",
+        "on lethal force the thick mother branch swings from trunk to that specific ally"
+      ],
+      "impact": "mother branch flattens, bark splits along fiber and liquid is squeezed back into surviving branches; torn fibers pull the ally upright",
+      "residue": "charred trunk segment, slow-pulsing channels, woodening severed branch and fork-shaped ground grooves"
+    },
+    "evergreen_court": {
+      "family": "state_reading_garden_growth",
+      "spawn_primitives": [
+        "moss_cushion",
+        "rough_trunk_segment",
+        "broad_shield_leaf",
+        "narrow_blade_leaf",
+        "sap_fountain"
+      ],
+      "piece_count": {
+        "moss_beds": 3,
+        "trunk_forks": 2,
+        "shield_leaves": 5,
+        "blade_leaves": 7
+      },
+      "formation": "moss pads swell first, two asymmetric trunks fork above them and the sap source opens at the shared wood knot",
+      "paths": [
+        "sap climbs visible grain and splits by ally health state",
+        "shield leaves fold down over low-health zones",
+        "blade leaves turn edge-on then snap along full-health attack vectors"
+      ],
+      "impact": "shield leaf dishes into moss and transfers force outward; blade leaf flings one wide cutting sap sheet then visibly thins",
+      "residue": "used blade leaves fall first, wet moss and flattened shields remain, sap condenses into one warm-green amber seed"
+    },
+    "silent_feather_cadence": {
+      "family": "short_short_long_feather_echo",
+      "spawn_primitives": [
+        "rust_short_feather_blade",
+        "ivory_mid_feather_blade",
+        "gold_long_feather_blade",
+        "echo_feather"
+      ],
+      "piece_count": {
+        "primary_feathers": 3,
+        "echo_feathers": 3
+      },
+      "formation": "three parents stage on separate depths with an unmistakable short-short-long length pattern",
+      "paths": [
+        "rust feather makes first straight short cut",
+        "ivory feather follows higher after one short gap",
+        "gold feather waits above and descends on a longer third arc; each parent recoils and releases one smaller echo"
+      ],
+      "impact": "tips hook into the same plane, barbs break front-to-back and echoes flatten shafts; long shaft splits into two scissor halves",
+      "residue": "three parallel short-short-long cuts, textured barb fragments, gold half-shaft embedded last"
+    },
+    "skyward_returning_feathers": {
+      "family": "plow_launch_hinged_return",
+      "spawn_primitives": [
+        "massive_plow_feather",
+        "hinged_echo_feather",
+        "gold_spine",
+        "sky_slit"
+      ],
+      "piece_count": {
+        "plow_feathers": 1,
+        "return_feathers": 8
+      },
+      "formation": "one massive feathered crescent occupies foreground; eight independent blades stage 3 front, 3 middle, 2 rear",
+      "paths": [
+        "plow crescent sweeps enemies toward one tight point",
+        "eight blades launch outward in rear-middle-front order",
+        "after crossing their apex, joints fold and return front-middle-rear shaft-first"
+      ],
+      "impact": "eight spines compress one slit in sequence; plow feather arrives last and splits into giant shears through the slit",
+      "residue": "eight embedded short shafts, curved plow furrow, narrowing vertical skylight and depth-sorted feather debris"
+    },
+    "guarding_reflection": {
+      "family": "four_panel_directional_mirror_return",
+      "spawn_primitives": [
+        "bronze_mirror_frame",
+        "gray_mirror_plate",
+        "stored_crack_scar",
+        "reflected_light_wedge"
+      ],
+      "piece_count": {
+        "mirror_shields": 4,
+        "return_wedges": 4
+      },
+      "formation": "four slanted shields assemble as an open fortress, front pair overlapping rear corners",
+      "paths": [
+        "each shield retreats half a thickness on its own incoming vector",
+        "crack scars retain four distinct directions",
+        "panels rotate their normals then flip to eject along recorded exits"
+      ],
+      "impact": "scar light pinches into wedges, mirror plates spring flat, strongest wedge shaves one foreground metal corner",
+      "residue": "thin dark mirror chips, four dim shield faces and short cooling scratches along real exit paths"
+    },
+    "gale_reservoir": {
+      "family": "wind_water_route_collection_overflow",
+      "spawn_primitives": [
+        "S_shaped_water_ridge",
+        "wind_peeled_water_sheet",
+        "four_point_AP_crystal",
+        "overflow_guard_sheet"
+      ],
+      "piece_count": {
+        "route_ridges": 3,
+        "AP_crystals": 5,
+        "guard_sheets": 1
+      },
+      "formation": "three route segments occupy distinct heights and create five crystals only where physical paths cross",
+      "paths": [
+        "rear, middle and foreground ridges advance in order",
+        "crystals collect far-to-near and collapse their route behind them",
+        "all three ridges reverse from their tails and braid upward"
+      ],
+      "impact": "last crystal enters the core, braided column sharpens and crest folds outward into one refractive guard sheet",
+      "residue": "wet grooves, falling water beads, gold crystal grit and one drying cyan track"
+    },
+    "balanced_elements": {
+      "family": "sequential_material_state_exchange",
+      "spawn_primitives": [
+        "thick_water_half_wall",
+        "sculpted_fire_half_wall",
+        "lightning_spine",
+        "steam_wedge"
+      ],
+      "piece_count": {
+        "water_arcs": 2,
+        "fire_tongues": 3,
+        "lightning_steps": 3
+      },
+      "formation": "opposed material walls grow on separate planes and touch only along one dark vertical seam",
+      "paths": [
+        "rear water wall overruns fire and creates one steam wedge",
+        "foreground fire rolls back and ejects physical drops",
+        "lightning descends the seam in three distinct steps, transforming each touched section"
+      ],
+      "impact": "spine forks sideways; water breaks as large ice-water plates and fire compresses into molten sheets, twisting forward as one three-phase wedge",
+      "residue": "steaming wet crack, melting plates left, dark molten drops right and only two charge jumps"
+    },
+    "heavenly_wheel_sever": {
+      "family": "rolling_three_material_blade_machine",
+      "spawn_primitives": [
+        "molten_open_blade",
+        "silver_feather_cutter",
+        "toothed_lightning_hub"
+      ],
+      "piece_count": {
+        "outer_fire_blades": 3,
+        "middle_feather_blades": 6,
+        "lightning_teeth": 9
+      },
+      "formation": "three thick open fire blades form a rear rolling rim, six feather cutters interleave in middle depth, toothed hub advances from front",
+      "paths": [
+        "fire rim rolls and cuts a path",
+        "feather cutters split into two depth rows then scissor back",
+        "hub catches up last while arcs connect adjacent physical teeth"
+      ],
+      "impact": "fire rim crushes into an ellipse, feathers close into six cuts and hub locks; three teeth shear off along the advance axis",
+      "residue": "one molten track, six short silver cuts, three sparking teeth and smoke sourced only from the hot groove"
+    },
+    "frost_orchid_flame": {
+      "family": "ice_orchid_preserve_then_upcut",
+      "spawn_primitives": [
+        "translucent_ice_petal",
+        "trapped_toxin_bead",
+        "forged_fire_blade",
+        "corrosive_puddle_lobe"
+      ],
+      "piece_count": {
+        "ice_petals": 6,
+        "toxin_beads": 9,
+        "fire_blades": 1,
+        "puddle_lobes": 5
+      },
+      "formation": "six unequal petals grow from frost veins and close around visible poison; orange blade forges below only after closure",
+      "paths": [
+        "petals finish freezing rear-to-front",
+        "poison beads compress inward",
+        "fire blade travels bottom-to-top and fracture follows immediately behind it"
+      ],
+      "impact": "petals open and break sequentially into melting plates; toxin is squeezed downward while fire blade remains readable through the crown",
+      "residue": "five-lobed corrosive puddle, cold-smoking melt plates, orange cut scar and poisoned water droplets"
+    },
+    "sunlit_spring_court": {
+      "family": "garden_arch_basin_canopy_growth",
+      "spawn_primitives": [
+        "jade_vine_segment",
+        "stone_spring_basin",
+        "gold_leaf_sun_crown",
+        "water_canopy_skin"
+      ],
+      "piece_count": {
+        "vine_segments": 12,
+        "sunbeams": 3,
+        "canopy_skins": 1
+      },
+      "formation": "left and right vines grow as an open pointed arch around a low basin; crown is supported by leaves rather than a full sun disk",
+      "paths": [
+        "cleanse flakes sweep outward first",
+        "basin streams flow inward and rise through the heal zone",
+        "crown ascends the arch and sends three depth-staggered beams into the water"
+      ],
+      "impact": "water folds upward from the basin into one thin gold-green canopy and pins to the arch; gray flakes crack where they touch it",
+      "residue": "gold dew on leaf tips, shallow water trace, attached shield beads and cleansed powder flowing offscreen"
+    },
+    "returning_shared_pulse": {
+      "family": "three_lifeline_knot_targeted_return",
+      "spawn_primitives": [
+        "crystalline_lifeline_tube",
+        "double_arc_life_clasp",
+        "mercy_seed",
+        "jade_spirit_core"
+      ],
+      "piece_count": {
+        "lifeline_tubes": 3,
+        "clasp_arcs": 2,
+        "spirit_cores": 1
+      },
+      "formation": "three depth-separated tubes grow inward and braid into an open clasp, explicitly not a heart silhouette",
+      "paths": [
+        "damage crystals arrive one route at a time",
+        "clasp tightens with each arrival while spirit core rotates only half an orbit",
+        "mercy seed opens the clasp and core exits along the single low-health guide"
+      ],
+      "impact": "red crystal melts instead of bursting; one narrow gold-jade pulse leaves in a selected direction while unused tubes recoil as open lobes",
+      "residue": "red-to-gold tube skin, orange droplets on chosen route, short spirit tail and relaxed dark fibers"
+    },
+    "guarding_shared_pulse": {
+      "family": "anchored_hinged_shield_force_exchange",
+      "spawn_primitives": [
+        "ground_anchor_spine",
+        "hinged_bronze_shield_half",
+        "embedded_crimson_channel",
+        "small_ally_heal_pulse"
+      ],
+      "piece_count": {
+        "shield_halves": 2,
+        "blood_channels": 2,
+        "heal_pulses": 1
+      },
+      "formation": "vertical spine drives into a ground groove, then two thick halves hinge outward with real near/far overlap",
+      "paths": [
+        "enemy force dents halves inward without rearward drift",
+        "red charge moves inside embedded channels to the hinge",
+        "halves open forward as a wedge while back pressure squeezes one small pulse toward allies"
+      ],
+      "impact": "forward wedge ejects impact chips and bronze shavings; rear pulse remains smaller and lower-energy; anchor gains a permanent dent",
+      "residue": "anchor groove, heavy bronze chips, dark red crystals and exactly two ivory drops on the ally route"
+    },
+    "gale_moon_arc": {
+      "family": "broken_orbit_track_center_launch",
+      "spawn_primitives": [
+        "thick_wind_cut_track",
+        "gold_wind_marker",
+        "silver_cyan_moon_blade"
+      ],
+      "piece_count": {
+        "track_segments": 3,
+        "wind_markers": 3,
+        "moon_blades": 1
+      },
+      "formation": "track grows from a deliberate gap in three depth segments; markers pin in order and center remains dark",
+      "paths": [
+        "rear, middle and foreground track segments light sequentially along tangents",
+        "moon blank turns half a rotation to expose thickness",
+        "finished blade launches from center through the gap"
+      ],
+      "impact": "blade severs the track and peels both ends outward as ribbons; nearest marker loses one physical corner",
+      "residue": "two torn wind bands, three dim directional markers, flat moon chips and ground mist following tangent or blade vectors"
+    },
+    "breathing_thunder_echo": {
+      "family": "root_network_marker_chain_strike",
+      "spawn_primitives": [
+        "cyan_AP_root_branch",
+        "hooked_diamond_marker",
+        "vertical_lightning_spear",
+        "lateral_chain_arc"
+      ],
+      "piece_count": {
+        "network_trunks": 1,
+        "network_branches": 7,
+        "echo_markers": 4,
+        "lightning_spears": 4
+      },
+      "formation": "one trunk grows into an irregular ground-root network; four physical markers hook onto separate junctions at distinct depths",
+      "paths": [
+        "gold echo shots arrive along four different arcs and become markers",
+        "current travels trunk-to-branch toward one marker at a time",
+        "four vertical spears strike in marker order, then one lateral arc links only struck nodes"
+      ],
+      "impact": "each marker flattens at contact and ejects needles upward; light pools remain local and no central explosion forms",
+      "residue": "scorched branching network, four melted markers, upward cyan needles and two or three dying violet arcs"
+    }
+  },
+  "finishers": [
+    {
+      "id": "silent_battle_rhythm",
+      "base_profile": "thousand_blade_kill",
+      "element": "normal",
+      "cadence": "measured_acceleration",
+      "beat_pattern": [
+        0.08,
+        0.24,
+        0.43,
+        0.64,
+        0.86
+      ],
+      "geometry_identity": {
+        "motif": "three_concentric_tempo_ribs",
+        "secondary_motif": "closing_rings_then_cross_core",
+        "orientation": "forward",
+        "choreography_family": "forged_rib_acceleration",
+        "spawn_mode": "piecewise:bronze_blade_rib+weld_seam+copper_pressure_smoke",
+        "piece_count": {
+          "hero_ribs": 3,
+          "weld_chips": 9
+        },
+        "formation": "three unequal ribs forge rear-to-front from the same diagonal pressure groove",
+        "travel_path": [
+          "rib_1 short forward sweep",
+          "rib_2 catches and nests over rib_1",
+          "rib_3 accelerates through both into one heavy crescent"
+        ],
+        "impact_mode": "largest rib nose flattens, three heat cracks travel backward, nested ribs shear metal chips only to the exit side",
+        "residue_mode": "one cooling copper cut scar, three rotating forged chips, grounded ember powder"
+      },
+      "particle_identity": {
+        "motif": "metered_bronze_glints",
+        "count": 44,
+        "hero_count": 8,
+        "flow": "inward_then_forward",
+        "spread": 0.62,
+        "gravity": -0.08
+      },
+      "light_identity": {
+        "motif": "rhythmic_copper_key_light",
+        "palette": [
+          "#F7E8C0",
+          "#B8773B",
+          "#6E2A24"
+        ],
+        "accent_palette": [
+          "#FFF5D6"
+        ],
+        "bloom": 1.18,
+        "contrast": 1.12
+      }
+    },
+    {
+      "id": "horizon_stream",
+      "base_profile": "thousand_blade_kill",
+      "element": "light",
+      "cadence": "long_line_reversal",
+      "beat_pattern": [
+        0.1,
+        0.31,
+        0.57,
+        0.74,
+        0.92
+      ],
+      "geometry_identity": {
+        "motif": "horizon_prism_lane",
+        "secondary_motif": "reversing_parallel_cut",
+        "orientation": "horizontal",
+        "choreography_family": "horizon_shear_reversal",
+        "spawn_mode": "piecewise:ivory_horizon_segment+compressed_air_sheet+reverse_prism_crescent",
+        "piece_count": {
+          "line_segments": 7,
+          "pressure_sheets": 2,
+          "reverse_blades": 1
+        },
+        "formation": "short horizontal segments stitch into one thick horizon before the counter-cut exists",
+        "travel_path": [
+          "horizon extends left-to-right",
+          "air sheets pull toward the line",
+          "one foreground crescent returns right-to-left and diagonally through it"
+        ],
+        "impact_mode": "crossing point pinches instead of blooming, horizon separates into upper and lower sheets, prism slabs peel horizontally",
+        "residue_mode": "straight gold afterline, two relaxing cloud sheets, drifting prism plates"
+      },
+      "particle_identity": {
+        "motif": "streaming_prism_dust",
+        "count": 52,
+        "hero_count": 6,
+        "flow": "horizontal_then_reverse",
+        "spread": 0.44,
+        "gravity": 0.0
+      },
+      "light_identity": {
+        "motif": "horizon_rim_light",
+        "palette": [
+          "#FFF1B8",
+          "#A8EDFF",
+          "#5A7CD8"
+        ],
+        "bloom": 1.28,
+        "contrast": 1.2
+      }
+    },
+    {
+      "id": "sudden_rain_cadence",
+      "base_profile": "thousand_blade_kill",
+      "element": "water",
+      "cadence": "staccato_downpour",
+      "beat_pattern": [
+        0.06,
+        0.17,
+        0.29,
+        0.48,
+        0.78
+      ],
+      "geometry_identity": {
+        "motif": "rain_staff_crossfire",
+        "secondary_motif": "droplet_impact_grid",
+        "orientation": "descending",
+        "choreography_family": "staggered_blade_downpour",
+        "spawn_mode": "piecewise:wet_blue_steel_blade+water_skin+ground_mist",
+        "piece_count": {
+          "rear_blades": 3,
+          "middle_blades": 6,
+          "hero_blades": 3
+        },
+        "formation": "three depth groups condense overhead with unequal length, pitch and spacing",
+        "travel_path": [
+          "rear triplet falls",
+          "middle group follows after a beat gap",
+          "three hero blades cross the near plane and converge on one low zone"
+        ],
+        "impact_mode": "blade tips pierce before their water skins overturn into one broad low crown; hero tips chip without turning into ice",
+        "residue_mode": "three half-dissolved embedded tips, deep blue puddle, heavy drops and ground-hugging vapor"
+      },
+      "particle_identity": {
+        "motif": "silver_blue_rain_needles",
+        "count": 60,
+        "hero_count": 7,
+        "flow": "descending_staccato_bursts",
+        "spread": 0.82,
+        "gravity": 0.74
+      },
+      "light_identity": {
+        "motif": "wet_specular_flicker",
+        "palette": [
+          "#DDF7FF",
+          "#63BEEA",
+          "#3552A4"
+        ],
+        "bloom": 1.12,
+        "contrast": 1.25
+      }
+    },
+    {
+      "id": "falling_moon_arc",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "light",
+      "cadence": "suspended_moonfall",
+      "beat_pattern": [
+        0.14,
+        0.36,
+        0.59,
+        0.77,
+        0.94
+      ],
+      "geometry_identity": {
+        "motif": "descending_lunar_crescent",
+        "secondary_motif": "moon_halo_shock_ring",
+        "orientation": "descending",
+        "choreography_family": "lunar_guillotine_descent",
+        "spawn_mode": "piecewise:cratered_moonstone_slab+gold_cutting_underside+moonrock_fragment",
+        "piece_count": {
+          "moon_fragments": 1,
+          "hero_debris": 7,
+          "ground_waves": 1
+        },
+        "formation": "one incomplete thick crescent grows from a gold cutting edge and filled moonstone plates overhead",
+        "travel_path": [
+          "rear mist stretches downward",
+          "crescent falls steeply with scale parallax",
+          "foreground moon chips overtake the body after contact"
+        ],
+        "impact_mode": "underside compresses into a short contact edge, cracks climb the moon face and one lower corner is physically removed",
+        "residue_mode": "half-crescent erodes to silver grit, cratered slabs tumble, one low elliptical ground pressure wave thins out"
+      },
+      "particle_identity": {
+        "motif": "lunar_silver_motes",
+        "count": 48,
+        "hero_count": 6,
+        "flow": "descending_then_outward",
+        "spread": 0.7,
+        "gravity": 0.18
+      },
+      "light_identity": {
+        "motif": "cold_moon_backlight",
+        "palette": [
+          "#FFF6D6",
+          "#C7D9FF",
+          "#7180C8"
+        ],
+        "bloom": 1.34,
+        "contrast": 1.18
+      }
+    },
+    {
+      "id": "thousand_blade_kill",
+      "base_profile": "thousand_blade_kill",
+      "element": "normal",
+      "cadence": "echo_volley_return",
+      "beat_pattern": [
+        0.08,
+        0.22,
+        0.36,
+        0.62,
+        0.88
+      ],
+      "geometry_identity": {
+        "motif": "feather_blade_mandala",
+        "secondary_motif": "returning_crossfire_crown",
+        "orientation": "radial",
+        "choreography_family": "feather_blade_boundary_return",
+        "spawn_mode": "piecewise:forged_feather_blade+hinged_spine+curved_return_trail",
+        "piece_count": {
+          "hero_feathers": 5,
+          "middle_feathers": 8,
+          "rear_feathers": 12
+        },
+        "formation": "one engraved hero feather splits into asymmetric front/middle/rear flocks, never a radial wheel",
+        "travel_path": [
+          "small rear blades launch outward",
+          "hero blades bend at offscreen boundary joints",
+          "return batches curve back from distinct depths and increasing scale"
+        ],
+        "impact_mode": "spines enter one compact slit first, barbs split into amplifying cutters, two return trajectories cross without a round burst",
+        "residue_mode": "unreturned feathers skim the boundary, two narrowing silver tracks, old-gold barb chips"
+      },
+      "particle_identity": {
+        "motif": "white_cyan_blade_shards",
+        "count": 64,
+        "hero_count": 12,
+        "flow": "radial_out_then_curved_return",
+        "spread": 1.0,
+        "gravity": 0.0
+      },
+      "light_identity": {
+        "motif": "metallic_execution_flash",
+        "palette": [
+          "#FFFFFF",
+          "#A9D8FF",
+          "#5867B5"
+        ],
+        "accent_palette": [
+          "#D8B86A"
+        ],
+        "bloom": 1.42,
+        "contrast": 1.3
+      }
+    },
+    {
+      "id": "still_mountain",
+      "base_profile": "frozen_burial",
+      "element": "normal",
+      "cadence": "immovable_hold_release",
+      "beat_pattern": [
+        0.13,
+        0.4,
+        0.68,
+        0.83,
+        0.96
+      ],
+      "geometry_identity": {
+        "motif": "mountain_seal_bastion",
+        "secondary_motif": "stored_force_fault_ring",
+        "orientation": "grounded",
+        "choreography_family": "load_bearing_mountain_release",
+        "spawn_mode": "piecewise:black_slate_plate+dark_iron_seam+amber_fault",
+        "piece_count": {
+          "mountain_plates": 15,
+          "front_fault_slabs": 6
+        },
+        "formation": "wide grounded base interlocks upward into an asymmetric cold peak",
+        "travel_path": [
+          "base plates settle inward under gravity",
+          "middle strata compress once per stored hit",
+          "only front fault slabs hinge outward at release"
+        ],
+        "impact_mode": "peak stays fixed while the base fault lifts a low fan of heavy plates; no circular shockwave",
+        "residue_mode": "plates fall by weight, jagged hot fault cools to iron, amber grit crawls along the ground"
+      },
+      "particle_identity": {
+        "motif": "heavy_pressure_fragments",
+        "count": 38,
+        "hero_count": 6,
+        "flow": "grounded_then_outward",
+        "spread": 0.78,
+        "gravity": 0.88
+      },
+      "light_identity": {
+        "motif": "low_amber_ground_light",
+        "palette": [
+          "#F4D39B",
+          "#A98B68",
+          "#505A68"
+        ],
+        "bloom": 0.92,
+        "contrast": 1.38
+      }
+    },
+    {
+      "id": "stone_ring_guard",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "normal",
+      "cadence": "ring_lock_shatter",
+      "beat_pattern": [
+        0.1,
+        0.28,
+        0.52,
+        0.7,
+        0.91
+      ],
+      "geometry_identity": {
+        "motif": "segmented_guard_ring",
+        "secondary_motif": "tracking_fragment_orbit",
+        "orientation": "radial",
+        "choreography_family": "irregular_guard_orbit_counter",
+        "spawn_mode": "piecewise:basalt_guard_block+bronze_clamp+gold_mineral_core",
+        "piece_count": {
+          "guard_blocks": 9,
+          "tracking_fragments": 5
+        },
+        "formation": "unequal blocks lock one at a time around a functional breach with real front/rear occlusion",
+        "travel_path": [
+          "rear blocks seat first",
+          "foreground block depresses along the incoming vector",
+          "broken pieces leave through the breach then curve slightly toward the recorded attacker"
+        ],
+        "impact_mode": "most-hit block splits along bedding and its clamp straightens into a launch rail",
+        "residue_mode": "intact blocks drop sequentially, tracked fragments leave short mineral dust, spent clamps remain on ground"
+      },
+      "particle_identity": {
+        "motif": "faceted_guard_splinters",
+        "count": 46,
+        "hero_count": 8,
+        "flow": "orbit_then_tracking_release",
+        "spread": 0.9,
+        "gravity": 0.58
+      },
+      "light_identity": {
+        "motif": "bronze_edge_occlusion",
+        "palette": [
+          "#FFE0A3",
+          "#B7956D",
+          "#576579"
+        ],
+        "bloom": 0.98,
+        "contrast": 1.34
+      }
+    },
+    {
+      "id": "tempered_bones",
+      "base_profile": "frozen_burial",
+      "element": "light",
+      "cadence": "forged_pulse_counter",
+      "beat_pattern": [
+        0.12,
+        0.33,
+        0.55,
+        0.76,
+        0.93
+      ],
+      "geometry_identity": {
+        "motif": "golden_bone_lattice",
+        "secondary_motif": "tempered_fist_afterimage",
+        "orientation": "vertical",
+        "choreography_family": "ribcage_to_knuckle_transformation",
+        "spawn_mode": "piecewise:tempered_rib+segmented_spine+sternum_plate",
+        "piece_count": {
+          "rib_pairs": 5,
+          "spine_segments": 7,
+          "knuckle_face": 1
+        },
+        "formation": "spine locks first, paired ribs forge top-to-bottom, sternum closes the defensive cage",
+        "travel_path": [
+          "each absorbed hit bends and tempers one rib",
+          "ribs release bottom-to-top and nest into five fingers",
+          "sternum and spine telescope forward as fist face and forearm"
+        ],
+        "impact_mode": "knuckle face dents and forge-cracks, throwing only metal armor slabs along the punch axis",
+        "residue_mode": "fist unfolds into cooling ribs, quench scales rotate down, one dark-red heat streak remains"
+      },
+      "particle_identity": {
+        "motif": "forge_scale_sparks",
+        "count": 42,
+        "hero_count": 6,
+        "flow": "inward_lock_then_forward",
+        "spread": 0.66,
+        "gravity": 0.32
+      },
+      "light_identity": {
+        "motif": "furnace_gold_rim",
+        "palette": [
+          "#FFF2B5",
+          "#E9A84D",
+          "#7B4F3E"
+        ],
+        "bloom": 1.22,
+        "contrast": 1.3
+      }
+    },
+    {
+      "id": "trackless_gale",
+      "base_profile": "thousand_blade_kill",
+      "element": "wind",
+      "cadence": "triple_vanish_burst",
+      "beat_pattern": [
+        0.05,
+        0.2,
+        0.4,
+        0.63,
+        0.89
+      ],
+      "geometry_identity": {
+        "motif": "three_shear_vanish_lanes",
+        "secondary_motif": "delayed_wind_blade_seams",
+        "orientation": "forward",
+        "choreography_family": "three_lane_delayed_shear",
+        "spawn_mode": "piecewise:paired_pressure_membrane+wind_beak+ground_leaf",
+        "piece_count": {
+          "lanes": 3,
+          "membranes_per_lane": 2,
+          "hero_leaves": 7
+        },
+        "formation": "three offset air corridors occupy rear, middle and foreground depths with black center seams",
+        "travel_path": [
+          "rear corridor crosses first",
+          "middle and foreground corridors intersect at different heights",
+          "each passed corridor closes from both sides in the same delayed order"
+        ],
+        "impact_mode": "membranes meet into thick cyan blades and unzip forward one lane at a time, never simultaneously",
+        "residue_mode": "three refractive air seams rebound by depth, sourced leaves and dust lose lift and fall"
+      },
+      "particle_identity": {
+        "motif": "air_pressure_ribbons",
+        "count": 54,
+        "hero_count": 9,
+        "flow": "three_forward_lanes_then_delayed_burst",
+        "spread": 0.88,
+        "gravity": -0.16
+      },
+      "light_identity": {
+        "motif": "cyan_velocity_rim",
+        "palette": [
+          "#E8FFFF",
+          "#73E5D0",
+          "#4A84B6"
+        ],
+        "bloom": 1.16,
+        "contrast": 1.24
+      }
+    },
+    {
+      "id": "enduring_arcane_breath",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "water",
+      "cadence": "inward_breath_reprise",
+      "beat_pattern": [
+        0.16,
+        0.39,
+        0.61,
+        0.8,
+        0.95
+      ],
+      "geometry_identity": {
+        "motif": "inward_double_helix",
+        "secondary_motif": "reserve_ring_reprise",
+        "orientation": "inward",
+        "choreography_family": "reverse_flow_breath_core",
+        "spawn_mode": "piecewise:indigo_mana_silk+gold_star_node+reserve_breath_pearl",
+        "piece_count": {
+          "silk_streams": 2,
+          "travel_nodes": 9,
+          "pearls": 1
+        },
+        "formation": "opposed silk streams wrap a short double helix around a deliberately dark reserve chamber",
+        "travel_path": [
+          "far nodes reverse along the helix",
+          "silks tighten in breathing pulses rather than constant spin",
+          "filled strands melt inward and leave one stable glass pearl"
+        ],
+        "impact_mode": "condensation seals the outer breath; inner gold reserve flips and exhales one shorter warm pulse only on reprise",
+        "residue_mode": "small indigo pearl retains a visible gold seed, wet silk tails recoil and sparse star sand returns outward"
+      },
+      "particle_identity": {
+        "motif": "inward_star_meridian_droplets",
+        "count": 50,
+        "hero_count": 6,
+        "flow": "inward_then_reserve_reprise",
+        "spread": 0.68,
+        "gravity": 0.0
+      },
+      "light_identity": {
+        "motif": "indigo_teal_inward_pulse",
+        "palette": [
+          "#F4E5B7",
+          "#3B3D89",
+          "#59BED0"
+        ],
+        "accent_palette": [
+          "#21183F",
+          "#C9A85A"
+        ],
+        "bloom": 1.18,
+        "contrast": 1.18
+      }
+    },
+    {
+      "id": "inexhaustible_reservoir",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "water",
+      "cadence": "deep_fill_overflow",
+      "beat_pattern": [
+        0.18,
+        0.42,
+        0.65,
+        0.82,
+        0.96
+      ],
+      "geometry_identity": {
+        "motif": "wellspring_reservoir_basin",
+        "secondary_motif": "overflow_shield_dome",
+        "orientation": "upward",
+        "choreography_family": "basin_column_overflow_shield",
+        "spawn_mode": "piecewise:mineral_basin_plate+feeding_water_tongue+volumetric_spring_column+shield_water_skin",
+        "piece_count": {
+          "basin_plates": 5,
+          "feed_streams": 2,
+          "shield_skins": 2
+        },
+        "formation": "asymmetric mineral plates assemble low while two water tongues feed a deep center",
+        "travel_path": [
+          "water level rises inside the basin",
+          "one thick column pushes upward and forks at its crest",
+          "excess folds outward and downward into one or two curved skins according to reserve"
+        ],
+        "impact_mode": "incoming force dents the water skin and grows a sourced crown at that dent before elastic recovery",
+        "residue_mode": "shield drains in heavy beads back to the basin, gold edge darkens, thin wet patch remains"
+      },
+      "particle_identity": {
+        "motif": "buoyant_mana_bubbles",
+        "count": 56,
+        "hero_count": 8,
+        "flow": "upward_fill_then_shield",
+        "spread": 0.84,
+        "gravity": -0.5
+      },
+      "light_identity": {
+        "motif": "deep_blue_caustic_light",
+        "palette": [
+          "#D6FFFF",
+          "#3CAED1",
+          "#3852A7"
+        ],
+        "bloom": 1.18,
+        "contrast": 1.2
+      }
+    },
+    {
+      "id": "returning_counterguard",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "normal",
+      "cadence": "record_hold_replay",
+      "beat_pattern": [
+        0.11,
+        0.35,
+        0.58,
+        0.79,
+        0.94
+      ],
+      "geometry_identity": {
+        "motif": "mirror_bastion_archive",
+        "secondary_motif": "counterfeit_statue_volley",
+        "orientation": "returning",
+        "choreography_family": "guardian_slab_recorded_replay",
+        "spawn_mode": "piecewise:ivory_guardian_slab+load_bearing_ridge+counter_wedge",
+        "piece_count": {
+          "slab_panels": 6,
+          "counter_wedges": 3
+        },
+        "formation": "unequal trapezoid panels key onto two ridges and lock around a narrow central seam",
+        "travel_path": [
+          "slab inclines to receive each hit",
+          "one wedge rotates to each recorded source vector",
+          "wedges eject back-to-front along those same vectors"
+        ],
+        "impact_mode": "wedge tips flatten and crumble into fist-sized stone while compressed amber force escapes as directional fans",
+        "residue_mode": "three parallel rubble furrows, cooling metal skins, one weathering guard stump"
+      },
+      "particle_identity": {
+        "motif": "mirrored_metal_splinters",
+        "count": 48,
+        "hero_count": 6,
+        "flow": "record_then_ordered_return",
+        "spread": 0.76,
+        "gravity": 0.24
+      },
+      "light_identity": {
+        "motif": "silver_reflection_sweep",
+        "palette": [
+          "#FFFFFF",
+          "#B7C9D8",
+          "#7169A9"
+        ],
+        "bloom": 1.16,
+        "contrast": 1.35
+      }
+    },
+    {
+      "id": "inferno_cremation",
+      "base_profile": "inferno_cremation",
+      "element": "fire",
+      "cadence": "domain_ignition_bloom",
+      "beat_pattern": [
+        0.12,
+        0.34,
+        0.68,
+        0.82,
+        0.96
+      ],
+      "geometry_identity": {
+        "motif": "moving_nocturne_fire_domain",
+        "secondary_motif": "cremation_sun_pillar",
+        "orientation": "radial",
+        "choreography_family": "hunting_lava_river_cremation",
+        "spawn_mode": "piecewise:molten_fire_puddle+obsidian_crust_plate+white_hot_blade_spine",
+        "piece_count": {
+          "burn_puddles": 5,
+          "river_branches": 3,
+          "blade_spines": 1
+        },
+        "formation": "burn stacks pool into unequal liquid masses that join as one S-shaped ground river",
+        "travel_path": [
+          "river bends between burning targets with outside-bank inertia",
+          "current narrows and climbs into a pursuing blade",
+          "blade wraps the fallen target then collapses upward into a cremation column"
+        ],
+        "impact_mode": "stored heat compresses inside the column and ejects a grounded lava fan with liquid, slag and smoke",
+        "residue_mode": "S-shaped black crust, slowly moving orange seams, porous slag coughing short smoke"
+      },
+      "particle_identity": {
+        "motif": "ember_cinder_cyclone",
+        "count": 64,
+        "hero_count": 10,
+        "flow": "radial_domain_then_upward_cinders",
+        "spread": 1.0,
+        "gravity": -0.26
+      },
+      "light_identity": {
+        "motif": "volumetric_furnace_core",
+        "palette": [
+          "#FFF3A0",
+          "#FF7A24",
+          "#B51F32"
+        ],
+        "bloom": 1.48,
+        "contrast": 1.42
+      }
+    },
+    {
+      "id": "frozen_burial",
+      "base_profile": "frozen_burial",
+      "element": "ice",
+      "cadence": "seal_pause_chain_shatter",
+      "beat_pattern": [
+        0.14,
+        0.42,
+        0.7,
+        0.86
+      ],
+      "geometry_identity": {
+        "motif": "frost_blossom_coffin",
+        "secondary_motif": "chain_shatter_mausoleum",
+        "orientation": "descending",
+        "choreography_family": "coffin_plate_chain_fracture",
+        "spawn_mode": "piecewise:trapezoid_ice_plate+cobalt_storage_spine+ground_frost_ridge",
+        "piece_count": {
+          "coffin_plates": 7,
+          "chain_coffins": 3,
+          "hero_shards": 9
+        },
+        "formation": "side plates rise from the feet, shoulder plates clamp next and one pointed cap seals last",
+        "travel_path": [
+          "frost ridge crawls to nearby targets",
+          "main coffin contracts under stored force",
+          "zigzag crack runs down the spine, rebounds upward, then transmits along the ground ridge"
+        ],
+        "impact_mode": "plates hinge outward in six-to-nine thick pieces; each linked coffin repeats dent, fracture and hinge in order",
+        "residue_mode": "thick translucent slabs, embedded cobalt spine, zigzag frost groove, edge meltwater"
+      },
+      "particle_identity": {
+        "motif": "prismatic_ice_shards",
+        "count": 60,
+        "hero_count": 10,
+        "flow": "seal_then_chain_outward",
+        "spread": 0.94,
+        "gravity": 0.44
+      },
+      "light_identity": {
+        "motif": "glacial_subsurface_flash",
+        "palette": [
+          "#F2FFFF",
+          "#83DDF4",
+          "#526FC9"
+        ],
+        "bloom": 1.36,
+        "contrast": 1.36
+      }
+    },
+    {
+      "id": "thunder_prison_pierce",
+      "base_profile": "thunder_prison_pierce",
+      "element": "lightning",
+      "cadence": "jumping_field_railshot",
+      "beat_pattern": [
+        0.07,
+        0.18,
+        0.54,
+        0.66,
+        0.9
+      ],
+      "geometry_identity": {
+        "motif": "spring_thunder_prison",
+        "secondary_motif": "central_judgement_rail",
+        "orientation": "forward",
+        "choreography_family": "pillar_prison_to_rail_spear",
+        "spawn_mode": "piecewise:black_blue_pillar_base+thick_plasma_column+conductive_groove+condensed_lightning_spear",
+        "piece_count": {
+          "pillars": 5,
+          "jump_arcs": 6,
+          "rail_spears": 1
+        },
+        "formation": "irregular bases open at staggered depth and grow five unequal plasma columns around an open corridor",
+        "travel_path": [
+          "arcs jump pillar-to-pillar and carve a groove at each contact",
+          "column cores drain through grooves toward one gold spear blank",
+          "spear accelerates diagonally through the open corridor"
+        ],
+        "impact_mode": "spear telescopes into a narrow cut, splitting the contact plane into a V while columns collapse behind it",
+        "residue_mode": "long scorched trench, smoking bases, glassy charged shell plates and two final grounded jumps"
+      },
+      "particle_identity": {
+        "motif": "branching_violet_arcs",
+        "count": 60,
+        "hero_count": 8,
+        "flow": "vertical_jumps_then_forward_rail",
+        "spread": 0.92,
+        "gravity": 0.0
+      },
+      "light_identity": {
+        "motif": "electric_strobe_gate",
+        "palette": [
+          "#F4EEFF",
+          "#A67CFF",
+          "#456DFF"
+        ],
+        "accent_palette": [
+          "#63E6FF",
+          "#D8B65C"
+        ],
+        "bloom": 1.5,
+        "contrast": 1.46
+      }
+    },
+    {
+      "id": "orchid_corrosion",
+      "base_profile": "inferno_cremation",
+      "element": "poison",
+      "cadence": "petal_bloom_decay",
+      "beat_pattern": [
+        0.15,
+        0.37,
+        0.59,
+        0.78,
+        0.95
+      ],
+      "geometry_identity": {
+        "motif": "corrosive_orchid_rosette",
+        "secondary_motif": "spreading_spore_domain_and_gold_heal_return",
+        "orientation": "radial",
+        "choreography_family": "poison_orchid_bidirectional_release",
+        "spawn_mode": "piecewise:braided_poison_stem+waxy_orchid_petal+swollen_toxin_sac+healing_sepal",
+        "piece_count": {
+          "petals": 5,
+          "healing_sepals": 2,
+          "feed_streams": 4
+        },
+        "formation": "poison streams braid into a bent stem; unequal fleshy petals open one by one around a weighted sac",
+        "travel_path": [
+          "flower folds toward poisoned enemy and siphons inward",
+          "loaded stem whips upward and petals turn enemy faces outward",
+          "sac vents low toward enemies while two intact sepals recoil toward allies"
+        ],
+        "impact_mode": "sac splits along three veins, petals tear into heavy acid drops, sepals flatten into clean dew sheets",
+        "residue_mode": "bubbling enemy puddle and collapsed violet flesh opposite two clear ally droplets; stem dehydrates black"
+      },
+      "particle_identity": {
+        "motif": "toxic_droplets_and_gold_return_seeds",
+        "count": 56,
+        "hero_count": 8,
+        "flow": "outward_damage_then_inward_heal",
+        "spread": 0.9,
+        "gravity": -0.08
+      },
+      "light_identity": {
+        "motif": "toxic_core_with_gold_heal_return",
+        "palette": [
+          "#E8D68A",
+          "#4FAE6D",
+          "#642D78"
+        ],
+        "accent_palette": [
+          "#F7D77C"
+        ],
+        "bloom": 1.24,
+        "contrast": 1.4
+      }
+    },
+    {
+      "id": "sunbearing_dawn",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "light",
+      "cadence": "ascending_heal_crown",
+      "beat_pattern": [
+        0.13,
+        0.3,
+        0.51,
+        0.73,
+        0.92
+      ],
+      "geometry_identity": {
+        "motif": "dawn_sun_chariot",
+        "secondary_motif": "revival_halo_crown",
+        "orientation": "upward",
+        "choreography_family": "sequential_dawn_heal_to_leaf_shell",
+        "spawn_mode": "piecewise:sectioned_dawn_beam+leaf_cup+shield_leaf+revival_seed",
+        "piece_count": {
+          "beam_slabs": 3,
+          "shield_leaves": 6,
+          "seeds": 1
+        },
+        "formation": "offset light slabs make a movable beam; two soft leaves form the first recipient cup",
+        "travel_path": [
+          "beam seeks lowest health, narrows, then slides by a broken line to the next ally",
+          "overflow spills over each cup and is caught by leaves bottom-to-top",
+          "beam returns to first ally and lowers the seed into the shell"
+        ],
+        "impact_mode": "external force cracks the leaf shell without exploding; seed sends a short sprout through that crack",
+        "residue_mode": "two or three leaf shadows per ally, one tangible seed and fresh sprout on the revival holder"
+      },
+      "particle_identity": {
+        "motif": "ascending_gold_starlets",
+        "count": 54,
+        "hero_count": 8,
+        "flow": "lowest_health_sequence_then_shield",
+        "spread": 0.82,
+        "gravity": -0.48
+      },
+      "light_identity": {
+        "motif": "warm_volumetric_sunrays",
+        "palette": [
+          "#FFFCE1",
+          "#FFD76B",
+          "#E87C52"
+        ],
+        "bloom": 1.42,
+        "contrast": 1.2
+      }
+    },
+    {
+      "id": "returning_spring_spirits",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "light",
+      "cadence": "spirit_procession_bloom",
+      "beat_pattern": [
+        0.09,
+        0.28,
+        0.5,
+        0.72,
+        0.93
+      ],
+      "geometry_identity": {
+        "motif": "three_spirit_procession",
+        "secondary_motif": "cleansing_routes_then_team_bloom",
+        "orientation": "orbiting",
+        "choreography_family": "three_spirit_patrol_returning_bloom",
+        "spawn_mode": "piecewise:water_leaf_spirit+seed_fiber_tail+purified_mud_bead+water_leaf_bud",
+        "piece_count": {
+          "spirits": 3,
+          "mud_beads": 3,
+          "flower_leaves": 5
+        },
+        "formation": "one large and two small faceless water bodies wrap around veined leaf spines",
+        "travel_path": [
+          "small spirit cleanses feet in foreground",
+          "main spirit spirals once outside the body and hands off to next ally",
+          "three routes meet as an open bud at the final station"
+        ],
+        "impact_mode": "mud beads are thrown down; bud drinks, swells and opens five leaves into a grounded healing wave that returns along the patrol path",
+        "residue_mode": "three sprouts pin drained mud beads, clear drops soak into route, gray cleanse shells crack to powder"
+      },
+      "particle_identity": {
+        "motif": "jade_gold_spirit_petals",
+        "count": 54,
+        "hero_count": 3,
+        "flow": "three_orbits_then_center_bloom",
+        "spread": 0.86,
+        "gravity": -0.3
+      },
+      "light_identity": {
+        "motif": "soft_spirit_backscatter",
+        "palette": [
+          "#F3FFD2",
+          "#83E6A8",
+          "#FFD67B"
+        ],
+        "bloom": 1.28,
+        "contrast": 1.12
+      }
+    },
+    {
+      "id": "shared_bloodline",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "dark",
+      "cadence": "link_tension_heartpulse",
+      "beat_pattern": [
+        0.12,
+        0.32,
+        0.56,
+        0.75,
+        0.94
+      ],
+      "geometry_identity": {
+        "motif": "shared_blood_constellation",
+        "secondary_motif": "fatal_guard_heart_seal_and_gold_return",
+        "orientation": "linked",
+        "choreography_family": "living_root_lifeline_intercept",
+        "spawn_mode": "piecewise:fiber_root_branch+transparent_blood_channel+forked_crystal_connector+mother_branch",
+        "piece_count": {
+          "team_branches": 6,
+          "liquid_channels": 3,
+          "mother_branches": 2
+        },
+        "formation": "uneven roots grow from team positions and braid into a grounded trunk, with upper branches left deliberately open",
+        "travel_path": [
+          "captured blood enters one root tip",
+          "visible liquid divides with wider flow toward low-health branches",
+          "on lethal force the thick mother branch swings from trunk to that specific ally"
+        ],
+        "impact_mode": "mother branch flattens, bark splits along fiber and liquid is squeezed back into surviving branches; torn fibers pull the ally upright",
+        "residue_mode": "charred trunk segment, slow-pulsing channels, woodening severed branch and fork-shaped ground grooves"
+      },
+      "particle_identity": {
+        "motif": "crimson_links_and_gold_return_motes",
+        "count": 52,
+        "hero_count": 6,
+        "flow": "inward_damage_then_outward_heal",
+        "spread": 0.7,
+        "gravity": 0.18
+      },
+      "light_identity": {
+        "motif": "crimson_pulse_with_gold_lifesave",
+        "palette": [
+          "#F6D890",
+          "#B9354D",
+          "#3E173D"
+        ],
+        "accent_palette": [
+          "#FFF0B0"
+        ],
+        "bloom": 1.22,
+        "contrast": 1.42
+      }
+    },
+    {
+      "id": "evergreen_court",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "light",
+      "cadence": "garden_unfold_sustain",
+      "beat_pattern": [
+        0.16,
+        0.38,
+        0.6,
+        0.81,
+        0.96
+      ],
+      "geometry_identity": {
+        "motif": "evergreen_court_mandala",
+        "secondary_motif": "dual_health_canopy",
+        "orientation": "radial",
+        "choreography_family": "state_reading_garden_growth",
+        "spawn_mode": "piecewise:moss_cushion+rough_trunk_segment+broad_shield_leaf+narrow_blade_leaf+sap_fountain",
+        "piece_count": {
+          "moss_beds": 3,
+          "trunk_forks": 2,
+          "shield_leaves": 5,
+          "blade_leaves": 7
+        },
+        "formation": "moss pads swell first, two asymmetric trunks fork above them and the sap source opens at the shared wood knot",
+        "travel_path": [
+          "sap climbs visible grain and splits by ally health state",
+          "shield leaves fold down over low-health zones",
+          "blade leaves turn edge-on then snap along full-health attack vectors"
+        ],
+        "impact_mode": "shield leaf dishes into moss and transfers force outward; blade leaf flings one wide cutting sap sheet then visibly thins",
+        "residue_mode": "used blade leaves fall first, wet moss and flattened shields remain, sap condenses into one warm-green amber seed"
+      },
+      "particle_identity": {
+        "motif": "emerald_light_petals",
+        "count": 56,
+        "hero_count": 6,
+        "flow": "upward_full_health_downward_low_health",
+        "spread": 0.88,
+        "gravity": -0.16
+      },
+      "light_identity": {
+        "motif": "verdant_cathedral_light",
+        "palette": [
+          "#F1FFD4",
+          "#55D98A",
+          "#2F7774"
+        ],
+        "accent_palette": [
+          "#E1B95B"
+        ],
+        "bloom": 1.3,
+        "contrast": 1.16
+      }
+    },
+    {
+      "id": "silent_feather_cadence",
+      "base_profile": "thousand_blade_kill",
+      "element": "wind",
+      "cadence": "silent_syncopated_volley",
+      "beat_pattern": [
+        0.05,
+        0.16,
+        0.33,
+        0.55,
+        0.84
+      ],
+      "geometry_identity": {
+        "motif": "three_feather_arrow_crown",
+        "secondary_motif": "tempo_nodes_echo_feather_volley",
+        "orientation": "forward",
+        "choreography_family": "short_short_long_feather_echo",
+        "spawn_mode": "piecewise:rust_short_feather_blade+ivory_mid_feather_blade+gold_long_feather_blade+echo_feather",
+        "piece_count": {
+          "primary_feathers": 3,
+          "echo_feathers": 3
+        },
+        "formation": "three parents stage on separate depths with an unmistakable short-short-long length pattern",
+        "travel_path": [
+          "rust feather makes first straight short cut",
+          "ivory feather follows higher after one short gap",
+          "gold feather waits above and descends on a longer third arc; each parent recoils and releases one smaller echo"
+        ],
+        "impact_mode": "tips hook into the same plane, barbs break front-to-back and echoes flatten shafts; long shaft splits into two scissor halves",
+        "residue_mode": "three parallel short-short-long cuts, textured barb fragments, gold half-shaft embedded last"
+      },
+      "particle_identity": {
+        "motif": "grouped_ivory_feather_echoes",
+        "count": 60,
+        "hero_count": 3,
+        "flow": "forward_then_grouped_echoes",
+        "spread": 0.82,
+        "gravity": -0.1
+      },
+      "light_identity": {
+        "motif": "ivory_gold_tempo_flash",
+        "palette": [
+          "#F6EBD1",
+          "#C69A55",
+          "#76503A"
+        ],
+        "accent_palette": [
+          "#FFF9E8"
+        ],
+        "bloom": 1.24,
+        "contrast": 1.3
+      }
+    },
+    {
+      "id": "skyward_returning_feathers",
+      "base_profile": "thousand_blade_kill",
+      "element": "light",
+      "cadence": "gather_launch_return",
+      "beat_pattern": [
+        0.1,
+        0.27,
+        0.49,
+        0.69,
+        0.91
+      ],
+      "geometry_identity": {
+        "motif": "skyward_eight_feather_gate",
+        "secondary_motif": "returning_center_star",
+        "orientation": "inward",
+        "choreography_family": "plow_launch_hinged_return",
+        "spawn_mode": "piecewise:massive_plow_feather+hinged_echo_feather+gold_spine+sky_slit",
+        "piece_count": {
+          "plow_feathers": 1,
+          "return_feathers": 8
+        },
+        "formation": "one massive feathered crescent occupies foreground; eight independent blades stage 3 front, 3 middle, 2 rear",
+        "travel_path": [
+          "plow crescent sweeps enemies toward one tight point",
+          "eight blades launch outward in rear-middle-front order",
+          "after crossing their apex, joints fold and return front-middle-rear shaft-first"
+        ],
+        "impact_mode": "eight spines compress one slit in sequence; plow feather arrives last and splits into giant shears through the slit",
+        "residue_mode": "eight embedded short shafts, curved plow furrow, narrowing vertical skylight and depth-sorted feather debris"
+      },
+      "particle_identity": {
+        "motif": "gold_blue_feather_shards",
+        "count": 64,
+        "hero_count": 8,
+        "flow": "outward_hold_then_inward_return",
+        "spread": 1.0,
+        "gravity": -0.22
+      },
+      "light_identity": {
+        "motif": "heavenward_rim_beams",
+        "palette": [
+          "#FFF8D5",
+          "#9EDFFF",
+          "#5869BD"
+        ],
+        "bloom": 1.4,
+        "contrast": 1.28
+      }
+    },
+    {
+      "id": "guarding_reflection",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "normal",
+      "cadence": "fortress_absorb_return",
+      "beat_pattern": [
+        0.14,
+        0.37,
+        0.62,
+        0.8,
+        0.95
+      ],
+      "geometry_identity": {
+        "motif": "four_panel_mirror_bastion",
+        "secondary_motif": "directional_attribute_return",
+        "orientation": "returning",
+        "choreography_family": "four_panel_directional_mirror_return",
+        "spawn_mode": "piecewise:bronze_mirror_frame+gray_mirror_plate+stored_crack_scar+reflected_light_wedge",
+        "piece_count": {
+          "mirror_shields": 4,
+          "return_wedges": 4
+        },
+        "formation": "four slanted shields assemble as an open fortress, front pair overlapping rear corners",
+        "travel_path": [
+          "each shield retreats half a thickness on its own incoming vector",
+          "crack scars retain four distinct directions",
+          "panels rotate their normals then flip to eject along recorded exits"
+        ],
+        "impact_mode": "scar light pinches into wedges, mirror plates spring flat, strongest wedge shaves one foreground metal corner",
+        "residue_mode": "thin dark mirror chips, four dim shield faces and short cooling scratches along real exit paths"
+      },
+      "particle_identity": {
+        "motif": "directional_white_gold_mirror_facets",
+        "count": 50,
+        "hero_count": 8,
+        "flow": "record_direction_then_return",
+        "spread": 0.78,
+        "gravity": 0.24
+      },
+      "light_identity": {
+        "motif": "warm_gold_mirror_edge_light",
+        "palette": [
+          "#FFF6DD",
+          "#D9A854",
+          "#5B4654"
+        ],
+        "accent_palette": [
+          "#FFFFFF"
+        ],
+        "bloom": 1.16,
+        "contrast": 1.42
+      }
+    },
+    {
+      "id": "gale_reservoir",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "wind",
+      "cadence": "spiral_path_collection",
+      "beat_pattern": [
+        0.07,
+        0.25,
+        0.47,
+        0.7,
+        0.93
+      ],
+      "geometry_identity": {
+        "motif": "gale_wellspring_spiral",
+        "secondary_motif": "gold_ap_star_path",
+        "orientation": "forward",
+        "choreography_family": "wind_water_route_collection_overflow",
+        "spawn_mode": "piecewise:S_shaped_water_ridge+wind_peeled_water_sheet+four_point_AP_crystal+overflow_guard_sheet",
+        "piece_count": {
+          "route_ridges": 3,
+          "AP_crystals": 5,
+          "guard_sheets": 1
+        },
+        "formation": "three route segments occupy distinct heights and create five crystals only where physical paths cross",
+        "travel_path": [
+          "rear, middle and foreground ridges advance in order",
+          "crystals collect far-to-near and collapse their route behind them",
+          "all three ridges reverse from their tails and braid upward"
+        ],
+        "impact_mode": "last crystal enters the core, braided column sharpens and crest folds outward into one refractive guard sheet",
+        "residue_mode": "wet grooves, falling water beads, gold crystal grit and one drying cyan track"
+      },
+      "particle_identity": {
+        "motif": "teal_path_motes_and_gold_ap_nodes",
+        "count": 56,
+        "hero_count": 5,
+        "flow": "path_hold_then_collect_inward",
+        "spread": 0.82,
+        "gravity": -0.3
+      },
+      "light_identity": {
+        "motif": "cyan_teal_flow_with_gold_pickups",
+        "palette": [
+          "#FFF0A3",
+          "#4ED8C3",
+          "#327BB5"
+        ],
+        "accent_palette": [
+          "#F4C95D"
+        ],
+        "bloom": 1.26,
+        "contrast": 1.24
+      }
+    },
+    {
+      "id": "balanced_elements",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "water",
+      "cadence": "tri_phase_weather_cycle",
+      "beat_pattern": [
+        0.09,
+        0.3,
+        0.5,
+        0.7,
+        0.92
+      ],
+      "geometry_identity": {
+        "motif": "water_fire_lightning_halfwheel",
+        "secondary_motif": "sequential_water_fire_lightning_weather_cycle",
+        "orientation": "radial",
+        "choreography_family": "sequential_material_state_exchange",
+        "spawn_mode": "piecewise:thick_water_half_wall+sculpted_fire_half_wall+lightning_spine+steam_wedge",
+        "piece_count": {
+          "water_arcs": 2,
+          "fire_tongues": 3,
+          "lightning_steps": 3
+        },
+        "formation": "opposed material walls grow on separate planes and touch only along one dark vertical seam",
+        "travel_path": [
+          "rear water wall overruns fire and creates one steam wedge",
+          "foreground fire rolls back and ejects physical drops",
+          "lightning descends the seam in three distinct steps, transforming each touched section"
+        ],
+        "impact_mode": "spine forks sideways; water breaks as large ice-water plates and fire compresses into molten sheets, twisting forward as one three-phase wedge",
+        "residue_mode": "steaming wet crack, melting plates left, dark molten drops right and only two charge jumps"
+      },
+      "particle_identity": {
+        "motif": "water_drops_fire_drops_lightning_arcs",
+        "count": 72,
+        "hero_count": 9,
+        "flow": "sequential_water_fire_lightning",
+        "spread": 0.92,
+        "gravity": 0.0
+      },
+      "light_identity": {
+        "motif": "three_phase_element_key_light",
+        "palette": [
+          "#2C8FC9",
+          "#EF5638",
+          "#7B65FF"
+        ],
+        "accent_palette": [
+          "#F4D477",
+          "#EAFBFF"
+        ],
+        "bloom": 1.42,
+        "contrast": 1.4
+      }
+    },
+    {
+      "id": "heavenly_wheel_sever",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "fire",
+      "cadence": "flame_echo_thunder_wheel",
+      "beat_pattern": [
+        0.16,
+        0.38,
+        0.58,
+        0.76,
+        0.94
+      ],
+      "geometry_identity": {
+        "motif": "three_concentric_fire_echo_lightning_wheels",
+        "secondary_motif": "sequential_fire_silver_echo_violet_thunder_cut",
+        "orientation": "forward",
+        "choreography_family": "rolling_three_material_blade_machine",
+        "spawn_mode": "piecewise:molten_open_blade+silver_feather_cutter+toothed_lightning_hub",
+        "piece_count": {
+          "outer_fire_blades": 3,
+          "middle_feather_blades": 6,
+          "lightning_teeth": 9
+        },
+        "formation": "three thick open fire blades form a rear rolling rim, six feather cutters interleave in middle depth, toothed hub advances from front",
+        "travel_path": [
+          "fire rim rolls and cuts a path",
+          "feather cutters split into two depth rows then scissor back",
+          "hub catches up last while arcs connect adjacent physical teeth"
+        ],
+        "impact_mode": "fire rim crushes into an ellipse, feathers close into six cuts and hub locks; three teeth shear off along the advance axis",
+        "residue_mode": "one molten track, six short silver cuts, three sparking teeth and smoke sourced only from the hot groove"
+      },
+      "particle_identity": {
+        "motif": "ember_silver_echo_violet_electric_sparks",
+        "count": 72,
+        "hero_count": 9,
+        "flow": "three_concentric_forward_layers",
+        "spread": 0.92,
+        "gravity": -0.08
+      },
+      "light_identity": {
+        "motif": "warm_cool_violet_three_layer_strobe",
+        "palette": [
+          "#FF6B32",
+          "#EAF6FF",
+          "#775BFF"
+        ],
+        "accent_palette": [
+          "#E7C66A"
+        ],
+        "bloom": 1.46,
+        "contrast": 1.42
+      }
+    },
+    {
+      "id": "frost_orchid_flame",
+      "base_profile": "inferno_cremation",
+      "element": "poison",
+      "cadence": "freeze_preserve_ignite_bloom",
+      "beat_pattern": [
+        0.11,
+        0.34,
+        0.55,
+        0.74,
+        0.93
+      ],
+      "geometry_identity": {
+        "motif": "frost_orchid_flame_rosette",
+        "secondary_motif": "preserved_toxin_shatter_then_corrosion_bloom",
+        "orientation": "radial",
+        "choreography_family": "ice_orchid_preserve_then_upcut",
+        "spawn_mode": "piecewise:translucent_ice_petal+trapped_toxin_bead+forged_fire_blade+corrosive_puddle_lobe",
+        "piece_count": {
+          "ice_petals": 6,
+          "toxin_beads": 9,
+          "fire_blades": 1,
+          "puddle_lobes": 5
+        },
+        "formation": "six unequal petals grow from frost veins and close around visible poison; orange blade forges below only after closure",
+        "travel_path": [
+          "petals finish freezing rear-to-front",
+          "poison beads compress inward",
+          "fire blade travels bottom-to-top and fracture follows immediately behind it"
+        ],
+        "impact_mode": "petals open and break sequentially into melting plates; toxin is squeezed downward while fire blade remains readable through the crown",
+        "residue_mode": "five-lobed corrosive puddle, cold-smoking melt plates, orange cut scar and poisoned water droplets"
+      },
+      "particle_identity": {
+        "motif": "ice_petal_cinder_spores",
+        "count": 72,
+        "hero_count": 9,
+        "flow": "freeze_then_shatter_then_ground_bloom",
+        "spread": 0.92,
+        "gravity": 0.08
+      },
+      "light_identity": {
+        "motif": "cold_hot_toxic_splitlight",
+        "palette": [
+          "#DFFFFF",
+          "#C053D9",
+          "#FF7747"
+        ],
+        "accent_palette": [
+          "#E8CE72"
+        ],
+        "bloom": 1.4,
+        "contrast": 1.42
+      }
+    },
+    {
+      "id": "sunlit_spring_court",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "light",
+      "cadence": "three_ring_healing_ascent",
+      "beat_pattern": [
+        0.12,
+        0.31,
+        0.53,
+        0.76,
+        0.94
+      ],
+      "geometry_identity": {
+        "motif": "sun_spring_court_triple_mandala",
+        "secondary_motif": "cleanse_heal_shield_crown",
+        "orientation": "upward",
+        "choreography_family": "garden_arch_basin_canopy_growth",
+        "spawn_mode": "piecewise:jade_vine_segment+stone_spring_basin+gold_leaf_sun_crown+water_canopy_skin",
+        "piece_count": {
+          "vine_segments": 12,
+          "sunbeams": 3,
+          "canopy_skins": 1
+        },
+        "formation": "left and right vines grow as an open pointed arch around a low basin; crown is supported by leaves rather than a full sun disk",
+        "travel_path": [
+          "cleanse flakes sweep outward first",
+          "basin streams flow inward and rise through the heal zone",
+          "crown ascends the arch and sends three depth-staggered beams into the water"
+        ],
+        "impact_mode": "water folds upward from the basin into one thin gold-green canopy and pins to the arch; gray flakes crack where they touch it",
+        "residue_mode": "gold dew on leaf tips, shallow water trace, attached shield beads and cleansed powder flowing offscreen"
+      },
+      "particle_identity": {
+        "motif": "gold_jade_spirit_petals",
+        "count": 64,
+        "hero_count": 8,
+        "flow": "outward_cleanse_inward_heal_attach_shield",
+        "spread": 0.9,
+        "gravity": -0.34
+      },
+      "light_identity": {
+        "motif": "layered_sunlit_canopy",
+        "palette": [
+          "#FFFFE8",
+          "#A7EE9B",
+          "#FFCC68"
+        ],
+        "bloom": 1.4,
+        "contrast": 1.18
+      }
+    },
+    {
+      "id": "returning_shared_pulse",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "light",
+      "cadence": "blood_hold_light_return",
+      "beat_pattern": [
+        0.1,
+        0.29,
+        0.52,
+        0.73,
+        0.92
+      ],
+      "geometry_identity": {
+        "motif": "returning_lifeline_pulse",
+        "secondary_motif": "low_health_guidance_star",
+        "orientation": "linked",
+        "choreography_family": "three_lifeline_knot_targeted_return",
+        "spawn_mode": "piecewise:crystalline_lifeline_tube+double_arc_life_clasp+mercy_seed+jade_spirit_core",
+        "piece_count": {
+          "lifeline_tubes": 3,
+          "clasp_arcs": 2,
+          "spirit_cores": 1
+        },
+        "formation": "three depth-separated tubes grow inward and braid into an open clasp, explicitly not a heart silhouette",
+        "travel_path": [
+          "damage crystals arrive one route at a time",
+          "clasp tightens with each arrival while spirit core rotates only half an orbit",
+          "mercy seed opens the clasp and core exits along the single low-health guide"
+        ],
+        "impact_mode": "red crystal melts instead of bursting; one narrow gold-jade pulse leaves in a selected direction while unused tubes recoil as open lobes",
+        "residue_mode": "red-to-gold tube skin, orange droplets on chosen route, short spirit tail and relaxed dark fibers"
+      },
+      "particle_identity": {
+        "motif": "rose_gold_healing_droplets",
+        "count": 60,
+        "hero_count": 6,
+        "flow": "inward_hold_then_outward_low_health_return",
+        "spread": 0.84,
+        "gravity": -0.22
+      },
+      "light_identity": {
+        "motif": "crimson_to_gold_transition",
+        "palette": [
+          "#FFF4D8",
+          "#ED6D7F",
+          "#7A5FC2"
+        ],
+        "bloom": 1.32,
+        "contrast": 1.26
+      }
+    },
+    {
+      "id": "guarding_shared_pulse",
+      "base_profile": "frozen_burial",
+      "element": "normal",
+      "cadence": "brace_counter_heal",
+      "beat_pattern": [
+        0.13,
+        0.36,
+        0.58,
+        0.79,
+        0.95
+      ],
+      "geometry_identity": {
+        "motif": "shared_guard_heart_bastion",
+        "secondary_motif": "counter_heal_wave",
+        "orientation": "grounded",
+        "choreography_family": "anchored_hinged_shield_force_exchange",
+        "spawn_mode": "piecewise:ground_anchor_spine+hinged_bronze_shield_half+embedded_crimson_channel+small_ally_heal_pulse",
+        "piece_count": {
+          "shield_halves": 2,
+          "blood_channels": 2,
+          "heal_pulses": 1
+        },
+        "formation": "vertical spine drives into a ground groove, then two thick halves hinge outward with real near/far overlap",
+        "travel_path": [
+          "enemy force dents halves inward without rearward drift",
+          "red charge moves inside embedded channels to the hinge",
+          "halves open forward as a wedge while back pressure squeezes one small pulse toward allies"
+        ],
+        "impact_mode": "forward wedge ejects impact chips and bronze shavings; rear pulse remains smaller and lower-energy; anchor gains a permanent dent",
+        "residue_mode": "anchor groove, heavy bronze chips, dark red crystals and exactly two ivory drops on the ally route"
+      },
+      "particle_identity": {
+        "motif": "bronze_crimson_guard_sparks",
+        "count": 54,
+        "hero_count": 6,
+        "flow": "forward_counter_opposed_by_ally_heal",
+        "spread": 0.8,
+        "gravity": 0.4
+      },
+      "light_identity": {
+        "motif": "warm_guard_pulse",
+        "palette": [
+          "#FFE8C0",
+          "#D56A6E",
+          "#65738A"
+        ],
+        "bloom": 1.16,
+        "contrast": 1.34
+      }
+    },
+    {
+      "id": "gale_moon_arc",
+      "base_profile": "heavenly_wheel_sever",
+      "element": "wind",
+      "cadence": "circular_dash_center_sever",
+      "beat_pattern": [
+        0.06,
+        0.23,
+        0.46,
+        0.68,
+        0.9
+      ],
+      "geometry_identity": {
+        "motif": "gale_lunar_orbit_cut",
+        "secondary_motif": "center_outward_giant_arc",
+        "orientation": "radial",
+        "choreography_family": "broken_orbit_track_center_launch",
+        "spawn_mode": "piecewise:thick_wind_cut_track+gold_wind_marker+silver_cyan_moon_blade",
+        "piece_count": {
+          "track_segments": 3,
+          "wind_markers": 3,
+          "moon_blades": 1
+        },
+        "formation": "track grows from a deliberate gap in three depth segments; markers pin in order and center remains dark",
+        "travel_path": [
+          "rear, middle and foreground track segments light sequentially along tangents",
+          "moon blank turns half a rotation to expose thickness",
+          "finished blade launches from center through the gap"
+        ],
+        "impact_mode": "blade severs the track and peels both ends outward as ribbons; nearest marker loses one physical corner",
+        "residue_mode": "two torn wind bands, three dim directional markers, flat moon chips and ground mist following tangent or blade vectors"
+      },
+      "particle_identity": {
+        "motif": "moonlit_wind_ribbons",
+        "count": 60,
+        "hero_count": 3,
+        "flow": "single_orbit_then_center_outward",
+        "spread": 0.9,
+        "gravity": -0.14
+      },
+      "light_identity": {
+        "motif": "silver_teal_orbit_light",
+        "palette": [
+          "#F6FAFF",
+          "#78E2D2",
+          "#7884CF"
+        ],
+        "accent_palette": [
+          "#D8B862"
+        ],
+        "bloom": 1.38,
+        "contrast": 1.3
+      }
+    },
+    {
+      "id": "breathing_thunder_echo",
+      "base_profile": "thunder_prison_pierce",
+      "element": "lightning",
+      "cadence": "mana_charge_echo_strikes",
+      "beat_pattern": [
+        0.08,
+        0.26,
+        0.47,
+        0.67,
+        0.91
+      ],
+      "geometry_identity": {
+        "motif": "ap_meridian_echo_marker_network",
+        "secondary_motif": "gold_echo_nodes_then_vertical_lightning_chain",
+        "orientation": "radial",
+        "choreography_family": "root_network_marker_chain_strike",
+        "spawn_mode": "piecewise:cyan_AP_root_branch+hooked_diamond_marker+vertical_lightning_spear+lateral_chain_arc",
+        "piece_count": {
+          "network_trunks": 1,
+          "network_branches": 7,
+          "echo_markers": 4,
+          "lightning_spears": 4
+        },
+        "formation": "one trunk grows into an irregular ground-root network; four physical markers hook onto separate junctions at distinct depths",
+        "travel_path": [
+          "gold echo shots arrive along four different arcs and become markers",
+          "current travels trunk-to-branch toward one marker at a time",
+          "four vertical spears strike in marker order, then one lateral arc links only struck nodes"
+        ],
+        "impact_mode": "each marker flattens at contact and ejects needles upward; light pools remain local and no central explosion forms",
+        "residue_mode": "scorched branching network, four melted markers, upward cyan needles and two or three dying violet arcs"
+      },
+      "particle_identity": {
+        "motif": "gold_echo_nodes_violet_arcs_cyan_needles",
+        "count": 64,
+        "hero_count": 4,
+        "flow": "seed_nodes_then_vertical_strikes_then_chain",
+        "spread": 0.9,
+        "gravity": -0.06
+      },
+      "light_identity": {
+        "motif": "gold_marker_cyan_lightning_strobe",
+        "palette": [
+          "#9874FF",
+          "#4FC7DF",
+          "#F2D07A"
+        ],
+        "accent_palette": [
+          "#231D4F"
+        ],
+        "bloom": 1.44,
+        "contrast": 1.44
+      }
+    }
+  ]
+}

@@ -388,16 +388,24 @@ func set_combo_formula(
 				(card_variant as Dictionary).get("name", "Combo")
 			))
 	var next_finisher_name := ""
+	var next_finisher_epithet := ""
+	var next_finisher_full_name := ""
 	if not finisher_queue.is_empty() and finisher_queue[0] is Dictionary:
-		next_finisher_name = String(
-			(finisher_queue[0] as Dictionary).get("display_name", "")
-		)
+		var next_finisher := finisher_queue[0] as Dictionary
+		next_finisher_name = String(next_finisher.get(
+			"name", next_finisher.get("display_name", "")
+		)).strip_edges()
+		next_finisher_epithet = String(next_finisher.get("epithet", "")).strip_edges()
+		next_finisher_full_name = String(next_finisher.get(
+			"display_name", "%s%s" % [next_finisher_epithet, next_finisher_name]
+		)).strip_edges()
 	var possible_names: Array[String] = []
 	for candidate_variant in possible_finishers:
 		if candidate_variant is Dictionary:
-			var candidate_name := String(
-				(candidate_variant as Dictionary).get("display_name", "")
-			).strip_edges()
+			var candidate := candidate_variant as Dictionary
+			var candidate_name := String(candidate.get(
+				"name", candidate.get("display_name", "")
+			)).strip_edges()
 			if not candidate_name.is_empty() and not possible_names.has(candidate_name):
 				possible_names.append(candidate_name)
 	_combo_summary.text = (
@@ -415,12 +423,24 @@ func set_combo_formula(
 		]
 	)
 	_combo_milestones.text = (
-		" → ".join(formula_names)
+		"祝福冠名 · %s" % next_finisher_epithet
+		if finisher_pending and not next_finisher_epithet.is_empty()
+		else "無祝福冠名"
+		if finisher_pending
+		else " → ".join(formula_names)
 		if not formula_names.is_empty()
 		else "依序打出三張已學會的 Combo／治療招式"
 	)
-	_combo_summary.tooltip_text = _combo_summary.text
-	_combo_milestones.tooltip_text = _combo_milestones.text
+	_combo_summary.tooltip_text = (
+		next_finisher_full_name
+		if finisher_pending and not next_finisher_full_name.is_empty()
+		else _combo_summary.text
+	)
+	_combo_milestones.tooltip_text = (
+		"完整招式名 · %s" % next_finisher_full_name
+		if finisher_pending and not next_finisher_full_name.is_empty()
+		else _combo_milestones.text
+	)
 	var signature := "%s|%s|%s" % [
 		",".join(formula_names),
 		str(stacks),

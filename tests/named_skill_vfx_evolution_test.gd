@@ -51,8 +51,8 @@ func _run() -> void:
 			"Seven persistent stacks must unlock multiple readable VFX layers."
 		)
 		_expect(
-			int(effect.call("get_active_layer_count")) >= 9,
-			"Evolved stacked skills must assemble extra parts instead of only scaling brighter."
+			int(effect.call("get_active_layer_count")) == 6,
+			"Authored Finishers must retain body, two chromatic lights, and three sourced particle layers without restoring generic parts."
 		)
 
 	var archetypes: Dictionary = {}
@@ -82,11 +82,31 @@ func _run() -> void:
 		"Evolved replay setup must assemble accent layers."
 	)
 	effect.call("play", "iron_momentum", 1, 1.0, true, 1, 0)
+	effect.set_process(false)
 	await process_frame
 	_expect(
 		int(effect.call("get_active_layer_count")) == 5
 			and effect.get_child_count() == 5,
 		"Cross-profile replay must clear prior evolution accents instead of accumulating children."
+	)
+	if not bool(effect.call("is_active")):
+		effect.call("play", "iron_momentum", 1, 1.0, true, 1, 0)
+		effect.set_process(false)
+	var replay_state := [false]
+	effect.finished.connect(
+		func(_completed_profile_id: String) -> void:
+			replay_state[0] = true
+			effect.call("play", "iron_momentum", 1, 1.0, true, 1, 0)
+	,
+		CONNECT_ONE_SHOT
+	)
+	effect.call("_finish")
+	_expect(bool(replay_state[0]), "Reusable VFX must emit finished after completing its reset.")
+	_expect(
+		bool(effect.call("is_active"))
+			and String(effect.call("get_profile_id")) == "iron_momentum"
+			and effect.visible,
+		"A finished listener must be able to start the next VFX without the old playback hiding it."
 	)
 
 	effect.queue_free()

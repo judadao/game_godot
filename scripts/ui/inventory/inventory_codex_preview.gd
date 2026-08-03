@@ -7,7 +7,11 @@ const AUTO_ATTACK_SCENE := preload("res://scenes/combat/AutoAttackFeedback.tscn"
 const FIRE_SCENE := preload("res://scenes/combat/vfx/FireUltimateVFX.tscn")
 const ICE_SCENE := preload("res://scenes/combat/vfx/IceUltimateVFX.tscn")
 const NAMED_SKILL_SCENE := preload("res://scenes/combat/vfx/NamedSkillVFX.tscn")
+const STORM_CHARGE_SCENE := preload("res://scenes/combat/vfx/StormChargeVFX.tscn")
 const SWORD_WAVE_SPEED_MULTIPLIER := 1.10
+const NAMED_EFFECT_DIAMETER := 380.0
+const NAMED_EFFECT_GROUND_ANCHOR := 0.82
+const PREVIEW_PADDING := 10.0
 
 var _entry: Dictionary = {}
 var _effect: Node2D
@@ -30,7 +34,7 @@ func _process(delta: float) -> void:
 	if (
 		is_instance_valid(_effect)
 		and (
-			kind in ["basic_attack", "attack_aura", "finisher", "passive_skill"]
+			kind in ["basic_attack", "attack_aura", "finisher", "passive_skill", "storm_charge"]
 			or not String(_entry.get("named_vfx_id", "")).is_empty()
 		)
 		and not _effect_preview_size.is_equal_approx(size)
@@ -38,7 +42,7 @@ func _process(delta: float) -> void:
 		_spawn_effect()
 	if kind in [
 		"basic_attack", "attack_aura", "technique", "passive_skill", "finisher",
-		"fire_ultimate", "ice_ultimate",
+		"fire_ultimate", "ice_ultimate", "storm_charge",
 	]:
 		_replay_remaining -= delta
 		if _replay_remaining <= 0.0:
@@ -52,6 +56,7 @@ func show_entry(entry: Dictionary) -> void:
 	_clear_effect()
 	if String(_entry.get("preview_kind", "")) in [
 		"basic_attack", "attack_aura", "technique", "passive_skill", "finisher",
+		"storm_charge",
 	]:
 		_spawn_effect()
 	queue_redraw()
@@ -107,13 +112,61 @@ func is_effect_top_level() -> bool:
 	return _effect.is_set_as_top_level() if is_instance_valid(_effect) else false
 
 
+func is_dedicated_storm_charge_active() -> bool:
+	return is_instance_valid(_effect) and _effect.is_in_group("StormChargeVFX")
+
+
+func get_preview_floor_y() -> float:
+	return size.y * 0.78
+
+
+func get_effect_visual_scale() -> float:
+	return absf(_effect.scale.x) if is_instance_valid(_effect) else 0.0
+
+
+func get_effect_local_position() -> Vector2:
+	return _effect.position if is_instance_valid(_effect) else Vector2.ZERO
+
+
+func get_named_effect_spatial_mode() -> String:
+	if not is_instance_valid(_effect) or not _effect.has_method("get_finisher_debug_state"):
+		return ""
+	return String((_effect.call("get_finisher_debug_state") as Dictionary).get("spatial_mode", ""))
+
+
+func get_named_effect_estimated_horizontal_span() -> float:
+	if not is_instance_valid(_effect) or not _effect.has_method("get_finisher_debug_state"):
+		return 0.0
+	var state := _effect.call("get_finisher_debug_state") as Dictionary
+	var travel := (
+		float(state.get("directional_travel_distance", 0.0))
+		if String(state.get("spatial_mode", "")) == "directional_forward"
+		else 0.0
+	)
+	return (NAMED_EFFECT_DIAMETER + travel) * get_effect_visual_scale()
+
+
+func get_named_effect_estimated_vertical_span() -> float:
+	if not is_instance_valid(_effect) or not _effect.has_method("get_finisher_debug_state"):
+		return 0.0
+	return NAMED_EFFECT_DIAMETER * get_effect_visual_scale()
+
+
+func character_uses_attack_sheet() -> bool:
+	var kind := String(_entry.get("preview_kind", ""))
+	return (
+		String(_entry.get("named_vfx_id", "")).is_empty()
+		and kind in ["basic_attack", "attack_aura", "technique", "fire_ultimate", "ice_ultimate"]
+	)
+
+
 func _draw() -> void:
 	var rect := Rect2(Vector2.ZERO, size)
 	draw_rect(rect, Color("#10171a"))
 	for index in 7:
 		var y := size.y * (0.22 + float(index) * 0.1)
 		draw_line(Vector2(0, y), Vector2(size.x, y), Color(0.2, 0.28, 0.27, 0.2), 1.0)
-	var floor_y := size.y * 0.78
+	var floor_y := get_preview_floor_y()
 	draw_rect(Rect2(0, floor_y, size.x, size.y - floor_y), Color("#24231e"))
 	draw_line(Vector2(0, floor_y), Vector2(size.x, floor_y), Color("#96743d"), 2.0)
 	var center := Vector2(size.x * 0.5, floor_y - 39.0)
@@ -128,10 +181,7 @@ func _draw() -> void:
 
 
 func _draw_character(center: Vector2) -> void:
-	var kind := String(_entry.get("preview_kind", ""))
-	var uses_attack_action := kind in [
-		"basic_attack", "attack_aura", "technique", "finisher", "fire_ultimate", "ice_ultimate",
-	]
+	var uses_attack_action := character_uses_attack_sheet()
 	var action_active := uses_attack_action and _action_elapsed < 0.5
 	var texture := PLAYER_ATTACK_TEXTURE if action_active else PLAYER_TEXTURE
 	if texture == null:
@@ -159,6 +209,9 @@ func _spawn_effect() -> void:
 	var named_vfx_id := String(_entry.get("named_vfx_id", ""))
 	if not named_vfx_id.is_empty():
 		_spawn_named_skill(named_vfx_id)
+		return
+	if kind == "storm_charge":
+		_spawn_storm_charge()
 		return
 	if kind in ["basic_attack", "attack_aura", "finisher"]:
 		_spawn_sword_wave(kind)
@@ -231,12 +284,65 @@ func _spawn_named_skill(profile_id: String) -> void:
 		clampi(int(_entry.get("level", 1)), 1, 3),
 		maxi(0, int(_entry.get("combo_stack", 0)))
 	)
+	_fit_named_skill_to_preview()
 	_effect_preview_size = size
 	_replay_remaining = 1.5
 
 
+func _spawn_storm_charge() -> void:
+	_effect = STORM_CHARGE_SCENE.instantiate() as Node2D
+	if _effect == null:
+		return
+	add_child(_effect)
+	_effect.z_index = 6
+	_effect.position = Vector2(size.x * 0.5, get_preview_floor_y())
+	_effect.call("configure", clampi(int(_entry.get("level", 1)), 1, 3))
+	_effect.call("play")
+	_effect_preview_size = size
+	_replay_remaining = 1.55
+
+
+func _fit_named_skill_to_preview() -> void:
+	if not is_instance_valid(_effect) or not _effect.has_method("get_finisher_debug_state"):
+		return
+	var state := _effect.call("get_finisher_debug_state") as Dictionary
+	if state.is_empty():
+		_effect.position = _preview_effect_center()
+		return
+	var spatial_mode := String(state.get("spatial_mode", "player_centered"))
+	var travel_distance := (
+		float(state.get("directional_travel_distance", 0.0))
+		if spatial_mode == "directional_forward"
+		else 0.0
+	)
+	var width_fit := maxf(
+		0.1,
+		(size.x - PREVIEW_PADDING * 2.0) / (NAMED_EFFECT_DIAMETER + travel_distance)
+	)
+	var floor_y := get_preview_floor_y()
+	var top_fit := maxf(
+		0.1,
+		(floor_y - PREVIEW_PADDING) / (NAMED_EFFECT_DIAMETER * NAMED_EFFECT_GROUND_ANCHOR)
+	)
+	var bottom_fit := maxf(
+		0.1,
+		(size.y - floor_y - PREVIEW_PADDING)
+			/ (NAMED_EFFECT_DIAMETER * (1.0 - NAMED_EFFECT_GROUND_ANCHOR))
+	)
+	# The authored preview_scale is a gameplay-preview hint, not a Codex ceiling.
+	# Fill the available display frame so the move's object and motion remain
+	# readable, while the three bounds above keep every pixel safely clipped.
+	var fitted_scale := minf(width_fit, minf(top_fit, bottom_fit))
+	var direction_sign := -1.0 if _effect.scale.x < 0.0 else 1.0
+	_effect.scale = Vector2(direction_sign * fitted_scale, fitted_scale)
+	var origin_x := size.x * 0.5
+	if spatial_mode == "directional_forward":
+		origin_x = PREVIEW_PADDING + NAMED_EFFECT_DIAMETER * 0.5 * fitted_scale
+	_effect.position = Vector2(origin_x, floor_y)
+
+
 func _preview_effect_center() -> Vector2:
-	return Vector2(size.x * 0.5, size.y * 0.78 - 39.0)
+	return Vector2(size.x * 0.5, get_preview_floor_y() - 39.0)
 
 
 func _draw_technique_preview(center: Vector2) -> void:

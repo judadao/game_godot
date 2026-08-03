@@ -147,6 +147,9 @@ const COMBO_EVOLUTIONS := [
 @export var named_skill_vfx_scene: PackedScene = preload(
 	"res://scenes/combat/vfx/NamedSkillVFX.tscn"
 )
+@export var storm_charge_vfx_scene: PackedScene = preload(
+	"res://scenes/combat/vfx/StormChargeVFX.tscn"
+)
 
 @onready var map_root: Node = $MapRoot
 @onready var hud_root: CanvasLayer = $HUDLayer
@@ -2611,12 +2614,11 @@ func _build_formula_finisher(
 	)
 	if bool(effect.get("piercing", false)):
 		effect["target_count"] = maxi(6, int(effect.get("target_count", 1)))
-	var primary_gift := divine_gift_manager.call("get_primary_gift") as Dictionary
-	for gift_element_variant in primary_gift.get(
-		"elements",
-		[primary_gift.get("element", "normal")]
-	) as Array:
-		_append_vfx_element(elements, String(gift_element_variant))
+	var blessing_overlays := _build_finisher_blessing_overlays()
+	for blessing_overlay_variant in blessing_overlays:
+		var blessing_overlay := blessing_overlay_variant as Dictionary
+		for gift_element_variant in blessing_overlay.get("elements", []) as Array:
+			_append_vfx_element(elements, String(gift_element_variant))
 	var recipe_name := String(recipe.get("name", "Finisher"))
 	var epithet := String(divine_gift_manager.call("get_epithet_prefix"))
 	finisher["id"] = String(recipe.get("id", "divine_finale"))
@@ -2641,8 +2643,51 @@ func _build_formula_finisher(
 		"finisher_name": String(finisher["name"]),
 		"stack_count": total_stacks,
 		"elements": elements,
+		"blessing_overlays": blessing_overlays,
 	}
 	return finisher
+
+
+func _build_finisher_blessing_overlays(maximum: int = 3) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if maximum <= 0:
+		return result
+	var seen_ids: Dictionary = {}
+	var gift_inventory := divine_gift_manager.call("get_inventory") as Array
+	for gift_variant in gift_inventory:
+		if not gift_variant is Dictionary:
+			continue
+		var gift := gift_variant as Dictionary
+		var gift_id := String(gift.get("id", "")).strip_edges()
+		if gift_id.is_empty() or seen_ids.has(gift_id):
+			continue
+		var gift_elements: Array[String] = []
+		var element_values := gift.get(
+			"elements",
+			[gift.get("element", "normal")]
+		) as Array
+		for element_variant in element_values:
+			_append_vfx_element(gift_elements, String(element_variant))
+		if gift_elements.is_empty():
+			_append_vfx_element(gift_elements, String(gift.get("element", "normal")))
+		var kind := String(gift.get("kind", "base"))
+		result.append({
+			"id": gift_id,
+			"name": String(gift.get("name", gift_id)),
+			"kind": kind,
+			"evolved": kind == "evolved",
+			"level": clampi(int(gift.get("level", 1)), 1, 3),
+			"max_level": clampi(int(gift.get("max_level", 3)), 1, 3),
+			"element": gift_elements[0] if not gift_elements.is_empty() else "normal",
+			"elements": gift_elements,
+			"components": (gift.get("components", []) as Array).duplicate(),
+			"accent_color": String(gift.get("accent_color", "")),
+			"acquisition_index": result.size(),
+		})
+		seen_ids[gift_id] = true
+		if result.size() >= maximum:
+			break
+	return result
 
 
 func _consume_finisher_formula() -> void:
@@ -3177,6 +3222,7 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 	if card.is_empty():
 		return {}
 	var card_id := String(card.get("id", ""))
+	var special_vfx_id := "storm_charge" if card_id == "storm_charge" else ""
 	var named_vfx_id := (
 		card_id
 		if _ensure_named_skill_vfx_catalog()
@@ -3231,6 +3277,7 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 		),
 		"ultimate": is_elemental_skill and named_vfx_id.is_empty(),
 		"named_vfx_id": named_vfx_id,
+		"special_vfx_id": special_vfx_id,
 		"ground_trail_profile": ground_trail_profile,
 		"radius": maxf(96.0, float(effect.get("radius", 180.0))),
 		"intensity": clampi(
@@ -3243,6 +3290,9 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 		"importance": 1.45 if is_elemental_skill or is_finisher else 0.85,
 		"evolution_level": int(progression.get("evolution_level", 1)),
 		"buff_stacks": int(progression.get("buff_stacks", 0)),
+		"blessing_overlays": (
+			visual_profile.get("blessing_overlays", []) as Array
+		).duplicate(true),
 	}
 
 
@@ -3306,14 +3356,17 @@ func _play_combat_vfx(card: Dictionary) -> void:
 		)
 	elif not cast_name.is_empty():
 		_show_compact_cast_label(cast_name, presentation_element)
-	if bool(profile.get("ultimate", false)):
+	if String(profile.get("special_vfx_id", "")) == "storm_charge":
+		_spawn_storm_charge_vfx(profile)
+	elif bool(profile.get("ultimate", false)):
 		_spawn_elemental_ultimate(profile)
 	elif not String(profile.get("named_vfx_id", "")).is_empty():
 		_spawn_named_skill_vfx(
 			String(profile.get("named_vfx_id", "")),
 			clampf(float(profile.get("intensity", 1)) * 0.24 + 0.84, 0.9, 1.45),
 			int(profile.get("evolution_level", 1)),
-			int(profile.get("buff_stacks", 0))
+			int(profile.get("buff_stacks", 0)),
+			profile.get("blessing_overlays", []) as Array
 		)
 	if not String(profile.get("ground_trail_profile", "")).is_empty():
 		_spawn_ultimate_ground_trails(profile)
@@ -3363,6 +3416,20 @@ func _spawn_elemental_aura(host: Node2D, elements: Array, intensity: int) -> voi
 	cleanup.set_ignore_time_scale(true)
 	cleanup.tween_interval(1.1)
 	cleanup.tween_callback(aura.queue_free)
+
+
+func _spawn_storm_charge_vfx(profile: Dictionary) -> void:
+	if current_map == null or not player is Node2D or storm_charge_vfx_scene == null:
+		return
+	var effect := storm_charge_vfx_scene.instantiate() as Node2D
+	if effect == null:
+		return
+	current_map.add_child(effect)
+	effect.global_position = (player as Node2D).global_position
+	if effect.has_method("configure"):
+		effect.call("configure", clampi(int(profile.get("evolution_level", 1)), 1, 3))
+	if effect.has_method("play"):
+		effect.call("play")
 
 
 func _spawn_elemental_ultimate(profile: Dictionary) -> void:
@@ -3515,7 +3582,8 @@ func _spawn_named_skill_vfx(
 	profile_id: String,
 	intensity: float = 1.0,
 	evolution_level: int = 1,
-	buff_stacks: int = 0
+	buff_stacks: int = 0,
+	blessing_overlays: Array = []
 ) -> void:
 	if (
 		profile_id.is_empty()
@@ -3530,6 +3598,10 @@ func _spawn_named_skill_vfx(
 	if effect == null:
 		return
 	current_map.add_child(effect)
+	effect.set_meta(
+		"finisher_blessing_overlays",
+		blessing_overlays.duplicate(true)
+	)
 	effect.global_position = (player as Node2D).global_position
 	var direction := int(player.get("facing_direction"))
 	if direction == 0:
@@ -3730,12 +3802,12 @@ func _refresh_combo_display() -> void:
 		if not entry_variant is Dictionary:
 			continue
 		var entry := entry_variant as Dictionary
+		var finisher_name := String(entry.get("name", "Finisher"))
 		projected_finishers.append({
 			"recipe_id": String(entry.get("id", "")),
-			"display_name": "%s%s" % [
-				epithet,
-				String(entry.get("name", "Finisher")),
-			],
+			"name": finisher_name,
+			"epithet": epithet,
+			"display_name": "%s%s" % [epithet, finisher_name],
 		})
 	if not history.is_empty() and history.size() < COMBO_FORMULA_LENGTH:
 		var prefix: Array[String] = []
@@ -3748,9 +3820,12 @@ func _refresh_combo_display() -> void:
 			var recipe := recipe_variant as Dictionary
 			if not _is_finisher_recipe_learned(recipe):
 				continue
+			var finisher_name := String(recipe.get("name", "終結技"))
 			possible_finishers.append({
 				"recipe_id": String(recipe.get("id", "")),
-				"display_name": "%s%s" % [epithet, String(recipe.get("name", "終結技"))],
+				"name": finisher_name,
+				"epithet": epithet,
+				"display_name": "%s%s" % [epithet, finisher_name],
 			})
 	var gift_inventory := divine_gift_manager.call("get_inventory") as Array
 	var primary_gift := divine_gift_manager.call("get_primary_gift") as Dictionary
@@ -4431,6 +4506,8 @@ func _codex_category_for_card(card: Dictionary) -> String:
 
 
 func _codex_preview_kind_for_card(card: Dictionary, profile: Dictionary) -> String:
+	if String(card.get("id", "")) == "storm_charge":
+		return "storm_charge"
 	var category := _codex_category_for_card(card)
 	if category == "attacks":
 		return "basic_attack"

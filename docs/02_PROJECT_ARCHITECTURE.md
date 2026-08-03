@@ -400,7 +400,8 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `SkillCastPresentation` | `scripts/combat/skill_cast_presentation.gd` | 以 unscaled Tween 顯示放大招式名稱並管理短暫施法慢動作 |
 | Elemental combat VFX | `scenes/combat/vfx/*.tscn` | 火／冰攻擊纏繞與範圍大招的純 presentation；不擁有傷害判定 |
 | `ElementalGroundTrail` | `scenes/combat/vfx/ElementalGroundTrail.tscn`、`data/elemental_ground_trail_profiles.json` | 沿元素大招路徑拼裝 Core／Edge／Accent／Debris atlas 部件與連續 ribbon；火、冰、毒使用不同 topology，不擁有傷害判定 |
-| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json` | 依精確 Skill／Finisher id、唯一 archetype 與 beat pattern 組合五種圖集部件；`play()` 另接收 evolution level 與 buff stacks 以增加結構層，不擁有傷害判定 |
+| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json` | 依精確 Skill／Finisher id、唯一 archetype 與 beat pattern 播放；trigger 組合五種圖集部件，32 個 Finisher 則播放各自 4×3／12 格物件序列；`play()` 另接收 evolution level 與 buff stacks 以增加結構層，不擁有傷害判定 |
+| `StormChargeVFX` | `scenes/combat/vfx/StormChargeVFX.tscn` | 風暴充能專用的原地五節拍 presentation；固定導電主幹由左右地流依序接入雙腳、持劍手與劍身，接觸時只從劍身下游長出有粗細層級的右向分支，高潮後沿同一路徑回縮；不擁有傷害或 buff 規則 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
 | `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | single countdown、scheduled Elite/Boss、Final Rush、XP gem、money/material bags |
@@ -633,16 +634,44 @@ service；修改 mappings或處理順序時須用實際 run驗證。
   `water/fire/wind/lightning/ice/poison/light/dark/normal`。舊
   flame／earth／storm／frost／venom／neutral 等名稱只可在輸入邊界正規化，
   不得成為新的 catalog identity。
-- 五個 Combo Finisher 與四個已學觸發技由
-  `NamedSkillVFXCatalog` 保留精確名稱身份。九招各自擁有唯一 `archetype`、
-  3–5 個遞增 `beat_pattern`、三級 `evolution_layers`，以及對齊的
-  `stack_milestones`／`stack_traits`；不得只替換 motion 名稱後共用同一動畫模板。
+- `NamedSkillVFXCatalog` 將 `combo_finishers.json` 的 32 個正式 Finisher、
+  `finisher_vfx_identities.json` 的逐招視覺身份，以及
+  `named_skill_vfx_profiles.json` 的五個 Finisher atlas 基底與四個 trigger profile
+  合併為 runtime profiles。每個 Finisher 必須保留與 recipe 完全相同的繁中名稱、
+  `icon_path`、`role`，並具有獨立 cadence、beat pattern、geometry／particle／light
+  identity；共用 atlas row 只代表可重用素材，不得退化為只換色或只換 motion 名稱。
+- `NamedSkillVFX` 的 Charge／Attack／Trail／Impact／Debris atlas parts 與 evolution
+  icon echoes 只供 trigger 使用；Finisher 播放時全部隱藏。每招先由
+  `docs/art_concepts/finisher_choreography/` 的連續動作分鏡定義具體物件、因果、命中
+  變形與殘留，再由 `assets/generated/vfx/finisher_parts_v4/` 的 4×3、十二格逐格手繪
+  sprite sequence 成為物件 silhouette／連續變形 authority；Runtime 不做相片 cross-fade。
+  `<id>_material.png` 只保留為材質設計參考，七個完整 material planes 在 Finisher
+  Runtime 必須全部隱藏，避免疊出第二高潮、黑色板塊或改變地面透視。
+  `FinisherGeometryCore` 以單格 body、tight glow、wide glow，加上 Source／Contact／
+  Residue 三個 bounded `CPUParticles2D` layers，組成六個可見演出層。
+  Edge 由材質輪廓取樣產生，只能描繪實際物件，禁止 generic 圓環、刻度、放射網格、
+  icon echo 或無來源線條。所有 instance 共用
+  `shaders/combat/finisher_semantic_material.gdshader`，每層只保有獨立參數；profile 的
+  particle flow 會解析成實際發射方向，light energy／motif 也必須進入 runtime diagnostics
+  與材質能量。所有逐格圖共用水平接地基準，整張物件 `rotation = 0`；沿地動作只可
+  水平前進，受重力物件只可垂直升降。遠近只由 scale、間距、遮擋與 z-order 表示，
+  禁止把整條招式傾斜來假造透視。全部 Finisher 統一為純 `CanvasItem` 2.5D：透過明確
+  `z_index`、前後層 scale／parallax、材質遮擋、rim light 與 back light 製造空間感；不得引入
+  `Node3D`、`Camera3D`、3D mesh 或 SubViewport 離屏合成建立第二套 rendering authority。
+  Runtime profile／diagnostic 使用 `presentation_mode = "2_5d"` 鎖定這個邊界。
+  v4 逐格物件使用自身水平接地點，會清除 legacy atlas 的負 Y target lift；已有專屬
+  Finisher 動作時，`AutoAttackFeedback` 只保留命中事件與傷害文字，必須隱藏共通劍氣。
   `NamedSkillVFX.play(profile_id, direction, intensity, preview, evolution_level,
   buff_stacks)` 將等級限制在 1–3，並依非負疊層里程碑增加 accent parts。
   元素 mutation 只能疊加，不得把原始金屬、雷牢、天輪、冰棺、節拍或戰術剪影
   替換成泛用火焰。
 - 手動施放顯示中央招式名稱並短暫慢動作；普通自動攻擊不反覆觸發標題。火／冰
   projectile 使用 `ElementalAttackAura`，範圍技使用自動清理的 Fire／Ice VFX。
+- `storm_charge` 是明確例外：profile 投影 `special_vfx_id = storm_charge`，戰鬥與
+  Discovery Codex 都實例化同一個 `StormChargeVFX`，不得退回泛用 attack aura、水平
+  projectile 或任意線條動畫。scene 固定在 cast anchor；十一條固定語意導電路徑以
+  主幹／次分支三層光階依節拍 reveal/retract，level 只增加有界粒子／光層細節，
+  不改變由地面接至劍身的英雄輪廓或生成第二個高潮。
   大招本體與 `ElementalGroundTrail` 都使用 unscaled timeline：火系生成兩道掃掠
   焦痕、冰系生成一條主裂隙與兩條分岔、毒系保留不規則毒灘 profile。玩法傷害仍
   即時結算；致死敵人的碰撞與獎勵也立即結算，但 sprite 會保留到對應招式 impact
