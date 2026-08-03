@@ -58,6 +58,14 @@ const FAMILY_LABELS := {
 	"COMBO": "劍魂",
 	"CARD": "秘儀",
 }
+const FAMILY_GLYPHS := {
+	"HEALING": "✚",
+	"FLAME": "♨",
+	"VOLLEY": "➶",
+	"STORM": "ϟ",
+	"COMBO": "◆",
+	"CARD": "◇",
+}
 const TYPE_DISPLAY_NAMES := {
 	"ATTACK": "攻擊",
 	"COMBO": "連段",
@@ -82,22 +90,65 @@ var _row_active := true
 var _hovered := false
 var _fixed := false
 var _cast_feedback_tween: Tween
+var _cast_arc_tween: Tween
+var _animation_phase := 0.0
+var _cast_intensity := 0.0
 
 @onready var _shortcut: Label = $CardContent/Shortcut
+@onready var _ink_wash: ColorRect = $CardContent/InkWash
+@onready var _halo_layer: TextureRect = $CardContent/CelestialHalo
 @onready var _header_band: Panel = $CardContent/HeaderBand
 @onready var _card_name: Label = $CardContent/CardName
 @onready var _name_band: Panel = $CardContent/NameBand
+@onready var _category_band: Panel = $CardContent/CategoryBand
 @onready var _type_label: Label = $CardContent/CardType
 @onready var _icon: TextureRect = $CardContent/IconStage/Icon
 @onready var _icon_frame: Panel = $CardContent/IconStage/IconFrame
 @onready var _glyph: Label = $CardContent/IconStage/Glyph
+@onready var _raven_layer: TextureRect = $CardContent/SpectralRavens
+@onready var _vines_layer: TextureRect = $CardContent/VinesSmoke
+@onready var _sun_wave: Control = $CardContent/SunWave
+@onready var _tarot_frame: Control = $CardContent/TarotFrameOverlay
 @onready var _level: Label = $CardContent/Level
+@onready var _type_gem: Label = $CardContent/TypeGem
 @onready var _cost_label: Label = $CardContent/CostRow/CostLabel
 @onready var _cost_seal: Panel = $CardContent/CostRow/APSeal
 @onready var _cost_inner_ring: Panel = $CardContent/CostRow/APInnerRing
 @onready var _cost_value: Label = $CardContent/CostRow/CostValue
 @onready var _lock_badge: Label = $LockBadge
 @onready var _cast_feedback: Panel = $CastFeedback
+
+
+func _ready() -> void:
+	_cache_nodes()
+	set_process(true)
+	_sync_adaptive_layout()
+	resized.connect(_sync_adaptive_layout)
+
+
+func _process(delta: float) -> void:
+	if not is_visible_in_tree():
+		return
+	var speed := 1.05 if _hovered else 0.58
+	_animation_phase = fmod(_animation_phase + delta * speed, TAU)
+	var breath := (sin(_animation_phase) + 1.0) * 0.5
+	if _tarot_frame != null:
+		_tarot_frame.scale = Vector2.ONE
+		_tarot_frame.call("set_energy", 0.94 if _hovered else 0.58 + breath * 0.20)
+	if _halo_layer != null:
+		_halo_layer.visible = false
+	if _raven_layer != null:
+		_raven_layer.rotation = sin(_animation_phase * 0.72) * (0.004 if _hovered else 0.002)
+		_raven_layer.position.y = sin(_animation_phase * 0.83) * (0.7 if _hovered else 0.35)
+	if _vines_layer != null:
+		var vines_scale := 1.0 + breath * (0.004 if _hovered else 0.002)
+		_vines_layer.scale = Vector2.ONE * vines_scale
+	if _sun_wave != null:
+		_sun_wave.call("set_energy", 0.92 if _hovered else 0.58 + breath * 0.18)
+	if _icon != null and _icon.visible:
+		var art_scale := 1.0 + breath * (0.009 if _hovered else 0.004)
+		_icon.scale = Vector2.ONE * art_scale
+	queue_redraw()
 
 
 func configure(card: Dictionary, shortcut: String, affordable: bool) -> void:
@@ -109,27 +160,31 @@ func configure(card: Dictionary, shortcut: String, affordable: bool) -> void:
 	_visual_family = String(VISUAL_FAMILY_BY_ID.get(_card_id, _card_type))
 	_affordable = affordable
 	_fixed = bool(card.get("fixed", false))
-	tooltip_text = String(card.get("description", ""))
+	var display_name := String(card.get("name", "Card"))
+	var description := String(card.get("description", ""))
+	tooltip_text = display_name if description.is_empty() else "%s\n%s" % [display_name, description]
 	_shortcut.text = shortcut
-	_card_name.text = String(card.get("name", "Card"))
+	_card_name.text = display_name
+	_sync_adaptive_layout()
 	var combo_stack := maxi(0, int(card.get("combo_stack", 0)))
 	var family_label := String(FAMILY_LABELS.get(
 		_visual_family,
 		FAMILY_LABELS.get(_card_type, FAMILY_LABELS["CARD"])
 	))
-	var family_and_type := "%s · %s" % [
+	var family_and_type := "%s%s" % [
 		family_label,
 		String(TYPE_DISPLAY_NAMES.get(_card_type, TYPE_DISPLAY_NAMES["CARD"])),
 	]
-	_type_label.text = (
-		"%s ×%d" % [family_and_type, combo_stack]
-		if combo_stack > 0
-		else family_and_type
-	)
-	_level.text = "固定契印" if _fixed else "等級 %d" % maxi(1, int(card.get("level", 1)))
+	_type_label.text = family_and_type
+	_level.text = str(combo_stack)
+	_level.visible = false
+	_type_gem.text = String(FAMILY_GLYPHS.get(_visual_family, FAMILY_GLYPHS["CARD"]))
+	_type_gem.visible = true
 	_cost_value.text = str(maxi(0, int(card.get("cost", 0))))
-	_lock_badge.visible = _fixed
+	_lock_badge.visible = false
 	_lock_badge.text = "契印"
+	if _sun_wave != null:
+		_sun_wave.call("set_phase_offset", float(abs(_card_id.hash()) % 1000) / 1000.0 * TAU)
 	_finish_cast_feedback()
 	var icon_path := String(card.get("icon_path", ""))
 	var generated_icon := GENERATED_ICONS.get(_card_id) as Texture2D
@@ -158,20 +213,96 @@ func _cache_nodes() -> void:
 	if _shortcut != null:
 		return
 	_shortcut = get_node("CardContent/Shortcut") as Label
+	_ink_wash = get_node("CardContent/InkWash") as ColorRect
+	_halo_layer = get_node("CardContent/CelestialHalo") as TextureRect
 	_header_band = get_node("CardContent/HeaderBand") as Panel
 	_card_name = get_node("CardContent/CardName") as Label
 	_name_band = get_node("CardContent/NameBand") as Panel
+	_category_band = get_node("CardContent/CategoryBand") as Panel
 	_type_label = get_node("CardContent/CardType") as Label
 	_icon = get_node("CardContent/IconStage/Icon") as TextureRect
 	_icon_frame = get_node("CardContent/IconStage/IconFrame") as Panel
 	_glyph = get_node("CardContent/IconStage/Glyph") as Label
+	_raven_layer = get_node("CardContent/SpectralRavens") as TextureRect
+	_vines_layer = get_node("CardContent/VinesSmoke") as TextureRect
+	_sun_wave = get_node("CardContent/SunWave") as Control
+	_tarot_frame = get_node("CardContent/TarotFrameOverlay") as Control
 	_level = get_node("CardContent/Level") as Label
+	_type_gem = get_node("CardContent/TypeGem") as Label
 	_cost_label = get_node("CardContent/CostRow/CostLabel") as Label
 	_cost_seal = get_node("CardContent/CostRow/APSeal") as Panel
 	_cost_inner_ring = get_node("CardContent/CostRow/APInnerRing") as Panel
 	_cost_value = get_node("CardContent/CostRow/CostValue") as Label
 	_lock_badge = get_node("LockBadge") as Label
 	_cast_feedback = get_node("CastFeedback") as Panel
+	_sync_adaptive_layout()
+
+
+func _sync_adaptive_layout() -> void:
+	_sync_motion_pivots()
+	_layout_name_cartouche()
+
+
+func _layout_name_cartouche() -> void:
+	if _name_band == null or _card_name == null or size.x <= 1.0 or size.y <= 1.0:
+		return
+	var name_left := size.x * 0.13
+	var cost_left := size.x * 0.82 - 19.0
+	var name_right := maxf(name_left + 24.0, cost_left - 3.0)
+	var name_top := size.y * 0.805
+	var name_bottom := size.y * 0.96
+	_name_band.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_name_band.position = Vector2(name_left, name_top)
+	_name_band.size = Vector2(name_right - name_left, name_bottom - name_top)
+	_card_name.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_card_name.position = _name_band.position + Vector2(3.0, 1.0)
+	_card_name.size = Vector2(
+		maxf(18.0, _name_band.size.x - 6.0),
+		maxf(16.0, _name_band.size.y - 2.0)
+	)
+	_fit_card_name()
+
+
+func _fit_card_name() -> void:
+	if _card_name == null or _card_name.size.x <= 1.0:
+		return
+	var font := _card_name.get_theme_font("font")
+	var max_size := clampi(int(roundf(size.y * 0.068)), 14, 18)
+	var chosen_size := max_size
+	if font != null:
+		for candidate_size in range(max_size, 11, -1):
+			var measured := font.get_string_size(
+				_card_name.text,
+				HORIZONTAL_ALIGNMENT_LEFT,
+				-1.0,
+				candidate_size
+			)
+			chosen_size = candidate_size
+			var fits_one_line := measured.x <= _card_name.size.x - 2.0
+			var fits_two_lines := (
+				measured.x <= (_card_name.size.x - 2.0) * 1.86
+				and font.get_height(candidate_size) * 2.0 <= _card_name.size.y
+			)
+			if fits_one_line or fits_two_lines:
+				break
+	_card_name.add_theme_font_size_override("font_size", chosen_size)
+	_card_name.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+	_card_name.max_lines_visible = 2
+	_card_name.clip_text = true
+	_card_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+
+
+func _sync_motion_pivots() -> void:
+	if _tarot_frame != null:
+		_tarot_frame.pivot_offset = _tarot_frame.size * 0.5
+	if _halo_layer != null:
+		_halo_layer.pivot_offset = _halo_layer.size * 0.5
+	if _raven_layer != null:
+		_raven_layer.pivot_offset = _raven_layer.size * 0.5
+	if _vines_layer != null:
+		_vines_layer.pivot_offset = _vines_layer.size * 0.5
+	if _icon != null:
+		_icon.pivot_offset = _icon.size * 0.5
 
 
 func set_row_active(active: bool, affordable: bool) -> void:
@@ -210,6 +341,8 @@ func play_cast_feedback() -> void:
 	_cache_nodes()
 	if _cast_feedback_tween != null and _cast_feedback_tween.is_valid():
 		_cast_feedback_tween.kill()
+	if _cast_arc_tween != null and _cast_arc_tween.is_valid():
+		_cast_arc_tween.kill()
 	var accent := FAMILY_ACCENTS.get(
 		_visual_family,
 		FAMILY_ACCENTS["CARD"]
@@ -222,6 +355,17 @@ func play_cast_feedback() -> void:
 	_cast_feedback.modulate = Color(1.0, 1.0, 1.0, 0.0)
 	_cast_feedback.scale = Vector2(0.96, 0.96)
 	_cast_feedback.pivot_offset = size * 0.5
+	_cast_intensity = 1.0
+	_cast_arc_tween = create_tween()
+	_cast_arc_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_cast_arc_tween.set_trans(Tween.TRANS_QUAD)
+	_cast_arc_tween.set_ease(Tween.EASE_OUT)
+	_cast_arc_tween.tween_method(
+		_set_cast_intensity,
+		1.0,
+		0.0,
+		CAST_FEEDBACK_DURATION
+	)
 	_cast_feedback_tween = create_tween()
 	_cast_feedback_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	_cast_feedback_tween.set_trans(Tween.TRANS_QUAD)
@@ -261,18 +405,45 @@ func get_cast_feedback_duration() -> float:
 	return CAST_FEEDBACK_DURATION
 
 
+func get_motion_state() -> Dictionary:
+	return {
+		"idle_breathing": is_processing(),
+		"halo_breathing": is_processing(),
+		"raven_drift": is_processing(),
+		"vines_breathing": is_processing(),
+		"sun_wave_visualizer": _sun_wave != null and _sun_wave.is_processing(),
+		"gold_charge_flow": _tarot_frame != null
+			and _tarot_frame.has_method("get_geometry_state")
+			and bool((_tarot_frame.call("get_geometry_state") as Dictionary).get("animated_charge", false)),
+		"frame_shimmer": is_processing(),
+		"hover_acceleration": true,
+		"cast_arc": true,
+	}
+
+
 func get_frame_design_state() -> Dictionary:
 	return {
-		"frame_layers": 3,
-		"ritual_rings": 4,
-		"corner_marks": 4,
+		"frame_layers": 4,
+		"shared_frame_asset": false,
+		"shared_frame_geometry": true,
+		"code_native_geometry": true,
+		"aligned_transparent_layers": true,
+		"seven_by_eight": true,
 		"name_plate": true,
 		"full_artwork": true,
 		"monochrome_gold": true,
 		"shortcut_key_seal": true,
 		"ap_medallion": true,
-		"integrated_header_band": true,
+		"category_tab": true,
+		"stack_seal": false,
+		"type_gem": true,
+		"category_gem": false,
 		"dedicated_name_band": true,
+		"organic_tarot_overlay": true,
+		"no_table_grid": true,
+		"motion_layers": 4,
+		"audio_wave_rays": true,
+		"gold_charge_flow": true,
 		"visual_family": _visual_family,
 		"accent": FAMILY_ACCENTS.get(_visual_family, FAMILY_ACCENTS["CARD"]),
 	}
@@ -284,29 +455,31 @@ func _finish_cast_feedback() -> void:
 	_cast_feedback.visible = false
 	_cast_feedback.modulate = Color.WHITE
 	_cast_feedback.scale = Vector2.ONE
+	_cast_intensity = 0.0
+	queue_redraw()
+
+
+func _set_cast_intensity(value: float) -> void:
+	_cast_intensity = clampf(value, 0.0, 1.0)
+	queue_redraw()
 
 
 func _apply_visual_state() -> void:
-	var base_color := FAMILY_BACKGROUNDS.get(
-		_visual_family,
-		TYPE_COLORS.get(_card_type, TYPE_COLORS["CARD"])
-	) as Color
 	var family_accent := FAMILY_ACCENTS.get(_visual_family, FAMILY_ACCENTS["CARD"]) as Color
-	var card_ink := FRAME_INK.lerp(base_color.darkened(0.56), 0.16)
 	var normal_border := FRAME_GOLD.lightened(0.03 if _fixed else 0.0)
 	var bright_border := FRAME_GOLD.lightened(0.12)
 	var inactive_border := FRAME_OLD_GOLD.darkened(0.28)
 	var normal := _make_style(
-		card_ink if _row_active else card_ink.darkened(0.48),
+		Color(0.0, 0.0, 0.0, 0.0),
 		normal_border if _row_active else inactive_border,
-		2,
-		3 if _fixed else 2
+		0,
+		0
 	)
-	var highlighted := _make_style(card_ink.lightened(0.035), bright_border, 2, 4)
+	var highlighted := _make_style(Color(0.0, 0.0, 0.0, 0.0), bright_border, 0, 2)
 	var unavailable := _make_style(
-		card_ink.darkened(0.50 if _row_active else 0.62),
+		Color(0.004, 0.005, 0.008, 0.42),
 		Color(0.34, 0.30, 0.26, 0.86),
-		1,
+		0,
 		1
 	)
 	if _fixed and not _row_active:
@@ -318,21 +491,46 @@ func _apply_visual_state() -> void:
 			"panel",
 			_make_icon_frame(family_accent, _hovered)
 		)
+	if _ink_wash != null:
+		_ink_wash.color = Color(0.0, 0.0, 0.0, 0.0)
+	if _halo_layer != null:
+		_halo_layer.visible = false
+	if _raven_layer != null:
+		_raven_layer.visible = _visual_family == "VOLLEY"
+		_raven_layer.self_modulate = Color(
+			family_accent.r,
+			family_accent.g,
+			family_accent.b,
+			0.58
+		)
+	if _vines_layer != null:
+		_vines_layer.visible = _visual_family == "HEALING"
+		var vines_tint := FRAME_GOLD.lerp(family_accent, 0.32)
+		_vines_layer.self_modulate = Color(vines_tint.r, vines_tint.g, vines_tint.b, 0.52)
+	if _tarot_frame != null:
+		_tarot_frame.call("set_accent", family_accent)
 	_shortcut.add_theme_stylebox_override("normal", _make_shortcut_seal(family_accent))
 	_shortcut.add_theme_color_override("font_color", Color(0.86, 0.77, 0.59, 1.0))
 	_header_band.add_theme_stylebox_override("panel", _make_header_band())
 	_name_band.add_theme_stylebox_override("panel", _make_name_band())
+	_category_band.add_theme_stylebox_override("panel", _make_category_band(family_accent))
 	_card_name.add_theme_color_override(
 		"font_color",
 		Color(0.92, 0.86, 0.72, 1.0)
 	)
 	_type_label.add_theme_color_override("font_color", family_accent.lightened(0.05))
 	_cost_label.add_theme_color_override("font_color", Color(0.66, 0.57, 0.41, 1.0))
+	_cost_label.visible = false
+	_cost_seal.visible = false
+	_cost_inner_ring.visible = false
 	_cost_seal.add_theme_stylebox_override("panel", _make_cost_seal(family_accent))
 	_cost_inner_ring.add_theme_stylebox_override("panel", _make_cost_inner_ring(family_accent))
 	_cost_value.add_theme_color_override("font_color", Color(0.92, 0.84, 0.66, 1.0))
 	_cost_value.remove_theme_stylebox_override("normal")
-	_lock_badge.add_theme_color_override("font_color", FRAME_GOLD.lightened(0.16))
+	_lock_badge.visible = false
+	_level.visible = false
+	_type_gem.visible = true
+	_type_gem.add_theme_color_override("font_color", family_accent.lightened(0.12))
 	add_theme_stylebox_override("normal", highlighted if _hovered else normal)
 	add_theme_stylebox_override("hover", highlighted)
 	add_theme_stylebox_override("pressed", highlighted)
@@ -350,11 +548,11 @@ func _make_style(background: Color, border: Color, border_width: int, shadow_siz
 	style.bg_color = background
 	style.border_color = border
 	style.set_border_width_all(border_width)
-	style.set_corner_radius_all(2)
-	style.content_margin_left = 5.0
-	style.content_margin_top = 5.0
-	style.content_margin_right = 5.0
-	style.content_margin_bottom = 5.0
+	style.set_corner_radius_all(0)
+	style.content_margin_left = 0.0
+	style.content_margin_top = 0.0
+	style.content_margin_right = 0.0
+	style.content_margin_bottom = 0.0
 	style.shadow_color = Color(0.0, 0.0, 0.0, 0.78)
 	style.shadow_size = shadow_size
 	return style
@@ -362,27 +560,23 @@ func _make_style(background: Color, border: Color, border_width: int, shadow_siz
 
 func _make_icon_frame(_accent: Color, emphasized: bool) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.006, 0.009, 0.016, 0.96)
-	style.border_color = FRAME_GOLD.lightened(0.06) if emphasized else FRAME_OLD_GOLD.lightened(0.06)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(1)
-	style.shadow_color = Color(0.0, 0.0, 0.0, 0.64)
-	style.shadow_size = 2 if emphasized else 0
+	style.bg_color = Color(0.006, 0.009, 0.016, 0.18 if emphasized else 0.08)
+	style.border_color = Color(0.0, 0.0, 0.0, 0.0)
+	style.set_border_width_all(0)
+	style.set_corner_radius_all(0)
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.0)
+	style.shadow_size = 0
 	return style
 
 
-func _make_shortcut_seal(_accent: Color) -> StyleBoxFlat:
+func _make_shortcut_seal(accent: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.008, 0.011, 0.017, 0.98)
-	style.border_color = FRAME_GOLD.lightened(0.06)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(3)
-	style.content_margin_left = 5.0
-	style.content_margin_right = 5.0
-	style.content_margin_top = 1.0
-	style.content_margin_bottom = 1.0
-	style.shadow_color = Color(0.0, 0.0, 0.0, 0.72)
-	style.shadow_size = 1
+	style.bg_color = Color(0.008, 0.010, 0.012, 0.92)
+	style.border_color = FRAME_GOLD.lerp(accent, 0.18).lightened(0.06)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(20)
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.68)
+	style.shadow_size = 2
 	return style
 
 
@@ -396,10 +590,21 @@ func _make_header_band() -> StyleBoxFlat:
 
 func _make_name_band() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.006, 0.008, 0.012, 0.985)
-	style.border_color = FRAME_OLD_GOLD.lightened(0.04)
-	style.border_width_top = 1
-	style.border_width_bottom = 1
+	style.bg_color = Color(0.075, 0.052, 0.026, 0.46)
+	style.border_color = Color(0.0, 0.0, 0.0, 0.0)
+	style.set_border_width_all(0)
+	style.set_corner_radius_all(3)
+	return style
+
+
+func _make_category_band(accent: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.035, 0.025, 0.016, 0.86)
+	style.border_color = FRAME_GOLD.lerp(accent, 0.16).lightened(0.04)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(3)
+	style.content_margin_left = 5.0
+	style.content_margin_right = 5.0
 	return style
 
 
@@ -425,67 +630,32 @@ func _make_cost_inner_ring(accent: Color) -> StyleBoxFlat:
 
 func _make_cast_feedback_style(accent: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(accent.r, accent.g, accent.b, 0.10)
-	style.border_color = accent.lightened(0.22)
-	style.set_border_width_all(4)
-	style.set_corner_radius_all(8)
-	style.shadow_color = Color(accent.r, accent.g, accent.b, 0.72)
-	style.shadow_size = 9
+	style.bg_color = Color(accent.r, accent.g, accent.b, 0.015)
+	style.border_color = Color(0.0, 0.0, 0.0, 0.0)
+	style.set_border_width_all(0)
+	style.set_corner_radius_all(0)
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.0)
+	style.shadow_size = 0
 	return style
 
 
 func _draw() -> void:
-	if size.x < 20.0 or size.y < 30.0:
+	if size.x < 20.0 or size.y < 30.0 or _cast_intensity <= 0.001:
 		return
 	var accent := FAMILY_ACCENTS.get(
 		_visual_family,
 		FAMILY_ACCENTS["CARD"]
 	) as Color
-	var energy_alpha := 0.22 if _hovered else 0.10
-	var frame_alpha := 0.76 if _row_active else 0.36
-	var inner_rect := Rect2(Vector2(5.0, 5.0), size - Vector2(10.0, 10.0))
-	var ritual_rect := Rect2(Vector2(8.0, 8.0), size - Vector2(16.0, 16.0))
-	draw_rect(inner_rect, Color(FRAME_GOLD.r, FRAME_GOLD.g, FRAME_GOLD.b, frame_alpha), false, 1.0)
-	draw_rect(ritual_rect, Color(accent.r, accent.g, accent.b, energy_alpha), false, 1.0)
-
-	var center := Vector2(size.x * 0.5, size.y * 0.36)
-	var outer_radius := minf(size.x * 0.36, size.y * 0.23)
-	for ring_index in 4:
-		var ring_radius := outer_radius * (0.46 + float(ring_index) * 0.18)
-		var ring_color := Color(
-			FRAME_GOLD.r,
-			FRAME_GOLD.g,
-			FRAME_GOLD.b,
-			energy_alpha * (0.92 - float(ring_index) * 0.18)
-		)
-		draw_arc(center, ring_radius, 0.0, TAU, 32, ring_color, 1.0, true)
-	for spoke_index in 12:
-		var angle := TAU * float(spoke_index) / 12.0
-		var direction := Vector2.from_angle(angle)
-		draw_line(
-			center + direction * outer_radius * 0.78,
-			center + direction * outer_radius * 1.10,
-			Color(FRAME_GOLD.r, FRAME_GOLD.g, FRAME_GOLD.b, energy_alpha * 0.72),
-			1.0,
-			true
-		)
-	draw_circle(center, 2.0, Color(FRAME_GOLD.r, FRAME_GOLD.g, FRAME_GOLD.b, frame_alpha))
-
-	var corner_length := clampf(size.x * 0.12, 9.0, 15.0)
-	var corner_color := Color(FRAME_GOLD.r, FRAME_GOLD.g, FRAME_GOLD.b, frame_alpha)
-	_draw_corner_mark(Vector2(3.0, 3.0), Vector2.RIGHT, Vector2.DOWN, corner_length, corner_color)
-	_draw_corner_mark(Vector2(size.x - 3.0, 3.0), Vector2.LEFT, Vector2.DOWN, corner_length, corner_color)
-	_draw_corner_mark(Vector2(3.0, size.y - 3.0), Vector2.RIGHT, Vector2.UP, corner_length, corner_color)
-	_draw_corner_mark(Vector2(size.x - 3.0, size.y - 3.0), Vector2.LEFT, Vector2.UP, corner_length, corner_color)
-
-func _draw_corner_mark(
-	origin: Vector2,
-	horizontal: Vector2,
-	vertical: Vector2,
-	length: float,
-	color: Color
-) -> void:
-	draw_line(origin, origin + horizontal * length, color, 2.0, true)
-	draw_line(origin, origin + vertical * length, color, 2.0, true)
-	var notch := origin + (horizontal + vertical) * 4.0
-	draw_circle(notch, 1.5, color)
+	var center := Vector2(size.x * 0.5, size.y * 0.49)
+	var radius := minf(size.x * 0.34, size.y * 0.22)
+	var start_angle := -PI * 0.72 + (1.0 - _cast_intensity) * PI * 0.28
+	draw_arc(
+		center,
+		radius,
+		start_angle,
+		start_angle + PI * 1.44,
+		40,
+		Color(accent.r, accent.g, accent.b, _cast_intensity * 0.72),
+		1.5,
+		true
+	)

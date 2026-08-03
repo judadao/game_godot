@@ -559,8 +559,8 @@ instance.queue_free()
 | Growth queue | wave new-card 可直接 skip；滿 16 張可 replace/skip；EXP upgrade 五選一、全滿後獨立 fusion；無候選才 fallback；FIFO 不漏頁 |
 | Fusion | 精確選兩張不同 Lv.3 instances；消耗兩張、產生 Lv.1、淨減一 |
 | Deck/hand | 傳送門前四格直選；4 unique Healing／Combo 且至少 1 Healing；最後一張 Healing 不可換掉；候選排除重複並預覽終結技；QWER 使用後保留原 slot |
-| Card readability/feedback | 繁中長技能名固定兩行且不撐寬四卡框；七解析度不重疊；compatibility `BackRow` hidden 且不保留高度，黑金卡框由 CardStage 頂緣到底緣雙軸填滿四等分 slot、滿版主插畫；hover 不橫向放大；右側長公式固定欄寬 ellipsis；只有成功施放的相符 card id 播放短脈衝，重複呼叫重啟、未知 ID 無作用、0.5 秒內回穩 |
-| Combat input hierarchy | 隱藏舊 `ActionStrip`；`SPACE 衝刺` 位於 FooterRail；手牌頂緣貼齊 CardStage；卡面共用 Noto Serif TC 優先的襯線 stack，招式名至少 16px／獨立不透明名牌至少 34px，插畫在名牌上緣結束；Q/W/E/R 為 20–24px 高、12–13px 字級、1px 框／至多 2px 陰影且完整嵌入 28–32px HeaderBand 左側的鍵印；AP cost 為 42–46px、至少 22px 數字、1px 框／至多 2px 陰影的雙層古幣章；類型只顯示中文 |
+| Card readability/feedback | 繁中長技能名固定兩行、超出省略且 tooltip 保留完整名稱，不撐寬四卡框；七解析度不重疊；compatibility `BackRow` hidden 且不保留高度，code-native 7:8 金色幾何框與條件式透明裝飾層由 CardStage 頂緣到底緣雙軸填滿四等分 slot、主插畫占主要視覺；hover 不橫向放大；combat halo hidden，外框亮帶持續沿可調拱弧／側柱充能、主圖背後 60 根粗且保有留白的 360° sacred-geometry 日芒以雙頻波形大幅伸縮、維持圓形整體輪廓且四卡相位錯開；日芒使用不歸零的連續時間值，外框跨界亮帶同時繪製尾端與起點，循環接縫不得抖動；兩者使用全域時間軸，出招重投影不得歸零；右側長公式固定欄寬 ellipsis；只有成功施放的相符 card id 播放短脈衝，重複呼叫重啟、未知 ID 無作用、0.5 秒內回穩；透明裝飾素材另檢查 1173×1341、alpha 與共享對位 |
+| Combat input hierarchy | 隱藏舊 `ActionStrip`；`SPACE 衝刺` 位於 FooterRail；手牌頂緣貼齊 CardStage；卡面共用 Noto Serif TC 優先的襯線 stack，短招式名保持大字、長名稱最低 12px 且獨占暖墨底部卷軸，插畫在分類框上緣前結束；Q/W/E/R 位於左上 32–36px 圓章且至少 18px；右上顯示種類 icon；AP cost 位於右下 34–38px 圓章且只顯示至少 20px 的數字；中文分類使用四邊舊金框暖墨 tab 且至少 60% 卡寬；戰鬥卡不顯示 stack；不得新增表格線、全卡不透明色塊或霓虹外框 |
 | Basic Attack | 戰前獨立選 attack；Run lock；0 AP；不進牌堆；有水平走廊目標時自動攻擊；不向上／下追蹤；無目標不消耗 cooldown 或公式 |
 | Combo formula | catalog 合法 Combo／Healing 都可記錄；32 個精確已學會 AAA/ABC 配方；順序錯誤不觸發；純治療／防禦支援為零基礎傷害；多招 FIFO 排隊；下一發自動水平攻擊逐一施放；formula stacks 不消耗；各卡效果獨立 1.5 秒，單一效果到期只撤銷自己的 modifier；Combo Chain 維持獨立 2.5 秒 |
 | Divine Gifts | 每 stage/wave 一個必選頁；最多 3 slot；有空位才出新品，滿槽只出既有升級；全 inventory 的中文前綴與 mechanics 依序累加；Lv.3 融合材料退出獎勵池並釋出一格；fusion-only 可 skip；選擇頁與 HUD 不得露出英文名稱／說明 |

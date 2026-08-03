@@ -1473,18 +1473,20 @@ the HUD never reads gameplay state directly.
 - Responsibility: present a structured dark-fantasy card while keeping
   the root `Button` as the single input and focus owner. The fixed Autumn hand
   maps to generated 256×256 text-free source art under
-  `res://assets/ui/autumn/cards/generated/`, stretches its frame to the authored
-  slot while keeping the artwork centered in the dominant art stage, keeps the
-  action name at 12px or larger, and exposes
+  `res://assets/ui/autumn/cards/generated/`, composes it with aligned 1173×1341
+  celestial-halo, spectral-raven, and vines/smoke layers, adds an adjustable code-native
+  geometric frame with globally timed gold charge and a 60-ray 360-degree sacred-geometry
+  sunburst behind black-keyed card art（combat hides the concentric halo layer）, stretches that 7:8 composition to the authored battle slot, and exposes
   Healing／Flame／Volley／Storm visual families.
 - Typography: `CardName`／metadata／shortcut／AP 共用 `Noto Serif TC` 優先的繁中
-  襯線 stack；招式名至少 16px 且名牌高度至少 32px，類型顯示「連段／治療」而不是
+  襯線 stack；短招式名以 17–18px 顯示，長名稱最低 12px 且獨占底部卷軸名牌，類型顯示「連段／治療」而不是
   `COMBO／HEALING`。
-- Input/AP hierarchy: `Shortcut` 使用 20–24px 高、12–13px 字級的薄舊金鍵印，完整嵌入
-  28–32px `HeaderBand` 左側並與右側契印文字共線；不得跨出卡框。`IconStage` 必須在
-  不透明 `NameBand` 上緣結束，至少 34px 高的招式名空間不得和圖片重疊。`CostRow` 將
-  小型 `AP` 標記與至少 22px 數字整合成 42–46px 雙層古幣章。
-  兩者邊框皆為 1px，陰影不得超過 2px，也不得使用元素色霓虹光圈。
+- Input/AP hierarchy: `Shortcut` 使用左上 32–36px、至少 18px 的圓形鍵印；右上圓章
+  顯示依 Healing／Flame／Volley／Storm 上色且可辨識的種類 icon；`CostRow`
+  使用右下 34–38px 圓章且只顯示至少 20px 的 AP 數字，不重複 `AP` 文字。`Level` 在戰鬥卡面隱藏，不投影永久層數。
+  `IconStage` 必須在中文分類框上緣前結束；中文分類使用四邊舊金框的暖墨 tab 且至少佔 60% 卡寬。
+  `CardName` 銘牌右界依 AP 圓章位置計算，最多兩行、超出省略，完整名稱保留於 tooltip。四張牌不得新增
+  表格分隔線、全卡不透明色塊或元素色霓虹外框。
 
 ### AutumnCardHandUI renderer
 

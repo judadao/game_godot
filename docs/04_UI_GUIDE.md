@@ -1164,23 +1164,32 @@ preserve a card aspect ratio: four authored equal-width slots consume the full h
 and each card uses `EXPAND_FILL` to match its parent slot in both axes. Hover feedback may
 rise vertically but must not scale horizontally into an adjacent slot. Autumn cards use a
 `148–320px` responsive minimum height.
-Healing／Flame／Volley／Storm identification stays in the artwork and restrained accent,
+Healing／Flame／Volley／Storm identification stays in the artwork, category tab, and restrained accent,
 not a saturated full-card frame. 所有 20 張可投入終結技公式的
 Combo／Healing 劍魂都使用 `assets/ui/autumn/cards/generated/<card_id>.png` 的獨立
-256×256 暗黑塔羅插畫。插畫必須填滿卡面主視覺區，不可退化為中央小 icon；外框則由
-`AutumnBattleCard` 以近黑墨色卡身、舊金主框、節制的元素色、四角契印與同心秘儀環
-即時繪製，對齊古老黑金塔羅的層次，不能烘進 PNG。Do not add per-resolution card
+256×256 暗黑塔羅插畫。插畫必須填滿卡面主視覺區，不可退化為中央小 icon；四張戰鬥牌共用
+1173×1341 的 7:8 透明塔羅參考稿提供比例；runtime 外框由
+`battle_card_geometric_frame.gd` 以可調整的雙層金線、橢圓拱弧、側柱、銘牌與圓章繪製。
+烏鴉、藤蔓煙霧維持同尺寸獨立透明層，元素色只節制地投射到右上種類符號，不額外畫表格框或霓虹邊框。
+主圖使用黑底 key shader，讓 360° 金色 sacred-geometry sunburst 從圖騰後方透出而不疊在主體上；
+戰鬥卡不顯示 `CelestialHalo` 同心光暈。烏鴉只用於迴響族，藤蔓煙霧只用於生息族，不能把相同
+三層 stamp 到四張牌。卡框外不得鋪滿不透明元素色 `ColorRect`，四卡相接時仍須保有塔羅剪影。
+舊金幾何外框以全域單調時間軸讓單一道亮帶沿拱弧與側柱持續循環充能；主圖背後另有 60 根 360° 粗金線日芒、
+同心圓、六角與十二角幾何，兩組不同頻率的正弦波讓每根射線像環形音樂視覺化一樣連續伸縮。
+四張牌必須用 card id 錯開相位，不能同步機械閃爍；日芒波形使用不強制歸零的連續時間值，
+外框亮帶跨過拱弧終點時同時繪製尾端與起點，不能在循環接縫抖動。出招後即使手牌重新投影，
+也必須接續全域相位而不是歸零重播。
+Do not add per-resolution card
 positions or resize these cards from gameplay code.
 
-卡面文字使用 `Noto Serif TC` 優先的繁中襯線字族；招式名至少 16px、使用 32px 以上
-深墨名牌，並高於類型與 AP 的資訊層級。Q／W／E／R 使用 22–26px 高、13–14px 字級的
-薄舊金鍵印，完整收在 28–32px 高的頂部契約銘條左側，與右側「契印」共用基準線，
-不得跨出卡框或做成漂浮的大型發光按鈕。主插畫必須在獨立不透明 `NameBand` 上緣結束，
-招式名由至少 34px 高的名牌獨占，不得再覆蓋圖片。AP 消耗則把
-小型 `AP` 標記與至少 22px 的數字整合在卡片右下角 42–46px 雙層古幣章內；外框 1px、
-陰影至多 2px，且不可依元素色產生霓虹光圈。
+卡面文字使用 `Noto Serif TC` 優先的繁中襯線字族；短招式名以 17–18px 顯示，長名稱最低 12px，獨占帶深墨底的底部卷軸名牌。
+左上 Q／W／E／R 使用 32–36px 高、至少 18px 字級的圓形按鍵章；右上圓章顯示可辨識的種類 icon；
+右下 AP 圓章只顯示至少 20px 的數字，不重複顯示 `AP` 文字。分類以
+「生息治療／業火連段／迴響連段／雷霆連段」放在名牌上方至少 60% 卡寬、四邊舊金框的暖墨 tab。
+戰鬥卡面不顯示永久層數；主插畫必須在卷軸名牌上緣前結束，名稱不得再覆蓋圖片。
 
-技能名稱固定在兩行文字區內 wrap，超出時以省略號截斷；任何繁中長名稱、神賜疊加
+技能名稱由 AP 圓章位置動態計算專屬銘牌右界，短名稱保持大字、長名稱固定在兩行文字區內 wrap，
+超出時以省略號截斷，tooltip 保留完整名稱；任何繁中長名稱、神賜疊加
 前綴或字型 fallback 都不得改變卡框尺寸。成功施放後由 Game 在 AP 扣除與效果確認後
 呼叫 HUD 的 `show_card_cast_feedback(card_id)`；Hand 只對相符卡片播放約 0.34 秒的
 元素色描邊／光暈脈衝。AP 不足、未知 ID 或拒絕施放不能播放，重複施放則安全重啟

@@ -89,7 +89,13 @@ func _run() -> void:
 		var name_label := card_view.get_node("CardContent/CardName") as Label
 		var icon_view := card_view.get_node("CardContent/IconStage/Icon") as TextureRect
 		_expect(
-			name_label.text == chinese_name and card_view.tooltip_text == chinese_description,
+			name_label.text == chinese_name
+				and card_view.tooltip_text.begins_with(chinese_name + "\n")
+				and card_view.tooltip_text.ends_with(chinese_description)
+				and name_label.autowrap_mode == TextServer.AUTOWRAP_ARBITRARY
+				and name_label.max_lines_visible == 2
+				and name_label.clip_text
+				and name_label.text_overrun_behavior == TextServer.OVERRUN_TRIM_ELLIPSIS,
 			"秋季卡 UI 必須投影繁中名稱與描述：%s" % card_id
 		)
 		_expect(
