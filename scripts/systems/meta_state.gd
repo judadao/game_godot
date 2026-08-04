@@ -1,7 +1,13 @@
 class_name MetaState
 extends RefCounted
 
-const SCHEMA_VERSION := 9
+const SCHEMA_VERSION := 10
+const EXPEDITION_VARIANT_IDS: Array[StringName] = [
+	&"autumn", &"crystal",
+	&"hell_autumn", &"hell_crystal", &"hell",
+	&"heaven_autumn", &"heaven_crystal", &"disorder_hell", &"heaven",
+]
+const REGION_BOSS_UNLOCK_CLEAR_COUNT := 4
 const RESOURCE_IDS := ["gold", "autumn_wood", "stone", "magic_shard", "autumn_core"]
 const RETIRED_CARD_IDS := ["quickstep"]
 const RETIRED_SKILL_IDS := [
@@ -70,6 +76,28 @@ var story_state: Dictionary = {
 	"next_sequence_id": "chapter_01_town_square",
 	"story_flags": [],
 }
+var region_clear_counts: Dictionary = {
+	"autumn": 0,
+	"crystal": 0,
+	"heaven": 0,
+	"hell": 0,
+	"hell_autumn": 0,
+	"hell_crystal": 0,
+	"heaven_autumn": 0,
+	"heaven_crystal": 0,
+	"disorder_hell": 0,
+}
+var region_boss_defeated: Dictionary = {
+	"autumn": false,
+	"crystal": false,
+	"heaven": false,
+	"hell": false,
+	"hell_autumn": false,
+	"hell_crystal": false,
+	"heaven_autumn": false,
+	"heaven_crystal": false,
+	"disorder_hell": false,
+}
 var _last_migration_report: Dictionary = {}
 
 
@@ -133,6 +161,8 @@ func to_dict() -> Dictionary:
 		"inventory_state": inventory_state.duplicate(true),
 		"town_state": town_state.duplicate(true),
 		"story_state": story_state.duplicate(true),
+		"region_clear_counts": region_clear_counts.duplicate(true),
+		"region_boss_defeated": region_boss_defeated.duplicate(true),
 	}
 
 
@@ -204,6 +234,39 @@ func apply_dict(data: Dictionary) -> void:
 	inventory_state = _safe_dictionary(data.get("inventory_state"), inventory_state)
 	town_state = _safe_dictionary(data.get("town_state"), town_state)
 	story_state = _normalize_story_state(data.get("story_state", {}))
+	region_clear_counts = _normalize_region_clear_counts(data.get("region_clear_counts", {}))
+	region_boss_defeated = _normalize_region_boss_flags(data.get("region_boss_defeated", {}))
+
+
+func get_region_clear_count(region_id: StringName) -> int:
+	return maxi(0, int(region_clear_counts.get(String(region_id), 0)))
+
+
+func record_region_clear(region_id: StringName) -> bool:
+	if not EXPEDITION_VARIANT_IDS.has(region_id):
+		return false
+	var key := String(region_id)
+	region_clear_counts[key] = get_region_clear_count(region_id) + 1
+	return true
+
+
+func is_region_boss_ready(region_id: StringName) -> bool:
+	return (
+		EXPEDITION_VARIANT_IDS.has(region_id)
+		and get_region_clear_count(region_id) >= REGION_BOSS_UNLOCK_CLEAR_COUNT
+		and not is_region_boss_defeated(region_id)
+	)
+
+
+func mark_region_boss_defeated(region_id: StringName) -> bool:
+	if not EXPEDITION_VARIANT_IDS.has(region_id):
+		return false
+	region_boss_defeated[String(region_id)] = true
+	return true
+
+
+func is_region_boss_defeated(region_id: StringName) -> bool:
+	return bool(region_boss_defeated.get(String(region_id), false))
 
 
 func normalize_selected_deck(valid_ids: Array[String]) -> Array[String]:
@@ -309,6 +372,22 @@ func _normalize_story_state(value: Variant) -> Dictionary:
 		"next_sequence_id": next_sequence_id,
 		"story_flags": _safe_unique_string_array(incoming.get("story_flags", []), []),
 	}
+
+
+func _normalize_region_clear_counts(value: Variant) -> Dictionary:
+	var incoming := value as Dictionary if value is Dictionary else {}
+	var normalized: Dictionary = {}
+	for region_id in EXPEDITION_VARIANT_IDS:
+		normalized[String(region_id)] = maxi(0, int(incoming.get(String(region_id), 0)))
+	return normalized
+
+
+func _normalize_region_boss_flags(value: Variant) -> Dictionary:
+	var incoming := value as Dictionary if value is Dictionary else {}
+	var normalized: Dictionary = {}
+	for region_id in EXPEDITION_VARIANT_IDS:
+		normalized[String(region_id)] = bool(incoming.get(String(region_id), false))
+	return normalized
 
 
 func _safe_integer_dictionary(value: Variant, fallback: Dictionary) -> Dictionary:

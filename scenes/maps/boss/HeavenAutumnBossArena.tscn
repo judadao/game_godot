@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="PackedScene" path="res://scenes/maps/boss/RegionalBossArenaTemplate.tscn" id="1"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/heaven_sanctuary_background.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/heaven_autumn_terrain_atlas.png" id="3"]
+[node name="HeavenAutumnBossArena" instance=ExtResource("1")]
+metadata/expedition_variant_id = &"heaven_autumn"
+[node name="Backdrop" parent="." index="0"]
+scale = Vector2(0.995, 0.956)
+texture = ExtResource("2")
+[node name="ArenaPlatforms" parent="." index="3"]
+platform_color = Color(0.48, 0.38, 0.20, 1)
+rim_color = Color(1, 0.93, 0.61, 1)
+terrain_texture = ExtResource("3")
+floor_region = Rect2(32, 92, 1112, 124)
+platform_region = Rect2(636, 336, 520, 220)
+[node name="RegionalBossDirector" parent="." index="8"]
+expedition_variant_id = &"heaven_autumn"
+boss_health_multiplier = 2.0

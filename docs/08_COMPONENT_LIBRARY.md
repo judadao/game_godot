@@ -1229,6 +1229,19 @@ safe-margin centered window、圖示化 header/resource/status/action pattern，
 PlayerBlacksmithUI 只動態建立 recipe row。不得抽成一個以 mode Dictionary重建
 所有 layout 的通用 screen。
 
+### 21.8 PauseMenu dev map selector
+
+- Scene：`scenes/ui/system/PauseMenu.tscn`
+- Script：`scripts/ui/system/pause_menu.gd`
+- Owner：`Game/MenuLayer`
+- Status：Current — Used（dev mode only）
+- API：`configure_dev_mode(enabled, map_entries)`
+- Intent：`dev_map_requested(scene_path: String)`
+- Responsibility：以預設 hidden 的 `DevMapPanel` 投影 Game 注入的地圖名稱與 path，
+  並維持 ButtonStack／SettingsPanel／DevMapPanel 三者互斥與 focus 返回。
+- Boundary：不得讀取 ProjectSettings、MapRegistry、RunState 或直接載入 map；測試
+  Run 捨棄、路徑驗證、戰鬥 Run 建立與 save isolation 全由 Game／DevModeService 擁有。
+
 ## 22. Unused / Prototype / Disabled Legacy Components
 
 本節同時記錄沒有 production reference 的 prototype，以及仍被 production

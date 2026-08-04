@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="PackedScene" path="res://scenes/maps/boss/RegionalBossArenaTemplate.tscn" id="1"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/hell_rift_background.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/disorder_hell_terrain_atlas.png" id="3"]
+[node name="DisorderHellBossArena" instance=ExtResource("1")]
+metadata/expedition_variant_id = &"disorder_hell"
+[node name="Backdrop" parent="." index="0"]
+scale = Vector2(0.995, 0.956)
+texture = ExtResource("2")
+modulate = Color(0.78, 0.58, 0.94, 1)
+[node name="ArenaPlatforms" parent="." index="3"]
+platform_color = Color(0.18, 0.07, 0.22, 1)
+rim_color = Color(0.32, 1, 0.70, 1)
+terrain_texture = ExtResource("3")
+floor_region = Rect2(20, 104, 1496, 96)
+platform_region = Rect2(844, 336, 604, 96)
+[node name="RegionalBossDirector" parent="." index="8"]
+expedition_variant_id = &"disorder_hell"
+boss_health_multiplier = 2.5

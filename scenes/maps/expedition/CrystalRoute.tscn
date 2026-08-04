@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/expedition/ExpeditionRouteTemplate.tscn" id="1_template"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/crystal_cavern_background.png" id="2_background"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/crystal_terrain_atlas.png" id="3_terrain"]
+
+[node name="CrystalRoute" instance=ExtResource("1_template")]
+metadata/expedition_variant_id = &"crystal"
+
+[node name="GeneratedRoute" parent="." index="0"]
+variant_id = &"crystal"
+background_texture = ExtResource("2_background")
+terrain_atlas_texture = ExtResource("3_terrain")
+terrain_style = "crystal"
+ground_color = Color(0.075, 0.09, 0.22, 1)
+ground_highlight = Color(0.27, 0.63, 0.8, 1)
+platform_color = Color(0.16, 0.21, 0.38, 1)
+accent_color = Color(0.39, 0.84, 1, 1)

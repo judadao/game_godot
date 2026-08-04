@@ -133,6 +133,13 @@ func _check_pause_layout(viewport_size: Vector2i) -> void:
 	).instantiate() as Control
 	viewport.add_child(pause_menu)
 	await process_frame
+	var dev_entries: Array[Dictionary] = []
+	for map_index in 22:
+		dev_entries.append({
+			"label": "DEV 測試地圖 %02d｜長名稱版面驗證" % (map_index + 1),
+			"scene_path": "res://dev/map_%02d.tscn" % (map_index + 1),
+		})
+	pause_menu.call("configure_dev_mode", true, dev_entries)
 	pause_menu.open()
 	await process_frame
 	var screen := Rect2(Vector2.ZERO, Vector2(viewport_size))
@@ -150,6 +157,15 @@ func _check_pause_layout(viewport_size: Vector2i) -> void:
 			and exit_combat.size.y >= 44.0,
 		"Exit Combat must remain readable and inside Pause at %s." % viewport_size
 	)
+	var dev_button := pause_menu.get_node("MenuPanel/Content/ButtonStack/DevMaps") as Button
+	_expect(panel.get_global_rect().encloses(dev_button.get_global_rect()), "DEV Maps must remain inside Pause at %s." % viewport_size)
+	dev_button.pressed.emit()
+	await process_frame
+	var dev_panel := pause_menu.get_node("MenuPanel/Content/DevMapPanel") as Control
+	var map_options := pause_menu.get_node("MenuPanel/Content/DevMapPanel/MapOptions") as OptionButton
+	var travel := pause_menu.get_node("MenuPanel/Content/DevMapPanel/Travel") as Button
+	_expect(dev_panel.visible and panel.get_global_rect().encloses(dev_panel.get_global_rect()), "DEV map panel must remain inside Pause at %s." % viewport_size)
+	_expect(map_options.item_count == 22 and dev_panel.get_global_rect().encloses(travel.get_global_rect()), "DEV map options and travel action must remain usable at %s." % viewport_size)
 	viewport.queue_free()
 	await process_frame
 

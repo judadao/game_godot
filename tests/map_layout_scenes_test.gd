@@ -13,14 +13,11 @@ const LAYOUTS := [
 	},
 	{
 		"canonical": "res://scenes/maps/crystal_caves.tscn",
-		"layout": "res://scenes/maps/layouts/CrystalCavesLayout.tscn",
-		"root": "CrystalCaves",
+		"layout": "res://scenes/maps/expedition/CrystalRoute.tscn",
+		"root": "CrystalRoute",
 	},
-	{
-		"canonical": "res://scenes/maps/forbidden_graveyard.tscn",
-		"layout": "res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn",
-		"root": "ForbiddenGraveyard",
-	},
+	{"canonical": "res://scenes/maps/hell_rift.tscn", "layout": "res://scenes/maps/expedition/HellRoute.tscn", "root": "HellRoute"},
+	{"canonical": "res://scenes/maps/heaven_sanctuary.tscn", "layout": "res://scenes/maps/expedition/HeavenRoute.tscn", "root": "HeavenRoute"},
 ]
 
 var _failures := 0
@@ -50,7 +47,7 @@ func _run() -> void:
 		_expect(reference != null and not reference.visible, "%s must keep a hidden editor HUD reference." % layout_path)
 		var authored_hud := reference.get_node_or_null("HUD") as Control if reference != null else null
 		_expect(authored_hud != null, "%s must author one HUD root." % layout_path)
-		if layout_path == String(LAYOUTS[1]["layout"]):
+		if layout_path != String(LAYOUTS[0]["layout"]):
 			_expect(reference.get_node_or_null("CardHandUI") == null, "Autumn must not author a second card-hand root.")
 			_expect(
 				authored_hud.get_node_or_null("BottomStage/CardStage/AutumnCardHandUI") != null,

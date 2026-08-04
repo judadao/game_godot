@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="PackedScene" path="res://scenes/maps/boss/RegionalBossArenaTemplate.tscn" id="1"]
+[node name="AutumnBossArena" instance=ExtResource("1")]
+metadata/expedition_variant_id = &"autumn"
+[node name="RegionalBossDirector" parent="." index="8"]
+expedition_variant_id = &"autumn"

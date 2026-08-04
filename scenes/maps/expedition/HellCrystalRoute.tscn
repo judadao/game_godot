@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="PackedScene" path="res://scenes/maps/expedition/ExpeditionRouteTemplate.tscn" id="1"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/hell_rift_background.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/crystal_terrain_atlas.png" id="3"]
+[node name="HellCrystalRoute" instance=ExtResource("1")]
+metadata/expedition_variant_id = &"hell_crystal"
+[node name="GeneratedRoute" parent="." index="0"]
+variant_id = &"hell_crystal"
+background_texture = ExtResource("2")
+terrain_atlas_texture = ExtResource("3")
+terrain_style = "crystal"
+terrain_modulate = Color(0.82, 0.58, 0.92, 1)
+ground_color = Color(0.10, 0.07, 0.16, 1)
+ground_highlight = Color(0.68, 0.25, 0.95, 1)
+platform_color = Color(0.22, 0.11, 0.28, 1)
+accent_color = Color(0.95, 0.28, 0.78, 1)
+[node name="ExpeditionRunDirector" parent="." index="3"]
+base_normal_health_multiplier = 11.0
+maximum_normal_health_multiplier = 23.0
+maximum_density_cap = 155

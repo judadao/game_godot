@@ -44,6 +44,7 @@ pipeline描述成Current。
 | Generated VFX texture | 91 | `res://assets/generated/vfx/`（含 32 張 Finisher material、32 張 12 格 sequence 與 Storm Charge component/source plates） |
 | Generated inventory journal frame | 1 | `res://assets/ui/inventory/generated/inventory_journal_spread_v1.png` |
 | Generated Combo／Healing card art | 20 | `res://assets/ui/autumn/cards/generated/<card_id>.png` |
+| Expedition modular terrain atlas | 6 | `res://assets/environments/expedition/generated/*_terrain_atlas.png` |
 | Town NPC transparent cutout | 5 | `res://assets/town/npc/characters/` |
 | Town NPC world animation atlas | 9 | `res://assets/town/npc/characters/*_animation_atlas.png`、`res://assets/town/npc/priest/priest_animation_atlas.png` |
 
@@ -874,6 +875,10 @@ UI改description或disabled state不應回寫CardDatabase。
 
 Path：`user://saves/meta_progress.json`
 
+目前 `development/dev_mode_enabled=true` 時改用
+`user://saves/dev_meta_progress.json`。Dev bootstrap 對 Meta／Inventory 的全解鎖
+只會進入 dev save authority，不得污染正式 meta save。
+
 Owner：
 
 - DTO：`MetaState.to_dict()`
@@ -913,6 +918,9 @@ Paths：
 - `user://saves/quick_save.json`
 - `user://saves/quick_save.tmp`
 - `user://saves/quick_save.json.bak`
+
+Dev mode 對應使用 `dev_quick_save.json`、`dev_quick_save.tmp` 與
+`dev_quick_save.json.bak`，路徑選擇由 Game 單一 helper 擁有。
 
 Owner：`scripts/managers/game.gd`，不經`SaveService`。
 

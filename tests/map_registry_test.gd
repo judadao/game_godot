@@ -17,11 +17,19 @@ const MAP_CASES: Array[Dictionary] = [
 	},
 	{
 		"canonical": "res://scenes/maps/crystal_caves.tscn",
-		"authoritative": "res://scenes/maps/layouts/CrystalCavesLayout.tscn",
+		"authoritative": "res://scenes/maps/expedition/CrystalRoute.tscn",
 	},
 	{
 		"canonical": "res://scenes/maps/forbidden_graveyard.tscn",
 		"authoritative": "res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn",
+	},
+	{
+		"canonical": "res://scenes/maps/hell_rift.tscn",
+		"authoritative": "res://scenes/maps/expedition/HellRoute.tscn",
+	},
+	{
+		"canonical": "res://scenes/maps/heaven_sanctuary.tscn",
+		"authoritative": "res://scenes/maps/expedition/HeavenRoute.tscn",
 	},
 ]
 const UNKNOWN_PATH := "res://scenes/maps/unknown_map.tscn"

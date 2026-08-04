@@ -85,14 +85,16 @@ Game (Node, scripts/managers/game.gd)
 `Game._ready()` 的 current order：
 
 1. 將 `Game`、`HUDLayer`、`MenuLayer` 設為 `PROCESS_MODE_ALWAYS`。
-2. 透過 `SaveService.load_meta()` 讀取 `user://saves/meta_progress.json`。
+2. 透過 `SaveService.load_meta()` 讀取正式 `meta_progress.json`；目前預設啟用 dev
+   mode 時改讀隔離的 `dev_meta_progress.json`。
 3. 將 `MetaState.inventory_state`／legacy fields 套入 Inventory runtime state。
 4. 將 `MetaState.town_state`／legacy fields 套入 Town runtime state。
 5. 載入卡牌、13×3 技能系列與 Combo recipe catalog；實際的 `SkillRecipeManager`、
    `GrowthChoiceQueue` 與成長 UI caller 由 `Game` 組裝。
-6. 連接 `CardEffectRunner.effect_resolved`。
-7. 呼叫 `load_current_map(starting_map)`。
-8. 將 runtime progression 同步回 `MetaState`。
+6. 若 dev mode 啟用，由 `DevModeService` 一次投影全解鎖與測試資源。
+7. 連接 `CardEffectRunner.effect_resolved`。
+8. 呼叫 `load_current_map(starting_map)`。
+9. 將 runtime progression 同步回 `MetaState`。
 
 Startup 任一步驟的順序改變都可能影響地圖初始 HUD、裝備屬性、存檔 migration
 或卡牌 catalog；修改時必須跑 progression、map 與 vertical slice tests。
@@ -192,8 +194,35 @@ wrappers，讓 portal、HUD、save 與既有測試不需知道實作已抽離：
 | `res://scenes/maps/town.tscn` | `res://scenes/maps/town/TownMap.tscn` | `TownMap` |
 | `res://scenes/maps/autumn_safe_zone.tscn` | `res://scenes/maps/autumn_safe/AutumnSafeZoneMap.tscn` | `AutumnSafeZoneMap` |
 | `res://scenes/maps/autumn_forest.tscn` | `res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn` | `AutumnBattleMapV2` |
-| `res://scenes/maps/crystal_caves.tscn` | `res://scenes/maps/layouts/CrystalCavesLayout.tscn` | `CrystalCaves` |
-| `res://scenes/maps/forbidden_graveyard.tscn` | `res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn` | `ForbiddenGraveyard` |
+| `res://scenes/maps/crystal_caves.tscn` | `res://scenes/maps/expedition/CrystalRoute.tscn` | `CrystalRoute` |
+| `res://scenes/maps/hell_rift.tscn` | `res://scenes/maps/expedition/HellRoute.tscn` | `HellRoute` |
+| `res://scenes/maps/heaven_sanctuary.tscn` | `res://scenes/maps/expedition/HeavenRoute.tscn` | `HeavenRoute` |
+
+正式遠征由 `ExpeditionRegionCatalog` 以四個穩定 portal slot 與九個篇章變體管理：
+初期為 Autumn／Crystal；Hell 篇改為 Hell Autumn／Hell Crystal／Hell；Heaven
+篇改為 Heaven Autumn／Heaven Crystal／Disorder Hell／Heaven。變體各自保留
+clear count、Boss completion 與 power tier，不共用四次攻略進度。舊
+Forbidden Graveyard scene 只保留 compatibility，不再是正式遠征入口。
+
+`ExpeditionRegionCatalog.get_pending_boss_variant()` 是中央 Boss 待戰的單一判定：
+當任一當前變體達到四次且 Boss 尚未討伐，該變體取得中央門。在此期間其他戰區
+仍可進入與取得戰利品，但 `Game._finish_run()` 不再增加任何路線 clear count；待戰
+Boss 被擊敗後才恢復累計。Hub 不顯示 clear count，只投影「可進入」、
+「強大的敵人正在靠近...」或完成狀態。
+
+除既有 `AutumnBattleMapV2` 外，長程地圖共用 editor-authored
+`ExpeditionRouteTemplate.tscn` 與 runtime `ThemedExpeditionRoute` 生成的 24 個可替換
+route chunks；正式路徑寬度均為 10,560。Boss 使用九個薄 wrapper 指向
+`RegionalBossArenaTemplate.tscn`，固定為 1,664 × 900 的封閉垂直平台房。中央 Boss
+portal 只在當前變體成功攻略四次後取得 target，玩家互動觸發後才載入房間。
+Crystal 系列另由 `crystal_cavern_background.png` 與透明
+`crystal_terrain_atlas.png` 組成；長地板、三種平台與水晶簇皆為獨立可替換 visual，
+碰撞與深色保底地板仍由 route template 擁有，禁止再引用舊 Craftpix 背景作正式畫面。
+Hell Autumn、Heaven Autumn、Hell、Disorder Hell、Heaven 也各自持有透明
+`*_terrain_atlas.png`，不得退化為共用 atlas 換色。每套 atlas 具有連續地面、三種
+平台、端點／橋與四個環境 accent；route 與同變體 Boss room 必須引用同一套視覺
+語彙。所有長路線主地表以 Autumn 的 `y=460` 為構圖基準；Boss 主地表為 `y=500`、
+Player spawn 為 `y=470`，上方空間留給七個跳台，避免主角落入卡牌 HUD 後方。
 
 Town canonical content 維持 `1942 × 720` Eternal Forge gameplay world 與
 `y=672` baseline。`res://data/town_modular_layout.json` 定義
@@ -440,6 +469,14 @@ UI 對上層提供 setter/configure API與 typed signals：
 - `TownHallUI`：village stage、總建築等級、Town Hall 成本與升級操作。
 - `PauseMenu`：emit save/load/settings/exit-combat/quit 等 intent；Game 只在 active
   combat Run 啟用退出戰鬥，接收 intent 後以失敗結算保留已得資源並回 Town。
+- `DevModeService`：只由 `development/dev_mode_enabled` 控制目前開發建置；啟用時
+  在 catalogs 載入後集中投影全資源、裝備、圖紙、工具、劍魂與招式，並提供正式
+  route／Boss map entries。`PauseMenu` 只顯示選項並 emit scene path，實際驗證、
+  捨棄測試 Run 與載圖仍由 `Game` 擁有。
+
+Dev mode 使用 `dev_meta_progress.json` 與 `dev_quick_save*`，不覆寫正式
+`meta_progress.json`／`quick_save*`。以 `--script res://tests/**` 執行 headless tests
+時預設停用，只有 dev mode 專用測試透過測試期 project setting 明確開啟。
 
 三個功能建築 UI 都是 editor-authored Full Rect Scene，由
 `Game._open_town_service_ui()` 依 `service_id` 選擇，並透過 `set_context()` 與
@@ -560,14 +597,14 @@ Validated static JSON
 
 Permanent meta：
 
-- path：`user://saves/meta_progress.json`
-- schema：`MetaState.SCHEMA_VERSION == 9`
+- path：正式 `user://saves/meta_progress.json`；dev `user://saves/dev_meta_progress.json`
+- schema：`MetaState.SCHEMA_VERSION == 10`
 - service：`SaveService`
 - behavior：`.tmp` write → parse validation → backup → rename
 
 Quick save：
 
-- path：`user://saves/quick_save.json`
+- path：正式 `user://saves/quick_save.json`；dev `user://saves/dev_quick_save.json`
 - schema：1
 - owner：`Game._save_quick_slot()`／`_load_quick_slot()`
 - payload：authoritative map path、Player position/stats、prototype wallet/inventory/catalog

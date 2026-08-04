@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="PackedScene" path="res://scenes/maps/boss/RegionalBossArenaTemplate.tscn" id="1"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/hell_rift_background.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/crystal_terrain_atlas.png" id="3"]
+[node name="HellCrystalBossArena" instance=ExtResource("1")]
+metadata/expedition_variant_id = &"hell_crystal"
+[node name="Backdrop" parent="." index="0"]
+scale = Vector2(0.995, 0.956)
+texture = ExtResource("2")
+[node name="ArenaPlatforms" parent="." index="3"]
+platform_color = Color(0.22, 0.11, 0.28, 1)
+rim_color = Color(0.95, 0.28, 0.78, 1)
+terrain_texture = ExtResource("3")
+terrain_modulate = Color(0.86, 0.58, 0.92, 1)
+floor_region = Rect2(100, 126, 1338, 132)
+platform_region = Rect2(870, 340, 580, 145)
+[node name="RegionalBossDirector" parent="." index="8"]
+expedition_variant_id = &"hell_crystal"
+boss_health_multiplier = 1.35

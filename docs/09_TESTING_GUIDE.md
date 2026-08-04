@@ -710,6 +710,7 @@ instance.queue_free()
 | Growth card readability | upgrade/new/fusion choice 顯示 icon、類型色、AP/level；神賜使用 88px 符印、中文效果分類、2–3 條 next effect/mechanics、獨立 selected badge 與摘要；七解析度不裁切 |
 | Dash | ↑ 只觸發 Jump；Space 觸發玩家固有 Dash；不進牌庫/手牌、不耗 AP；Dash Combo infusions 使用 `target_action=dash` |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |
+| Dev mode | project default-on、headless test isolation、全資源／裝備／劍魂／招式 projection、正式 map entry 存在；ESC selector 在六尺寸內可操作；Town→Crystal→Town 直切會建立／捨棄測試 Run 且不結算 |
 | HUD authority | Autumn 只有一個 HUD root；hand 在 `CardStage`；Town HUD identity 不變 |
 | HUD projection | status/objective 左上、boss/toast 上中、bottom stage 完整；toast max 3/1.5 秒/duplicate refresh |
 | Combo popup | 個別劍魂 Combo 每次遞增時左側顯示「中文劍魂名 ×N」；1 次為 18px、隨次數平方根成長且上限 26px；位置永遠在左側 30% 與 66% gameplay boundary 上方，0.95 秒內小幅 punch、上浮、淡出並可安全重啟；達上限後重複施放不得再假裝遞增 |

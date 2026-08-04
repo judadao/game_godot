@@ -24,11 +24,22 @@ var materials_earned: Dictionary = {}
 var defeated_enemies := 0
 var elite_defeated := false
 var boss_defeated := false
+var expedition_variant_id: StringName = &""
+var expedition_power_tier := 1
+var is_boss_run := false
 
 
-func begin_run(deck_ids: Array = []) -> void:
+func begin_run(
+	deck_ids: Array = [],
+	variant_id: StringName = &"",
+	power_tier: int = 1,
+	boss_run: bool = false
+) -> void:
 	_reset_transient()
 	active = true
+	expedition_variant_id = variant_id
+	expedition_power_tier = maxi(1, power_tier)
+	is_boss_run = boss_run
 	var seen_instance_ids: Dictionary = {}
 	for raw_card in deck_ids:
 		var instance := _coerce_card_instance(raw_card)
@@ -49,6 +60,9 @@ func finish_run(victory: bool) -> Dictionary:
 		"defeated_enemies": defeated_enemies,
 		"elite_defeated": elite_defeated,
 		"boss_defeated": boss_defeated,
+		"expedition_variant_id": String(expedition_variant_id),
+		"expedition_power_tier": expedition_power_tier,
+		"is_boss_run": is_boss_run,
 	}
 	_reset_transient()
 	return summary
@@ -182,6 +196,9 @@ func _reset_transient() -> void:
 	defeated_enemies = 0
 	elite_defeated = false
 	boss_defeated = false
+	expedition_variant_id = &""
+	expedition_power_tier = 1
+	is_boss_run = false
 
 
 func _coerce_card_instance(raw_card: Variant) -> CardInstance:

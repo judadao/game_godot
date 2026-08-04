@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="PackedScene" path="res://scenes/maps/boss/RegionalBossArenaTemplate.tscn" id="1"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/hell_rift_background.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/hell_autumn_terrain_atlas.png" id="3"]
+[node name="HellAutumnBossArena" instance=ExtResource("1")]
+metadata/expedition_variant_id = &"hell_autumn"
+[node name="Backdrop" parent="." index="0"]
+scale = Vector2(0.995, 0.956)
+texture = ExtResource("2")
+[node name="ArenaPlatforms" parent="." index="3"]
+platform_color = Color(0.29, 0.12, 0.07, 1)
+rim_color = Color(1, 0.55, 0.13, 1)
+terrain_texture = ExtResource("3")
+floor_region = Rect2(20, 76, 1496, 100)
+platform_region = Rect2(296, 500, 860, 96)
+[node name="RegionalBossDirector" parent="." index="8"]
+expedition_variant_id = &"hell_autumn"
+boss_health_multiplier = 1.35

@@ -43,6 +43,21 @@ const MAIN_SCENES := [
 			"PlayerSpawn",
 		],
 	},
+	{
+		"path": "res://scenes/maps/expedition/CrystalRoute.tscn",
+		"root": "CrystalRoute",
+		"required": ["GeneratedRoute", "ExpeditionRunDirector", "WestReturnPortal", "EastReturnPortal", "WorldBounds", "PlayerSpawn"],
+	},
+	{
+		"path": "res://scenes/maps/expedition/HellRoute.tscn",
+		"root": "HellRoute",
+		"required": ["GeneratedRoute", "ExpeditionRunDirector", "WestReturnPortal", "EastReturnPortal", "WorldBounds", "PlayerSpawn"],
+	},
+	{
+		"path": "res://scenes/maps/expedition/HeavenRoute.tscn",
+		"root": "HeavenRoute",
+		"required": ["GeneratedRoute", "ExpeditionRunDirector", "WestReturnPortal", "EastReturnPortal", "WorldBounds", "PlayerSpawn"],
+	},
 ]
 
 var _failures := 0
@@ -75,7 +90,7 @@ func _run() -> void:
 		var is_safe_zone := scene_path.ends_with("AutumnSafeZoneMap.tscn")
 		var card_hand_path := (
 			"EditorHUDReference/HUD/BottomStage/CardStage/AutumnCardHandUI"
-			if scene_path.ends_with("AutumnBattleMapV2.tscn")
+			if scene_path.ends_with("AutumnBattleMapV2.tscn") or "/expedition/" in scene_path
 			else "EditorHUDReference/CardHandUI"
 		)
 		if not is_safe_zone:

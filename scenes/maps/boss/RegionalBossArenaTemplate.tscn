@@ -1,0 +1,95 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_forest_background.png" id="1_background"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2_player"]
+[ext_resource type="Script" path="res://scripts/combat/regional_boss_director.gd" id="3_director"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="4_portal"]
+[ext_resource type="Script" path="res://scripts/maps/regional_boss_arena_builder.gd" id="5_builder"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnBattleMapV2EditorHelpers.tscn" id="7_helpers"]
+
+[sub_resource type="RectangleShape2D" id="FloorShape"]
+size = Vector2(1664, 400)
+
+[sub_resource type="RectangleShape2D" id="WallShape"]
+size = Vector2(32, 900)
+
+[node name="RegionalBossArenaTemplate" type="Node2D"]
+metadata/map_role = "regional_boss_arena"
+metadata/map_width = 1664
+metadata/map_height = 900
+metadata/camera_limit_left = 0
+metadata/camera_limit_top = 0
+metadata/camera_limit_right = 1664
+metadata/camera_limit_bottom = 900
+
+[node name="Backdrop" type="Sprite2D" parent="."]
+position = Vector2(832, 450)
+scale = Vector2(1.083, 0.879)
+texture = ExtResource("1_background")
+texture_filter = 1
+z_index = -100
+
+[node name="FloorVisual" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(0, 500, 1664, 500, 1664, 900, 0, 900)
+color = Color(0.12, 0.11, 0.12, 1)
+z_index = 4
+
+[node name="FloorRim" type="Line2D" parent="."]
+points = PackedVector2Array(0, 500, 1664, 500)
+width = 12.0
+default_color = Color(0.79, 0.59, 0.29, 1)
+z_index = 5
+
+[node name="ArenaPlatforms" type="Node2D" parent="."]
+script = ExtResource("5_builder")
+
+[node name="ArenaFloor" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ArenaFloor"]
+position = Vector2(832, 700)
+shape = SubResource("FloorShape")
+
+[node name="WorldBounds" type="StaticBody2D" parent="."]
+
+[node name="LeftWall" type="CollisionShape2D" parent="WorldBounds"]
+position = Vector2(-16, 450)
+shape = SubResource("WallShape")
+
+[node name="RightWall" type="CollisionShape2D" parent="WorldBounds"]
+position = Vector2(1680, 450)
+shape = SubResource("WallShape")
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(220, 470)
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(220, 470)
+z_index = 30
+
+[node name="RegionalBossDirector" type="Node2D" parent="." groups=["EncounterDirectors"]]
+position = Vector2(1130, 470)
+z_index = 25
+script = ExtResource("3_director")
+auto_start = false
+engage_radius = 1300.0
+leash_radius = 1800.0
+route_wide_encounter = true
+
+[node name="ExitPortal" parent="." instance=ExtResource("4_portal")]
+position = Vector2(120, 480)
+z_index = 22
+interaction_id = &"boss_arena_exit"
+prompt_text = "Return to Portal Sanctuary"
+target_scene_path = "res://scenes/maps/battle_portal_hub.tscn"
+locked = true
+locked_reason = "The boss seal still binds this room."
+
+[node name="Visual" parent="ExitPortal" index="0"]
+scale = Vector2(0.30, 0.30)
+
+[node name="EditorHUDReference" parent="." instance=ExtResource("6_hud")]
+[node name="EditorHelpers" parent="." instance=ExtResource("7_helpers")]
+
+[editable path="ExitPortal"]
+[editable path="EditorHUDReference"]

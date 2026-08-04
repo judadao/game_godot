@@ -177,6 +177,18 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 text = "Exit Combat"
 disabled = true
 
+[node name="DevMaps" type="Button" parent="MenuPanel/Content/ButtonStack"]
+visible = false
+custom_minimum_size = Vector2(240, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.9, 1, 1)
+theme_override_colors/font_hover_color = Color(0.88, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+text = "DEV 地圖"
+
 [node name="Settings" type="Button" parent="MenuPanel/Content/ButtonStack"]
 custom_minimum_size = Vector2(240, 44)
 layout_mode = 2
@@ -231,6 +243,45 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 text = "Back"
+
+[node name="DevMapPanel" type="VBoxContainer" parent="MenuPanel/Content"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Heading" type="Label" parent="MenuPanel/Content/DevMapPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "DEV 地圖快速切換"
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="MenuPanel/Content/DevMapPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.76, 0.76, 1)
+text = "切換會捨棄目前測試回合，不進行結算。"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="MapOptions" type="OptionButton" parent="MenuPanel/Content/DevMapPanel"]
+custom_minimum_size = Vector2(240, 44)
+layout_mode = 2
+
+[node name="Travel" type="Button" parent="MenuPanel/Content/DevMapPanel"]
+custom_minimum_size = Vector2(240, 44)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+text = "前往地圖"
+
+[node name="Back" type="Button" parent="MenuPanel/Content/DevMapPanel"]
+custom_minimum_size = Vector2(240, 44)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+text = "返回"
 
 [node name="Footer" type="Label" parent="MenuPanel/Content"]
 layout_mode = 2

@@ -148,12 +148,44 @@ Current map identity：
 | `res://scenes/maps/town.tscn` | `res://scenes/maps/town/TownMap.tscn` |
 | `res://scenes/maps/autumn_safe_zone.tscn` | `res://scenes/maps/autumn_safe/AutumnSafeZoneMap.tscn` |
 | `res://scenes/maps/autumn_forest.tscn` | `res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn` |
-| `res://scenes/maps/crystal_caves.tscn` | `res://scenes/maps/layouts/CrystalCavesLayout.tscn` |
-| `res://scenes/maps/forbidden_graveyard.tscn` | `res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn` |
+| `res://scenes/maps/crystal_caves.tscn` | `res://scenes/maps/expedition/CrystalRoute.tscn` |
+| `res://scenes/maps/hell_rift.tscn` | `res://scenes/maps/expedition/HellRoute.tscn` |
+| `res://scenes/maps/heaven_sanctuary.tscn` | `res://scenes/maps/expedition/HeavenRoute.tscn` |
 
 Canonical scene是穩定 compatibility entry；authoritative scene擁有可編輯世界、
 per-map editor HUD reference與helper。runtime透過
 `Game._resolve_main_scene_path()`使用authoritative path。
+
+篇章變體 `HellAutumnRoute`、`HellCrystalRoute`、`HeavenAutumnRoute`、
+`HeavenCrystalRoute` 與 `DisorderHellRoute` 是正式 direct scene entries；它們繼承
+`ExpeditionRouteTemplate`，只覆寫 variant identity、背景、材質色與 encounter
+倍率。禁止複製另一份 Player、HUD、portal 或 collision authority。
+Crystal 三個世代使用同一套透明 modular terrain atlas；背景、色調與 encounter
+倍率可以覆寫，但地面和平台碰撞仍由 template 獨立擁有。每個 Crystal route 必須
+同時保留連續 floor art、solid fallback floor 與 full-width collision。
+
+```text
+ExpeditionRouteTemplate
+├── GeneratedRoute (24 modular chunks)
+├── PlayerSpawn / Player
+├── ExpeditionRunDirector
+├── WestReturnPortal
+├── EastReturnPortal (sealed until route guardian defeat)
+├── WorldBounds
+├── EditorHUDReference
+└── EditorHelpers
+```
+
+```text
+RegionalBossArenaTemplate
+├── Backdrop
+├── ArenaPlatforms (2 authored floor panels + 7 authored one-way platforms)
+├── ArenaFloor / WorldBounds
+├── PlayerSpawn / Player
+├── RegionalBossDirector
+├── ExitPortal (sealed until boss defeat)
+└── EditorHUDReference
+```
 
 ### 5.2 Town required contract
 
@@ -251,10 +283,11 @@ Town 的六個建築 UI 觸發由 `BuildingEntrances` 獨立擁有；每個 Area
 最東側原劍魂精煉工房改為普通民宅，只開啟無服務的住宅資訊 UI。
 
 `res://scenes/maps/battle_portal_hub.tscn` 是獨立可玩 map。Town 的唯一
-`BattleGateway` 先進入此大廳；大廳的 `RegionPortals` 固定有四個入口槽位：
-Autumn、Crystal、Graveyard 與鎖定的 Fourth Region。中央 `BossPortalAnchor`
-只保留位置，不得提前建立 `BossPortal`；尾王解鎖時再由正式 progression contract
-投影。Town return 使用無大型門體的左側互動出口。
+`BattleGateway` 先進入此大廳；大廳的 `RegionPortals` 固定有 Autumn、Crystal、
+Hell、Heaven 四個入口槽位，篇章只替換槽位所投影的變體。中央 `BossPortal`
+平時封印且沒有 target；任一當前變體完成四次攻略時才亮起並指向該變體 Boss 房。
+待戰期間其他入口仍可互動，但標籤統一顯示「強大的敵人正在靠近...」，不顯示
+內部 clear count。Town return 使用無大型門體的左側互動出口。
 該出口的互動區與最左側 Autumn portal 必須保持大於一個 Player body 寬度的
 水平淨空，避免玩家同時進入兩個 portal interaction candidates。
 Town 入口沿用背景圖內建的大型藍色門作為唯一視覺，因此
@@ -729,7 +762,11 @@ Town prop/building多為`Sprite2D` scene，groups如`TownProp`、`TownBuilding`�
 | `scenes/ui/inventory/InventoryUI.tscn` | `Control` | 古老日記式 backpack／status-equipment／owned Sword Souls／four-section compendium；招式保留 live VFX／concept art |
 | `scenes/ui/dialogue/DialogueUI.tscn` | `Control` | speaker/text/choice interaction 與左上動畫角色頭像 |
 | `scenes/ui/shop/ShopUI.tscn` | `Control` | icon-based merchant catalog transaction intent |
-| `scenes/ui/system/PauseMenu.tscn` | `Control` | pause/settings/save/load/exit-combat intent |
+| `scenes/ui/system/PauseMenu.tscn` | `Control` | pause/settings/save/load/exit-combat 與 dev map intent |
+
+`PauseMenu/Content/DevMapPanel` 是 editor-authored、預設 hidden 的 dev-only 子頁，
+使用 `OptionButton`、Travel 與 Back。`Game` 依 `DevModeService` 注入完整 map entries；
+UI 不讀 `MapRegistry`、不建立 Run、也不直接載入 scene。
 | `scenes/ui/town/MaterialYardUI.tscn` | `Control` | forging materials and permanent tools |
 | `scenes/ui/town/PlayerBlacksmithUI.tscn` | `Control` | blueprint forge, workshop upgrades, sales table |
 | `scenes/ui/town/TownHallUI.tscn` | `Control` | village stage and Town Hall upgrade |

@@ -675,6 +675,28 @@ func _process(delta: float) -> void:
 
 ## 13. Roadmap Item Checklist
 
+### Current — Evolving expedition worlds
+
+- Implemented four stable portal slots with 2 → 3 → 4 active-map progression.
+- Implemented nine independently persisted world variants across Autumn,
+  Crystal, Hell, Disorder Hell, and Heaven generations.
+- Implemented four-clear regional Boss eligibility and sealed, trigger-only
+  central Boss travel.
+- Implemented pending-Boss progress freeze: other routes remain farmable while
+  their clear counters pause, and the hub presents only the approaching-enemy cue.
+- Rebuilt Crystal with a hand-drawn cavern plate and replaceable transparent
+  floor, platform, end-cap, and crystal-cluster terrain modules.
+- Added dedicated generated terrain atlases for Hell Autumn, Heaven Autumn,
+  Hell Rift, Disorder Hell, and Heaven Sanctuary; routes and Boss rooms share
+  the matching authored floor/platform language rather than tinted placeholders.
+- Aligned route and Boss combat bands to the Autumn HUD-safe vertical frame.
+- Added a default-on, save-isolated development mode with full runtime catalogs
+  and direct Pause-menu travel across formal routes and regional Boss rooms.
+- Implemented bounded vertical platform Boss arenas, tier-scaled enemies,
+  multiplied material rewards, and expedition-tier forge offer progression.
+- Forbidden Graveyard remains compatibility content and is not a current formal
+  expedition destination.
+
 新增或開始 item 前：
 
 - [ ] 有 current code／scene／test evidence。

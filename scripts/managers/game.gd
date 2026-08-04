@@ -9,7 +9,13 @@ const QUICK_SAVE_PATH := "user://saves/quick_save.json"
 const QUICK_SAVE_TEMP_PATH := "user://saves/quick_save.tmp"
 const QUICK_SAVE_BACKUP_PATH := "user://saves/quick_save.json.bak"
 const META_SAVE_PATH := "user://saves/meta_progress.json"
+const DEV_QUICK_SAVE_PATH := "user://saves/dev_quick_save.json"
+const DEV_QUICK_SAVE_TEMP_PATH := "user://saves/dev_quick_save.tmp"
+const DEV_QUICK_SAVE_BACKUP_PATH := "user://saves/dev_quick_save.json.bak"
+const DEV_META_SAVE_PATH := "user://saves/dev_meta_progress.json"
 const MAP_REGISTRY_SCRIPT := preload("res://scripts/systems/map_registry.gd")
+const EXPEDITION_CATALOG_SCRIPT := preload("res://scripts/systems/expedition_region_catalog.gd")
+const BATTLE_PORTAL_HUB_SCENE_PATH := "res://scenes/maps/battle_portal_hub.tscn"
 const CARD_COLLECTION_SERVICE_SCRIPT := preload(
 	"res://scripts/systems/card_collection_service.gd"
 )
@@ -172,6 +178,8 @@ var meta_state := MetaState.new()
 var run_state := RunState.new()
 var save_service := SaveService.new()
 var map_registry := MAP_REGISTRY_SCRIPT.new()
+var expedition_catalog := EXPEDITION_CATALOG_SCRIPT.new()
+var dev_mode_service := preload("res://scripts/systems/dev_mode_service.gd").new()
 var card_database := CardDatabase.new()
 var deck_manager := DeckManager.new(card_database)
 var evolution_manager := EvolutionManager.new(card_database)
@@ -235,7 +243,7 @@ func _ready() -> void:
 		push_error("Combo Finisher catalog failed to load.")
 	if not _ensure_named_skill_vfx_catalog():
 		push_error("Named skill VFX catalog failed to load.")
-	meta_state.apply_dict(save_service.load_meta(META_SAVE_PATH))
+	meta_state.apply_dict(save_service.load_meta(_meta_save_path()))
 	inventory_manager.call("set_progression_unlocks", {
 		"dash_upgrade_unlocked": meta_state.dash_upgrade_unlocked,
 	})
@@ -257,16 +265,61 @@ func _ready() -> void:
 		town_manager.call("apply_dict", meta_state.town_state)
 	elif not meta_state.building_levels.is_empty():
 		town_manager.call("apply_dict", {"building_levels": meta_state.building_levels})
-	_refresh_forge_progression()
-	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	card_database.load_catalog()
 	meta_state.auto_attack_card_id = _resolve_auto_attack_card_id(meta_state.auto_attack_card_id)
 	evolution_manager.load_recipes()
 	skill_recipe_manager.load_catalog("res://data/skills.json")
+	_apply_dev_mode_bootstrap()
+	_refresh_forge_progression()
+	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	_configure_skill_loadout()
 	card_effect_runner.effect_resolved.connect(_on_card_effect_resolved)
 	load_current_map(starting_map)
 	_sync_progression_to_meta()
+
+
+func is_dev_mode_enabled() -> bool:
+	return bool(dev_mode_service.call("is_enabled"))
+
+
+func _meta_save_path() -> String:
+	return DEV_META_SAVE_PATH if is_dev_mode_enabled() else META_SAVE_PATH
+
+
+func _quick_save_path() -> String:
+	return DEV_QUICK_SAVE_PATH if is_dev_mode_enabled() else QUICK_SAVE_PATH
+
+
+func _quick_save_temp_path() -> String:
+	return DEV_QUICK_SAVE_TEMP_PATH if is_dev_mode_enabled() else QUICK_SAVE_TEMP_PATH
+
+
+func _quick_save_backup_path() -> String:
+	return DEV_QUICK_SAVE_BACKUP_PATH if is_dev_mode_enabled() else QUICK_SAVE_BACKUP_PATH
+
+
+func get_dev_map_entries() -> Array[Dictionary]:
+	if not is_dev_mode_enabled():
+		return []
+	return dev_mode_service.call("get_map_entries", expedition_catalog) as Array[Dictionary]
+
+
+func _apply_dev_mode_bootstrap() -> void:
+	if not is_dev_mode_enabled():
+		return
+	dev_mode_service.call(
+		"apply_runtime_unlocks",
+		meta_state,
+		inventory_manager,
+		card_database,
+		skill_recipe_manager,
+		forge_catalog,
+		town_manager
+	)
+	player_inventory["travel_bread"] = 999
+	inventory_manager.call("set_progression_unlocks", {
+		"dash_upgrade_unlocked": true,
+	})
 
 
 func _configure_skill_loadout() -> void:
@@ -391,6 +444,7 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 
 	current_map = map_scene.instantiate()
 	map_root.add_child(current_map)
+	_configure_expedition_map_progression()
 	load_hud()
 	load_card_hand()
 	_register_player(spawn_name)
@@ -407,6 +461,32 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 	return current_map
 
 
+func _configure_expedition_map_progression() -> void:
+	if current_map == null or not current_map.has_method("configure_progression"):
+		return
+	current_map.call(
+		"configure_progression",
+		meta_state.story_state,
+		meta_state.region_clear_counts,
+		meta_state.region_boss_defeated
+	)
+
+
+func _current_expedition_variant_id() -> StringName:
+	if current_map == null:
+		return &""
+	var variant_id := StringName(current_map.get_meta("expedition_variant_id", &""))
+	if not variant_id.is_empty():
+		return variant_id
+	return expedition_catalog.get_region_id_for_scene(
+		_canonical_map_scene_path(current_map.scene_file_path)
+	)
+
+
+func _is_current_expedition_map() -> bool:
+	return not _current_expedition_variant_id().is_empty()
+
+
 func _on_story_dialogue_requested(sequence_id: StringName) -> void:
 	var ui_control := open_ui("DialogueUI", dialogue_scene, false)
 	if ui_control == null or not story_director.start_requested_sequence(sequence_id, ui_control):
@@ -415,7 +495,7 @@ func _on_story_dialogue_requested(sequence_id: StringName) -> void:
 
 
 func _on_story_progress_changed(_story_state: Dictionary) -> void:
-	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	save_service.save_meta(_meta_save_path(), meta_state.to_dict())
 
 
 func _on_story_sequence_finished(_sequence_id: StringName) -> void:
@@ -526,7 +606,11 @@ func _update_hud_area_name() -> void:
 		"res://scenes/maps/battle_portal_hub.tscn": "戰鬥傳送大廳",
 	}
 	var map_path := _canonical_map_scene_path(current_map.scene_file_path)
-	hud.call("set_area_name", area_names.get(map_path, current_map.name))
+	var variant_id := _current_expedition_variant_id()
+	if not variant_id.is_empty():
+		hud.call("set_area_name", expedition_catalog.get_display_name(variant_id))
+	else:
+		hud.call("set_area_name", area_names.get(map_path, current_map.name))
 
 
 func _update_hud_player_identity() -> void:
@@ -607,7 +691,7 @@ func close_ui(ui: Variant) -> void:
 	var ui_name := String(_ui_names.get(ui_control, ui_control.name))
 	if ui_name in ["MaterialYardUI", "PlayerBlacksmithUI", "TownHallUI"]:
 		_sync_progression_to_meta()
-		save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+		save_service.save_meta(_meta_save_path(), meta_state.to_dict())
 		_apply_town_visual_progress()
 		_apply_equipment_stats()
 	_closing_ui[ui_control] = true
@@ -729,11 +813,22 @@ func _configure_player_camera() -> void:
 	camera.limit_right = int(current_map.get_meta("camera_limit_right", 1280))
 	camera.limit_bottom = int(current_map.get_meta("camera_limit_bottom", 720))
 	camera.position_smoothing_enabled = false
-	camera.position.y = COMBAT_CAMERA_SAFE_OFFSET_Y if run_state.active and _current_map_matches(AUTUMN_FOREST_SCENE_PATH) else 0.0
+	camera.position.y = COMBAT_CAMERA_SAFE_OFFSET_Y if run_state.active and _is_current_expedition_map() else 0.0
 	camera.reset_smoothing()
 
 
 func _wire_common_ui_controls(ui_control: Control) -> void:
+	if ui_control.has_method("configure_dev_mode"):
+		ui_control.call(
+			"configure_dev_mode",
+			is_dev_mode_enabled(),
+			get_dev_map_entries()
+		)
+	if ui_control.has_signal("dev_map_requested"):
+		ui_control.connect(
+			"dev_map_requested",
+			_on_dev_map_requested.bind(ui_control)
+		)
 	var close_button := ui_control.find_child("CloseButton", true, false)
 	if close_button is BaseButton:
 		(close_button as BaseButton).pressed.connect(close_ui.bind(ui_control))
@@ -756,7 +851,7 @@ func _wire_common_ui_controls(ui_control: Control) -> void:
 			_on_pause_exit_combat_requested.bind(ui_control)
 		)
 	if ui_control.has_method("set_button_enabled"):
-		ui_control.call("set_button_enabled", "load", FileAccess.file_exists(QUICK_SAVE_PATH))
+		ui_control.call("set_button_enabled", "load", FileAccess.file_exists(_quick_save_path()))
 		ui_control.call("set_button_enabled", "exit_combat", _can_exit_active_combat())
 
 	var quit_button := ui_control.find_child("Quit", true, false)
@@ -767,7 +862,7 @@ func _wire_common_ui_controls(ui_control: Control) -> void:
 func _can_exit_active_combat() -> bool:
 	return (
 		run_state.active
-		and _current_map_matches(AUTUMN_FOREST_SCENE_PATH)
+		and _is_current_expedition_map()
 	)
 
 
@@ -781,6 +876,34 @@ func _on_pause_exit_combat_requested(pause_ui: Control) -> void:
 	load_current_map(
 		load(_resolve_main_scene_path(TOWN_SCENE_PATH)) as PackedScene
 	)
+
+
+func _on_dev_map_requested(scene_path: String, pause_ui: Control) -> void:
+	if not is_dev_mode_enabled():
+		return
+	var resolved_path := _resolve_main_scene_path(scene_path)
+	if scene_path.is_empty() or not ResourceLoader.exists(resolved_path):
+		_set_menu_footer(pause_ui, "DEV map unavailable: %s" % scene_path)
+		return
+	close_ui(pause_ui)
+	if run_state.active:
+		run_state.finish_run(false)
+		growth_choice_queue.clear()
+		skill_recipe_manager.reset_runtime()
+		_auto_attack_remaining = 0.0
+		_set_tactical_slowdown(false)
+	var variant_id := expedition_catalog.get_region_id_for_scene(scene_path)
+	if variant_id.is_empty():
+		variant_id = expedition_catalog.get_region_id_for_scene(resolved_path)
+	if not variant_id.is_empty():
+		_begin_expedition_run(
+			[],
+			variant_id,
+			expedition_catalog.is_boss_scene(scene_path)
+		)
+	_pending_player_state.clear()
+	player = null
+	load_current_map(load(resolved_path) as PackedScene)
 
 
 func _wire_ui_lifecycle(ui_control: Control) -> void:
@@ -917,7 +1040,7 @@ func _on_reward_bag_collected(_kind: StringName, reward: Dictionary) -> void:
 		return
 	for resource_variant in reward:
 		var resource_id := String(resource_variant)
-		var amount := int(reward[resource_variant])
+		var amount := int(reward[resource_variant]) * maxi(1, run_state.expedition_power_tier)
 		if amount > 0:
 			run_state.add_reward(resource_id, amount)
 
@@ -929,18 +1052,27 @@ func _on_boss_stage_completed() -> void:
 	meta_state.boss_defeated = true
 	meta_state.dash_upgrade_unlocked = true
 	inventory_manager.call("set_progression_unlocks", {"dash_upgrade_unlocked": true})
-	run_state.add_reward("autumn_wood", 18)
-	run_state.add_reward("magic_shard", 7)
-	meta_state.add_resource("autumn_core", 1)
-	inventory_manager.call("add_resource", &"autumn_core", 1)
-	meta_state.shortcuts["autumn_route_cleared"] = true
+	var tier := maxi(1, run_state.expedition_power_tier)
+	run_state.add_reward("autumn_wood", 12 * tier)
+	run_state.add_reward("stone", 8 * tier)
+	run_state.add_reward("magic_shard", 7 * tier)
+	run_state.add_reward("autumn_core", tier)
+	meta_state.shortcuts["expedition_power_tier"] = maxi(
+		int(meta_state.shortcuts.get("expedition_power_tier", 1)),
+		tier
+	)
 	_discover_equipment_reward()
 	if current_map != null:
-		var east_safe_portal := current_map.get_node_or_null("EastSafePortal")
-		if east_safe_portal != null and east_safe_portal.has_method("set_locked"):
-			east_safe_portal.call("set_locked", false, "")
+		for portal_name in ["EastSafePortal", "EastReturnPortal", "ExitPortal"]:
+			var exit_portal := current_map.get_node_or_null(portal_name)
+			if exit_portal != null and exit_portal.has_method("set_locked"):
+				exit_portal.call("set_locked", false, "")
 	if hud != null and hud.has_method("set_objective"):
-		hud.call("set_objective", "BOSS DEFEATED — EXPEDITION COMPLETE", "Either gate returns to the autumn camp.")
+		hud.call(
+			"set_objective",
+			"BOSS DEFEATED — EXPEDITION COMPLETE",
+			"The portal seal is broken. Tier %d rewards secured." % tier
+		)
 
 
 func _on_experience_gem_spawned(gem: Node, _value: int) -> void:
@@ -978,11 +1110,19 @@ func _current_divine_stage_key() -> String:
 	var map_path := current_map.scene_file_path if current_map != null else "run"
 	var event_number := 0
 	if current_map != null:
-		var director := current_map.get_node_or_null("AutumnRunDirector")
-		if director != null and director.has_method("get_elite_defeat_count"):
-			event_number = int(director.call("get_elite_defeat_count"))
-		elif director != null and director.has_method("get_wave_number"):
-			event_number = int(director.call("get_wave_number"))
+		var directors := get_tree().get_nodes_in_group("EncounterDirectors")
+		if directors.is_empty():
+			var compatibility_director := current_map.get_node_or_null("AutumnRunDirector")
+			if compatibility_director != null:
+				directors.append(compatibility_director)
+		for director in directors:
+			if not current_map.is_ancestor_of(director):
+				continue
+			if director.has_method("get_elite_defeat_count"):
+				event_number = int(director.call("get_elite_defeat_count"))
+			elif director.has_method("get_wave_number"):
+				event_number = int(director.call("get_wave_number"))
+			break
 	return "%s:%d" % [map_path, event_number]
 
 
@@ -1130,7 +1270,7 @@ func _on_reward_replacement_confirmed(indices: Array[int], ui_control: Control) 
 	)
 	if replaced:
 		_sync_progression_to_meta()
-	if not replaced or not save_service.save_meta(META_SAVE_PATH, meta_state.to_dict()):
+	if not replaced or not save_service.save_meta(_meta_save_path(), meta_state.to_dict()):
 		_restore_growth_transaction(snapshot)
 		return
 	_finish_reward_replacement(ui_control)
@@ -1166,7 +1306,7 @@ func _apply_growth_resolution(choice: Dictionary) -> bool:
 	var applied := _apply_growth_resolution_uncommitted(choice)
 	if applied:
 		_sync_progression_to_meta()
-	if not applied or not save_service.save_meta(META_SAVE_PATH, meta_state.to_dict()):
+	if not applied or not save_service.save_meta(_meta_save_path(), meta_state.to_dict()):
 		_restore_growth_transaction(snapshot)
 		return false
 	return true
@@ -1370,6 +1510,14 @@ func _on_player_defeated() -> void:
 
 
 func _begin_autumn_run(deck_override: Array = []) -> void:
+	_begin_expedition_run(deck_override, &"autumn", false)
+
+
+func _begin_expedition_run(
+	deck_override: Array = [],
+	variant_id: StringName = &"autumn",
+	boss_run: bool = false
+) -> void:
 	if run_state.active:
 		return
 	# Starting an expedition always owns input and time. If the player departs while
@@ -1392,7 +1540,12 @@ func _begin_autumn_run(deck_override: Array = []) -> void:
 	for card in card_database.get_all_cards():
 		valid_ids.append(String(card.get("id", "")))
 	meta_state.normalize_selected_deck(valid_ids)
-	run_state.begin_run(meta_state.selected_card_instances)
+	run_state.begin_run(
+		meta_state.selected_card_instances,
+		variant_id,
+		expedition_catalog.get_power_tier(variant_id),
+		boss_run
+	)
 	divine_gift_manager.call("reset_run")
 	deck_manager.set_protected_cards([])
 	deck_manager.call(
@@ -1472,6 +1625,23 @@ func _finish_run(victory: bool) -> Dictionary:
 	card_hand_ui.visible = false
 	card_hand_ui.call("hide_boss_health")
 	meta_state.apply_run_summary(summary)
+	var completed_variant := StringName(summary.get("expedition_variant_id", ""))
+	if victory and not completed_variant.is_empty():
+		if bool(summary.get("is_boss_run", false)):
+			meta_state.mark_region_boss_defeated(completed_variant)
+		else:
+			var chapter_id := String(meta_state.story_state.get("chapter_id", "chapter_01"))
+			var pending_variant := expedition_catalog.get_pending_boss_variant(
+				chapter_id,
+				meta_state.region_clear_counts,
+				meta_state.region_boss_defeated
+			)
+			if pending_variant.is_empty():
+				meta_state.record_region_clear(completed_variant)
+		meta_state.shortcuts["expedition_power_tier"] = maxi(
+			int(meta_state.shortcuts.get("expedition_power_tier", 1)),
+			int(summary.get("expedition_power_tier", 1))
+		)
 	inventory_manager.call("add_resource", &"gold", maxi(0, int(summary.get("gold", 0))))
 	var materials: Variant = summary.get("materials", {})
 	if materials is Dictionary:
@@ -1482,7 +1652,7 @@ func _finish_run(victory: bool) -> Dictionary:
 				maxi(0, int(materials[resource_id]))
 			)
 	_sync_progression_to_meta()
-	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	save_service.save_meta(_meta_save_path(), meta_state.to_dict())
 	if hud != null and hud.has_method("set_currency"):
 		hud.call("set_currency", wallet_gold)
 	return summary
@@ -3905,7 +4075,7 @@ func _refresh_combo_display() -> void:
 func _update_card_hand_visibility() -> void:
 	if card_hand_ui == null or current_map == null:
 		return
-	card_hand_ui.visible = _current_map_matches(AUTUMN_FOREST_SCENE_PATH) and run_state.active
+	card_hand_ui.visible = _is_current_expedition_map() and run_state.active
 
 
 func _set_tactical_slowdown(enabled: bool) -> void:
@@ -4074,7 +4244,7 @@ func _on_inventory_equip_requested(item_id: StringName, ui_control: Control) -> 
 		return
 	_apply_equipment_stats()
 	_sync_progression_to_meta()
-	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	save_service.save_meta(_meta_save_path(), meta_state.to_dict())
 	ui_control.call("set_items", _inventory_projection())
 	ui_control.call("set_player_status", _inventory_status_projection())
 	ui_control.call("set_equipment_entries", _inventory_equipment_projection())
@@ -4909,7 +5079,10 @@ func _save_quick_slot(menu: Control) -> void:
 		_set_menu_footer(menu, "Save failed: cannot create save folder.")
 		return
 
-	var temp_file := FileAccess.open(QUICK_SAVE_TEMP_PATH, FileAccess.WRITE)
+	var temp_path := _quick_save_temp_path()
+	var save_path := _quick_save_path()
+	var backup_path := _quick_save_backup_path()
+	var temp_file := FileAccess.open(temp_path, FileAccess.WRITE)
 	if temp_file == null:
 		_set_menu_footer(menu, "Save failed: cannot write temporary file.")
 		return
@@ -4917,19 +5090,19 @@ func _save_quick_slot(menu: Control) -> void:
 	temp_file.flush()
 	temp_file = null
 
-	var check_file := FileAccess.open(QUICK_SAVE_TEMP_PATH, FileAccess.READ)
+	var check_file := FileAccess.open(temp_path, FileAccess.READ)
 	if check_file == null or JSON.parse_string(check_file.get_as_text()) == null:
-		_remove_file_if_present(QUICK_SAVE_TEMP_PATH)
+		_remove_file_if_present(temp_path)
 		_set_menu_footer(menu, "Save failed: validation error.")
 		return
 
-	if FileAccess.file_exists(QUICK_SAVE_PATH):
-		_copy_file(QUICK_SAVE_PATH, QUICK_SAVE_BACKUP_PATH)
-		_remove_file_if_present(QUICK_SAVE_PATH)
+	if FileAccess.file_exists(save_path):
+		_copy_file(save_path, backup_path)
+		_remove_file_if_present(save_path)
 
 	var rename_error := DirAccess.rename_absolute(
-		ProjectSettings.globalize_path(QUICK_SAVE_TEMP_PATH),
-		ProjectSettings.globalize_path(QUICK_SAVE_PATH)
+		ProjectSettings.globalize_path(temp_path),
+		ProjectSettings.globalize_path(save_path)
 	)
 	if rename_error != OK:
 		_set_menu_footer(menu, "Save failed while replacing quick save.")
@@ -4941,7 +5114,7 @@ func _save_quick_slot(menu: Control) -> void:
 
 
 func _load_quick_slot(menu: Control) -> void:
-	var save_file := FileAccess.open(QUICK_SAVE_PATH, FileAccess.READ)
+	var save_file := FileAccess.open(_quick_save_path(), FileAccess.READ)
 	if save_file == null:
 		_set_menu_footer(menu, "No quick save found.")
 		return
@@ -5500,7 +5673,7 @@ func _on_blacksmith_workshop_upgraded(ui_control: Control) -> void:
 func _persist_forge_progress() -> void:
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	_sync_progression_to_meta()
-	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	save_service.save_meta(_meta_save_path(), meta_state.to_dict())
 	if hud != null and hud.has_method("set_currency"):
 		hud.call("set_currency", wallet_gold)
 	_apply_equipment_stats()
@@ -5521,9 +5694,13 @@ func _sync_progression_to_meta() -> void:
 
 
 func _refresh_forge_progression() -> void:
+	var expedition_unlock_tier := maxi(
+		0,
+		int(meta_state.shortcuts.get("expedition_power_tier", 1)) - 1
+	)
 	forge_service.call(
 		"set_progression_levels",
-		int(town_manager.call("get_village_stage")),
+		maxi(int(town_manager.call("get_village_stage")), expedition_unlock_tier),
 		int(town_manager.call("get_building_level", &"blacksmith"))
 	)
 
@@ -5633,8 +5810,21 @@ func _on_portal_entered(_portal: Node, target_scene_path: String, target_spawn_n
 		push_warning("Portal target scene is not available: %s" % target_scene_path)
 		return
 
-	if canonical_target == AUTUMN_FOREST_SCENE_PATH:
+	var expedition_variant := StringName(
+		_portal.get_meta("expedition_variant_id", &"") if _portal != null else &""
+	)
+	if expedition_variant.is_empty():
+		expedition_variant = expedition_catalog.get_region_id_for_scene(canonical_target)
+	if not expedition_variant.is_empty() and not run_state.active:
 		_open_deck_builder(canonical_target, target_spawn_name)
+		return
+	elif canonical_target == BATTLE_PORTAL_HUB_SCENE_PATH and run_state.active:
+		var victory := run_state.boss_defeated
+		var summary := _finish_run(victory)
+		_pending_player_state.clear()
+		player = null
+		load_current_map(load(resolved_target) as PackedScene, target_spawn_name)
+		_show_run_result(victory, summary)
 		return
 	elif canonical_target == AUTUMN_SAFE_ZONE_SCENE_PATH and run_state.active:
 		var victory := run_state.boss_defeated
@@ -5712,13 +5902,22 @@ func _on_loadout_confirmed(
 	var previous_meta := meta_state.to_dict()
 	meta_state.set_selected_deck(normalized)
 	meta_state.auto_attack_card_id = _resolve_auto_attack_card_id(auto_attack_card_id)
-	if not save_service.save_meta(META_SAVE_PATH, meta_state.to_dict()):
+	if not save_service.save_meta(_meta_save_path(), meta_state.to_dict()):
 		meta_state.apply_dict(previous_meta)
 		return
 	close_ui(ui_control)
 	if target_scene_path.is_empty():
 		return
-	_begin_autumn_run(normalized)
+	var variant_id := expedition_catalog.get_region_id_for_scene(target_scene_path)
+	if variant_id.is_empty():
+		variant_id = expedition_catalog.get_region_id_for_scene(
+			_canonical_map_scene_path(target_scene_path)
+		)
+	_begin_expedition_run(
+		normalized,
+		variant_id if not variant_id.is_empty() else &"autumn",
+		expedition_catalog.is_boss_scene(target_scene_path)
+	)
 	load_current_map(load(_resolve_main_scene_path(target_scene_path)) as PackedScene, target_spawn_name)
 
 
@@ -6086,7 +6285,7 @@ func _purchase_forge_shop_offer(
 	)
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	_sync_progression_to_meta()
-	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+	save_service.save_meta(_meta_save_path(), meta_state.to_dict())
 	if hud != null and hud.has_method("set_currency"):
 		hud.call("set_currency", wallet_gold)
 	_refresh_shop_projection(ui_control, shop_id, "buy")

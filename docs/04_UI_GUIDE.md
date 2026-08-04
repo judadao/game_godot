@@ -731,10 +731,10 @@ mode 不顯示額外模式列，Close 固定於右上 header。各 screen 可依
 
 Current `PauseMenu`：
 
-- Continue、Inventory、Save、Load、Exit Combat、Settings、Quit
+- Continue、Inventory、Save、Load、Exit Combat、DEV 地圖、Settings、Quit
 - Master bus volume
 - fullscreen toggle
-- settings/button stack focus switching
+- settings／dev-map／button-stack focus switching
 
 規則：
 
@@ -745,6 +745,11 @@ Current `PauseMenu`：
 - Exit Combat 永遠保留在 ButtonStack；只有 active Run 且位於正式戰鬥地圖時
   可操作，其他地圖使用真正的 `disabled` 狀態反灰。觸發後由 Game 以撤退結算
   本輪並直接載入 Town，PauseMenu 不直接存取 RunState。
+- `DEV 地圖` 只在集中式 dev mode 啟用時顯示。子頁接收 Game 注入的正式 route、
+  world variant 與 Boss 房清單，選擇後只 emit `dev_map_requested(scene_path)`；
+  Game 捨棄目前測試 Run、不結算攻略進度，再建立必要的測試 Run 與載入 map。
+- DEV 子頁為固定三個 controls 的 authored layout；22 筆 map 名稱由 `OptionButton`
+  承載，避免把長列表撐高 Pause panel。返回後 focus 回 `DEV 地圖`。
 - 音量目前未確認持久化，文件不得聲稱設定會跨啟動保存。
 
 ## 16. Responsive Design

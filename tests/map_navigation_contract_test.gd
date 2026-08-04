@@ -9,15 +9,21 @@ const MAP_SCENES := [
 	},
 	{
 		"path": "res://scenes/maps/crystal_caves.tscn",
-		"portal": "TownPortal",
-		"target": "res://scenes/maps/town.tscn",
-		"right_wall": "WorldCollision/RightWall",
+		"portal": "WestReturnPortal",
+		"target": "res://scenes/maps/battle_portal_hub.tscn",
+		"right_wall": "WorldBounds/RightWall",
 	},
 	{
-		"path": "res://scenes/maps/forbidden_graveyard.tscn",
-		"portal": "TownPortal",
-		"target": "res://scenes/maps/town.tscn",
-		"right_wall": "WorldCollision/RightWall",
+		"path": "res://scenes/maps/hell_rift.tscn",
+		"portal": "WestReturnPortal",
+		"target": "res://scenes/maps/battle_portal_hub.tscn",
+		"right_wall": "WorldBounds/RightWall",
+	},
+	{
+		"path": "res://scenes/maps/heaven_sanctuary.tscn",
+		"portal": "WestReturnPortal",
+		"target": "res://scenes/maps/battle_portal_hub.tscn",
+		"right_wall": "WorldBounds/RightWall",
 	},
 ]
 

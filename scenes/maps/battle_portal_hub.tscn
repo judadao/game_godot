@@ -1,46 +1,30 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=10 format=3]
 
-[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
-[ext_resource type="PackedScene" path="res://scenes/maps/town/portals/TownFastTravelPortal.tscn" id="2_return"]
-[ext_resource type="PackedScene" path="res://scenes/maps/town/portals/TownForestPortal.tscn" id="3_autumn"]
-[ext_resource type="PackedScene" path="res://scenes/maps/town/portals/TownCavesPortal.tscn" id="4_crystal"]
-[ext_resource type="PackedScene" path="res://scenes/maps/town/portals/TownGraveyardPortal.tscn" id="5_graveyard"]
+[ext_resource type="Script" path="res://scripts/maps/battle_portal_hub.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/battle_portal_sanctuary.png" id="2_background"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="4_portal"]
+[ext_resource type="PackedScene" path="res://scenes/maps/town/portals/TownFastTravelPortal.tscn" id="5_return"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/editor/TownEternalForgeEditorHUDReference.tscn" id="6_hud"]
 
 [sub_resource type="RectangleShape2D" id="FloorShape"]
 size = Vector2(1650, 96)
-
 [sub_resource type="RectangleShape2D" id="WallShape"]
 size = Vector2(48, 720)
-
-[sub_resource type="RectangleShape2D" id="TownReturnInteractionShape"]
-size = Vector2(88, 140)
-
-[sub_resource type="StyleBoxFlat" id="PortalLabelStyle"]
-bg_color = Color(0.025, 0.035, 0.055, 0.94)
+[sub_resource type="StyleBoxFlat" id="LabelStyle"]
+bg_color = Color(0.025, 0.035, 0.055, 0.9)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.85098, 0.603922, 0.168627, 0.92)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-
-[sub_resource type="StyleBoxFlat" id="LockedLabelStyle"]
-bg_color = Color(0.045, 0.025, 0.06, 0.94)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.45, 0.28, 0.55, 0.9)
+border_color = Color(0.85, 0.604, 0.169, 0.92)
 corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
 [node name="BattlePortalHub" type="Node2D"]
+script = ExtResource("1_script")
 metadata/map_width = 1600
 metadata/map_height = 720
 metadata/camera_limit_left = 0
@@ -49,155 +33,173 @@ metadata/camera_limit_right = 1600
 metadata/camera_limit_bottom = 720
 metadata/map_role = "battle_portal_hub"
 
-[node name="Backdrop" type="Node2D" parent="."]
+[node name="Backdrop" type="Sprite2D" parent="."]
+position = Vector2(800, 360)
+scale = Vector2(0.957, 0.765)
+texture = ExtResource("2_background")
+texture_filter = 1
 z_index = -20
 
-[node name="Void" type="ColorRect" parent="Backdrop"]
-offset_right = 1600.0
-offset_bottom = 720.0
-mouse_filter = 2
-color = Color(0.012, 0.018, 0.035, 1)
-
-[node name="UpperGlow" type="Polygon2D" parent="Backdrop"]
-polygon = PackedVector2Array(0, 0, 1600, 0, 1600, 500, 1280, 430, 800, 470, 320, 430, 0, 500)
-color = Color(0.055, 0.09, 0.16, 1)
-
-[node name="CentralRecess" type="Polygon2D" parent="Backdrop"]
-polygon = PackedVector2Array(650, 80, 950, 80, 1040, 672, 560, 672)
-color = Color(0.025, 0.03, 0.055, 1)
-
-[node name="Floor" type="ColorRect" parent="Backdrop"]
-offset_top = 672.0
-offset_right = 1600.0
-offset_bottom = 720.0
-mouse_filter = 2
-color = Color(0.12, 0.105, 0.11, 1)
-
 [node name="RegionPortals" type="Node2D" parent="."]
+[node name="AutumnPortal" parent="RegionPortals" instance=ExtResource("4_portal")]
+position = Vector2(145, 666)
+collision_layer = 0
+show_default_visual = false
+interaction_id = &"autumn_expedition_portal"
+[node name="ActiveGlow" type="Polygon2D" parent="RegionPortals/AutumnPortal"]
+position = Vector2(0, -108)
+polygon = PackedVector2Array(-38, 58, -52, 16, -42, -36, 0, -66, 42, -36, 52, 16, 38, 58)
+color = Color(1, 0.39, 0.12, 0.72)
+[node name="Seal" type="Polygon2D" parent="RegionPortals/AutumnPortal"]
+position = Vector2(0, -108)
+polygon = PackedVector2Array(-38, 58, -52, 16, -42, -36, 0, -66, 42, -36, 52, 16, 38, 58)
+color = Color(0.17, 0.18, 0.2, 0.92)
 
-[node name="AutumnPortal" parent="RegionPortals" instance=ExtResource("3_autumn")]
-position = Vector2(280, 672)
+[node name="CrystalPortal" parent="RegionPortals" instance=ExtResource("4_portal")]
+position = Vector2(438, 666)
+collision_layer = 0
+show_default_visual = false
+interaction_id = &"crystal_expedition_portal"
+[node name="ActiveGlow" type="Polygon2D" parent="RegionPortals/CrystalPortal"]
+position = Vector2(0, -108)
+polygon = PackedVector2Array(-38, 58, -52, 16, -42, -36, 0, -66, 42, -36, 52, 16, 38, 58)
+color = Color(0.2, 0.78, 1, 0.72)
+[node name="Seal" type="Polygon2D" parent="RegionPortals/CrystalPortal"]
+position = Vector2(0, -108)
+polygon = PackedVector2Array(-38, 58, -52, 16, -42, -36, 0, -66, 42, -36, 52, 16, 38, 58)
+color = Color(0.17, 0.18, 0.2, 0.92)
 
-[node name="CrystalPortal" parent="RegionPortals" instance=ExtResource("4_crystal")]
-position = Vector2(530, 672)
+[node name="HellPortal" parent="RegionPortals" instance=ExtResource("4_portal")]
+position = Vector2(1162, 666)
+collision_layer = 0
+show_default_visual = false
+interaction_id = &"hell_expedition_portal"
+[node name="ActiveGlow" type="Polygon2D" parent="RegionPortals/HellPortal"]
+position = Vector2(0, -108)
+polygon = PackedVector2Array(-38, 58, -52, 16, -42, -36, 0, -66, 42, -36, 52, 16, 38, 58)
+color = Color(0.9, 0.15, 0.07, 0.78)
+[node name="Seal" type="Polygon2D" parent="RegionPortals/HellPortal"]
+position = Vector2(0, -108)
+polygon = PackedVector2Array(-38, 58, -52, 16, -42, -36, 0, -66, 42, -36, 52, 16, 38, 58)
+color = Color(0.17, 0.18, 0.2, 0.92)
 
-[node name="FourthRegionPortal" parent="RegionPortals" instance=ExtResource("4_crystal")]
-position = Vector2(1050, 672)
-locked = true
-locked_reason = "第四戰區尚未開放"
-target_scene_path = ""
-interaction_id = &"fourth_region_reserved"
-display_name = "Fourth Region"
-portal_tint = Color(0.38, 0.3, 0.48, 1)
-
-[node name="GraveyardPortal" parent="RegionPortals" instance=ExtResource("5_graveyard")]
-position = Vector2(1270, 672)
+[node name="HeavenPortal" parent="RegionPortals" instance=ExtResource("4_portal")]
+position = Vector2(1452, 666)
+collision_layer = 0
+show_default_visual = false
+interaction_id = &"heaven_expedition_portal"
+[node name="ActiveGlow" type="Polygon2D" parent="RegionPortals/HeavenPortal"]
+position = Vector2(0, -108)
+polygon = PackedVector2Array(-38, 58, -52, 16, -42, -36, 0, -66, 42, -36, 52, 16, 38, 58)
+color = Color(1, 0.93, 0.58, 0.78)
+[node name="Seal" type="Polygon2D" parent="RegionPortals/HeavenPortal"]
+position = Vector2(0, -108)
+polygon = PackedVector2Array(-38, 58, -52, 16, -42, -36, 0, -66, 42, -36, 52, 16, 38, 58)
+color = Color(0.17, 0.18, 0.2, 0.92)
 
 [node name="BossPortalAnchor" type="Marker2D" parent="."]
-position = Vector2(800, 672)
-metadata/portal_role = "future_final_boss"
-metadata/unlock_state = "reserved"
+position = Vector2(800, 666)
+[node name="BossPortal" parent="." instance=ExtResource("4_portal")]
+position = Vector2(800, 666)
+collision_layer = 0
+show_default_visual = false
+interaction_id = &"regional_boss_portal"
+locked = true
+[node name="ReadyGlow" type="Polygon2D" parent="BossPortal"]
+position = Vector2(0, -168)
+polygon = PackedVector2Array(-62, 84, -78, 16, -62, -76, 0, -116, 62, -76, 78, 16, 62, 84)
+color = Color(0.55, 0.26, 1, 0.82)
+[node name="Seal" type="Polygon2D" parent="BossPortal"]
+position = Vector2(0, -168)
+polygon = PackedVector2Array(-64, 84, -78, 16, -62, -76, 0, -116, 62, -76, 78, 16, 64, 84)
+color = Color(0.12, 0.13, 0.16, 0.96)
 
 [node name="PortalLabels" type="Node2D" parent="."]
-
 [node name="AutumnLabel" type="Label" parent="PortalLabels"]
-offset_left = 185.0
-offset_top = 480.0
-offset_right = 375.0
-offset_bottom = 522.0
-theme_override_colors/font_color = Color(0.67, 1, 0.71, 1)
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("PortalLabelStyle")
-text = "秋林戰區"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="CrystalLabel" type="Label" parent="PortalLabels"]
-offset_left = 435.0
-offset_top = 480.0
-offset_right = 625.0
-offset_bottom = 522.0
-theme_override_colors/font_color = Color(0.55, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("PortalLabelStyle")
-text = "水晶洞窟"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="FourthLabel" type="Label" parent="PortalLabels"]
-offset_left = 955.0
-offset_top = 480.0
-offset_right = 1145.0
-offset_bottom = 522.0
-theme_override_colors/font_color = Color(0.62, 0.55, 0.7, 1)
+offset_left = 57.0
+offset_top = 450.0
+offset_right = 233.0
+offset_bottom = 506.0
+theme_override_colors/font_color = Color(1, 0.86, 0.63, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("LockedLabelStyle")
-text = "第四戰區・未開放"
+theme_override_styles/normal = SubResource("LabelStyle")
+horizontal_alignment = 1
+vertical_alignment = 1
+[node name="CrystalLabel" type="Label" parent="PortalLabels"]
+offset_left = 350.0
+offset_top = 450.0
+offset_right = 526.0
+offset_bottom = 506.0
+theme_override_colors/font_color = Color(0.65, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("LabelStyle")
+horizontal_alignment = 1
+vertical_alignment = 1
+[node name="HellLabel" type="Label" parent="PortalLabels"]
+offset_left = 1074.0
+offset_top = 450.0
+offset_right = 1250.0
+offset_bottom = 506.0
+theme_override_colors/font_color = Color(1, 0.58, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("LabelStyle")
+horizontal_alignment = 1
+vertical_alignment = 1
+[node name="HeavenLabel" type="Label" parent="PortalLabels"]
+offset_left = 1364.0
+offset_top = 450.0
+offset_right = 1540.0
+offset_bottom = 506.0
+theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("LabelStyle")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="GraveyardLabel" type="Label" parent="PortalLabels"]
-offset_left = 1175.0
-offset_top = 480.0
-offset_right = 1365.0
-offset_bottom = 522.0
-theme_override_colors/font_color = Color(0.87, 0.66, 1, 1)
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("PortalLabelStyle")
-text = "禁忌墓園"
+[node name="BossLabel" type="Label" parent="."]
+offset_left = 650.0
+offset_top = 382.0
+offset_right = 950.0
+offset_bottom = 442.0
+theme_override_colors/font_color = Color(0.91, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("LabelStyle")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TownPortal" parent="." instance=ExtResource("2_return")]
-position = Vector2(100, 672)
+[node name="TownPortal" parent="." instance=ExtResource("5_return")]
+position = Vector2(44, 666)
 target_scene_path = "res://scenes/maps/town.tscn"
 target_spawn_name = &"PlayerSpawn"
 interaction_id = &"battle_hub_return"
 prompt_text = "Return to Town"
-
 [node name="TownVisual" parent="TownPortal" index="3"]
 visible = false
-
-[node name="CollisionShape2D" parent="TownPortal/InteractionArea" index="0"]
-shape = SubResource("TownReturnInteractionShape")
-
 [node name="ReturnLabel" type="Label" parent="."]
-offset_left = 40.0
-offset_top = 610.0
-offset_right = 160.0
-offset_bottom = 646.0
-theme_override_colors/font_color = Color(0.64, 0.72, 0.82, 1)
-theme_override_font_sizes/font_size = 14
+offset_left = 8.0
+offset_top = 606.0
+offset_right = 130.0
+offset_bottom = 638.0
+theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
+theme_override_font_sizes/font_size = 13
 text = "← 返回城鎮"
-horizontal_alignment = 1
 
 [node name="PlayerSpawn" type="Marker2D" parent="."]
-position = Vector2(730, 702)
-
-[node name="Player" parent="." instance=ExtResource("1_player")]
-position = Vector2(730, 702)
-
+position = Vector2(650, 640)
+[node name="Player" parent="." instance=ExtResource("3_player")]
+position = Vector2(650, 640)
+z_index = 30
 [node name="WorldCollision" type="StaticBody2D" parent="."]
-
 [node name="FloorCollision" type="CollisionShape2D" parent="WorldCollision"]
 position = Vector2(800, 720)
 shape = SubResource("FloorShape")
-
 [node name="LeftWall" type="CollisionShape2D" parent="WorldCollision"]
 position = Vector2(-24, 360)
 shape = SubResource("WallShape")
-
 [node name="RightWall" type="CollisionShape2D" parent="WorldCollision"]
 position = Vector2(1624, 360)
 shape = SubResource("WallShape")
-
 [node name="EditorHUDReference" parent="." instance=ExtResource("6_hud")]
 
-[editable path="RegionPortals/AutumnPortal"]
-[editable path="RegionPortals/CrystalPortal"]
-[editable path="RegionPortals/FourthRegionPortal"]
-[editable path="RegionPortals/GraveyardPortal"]
 [editable path="TownPortal"]
 [editable path="EditorHUDReference"]
-[editable path="EditorHUDReference/HUD"]
-[editable path="EditorHUDReference/CardHandUI"]

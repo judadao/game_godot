@@ -11,7 +11,7 @@ func _run() -> void:
 	var legacy := MetaState.new()
 	legacy.apply_dict({"schema_version": 8, "resources": {"gold": 12}})
 	var migrated := legacy.to_dict()
-	_expect(int(migrated.get("schema_version", 0)) == 9, "Story progress adds save schema version nine.")
+	_expect(int(migrated.get("schema_version", 0)) >= 10, "Expedition progress requires save schema version ten or later.")
 	var story := migrated.get("story_state", {}) as Dictionary
 	_expect(String(story.get("chapter_id", "")) == "chapter_01", "Legacy saves start at chapter one.")
 	_expect((story.get("story_flags", []) as Array).is_empty(), "Legacy saves do not invent completed story flags.")

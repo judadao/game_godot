@@ -1,0 +1,81 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/maps/themed_expedition_route.gd" id="1_route"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2_player"]
+[ext_resource type="Script" path="res://scripts/combat/survival_wave_director.gd" id="3_director"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="4_portal"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnEditorHUDReference.tscn" id="5_hud"]
+[ext_resource type="PackedScene" path="res://scenes/maps/autumn_battle/editor/AutumnBattleMapV2EditorHelpers.tscn" id="6_helpers"]
+
+[sub_resource type="RectangleShape2D" id="WallShape"]
+size = Vector2(32, 720)
+
+[node name="ExpeditionRouteTemplate" type="Node2D"]
+metadata/map_role = "expedition_route"
+metadata/map_width = 10560
+metadata/map_height = 720
+metadata/camera_limit_left = 0
+metadata/camera_limit_top = 0
+metadata/camera_limit_right = 10560
+metadata/camera_limit_bottom = 810
+
+[node name="GeneratedRoute" type="Node2D" parent="."]
+script = ExtResource("1_route")
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(300, 470)
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(300, 470)
+z_index = 30
+
+[node name="ExpeditionRunDirector" type="Node2D" parent="." groups=["EncounterDirectors"]]
+z_index = 25
+script = ExtResource("3_director")
+auto_start = false
+engage_radius = 720.0
+leash_radius = 980.0
+disengage_duration = 6.0
+route_wide_encounter = true
+spawn_around_player = true
+spawn_route_left = 260.0
+spawn_route_right = 10300.0
+
+[node name="WestReturnPortal" parent="." instance=ExtResource("4_portal")]
+position = Vector2(150, 500)
+z_index = 22
+interaction_id = &"expedition_west_return"
+prompt_text = "Return to Portal Sanctuary"
+target_scene_path = "res://scenes/maps/battle_portal_hub.tscn"
+
+[node name="Visual" parent="WestReturnPortal" index="0"]
+scale = Vector2(0.34, 0.34)
+
+[node name="EastReturnPortal" parent="." instance=ExtResource("4_portal")]
+position = Vector2(10410, 500)
+z_index = 22
+interaction_id = &"expedition_east_return"
+prompt_text = "Return to Portal Sanctuary"
+target_scene_path = "res://scenes/maps/battle_portal_hub.tscn"
+locked = true
+locked_reason = "Defeat the expedition guardian to open the return gate."
+
+[node name="Visual" parent="EastReturnPortal" index="0"]
+scale = Vector2(0.34, 0.34)
+
+[node name="WorldBounds" type="StaticBody2D" parent="."]
+
+[node name="LeftWall" type="CollisionShape2D" parent="WorldBounds"]
+position = Vector2(-16, 360)
+shape = SubResource("WallShape")
+
+[node name="RightWall" type="CollisionShape2D" parent="WorldBounds"]
+position = Vector2(10576, 360)
+shape = SubResource("WallShape")
+
+[node name="EditorHUDReference" parent="." instance=ExtResource("5_hud")]
+[node name="EditorHelpers" parent="." instance=ExtResource("6_helpers")]
+
+[editable path="WestReturnPortal"]
+[editable path="EastReturnPortal"]
+[editable path="EditorHUDReference"]

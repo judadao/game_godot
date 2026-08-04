@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="PackedScene" path="res://scenes/maps/expedition/ExpeditionRouteTemplate.tscn" id="1"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/heaven_sanctuary_background.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/heaven_terrain_atlas.png" id="3"]
+[node name="HeavenRoute" instance=ExtResource("1")]
+metadata/expedition_variant_id = &"heaven"
+[node name="GeneratedRoute" parent="." index="0"]
+variant_id = &"heaven"
+background_texture = ExtResource("2")
+terrain_style = "heaven"
+terrain_atlas_texture = ExtResource("3")
+terrain_modulate = Color(1, 1, 1, 1)
+ground_color = Color(0.30, 0.29, 0.24, 1)
+ground_highlight = Color(1, 0.92, 0.60, 1)
+platform_color = Color(0.52, 0.50, 0.42, 1)
+accent_color = Color(1, 1, 0.82, 1)
+[node name="ExpeditionRunDirector" parent="." index="3"]
+base_normal_health_multiplier = 20.0
+maximum_normal_health_multiplier = 34.0
+maximum_density_cap = 185

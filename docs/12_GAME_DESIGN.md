@@ -117,8 +117,10 @@ Guardian 死亡本身不是最終結算點；玩家回到安全區時才完成�
 | Town | `res://scenes/maps/town/TownMap.tscn` | Hub gameplay |
 | Autumn Safe Zone | `res://scenes/maps/autumn_safe/AutumnSafeZoneMap.tscn` | 營火、旅商與出入口 |
 | Autumn | `res://scenes/maps/autumn_battle/AutumnBattleMapV2.tscn` | 完整 survival vertical slice |
-| Crystal Caves | `res://scenes/maps/layouts/CrystalCavesLayout.tscn` | Layout only |
-| Forbidden Graveyard | `res://scenes/maps/layouts/ForbiddenGraveyardLayout.tscn` | Layout only |
+| Crystal | `res://scenes/maps/expedition/CrystalRoute.tscn` | 完整 10,560px 遠征路線 |
+| Hell | `res://scenes/maps/expedition/HellRoute.tscn` | 完整 10,560px 遠征路線 |
+| Heaven | `res://scenes/maps/expedition/HeavenRoute.tscn` | 完整 10,560px 遠征路線 |
+| Regional Boss | `res://scenes/maps/boss/RegionalBossArenaTemplate.tscn` | 1,664 × 900 垂直平台房 |
 
 舊路徑由 `Game` 正規化到 authoritative scene。新增文件或測試時應引用 authoritative path。
 
@@ -132,10 +134,22 @@ Town 是起始 Hub，現有內容包括：
   另一側離開；
 - Material Yard、Player Blacksmith、Town Hall 專用建築 UI；
 - Town 商品買賣；
-- Autumn、Crystal Caves、Forbidden Graveyard portal；
+- 單一 BattleGateway，通往四槽戰鬥傳送聖所；
 - Town 內部的入口／尾端 fast travel。
 
-Town 可直接進入 Crystal Caves 與 Forbidden Graveyard，因此 Autumn Guardian 的 forward portal 目前不是全域世界進度鎖。
+戰鬥傳送聖所依 `story_state.chapter_id` 投影當前世界世代：
+
+- Chapter 1–2：Autumn、Crystal。
+- Hell chapter：Hell Autumn、Hell Crystal、Hell；前兩張地圖加入地獄材質與更強敵人。
+- Heaven chapter：Heaven Autumn、Heaven Crystal、Disorder Hell、Heaven；Hell 在大統領被擊敗後轉為無序狀態。
+
+每個變體各自成功攻略四次，中央 Boss 石門才會解除該變體封印。Boss 房不會由
+篇章自動載入；玩家必須靠近並觸發已解封的中央門。路線與 Boss 的 power tier
+會提高敵人生命／密度與 material bag 倍率；已達到的最高 tier 同時提高鍛造商店
+可見圖紙階級，因此裝備與劍魂招式供應會隨 Hell／Heaven 世代提升。
+一旦中央門進入待戰狀態，其他戰區仍可反覆進入、戰鬥與帶回掉落，但所有戰區的
+攻略次數暫停累計，直到該 Boss 被擊敗。傳送區只提示「強大的敵人正在靠近...」，
+不直接展示攻略次數。
 
 ### 3.3 Autumn
 
