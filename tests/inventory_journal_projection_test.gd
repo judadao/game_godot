@@ -16,7 +16,7 @@ func _run() -> void:
 	_expect(game.has_method("_inventory_status_projection"), "Game must own the player-status journal projection.")
 	_expect(game.has_method("_inventory_equipment_projection"), "Game must own the equipped-slot journal projection.")
 	_expect(game.has_method("_inventory_sword_soul_projection"), "Game must project owned Sword Soul instances.")
-	_expect(game.has_method("_inventory_compendium_projection"), "Game must assemble the four-section codex projection.")
+	_expect(game.has_method("_inventory_compendium_projection"), "Game must assemble the five-section codex projection.")
 	_expect(game.has_method("_on_inventory_equip_requested"), "Game must own journal equipment mutations after UI intent emission.")
 
 	if game.has_method("_inventory_status_projection"):
@@ -50,7 +50,7 @@ func _run() -> void:
 
 	if game.has_method("_inventory_compendium_projection"):
 		var compendium := game.call("_inventory_compendium_projection") as Array
-		var sections := {"techniques": 0, "enemies": 0, "sword_souls": 0, "equipment": 0}
+		var sections := {"techniques": 0, "enemies": 0, "sword_souls": 0, "equipment": 0, "story_review": 0}
 		var seen_ids: Dictionary = {}
 		var sword_soul_ids: Dictionary = {}
 		for entry_variant in compendium:
@@ -81,6 +81,7 @@ func _run() -> void:
 				"Sword Soul codex must include catalog card: %s." % card.get("id", "")
 			)
 		_expect(int(sections["techniques"]) == 39, "Technique codex must project the 13 approved series with three tiers each.")
+		_expect(int(sections["story_review"]) >= 1, "Compendium must expose chapter-one Story Review sections.")
 
 	game.call("_toggle_inventory")
 	await process_frame

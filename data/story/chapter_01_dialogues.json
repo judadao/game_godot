@@ -5,6 +5,15 @@
     "title": "序章—沒有過去的人",
     "opening_sequence_id": "chapter_01_town_square"
   },
+  "review_sections": [
+    {
+      "sequence_id": "chapter_01_town_square",
+      "scene_id": "1-1",
+      "title": "廣場上的早晨",
+      "summary": "聖女在廣場找到走錯方向的主角，催他回到鐵匠鋪開始一天的工作。",
+      "order": 1
+    }
+  ],
   "speakers": {
     "protagonist": {
       "display_name": "主角",
@@ -12,7 +21,9 @@
         "texture_path": "res://assets/curated/game_own/world/legacy_fantasy/Character/Idle/Idle-Sheet.png",
         "columns": 4,
         "rows": 1,
-        "fps": 5.0,
+        "fps": 3.0,
+        "crop_mode": "half_body",
+        "one_shot": true,
         "state_rows": {"idle": 0, "chat": 0, "laugh": 0, "happy": 0, "sad": 0, "surprised": 0, "angry": 0}
       }
     },
@@ -22,7 +33,9 @@
         "texture_path": "res://assets/town/npc/priest/priest_animation_atlas.png",
         "columns": 8,
         "rows": 8,
-        "fps": 6.0,
+        "fps": 3.5,
+        "crop_mode": "half_body",
+        "one_shot": true,
         "state_rows": {"idle": 0, "chat": 1, "laugh": 1, "happy": 5, "sad": 6, "surprised": 1, "angry": 7}
       }
     }

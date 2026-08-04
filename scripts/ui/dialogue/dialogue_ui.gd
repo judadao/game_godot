@@ -62,6 +62,8 @@ func set_dialogue_text(text: String) -> void:
 
 func set_choices(new_choices: Array) -> void:
 	choices = _to_dictionary_array(new_choices)
+	choices_container.visible = not choices.is_empty()
+	dialogue_text.anchor_right = 0.68 if choices_container.visible else 0.93
 	while _choice_buttons.size() < choices.size():
 		var button := Button.new()
 		choices_container.add_child(button)

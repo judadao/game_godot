@@ -439,8 +439,9 @@ Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
 | `forge_catalog_test.gd` / `forge_service_test.gd` | offer/recipe schema、Tier gate、購買、鍛造與 sale escrow |
 | `forge_game_integration_test.gd` | 圖紙＋工具購買後鍛造 equipment／Sword Soul、升級、上桌販售、gold 與 meta save |
 | `chapter_one_story_catalog_test.gd` | 第一章廣場 21 句正史、speaker／portrait path／emotion schema 與 completion flag |
-| `chapter_one_dialogue_progression_test.gd` | 逐句 speaker／情緒切換、完成旗標、下一 scene checkpoint 與禁止重播 |
-| `chapter_one_dialogue_ui_test.gd` | 左上動畫頭像與下方對話框在六個標準解析度的邊界／相對位置 |
+| `chapter_one_dialogue_progression_test.gd` | 回顧逐句 speaker／情緒切換、單句 one-shot 停末幀，且完成不寫 flag／checkpoint |
+| `chapter_one_dialogue_ui_test.gd` | 左上半身動畫頭像、無選項文字空間與下方對話框在六個標準解析度的邊界／相對位置 |
+| `story_review_codex_test.gd` | 圖鑑劇情回顧 projection、直接分類切換、播放 intent、read-only 完成與 Town 禁止自動觸發 |
 | `story_state_migration_test.gd` | schema 8→9 預設 story state 與 schema 9 checkpoint／flags round-trip |
 
 Layout test 另外要求每個 screen 顯示至少三種 distinct functional icon；Button

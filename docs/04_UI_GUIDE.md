@@ -563,14 +563,15 @@ HUDLayer
 - centered 1020×680 native open-journal frame，整本等比縮放且維持 1.5 aspect
 - 背包／狀態／劍魂／圖鑑四個有 icon 與明確 focus state 的章節分頁；第四章的
   玩家可見名稱固定只顯示「圖鑑」，不附加 `CODEX`／`COMPENDIUM`
-- 背包依素材／關鍵道具／裝備／補給品篩選；裝備詳細頁提供至少 32px 的
+- 背包依素材／關鍵道具／裝備／補給品篩選；背包與圖鑑分類都使用常駐、可直接點擊的
+  editor-authored Button grid，不得退回需要展開才能選擇的 `OptionButton`。裝備詳細頁提供至少 32px 的
   `裝備 · EQUIP` intent button，已裝備項目顯示 disabled `已裝備 · EQUIPPED`
 - 狀態頁同時顯示 personal status 與 weapon／armor／accessory 三個權威裝備投影
 - 劍魂頁逐一保留 `CardInstance.instance_id` 與獨立 level，不用 card id 合併持有實例；
   左頁使用雙欄劍魂格填滿書脊前的可用空間，右頁只呈現 Game projection 提供的
   `bonus_type_label` 與短中文 `ability_summary`，UI 不自行推算攻擊／防禦／治療／
   元素／機動／AP 類型
-- 圖鑑依招式／敵人／劍魂／裝備篩選；劍魂章列出 `cards.json` 全部 38 個正式劍魂，
+- 圖鑑依招式／敵人／劍魂／裝備／劇情回顧篩選；劍魂章列出 `cards.json` 全部 38 個正式劍魂，
   不得只列四個鍛造圖紙，並分別標示解鎖、持有、等級與取得狀態；敵人是 catalog
   reference，不是假造 discovery
 - 所有章節內容保留 32px painted page-curl safe inset；圖鑑長內容在固定 detail viewport
@@ -602,6 +603,11 @@ HUDLayer
   舊 profile 的 display name／trigger 類型不可改寫新招式名稱、系列、引言或演出內容
 - 39 招即使尚未有獨立 icon 也不能從列表消失；空 `icon_path` 使用既有 curated journal
   fallback。未來加入正式圖示時由 catalog path 覆蓋，不在 UI 以名稱硬編 icon
+- 劇情回顧由 `StoryDirector.get_review_entries()` 投影章節；選擇一節後以
+  `播放本節` 按鈕開啟既有 `DialogueUI`。回顧模式不接入地圖正式流程、不寫 story flag
+  或 checkpoint；完成後回到同一圖鑑分類與原選取節點。目前只有第一章 1-1 可播放。
+- 劇情對話頭像固定半身裁切，每句 emotion 動作以不高於 3.5 FPS 播放一次並停在末幀，
+  不循環成 GIF；沒有 choice 時隱藏整欄並讓本文使用右側空間。
 
 `inventory_ui.gd`：
 
@@ -611,7 +617,7 @@ HUDLayer
   重新注入背包、狀態、裝備與圖鑑 projection
 - `set_codex_view_mode()` 僅保留舊 caller 的相容入口，任何傳入模式都固定回到
   production live VFX；concept tab、crop 與舊效果板不可重新顯示
-- inventory category 與 codex category 都執行實際篩選
+- inventory category 與 codex category 的常駐按鈕都執行實際篩選
 - `ItemList` 提供 mouse/keyboard selection
 
 ### 12.2 Current gaps

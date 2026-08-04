@@ -860,11 +860,11 @@ instance ID 必須修復並留下 report。Skill arrays 去重，active 只保�
 schema 8 另移除四個退役被動 ID，且不補入舊 `Iron Momentum` 預設；
 auto attack 缺失或無效時在組裝 Run 時 fallback 到有效已解鎖 attack。
 
-第一章目前以正史場景 1-1「城鎮廣場」作為 playable opening：首次進 Town 自動播放
-21 句對話並由 UI stack 鎖住玩家操作（城鎮環境動畫不中斷），左上頭像依
-line-authored emotion 播放角色既有圖集；完成後
-寫入 `protagonist_town_routine_established`，checkpoint 前進至 `chapter_01_forge`，
-後續進城不重播。1-2～1-5 由同一 StoryDirector／DialogueRunner 接續，不得用另一套 UI。
+第一章正史場景 1-1「城鎮廣場」目前只作為圖鑑「劇情回顧」vertical slice：玩家從
+I 選單直接選取章節後播放 21 句對話，左上半身頭像依 line-authored emotion 低速播放
+一次並停在末幀。載入 Town 不自動播放，回顧完成也不寫
+`protagonist_town_routine_established` 或前進 checkpoint。正式接入主線前，1-2～1-5
+仍由同一 StoryDirector／DialogueRunner 擴充，不得用另一套 UI。
 
 ### 11.3 Meta save
 

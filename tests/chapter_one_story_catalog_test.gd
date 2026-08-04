@@ -35,6 +35,9 @@ func _run() -> void:
 			ResourceLoader.exists(String(portrait.get("texture_path", "")), "Texture2D"),
 			"Every opening speaker must reference a loadable portrait texture."
 		)
+		_expect(String(portrait.get("crop_mode", "")) == "half_body", "Story portraits must request half-body framing.")
+		_expect(bool(portrait.get("one_shot", false)), "Each story sentence must play one non-looping action.")
+		_expect(float(portrait.get("fps", 99.0)) <= 3.5, "Story portrait actions must use a calm readable speed.")
 
 	quit(0 if _failures == 0 else 1)
 

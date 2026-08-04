@@ -774,6 +774,9 @@ schema 9 新增 `story_state`；舊存檔不會假造已完成旗標，而是從
 `chapter_01_town_square` 開始。第一章逐句資料由
 `data/story/chapter_01_dialogues.json` schema 1 擁有，角色 portrait path、grid、
 emotion rows 與 sequence speaker reference 都由 `StoryDialogueCatalog` 載入時驗證。
+同一 catalog 的 `review_sections` 是圖鑑劇情回顧清單；portrait 必須宣告
+`crop_mode = half_body` 與 `one_shot = true`。目前回顧播放不寫入 `story_state`，正式
+Town 觸發仍待後續核准。
 `inventory_state`與`town_state`是current manager DTO；其他equipment/building fields
 同時保留legacy compatibility。
 

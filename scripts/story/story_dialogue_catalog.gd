@@ -41,13 +41,25 @@ func get_speaker(speaker_id: StringName) -> Dictionary:
 	return (speakers.get(String(speaker_id), {}) as Dictionary).duplicate(true)
 
 
+func get_review_sections() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for section_variant in _catalog.get("review_sections", []) as Array:
+		if section_variant is Dictionary:
+			result.append((section_variant as Dictionary).duplicate(true))
+	result.sort_custom(func(left: Dictionary, right: Dictionary) -> bool:
+		return int(left.get("order", 999)) < int(right.get("order", 999))
+	)
+	return result
+
+
 func _validate_catalog(candidate: Dictionary) -> bool:
 	if int(candidate.get("schema_version", 0)) != 1:
 		push_error("Unsupported story dialogue schema.")
 		return false
 	var speakers_variant: Variant = candidate.get("speakers", {})
 	var sequences_variant: Variant = candidate.get("sequences", {})
-	if not speakers_variant is Dictionary or not sequences_variant is Dictionary:
+	var review_sections_variant: Variant = candidate.get("review_sections", [])
+	if not speakers_variant is Dictionary or not sequences_variant is Dictionary or not review_sections_variant is Array:
 		push_error("Story catalog requires speakers and sequences objects.")
 		return false
 	var speakers := speakers_variant as Dictionary
@@ -60,6 +72,20 @@ func _validate_catalog(candidate: Dictionary) -> bool:
 			return false
 		if int(portrait.get("columns", 0)) <= 0 or int(portrait.get("rows", 0)) <= 0:
 			push_error("Story speaker '%s' has an invalid portrait grid." % speaker_id)
+			return false
+		if String(portrait.get("crop_mode", "")) != "half_body" or not bool(portrait.get("one_shot", false)):
+			push_error("Story speaker '%s' must use half-body one-shot portrait motion." % speaker_id)
+			return false
+	for section_variant in review_sections_variant as Array:
+		if not section_variant is Dictionary:
+			return false
+		var section := section_variant as Dictionary
+		var review_sequence_id := String(section.get("sequence_id", ""))
+		if review_sequence_id.is_empty() or not (sequences_variant as Dictionary).has(review_sequence_id):
+			push_error("Story Review references an unknown sequence.")
+			return false
+		if String(section.get("title", "")).strip_edges().is_empty():
+			push_error("Story Review section requires a title.")
 			return false
 	for sequence_id in sequences_variant:
 		var sequence := (sequences_variant as Dictionary)[sequence_id] as Dictionary

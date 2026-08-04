@@ -7,6 +7,7 @@ signal toggled(is_open: bool)
 signal category_selected(category: String)
 signal item_selected(index: int, item_data: Dictionary)
 signal equip_requested(item_id: StringName)
+signal story_review_requested(sequence_id: StringName)
 
 const MODE_INVENTORY := &"bag"
 const MODE_STATUS := &"status"
@@ -38,7 +39,7 @@ const DEFAULT_SOUL_ICON := preload(
 @onready var status_page: HBoxContainer = $Center/MainPanel/Margin/Layout/Pages/StatusPage
 @onready var sword_souls_page: HBoxContainer = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage
 @onready var codex_page: HBoxContainer = $Center/MainPanel/Margin/Layout/Pages/CodexPage
-@onready var item_filter: OptionButton = $Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser/Filter
+@onready var item_filter: GridContainer = $Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser/Filter
 @onready var item_list: ItemList = $Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser/Items
 @onready var item_name: Label = $Center/MainPanel/Margin/Layout/Pages/InventoryPage/Details/Content/Name
 @onready var item_kind: Label = $Center/MainPanel/Margin/Layout/Pages/InventoryPage/Details/Content/Kind
@@ -58,13 +59,14 @@ const DEFAULT_SOUL_ICON := preload(
 @onready var soul_meta: Label = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Meta
 @onready var soul_description: Label = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Description
 @onready var soul_effect: Label = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Effect
-@onready var codex_filter: OptionButton = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter
+@onready var codex_filter: GridContainer = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter
 @onready var codex_list: ItemList = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Entries
 @onready var live_vfx_button: Button = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/ViewTabs/LiveVFX
 @onready var concept_art_button: Button = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/ViewTabs/ConceptArt
 @onready var preview: Control = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Preview
 @onready var concept_view: TextureRect = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/ConceptView
 @onready var static_icon: TextureRect = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/StaticIcon
+@onready var story_play_button: Button = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/PlayStory
 @onready var codex_scroll: ScrollContainer = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll
 @onready var codex_content: VBoxContainer = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content
 @onready var codex_top_inset: Control = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/TopInset
@@ -91,6 +93,8 @@ var _codex_row_entry_indices: Array[int] = []
 var _codex_entry_rows: Array[int] = []
 var _codex_view_mode := CODEX_VIEW_LIVE
 var _active_codex_section := "techniques"
+var _codex_section_filter := "techniques"
+var _selected_story_sequence: StringName
 var _active_concept_region := Rect2()
 
 
@@ -102,18 +106,18 @@ func _ready() -> void:
 	status_tab.pressed.connect(set_mode.bind(MODE_STATUS))
 	sword_souls_tab.pressed.connect(set_mode.bind(MODE_SWORD_SOULS))
 	codex_tab.pressed.connect(set_mode.bind(MODE_CODEX))
-	item_filter.item_selected.connect(_on_item_filter_selected)
-	codex_filter.item_selected.connect(_on_codex_filter_selected)
+	_wire_filter_buttons(item_filter, _on_item_filter_pressed)
+	_wire_filter_buttons(codex_filter, _on_codex_filter_pressed)
 	item_list.item_selected.connect(_on_item_selected)
 	equip_button.pressed.connect(_request_selected_equipment)
 	soul_list.item_selected.connect(_on_soul_selected)
 	codex_list.item_selected.connect(_on_codex_selected)
+	story_play_button.pressed.connect(_request_selected_story_review)
 	live_vfx_button.pressed.connect(set_codex_view_mode.bind(CODEX_VIEW_LIVE))
 	concept_art_button.get_parent().visible = false
 	concept_view.visible = false
 	codex_scroll.resized.connect(_schedule_codex_detail_alignment)
 	codex_content.resized.connect(_schedule_codex_detail_alignment)
-	_populate_filters()
 	set_mode(MODE_INVENTORY)
 	set_codex_view_mode(CODEX_VIEW_LIVE)
 	resized.connect(_update_journal_scale)
@@ -215,15 +219,18 @@ func set_mode(mode: StringName) -> void:
 
 
 func set_category(category: String) -> void:
-	current_category = category.to_lower()
-	var filter_index := 0
-	for index in item_filter.item_count:
-		if String(item_filter.get_item_metadata(index)) == current_category:
-			filter_index = index
-			break
-	item_filter.select(filter_index)
+	current_category = _select_filter_button(item_filter, category.to_lower(), "all")
 	_refresh_item_list()
 	category_selected.emit(current_category)
+
+
+func set_codex_section(section: String) -> void:
+	_codex_section_filter = _select_filter_button(codex_filter, section.to_lower(), "techniques")
+	_refresh_codex_list()
+
+
+func get_codex_section() -> String:
+	return _codex_section_filter
 
 
 func select_codex_entry(entry_id: String) -> void:
@@ -281,15 +288,17 @@ func get_selected_codex_id() -> String:
 
 func set_codex_view_mode(_mode: StringName) -> void:
 	var is_technique := _active_codex_section == "techniques"
+	var is_story := _active_codex_section == "story_review"
 	_codex_view_mode = CODEX_VIEW_LIVE
 	live_vfx_button.disabled = not is_technique
 	concept_art_button.disabled = true
 	concept_art_button.get_parent().visible = false
-	static_icon.visible = not is_technique
+	static_icon.visible = not is_technique and not is_story
 	preview.visible = is_technique
 	concept_view.visible = false
 	live_vfx_button.button_pressed = is_technique
 	concept_art_button.button_pressed = false
+	story_play_button.visible = is_story
 
 
 func get_codex_view_mode() -> StringName:
@@ -300,36 +309,36 @@ func get_active_concept_region() -> Rect2:
 	return _active_concept_region
 
 
-func _populate_filters() -> void:
-	item_filter.clear()
-	codex_filter.clear()
-	for entry in [
-		["全部 All", "all"],
-		["素材 Materials", "materials"],
-		["關鍵道具 Key Items", "quest"],
-		["裝備 Equipment", "gear"],
-		["消耗品 Supplies", "items"],
-	]:
-		item_filter.add_item(entry[0])
-		item_filter.set_item_metadata(item_filter.item_count - 1, entry[1])
-	for entry in [
-		["招式 Techniques", "techniques"],
-		["敵人 Enemies", "enemies"],
-		["劍魂 Sword Souls", "sword_souls"],
-		["裝備 Equipment", "equipment"],
-	]:
-		codex_filter.add_item(entry[0])
-		codex_filter.set_item_metadata(codex_filter.item_count - 1, entry[1])
+func _wire_filter_buttons(container: GridContainer, handler: Callable) -> void:
+	for child_variant in container.get_children():
+		var button := child_variant as Button
+		if button == null:
+			continue
+		button.pressed.connect(handler.bind(String(button.get_meta("filter_id", ""))))
 
 
-func _on_item_filter_selected(index: int) -> void:
-	current_category = String(item_filter.get_item_metadata(index))
+func _select_filter_button(container: GridContainer, requested: String, fallback: String) -> String:
+	var selected := fallback
+	for child_variant in container.get_children():
+		var button := child_variant as Button
+		if button != null and String(button.get_meta("filter_id", "")) == requested:
+			selected = requested
+			break
+	for child_variant in container.get_children():
+		var button := child_variant as Button
+		if button != null:
+			button.button_pressed = String(button.get_meta("filter_id", "")) == selected
+	return selected
+
+
+func _on_item_filter_pressed(filter_id: String) -> void:
+	current_category = _select_filter_button(item_filter, filter_id, "all")
 	_refresh_item_list()
 	category_selected.emit(current_category)
 
 
-func _on_codex_filter_selected(_index: int) -> void:
-	_refresh_codex_list()
+func _on_codex_filter_pressed(filter_id: String) -> void:
+	set_codex_section(filter_id)
 
 
 func _refresh_item_list() -> void:
@@ -420,7 +429,7 @@ func _refresh_codex_list() -> void:
 	_visible_codex.clear()
 	_codex_row_entry_indices.clear()
 	_codex_entry_rows.clear()
-	var section := String(codex_filter.get_item_metadata(codex_filter.selected)) if codex_filter.item_count > 0 else "techniques"
+	var section := _codex_section_filter
 	var filtered_entries: Array[Dictionary] = []
 	for entry in codex_entries:
 		var entry_section := String(entry.get("section", "techniques"))
@@ -458,6 +467,8 @@ func _refresh_codex_list() -> void:
 		)
 		_codex_row_entry_indices.append(visible_index)
 		_codex_entry_rows.append(entry_row)
+		if section == "story_review" and not bool(entry.get("playable", false)):
+			codex_list.set_item_disabled(entry_row, true)
 	if _visible_codex.is_empty():
 		_clear_codex_details()
 	else:
@@ -567,6 +578,19 @@ func _on_codex_selected(row: int) -> void:
 		concept_view.texture = null
 		_active_concept_region = Rect2()
 		preview.call("show_entry", entry)
+	elif _active_codex_section == "story_review":
+		codex_description.text = String(entry.get("description", "尚無說明。"))
+		codex_recipe.text = ""
+		codex_effect.text = ""
+		codex_effect.visible = false
+		codex_trigger.text = ""
+		codex_trigger.visible = false
+		codex_meta.text = String(entry.get("meta_summary", ""))
+		codex_growth.text = ""
+		codex_growth.visible = false
+		_selected_story_sequence = StringName(entry.get("sequence_id", entry.get("id", "")))
+		story_play_button.disabled = not bool(entry.get("playable", false))
+		preview.call("show_entry", {})
 	else:
 		codex_description.text = String(entry.get("description", "尚無說明。"))
 		codex_recipe.text = ""
@@ -584,6 +608,12 @@ func _on_codex_selected(row: int) -> void:
 	set_codex_view_mode(_codex_view_mode)
 	codex_scroll.scroll_vertical = 0
 	call_deferred("_schedule_codex_detail_alignment")
+
+
+func _request_selected_story_review() -> void:
+	if _active_codex_section != "story_review" or _selected_story_sequence.is_empty() or story_play_button.disabled:
+		return
+	story_review_requested.emit(_selected_story_sequence)
 
 
 func _schedule_codex_detail_alignment() -> void:
@@ -632,6 +662,7 @@ func _clear_soul_details() -> void:
 
 func _clear_codex_details() -> void:
 	_active_codex_section = "techniques"
+	_selected_story_sequence = &""
 	codex_name.text = "尚無紀錄"
 	codex_kind.text = "此章目前沒有可查閱的內容。"
 	codex_meta.text = ""
@@ -644,6 +675,7 @@ func _clear_codex_details() -> void:
 	static_icon.texture = DEFAULT_ITEM_ICON
 	_active_concept_region = Rect2()
 	preview.call("show_entry", {})
+	story_play_button.visible = false
 	set_codex_view_mode(CODEX_VIEW_LIVE)
 
 

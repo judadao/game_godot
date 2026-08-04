@@ -228,6 +228,7 @@ func _ready() -> void:
 	story_director.dialogue_requested.connect(_on_story_dialogue_requested)
 	story_director.story_progress_changed.connect(_on_story_progress_changed)
 	story_director.sequence_finished.connect(_on_story_sequence_finished)
+	story_director.review_finished.connect(_on_story_review_finished)
 	if not bool(divine_gift_manager.call("load_catalog")):
 		push_error("Divine Gift catalog failed to load.")
 	if not bool(combo_finisher_catalog.call("load_catalog")):
@@ -403,8 +404,6 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 	_update_card_hand_visibility()
 	_apply_town_visual_progress()
 	map_loaded.emit(current_map)
-	if _current_map_matches(TOWN_SCENE_PATH):
-		story_director.request_chapter_one_opening()
 	return current_map
 
 
@@ -423,6 +422,34 @@ func _on_story_sequence_finished(_sequence_id: StringName) -> void:
 	var dialogue_ui := get_open_ui("DialogueUI")
 	if dialogue_ui != null:
 		close_ui(dialogue_ui)
+
+
+func _on_inventory_story_review_requested(sequence_id: StringName, inventory_ui: Control) -> void:
+	if inventory_ui != null and is_instance_valid(inventory_ui):
+		close_ui(inventory_ui)
+	var dialogue_ui := open_ui("DialogueUI", dialogue_scene, false)
+	if dialogue_ui == null or not story_director.start_review_sequence(sequence_id, dialogue_ui):
+		if dialogue_ui != null:
+			close_ui(dialogue_ui)
+		_open_story_review_codex(sequence_id)
+
+
+func _on_story_review_finished(sequence_id: StringName) -> void:
+	var dialogue_ui := get_open_ui("DialogueUI")
+	if dialogue_ui != null:
+		close_ui(dialogue_ui)
+	_open_story_review_codex(sequence_id)
+
+
+func _open_story_review_codex(sequence_id: StringName = &"") -> void:
+	_open_inventory()
+	var inventory_ui := get_open_ui("InventoryUI")
+	if inventory_ui == null:
+		return
+	inventory_ui.call("set_mode", &"codex")
+	inventory_ui.call("set_codex_section", "story_review")
+	if not sequence_id.is_empty():
+		inventory_ui.call("select_codex_entry", String(sequence_id))
 
 
 func load_hud() -> void:
@@ -3972,6 +3999,7 @@ func _open_inventory() -> void:
 	inventory_ui.call("set_sword_souls", _inventory_sword_soul_projection())
 	inventory_ui.call("set_codex_entries", _inventory_compendium_projection())
 	_connect_with_source_if_present(inventory_ui, &"equip_requested", &"_on_inventory_equip_requested")
+	_connect_with_source_if_present(inventory_ui, &"story_review_requested", &"_on_inventory_story_review_requested")
 
 
 func _inventory_projection() -> Array[Dictionary]:
@@ -4211,6 +4239,7 @@ func _inventory_compendium_projection() -> Array[Dictionary]:
 	result.append_array(_inventory_enemy_codex_projection())
 	result.append_array(_inventory_sword_soul_codex_projection())
 	result.append_array(_inventory_equipment_codex_projection())
+	result.append_array(story_director.get_review_entries())
 	return result
 
 

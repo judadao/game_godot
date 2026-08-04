@@ -153,9 +153,10 @@ Game
   PlayerBlacksmith、TownHall 等 runtime UI。
 - Dynamic damage number、summon visual、boss telegraph 使用短生命週期 Node/Tween，
   建立端同時負責 cleanup。
-- `StoryDirector` 擁有 chapter checkpoint／story flag 投影與開場觸發；
-  `DialogueRunner` 只依 catalog 將逐句 speaker、文字與情緒投影到既有 `DialogueUI`，
-  不建立第二套對話畫面。
+- `StoryDirector` 保留 chapter checkpoint／story flag 的正式流程 API，但目前第一章
+  只由 Inventory 圖鑑的「劇情回顧」以 read-only review mode 呼叫；載入 Town 不得
+  自動觸發。`DialogueRunner` 只依 catalog 將逐句 speaker、文字與情緒投影到既有
+  `DialogueUI`，不建立第二套對話畫面；回顧完成不得 mutation `MetaState`。
 
 ### 3.3 RefCounted ownership
 

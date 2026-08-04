@@ -303,11 +303,77 @@ theme_override_colors/font_color = Color(0.23, 0.16, 0.11, 1)
 theme_override_font_sizes/font_size = 21
 text = "背包內容 · PACK CONTENTS"
 
-[node name="Filter" type="OptionButton" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser"]
-custom_minimum_size = Vector2(0, 34)
+[node name="Filter" type="GridContainer" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.15, 0.11, 1)
-theme_override_styles/normal = SubResource("section")
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+columns = 2
+
+[node name="All" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser/Filter"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "全部"
+tooltip_text = "All"
+metadata/filter_id = "all"
+
+[node name="Materials" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser/Filter"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "素材"
+tooltip_text = "Materials"
+metadata/filter_id = "materials"
+
+[node name="KeyItems" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser/Filter"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "關鍵道具"
+tooltip_text = "Key Items"
+metadata/filter_id = "quest"
+
+[node name="Equipment" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser/Filter"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "裝備"
+tooltip_text = "Equipment"
+metadata/filter_id = "gear"
+
+[node name="Supplies" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser/Filter"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "消耗品"
+tooltip_text = "Supplies"
+metadata/filter_id = "items"
 
 [node name="Items" type="ItemList" parent="Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser"]
 layout_mode = 2
@@ -646,11 +712,77 @@ theme_override_colors/font_color = Color(0.2, 0.14, 0.1, 1)
 theme_override_font_sizes/font_size = 21
 text = "圖鑑"
 
-[node name="Filter" type="OptionButton" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser"]
-custom_minimum_size = Vector2(0, 34)
+[node name="Filter" type="GridContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.15, 0.11, 1)
-theme_override_styles/normal = SubResource("section")
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+columns = 2
+
+[node name="Techniques" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "招式"
+tooltip_text = "Techniques"
+metadata/filter_id = "techniques"
+
+[node name="Enemies" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "敵人"
+tooltip_text = "Enemies"
+metadata/filter_id = "enemies"
+
+[node name="SwordSouls" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "劍魂"
+tooltip_text = "Sword Souls"
+metadata/filter_id = "sword_souls"
+
+[node name="Equipment" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "裝備"
+tooltip_text = "Equipment"
+metadata/filter_id = "equipment"
+
+[node name="StoryReview" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "劇情回顧"
+tooltip_text = "Story Review"
+metadata/filter_id = "story_review"
 
 [node name="Entries" type="ItemList" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser"]
 layout_mode = 2
@@ -719,6 +851,16 @@ mouse_filter = 2
 texture_filter = 1
 expand_mode = 1
 stretch_mode = 5
+
+[node name="PlayStory" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
+visible = false
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "播放本節 · PLAY SECTION"
 
 [node name="Info" type="PanelContainer" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
 layout_mode = 2

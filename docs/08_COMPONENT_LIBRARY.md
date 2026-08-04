@@ -658,6 +658,8 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
 - chapter modes：`bag`、`status`、`sword_souls`、`codex`
 - authored parts：open-journal background、四個 icon tabs、四個 page containers、filters、
   lists、status/equipment slots、detail panels、equip action
+- filter contract：Bag 與 Codex 的 `Filter` 都是常駐 `GridContainer` Button 集合，
+  以 `metadata/filter_id` 保存 stable category；Inventory subtree 不得出現 `OptionButton`
 - public projection API：`set_items()`、`set_player_status()`、
   `set_equipment_entries()`、`set_sword_souls()`、`set_codex_entries()`
 - technique ordering：`set_codex_entries()` 對 39 招使用 projection 的
@@ -671,11 +673,13 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
   `effect_summary`，也不顯示系列語彙、特效狀態、逐張劍魂效果或演出流程。
   `Recipe` 是 editor-authored Label，不由 runtime 重建
 - action boundary：`equip_requested(item_id)`；父 Game 驗證、mutation、save 與 refresh
+- story review boundary：`story_review_requested(sequence_id)` 只要求父 Game 以既有
+  `DialogueUI` 啟動 read-only review；完成後返回 `story_review` 分類，不修改 story flags
 - empty/selection/focus：每頁 deterministic initial focus；同一時間恰好一個 page visible
 - safe area：底部保留 32px page-curl inset；Codex Info 的 Panel 內嵌 vertical
   ScrollContainer、26px unpainted footer 與 scroll-content BottomInset
-- visual boundary：招式使用 `InventoryCodexPreview`；其他圖鑑分類使用
-  static icon，不 runtime 偽造技能 VFX
+- visual boundary：招式使用 `InventoryCodexPreview`；敵人／劍魂／裝備使用 static icon；
+  劇情回顧不偽造技能 VFX，而顯示播放動作與文字摘要
 
 ## 13. HealthBar
 

@@ -70,14 +70,15 @@ func _run() -> void:
 
 	var item_filter := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser/Filter"
-	) as OptionButton
+	) as GridContainer
 	var item_rows := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/InventoryPage/Browser/Items"
 	) as ItemList
 	_expect(item_rows != null and item_rows.get_theme_color("font_color").get_luminance() >= 0.55, "Unselected backpack rows need readable contrast on the dark list surface.")
-	_expect(_has_filter_metadata(item_filter, "materials"), "Backpack must have a materials chapter filter.")
-	_expect(_has_filter_metadata(item_filter, "quest"), "Backpack must have a key-item chapter filter.")
-	_expect(_has_filter_metadata(item_filter, "gear"), "Backpack must have an equipment chapter filter.")
+	_expect(item_filter != null, "Backpack filters must be always-visible buttons, not a dropdown.")
+	_expect(_has_filter_button(item_filter, "materials"), "Backpack must have a materials filter button.")
+	_expect(_has_filter_button(item_filter, "quest"), "Backpack must have a key-item filter button.")
+	_expect(_has_filter_button(item_filter, "gear"), "Backpack must have an equipment filter button.")
 	var equip_button := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/InventoryPage/Details/Content/Equip"
 	) as Button
@@ -130,7 +131,7 @@ func _run() -> void:
 
 	var codex_filter := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter"
-	) as OptionButton
+	) as GridContainer
 	var codex_rows := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Entries"
 	) as ItemList
@@ -151,11 +152,13 @@ func _run() -> void:
 	)
 	_expect(codex_footer_safe != null and codex_footer_safe.custom_minimum_size.y >= 26.0, "Codex details need an unpainted safe footer below the clipped scroll viewport.")
 	_expect(codex_bottom_inset != null and codex_bottom_inset.custom_minimum_size.y >= 28.0, "Codex scroll content needs bottom space so the final line can rise above the footer mask.")
-	for category in ["techniques", "enemies", "sword_souls", "equipment"]:
+	_expect(codex_filter != null, "Codex filters must be always-visible buttons, not a dropdown.")
+	for category in ["techniques", "enemies", "sword_souls", "equipment", "story_review"]:
 		_expect(
-			_has_filter_metadata(codex_filter, category),
+			_has_filter_button(codex_filter, category),
 			"Codex must expose the %s section." % category
 		)
+	_expect(ui.find_children("*", "OptionButton", true, false).is_empty(), "The I journal must not retain dropdown filters.")
 	var long_codex: Array[Dictionary] = []
 	for index in 20:
 		long_codex.append({"section": "techniques", "id": "technique_%d" % index, "name": "Technique %d" % index})
@@ -174,11 +177,12 @@ func _run() -> void:
 	quit(1 if _failures > 0 else 0)
 
 
-func _has_filter_metadata(filter: OptionButton, expected: String) -> bool:
+func _has_filter_button(filter: GridContainer, expected: String) -> bool:
 	if filter == null:
 		return false
-	for index in filter.item_count:
-		if String(filter.get_item_metadata(index)) == expected:
+	for child_variant in filter.get_children():
+		var button := child_variant as Button
+		if button != null and String(button.get_meta("filter_id", "")) == expected:
 			return true
 	return false
 

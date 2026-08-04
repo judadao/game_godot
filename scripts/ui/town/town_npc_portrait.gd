@@ -21,6 +21,9 @@ var _atlas_columns := 1
 var _atlas_rows := 1
 var _atlas_fps := FRAME_RATE
 var _state_rows: Dictionary = {}
+var _crop_mode: StringName = &"full_body"
+var _one_shot := false
+var _animation_finished := false
 
 
 func _ready() -> void:
@@ -64,6 +67,9 @@ func configure_animation_atlas(portrait: Dictionary) -> bool:
 	_atlas_columns = columns
 	_atlas_rows = rows
 	_atlas_fps = maxf(0.1, float(portrait.get("fps", FRAME_RATE)))
+	_crop_mode = StringName(portrait.get("crop_mode", "full_body"))
+	_one_shot = bool(portrait.get("one_shot", false))
+	_animation_finished = false
 	_state_rows = (state_rows_variant as Dictionary).duplicate(true)
 	_atlas_texture = AtlasTexture.new()
 	_atlas_texture.atlas = character_texture
@@ -80,15 +86,23 @@ func play_state(state: StringName) -> bool:
 	if not SUPPORTED_STATES.has(state):
 		return false
 	_active_state = state
-	_elapsed = phase_offset
-	_pose_frame = int(floor(_elapsed * _atlas_fps)) % _atlas_columns
+	_elapsed = 0.0
+	_pose_frame = 0
+	_animation_finished = false
 	_apply_pose()
 	return true
 
 
 func advance_animation(delta: float) -> void:
+	if _one_shot and _animation_finished:
+		return
 	_elapsed += maxf(delta, 0.0)
-	_pose_frame = int(floor(_elapsed * _atlas_fps)) % _atlas_columns
+	var raw_frame := int(floor(_elapsed * _atlas_fps))
+	if _one_shot:
+		_pose_frame = mini(raw_frame, _atlas_columns - 1)
+		_animation_finished = raw_frame >= _atlas_columns - 1
+	else:
+		_pose_frame = raw_frame % _atlas_columns
 	_apply_pose()
 
 
@@ -100,18 +114,36 @@ func get_supported_states() -> Array[StringName]:
 	return SUPPORTED_STATES.duplicate()
 
 
+func get_crop_mode() -> StringName:
+	return _crop_mode
+
+
+func is_animation_finished() -> bool:
+	return _animation_finished
+
+
+func get_pose_frame() -> int:
+	return _pose_frame
+
+
 func _layout_portrait() -> void:
 	if portrait_texture == null or character_texture == null or size.x <= 0.0:
 		return
 	var cell_width := float(character_texture.get_width()) / maxf(1.0, float(_atlas_columns))
 	var cell_height := float(character_texture.get_height()) / maxf(1.0, float(_atlas_rows))
 	var aspect: float = cell_height / maxf(1.0, cell_width)
-	var rendered_height: float = maxf(size.y, size.x * aspect)
+	var rendered_width := size.x
+	var rendered_height: float = maxf(size.y, rendered_width * aspect)
+	var top_offset := -rendered_height * 0.015
+	if _crop_mode == &"half_body":
+		rendered_width = size.x * 1.48
+		rendered_height = maxf(size.y * 1.55, rendered_width * aspect)
+		top_offset = -rendered_height * 0.12
 	portrait_motion.position = Vector2.ZERO
 	portrait_motion.size = size
 	portrait_motion.pivot_offset = Vector2(size.x * 0.5, size.y)
-	portrait_texture.position = Vector2(0.0, -rendered_height * 0.015)
-	portrait_texture.size = Vector2(size.x, rendered_height)
+	portrait_texture.position = Vector2((size.x - rendered_width) * 0.5, top_offset)
+	portrait_texture.size = Vector2(rendered_width, rendered_height)
 	_apply_pose()
 
 

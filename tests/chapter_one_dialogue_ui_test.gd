@@ -28,6 +28,22 @@ func _run() -> void:
 	_expect(portrait_frame != null, "Dialogue UI must expose its portrait in the upper-left layer.")
 	_expect(animated_portrait != null, "Dialogue UI must use the reusable animated NPC portrait component.")
 	_expect(dialogue.has_method("present_story_line"), "Dialogue UI must accept a complete story line presentation.")
+	if animated_portrait != null:
+		_expect(animated_portrait.has_method("get_crop_mode"), "Story portraits must expose their crop contract.")
+		_expect(animated_portrait.has_method("is_animation_finished"), "Story portraits must expose one-shot completion.")
+
+	var catalog := StoryDialogueCatalog.new()
+	_expect(catalog.load_catalog(), "Dialogue layout test must load the story catalog.")
+	var opening := catalog.get_sequence(&"chapter_01_town_square")
+	var first_line := (opening.get("lines", []) as Array)[0] as Dictionary
+	dialogue.call("present_story_line", first_line, catalog.get_speaker(&"priest"))
+	var dialogue_text := dialogue.get_node("DialoguePanel/DialogueText") as RichTextLabel
+	var choices := dialogue.get_node("DialoguePanel/ChoicesContainer") as VBoxContainer
+	_expect(dialogue_text.anchor_top <= 0.13, "Story text must start close to the dialogue panel's top edge.")
+	_expect(dialogue_text.anchor_right >= 0.9, "Story text must use the space left by hidden choices.")
+	_expect(not choices.visible, "An empty story choice column must not reserve visible whitespace.")
+	if animated_portrait != null and animated_portrait.has_method("get_crop_mode"):
+		_expect(animated_portrait.call("get_crop_mode") == &"half_body", "Story portraits must render as half-body crops.")
 
 	if portrait_frame != null and dialogue_panel != null:
 		for viewport_size in VIEWPORT_SIZES:
