@@ -7,7 +7,10 @@ const AUTUMN_TERRAIN_ATLAS := preload(
 const FLOOR_REGION := Rect2(14, 320, 994, 170)
 const PLATFORM_REGION := Rect2(24, 684, 506, 198)
 const ARENA_WIDTH := 1664.0
+const ARENA_HEIGHT := 900.0
 const FLOOR_TOP := 500.0
+const FLOOR_EDGE_TRIM := 18.0
+const PLATFORM_LANDING_MARGIN := 16.0
 
 @export var platform_color := Color("4a5265")
 @export var rim_color := Color("d7b96b")
@@ -17,21 +20,36 @@ const FLOOR_TOP := 500.0
 @export var platform_region := PLATFORM_REGION
 
 const PLATFORM_SPECS := [
-	[Vector2(290, 390), 260.0],
-	[Vector2(650, 290), 230.0],
-	[Vector2(1014, 390), 260.0],
-	[Vector2(1370, 275), 230.0],
-	[Vector2(832, 185), 220.0],
-	[Vector2(430, 110), 180.0],
-	[Vector2(1230, 105), 180.0],
+	[Vector2(300, 390), 250.0],
+	[Vector2(555, 300), 220.0],
+	[Vector2(810, 390), 250.0],
+	[Vector2(1065, 300), 220.0],
+	[Vector2(1320, 390), 250.0],
+	[Vector2(730, 205), 205.0],
+	[Vector2(985, 205), 205.0],
 ]
 
 
 func _ready() -> void:
+	_fit_backdrop()
 	_build_floor_art()
 	for index in PLATFORM_SPECS.size():
 		var spec: Array = PLATFORM_SPECS[index]
 		_build_platform(index, spec[0] as Vector2, float(spec[1]))
+
+
+func _fit_backdrop() -> void:
+	var backdrop := get_node_or_null("../Backdrop") as Sprite2D
+	if backdrop == null or backdrop.texture == null:
+		return
+	var texture_size := backdrop.texture.get_size()
+	if texture_size.x <= 0.0 or texture_size.y <= 0.0:
+		return
+	backdrop.position = Vector2(ARENA_WIDTH * 0.5, ARENA_HEIGHT * 0.5)
+	backdrop.scale = Vector2(
+		ARENA_WIDTH / texture_size.x,
+		ARENA_HEIGHT / texture_size.y
+	)
 
 
 func _build_platform(index: int, platform_position: Vector2, width: float) -> void:
@@ -39,10 +57,13 @@ func _build_platform(index: int, platform_position: Vector2, width: float) -> vo
 	platform.name = "JumpPlatform%02d" % (index + 1)
 	platform.position = platform_position
 	var collision := CollisionShape2D.new()
+	collision.name = "CollisionShape2D"
 	var shape := RectangleShape2D.new()
-	shape.size = Vector2(width, 12)
+	shape.size = Vector2(width, 20)
 	collision.shape = shape
+	collision.position.y = 5.0
 	collision.one_way_collision = true
+	collision.one_way_collision_margin = PLATFORM_LANDING_MARGIN
 	platform.add_child(collision)
 	var visual := Polygon2D.new()
 	visual.polygon = PackedVector2Array([
@@ -74,20 +95,19 @@ func _build_platform(index: int, platform_position: Vector2, width: float) -> vo
 func _build_floor_art() -> void:
 	if terrain_texture == null:
 		return
-	var panel_width := ARENA_WIDTH * 0.5
-	for index in 2:
-		var panel := Sprite2D.new()
-		panel.name = "TerrainFloorPanel%02d" % (index + 1)
-		panel.texture = _atlas_texture(floor_region)
-		panel.position = Vector2(
-			panel_width * (float(index) + 0.5),
-			FLOOR_TOP + floor_region.size.y * 0.5
-		)
-		panel.scale = Vector2(panel_width / floor_region.size.x, 1.0)
-		panel.modulate = terrain_modulate
-		panel.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		panel.z_index = 6
-		add_child(panel)
+	var safe_region := Rect2(
+		floor_region.position + Vector2(FLOOR_EDGE_TRIM, 0.0),
+		Vector2(floor_region.size.x - FLOOR_EDGE_TRIM * 2.0, floor_region.size.y)
+	)
+	var panel := Sprite2D.new()
+	panel.name = "TerrainFloorPanel01"
+	panel.texture = _atlas_texture(safe_region)
+	panel.position = Vector2(ARENA_WIDTH * 0.5, FLOOR_TOP + safe_region.size.y * 0.5)
+	panel.scale = Vector2(ARENA_WIDTH / safe_region.size.x, 1.0)
+	panel.modulate = terrain_modulate
+	panel.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	panel.z_index = 6
+	add_child(panel)
 
 
 func _atlas_texture(region: Rect2) -> AtlasTexture:

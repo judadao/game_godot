@@ -59,16 +59,39 @@ func _run() -> void:
 			var height := int(arena.get_meta("map_height", 0))
 			_expect(width >= 1600 and width <= 1700, "%s boss arena must be about 1.3 screens wide." % region_id)
 			_expect(height >= 800, "%s boss arena must provide vertical play space." % region_id)
+			var backdrop := arena.get_node_or_null("Backdrop") as Sprite2D
+			var expected_backdrop_path := _expected_boss_backdrop_path(region_id)
+			_expect(
+				backdrop != null
+					and backdrop.texture != null
+					and backdrop.texture.resource_path == expected_backdrop_path,
+				"%s boss arena must use its dedicated full-height authored wall." % region_id
+			)
+			if backdrop != null and backdrop.texture != null:
+				var backdrop_size := backdrop.texture.get_size() * backdrop.scale.abs()
+				_expect(
+					backdrop_size.x >= float(width) - 1.0
+						and backdrop_size.y >= float(height) - 1.0,
+					"%s boss wall must cover the complete camera bounds without black bands." % region_id
+				)
 			_expect(arena.has_node("ArenaPlatforms") and arena.get_node("ArenaPlatforms").get_child_count() >= 4, "%s boss arena must provide jump platforms." % region_id)
 			_expect(
-				arena.find_children("TerrainFloorPanel*", "Sprite2D", true, false).size() >= 2,
-				"%s boss arena must use authored floor art instead of an exposed color block." % region_id
+				arena.find_children("TerrainFloorPanel*", "Sprite2D", true, false).size() == 1,
+				"%s boss arena must use one continuous authored floor strip without a center seam." % region_id
 			)
 			_expect(
 				arena.find_children("TerrainPlatformArt", "Sprite2D", true, false).size() >= 7,
 				"%s boss arena jump platforms must use authored terrain art." % region_id
 			)
 			var arena_builder := arena.get_node("ArenaPlatforms")
+			_expect(
+				_boss_platforms_are_reachable(arena_builder),
+				"%s boss platforms must form a monster-reachable chain." % region_id
+			)
+			_expect(
+				_boss_platform_collisions_are_stable(arena_builder),
+				"%s boss one-way platforms must align with their art and keep a generous landing margin." % region_id
+			)
 			var arena_terrain := arena_builder.get("terrain_texture") as Texture2D
 			_expect(
 				arena_terrain != null and arena_terrain.resource_path == _expected_terrain_path(region_id),
@@ -106,6 +129,57 @@ func _expected_terrain_path(region_id: StringName) -> String:
 			return "res://assets/environments/expedition/generated/heaven_terrain_atlas.png"
 		_:
 			return "res://assets/environments/autumn_town_style/generated/autumn_ground_atlas.png"
+
+
+func _expected_boss_backdrop_path(region_id: StringName) -> String:
+	return "res://assets/environments/expedition/generated/%s_boss_backdrop.png" % region_id
+
+
+func _boss_platforms_are_reachable(arena_builder: Node) -> bool:
+	const FLOOR_Y := 500.0
+	const MAX_HORIZONTAL_GAP := 280.0
+	const MAX_VERTICAL_STEP := 130.0
+	var platforms := arena_builder.find_children("JumpPlatform*", "StaticBody2D", false, false)
+	for platform_variant in platforms:
+		var platform := platform_variant as StaticBody2D
+		if FLOOR_Y - platform.position.y <= MAX_VERTICAL_STEP:
+			continue
+		var has_launch_surface := false
+		for candidate_variant in platforms:
+			var candidate := candidate_variant as StaticBody2D
+			if candidate == platform or candidate.position.y <= platform.position.y:
+				continue
+			if (
+				candidate.position.y - platform.position.y <= MAX_VERTICAL_STEP
+				and absf(candidate.position.x - platform.position.x) <= MAX_HORIZONTAL_GAP
+			):
+				has_launch_surface = true
+				break
+		if not has_launch_surface:
+			return false
+	return not platforms.is_empty()
+
+
+func _boss_platform_collisions_are_stable(arena_builder: Node) -> bool:
+	var platforms := arena_builder.find_children("JumpPlatform*", "StaticBody2D", false, false)
+	for platform_variant in platforms:
+		var platform := platform_variant as StaticBody2D
+		var collision := platform.find_child("CollisionShape2D", false, false) as CollisionShape2D
+		var art := platform.find_child("TerrainPlatformArt", false, false) as Sprite2D
+		var shape := collision.shape as RectangleShape2D if collision != null else null
+		if (
+			collision == null
+			or not collision.one_way_collision
+			or collision.one_way_collision_margin < 12.0
+			or shape == null
+			or art == null
+		):
+			return false
+		var collision_top := collision.position.y - shape.size.y * 0.5
+		var art_top := art.position.y - art.texture.get_height() * absf(art.scale.y) * 0.5
+		if not is_equal_approx(collision_top, art_top):
+			return false
+	return not platforms.is_empty()
 
 
 func _has_visible_texture(sprite: Sprite2D) -> bool:

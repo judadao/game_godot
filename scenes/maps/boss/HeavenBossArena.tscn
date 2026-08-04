@@ -1,11 +1,10 @@
 [gd_scene load_steps=4 format=3]
 [ext_resource type="PackedScene" path="res://scenes/maps/boss/RegionalBossArenaTemplate.tscn" id="1"]
-[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/heaven_sanctuary_background.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/heaven_boss_backdrop.png" id="2"]
 [ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/heaven_terrain_atlas.png" id="3"]
 [node name="HeavenBossArena" instance=ExtResource("1")]
 metadata/expedition_variant_id = &"heaven"
 [node name="Backdrop" parent="." index="0"]
-scale = Vector2(0.995, 0.956)
 texture = ExtResource("2")
 [node name="ArenaPlatforms" parent="." index="3"]
 platform_color = Color(0.52, 0.50, 0.42, 1)

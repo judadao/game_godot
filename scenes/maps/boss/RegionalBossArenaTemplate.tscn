@@ -1,6 +1,6 @@
 [gd_scene load_steps=11 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/environments/autumn_town_style/generated/autumn_forest_background.png" id="1_background"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/autumn_boss_backdrop.png" id="1_background"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2_player"]
 [ext_resource type="Script" path="res://scripts/combat/regional_boss_director.gd" id="3_director"]
 [ext_resource type="PackedScene" path="res://scenes/props/Portal.tscn" id="4_portal"]
@@ -25,7 +25,6 @@ metadata/camera_limit_bottom = 900
 
 [node name="Backdrop" type="Sprite2D" parent="."]
 position = Vector2(832, 450)
-scale = Vector2(1.083, 0.879)
 texture = ExtResource("1_background")
 texture_filter = 1
 z_index = -100
