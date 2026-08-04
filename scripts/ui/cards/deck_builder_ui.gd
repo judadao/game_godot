@@ -6,8 +6,8 @@ signal loadout_confirmed(deck_ids: Array[String], auto_attack_card_id: String)
 signal canceled
 
 const SLOT_COUNT := 4
-const MIN_HEALING_COUNT := 1
-const SLOT_ROLES := ["技能 1", "技能 2", "技能 3", "技能 4"]
+const SLOT_ROLES := ["固定治療", "劍魂 1", "劍魂 2", "劍魂 3"]
+const SKILL_CATALOG_PATH := "res://data/skills.json"
 const GEOMETRY_SCRIPT := preload("res://scripts/ui/cards/loadout_card_geometry.gd")
 const INK := Color(0.010, 0.014, 0.021, 0.985)
 const INK_RAISED := Color(0.025, 0.030, 0.042, 0.985)
@@ -21,8 +21,10 @@ var _counts: Dictionary = {}
 var _slot_card_ids: Array[String] = ["", "", "", ""]
 var _active_slot_index := 0
 var _visible_choice_ids: Array[String] = []
+var _selected_skill_recipe_ids: Array[String] = []
 var _auto_attack_card_id := "ember_bolt"
 var _finisher_catalog := ComboFinisherCatalog.new()
+var _skill_catalog := SkillRecipeManager.new()
 var _context_id: StringName
 
 var _slot_buttons: Array[Button] = []
@@ -37,6 +39,9 @@ var _recipe_summary: Label
 var _count_label: Label
 var _confirm_button: Button
 var _auto_attack_selector: OptionButton
+var _skill_recipe_selector: VBoxContainer
+var _recipe_choice_grid: GridContainer
+var _recipe_scroll: ScrollContainer
 
 
 func _ready() -> void:
@@ -44,6 +49,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_finisher_catalog.load_catalog()
+	_skill_catalog.load_catalog(SKILL_CATALOG_PATH)
 	_build_layout()
 	_apply_responsive_scale()
 	if not get_viewport().size_changed.is_connected(_apply_responsive_scale):
@@ -58,6 +64,7 @@ func configure(
 ) -> void:
 	_catalog.clear()
 	_counts.clear()
+	_selected_skill_recipe_ids.clear()
 	for card_variant in cards:
 		if not card_variant is Dictionary:
 			continue
@@ -88,6 +95,19 @@ func get_context_id() -> StringName:
 func _restore_fixed_loadout(requested: Array[String]) -> void:
 	_slot_card_ids = ["", "", "", ""]
 	var restored: Array[String] = []
+	var fixed_healing := ""
+	for card_id in requested:
+		var requested_card := _find_catalog_card(card_id)
+		if (
+			_is_combat_hand_card(requested_card)
+			and String(requested_card.get("type", "")) == "healing"
+		):
+			fixed_healing = card_id
+			break
+	if fixed_healing.is_empty():
+		fixed_healing = _first_available_card("healing", [])
+	if not fixed_healing.is_empty():
+		restored.append(fixed_healing)
 	for card_id in requested:
 		var card := _find_catalog_card(card_id)
 		if (
@@ -97,12 +117,6 @@ func _restore_fixed_loadout(requested: Array[String]) -> void:
 		):
 			continue
 		restored.append(card_id)
-	if _healing_count(restored) < MIN_HEALING_COUNT:
-		var fallback_healing := _first_available_card("healing", restored)
-		if not fallback_healing.is_empty():
-			restored.push_front(fallback_healing)
-			if restored.size() > SLOT_COUNT:
-				restored.pop_back()
 	while restored.size() < SLOT_COUNT:
 		var fallback := _first_available_card("", restored)
 		if fallback.is_empty():
@@ -175,6 +189,35 @@ func get_visible_choice_ids() -> Array[String]:
 	return _visible_choice_ids.duplicate()
 
 
+func get_selected_skill_recipe_ids() -> Array[String]:
+	return _selected_skill_recipe_ids.duplicate()
+
+
+func is_skill_recipe_selectable(skill_id: String) -> bool:
+	if _selected_skill_recipe_ids.has(skill_id):
+		return true
+	var recipe := _finisher_recipe_for_skill(skill_id)
+	if recipe.is_empty() or not _recipe_requirements_available(recipe):
+		return false
+	var candidate_ids := _selected_skill_recipe_ids.duplicate()
+	candidate_ids.append(skill_id)
+	return _can_fit_skill_recipes(candidate_ids)
+
+
+func choose_skill_recipe(skill_id: String) -> bool:
+	if _selected_skill_recipe_ids.has(skill_id):
+		_selected_skill_recipe_ids.erase(skill_id)
+		_apply_selected_skill_recipes_to_slots()
+		_refresh_all()
+		return true
+	if not is_skill_recipe_selectable(skill_id):
+		return false
+	_selected_skill_recipe_ids.append(skill_id)
+	_apply_selected_skill_recipes_to_slots()
+	_refresh_all()
+	return true
+
+
 func select_slot(slot_index: int) -> void:
 	if slot_index < 0 or slot_index >= SLOT_COUNT:
 		return
@@ -194,6 +237,7 @@ func choose_card_for_active_slot(card_id: String) -> bool:
 		return false
 	_slot_card_ids[_active_slot_index] = card_id
 	_sync_counts_from_slots()
+	_prune_selected_skill_recipes_for_loadout()
 	_refresh_all()
 	return true
 
@@ -246,8 +290,8 @@ func _build_layout() -> void:
 	type_legend.alignment = BoxContainer.ALIGNMENT_CENTER
 	type_legend.add_theme_constant_override("separation", 20)
 	column.add_child(type_legend)
-	_add_legend_chip(type_legend, "✚  治療 HEALING  ·  至少保留 1 張", HEALING_ACCENT)
-	_add_legend_chip(type_legend, "◆  連段 COMBO  ·  組成終結技", COMBO_ACCENT)
+	_add_legend_chip(type_legend, "✚  第 1 格固定治療", HEALING_ACCENT)
+	_add_legend_chip(type_legend, "◆  後 3 格組成招式劍魂", COMBO_ACCENT)
 	_add_legend_chip(type_legend, "先點上方卡槽，再從下方替換", BRIGHT_GOLD)
 
 	_auto_attack_selector = OptionButton.new()
@@ -256,6 +300,30 @@ func _build_layout() -> void:
 	_auto_attack_selector.add_theme_font_size_override("font_size", 16)
 	_auto_attack_selector.item_selected.connect(_on_auto_attack_selected)
 	column.add_child(_auto_attack_selector)
+
+	_skill_recipe_selector = VBoxContainer.new()
+	_skill_recipe_selector.name = "SkillRecipeSelector"
+	_skill_recipe_selector.add_theme_constant_override("separation", 4)
+	column.add_child(_skill_recipe_selector)
+	var recipe_header := Label.new()
+	recipe_header.name = "Header"
+	recipe_header.text = "招式選擇  ·  點選後自動填入所需劍魂，可相容的招式可繼續疊加"
+	recipe_header.add_theme_font_size_override("font_size", 15)
+	recipe_header.add_theme_color_override("font_color", BRIGHT_GOLD)
+	_skill_recipe_selector.add_child(recipe_header)
+	var recipe_scroll := ScrollContainer.new()
+	_recipe_scroll = recipe_scroll
+	recipe_scroll.name = "RecipeScroll"
+	recipe_scroll.custom_minimum_size = Vector2(0, 86)
+	recipe_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_skill_recipe_selector.add_child(recipe_scroll)
+	_recipe_choice_grid = GridContainer.new()
+	_recipe_choice_grid.name = "RecipeChoices"
+	_recipe_choice_grid.columns = 3
+	_recipe_choice_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_recipe_choice_grid.add_theme_constant_override("h_separation", 7)
+	_recipe_choice_grid.add_theme_constant_override("v_separation", 5)
+	recipe_scroll.add_child(_recipe_choice_grid)
 
 	var slots := HBoxContainer.new()
 	slots.name = "LoadoutSlots"
@@ -562,11 +630,11 @@ func _apply_context() -> void:
 		return
 	if _context_id == &"blueprint_research":
 		_title_label.text = "技能設計研究"
-		_hint_label.text = "配置四張治療或 Combo 技能；隊伍中至少保留一張治療。"
+		_hint_label.text = "第 1 格固定治療；選擇招式可自動配置後 3 格劍魂。"
 		_confirm_button.text = "儲存設計"
 	else:
 		_title_label.text = "遠征技能配置"
-		_hint_label.text = "四個技能槽皆可配置治療或 Combo；至少保留一張治療。"
+		_hint_label.text = "第 1 格固定治療；選擇招式可自動配置後 3 格劍魂。"
 		_confirm_button.text = "進入森林"
 
 
@@ -574,6 +642,7 @@ func _refresh_all() -> void:
 	if not is_node_ready() or _slot_buttons.is_empty():
 		return
 	_refresh_slots()
+	_rebuild_skill_recipe_choices()
 	_rebuild_choices()
 	_rebuild_auto_attack_selector()
 	_refresh_recipe_summary()
@@ -630,6 +699,99 @@ func _refresh_slots() -> void:
 		_apply_button_styles(slot, accent, selected)
 
 
+func _rebuild_skill_recipe_choices() -> void:
+	if _recipe_choice_grid == null:
+		return
+	for child in _recipe_choice_grid.get_children():
+		_recipe_choice_grid.remove_child(child)
+		child.queue_free()
+	for skill in _skill_catalog.get_all_skills():
+		var skill_id := String(skill.get("id", ""))
+		var recipe := _finisher_recipe_for_skill(skill_id)
+		var selected := _selected_skill_recipe_ids.has(skill_id)
+		var selectable := is_skill_recipe_selectable(skill_id)
+		var choice := Button.new()
+		choice.name = "Skill_%s" % skill_id
+		choice.custom_minimum_size = Vector2(310, 36)
+		choice.toggle_mode = true
+		choice.button_pressed = selected
+		choice.disabled = not selectable
+		choice.text = "%s%s" % [
+			"✓  " if selected else "",
+			_display_name(skill, skill_id),
+		]
+		choice.tooltip_text = "%s\n所需劍魂：%s" % [
+			_display_description(skill),
+			_recipe_requirement_names(recipe),
+		]
+		choice.pressed.connect(_on_skill_recipe_pressed.bind(skill_id))
+		choice.focus_entered.connect(_focus_skill_recipe_choice.bind(choice))
+		_apply_skill_recipe_button_style(choice, selected, selectable)
+		_recipe_choice_grid.add_child(choice)
+	_wire_skill_recipe_focus_navigation()
+
+
+func _apply_skill_recipe_button_style(
+	button: Button,
+	selected: bool,
+	selectable: bool
+) -> void:
+	var accent := BRIGHT_GOLD if selected else Color(0.78, 0.66, 0.48, 1.0)
+	var normal := _button_style(accent, selected, true)
+	var hover := _button_style(accent.lightened(0.15), true, true)
+	var disabled := _button_style(Color(0.30, 0.32, 0.36, 1.0), false, true)
+	disabled.bg_color = Color(0.035, 0.038, 0.045, 0.92)
+	disabled.border_color = Color(0.25, 0.27, 0.30, 0.72)
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", hover)
+	button.add_theme_stylebox_override("focus", hover)
+	button.add_theme_stylebox_override("disabled", disabled)
+	button.add_theme_color_override(
+		"font_color",
+		BRIGHT_GOLD if selected else Color(0.92, 0.86, 0.73, 1.0)
+	)
+	button.add_theme_color_override("font_hover_color", Color(1.0, 0.94, 0.78, 1.0))
+	button.add_theme_color_override("font_pressed_color", BRIGHT_GOLD)
+	button.add_theme_color_override("font_focus_color", BRIGHT_GOLD)
+	button.add_theme_color_override("font_disabled_color", Color(0.36, 0.38, 0.41, 1.0))
+	button.modulate = Color.WHITE if selectable else Color(0.78, 0.78, 0.78, 1.0)
+
+
+func _on_skill_recipe_pressed(skill_id: String) -> void:
+	choose_skill_recipe(skill_id)
+
+
+func _focus_skill_recipe_choice(choice: Control) -> void:
+	if _recipe_scroll != null:
+		_recipe_scroll.call_deferred("ensure_control_visible", choice)
+
+
+func _wire_skill_recipe_focus_navigation() -> void:
+	var choices := _recipe_choice_grid.get_children()
+	var columns := maxi(1, _recipe_choice_grid.columns)
+	for index in choices.size():
+		var choice := choices[index] as Button
+		if choice.disabled:
+			continue
+		var left := index - 1
+		if index % columns > 0 and left >= 0 and not (choices[left] as Button).disabled:
+			choice.focus_neighbor_left = choice.get_path_to(choices[left])
+		var right := index + 1
+		if right < choices.size() and right % columns > 0 and not (choices[right] as Button).disabled:
+			choice.focus_neighbor_right = choice.get_path_to(choices[right])
+		var upper := index - columns
+		while upper >= 0 and (choices[upper] as Button).disabled:
+			upper -= columns
+		if upper >= 0:
+			choice.focus_neighbor_top = choice.get_path_to(choices[upper])
+		var lower := index + columns
+		while lower < choices.size() and (choices[lower] as Button).disabled:
+			lower += columns
+		if lower < choices.size():
+			choice.focus_neighbor_bottom = choice.get_path_to(choices[lower])
+
+
 func _rebuild_choices() -> void:
 	if _choice_grid == null:
 		return
@@ -637,15 +799,15 @@ func _rebuild_choices() -> void:
 		_choice_grid.remove_child(child)
 		child.queue_free()
 	_visible_choice_ids.clear()
-	var protects_last_healing := _slot_holds_last_healing(_active_slot_index)
+	var fixed_healing_slot := _is_fixed_healing_slot(_active_slot_index)
 	_choice_header.text = (
-		"✚  此槽是最後一張治療：先在其他槽配置治療，才能換成 Combo"
-		if protects_last_healing
+		"✚  固定治療槽：可更換其他治療劍魂，但不能改成 Combo"
+		if fixed_healing_slot
 		else "選擇替換卡  ·  綠色＝治療  /  紫色與元素色＝Combo"
 	)
 	_choice_header.add_theme_color_override(
 		"font_color",
-		HEALING_ACCENT.lightened(0.18) if protects_last_healing else BRIGHT_GOLD
+		HEALING_ACCENT.lightened(0.18) if fixed_healing_slot else BRIGHT_GOLD
 	)
 	for card in _catalog:
 		if not _is_card_valid_for_slot(card, _active_slot_index):
@@ -767,7 +929,7 @@ func _is_valid_loadout() -> bool:
 		if unique_ids.has(card_id) or not _is_combat_hand_card(_find_catalog_card(card_id)):
 			return false
 		unique_ids.append(card_id)
-	return _healing_count(_slot_card_ids) >= MIN_HEALING_COUNT
+	return String(_find_catalog_card(_slot_card_ids[0]).get("type", "")) == "healing"
 
 
 func _rebuild_auto_attack_selector() -> void:
@@ -814,10 +976,7 @@ func _on_auto_attack_selected(index: int) -> void:
 func _is_card_valid_for_slot(card: Dictionary, slot_index: int) -> bool:
 	if slot_index < 0 or slot_index >= SLOT_COUNT or not _is_combat_hand_card(card):
 		return false
-	return not (
-		_slot_holds_last_healing(slot_index)
-		and String(card.get("type", "")) != "healing"
-	)
+	return slot_index != 0 or String(card.get("type", "")) == "healing"
 
 
 func _is_combat_hand_card(card: Dictionary) -> bool:
@@ -826,6 +985,80 @@ func _is_combat_hand_card(card: Dictionary) -> bool:
 		and bool(card.get("combat_hand", true))
 		and _finisher_catalog.is_skill_eligible(String(card.get("id", "")))
 	)
+
+
+func _recipe_requirements_available(recipe: Dictionary) -> bool:
+	var required_ids := recipe.get("required_skills", []) as Array
+	if required_ids.is_empty():
+		return false
+	for card_id_variant in required_ids:
+		if not _is_combat_hand_card(_find_catalog_card(String(card_id_variant))):
+			return false
+	return true
+
+
+func _finisher_recipe_for_skill(skill_id: String) -> Dictionary:
+	var profile_id := _skill_catalog.get_legacy_vfx_id(skill_id)
+	return _finisher_catalog.get_recipe(profile_id) if not profile_id.is_empty() else {}
+
+
+func _required_souls_for_skill_recipes(recipe_ids: Array) -> Array[String]:
+	var required: Array[String] = []
+	for skill_id_variant in recipe_ids:
+		var recipe := _finisher_recipe_for_skill(String(skill_id_variant))
+		for card_id_variant in recipe.get("required_skills", []) as Array:
+			var card_id := String(card_id_variant)
+			if not required.has(card_id):
+				required.append(card_id)
+	return required
+
+
+func _can_fit_skill_recipes(recipe_ids: Array) -> bool:
+	for skill_id_variant in recipe_ids:
+		var recipe := _finisher_recipe_for_skill(String(skill_id_variant))
+		if recipe.is_empty() or not _recipe_requirements_available(recipe):
+			return false
+	var required := _required_souls_for_skill_recipes(recipe_ids)
+	var fixed_healing := _slot_card_ids[0] if not _slot_card_ids.is_empty() else ""
+	if not fixed_healing.is_empty():
+		required.erase(fixed_healing)
+	return required.size() <= SLOT_COUNT - 1
+
+
+func _apply_selected_skill_recipes_to_slots() -> void:
+	var requested: Array[String] = []
+	var fixed_healing := _slot_card_ids[0] if not _slot_card_ids.is_empty() else ""
+	if not fixed_healing.is_empty():
+		requested.append(fixed_healing)
+	for required_id in _required_souls_for_skill_recipes(_selected_skill_recipe_ids):
+		if required_id != fixed_healing and not requested.has(required_id):
+			requested.append(required_id)
+	for current_card_id in _slot_card_ids.slice(1):
+		if not current_card_id.is_empty() and not requested.has(current_card_id):
+			requested.append(current_card_id)
+	_restore_fixed_loadout(requested)
+
+
+func _prune_selected_skill_recipes_for_loadout() -> void:
+	var retained: Array[String] = []
+	for skill_id in _selected_skill_recipe_ids:
+		var recipe := _finisher_recipe_for_skill(skill_id)
+		var requirements_met := not recipe.is_empty()
+		for card_id_variant in recipe.get("required_skills", []) as Array:
+			if not _slot_card_ids.has(String(card_id_variant)):
+				requirements_met = false
+				break
+		if requirements_met:
+			retained.append(skill_id)
+	_selected_skill_recipe_ids = retained
+
+
+func _recipe_requirement_names(recipe: Dictionary) -> String:
+	var names: Array[String] = []
+	for card_id_variant in recipe.get("required_skills", []) as Array:
+		var card_id := String(card_id_variant)
+		names.append(_display_name(_find_catalog_card(card_id), card_id))
+	return "、".join(names)
 
 
 func _card_icon(card: Dictionary) -> String:
@@ -845,23 +1078,8 @@ func _card_icon(card: Dictionary) -> String:
 	return "◆"
 
 
-func _healing_count(card_ids: Array) -> int:
-	var count := 0
-	for card_id_variant in card_ids:
-		var card := _find_catalog_card(String(card_id_variant))
-		if String(card.get("type", "")) == "healing":
-			count += 1
-	return count
-
-
-func _slot_holds_last_healing(slot_index: int) -> bool:
-	if slot_index < 0 or slot_index >= SLOT_COUNT:
-		return false
-	var current := _find_catalog_card(_slot_card_ids[slot_index])
-	return (
-		String(current.get("type", "")) == "healing"
-		and _healing_count(_slot_card_ids) <= MIN_HEALING_COUNT
-	)
+func _is_fixed_healing_slot(slot_index: int) -> bool:
+	return slot_index == 0
 
 
 func _format_recipe_hint(recipe: Dictionary) -> String:

@@ -54,6 +54,21 @@ func _run() -> void:
 		var slots := builder.get_node(
 			"Shade/LoadoutPanel/Margin/Column/LoadoutSlots"
 		) as HBoxContainer
+		var recipe_selector := builder.get_node(
+			"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector"
+		) as VBoxContainer
+		var recipe_scroll := builder.get_node(
+			"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector/RecipeScroll"
+		) as ScrollContainer
+		_expect(
+			panel_rect.encloses(_canvas_rect(recipe_selector))
+				and panel_rect.encloses(_canvas_rect(recipe_scroll)),
+			"Named-skill selector must remain inside the panel at %s." % viewport_size
+		)
+		_expect(
+			_canvas_rect(recipe_selector).end.y <= _canvas_rect(slots).position.y,
+			"Named-skill selector must not overlap the Sword Soul slots at %s." % viewport_size
+		)
 		_expect(
 			slots.get_child_count() == 4,
 			"Exactly four loadout slots must render at %s." % viewport_size

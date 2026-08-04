@@ -480,7 +480,7 @@ Scene group、base signals與固定 child contract缺一不可。
 ```text
 data/cards.json
 → CardDatabase
-→ DeckBuilderUI selects 4 unique Combo／Healing slots (at least 1 Healing) + one auto-attack card
+→ DeckBuilderUI fixes Healing in slot 1, selects three formula Sword Souls + one auto-attack card
 → MetaState selected deck / auto_attack_card_id
 → RunState + DeckManager
 → CardHandUI.set_cards()
@@ -1007,10 +1007,12 @@ CardInstance
 ```
 
 `DeckManager.start_fixed_hand()` 建立本次 Run 唯一的一組四張技能：
-四張皆可為不重複的 Healing 或 Combo，且至少保留一張 Healing。固定手牌只受 AP 限制；使用後留在原 slot，
+第 1 格固定 Healing，後 3 格是不重複的公式劍魂。固定手牌只受 AP 限制；使用後留在原 slot，
 不進 draw／discard／exhaust／cooldown，也不提供 redraw 或輪抽。
-傳送門前的 `DeckBuilderUI` 直接投影四個固定槽位；每格都接受已解鎖的 Healing／Combo，
-候選排除其他格已選技能，且不能把牌組最後一張 Healing 換掉。畫面同步列出
+傳送門前的 `DeckBuilderUI` 直接投影四個固定槽位；第 1 格只接受 Healing，後 3 格接受
+已解鎖且不重複的公式劍魂。招式選擇投影 `SkillRecipeManager` 的 39 個正式名稱，經
+`legacy_vfx_id` 找到 `ComboFinisherCatalog.required_skills` 後，以聯集自動填入
+後 3 格；仍能與已選招式共存的名稱保持正常顏色，缺少劍魂或聯集超過三格者反灰。畫面同步列出
 目前四張技能可完成的已學會 named Finisher recipes。確認順序就是戰鬥
 Q／W／E／R 的固定順序。
 `ember_bolt` 僅作為獨立 Basic Attack，不進入手牌、棄牌或 Combo 抽牌循環。`quickstep`

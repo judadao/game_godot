@@ -1536,8 +1536,8 @@ the HUD never reads gameplay state directly.
 - Signals:
   - `loadout_confirmed(deck_ids: Array[String], auto_attack_card_id: String)`
   - legacy `deck_confirmed` remains compatibility-only
-- Responsibility: select exactly four unique Healing／Combo skills, including
-  at least one Healing, plus one independent unlocked auto-attack card
+- Responsibility: keep one fixed Healing in slot 1, select three unique formula
+  Sword Souls in slots 2–4, plus one independent unlocked auto-attack card
 - Rule: auto attack does not consume a deck slot；the selector is unavailable
   during an active Run
 - Presentation: catalog icons、green Healing／purple Combo cues、selected gold
@@ -1545,7 +1545,11 @@ the HUD never reads gameplay state directly.
   panel scales from 1.0 to 1.75 across the required viewports
 - Interaction: candidate hover or keyboard focus previews the exact Sword Soul
   effect immediately；focus navigation owns explicit two-column neighbors and
-  calls `ScrollContainer.ensure_control_visible()` when moving off-screen
+  calls `ScrollContainer.ensure_control_visible()` when moving off-screen. The
+  named-skill selector lists the same 39 official skills as the Codex, resolves
+  `legacy_vfx_id`, and unions each selected recipe's `required_skills` into
+  slots 2–4；compatible recipes remain normal/interactive, while missing or
+  over-capacity recipes stay visible with disabled grey text
 
 ### CombatStatusController
 

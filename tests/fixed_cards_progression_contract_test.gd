@@ -54,8 +54,9 @@ func _run() -> void:
 	_expect(
 		restored.size() == 4
 			and restored_has_healing
+			and String(database.get_card(String(restored[0])).get("type", "")) == "healing"
 			and restored_are_hand_cards,
-		"Deck builder must migrate a legacy backpack to four unique hand skills with at least one Healing skill."
+		"Deck builder must migrate a legacy backpack to fixed Healing first plus three unique formula slots."
 	)
 	_expect(
 		String(builder.call("get_auto_attack_card_id")) == "cleave",
@@ -95,6 +96,12 @@ func _run() -> void:
 		clamped == ["guard", "healing_light"],
 		"Game normalization must retain unique Combo/Healing skills and exclude attacks and Dash-only cards."
 	)
+	var fixed_clamped := game.call("_ensure_fixed_combo_loadout", clamped) as Array
+	_expect(
+		fixed_clamped.size() == 4
+			and fixed_clamped[0] == "healing_light",
+		"Expedition normalization must place fixed Healing first before filling three formula slots."
+	)
 	game_meta.selected_deck = migrated.duplicate()
 	game_meta.auto_attack_card_id = "cleave"
 	game.call("_begin_autumn_run", migrated)
@@ -109,6 +116,10 @@ func _run() -> void:
 	var deck := game.get("deck_manager") as DeckManager
 	_expect(run.active, "Autumn run must start before the loadout becomes locked.")
 	_expect(deck.hand.size() == 4, "Combat must expose exactly four reusable Combo/Healing skills.")
+	_expect(
+		String(database.get_card(deck.hand[0]).get("type", "")) == "healing",
+		"Run normalization must keep the first combat slot fixed to Healing."
+	)
 	var run_healing_cards := deck.get_all_instances().filter(
 		func(instance: CardInstance) -> bool:
 			return String(database.get_card(instance.card_id).get("type", "")) == "healing"

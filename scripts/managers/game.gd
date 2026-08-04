@@ -5647,7 +5647,9 @@ func _on_loadout_confirmed(
 	) -> void:
 	if run_state.active:
 		return
-	var normalized := _normalize_expedition_deck(deck_ids)
+	var normalized := _ensure_fixed_combo_loadout(
+		_normalize_expedition_deck(deck_ids)
+	)
 	var previous_meta := meta_state.to_dict()
 	meta_state.set_selected_deck(normalized)
 	meta_state.auto_attack_card_id = _resolve_auto_attack_card_id(auto_attack_card_id)
@@ -5688,7 +5690,18 @@ func _is_combat_hand_card(card: Dictionary) -> bool:
 
 func _ensure_fixed_combo_loadout(deck_ids: Array[String]) -> Array[String]:
 	var fixed_loadout: Array[String] = []
-	var has_healing := false
+	var fixed_healing := ""
+	for card_id in deck_ids:
+		var candidate := card_database.get_card(card_id)
+		if (
+			_is_combat_hand_card(candidate)
+			and String(candidate.get("type", "")) == "healing"
+		):
+			fixed_healing = card_id
+			break
+	if fixed_healing.is_empty():
+		fixed_healing = "healing_light"
+	fixed_loadout.append(fixed_healing)
 	for card_id in deck_ids:
 		if fixed_loadout.size() >= deck_manager.hand_size:
 			break
@@ -5696,7 +5709,6 @@ func _ensure_fixed_combo_loadout(deck_ids: Array[String]) -> Array[String]:
 		if not _is_combat_hand_card(card) or fixed_loadout.has(card_id):
 			continue
 		fixed_loadout.append(card_id)
-		has_healing = has_healing or String(card.get("type", "")) == "healing"
 	for fallback_id in [
 		"healing_light", "flame_imbue", "echo_volley", "storm_charge",
 		"battle_rhythm", "guard", "renewal", "verdant_renewal",
@@ -5706,14 +5718,6 @@ func _ensure_fixed_combo_loadout(deck_ids: Array[String]) -> Array[String]:
 		if fixed_loadout.has(fallback_id):
 			continue
 		fixed_loadout.append(fallback_id)
-		has_healing = has_healing or String(
-			card_database.get_card(fallback_id).get("type", "")
-		) == "healing"
-	if not has_healing:
-		if fixed_loadout.size() >= deck_manager.hand_size:
-			fixed_loadout[fixed_loadout.size() - 1] = "healing_light"
-		else:
-			fixed_loadout.append("healing_light")
 	return fixed_loadout
 
 

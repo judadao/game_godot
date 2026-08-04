@@ -73,7 +73,7 @@
 Town
   → 從建築地基開啟材料行、主角鐵匠鋪、村長家、劍魂商服務
   → 在 battle portal hub 選擇 Autumn portal
-  → Deck Builder 選擇 1–16 張普通遠征牌與一個獨立 auto attack
+  → Deck Builder 固定第 1 格治療，配置後 3 格劍魂與一個獨立 auto attack
   → 直接載入 Autumn battle route 並開始 Autumn Run
   → 四個限時生存階段
   → Guardian 階段
@@ -88,7 +88,7 @@ Town
 與 Town/hub 的 Autumn portal 互動時直接開啟 Deck Builder，不先載入安全區：
 
 1. 先開啟 Deck Builder；
-2. 技能配置正規化為四張不重複 Healing／Combo，且至少保留一張 Healing；
+2. 技能配置正規化為第 1 格固定 Healing、後 3 格為不重複公式劍魂；
 3. 從已解鎖 attack cards 選一個獨立 Basic Attack；
 4. 建立新的 `RunState`；
 5. Basic Attack ID 鎖定為本 Run 的選擇，戰鬥中不可切換；
@@ -346,8 +346,10 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 
 目前規則：
 
-- fixed loadout 必須剛好 4 張不重複 Healing／Combo，且至少一張 Healing；
-- 傳送門前四格皆可選兩種類型，候選排除其他格技能，且不得移除最後一張 Healing；
+- fixed loadout 必須剛好 4 張不重複公式劍魂，第 1 格固定為 Healing，後 3 格組成招式；
+- 招式選擇列出與圖鑑相同的 39 個正式招式名稱，經 `legacy_vfx_id` 對應配方後，把
+  `required_skills` 聯集填入後 3 格；聯集仍可容納的招式維持可選，超過
+  三格或缺少已解鎖劍魂的招式保留在列表並反灰；
 - 配置畫面即時列出目前四張技能可完成的已學會終結技；
 - Basic Attack 在固定技能之外獨立選擇，必須是已解鎖的 `attack` card；
 - 固定技能整個 Run 不抽換、不輪巡；
@@ -386,7 +388,7 @@ cooldown、redraw 或 overflow。舊 pile API 只保留資料相容性，不是�
 ### 6.5 Fixed-hand invariant
 
 - 四個 slot 在 Run 期間不變；
-- four unique Healing／Combo，且至少 one Healing；
+- slot 1 固定 Healing，slot 2–4 為三格不重複公式劍魂；
 - 沒有 redraw、discard、replacement、overflow 或 Auto Use；
 - Basic Attack 不在 hand。
 

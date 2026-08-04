@@ -43,6 +43,41 @@ func _run() -> void:
 		"Portal loadout must explain which named Finishers the four slots enable."
 	)
 	_expect(
+		builder.has_node("Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector"),
+		"Portal loadout must expose a named-skill selector that can fill required Sword Souls."
+	)
+	_expect(
+		builder.has_method("choose_skill_recipe")
+			and builder.has_method("get_selected_skill_recipe_ids")
+			and builder.has_method("is_skill_recipe_selectable"),
+		"Named-skill selection must expose deterministic compatibility diagnostics."
+	)
+	var named_skill_grid := builder.get_node(
+		"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector/RecipeScroll/RecipeChoices"
+	) as GridContainer
+	var flowing_fire_choice := named_skill_grid.get_node_or_null(
+		"Skill_flowing_fire_night"
+	) as Button
+	_expect(
+		named_skill_grid.get_child_count() == 39
+			and flowing_fire_choice != null
+			and flowing_fire_choice.text.contains("流火照夜"),
+		"Expedition selection must use the same 39 official skill names as the Codex."
+	)
+	var named_skill_scroll := builder.get_node(
+		"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector/RecipeScroll"
+	) as ScrollContainer
+	var last_named_skill := named_skill_grid.get_child(named_skill_grid.get_child_count() - 1) as Button
+	named_skill_scroll.scroll_vertical = 0
+	last_named_skill.grab_focus()
+	await process_frame
+	await process_frame
+	await process_frame
+	_expect(
+		last_named_skill.has_focus() and named_skill_scroll.scroll_vertical > 0,
+		"Keyboard focus must scroll the 39-skill selector to keep the focused name visible."
+	)
+	_expect(
 		builder.has_node("Shade/LoadoutPanel/Margin/Column/TypeLegend"),
 		"Portal loadout must explain Healing and Combo colors before selection."
 	)
@@ -138,37 +173,37 @@ func _run() -> void:
 	)
 	_expect(
 		bool(builder.call("choose_card_for_active_slot", "echo_volley")),
-		"Any slot must accept a Combo while the loadout keeps at least one Healing skill."
+		"Any non-Healing slot must accept an eligible Combo."
 	)
 
 	builder.call("select_slot", 0)
 	_expect(
-		bool(builder.call("choose_card_for_active_slot", "flame_imbue")),
-		"The former dedicated Healing slot must also accept a Combo when another Healing remains."
-	)
-	builder.call("select_slot", 2)
-	var last_healing_choices := builder.call("get_visible_choice_ids") as Array
-	_expect(
-		not last_healing_choices.is_empty()
-			and _all_cards_have_type(database, last_healing_choices, "healing"),
-		"The final Healing skill must be protected until another Healing skill is equipped."
-	)
-	_expect(
-		not last_healing_choices.has("frostburst_imbue")
-			and not bool(builder.call("choose_card_for_active_slot", "frostburst_imbue")),
-		"The final Healing slot must reject a Combo replacement."
+		not bool(builder.call("choose_card_for_active_slot", "flame_imbue")),
+		"The first slot must remain Healing and reject Combo replacements."
 	)
 	_expect(
 		bool(builder.call("choose_card_for_active_slot", "renewal")),
-		"The final Healing slot may still switch to another Healing skill."
+		"The fixed Healing slot may switch to another Healing Sword Soul."
+	)
+	builder.call("select_slot", 2)
+	var trailing_choices := builder.call("get_visible_choice_ids") as Array
+	_expect(
+		_has_card_type(database, trailing_choices, "healing")
+			and _has_card_type(database, trailing_choices, "combo"),
+		"The three trailing Sword Soul slots must accept both formula-eligible types."
+	)
+	_expect(
+		trailing_choices.has("frostburst_imbue")
+			and bool(builder.call("choose_card_for_active_slot", "frostburst_imbue")),
+		"A trailing slot must accept a Combo because the first Healing slot is fixed."
 	)
 
 	var selected := builder.call("get_selected_deck") as Array
 	_expect(
 		selected == [
-			"flame_imbue", "echo_volley", "renewal", "storm_charge",
+			"renewal", "echo_volley", "frostburst_imbue", "storm_charge",
 		],
-		"Confirmation order must match the four visible mixed skill slots."
+		"Confirmation order must keep fixed Healing first followed by three formula slots."
 	)
 
 	builder.call("configure", localized_cards, [
@@ -183,6 +218,71 @@ func _run() -> void:
 			and recipe_summary.text.contains("治癒之光 → 復甦之靈 → 翠綠復甦"),
 		"Finisher summary must include Healing recipes and prefer Chinese display fields."
 	)
+
+	if builder.has_method("choose_skill_recipe"):
+		builder.call("configure", localized_cards, [
+			"healing_light", "flame_imbue", "echo_volley", "storm_charge",
+		])
+		var fixed_healing := String((builder.call("get_slot_card_ids") as Array)[0])
+		_expect(
+			bool(builder.call("choose_skill_recipe", "wildfire_thunder_tone"))
+				and (builder.call("get_slot_card_ids") as Array) == [
+					fixed_healing, "flame_imbue", "echo_volley", "storm_charge",
+				],
+			"Selecting 流火雷音 must fill all three trailing slots while preserving fixed Healing."
+		)
+		_expect(
+			bool(builder.call("is_skill_recipe_selectable", "flowing_fire_night")),
+			"A named skill whose requirement already overlaps the three filled slots must remain selectable."
+		)
+		builder.call("configure", localized_cards, [
+			"healing_light", "flame_imbue", "echo_volley", "storm_charge",
+		])
+		fixed_healing = String((builder.call("get_slot_card_ids") as Array)[0])
+		_expect(
+			bool(builder.call("choose_skill_recipe", "silent_war_cadence")),
+			"Selecting a named skill must fill its required Sword Soul."
+		)
+		_expect(
+			(builder.call("get_slot_card_ids") as Array).has("battle_rhythm"),
+			"戰律希聲 must automatically place battle_rhythm in the Sword Soul slots."
+		)
+		_expect(
+			String((builder.call("get_slot_card_ids") as Array)[0]) == fixed_healing,
+			"Named-skill selection must never replace the fixed Healing slot."
+		)
+		_expect(
+			bool(builder.call("is_skill_recipe_selectable", "myriad_blades_descend"))
+				and bool(builder.call("choose_skill_recipe", "myriad_blades_descend"))
+				and (builder.call("get_slot_card_ids") as Array).has("sweeping_reach"),
+			"A second compatible named skill must remain normally selectable and fill its non-overlapping requirement."
+		)
+		_expect(
+			bool(builder.call("choose_skill_recipe", "thousand_feather_resonance"))
+				and (builder.call("get_slot_card_ids") as Array).has("echo_volley"),
+			"A third compatible named skill must use the remaining non-Healing capacity."
+		)
+		_expect(
+			not bool(builder.call("is_skill_recipe_selectable", "moonwheel_downlight")),
+			"A fourth distinct requirement must be unavailable because only three formula slots may change."
+		)
+		var blocked_recipe := builder.get_node_or_null(
+			"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector/RecipeScroll/RecipeChoices/Skill_moonwheel_downlight"
+		) as Button
+		var selectable_recipe := builder.get_node_or_null(
+			"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector/RecipeScroll/RecipeChoices/Skill_myriad_blades_descend"
+		) as Button
+		_expect(
+			blocked_recipe != null and blocked_recipe.disabled,
+			"An incompatible named skill must remain visible but greyed out instead of disappearing."
+		)
+		_expect(
+			selectable_recipe != null
+				and not selectable_recipe.disabled
+				and selectable_recipe.get_theme_color("font_color").get_luminance()
+					> blocked_recipe.get_theme_color("font_disabled_color").get_luminance(),
+			"Compatible named-skill text must remain brighter than an incompatible greyed-out name."
+		)
 
 	builder.call("configure", localized_cards, [
 		"energy_surge", "kinetic_acceleration", "healing_light", "storm_charge",
@@ -204,17 +304,6 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
-
-
-func _all_cards_have_type(
-	database: CardDatabase,
-	card_ids: Array,
-	expected_type: String
-) -> bool:
-	for card_id in card_ids:
-		if String(database.get_card(String(card_id)).get("type", "")) != expected_type:
-			return false
-	return true
 
 
 func _has_card_type(
