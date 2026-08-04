@@ -10,11 +10,11 @@
       "base_effect": {}
     },
     {
-      "id": "horizon_stream", "name": "天際流光",
+      "id": "horizon_stream", "name": "萬劍垂天",
       "icon_path": "res://assets/ui/finishers/generated/horizon_stream.png",
       "sequence": ["sweeping_reach", "sweeping_reach", "sweeping_reach"],
       "required_skills": ["sweeping_reach"], "role": "offense",
-      "description": "生成橫跨戰場的水平斬線聚攏敵人，再以反向斬線造成破韌。",
+      "description": "天空展開圓形劍陣；第一輪劍雨鎖定敵人，第二輪覆蓋整片區域。",
       "base_effect": {"piercing": true}
     },
     {
@@ -174,11 +174,11 @@
       "base_effect": {}
     },
     {
-      "id": "skyward_returning_feathers", "name": "天光回羽",
+      "id": "skyward_returning_feathers", "name": "天羽萬象",
       "icon_path": "res://assets/ui/finishers/generated/skyward_returning_feathers.png",
       "sequence": ["sweeping_reach", "giant_arc", "echo_volley"],
       "required_skills": ["sweeping_reach", "giant_arc", "echo_volley"], "role": "offense",
-      "description": "先以大弧聚敵，再讓八方向回聲刃折返斬向中心。",
+      "description": "萬羽聚成多層巨翼，依序釋放細羽追擊、羽刃橫掃與巨型天羽墜落。",
       "base_effect": {"returning_projectiles": true}
     },
     {

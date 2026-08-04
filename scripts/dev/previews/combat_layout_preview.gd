@@ -41,7 +41,7 @@ func _ready() -> void:
 	hud.set_objective("FINAL RUSH — SURVIVE", "THREAT 37 / 60")
 	hud.set_survival_timer(29.4, 180.0, true)
 	hud.set_active_statuses([
-		{"id": "iron_momentum", "name": "Iron Momentum", "icon": "◆", "remaining_seconds": 2.8},
+		{"id": "silent_war_cadence", "name": "戰律希聲", "icon": "◆", "remaining_seconds": 2.8},
 		{"id": "renewal", "name": "Verdant Renewal", "icon": "+", "remaining_seconds": 4.1},
 	])
 	hud.set_boss_health("HEARTWOOD GUARDIAN", 72, 100)
@@ -67,7 +67,7 @@ func _ready() -> void:
 			{"display_name": "天罰雷霆的雷獄穿心"},
 		]
 	)
-	hud.show_skill_toast("iron_momentum", "IRON MOMENTUM")
+	hud.show_skill_toast("silent_war_cadence", "戰律希聲")
 
 	card_hand.set_cards(_sample_cards(), 5.0)
 	card_hand.set_action_points(5.0, 5.0)

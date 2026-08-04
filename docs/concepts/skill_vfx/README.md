@@ -8,6 +8,11 @@ language; the detailed continuous-action authority is
 atlas parts and use one twelve-frame painted object sequence plus a pure CanvasItem
 2.5D choreography stack, without embedding a 3D SubViewport.
 
+This document is an animation-library reference, not the gameplay skill catalog.
+The current 13 series and 39 basic／advanced／master skills are authoritative only in
+`data/skills.json`. Iron Momentum, Ember Reprise, Battle Tempo, and Grand Strategy
+are retired skill records; their profiles remain solely for temporary VFX reuse.
+
 The 2.5D stack uses front/mid/back z-depth, directional parallax, semantic contour
 shading, rim/back light, foreground fragments, and physical residue. All frames share a
 horizontal ground anchor with zero whole-sprite rotation; grounded objects travel horizontally,
@@ -25,7 +30,7 @@ complete specification in `docs/art_concepts/finisher_choreography/README.md`
 and its three linked batches; keep the identity mapping synchronized with
 `data/finisher_vfx_identities.json`.
 
-## Named triggers
+## Retired trigger animation profiles
 
 | Skill | Readable silhouette | Three-beat timing |
 | --- | --- | --- |

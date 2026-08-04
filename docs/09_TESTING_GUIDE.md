@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 157 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 160 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -45,17 +45,16 @@ Inventory／Codex focused coverage：
 - `inventory_journal_layout_test.gd`：1152×720、1280×720、1600×900、1920×1080、
   2560×1080、2560×1440 的整本等比 frame、page bounds、center gutter 與極值內容；
   `INVENTORY_JOURNAL_CAPTURE_DIR` 只在 graphical renderer 產生四章 review captures。
-- `inventory_codex_projection_test.gd`：目前普攻、四格配置、啟用 passive Skill 與
-  全部 32 個正式 Finisher 的唯一 projection；同時禁止未裝備／未啟用的歷史項目滲入，
-  並驗證目前等級 effect、精確 combat VFX identity、方向數／散射角度，以及命名技能的
-  元素／進化／Buff milestone metadata。
-- `inventory_codex_ui_test.gd`：分頁、projection、selection、production VFX preview
-  ownership，以及退役 concept controls 永遠隱藏、相容入口固定回到 live view。
+- `inventory_codex_projection_test.gd`：`skills.json` 的 13 系列、39 招唯一 projection；
+  驗證 basic／advanced／master 各 13 招、中文名稱／定位／動畫節拍、退役被動與舊名稱
+  不再出現，以及每招暫用的精確 named VFX profile 確實存在。
+- `inventory_codex_ui_test.gd`：39 招 selection、系列／階級／元素／系列語彙文字、
+  temporary VFX preview ownership，以及退役 concept controls 永遠隱藏、相容入口固定回到 live view。
 - `inventory_codex_layout_test.gd`：六解析度 panel/list/active visual/explanation geometry，
-  並逐一實例化全部 32 個 Finisher，驗證 `320px` live frame 的水平完整 travel、
+  並投影全部 39 招、逐一實例化其唯一暫用動畫，驗證 `320px` live frame 的水平完整 travel、
   垂直完整主體、地面錨點與最小可讀占比；world travel 超過 `220px` 時只在 Codex
   壓縮，測試另鎖定實戰距離不得跟著縮短。
-  可用 `INVENTORY_CODEX_CAPTURE_ENTRY` 指定普通攻擊、Combo、Skill 或 Finisher，
+  可用 `INVENTORY_CODEX_CAPTURE_ENTRY` 指定任一新 skill ID，
   再搭配 capture path/size 產生 Vulkan 的 live VFX 視覺比較基準；舊的
   `INVENTORY_CODEX_CAPTURE_VIEW` 不得使 concept art 回到玩家畫面。
   實際 Game projection 可用 `INVENTORY_CODEX_PROJECTION_CAPTURE_PATH` 擷取，
@@ -226,9 +225,11 @@ Healing／Flame／Volley／Storm visual family。另須以超長公式、終結�
 且 `AutumnBattleCard` 實際投影相同中文與圖片。Generated raster 最終仍須獨立檢查
 20 張原生圖、44px contact sheet、六解析度完整畫面與一張完整畫面的固定 3×2 六切片。
 
-`generated_catalog_icon_contract_test.gd` 另檢查完整 38 cards、4 skills、32 finishers
-與 10 equipment（共 84 張）各自擁有依 ID 命名、唯一、可載入的 256×256 generated
+`generated_catalog_icon_contract_test.gd` 另檢查完整 38 cards、32 finishers
+與 10 equipment（共 80 張）各自擁有依 ID 命名、唯一、可載入的 256×256 generated
 icon，並驗證所有 generated card art 在 `AutumnBattleCard` 使用 linear filtering。
+新的 39 招目前允許空 `icon_path`；未來只要補入 path，測試就立即要求唯一、可載入且
+為 256×256，避免暫時 fallback 被誤寫成正式逐招圖示。
 最終視覺審查需看四類 native contact sheet、44／52px 縮圖、實際 Combat HUD 與
 Inventory 六解析度 full frames，以及代表 full frame 的固定 3×2 六切片。
 
@@ -272,15 +273,15 @@ Combat VFX 修改至少執行
 路徑端點、visual budget、unscaled fresh／active／decay 與自動清理；大招致死
 演出另執行 `ultimate_enemy_defeat_presentation_test.gd`，確認 gameplay／碰撞／
 獎勵立即結算，但敵人保留到 Fire／Ice impact delay 後才 dissolve／burst。
-命名技能另執行 `named_skill_vfx_test.gd` 與 `named_skill_vfx_evolution_test.gd`，
-保護五個 atlas Finisher 基底、四個 trigger、五個可拼裝 parts、正式 element、
+命名動畫 library 另執行 `named_skill_vfx_test.gd` 與 `named_skill_vfx_evolution_test.gd`，
+保護五個 atlas Finisher 基底、四個退役 trigger profile、五個可拼裝 parts、正式 element、
 archetype、beat pattern、三級 evolution、stack progression 與收尾時序。
 `storm_charge_vfx_test.gd` 另驗證專用 scene 的五個依序節拍、至少十條固定語意導電
 路徑、10/4/1.4px 主幹與 6/3/1px 次分支三層光階、原地 anchor、水平位移零、
 劍身相連的右向 contact、單一高潮與同路徑單調回縮，以及 level 1–3 只增加有界
-粒子／結構細節。`named_skill_vfx_test.gd` 與
-`inventory_codex_projection_test.gd` 必須同時確認 `storm_charge` 投影專用
-`special_vfx_id`／preview kind；圖鑑 layout test 還需實例化同一 scene 並貼齊預覽地面。
+粒子／結構細節。舊卡牌 combat VFX integration 仍需確認 `storm_charge` 的專用
+`special_vfx_id`／preview kind；新的 39 招圖鑑不把該舊卡或四個 trigger profile
+重新列為現役技能。
 Graphical 5-beat contact sheet 是必要視覺證據；只有結構 PASS、但仍呈現細線菱形／鋸齒
 或泛用 projectile 時，不得接受。
 `finisher_named_vfx_catalog_test.gd` 再由 `combo_finishers.json` 動態驗證全部 32 招：
@@ -697,7 +698,7 @@ instance.queue_free()
 
 建議 focused entrypoints 應以 repository 實際存在檔名為準，至少涵蓋
 `card_instance_*`、`card_collection_service_test.gd`、`combat_status_controller_test.gd`、
-`skill_recipe_manager_test.gd`、`growth_choice_queue_test.gd`、
+`skill_series_catalog_test.gd`、`skill_recipe_manager_test.gd`、`growth_choice_queue_test.gd`、
 `card_growth_ui_*` 與 `autumn_hud_v3_*`。本輪 OB／神賜補全另以
 `combat_ob_completion_contract_test.gd`、
 `combat_ob_finisher_runtime_contract_test.gd` 與 `divine_gift_capacity_contract_test.gd`

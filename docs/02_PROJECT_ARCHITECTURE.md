@@ -88,7 +88,7 @@ Game (Node, scripts/managers/game.gd)
 2. 透過 `SaveService.load_meta()` 讀取 `user://saves/meta_progress.json`。
 3. 將 `MetaState.inventory_state`／legacy fields 套入 Inventory runtime state。
 4. 將 `MetaState.town_state`／legacy fields 套入 Town runtime state。
-5. 載入卡牌、技能與合成 recipe catalog；實際的 `SkillRecipeManager`、
+5. 載入卡牌、13×3 技能系列與 Combo recipe catalog；實際的 `SkillRecipeManager`、
    `GrowthChoiceQueue` 與成長 UI caller 由 `Game` 組裝。
 6. 連接 `CardEffectRunner.effect_resolved`。
 7. 呼叫 `load_current_map(starting_map)`。
@@ -164,7 +164,7 @@ State/system instances由 `Game` 建立並持有，不加入 SceneTree：
 | `card_database` | `CardDatabase` | validated card catalog |
 | `deck_manager` | `DeckManager` | CardInstance 的 draw/hand/discard/exhaust/cooldown 與 AP |
 | `card_collection_service` | `CardCollectionService` | 協調 MetaState／RunState／DeckManager 的 add／fuse／remove 與 collection snapshot／rollback |
-| `skill_recipe_manager` | `SkillRecipeManager` | 已裝備的攻擊 recipe、視窗、進度與 cooldown |
+| `skill_recipe_manager` | `SkillRecipeManager` | 13 系列、39 招、基本／進階／大師階級與暫用動畫映射的唯讀 catalog；舊 recipe runtime 僅保留 caller 相容 |
 | `growth_choice_queue` | `GrowthChoiceQueue` | wave、EXP Blessing、菁英／Boss loot 的單一 FIFO queue |
 | `inventory_manager` | unnamed `RefCounted` script | resources/equipment runtime model |
 | `town_manager` | unnamed `RefCounted` script | building levels/village stage |
@@ -385,7 +385,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `DeckManager` | `scripts/systems/deck_manager.gd` | `start`, `draw_cards`, `play_from_hand`, `regenerate_energy`, `discard_and_redraw_hand`, `end_turn` |
 | `CardCollectionService` | `scripts/systems/card_collection_service.gd` | `is_configured`, `get_deck_size`, `get_copy_count`, `add_persistent_card`, `fuse`, `remove_instance`, `capture_state`, `restore_state` |
 | `CardInstance` | `scripts/systems/card_instance.gd` | `instance_id`, `card_id`, `level`, `is_fixed`, `is_growth_locked`, `to_dict`, `from_dict` |
-| `SkillRecipeManager` | `scripts/systems/skill_recipe_manager.gd` | `load_catalog`, `configure_loadout`, `record_card`, `tick`, `reset_runtime` |
+| `SkillRecipeManager` | `scripts/systems/skill_recipe_manager.gd` | `load_catalog`, `get_all_series`, `get_all_skills`, `get_series`, `get_skill`, `get_tier_label`, `get_legacy_vfx_id`；`configure_loadout`／`record_card` 保留 caller 相容，未定義新觸發規則 |
 | `GrowthChoiceQueue` | `scripts/systems/growth_choice_queue.gd` | `enqueue_wave_blessing`, `enqueue_experience_blessings`, `enqueue_combat_blessing_reward`, `peek`, `resolve` |
 | `ElementTaxonomy` | `scripts/systems/element_taxonomy.gd` | `get_all`, `normalize`, `is_valid`, `get_color`；武器、神賜與戰鬥 VFX 共用的元素命名權威 |
 | `ElementalGroundTrailCatalog` | `scripts/systems/elemental_ground_trail_catalog.gd` | 驗證火／冰／毒地面路徑 profile、四象限 atlas 與 visual budget |
@@ -400,7 +400,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `SkillCastPresentation` | `scripts/combat/skill_cast_presentation.gd` | 以 unscaled Tween 顯示放大招式名稱並管理短暫施法慢動作 |
 | Elemental combat VFX | `scenes/combat/vfx/*.tscn` | 火／冰攻擊纏繞與範圍大招的純 presentation；不擁有傷害判定 |
 | `ElementalGroundTrail` | `scenes/combat/vfx/ElementalGroundTrail.tscn`、`data/elemental_ground_trail_profiles.json` | 沿元素大招路徑拼裝 Core／Edge／Accent／Debris atlas 部件與連續 ribbon；火、冰、毒使用不同 topology，不擁有傷害判定 |
-| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json` | 依精確 Skill／Finisher id、唯一 archetype 與 beat pattern 播放；trigger 組合五種圖集部件，32 個 Finisher 則播放各自 4×3／12 格物件序列；`play()` 另接收 evolution level 與 buff stacks 以增加結構層，不擁有傷害判定 |
+| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json` | 依精確 animation profile id、唯一 archetype 與 beat pattern 播放；4 個退役 trigger profile 組合五種圖集部件，32 個 Finisher 則播放各自 4×3／12 格物件序列；現役 39 招由 `skills.json/legacy_vfx_map` 暫時選取 profile，`play()` 另接收 evolution level 與 buff stacks 以增加結構層，不擁有技能名稱或傷害判定 |
 | `StormChargeVFX` | `scenes/combat/vfx/StormChargeVFX.tscn` | 風暴充能專用的原地五節拍 presentation；固定導電主幹由左右地流依序接入雙腳、持劍手與劍身，接觸時只從劍身下游長出有粗細層級的右向分支，高潮後沿同一路徑回縮；不擁有傷害或 buff 規則 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
@@ -421,9 +421,10 @@ UI 對上層提供 setter/configure API與 typed signals：
   mode/quantity/confirmed。
 - `InventoryUI`：以單一古老日記呈現四個章節：背包（素材、關鍵道具、裝備）、
   個人狀態與三個裝備欄位、依 `CardInstance` identity 投影的現有劍魂，以及招式／
-  敵人／劍魂／裝備圖鑑。招式清單由 `Game` 只投影目前普攻、目前四格配置、啟用技能
-  與完整正式 Finisher gallery，避免歷史解鎖項目滲入審查；預覽重用套用目前等級後的
-  production elemental／named VFX；敵人章節
+  敵人／劍魂／裝備圖鑑。招式清單由 `Game` 投影 `skills.json` 的 13 系列、39 招，
+  每系列固定基本／進階／大師三階；舊普攻、手牌、被動 trigger 與 Finisher 名稱不再
+  混成第二份招式權威。每招暫以 `legacy_vfx_map` 重用既有 production named VFX，
+  但動畫 profile 不反向決定招式名稱或分類；敵人章節
   是 `EnemyArchetype.autumn_catalog()` 的靜態參考，不宣稱 discovery 進度。UI 只透過
   `equip_requested` emit 裝備意圖，由 `Game` 驗證後呼叫 `InventoryManager.equip()`、
   重算玩家屬性並同步 Meta save，不擁有 inventory 或戰鬥規則。
@@ -1019,7 +1020,7 @@ Q／W／E／R 的固定順序。
 戰前另由 `DeckBuilderUI` 從已解鎖 attack cards 選一個 Basic Attack。選擇保存於
 `MetaState.auto_attack_card_id`，Run 開始時複製到 run-local lock；戰鬥中不可切換。
 Basic Attack 不建立額外 CardInstance、不進 hand 或任一牌堆、不花 AP，也不送入
-`SkillRecipeManager.record_card()`。有效敵人進入角色面向的水平走廊時自動施放；
+舊 `SkillRecipeManager.record_card()` recipe engine。有效敵人進入角色面向的水平走廊時自動施放；
 沒有合法目標時不消耗 cooldown、Combo 公式或終結技。
 
 只有被 `ComboFinisherCatalog` 收錄為配方材料的 Combo／Healing 技能會記入三格公式；
@@ -1054,12 +1055,14 @@ Dash Edge 與 Gale Drive 保留為 legacy catalog cards，但標記 `combat_hand
 不進 Deck Builder、預設背包或戰鬥獎勵；其 infusion 仍以
 `target_action = "dash"` 暫時投影到玩家固有 Dash，不建立或尋找 Dash 卡。
 
-`MetaState` schema version 5 以 `selected_card_instances` 儲存 instance payload，
+`MetaState` schema version 8 以 `selected_card_instances` 儲存 instance payload，
 同時保留必要的舊 `selected_deck` projection 作 compatibility。舊 card-id 陣列 migration
 必須 deterministic、idempotent，修復非法 level 與重複/缺失 instance ID，並提供
-migration report。schema 6 另保存 `auto_attack_card_id`、`learned_skill_ids` 與
-`active_skill_ids`；auto attack 缺失或無效時 fallback 到已解鎖的有效 attack，
-active skill 必須是 learned 的子集。`RunState.card_instances` 是 expedition
+migration report。schema 6 起另保存 `auto_attack_card_id`、`learned_skill_ids` 與
+`active_skill_ids`；schema 8 會移除 `iron_momentum`、`ember_reprise`、
+`battle_tempo`、`grand_strategy` 四個退役被動 ID，且不再自動補入舊預設。
+auto attack 缺失或無效時 fallback 到已解鎖的有效 attack，active skill 必須是 learned
+的子集。`RunState.card_instances` 是 expedition
 期間的同一 identity projection，不另造 card-id 等級表。
 
 ### 21.2 Combat 與 skill services
@@ -1069,12 +1072,13 @@ active skill 必須是 learned 的子集。`RunState.card_instances` 是 expedit
   必須繞過 reduction。它也負責 regeneration、lifesteal、retaliation 與 pause。
 - 卡牌 taxonomy 不再有 `defense`。原防禦牌是 `combo`，治療牌是綠色
   `healing`，效果分為 immediate restore、regeneration、lifesteal 等明確語意。
-- `SkillRecipeManager` 只接收成功且正傷害的 attack card event。count 與 exact
-  sequence 都有 8 秒 window；non-attack 不推進，exact sequence 的錯誤 attack
-  會重設並允許從第一步重新開始。各 active skill 可同時判定並有獨立 cooldown。
-- 已學會 skill 永久保存；active loadout 受 Memory Library capacity
-  10/14/18/24/30 限制。初始 `Iron Momentum` 使用 1 memory：五次 attack 觸發
-  三秒弱霸體，十秒 cooldown。
+- `SkillRecipeManager` 現在只以 `skills.json` schema 2 載入 13 個系列與 39 招，
+  並驗證每系列恰有 basic／advanced／master 三階、中文名稱、定位與動畫節拍。
+- 新招式的傷害、AP、解鎖、施放與升級規則尚未核准，composition root 不得從名稱
+  猜測。舊 count／sequence trigger engine 已退役；`record_card()` 僅為既有 caller
+  保留並回傳空結果。
+- `legacy_vfx_map` 是暫時 presentation 相容層，只讓 39 招先重用既有動畫；
+  `named_skill_vfx_profiles.json` 的四個舊 trigger ID 不再是可學技能或分類權威。
 
 ### 21.3 成長與 UI ownership
 

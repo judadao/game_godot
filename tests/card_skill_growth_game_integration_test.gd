@@ -19,7 +19,7 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	await process_frame
-	_expect(_has_property(game, "skill_recipe_manager"), "Game must own the passive SkillRecipeManager.")
+	_expect(_has_property(game, "skill_recipe_manager"), "Game must own the skill-series catalog boundary.")
 	_expect(_has_property(game, "growth_choice_queue"), "Game must own the sole GrowthChoiceQueue.")
 	_expect(
 		_has_property(game, "card_collection_service"),
@@ -60,20 +60,19 @@ func _run() -> void:
 	_expect(game.get_open_ui("LevelUpUI") == null, "Legacy LevelUpUI must not be opened.")
 	var skill_manager := game.get("skill_recipe_manager") as SkillRecipeManager
 	var attack := (game.get("card_database") as CardDatabase).get_card("ember_bolt")
-	var skill_triggers: Array[Dictionary] = []
-	for index in 5:
-		skill_triggers = skill_manager.record_card(attack)
+	var skill_triggers := skill_manager.record_card(attack)
 	game.call("_resolve_skill_triggers", skill_triggers)
 	var player := game.get("player") as Node
 	var statuses := player.call("get_combat_status_projection") as Array
-	_expect(statuses.any(
+	_expect(not statuses.any(
 		func(status: Dictionary) -> bool:
 			return String(status.get("source_id", "")) == "iron_momentum"
-	), "Five attacks must apply Iron Momentum weak super armor.")
+	), "Retired Iron Momentum must not remain an invisible combat trigger.")
 	var toast_stack := (game.get("hud") as Control).get_node(
 		"BottomStage/ActivityFeed/FeedMargin/FeedRows/SkillToastStack"
 	)
-	_expect(toast_stack.get_child_count() == 1, "Triggered skill must show one temporary HUD toast.")
+	_expect(toast_stack.get_child_count() == 0, "Retired passive skills must not create HUD toasts.")
+	_expect(skill_manager.get_all_series().size() == 13, "Game must load all 13 new skill series.")
 
 	var fixed_ids := deck.hand.duplicate()
 	deck.energy = deck.max_energy

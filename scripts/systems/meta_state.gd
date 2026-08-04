@@ -1,9 +1,12 @@
 class_name MetaState
 extends RefCounted
 
-const SCHEMA_VERSION := 7
+const SCHEMA_VERSION := 8
 const RESOURCE_IDS := ["gold", "autumn_wood", "stone", "magic_shard", "autumn_core"]
 const RETIRED_CARD_IDS := ["quickstep"]
+const RETIRED_SKILL_IDS := [
+	"iron_momentum", "ember_reprise", "battle_tempo", "grand_strategy",
+]
 const EXPANDED_COMBO_CARD_IDS := [
 	"sweeping_reach",
 	"quickened_cadence",
@@ -54,8 +57,8 @@ var equipment := {"weapon": "", "armor": "", "accessory": ""}
 var equipment_levels: Dictionary = {}
 var unlocked_combos: Array[String] = []
 var unlocked_evolutions: Array[String] = []
-var learned_skill_ids: Array[String] = ["iron_momentum"]
-var active_skill_ids: Array[String] = ["iron_momentum"]
+var learned_skill_ids: Array[String] = []
+var active_skill_ids: Array[String] = []
 var boss_defeated := false
 var dash_upgrade_unlocked := false
 var shortcuts: Dictionary = {}
@@ -172,19 +175,22 @@ func apply_dict(data: Dictionary) -> void:
 	unlocked_evolutions = _safe_string_array(data.get("unlocked_evolutions"), unlocked_evolutions)
 	learned_skill_ids = _safe_unique_string_array(
 		data.get("learned_skill_ids"),
-		["iron_momentum"]
+		[]
 	)
 	active_skill_ids = _safe_unique_string_array(
 		data.get("active_skill_ids"),
-		["iron_momentum"]
+		[]
 	)
+	for retired_skill_id in RETIRED_SKILL_IDS:
+		if learned_skill_ids.has(retired_skill_id):
+			learned_skill_ids.erase(retired_skill_id)
+			_last_migration_report["retired_skills_removed"] = int(
+				_last_migration_report.get("retired_skills_removed", 0)
+			) + 1
+		active_skill_ids.erase(retired_skill_id)
 	active_skill_ids = active_skill_ids.filter(
 		func(skill_id: String) -> bool: return learned_skill_ids.has(skill_id)
 	)
-	if not learned_skill_ids.has("iron_momentum"):
-		learned_skill_ids.push_front("iron_momentum")
-	if active_skill_ids.is_empty():
-		active_skill_ids.append("iron_momentum")
 	boss_defeated = bool(data.get("boss_defeated", boss_defeated))
 	dash_upgrade_unlocked = bool(data.get("dash_upgrade_unlocked", boss_defeated))
 	shortcuts = _safe_dictionary(data.get("shortcuts"), shortcuts)
@@ -425,6 +431,7 @@ func _empty_migration_report(from_schema: int) -> Dictionary:
 		"discarded_invalid_instances": 0,
 		"expanded_combo_cards_unlocked": 0,
 		"retired_cards_removed": 0,
+		"retired_skills_removed": 0,
 	}
 
 

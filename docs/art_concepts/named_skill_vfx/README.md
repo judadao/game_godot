@@ -5,6 +5,11 @@ from `/home/judd/Downloads/` were used only as motion-language references
 (pixel-art timing, slash arcs, projectile trails, burst/debris rhythm). Do not
 copy their characters, poses, sprite layouts, watermarks, text, or exact shapes.
 
+Current gameplay skill names, series, tiers, roles, and descriptions come only from
+`data/skills.json` schema 2. The four trigger IDs documented below are retired as
+skills and remain only as animation-library compatibility profiles for
+`legacy_vfx_map`; future design work must not use them as a skill roster.
+
 The five atlas-base identities in this folder follow
 `data/named_skill_vfx_profiles.json`. The complete 32-Finisher runtime identity
 set follows `data/finisher_vfx_identities.json` and the detailed continuous-action
@@ -46,7 +51,7 @@ language for this concept set. `lightning` and `light` are separate elements.
 `normal` means pure sword pressure, white-cyan kinetic force, and metal glints;
 it must not default to fire.
 
-## Legacy atlas trigger mapping
+## Retired trigger animation profiles
 
 The five Finisher rows formerly listed here are retired concept-board records.
 They are not runtime identities and must not be used as construction guidance.
@@ -63,7 +68,7 @@ actions are specified in `docs/art_concepts/finisher_choreography/`.
 
 ## Legacy trigger modular part breakdown
 
-This atlas-friendly row model applies only to the four named triggers. Finishers
+This atlas-friendly row model applies only to the four retired trigger animation profiles. Finishers
 must not use it: they use the exclusive ten-layer semantic-material choreography
 described in `docs/art_concepts/finisher_choreography/README.md`.
 

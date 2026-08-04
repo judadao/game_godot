@@ -262,13 +262,13 @@ UI setter/configure API
 |---|---|---|---|
 | `cards.json` | `CardDatabase` | `cards` | 24 cards |
 | `evolutions.json` | `EvolutionManager` | `fusion_recipes` | 6 recipes |
-| `skills.json` | `SkillRecipeManager` | `skills` | attack-only passive skill recipes |
+| `skills.json` | `SkillRecipeManager` | `series` | 13 個系列 × basic／advanced／master，共 39 招；另含 retired IDs 與暫用 `legacy_vfx_map` |
 | `equipment.json` | `inventory_manager.gd` | `resource_order`, `starting_resources`, `equipment` | 5 resources, 10 equipment |
 | `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 4 buildings × 3 levels, 3 stages |
 | `divine_gifts.json` | `DivineGiftManager` | `gifts` | 6 個三級 Run-local 神賜 |
 | `combo_finishers.json` | `ComboFinisherCatalog` | `recipes` | 32 個精確三招終結技配方 |
 | `forge_catalog.json` | `ForgeCatalog` | `material_offers`, `equipment_recipes`, `sword_soul_recipes` | Town 鍛造 offer 與 recipe |
-| `named_skill_vfx_profiles.json` | `NamedSkillVFXCatalog` | `profiles` | 5 個 Finisher＋4 個 trigger 的差異化模組 VFX |
+| `named_skill_vfx_profiles.json` | `NamedSkillVFXCatalog` | `profiles` | 32 個 Finisher 與 4 個退役 trigger 的動畫 profile；只作 presentation library，不定義現役技能名稱／分類 |
 | `finisher_vfx_identities.json` | `NamedSkillVFXCatalog` | `finishers` | 32 個 Finisher 的 base profile、元素、cadence、beat pattern 與 geometry／particle／light identity |
 | `elemental_ground_trail_profiles.json` | `ElementalGroundTrailCatalog` | `profiles` | 火焰路徑、冰裂分岔與毒灘的四槽 atlas 拼裝資料 |
 | `town_npc_interactions.json` | `TownNPCInteractionCatalog` | `interactions` | 9 種 Town presentation interaction、雙方 animation sequence、角色／archetype selector、距離、cooldown 與 weight |
@@ -293,7 +293,7 @@ schema、ID、selector、sequence 與 deterministic query 另由
 
 - `cards.json`：`schema_version = 3`
 - `evolutions.json`：`schema_version = 2`
-- `skills.json`：目前沒有 schema_version field
+- `skills.json`：`schema_version = 2`、`catalog_kind = skill_series`；loader 要求 exact version
 - `equipment.json`：目前沒有schema_version field
 - `town_upgrades.json`：目前沒有schema_version field
 - `divine_gifts.json`：目前沒有 schema_version field
@@ -747,7 +747,7 @@ extends Resource
 
 ### 9.1 MetaState
 
-`MetaState.SCHEMA_VERSION = 7`。
+`MetaState.SCHEMA_VERSION = 8`。
 
 主要fields：
 
@@ -765,8 +765,10 @@ inventory_state / town_state
 
 `auto_attack_card_id` 是戰前 loadout 選擇，必須解析為已解鎖的 attack card；
 無效時由 composition root 選擇有效 fallback。`active_skill_ids` 必須是
-`learned_skill_ids` 的子集。migration 會去重、移除未知 active entry，並確保初始
-`iron_momentum` 已學會且至少有一個 active skill。
+`learned_skill_ids` 的子集。schema 8 migration 會去重並移除四個退役被動 ID
+`iron_momentum`、`ember_reprise`、`battle_tempo`、`grand_strategy`，且不再自動建立
+舊初始技能；新 39 招只有穩定 ID、系列與階級資料，尚未核准的解鎖／配置規則不得由
+loader 或 migration 猜測。
 `inventory_state`與`town_state`是current manager DTO；其他equipment/building fields
 同時保留legacy compatibility。
 
@@ -828,13 +830,14 @@ Healing 可作為正式材料，但任何 required skill 未學會時不得排�
 `cards.json` 與 `equipment.json` 保留 canonical 英文 `name`／`description`，並以
 `name_zh`／`description_zh` 提供玩家可見繁中投影；stable ID、戰鬥數值與存檔 key
 不因在地化改名。每一張正式 card 的 `icon_path` 必須是唯一的
-`res://assets/ui/autumn/cards/generated/<card_id>.png`；`skills.json`、
+`res://assets/ui/autumn/cards/generated/<card_id>.png`；
 `combo_finishers.json` 與 `equipment.json` 也分別持有唯一的
-`res://assets/ui/skills/generated/<skill_id>.png`、
 `res://assets/ui/finishers/generated/<finisher_id>.png` 與
 `res://assets/ui/equipment/generated/<equipment_id>.png`。所有圖示固定 256×256，
 不含文字、數字、AP、快捷鍵或 UI 外框；裝備圖示使用透明背景，其餘戰鬥圖示
-延續 midnight-black／antique-gold 劍魂語言。完整劍魂 prompt 基準記錄於
+延續 midnight-black／antique-gold 劍魂語言。新的 39 招目前允許 `icon_path` 留空，
+Inventory 以 curated journal icon fallback 顯示；正式逐招圖示加入時才需遵守唯一
+256×256 path contract，不得繼續引用已退役四被動的圖示。完整劍魂 prompt 基準記錄於
 `docs/art_concepts/combo_card_tarot_v1.md`。InventoryManager 的裝備持久化正式允許 Lv.1–15，但目前只有
 Lv.1→2、Lv.2→3 成本與截至 Lv.3 的效果曲線有 runtime authority。Lv.4–15 會保留
 存檔等級，但不得外推屬性或捏造突破成本；鐵匠鋪以「突破素材尚未開放」停用操作。
@@ -1299,10 +1302,10 @@ stable strings without dropping cards. `MetaState.get_last_migration_report()` /
 Applying an already migrated payload must be idempotent.
 
 Schema 6 also serializes `auto_attack_card_id`, `learned_skill_ids`, and
-`active_skill_ids`. Both skill arrays
-are unique string IDs; active is normalized to a subset of learned. Legacy
-payloads receive the initial `iron_momentum` learned/active defaults, and an
-already migrated schema-6 payload round-trips without changing order or IDs.
+`active_skill_ids`. Both skill arrays are unique string IDs; active is normalized
+to a subset of learned. Schema 8 removes the four retired passive IDs and does not
+insert a replacement default. Valid new skill-series IDs survive migration, while
+`Game` filters configured IDs through the current catalog before runtime use.
 The auto-attack ID is a loadout choice, not a selected-deck instance.
 
 `DeckManager` keeps `CardInstance` objects authoritative in hand, draw,

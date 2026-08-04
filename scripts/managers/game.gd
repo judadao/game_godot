@@ -265,14 +265,12 @@ func _ready() -> void:
 
 func _configure_skill_loadout() -> void:
 	var capacity := int(town_manager.call("get_skill_memory_capacity"))
-	if skill_recipe_manager.configure_loadout(
-		meta_state.learned_skill_ids,
-		meta_state.active_skill_ids,
-		capacity
-	):
-		return
-	meta_state.learned_skill_ids = ["iron_momentum"]
-	meta_state.active_skill_ids = ["iron_momentum"]
+	meta_state.learned_skill_ids = meta_state.learned_skill_ids.filter(
+		func(skill_id: String) -> bool: return skill_recipe_manager.has_skill(skill_id)
+	)
+	meta_state.active_skill_ids = meta_state.active_skill_ids.filter(
+		func(skill_id: String) -> bool: return meta_state.learned_skill_ids.has(skill_id)
+	)
 	skill_recipe_manager.configure_loadout(
 		meta_state.learned_skill_ids,
 		meta_state.active_skill_ids,
@@ -4356,6 +4354,52 @@ func _equipment_effect_summary(item: Dictionary) -> String:
 
 
 func _inventory_codex_projection() -> Array[Dictionary]:
+	var projection: Array[Dictionary] = []
+	for skill_variant in skill_recipe_manager.get_all_skills():
+		var skill := skill_variant as Dictionary
+		var tier_rank := clampi(int(skill.get("tier_rank", 1)), 1, 3)
+		var tier_id := String(skill.get("tier", "basic"))
+		var tier_label := skill_recipe_manager.get_tier_label(tier_id)
+		var series_name := String(skill.get("series_name", "未分類"))
+		var elements := (skill.get("combat_elements", []) as Array).duplicate()
+		var animation_beats := skill.get("animation_beats", []) as Array
+		var legacy_vfx_id := String(skill.get("legacy_vfx_id", ""))
+		projection.append({
+			"id": String(skill.get("id", "")),
+			"name": String(skill.get("name", "未知招式")),
+			"catalog_kind": "skill_series",
+			"category": "skills",
+			"skill_series_id": String(skill.get("series_id", "")),
+			"skill_series_name": series_name,
+			"tier": tier_id,
+			"tier_label": tier_label,
+			"tier_rank": tier_rank,
+			"kind_label": "%s系列 · %s招式" % [series_name, tier_label],
+			"description": String(skill.get("description", "")),
+			"effect_summary": String(skill.get("positioning", "")),
+			"trigger_summary": "動畫：%s" % " → ".join(animation_beats),
+			"identity_elements": (skill.get("series_identity_elements", []) as Array).duplicate(),
+			"icon_path": (
+				String(skill.get("icon_path", ""))
+				if not String(skill.get("icon_path", "")).is_empty()
+				else JOURNAL_ICON_ROOT + "Icon41_1_2.png"
+			),
+			"preview_kind": "finisher",
+			"named_vfx_id": legacy_vfx_id,
+			"combat_vfx_id": legacy_vfx_id,
+			"legacy_vfx": true,
+			"element": String(elements[0]) if not elements.is_empty() else "normal",
+			"elements": elements,
+			"intensity": [2, 3, 5][tier_rank - 1],
+			"attack_size_multiplier": [1.0, 1.25, 1.6][tier_rank - 1],
+			"stack_count": (tier_rank - 1) * 3,
+			"level": tier_rank,
+			"combo_stack": (tier_rank - 1) * 3,
+		})
+	return projection
+
+
+func _inventory_legacy_codex_projection() -> Array[Dictionary]:
 	var projection: Array[Dictionary] = []
 	for card_id in _current_codex_card_ids():
 		var card := _current_codex_card(card_id)

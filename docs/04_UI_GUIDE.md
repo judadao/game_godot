@@ -572,10 +572,11 @@ HUDLayer
 - 所有章節內容保留 32px painted page-curl safe inset；圖鑑長內容在固定 detail viewport
   內捲動，viewport 下方另保留 26px 無繪製 footer 與內容 BottomInset，不讓最後一行
   落入書頁捲邊或顯示半行
-- Codex 左側 basic attacks／skills／infusions／finishers 列表；右側只顯示現役
-  `LIVE VFX`，退役 concept boards 不得重新進入玩家圖鑑；下方顯示效果／觸發說明
-- 詳情區必須投影目前元素、`LV 1–3` 進化層、Buff stack 與下一個 stack milestone，
-  不得在 UI 內另行推算技能規則
+- 圖鑑招式章左側固定列出 `skills.json` 的 39 招，不再混列目前普攻、四格手牌、
+  舊 passive trigger 或 32 個 Finisher recipe 名稱；右側只顯示現役 `LIVE VFX`，
+  退役 concept boards 不得重新進入玩家圖鑑
+- 詳情區投影系列、基本／進階／大師階級、正式元素、系列識別語彙、定位、完整描述與
+  animation beats；UI 不從名稱猜測傷害、AP、解鎖或升級規則，並明示「暫用既有動畫」
 - `InventoryCodexPreview` 等待 Container 提供有效尺寸後才生成 production VFX；
   劍氣使用 preview-local 起點／終點，resize 時重建，不能混入 viewport stretch
   座標或逃出 `clip_contents`。Live frame 邏輯高度至少 `320px`；命名終結技依
@@ -583,22 +584,11 @@ HUDLayer
   左移方向性起點並貼齊預覽地面；Codex fit 不受舊 `preview_scale` 的縮小上限限制，
   世界方向位移在圖鑑中最多壓縮為 `220px`（不改戰鬥距離），並在安全範圍內放到最大，
   不能只放大外框後繼續裁掉或縮小招式
-- Basic Attack 預覽維持白青中性月牙；卡片本身的 fire／ice tag 不等同已啟用
-  Combo infusion，只有 infusion／Finisher preview 能傳入元素層
-- `風暴充能` 不使用泛用 attack-aura 預覽；圖鑑在同一 live frame 實例化 production
-  `StormChargeVFX`，以 frame 的地面線作 y=0 cast anchor，完整播放左右接地、雙腿導電、
-  劍根／劍身鎖定、右向分叉與同路徑回縮；resize 時重建且不得裁掉接地流或劍端分支
-- 招式 discovery projection 只包含目前普攻、目前四格戰鬥配置與啟用中的 passive
-  Skill；歷史解鎖但未裝備的卡片（例如已卸下的 `guard`）不得滲回招式審查清單。
-  32 個正式 Finisher 則維持完整 production VFX gallery，stable id 不得重複
-- 目前配置卡必須先套用其 `CardInstance.level` 的 upgrade effect，再投影 effect summary、
-  `special_vfx_id`／`named_vfx_id`、方向數與散射角度；像 `echo_volley` 的 2／4／8 道
-  劍氣預覽必須與實戰等級一致，不能退回單一道泛用劍氣
-- 治療、防禦、能量、移動、控制及強化技使用對應的 code-native `technique`
-  preview；不能因為沒有火／冰專屬 VFX 而從列表消失
-- 啟用中的命名觸發技與全部正式 Combo Finisher 必須投影精確 `named_vfx_id`；
-  Discovery Codex 與戰鬥共用 `NamedSkillVFX.tscn` 及同一份 profile，不能退回
-  泛用 technique 圈或放大版普通劍氣
+- 每招依 `legacy_vfx_map` 投影精確 `named_vfx_id`，暫時重用既有
+  `NamedSkillVFX.tscn` profile；mapping 是 presentation compatibility，不得使舊 profile
+  display name、trigger 類型或 Combo recipe 重新成為圖鑑內容權威
+- 39 招即使尚未有獨立 icon 也不能從列表消失；空 `icon_path` 使用既有 curated journal
+  fallback。未來加入正式圖示時由 catalog path 覆蓋，不在 UI 以名稱硬編 icon
 
 `inventory_ui.gd`：
 

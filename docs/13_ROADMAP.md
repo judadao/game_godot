@@ -70,7 +70,9 @@ Roadmap item 的建立與關閉依序使用：
 - 卡牌使用 real-time AP，單組 4 張 Combo／Healing 手牌用 QWER 出牌，出牌後固定補回四張，T 可直接棄牌補四張；
 - ↑ 只觸發 Jump；Space 是玩家固有 Dash，不進牌庫/手牌且不耗 AP；
 - Quickstep 已從正式卡表移除；Dash Combo 以 `target_action=dash` 暫時強化固有 Dash；
-- timed combo status cards、attack-only passive skills 與兩張 Lv.3 fusion 已存在；
+- timed combo status cards 與兩張 Lv.3 fusion 已存在；技能內容已切換為 13 系列、
+  39 招、每系列 basic／advanced／master 三階的 catalog，舊 attack-only passive
+  recipes 已退役；目前只完成名稱／分類／圖鑑與暫用動畫映射，玩法數值與解鎖流程尚未核准；
 - ExperienceGem、跨級 XP queue、GrowthChoiceQueue 與 CardGrowthUI 已存在；
 - Campfire accessible UI 為 Rest／Leave；
 - Wandering merchant 使用 run gold；

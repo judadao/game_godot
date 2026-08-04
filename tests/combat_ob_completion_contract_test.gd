@@ -4,7 +4,7 @@ const InventoryManagerScript = preload("res://scripts/systems/inventory_manager.
 
 const EXPECTED_FINISHERS := {
 	"battle_rhythm,battle_rhythm,battle_rhythm": "戰律希聲",
-	"sweeping_reach,sweeping_reach,sweeping_reach": "天際流光",
+	"sweeping_reach,sweeping_reach,sweeping_reach": "萬劍垂天",
 	"quickened_cadence,quickened_cadence,quickened_cadence": "驟雨繁音",
 	"giant_arc,giant_arc,giant_arc": "月輪垂光",
 	"echo_volley,echo_volley,echo_volley": "千羽相應",
@@ -24,7 +24,7 @@ const EXPECTED_FINISHERS := {
 	"blood_pact_combo,blood_pact_combo,blood_pact_combo": "同枝共脈",
 	"verdant_renewal,verdant_renewal,verdant_renewal": "青庭長春",
 	"battle_rhythm,quickened_cadence,echo_volley": "希聲繁羽",
-	"sweeping_reach,giant_arc,echo_volley": "天光回羽",
+	"sweeping_reach,giant_arc,echo_volley": "天羽萬象",
 	"guard,iron_skin,stoneguard_combo": "守一返照",
 	"fleet_footwork,arcane_breath,deep_reservoir": "扶搖泉湧",
 	"flame_imbue,frostburst_imbue,storm_charge": "水火既濟",
@@ -103,12 +103,12 @@ func _test_chinese_combo_and_equipment_copy() -> void:
 		_expect(not cards.get_card(card_id).is_empty(), "OB Combo 必須存在：%s" % card_id)
 	var skills := SkillRecipeManager.new()
 	_expect(skills.load_catalog("res://data/skills.json"), "招式資料必須可載入。")
-	var skill_document := _read_json_dictionary("res://data/skills.json")
-	for skill_variant in skill_document.get("skills", []) as Array:
+	for skill_variant in skills.get_all_skills():
 		var skill_id := String((skill_variant as Dictionary).get("id", ""))
-		var skill := skills.get_recipe(skill_id)
+		var skill := skills.get_skill(skill_id)
 		_expect(not skill.is_empty(), "招式必須能由玩家資料庫讀取：%s" % skill_id)
-		_expect(_contains_han(String(skill.get("name_zh", ""))), "招式必須提供中文顯示名：%s" % skill_id)
+		_expect(_contains_han(String(skill.get("name", ""))), "招式必須提供中文顯示名：%s" % skill_id)
+	_expect(skills.get_all_skills().size() == 39, "招式資料必須只使用十三系列的三十九招。")
 	var inventory = InventoryManagerScript.new()
 	for item_variant in inventory.get_equipment_catalog():
 		var item := item_variant as Dictionary

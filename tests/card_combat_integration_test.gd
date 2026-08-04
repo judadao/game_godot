@@ -107,15 +107,12 @@ func _run() -> void:
 	)
 
 	var skills := SkillRecipeManager.new()
-	_expect(skills.load_catalog("res://data/skills.json"), "Passive Skill catalog must load.")
-	_expect(skills.configure_loadout(["iron_momentum"], ["iron_momentum"], 10), "Initial Skill must equip.")
-	for index in 4:
-		_expect(skills.record_card(database.get_card("ember_bolt")).is_empty(), "Skill must wait for five attacks.")
+	_expect(skills.load_catalog("res://data/skills.json"), "Skill-series catalog must load.")
+	_expect(skills.configure_loadout(["silent_war_cadence"], ["silent_war_cadence"], 10), "Known new-series IDs must pass the compatibility loadout boundary.")
 	var fifth_attack := skills.record_card(database.get_card("inferno_orb"))
 	_expect(
-		fifth_attack.size() == 1
-		and String(fifth_attack[0].get("id", "")) == "iron_momentum",
-		"Five attack cards must trigger the visible Iron Momentum result."
+		fifth_attack.is_empty(),
+		"New series skills must not inherit retired attack-count trigger rules."
 	)
 
 	var hand_ui := hand_scene.instantiate()

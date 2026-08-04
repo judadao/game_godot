@@ -593,6 +593,12 @@ func _to_dictionary_array(source: Array) -> Array[Dictionary]:
 
 
 func _format_codex_meta(entry: Dictionary) -> String:
+	if String(entry.get("catalog_kind", "")) == "skill_series":
+		return "系列  %s   ·   階級 %s   ·   元素 %s" % [
+			String(entry.get("skill_series_name", "未分類")),
+			String(entry.get("tier_label", "基礎")),
+			_element_display_name(_entry_element(entry)),
+		]
 	var level := clampi(int(entry.get("level", entry.get("card_level", 1))), 1, 3)
 	var stacks := maxi(0, int(entry.get("combo_stack", entry.get("buff_stacks", 0))))
 	return "屬性  %s   ·   等級 %d/3   ·   增益 ×%d" % [
@@ -603,6 +609,11 @@ func _format_codex_meta(entry: Dictionary) -> String:
 
 
 func _format_codex_growth(entry: Dictionary) -> String:
+	if String(entry.get("catalog_kind", "")) == "skill_series":
+		var elements := PackedStringArray()
+		for identity_variant in entry.get("identity_elements", []) as Array:
+			elements.append(String(identity_variant))
+		return "系列語彙  %s\n特效狀態  暫用既有動畫" % " · ".join(elements)
 	var level := clampi(int(entry.get("level", entry.get("card_level", 1))), 1, 3)
 	var stacks := maxi(0, int(entry.get("combo_stack", entry.get("buff_stacks", 0))))
 	var layers := entry.get("evolution_layers", []) as Array

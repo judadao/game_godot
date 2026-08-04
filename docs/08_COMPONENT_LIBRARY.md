@@ -625,8 +625,10 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
   `StormChargeVFX`
 - boundary：只顯示 projection，不計算傷害、不解鎖 discovery、不 mutation save
 - sibling presentation：玩家圖鑑只顯示此 production `LIVE VFX` component；舊
-  concept boards 與 tabs 維持隱藏。元素、進化層與 Buff milestone 一律來自 Game
-  projection
+  concept boards 與 tabs 維持隱藏。現役招式 projection 固定來自 13 系列、39 招的
+  skill catalog，包含系列、基本／進階／大師階級、定位、描述與動畫節拍
+- compatibility：39 招暫時以 `legacy_vfx_map` 重用既有 named VFX；component 只播放
+  `named_vfx_id`，不得用 profile display name 或舊 trigger 類型改寫招式資料
 - fit contract：live frame 邏輯高度至少 `320px`；命名終結技以 authored diameter、
   完整 travel 與 `0.82` ground anchor 計算縮放／起點，不受舊 `preview_scale` 縮小上限
   限制；圖鑑可把 world directional travel 壓到最多 `220px`，但不可改戰鬥移動距離，

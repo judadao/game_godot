@@ -463,27 +463,36 @@ mechanics，因此所有不同神賜欄位直接相加、倍率直接相乘，
 融合神賜同時保留兩個材料的 canonical `elements`，不會把屬性改名成
 `evolved`。Flame、Storm、Frost、Venom 等舊稱只作輸入相容 alias。
 
-### 7.3 Passive attack Skill
+### 7.3 技能系列 catalog
 
-Skill recipe 不是卡牌類型，也不由 non-attack card 推進。每次成功且正傷害的
-attack card 只產生一個 skill event；multi-hit 仍算一個。active skills 可平行判定：
+`data/skills.json` 是現役技能名稱與分類的唯一權威。技能分成 13 個系列，每系列固定
+三招：第一招為 basic（基本）、第二招為 advanced（進階）、第三招為 master（大師）。
 
-- count recipe 在 8 秒 window 內累積攻擊次數；
-- exact sequence 只接受指定 attack card ID；錯誤 attack 重設，若它也是第一步
-  則立即從第一步重新開始；
-- non-attack 不推進 recipe；
-- 每個 skill 有獨立 cooldown，同一次 attack 可觸發多個 skill。
+| 系列 | 基本 | 進階 | 大師 |
+|---|---|---|---|
+| 劍雨 | 戰律希聲 | 萬劍垂天 | 驟雨繁音 |
+| 月輪 | 月輪垂光 | 扶搖月輪 | 月蝕重輪 |
+| 羽毛 | 千羽相應 | 希聲繁羽 | 天羽萬象 |
+| 古木 | 古根纏行 | 年輪護生 | 萬古森羅 |
+| 巨石 | 靜岳無移 | 石環守一 | 群岳歸一 |
+| 巨盾 | 守一返照 | 守一共脈 | 天門不破 |
+| 火焰 | 流火照夜 | 霜蘭流火 | 天火燎原 |
+| 雷電 | 綿息雷音 | 流火雷音 | 九霄震律 |
+| 水流 | 扶搖泉湧 | 靈泉不窮 | 滄海回瀾 |
+| 植物攻擊 | 蘭芷成蝕 | 荊庭穿心 | 萬華噬野 |
+| 龍息 | 奧術吐息 | 龍脈迴響 | 萬象龍臨 |
+| 朝陽生息 | 朝光載陽 | 春庭載陽 | 青庭長春 |
+| 同枝共生 | 春靈來復 | 同枝共脈 | 同脈來復 |
 
-學會的 skill 永久保留，出發前在安全區/Town 編輯 active loadout。Memory Library
-level 的 capacity 是 10/14/18/24/30。初始 `Iron Momentum` 使用 1 memory，五次
-attack 觸發三秒弱霸體，cooldown 十秒。
+每招資料至少包含穩定 ID、繁中名稱、系列 ID／名稱、階級、定位、完整描述與連續動畫
+節拍。`萬劍垂天` 取代舊稱 `天際流光`；`天羽萬象` 取代舊稱 `天光回羽`。四個舊被動
+`iron_momentum`、`ember_reprise`、`battle_tempo`、`grand_strategy` 已退役，不能再由
+存檔、圖鑑或 runtime 當成可學技能。
 
-五個 Combo Finisher 與四個 named trigger 不共用同一 motion 模板。九招分別具有
-獨立 archetype 與 3–5 段 beat pattern；Skill 的 Lv.1／2／3 會依
-`evolution_layers` 定義逐步增加新部件的身份，永久 Combo／Buff 疊層則依各招
-`stack_milestones` 增加結構層，並保留對齊的 `stack_traits` 成長語彙。Runtime 將實際
-`evolution_level` 與最強相關 `buff_stacks` 傳給演出，因此成長會改變剪影、
-路徑或節拍，而不只是整體縮放與亮度。
+本階段只核准名稱、系列、階級、定位與招式描述；傷害、AP、解鎖、施放、升級與系列
+機制尚未定案，不得從名稱或舊被動 recipe 外推。為讓目前遊戲仍可預覽招式，39 招先以
+`legacy_vfx_map` 對應最接近的既有 named VFX。這些 profile 只是暫時動畫 library，
+不能反向覆寫技能名稱、分類或描述；後續逐招特效完成時再替換 mapping。
 
 ### 7.4 火／冰範圍技能
 
@@ -825,7 +834,7 @@ Rest 每個 Run 只能成功使用一次，會把 health 與 mana 恢復到上�
 
 ### 11.2 MetaState
 
-`MetaState` schema version 為 5，保存：
+`MetaState` schema version 為 8，保存：
 
 - persistent resources；
 - village／building progression；
@@ -842,6 +851,7 @@ Rest 每個 Run 只能成功使用一次，會把 health 與 mana 恢復到上�
 
 舊 payload 在載入時 deterministic、idempotent migration；非法 level、重複/缺失
 instance ID 必須修復並留下 report。Skill arrays 去重，active 只保留 learned IDs；
+schema 8 另移除四個退役被動 ID，且不補入舊 `Iron Momentum` 預設；
 auto attack 缺失或無效時在組裝 Run 時 fallback 到有效已解鎖 attack。
 
 ### 11.3 Meta save
@@ -1025,7 +1035,7 @@ Deck Builder 在戰前從已解鎖 attack cards 選一個 Basic Attack，與四�
 
 - cost 固定為 0，不進 hand/draw/discard/exhaust/cooldown；
 - 有合法水平目標時依 catalog interval 自動發射；
-- 不建立出牌事件，因此不推進 `SkillRecipeManager` 的 count/sequence；
+- 不建立出牌事件；退役的 `SkillRecipeManager` count/sequence engine 不再推進；
 - 可使用所選 attack card 的有效 level/equipment projection；
 - 固定沿玩家面向發射；方向劍氣使用與 106px 主刃高度、Combo 尺寸、stack
   及 Combo spectacle 同源的前向膠囊掃掠形狀，沿途每個 hurtbox 只結算一次；
@@ -1034,7 +1044,7 @@ Deck Builder 在戰前從已解鎖 attack cards 選一個 Basic Attack，與四�
 
 Dash 是玩家固有 action：↑ 只觸發 Jump，Space 觸發 Dash。Dash 不建立
 `CardInstance`，不進 backpack/hand/draw/discard/exhaust/cooldown，也不花 AP 或
-觸發 `SkillRecipeManager` 的 card sequence。`quickstep` 已從正式卡表移除。
+觸發退役的 `SkillRecipeManager` card sequence。`quickstep` 已從正式卡表移除。
 Dash Edge/Gale Drive 是 `combat_hand = false` 的 legacy Combo cards，以 `target_action = dash` 在各自 effect
 window 內暫時強化固有 Dash；Combo 本身不直接移動玩家。
 

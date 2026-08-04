@@ -80,7 +80,7 @@ func _run() -> void:
 				sword_soul_ids.has(String(card.get("id", ""))),
 				"Sword Soul codex must include catalog card: %s." % card.get("id", "")
 			)
-		_expect(int(sections["techniques"]) > 0, "Technique codex must preserve discovered moves.")
+		_expect(int(sections["techniques"]) == 39, "Technique codex must project the 13 approved series with three tiers each.")
 
 	game.queue_free()
 	await process_frame

@@ -2,7 +2,6 @@ extends SceneTree
 
 const EXPECTED_SIZE := Vector2i(256, 256)
 const CARD_ROOT := "res://assets/ui/autumn/cards/generated/"
-const SKILL_ROOT := "res://assets/ui/skills/generated/"
 const FINISHER_ROOT := "res://assets/ui/finishers/generated/"
 const EQUIPMENT_ROOT := "res://assets/ui/equipment/generated/"
 
@@ -15,12 +14,12 @@ func _initialize() -> void:
 
 func _run() -> void:
 	_check_catalog("res://data/cards.json", "cards", CARD_ROOT)
-	_check_catalog("res://data/skills.json", "skills", SKILL_ROOT)
+	_check_skill_series_icons()
 	_check_catalog("res://data/combo_finishers.json", "recipes", FINISHER_ROOT)
 	_check_catalog("res://data/equipment.json", "equipment", EQUIPMENT_ROOT)
 	_check_generated_card_filtering()
 	if _failures == 0:
-		print("PASS: every card, skill, finisher, and equipment entry owns unique generated icon art")
+		print("PASS: generated catalog icons and new skill-series icon boundary")
 	quit(1 if _failures > 0 else 0)
 
 
@@ -42,6 +41,25 @@ func _check_generated_card_filtering() -> void:
 			"Generated card art must use linear filtering at HUD scale: %s" % card.get("id", "")
 		)
 		card_view.free()
+
+
+func _check_skill_series_icons() -> void:
+	var catalog := SkillRecipeManager.new()
+	_expect(catalog.load_catalog("res://data/skills.json"), "Skill-series catalog must load for icon validation.")
+	var skills := catalog.get_all_skills()
+	_expect(skills.size() == 39, "Skill icon boundary must cover all 39 new skills.")
+	var paths: Dictionary = {}
+	for skill_variant in skills:
+		var skill := skill_variant as Dictionary
+		var icon_path := String(skill.get("icon_path", "")).strip_edges()
+		if icon_path.is_empty():
+			continue
+		_expect(not paths.has(icon_path), "Authored skill icon paths must stay unique: %s" % icon_path)
+		paths[icon_path] = String(skill.get("id", ""))
+		var texture := load(icon_path) as Texture2D if ResourceLoader.exists(icon_path) else null
+		_expect(texture != null, "Authored skill icon must load: %s" % icon_path)
+		if texture != null:
+			_expect(Vector2i(texture.get_width(), texture.get_height()) == EXPECTED_SIZE, "Authored skill icon must be 256x256: %s" % icon_path)
 
 
 func _check_catalog(path: String, key: String, root_path: String) -> void:
