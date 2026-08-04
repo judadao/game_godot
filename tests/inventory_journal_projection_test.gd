@@ -82,6 +82,29 @@ func _run() -> void:
 			)
 		_expect(int(sections["techniques"]) == 39, "Technique codex must project the 13 approved series with three tiers each.")
 
+	game.call("_toggle_inventory")
+	await process_frame
+	await process_frame
+	var runtime_journal := game.call("get_open_ui", "InventoryUI") as Control
+	_expect(runtime_journal != null, "The production I-key flow must open InventoryUI.")
+	if runtime_journal != null:
+		runtime_journal.call("set_mode", &"codex")
+		await process_frame
+		var runtime_rows := runtime_journal.get_node(
+			"Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Entries"
+		) as ItemList
+		var expected_opening_rows := [
+			"◆  劍雨系列", "基礎 · 戰律希聲", "進階 · 萬劍垂天", "大師 · 驟雨繁音",
+			"◆  月輪系列", "基礎 · 月輪垂光", "進階 · 扶搖月輪", "大師 · 月蝕重輪",
+		]
+		_expect(runtime_rows.item_count == 52, "The production journal must show 13 series headers and 39 skills.")
+		for row_index in mini(expected_opening_rows.size(), runtime_rows.item_count):
+			_expect(
+				runtime_rows.get_item_text(row_index) == expected_opening_rows[row_index],
+				"The production journal row %d must preserve series/tier ordering; got: %s"
+					% [row_index, runtime_rows.get_item_text(row_index)]
+			)
+
 	game.queue_free()
 	await process_frame
 	if _failures == 0:

@@ -657,6 +657,8 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
   `skill_series_rank`／`tier_rank` 重建 13 組 catalog 順序；系列標題列不可選，
   每組招式列固定為基本／進階／大師，且 row-to-entry mapping 必須保持 keyboard、
   programmatic selection 與 scroll-to-selection 正確
+- series header state：深色底條搭配亮金文字，不設 disabled；只用 non-selectable
+  保留完整對比並阻止 selection
 - action boundary：`equip_requested(item_id)`；父 Game 驗證、mutation、save 與 refresh
 - empty/selection/focus：每頁 deterministic initial focus；同一時間恰好一個 page visible
 - safe area：底部保留 32px page-curl inset；Codex Info 的 Panel 內嵌 vertical

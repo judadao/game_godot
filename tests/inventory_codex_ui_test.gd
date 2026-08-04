@@ -35,8 +35,8 @@ func _run() -> void:
 	_expect(ui.call("get_visible_codex_count") == 39, "Codex must list all 39 current skills.")
 	_expect(codex_rows.item_count == 52, "Codex must group 39 skills under 13 visible series headers.")
 	var expected_opening_rows := [
-		"劍雨系列", "基礎 · 戰律希聲", "進階 · 萬劍垂天", "大師 · 驟雨繁音",
-		"月輪系列", "基礎 · 月輪垂光", "進階 · 扶搖月輪", "大師 · 月蝕重輪",
+		"◆  劍雨系列", "基礎 · 戰律希聲", "進階 · 萬劍垂天", "大師 · 驟雨繁音",
+		"◆  月輪系列", "基礎 · 月輪垂光", "進階 · 扶搖月輪", "大師 · 月蝕重輪",
 	]
 	for row_index in expected_opening_rows.size():
 		_expect(
@@ -45,10 +45,19 @@ func _run() -> void:
 				% [row_index, codex_rows.get_item_text(row_index)]
 		)
 	_expect(
-		codex_rows.is_item_disabled(0)
-			and codex_rows.is_item_disabled(4)
-			and not codex_rows.is_item_disabled(1),
-		"Series headers must be non-selectable while skill rows remain selectable."
+		not codex_rows.is_item_selectable(0)
+			and not codex_rows.is_item_selectable(4)
+			and not codex_rows.is_item_disabled(0)
+			and codex_rows.is_item_selectable(1),
+		"Series headers must remain bright and non-selectable while skill rows remain selectable."
+	)
+	var header_foreground := codex_rows.get_item_custom_fg_color(0)
+	var header_background := codex_rows.get_item_custom_bg_color(0)
+	_expect(
+		header_background.a >= 0.9
+			and header_foreground.get_luminance() - header_background.get_luminance() >= 0.55,
+		"Series headers need an opaque dark strip and high-luminance text; got foreground=%s background=%s."
+			% [header_foreground, header_background]
 	)
 	_expect(ui.call("get_selected_codex_id") == "flowing_fire_night", "Codex selection must use the new stable skill ID.")
 	_expect(preview.call("get_preview_kind") == "finisher", "New skills must use the temporary named-animation preview path.")

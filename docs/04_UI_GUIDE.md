@@ -574,6 +574,8 @@ HUDLayer
   落入書頁捲邊或顯示半行
 - 圖鑑招式章左側固定列出 `skills.json` 的 39 招，依 catalog 的 13 個正式系列順序
   分組；每組先顯示不可選取的「系列」標題，再固定排列基本／進階／大師三列。
+  系列標題使用不透明深色底條、亮金文字與菱形符號；只設為不可選，不可使用
+  disabled 灰化而失去與列表背景的對比。
   UI 必須依 `skill_series_rank`／`tier_rank` 排序，不能依輸入順序或招式名稱碰巧排列。
   列表不再混列目前普攻、四格手牌、舊 passive trigger 或 32 個 Finisher recipe 名稱；
   右側只顯示現役 `LIVE VFX`，退役 concept boards 不得重新進入玩家圖鑑

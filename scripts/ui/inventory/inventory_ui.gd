@@ -14,7 +14,8 @@ const MODE_SWORD_SOULS := &"sword_souls"
 const MODE_CODEX := &"codex"
 const LEGACY_MODE_INVENTORY := &"inventory"
 const CODEX_VIEW_LIVE := &"live"
-const CODEX_SERIES_HEADER_COLOR := Color(0.78, 0.57, 0.28, 1.0)
+const CODEX_SERIES_HEADER_COLOR := Color(1.0, 0.89, 0.58, 1.0)
+const CODEX_SERIES_HEADER_BACKGROUND := Color(0.13, 0.075, 0.035, 0.96)
 const SUPPORTED_ELEMENTS := [
 	"water", "fire", "wind", "lightning", "ice", "poison", "light", "dark", "normal",
 ]
@@ -427,11 +428,11 @@ func _refresh_codex_list() -> void:
 		if is_series_skill and series_key != active_series:
 			active_series = series_key
 			var header_row := codex_list.add_item(
-				"%s系列" % String(entry.get("skill_series_name", "未分類"))
+				"◆  %s系列" % String(entry.get("skill_series_name", "未分類"))
 			)
-			codex_list.set_item_disabled(header_row, true)
 			codex_list.set_item_selectable(header_row, false)
 			codex_list.set_item_custom_fg_color(header_row, CODEX_SERIES_HEADER_COLOR)
+			codex_list.set_item_custom_bg_color(header_row, CODEX_SERIES_HEADER_BACKGROUND)
 			_codex_row_entry_indices.append(-1)
 		var visible_index := _visible_codex.size()
 		_visible_codex.append(entry)
