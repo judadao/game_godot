@@ -656,13 +656,19 @@ service；修改 mappings或處理順序時須用實際 run驗證。
   icon echo 或無來源線條。所有 instance 共用
   `shaders/combat/finisher_semantic_material.gdshader`，每層只保有獨立參數；profile 的
   particle flow 會解析成實際發射方向，light energy／motif 也必須進入 runtime diagnostics
-  與材質能量。所有逐格圖共用水平接地基準，整張物件 `rotation = 0`；沿地動作只可
-  水平前進，受重力物件只可垂直升降。遠近只由 scale、間距、遮擋與 z-order 表示，
+  與材質能量。所有逐格圖共用水平接地基準，整張物件 `rotation = 0`；
+  `FinisherSemanticPiece` 會從每列四格的有效亮部下緣解析列基準，將非垂直動作的
+  第二、三列對齊第一列，避免 4×3 接觸表換列後整招逐步浮高；`descending`／`rainy`／
+  `upward`／`vertical` 保留逐格升降而不套校正。沿地動作只可水平前進，方向性招式
+  通過 contact 後仍保留短距離 follow-through，不得在固定進度硬停成隱形牆。遠近只由
+  scale、間距、遮擋與 z-order 表示，
   禁止把整條招式傾斜來假造透視。全部 Finisher 統一為純 `CanvasItem` 2.5D：透過明確
   `z_index`、前後層 scale／parallax、材質遮擋、rim light 與 back light 製造空間感；不得引入
   `Node3D`、`Camera3D`、3D mesh 或 SubViewport 離屏合成建立第二套 rendering authority。
   Runtime profile／diagnostic 使用 `presentation_mode = "2_5d"` 鎖定這個邊界。
-  v4 逐格物件使用自身水平接地點，會清除 legacy atlas 的負 Y target lift；已有專屬
+  v4 逐格物件使用自身水平接地點，會清除 legacy atlas 的負 Y target lift；千羽相應、
+  守一共脈與滄海回瀾另以 motion-family playback map 排除素材內畫出的垂直邊界／石牆格，
+  但維持十二格 timeline 與原本 radial／grounded／forward identity。已有專屬
   Finisher 動作時，`AutoAttackFeedback` 只保留命中事件與傷害文字，必須隱藏共通劍氣。
   `NamedSkillVFX.play(profile_id, direction, intensity, preview, evolution_level,
   buff_stacks)` 將等級限制在 1–3，並依非負疊層里程碑增加 accent parts。

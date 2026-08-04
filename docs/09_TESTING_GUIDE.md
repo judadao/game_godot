@@ -309,6 +309,11 @@ light identity 完整且組合可區分，粒子 count 維持 1–256；每招�
 icon echo 關閉狀態；另必須解析可載入的 4×3 手繪物件 sequence、十二個 authored frames、
 固定 `ground_anchor_ratio = 0.82`、source position 為原點、source rotation 為零，並回報
 `procedural_flat_object = false` 與 `crossfade_slideshow = false`。
+`finisher_frame_registration_test.gd` 另針對戰律希聲、千羽相應、守一共脈與滄海回瀾，
+驗證非垂直 4×3 sequence 的三列有效下緣會註冊到同一 Y 基準、方向性招式在 contact 後
+仍至少前進 24px，且千羽相應的邊界鉸鏈格、守一共脈的目標牆格與滄海回瀾的石牆格
+不會進入 runtime playback。全 32 招 catalog test 同時檢查非垂直招式啟用列校正、
+垂直招式停用，且每列校正維持在 ±128 source pixels 內。
 `FinisherGeometryCore` 固定隱藏七個完整 material／semantic planes，只顯示三個手繪
 物件 body／chromatic glow layers 與三個 particle layers，基底共六層；最多三個實際
 持有祝福各自再增加一個 source particle 與一個 `PointLight2D`，融合／進化祝福仍只算
@@ -344,7 +349,8 @@ renderer 不會送出 `frame_post_draw`。Windows 範例：
 
 相同 capture directory 的 `motion/` 另輸出 32 張 1440×810 的
 `<finisher_id>_motion_12f.png`。每張固定 4×3 排列完整十二格 runtime 時序；capture
-會驗證十二個 authored frame index 全部出現。獨立 reviewer 必須檢查每一張，確認
+會驗證十二個 authored timeline index 全部出現；含牆面的 source cel 可由受測的
+motion-family playback map 換成相鄰開放空間 pose。獨立 reviewer 必須檢查每一張，確認
 接地線水平、整體未旋轉、動作連續且沒有用單一斜線 lane 代替透視。
 
 每張 sheet 同時輸出 `<sheet_name>_slices/`，內容固定為 3 欄×2 列的六張等分原像素

@@ -529,7 +529,11 @@ func _update_finisher_spatial_position(progress: float) -> void:
 	if _finisher_geometry_core == null or not is_instance_valid(_finisher_geometry_core):
 		return
 	if _finisher_spatial_mode == &"directional_forward":
-		var travel := smoothstep(0.08, 0.72, clampf(progress, 0.0, 1.0))
+		var clamped_progress := clampf(progress, 0.0, 1.0)
+		var travel := smoothstep(0.08, 0.72, clamped_progress)
+		# Keep the authored object moving after contact. Freezing the whole sheet
+		# exactly at the impact beat makes late poses read as a screen-space wall.
+		travel += smoothstep(0.72, 1.0, clamped_progress) * 0.18
 		_finisher_geometry_core.position = Vector2(_finisher_travel_distance * travel, 0.0)
 	else:
 		_finisher_geometry_core.position = Vector2.ZERO

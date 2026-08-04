@@ -65,6 +65,19 @@ const AUTHORED_SEQUENCE_PATHS := {
 	"orbit_launch": "res://assets/generated/vfx/finisher_parts_v4/moon_wind_sequence.png",
 	"marker_chain": "res://assets/generated/vfx/finisher_parts_v4/root_marker_chain_sequence.png",
 }
+const AUTHORED_FRAME_PLAYBACK_MAPS := {
+	# Three source cels draw the offscreen return joint as a literal vertical
+	# hinge. Preserve the radial out-and-return identity while using the adjacent
+	# open-air feather poses, so the turn no longer reads as a visible wall.
+	"boundary_feather_return": [0, 1, 2, 3, 4, 5, 5, 8, 8, 9, 11, 11],
+	# The source cel at index 9 adds a separate vertical target slab. The shield
+	# itself is the contact authority, so hold its launch until the fragments take
+	# over instead of introducing an unrelated wall.
+	"shield_exchange": [0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 10, 11],
+	# The last two source cels contain a literal stone wall. Resolve the crest in
+	# open water, then return to the grounded pool for the afterglow.
+	"stream_collection": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 0],
+}
 const BLESSING_ELEMENT_STYLES := {
 	"fire": {
 		"particle_source": "flame_tongue",
@@ -330,9 +343,16 @@ func get_debug_state() -> Dictionary:
 		"authored_sequence_path": String(sequence_state.get("sequence_path", "")),
 		"authored_frame_count": int(sequence_state.get("authored_frame_count", 0)),
 		"authored_frame_index": int(sequence_state.get("frame_index", -1)),
+		"authored_timeline_frame_index": int(sequence_state.get("timeline_frame_index", -1)),
 		"authored_grid_columns": int(sequence_state.get("grid_columns", 0)),
 		"authored_grid_rows": int(sequence_state.get("grid_rows", 0)),
 		"ground_anchor_ratio": float(sequence_state.get("ground_anchor_ratio", 0.0)),
+		"y_registration_enabled": bool(sequence_state.get("y_registration_enabled", false)),
+		"frame_row_registration_offsets": sequence_state.get("frame_row_registration_offsets", []),
+		"row_baselines": sequence_state.get("row_baselines", []),
+		"registered_row_baselines": sequence_state.get("registered_row_baselines", []),
+		"current_frame_registration_offset_y": float(sequence_state.get("current_frame_registration_offset_y", 0.0)),
+		"authored_playback_map": sequence_state.get("playback_map", []),
 		"authored_source_position": sequence_state.get("source_position", Vector2(999.0, 999.0)),
 		"authored_source_rotation": float(sequence_state.get("source_rotation", 999.0)),
 		"authored_frame_animation": bool(sequence_state.get("authored_frame_animation", false)),
@@ -704,6 +724,8 @@ func _rebuild_semantic_pieces(profile: Dictionary) -> bool:
 		push_error("Finisher motion family has no authored sequence: %s (%s)" % [_piece_motion_kind, sequence_path])
 		return false
 	var grid := _resolve_authored_sequence_grid(sequence_path)
+	var stabilize_y := _orientation not in ["descending", "rainy", "upward", "vertical"]
+	var playback_map := AUTHORED_FRAME_PLAYBACK_MAPS.get(_piece_motion_kind, []) as Array
 	var semantic_shape := SEMANTIC_PIECE_SCRIPT.new() as Node2D
 	semantic_shape.name = "AuthoredFrameSequence"
 	semantic_shape.z_index = 8
@@ -716,7 +738,9 @@ func _rebuild_semantic_pieces(profile: Dictionary) -> bool:
 		grid.x,
 		grid.y,
 		0.82,
-		_light_energy
+		_light_energy,
+		stabilize_y,
+		playback_map
 	))
 	if not configured:
 		_piece_root.remove_child(semantic_shape)

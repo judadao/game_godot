@@ -49,6 +49,13 @@
 
 若問題無法穩定重現，先增加診斷資訊，不要直接大改程式。
 
+具名 Finisher 若出現「前幀貼地、後幀逐步浮高」或像撞上固定牆，先讀
+`NamedSkillVFX.get_finisher_debug_state()`：`frame_row_registration_offsets` 與
+`registered_row_baselines` 用來確認 4×3 atlas 換列校正，`authored_frame_index`／
+`authored_playback_map` 用來確認含邊界物的 cel 未進入播放，`runtime_target_offset`
+則應在沿地動作中保持 `y = 0`。方向性招式的 X 在 contact 後仍須增加；不要以整張
+sequence 的負 Y、旋轉或硬停補素材註冊錯誤。
+
 ## 4. Godot CLI 診斷
 
 ```powershell

@@ -289,6 +289,34 @@ func _validate_runtime_playback(
 		is_equal_approx(float(debug_state.get("ground_anchor_ratio", 0.0)), 0.82),
 		"%s must use the shared horizontal ground-contact anchor." % finisher_id
 	)
+	var orientation := String((profile.get("geometry_identity", {}) as Dictionary).get("orientation", "forward"))
+	var expects_y_registration := orientation not in ["descending", "rainy", "upward", "vertical"]
+	_expect(
+		bool(debug_state.get("y_registration_enabled", false)) == expects_y_registration,
+		"%s must register atlas rows only when its authored motion is non-vertical." % finisher_id
+	)
+	if expects_y_registration:
+		var row_offsets := debug_state.get("frame_row_registration_offsets", []) as Array
+		var registered_baselines := debug_state.get("registered_row_baselines", []) as Array
+		_expect(
+			row_offsets.size() == 3 and registered_baselines.size() == 3,
+			"%s must expose three row registration offsets and normalized baselines." % finisher_id
+		)
+		if row_offsets.size() == 3 and registered_baselines.size() == 3:
+			_expect(
+				row_offsets.all(func(offset: Variant) -> bool: return absf(float(offset)) <= 128.0),
+				"%s row registration must stay within the bounded correction range." % finisher_id
+			)
+			var baselines_are_normalized := true
+			for baseline in registered_baselines:
+				baselines_are_normalized = (
+					baselines_are_normalized
+					and is_equal_approx(float(baseline), float(registered_baselines[0]))
+				)
+			_expect(
+				baselines_are_normalized,
+				"%s registered atlas rows must resolve to one shared Y baseline." % finisher_id
+			)
 	_expect(
 		(debug_state.get("authored_source_position", Vector2(999.0, 999.0)) as Vector2).is_equal_approx(Vector2.ZERO)
 			and is_zero_approx(float(debug_state.get("authored_source_rotation", 999.0))),

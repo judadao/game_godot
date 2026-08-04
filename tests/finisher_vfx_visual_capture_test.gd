@@ -114,7 +114,7 @@ func _capture_motion_sheet(
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	viewport.add_child(background)
 
-	var observed_indices: Dictionary = {}
+	var observed_timeline_indices: Dictionary = {}
 	for frame_index in AUTHORED_MOTION_FRAME_COUNT:
 		var column := frame_index % MOTION_COLUMNS
 		var row := frame_index / MOTION_COLUMNS
@@ -129,13 +129,13 @@ func _capture_motion_sheet(
 		effect.call("debug_set_progress", float(frame_index) / float(AUTHORED_MOTION_FRAME_COUNT - 1))
 		effect.set_process(false)
 		var state := effect.call("get_finisher_debug_state") as Dictionary
-		observed_indices[int(state.get("authored_frame_index", -1))] = true
+		observed_timeline_indices[int(state.get("authored_timeline_frame_index", -1))] = true
 
 	await process_frame
 	await RenderingServer.frame_post_draw
 	_expect(
-		observed_indices.size() == AUTHORED_MOTION_FRAME_COUNT,
-		"%s motion evidence must expose all twelve distinct authored frame indices." % finisher_id
+		observed_timeline_indices.size() == AUTHORED_MOTION_FRAME_COUNT,
+		"%s motion evidence must expose all twelve authored timeline slots." % finisher_id
 	)
 	var image := viewport.get_texture().get_image()
 	var output_path := motion_dir.path_join("%s_motion_12f.png" % finisher_id)
