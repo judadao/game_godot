@@ -350,6 +350,8 @@ level upgrade；六組 fusion recipe 位於 `res://data/evolutions.json`。
 - 招式選擇列出與圖鑑相同的 39 個正式招式名稱，經 `legacy_vfx_id` 對應配方後，把
   `required_skills` 聯集填入後 3 格；聯集仍可容納的招式維持可選，超過
   三格或缺少已解鎖劍魂的招式保留在列表並反灰；
+- 四格卡槽保持在主流程前段，後方只用一個 workspace 互斥切換劍魂替換與招式配置，
+  不同清單不得同時堆疊；
 - 配置畫面即時列出目前四張技能可完成的已學會終結技；
 - Basic Attack 在固定技能之外獨立選擇，必須是已解鎖的 `attack` card；
 - 固定技能整個 Run 不抽換、不輪巡；

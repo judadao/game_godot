@@ -1549,7 +1549,10 @@ the HUD never reads gameplay state directly.
   named-skill selector lists the same 39 official skills as the Codex, resolves
   `legacy_vfx_id`, and unions each selected recipe's `required_skills` into
   slots 2–4；compatible recipes remain normal/interactive, while missing or
-  over-capacity recipes stay visible with disabled grey text
+  over-capacity recipes stay visible with disabled grey text. The slots remain
+  above one exclusive selection workspace；`SwordSoulSelector` and
+  `SkillRecipeSelector` switch through `SelectionModeBar` and never stack
+  simultaneously
 
 ### CombatStatusController
 

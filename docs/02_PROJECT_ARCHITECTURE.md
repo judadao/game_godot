@@ -1012,7 +1012,9 @@ CardInstance
 傳送門前的 `DeckBuilderUI` 直接投影四個固定槽位；第 1 格只接受 Healing，後 3 格接受
 已解鎖且不重複的公式劍魂。招式選擇投影 `SkillRecipeManager` 的 39 個正式名稱，經
 `legacy_vfx_id` 找到 `ComboFinisherCatalog.required_skills` 後，以聯集自動填入
-後 3 格；仍能與已選招式共存的名稱保持正常顏色，缺少劍魂或聯集超過三格者反灰。畫面同步列出
+後 3 格。四格卡槽下方只有一個 selection workspace，以「劍魂替換／依招式配置」
+雙模式切換，兩份長清單不得同時常駐或插在卡槽上方；仍能與已選招式共存的名稱保持
+正常顏色，缺少劍魂或聯集超過三格者反灰。畫面同步列出
 目前四張技能可完成的已學會 named Finisher recipes。確認順序就是戰鬥
 Q／W／E／R 的固定順序。
 `ember_bolt` 僅作為獨立 Basic Attack，不進入手牌、棄牌或 Combo 抽牌循環。`quickstep`

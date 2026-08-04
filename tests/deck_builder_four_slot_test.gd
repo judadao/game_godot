@@ -43,7 +43,9 @@ func _run() -> void:
 		"Portal loadout must explain which named Finishers the four slots enable."
 	)
 	_expect(
-		builder.has_node("Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector"),
+		builder.has_node(
+			"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector"
+		),
 		"Portal loadout must expose a named-skill selector that can fill required Sword Souls."
 	)
 	_expect(
@@ -53,7 +55,7 @@ func _run() -> void:
 		"Named-skill selection must expose deterministic compatibility diagnostics."
 	)
 	var named_skill_grid := builder.get_node(
-		"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector/RecipeScroll/RecipeChoices"
+		"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector/RecipeScroll/RecipeChoices"
 	) as GridContainer
 	var flowing_fire_choice := named_skill_grid.get_node_or_null(
 		"Skill_flowing_fire_night"
@@ -65,8 +67,14 @@ func _run() -> void:
 		"Expedition selection must use the same 39 official skill names as the Codex."
 	)
 	var named_skill_scroll := builder.get_node(
-		"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector/RecipeScroll"
+		"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector/RecipeScroll"
 	) as ScrollContainer
+	_expect(
+		not named_skill_scroll.get_parent().visible,
+		"Named-skill list must not crowd the default four-slot layout."
+	)
+	builder.call("set_skill_recipe_selector_visible", true)
+	await process_frame
 	var last_named_skill := named_skill_grid.get_child(named_skill_grid.get_child_count() - 1) as Button
 	named_skill_scroll.scroll_vertical = 0
 	last_named_skill.grab_focus()
@@ -103,7 +111,7 @@ func _run() -> void:
 			"Every loadout slot must expose type-color and AP labels."
 		)
 	var auto_attack_selector := builder.get_node(
-		"Shade/LoadoutPanel/Margin/Column/BasicAttackSelector"
+		"Shade/LoadoutPanel/Margin/Column/LoadoutTools/BasicAttackSelector"
 	) as OptionButton
 	_expect(
 		auto_attack_selector.item_count > 0
@@ -122,7 +130,7 @@ func _run() -> void:
 	await process_frame
 	var mixed_choices := builder.call("get_visible_choice_ids") as Array
 	var choice_grid := builder.get_node(
-		"Shade/LoadoutPanel/Margin/Column/SkillChoiceScroll/SkillChoices"
+		"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SwordSoulSelector/SkillChoiceScroll/SkillChoices"
 	) as GridContainer
 	var first_choice := choice_grid.get_child(0) as Button
 	_expect(
@@ -141,12 +149,12 @@ func _run() -> void:
 		"Four-slot choices must exclude skills that cannot advance a Finisher recipe."
 	)
 	var choice_scroll := builder.get_node(
-		"Shade/LoadoutPanel/Margin/Column/SkillChoiceScroll"
+		"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SwordSoulSelector/SkillChoiceScroll"
 	) as ScrollContainer
 	var last_choice := choice_grid.get_child(choice_grid.get_child_count() - 1) as Button
 	var last_choice_id := String(mixed_choices[-1])
 	var detail := builder.get_node(
-		"Shade/LoadoutPanel/Margin/Column/SelectedSkillDetail"
+		"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SwordSoulSelector/SelectedSkillDetail"
 	) as Label
 	choice_scroll.scroll_vertical = 0
 	last_choice.grab_focus()
@@ -267,10 +275,10 @@ func _run() -> void:
 			"A fourth distinct requirement must be unavailable because only three formula slots may change."
 		)
 		var blocked_recipe := builder.get_node_or_null(
-			"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector/RecipeScroll/RecipeChoices/Skill_moonwheel_downlight"
+			"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector/RecipeScroll/RecipeChoices/Skill_moonwheel_downlight"
 		) as Button
 		var selectable_recipe := builder.get_node_or_null(
-			"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector/RecipeScroll/RecipeChoices/Skill_myriad_blades_descend"
+			"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector/RecipeScroll/RecipeChoices/Skill_myriad_blades_descend"
 		) as Button
 		_expect(
 			blocked_recipe != null and blocked_recipe.disabled,

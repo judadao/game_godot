@@ -54,21 +54,42 @@ func _run() -> void:
 		var slots := builder.get_node(
 			"Shade/LoadoutPanel/Margin/Column/LoadoutSlots"
 		) as HBoxContainer
+		var sword_soul_selector := builder.get_node(
+			"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SwordSoulSelector"
+		) as VBoxContainer
 		var recipe_selector := builder.get_node(
-			"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector"
+			"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector"
 		) as VBoxContainer
 		var recipe_scroll := builder.get_node(
-			"Shade/LoadoutPanel/Margin/Column/SkillRecipeSelector/RecipeScroll"
+			"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector/RecipeScroll"
 		) as ScrollContainer
+		_expect(
+			sword_soul_selector.visible and not recipe_selector.visible,
+			"Sword Soul replacement must be the only default workspace at %s." % viewport_size
+		)
+		_expect(
+			builder.has_method("set_skill_recipe_selector_visible"),
+			"Deck Builder must expose deterministic workspace switching."
+		)
+		if builder.has_method("set_skill_recipe_selector_visible"):
+			builder.call("set_skill_recipe_selector_visible", true)
+			await process_frame
+		_expect(
+			recipe_selector.visible and not sword_soul_selector.visible,
+			"Named-skill mode must replace rather than stack with Sword Soul choices at %s."
+			% viewport_size
+		)
 		_expect(
 			panel_rect.encloses(_canvas_rect(recipe_selector))
 				and panel_rect.encloses(_canvas_rect(recipe_scroll)),
 			"Named-skill selector must remain inside the panel at %s." % viewport_size
 		)
 		_expect(
-			_canvas_rect(recipe_selector).end.y <= _canvas_rect(slots).position.y,
-			"Named-skill selector must not overlap the Sword Soul slots at %s." % viewport_size
+			_canvas_rect(recipe_selector).position.y >= _canvas_rect(slots).end.y,
+			"Named-skill selector must stay below the Sword Soul slots at %s." % viewport_size
 		)
+		builder.call("set_skill_recipe_selector_visible", false)
+		await process_frame
 		_expect(
 			slots.get_child_count() == 4,
 			"Exactly four loadout slots must render at %s." % viewport_size
@@ -85,10 +106,10 @@ func _run() -> void:
 				"Every iconified slot image must stay inside its card at %s." % viewport_size
 			)
 		var scroll := builder.get_node(
-			"Shade/LoadoutPanel/Margin/Column/SkillChoiceScroll"
+			"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SwordSoulSelector/SkillChoiceScroll"
 		) as ScrollContainer
 		_expect(
-			panel_rect.encloses(_canvas_rect(scroll)),
+			sword_soul_selector.visible and panel_rect.encloses(_canvas_rect(scroll)),
 			"Filtered skill choices must remain inside the panel at %s." % viewport_size
 		)
 		if viewport_size == _capture_size and not _capture_path.is_empty():

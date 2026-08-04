@@ -39,9 +39,12 @@ var _recipe_summary: Label
 var _count_label: Label
 var _confirm_button: Button
 var _auto_attack_selector: OptionButton
+var _sword_soul_selector: VBoxContainer
 var _skill_recipe_selector: VBoxContainer
 var _recipe_choice_grid: GridContainer
 var _recipe_scroll: ScrollContainer
+var _sword_soul_mode_button: Button
+var _skill_recipe_mode_button: Button
 
 
 func _ready() -> void:
@@ -79,6 +82,7 @@ func configure(
 	_restore_fixed_loadout(requested)
 	_auto_attack_card_id = auto_attack_card_id
 	if is_node_ready():
+		set_skill_recipe_selector_visible(false)
 		_refresh_all()
 
 
@@ -193,6 +197,27 @@ func get_selected_skill_recipe_ids() -> Array[String]:
 	return _selected_skill_recipe_ids.duplicate()
 
 
+func set_skill_recipe_selector_visible(show_recipes: bool) -> void:
+	if _sword_soul_selector == null or _skill_recipe_selector == null:
+		return
+	_sword_soul_selector.visible = not show_recipes
+	_skill_recipe_selector.visible = show_recipes
+	if _sword_soul_mode_button != null:
+		_sword_soul_mode_button.button_pressed = not show_recipes
+		_apply_selection_mode_style(
+			_sword_soul_mode_button,
+			not show_recipes,
+			COMBO_ACCENT
+		)
+	if _skill_recipe_mode_button != null:
+		_skill_recipe_mode_button.button_pressed = show_recipes
+		_apply_selection_mode_style(
+			_skill_recipe_mode_button,
+			show_recipes,
+			BRIGHT_GOLD
+		)
+
+
 func is_skill_recipe_selectable(skill_id: String) -> bool:
 	if _selected_skill_recipe_ids.has(skill_id):
 		return true
@@ -222,6 +247,7 @@ func select_slot(slot_index: int) -> void:
 	if slot_index < 0 or slot_index >= SLOT_COUNT:
 		return
 	_active_slot_index = slot_index
+	set_skill_recipe_selector_visible(false)
 	_refresh_slots()
 	_rebuild_choices()
 
@@ -294,37 +320,6 @@ func _build_layout() -> void:
 	_add_legend_chip(type_legend, "◆  後 3 格組成招式劍魂", COMBO_ACCENT)
 	_add_legend_chip(type_legend, "先點上方卡槽，再從下方替換", BRIGHT_GOLD)
 
-	_auto_attack_selector = OptionButton.new()
-	_auto_attack_selector.name = "BasicAttackSelector"
-	_auto_attack_selector.custom_minimum_size = Vector2(0, 40)
-	_auto_attack_selector.add_theme_font_size_override("font_size", 16)
-	_auto_attack_selector.item_selected.connect(_on_auto_attack_selected)
-	column.add_child(_auto_attack_selector)
-
-	_skill_recipe_selector = VBoxContainer.new()
-	_skill_recipe_selector.name = "SkillRecipeSelector"
-	_skill_recipe_selector.add_theme_constant_override("separation", 4)
-	column.add_child(_skill_recipe_selector)
-	var recipe_header := Label.new()
-	recipe_header.name = "Header"
-	recipe_header.text = "招式選擇  ·  點選後自動填入所需劍魂，可相容的招式可繼續疊加"
-	recipe_header.add_theme_font_size_override("font_size", 15)
-	recipe_header.add_theme_color_override("font_color", BRIGHT_GOLD)
-	_skill_recipe_selector.add_child(recipe_header)
-	var recipe_scroll := ScrollContainer.new()
-	_recipe_scroll = recipe_scroll
-	recipe_scroll.name = "RecipeScroll"
-	recipe_scroll.custom_minimum_size = Vector2(0, 86)
-	recipe_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_skill_recipe_selector.add_child(recipe_scroll)
-	_recipe_choice_grid = GridContainer.new()
-	_recipe_choice_grid.name = "RecipeChoices"
-	_recipe_choice_grid.columns = 3
-	_recipe_choice_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_recipe_choice_grid.add_theme_constant_override("h_separation", 7)
-	_recipe_choice_grid.add_theme_constant_override("v_separation", 5)
-	recipe_scroll.add_child(_recipe_choice_grid)
-
 	var slots := HBoxContainer.new()
 	slots.name = "LoadoutSlots"
 	slots.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -343,18 +338,65 @@ func _build_layout() -> void:
 		_build_slot_visual(slot)
 		_slot_buttons.append(slot)
 
+	var loadout_tools := HBoxContainer.new()
+	loadout_tools.name = "LoadoutTools"
+	loadout_tools.add_theme_constant_override("separation", 10)
+	column.add_child(loadout_tools)
+
+	_auto_attack_selector = OptionButton.new()
+	_auto_attack_selector.name = "BasicAttackSelector"
+	_auto_attack_selector.custom_minimum_size = Vector2(360, 40)
+	_auto_attack_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_auto_attack_selector.add_theme_font_size_override("font_size", 16)
+	_auto_attack_selector.item_selected.connect(_on_auto_attack_selected)
+	loadout_tools.add_child(_auto_attack_selector)
+
+	var selection_mode_bar := HBoxContainer.new()
+	selection_mode_bar.name = "SelectionModeBar"
+	selection_mode_bar.add_theme_constant_override("separation", 6)
+	loadout_tools.add_child(selection_mode_bar)
+	_sword_soul_mode_button = Button.new()
+	_sword_soul_mode_button.name = "SwordSoulModeButton"
+	_sword_soul_mode_button.text = "劍魂替換"
+	_sword_soul_mode_button.toggle_mode = true
+	_sword_soul_mode_button.custom_minimum_size = Vector2(176, 40)
+	_sword_soul_mode_button.pressed.connect(
+		set_skill_recipe_selector_visible.bind(false)
+	)
+	selection_mode_bar.add_child(_sword_soul_mode_button)
+	_skill_recipe_mode_button = Button.new()
+	_skill_recipe_mode_button.name = "SkillRecipeModeButton"
+	_skill_recipe_mode_button.text = "依招式配置"
+	_skill_recipe_mode_button.toggle_mode = true
+	_skill_recipe_mode_button.custom_minimum_size = Vector2(176, 40)
+	_skill_recipe_mode_button.pressed.connect(
+		set_skill_recipe_selector_visible.bind(true)
+	)
+	selection_mode_bar.add_child(_skill_recipe_mode_button)
+
+	var selection_workspace := VBoxContainer.new()
+	selection_workspace.name = "SelectionWorkspace"
+	selection_workspace.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	column.add_child(selection_workspace)
+
+	_sword_soul_selector = VBoxContainer.new()
+	_sword_soul_selector.name = "SwordSoulSelector"
+	_sword_soul_selector.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_sword_soul_selector.add_theme_constant_override("separation", 5)
+	selection_workspace.add_child(_sword_soul_selector)
+
 	_choice_header = Label.new()
 	_choice_header.name = "ChoiceHeader"
 	_choice_header.add_theme_font_size_override("font_size", 16)
 	_choice_header.add_theme_color_override("font_color", BRIGHT_GOLD)
-	column.add_child(_choice_header)
+	_sword_soul_selector.add_child(_choice_header)
 
 	var scroll := ScrollContainer.new()
 	_choice_scroll = scroll
 	scroll.name = "SkillChoiceScroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	column.add_child(scroll)
+	_sword_soul_selector.add_child(scroll)
 	_choice_grid = GridContainer.new()
 	_choice_grid.name = "SkillChoices"
 	_choice_grid.columns = 2
@@ -368,7 +410,33 @@ func _build_layout() -> void:
 	_detail_label.custom_minimum_size = Vector2(0, 34)
 	_detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_detail_label.add_theme_color_override("font_color", Color(0.76, 0.82, 0.86))
-	column.add_child(_detail_label)
+	_sword_soul_selector.add_child(_detail_label)
+
+	_skill_recipe_selector = VBoxContainer.new()
+	_skill_recipe_selector.name = "SkillRecipeSelector"
+	_skill_recipe_selector.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_skill_recipe_selector.add_theme_constant_override("separation", 5)
+	selection_workspace.add_child(_skill_recipe_selector)
+	var recipe_header := Label.new()
+	recipe_header.name = "Header"
+	recipe_header.text = "依招式配置  ·  相容配方可疊加，所需劍魂會填入後三格"
+	recipe_header.add_theme_font_size_override("font_size", 16)
+	recipe_header.add_theme_color_override("font_color", BRIGHT_GOLD)
+	_skill_recipe_selector.add_child(recipe_header)
+	var recipe_scroll := ScrollContainer.new()
+	_recipe_scroll = recipe_scroll
+	recipe_scroll.name = "RecipeScroll"
+	recipe_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	recipe_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_skill_recipe_selector.add_child(recipe_scroll)
+	_recipe_choice_grid = GridContainer.new()
+	_recipe_choice_grid.name = "RecipeChoices"
+	_recipe_choice_grid.columns = 3
+	_recipe_choice_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_recipe_choice_grid.add_theme_constant_override("h_separation", 7)
+	_recipe_choice_grid.add_theme_constant_override("v_separation", 5)
+	recipe_scroll.add_child(_recipe_choice_grid)
+	set_skill_recipe_selector_visible(false)
 
 	_recipe_summary = Label.new()
 	_recipe_summary.name = "RecipeSummary"
@@ -424,6 +492,26 @@ func _panel_style() -> StyleBoxFlat:
 	style.shadow_color = Color(0.0, 0.0, 0.0, 0.82)
 	style.shadow_size = 0 if DisplayServer.get_name() == "headless" else 18
 	return style
+
+
+func _apply_selection_mode_style(
+	button: Button,
+	active: bool,
+	accent: Color
+) -> void:
+	var normal := _button_style(accent, active, true)
+	var hover := _button_style(accent.lightened(0.12), true, true)
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("pressed", hover)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("focus", hover)
+	button.add_theme_color_override(
+		"font_color",
+		BRIGHT_GOLD if active else Color(0.72, 0.74, 0.76)
+	)
+	button.add_theme_color_override("font_pressed_color", BRIGHT_GOLD)
+	button.add_theme_color_override("font_hover_color", Color(1.0, 0.92, 0.72))
+	button.add_theme_color_override("font_focus_color", BRIGHT_GOLD)
 
 
 func _add_legend_chip(parent: Container, text_value: String, color: Color) -> void:
