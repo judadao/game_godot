@@ -661,9 +661,9 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
 - series header state：深色底條搭配亮金文字，不設 disabled；只用 non-selectable
   保留完整對比並阻止 selection
 - technique detail order：`description` 直接以書名號與斜體顯示 1～2 句引言，
-  `recipe_summary` 只顯示三張劍魂名稱與順序，不帶持有或編成狀態；`effect_summary` 顯示普攻基底
-  加成、組合總效果與終結特性；招式頁不顯示系列語彙、特效狀態、逐張劍魂效果或
-  演出流程。`Recipe` 是 editor-authored Label，不由 runtime 重建
+  `recipe_summary` 只顯示三張劍魂名稱與順序，不帶持有或編成狀態；招式頁不投影或顯示
+  `effect_summary`，也不顯示系列語彙、特效狀態、逐張劍魂效果或演出流程。
+  `Recipe` 是 editor-authored Label，不由 runtime 重建
 - action boundary：`equip_requested(item_id)`；父 Game 驗證、mutation、save 與 refresh
 - empty/selection/focus：每頁 deterministic initial focus；同一時間恰好一個 page visible
 - safe area：底部保留 32px page-curl inset；Codex Info 的 Panel 內嵌 vertical

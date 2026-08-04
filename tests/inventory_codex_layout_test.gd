@@ -224,7 +224,6 @@ func _make_codex_entries(catalog: RefCounted) -> Array[Dictionary]:
 			"tier_label": String(catalog.call("get_tier_label", String(skill.get("tier", "basic")))),
 			"tier_rank": int(skill.get("tier_rank", 1)),
 			"description": String(skill.get("description", "")),
-			"effect_summary": String(skill.get("positioning", "")),
 			"elements": elements,
 			"element": String(elements[0]) if not elements.is_empty() else "normal",
 			"preview_kind": "finisher",

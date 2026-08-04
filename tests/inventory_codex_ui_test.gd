@@ -111,9 +111,8 @@ func _run() -> void:
 	)
 	_expect(
 		effect_label != null
-			and effect_label.text.begins_with("效果與數值\n")
-			and effect_label.text.contains("攻擊力：目前普攻 + 56")
-			and not effect_label.text.contains("劍魂效果：")
+			and effect_label.text.is_empty()
+			and not effect_label.visible
 			and recipe_label != null
 			and recipe_label.text == "劍魂組合\n烈焰灌注 → 烈焰灌注 → 烈焰灌注"
 			and not recipe_label.text.contains("已編成")
@@ -127,15 +126,13 @@ func _run() -> void:
 			and notes_label != null
 			and notes_label.text.is_empty()
 			and not notes_label.visible,
-		"Codex must project the new skill role and description without stale card text; got effect=%s notes=%s" % [effect_label.text if effect_label != null else "<missing>", notes_label.text if notes_label != null else "<missing>"]
+		"Technique details must omit the effect-values and animation sections; got effect=%s notes=%s" % [effect_label.text if effect_label != null else "<missing>", notes_label.text if notes_label != null else "<missing>"]
 	)
 	_expect(
 		description_label != null
 			and recipe_label != null
-			and effect_label != null
-			and description_label.get_index() < recipe_label.get_index()
-			and recipe_label.get_index() < effect_label.get_index(),
-		"Technique details must read as introduction, Sword Soul formula, then numerical effects."
+			and description_label.get_index() < recipe_label.get_index(),
+		"Technique details must read as introduction followed by the Sword Soul formula."
 	)
 
 	ui.call("select_codex_entry", "celestial_feather_myriad")
@@ -213,11 +210,6 @@ func _make_codex_entries(catalog: RefCounted) -> Array[Dictionary]:
 				"烈焰灌注 → 烈焰灌注 → 烈焰灌注"
 				if is_flowing_fire
 				else "測試劍魂 → 測試劍魂 → 測試劍魂"
-			),
-			"effect_summary": (
-				"定位：基礎火焰攻擊\n攻擊力：目前普攻 + 56\n附加效果：燃燒傷害 5"
-				if is_flowing_fire
-				else "定位：%s\n攻擊力：目前普攻 + 28" % String(skill.get("positioning", ""))
 			),
 			"elements": (skill.get("combat_elements", []) as Array).duplicate(),
 			"element": String((skill.get("combat_elements", ["normal"]) as Array)[0]),

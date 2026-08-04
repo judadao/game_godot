@@ -48,11 +48,11 @@ Inventory／Codex focused coverage：
   `INVENTORY_JOURNAL_CAPTURE_DIR` 只在 graphical renderer 產生四章 review captures。
 - `inventory_codex_projection_test.gd`：`skills.json` 的 13 系列、39 招唯一 projection；
   驗證 catalog `skill_series_rank` 與 basic／advanced／master `tier_rank` 順序、各階 13 招、
-  中文名稱／引言／只含名稱與順序的三張劍魂組合／組合後攻擊力與總效果、退役被動與舊名稱
+  中文名稱／引言／只含名稱與順序的三張劍魂組合、招式頁不投影效果數值、退役被動與舊名稱
   不再出現，以及每招暫用的精確 named VFX profile 確實存在。
 - `inventory_codex_ui_test.gd`：以反轉輸入驗證 UI 仍重建 13 個不可選系列標題與每組
   基本／進階／大師三列；另驗證 39 招 selection、系列／階級／元素文字、斜體引言→
-  劍魂組合→效果與數值的 detail 順序，且系列語彙、特效狀態、逐張劍魂效果與演出流程
+  劍魂組合的 detail 順序，且系列語彙、特效狀態、效果與數值、逐張劍魂效果與演出流程
   保持隱藏；同時驗證 temporary VFX preview ownership，
   以及退役 concept controls 永遠隱藏、相容入口固定回到 live view。
 - `inventory_codex_layout_test.gd`：六解析度 panel/list/active visual/explanation geometry，

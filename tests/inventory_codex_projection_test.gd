@@ -47,7 +47,7 @@ func _run() -> void:
 		_expect(not String(entry.get("tier_label", "")).is_empty(), "%s must expose its Chinese tier label." % entry_id)
 		_expect(not String(entry.get("description", "")).is_empty(), "%s must expose the approved description." % entry_id)
 		_expect(not String(entry.get("recipe_summary", "")).is_empty(), "%s must expose its three-Sword-Soul formula." % entry_id)
-		_expect(String(entry.get("effect_summary", "")).contains("攻擊力："), "%s must expose attack power before its other effects." % entry_id)
+		_expect(not entry.has("effect_summary"), "%s must not project the removed effect-values section." % entry_id)
 		_expect(
 			not entry.has("trigger_summary") and not entry.has("identity_elements"),
 			"%s must not project removed animation or series-vocabulary description sections." % entry_id
@@ -75,12 +75,6 @@ func _run() -> void:
 		String(flowing_fire.get("recipe_summary", ""))
 			== "烈焰灌注 → 烈焰灌注 → 烈焰灌注",
 		"流火照夜 must list only its ordered Sword Soul formula without ownership state."
-	)
-	_expect(
-		String(flowing_fire.get("effect_summary", "")).contains("目前普攻 + 56")
-			and String(flowing_fire.get("effect_summary", "")).contains("燃燒傷害 5")
-			and not String(flowing_fire.get("effect_summary", "")).contains("劍魂效果："),
-		"流火照夜 must aggregate its formula into skill-level values without per-card descriptions."
 	)
 
 	var preview := InventoryCodexPreview.new()

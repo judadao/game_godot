@@ -557,7 +557,8 @@ func _on_codex_selected(row: int) -> void:
 	if _active_codex_section == "techniques":
 		codex_description.text = "[i]「%s」[/i]" % String(entry.get("description", "尚無說明。"))
 		codex_recipe.text = "劍魂組合\n%s" % String(entry.get("recipe_summary", "尚未設定。"))
-		codex_effect.text = "效果與數值\n%s" % String(entry.get("effect_summary", "尚無效果資料。"))
+		codex_effect.text = ""
+		codex_effect.visible = false
 		codex_trigger.text = ""
 		codex_trigger.visible = false
 		codex_meta.text = _format_codex_meta(entry)
@@ -570,6 +571,7 @@ func _on_codex_selected(row: int) -> void:
 		codex_description.text = String(entry.get("description", "尚無說明。"))
 		codex_recipe.text = ""
 		codex_effect.text = "效果\n%s" % String(entry.get("effect_summary", "尚無效果資料。"))
+		codex_effect.visible = true
 		codex_trigger.text = "說明\n%s" % String(entry.get("trigger_summary", "已記錄於旅途日誌。"))
 		codex_trigger.visible = true
 		codex_meta.text = String(entry.get("meta_summary", ""))
