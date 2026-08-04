@@ -4357,16 +4357,10 @@ func _equipment_effect_summary(item: Dictionary) -> String:
 
 func _inventory_codex_projection() -> Array[Dictionary]:
 	var projection: Array[Dictionary] = []
-	for card_id in meta_state.unlocked_cards:
-		var card := card_database.get_card(card_id)
+	for card_id in _current_codex_card_ids():
+		var card := _current_codex_card(card_id)
 		if card.is_empty():
 			continue
-		var owned_level := maxi(
-			1,
-			int(_sword_soul_progress(StringName(card_id)).get("level", 0))
-		)
-		card["level"] = owned_level
-		card["card_level"] = owned_level
 		var profile := _resolve_combat_vfx_profile(card)
 		var progression := _named_skill_vfx_progression(card)
 		var effect := card.get("effect", {}) as Dictionary
@@ -4380,11 +4374,13 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"" if category == "attacks"
 			else String(profile.get("element", ""))
 		)
+		var named_vfx_id := String(profile.get("named_vfx_id", ""))
+		var special_vfx_id := String(profile.get("special_vfx_id", ""))
 		projection.append({
 			"id": card_id,
 			"name": _localized_text(card, "name"),
 			"category": category,
-			"kind_label": _codex_kind_label_for_card(card, profile),
+			"kind_label": "目前配置 · %s" % _codex_kind_label_for_card(card, profile),
 			"description": _localized_text(card, "description"),
 			"effect_summary": (
 				"%s、攻擊範圍 %d" % [
@@ -4397,15 +4393,25 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"trigger_summary": _codex_trigger_summary_for_card(card),
 			"icon_path": String(card.get("icon_path", "")),
 			"preview_kind": preview_kind,
+			"named_vfx_id": named_vfx_id,
+			"special_vfx_id": special_vfx_id,
+			"combat_vfx_id": (
+				special_vfx_id
+				if not special_vfx_id.is_empty()
+				else (named_vfx_id if not named_vfx_id.is_empty() else preview_kind)
+			),
 			"visual_family": _codex_visual_family_for_card(card),
 			"element": element,
 			"elements": preview_elements,
 			"intensity": int(profile.get("intensity", 2)),
 			"radius": float(profile.get("radius", 180.0)),
+			"direction_count": 1 + maxi(0, int(effect.get("projectile_bonus", 0))),
+			"spread_degrees": float(effect.get("spread_degrees", 0.0)),
+			"stack_count": maxi(0, int(effect.get("projectile_bonus", 0))),
 			"level": int(progression.get("evolution_level", 1)),
 			"combo_stack": int(progression.get("buff_stacks", 0)),
 		})
-	for skill_id in meta_state.learned_skill_ids:
+	for skill_id in meta_state.active_skill_ids:
 		var recipe := skill_recipe_manager.get_recipe(skill_id)
 		if recipe.is_empty():
 			continue
@@ -4432,8 +4438,6 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 		projection.append(skill_entry)
 	for recipe_variant in combo_finisher_catalog.call("get_all_recipes") as Array:
 		var recipe := recipe_variant as Dictionary
-		if not _is_finisher_recipe_learned(recipe):
-			continue
 		var elements: Array[String] = []
 		var icon_path := String(recipe.get("icon_path", ""))
 		var sequence_names: Array[String] = []
@@ -4481,6 +4485,33 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 	return projection
 
 
+func _current_codex_card_ids() -> Array[String]:
+	var result: Array[String] = []
+	var auto_attack_id := (
+		_run_auto_attack_card_id
+		if run_state.active
+		else _resolve_auto_attack_card_id(meta_state.auto_attack_card_id)
+	)
+	if not auto_attack_id.is_empty():
+		result.append(auto_attack_id)
+	for card_id_variant in meta_state.selected_deck:
+		var card_id := String(card_id_variant)
+		if card_id.is_empty() or result.has(card_id):
+			continue
+		var card := card_database.get_card(card_id)
+		if not _is_combat_hand_card(card):
+			continue
+		result.append(card_id)
+	return result
+
+
+func _current_codex_card(card_id: String) -> Dictionary:
+	for instance in meta_state.selected_card_instances:
+		if instance.card_id == card_id:
+			return _card_for_cast(instance)
+	return _card_for_cast(card_id)
+
+
 func _named_skill_codex_metadata(profile_id: String) -> Dictionary:
 	if (
 		profile_id.is_empty()
@@ -4506,7 +4537,7 @@ func _codex_category_for_card(card: Dictionary) -> String:
 
 
 func _codex_preview_kind_for_card(card: Dictionary, profile: Dictionary) -> String:
-	if String(card.get("id", "")) == "storm_charge":
+	if String(profile.get("special_vfx_id", "")) == "storm_charge":
 		return "storm_charge"
 	var category := _codex_category_for_card(card)
 	if category == "attacks":

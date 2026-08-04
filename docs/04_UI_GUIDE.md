@@ -588,11 +588,15 @@ HUDLayer
 - `風暴充能` 不使用泛用 attack-aura 預覽；圖鑑在同一 live frame 實例化 production
   `StormChargeVFX`，以 frame 的地面線作 y=0 cast anchor，完整播放左右接地、雙腿導電、
   劍根／劍身鎖定、右向分叉與同路徑回縮；resize 時重建且不得裁掉接地流或劍端分支
-- discovery projection 包含每張已解鎖 card、每個已學 passive Skill 與每個已解鎖
-  Finisher，stable id 不得重複
+- 招式 discovery projection 只包含目前普攻、目前四格戰鬥配置與啟用中的 passive
+  Skill；歷史解鎖但未裝備的卡片（例如已卸下的 `guard`）不得滲回招式審查清單。
+  32 個正式 Finisher 則維持完整 production VFX gallery，stable id 不得重複
+- 目前配置卡必須先套用其 `CardInstance.level` 的 upgrade effect，再投影 effect summary、
+  `special_vfx_id`／`named_vfx_id`、方向數與散射角度；像 `echo_volley` 的 2／4／8 道
+  劍氣預覽必須與實戰等級一致，不能退回單一道泛用劍氣
 - 治療、防禦、能量、移動、控制及強化技使用對應的 code-native `technique`
   preview；不能因為沒有火／冰專屬 VFX 而從列表消失
-- 四個已學命名觸發技與五個既有專屬 VFX 的 stable Combo Finisher 必須投影精確 `named_vfx_id`；
+- 啟用中的命名觸發技與全部正式 Combo Finisher 必須投影精確 `named_vfx_id`；
   Discovery Codex 與戰鬥共用 `NamedSkillVFX.tscn` 及同一份 profile，不能退回
   泛用 technique 圈或放大版普通劍氣
 

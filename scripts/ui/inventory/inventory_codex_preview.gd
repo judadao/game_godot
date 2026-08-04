@@ -74,6 +74,29 @@ func get_effect_node_count() -> int:
 	return 1 if is_instance_valid(_effect) else 0
 
 
+func get_sword_wave_count() -> int:
+	if not is_instance_valid(_effect):
+		return 0
+	if bool(_effect.get_meta("codex_sword_wave_container", false)):
+		return _effect.get_child_count()
+	return 1 if _effect.scene_file_path == AUTO_ATTACK_SCENE.resource_path else 0
+
+
+func get_sword_wave_travel_offsets() -> Array[Vector2]:
+	var result: Array[Vector2] = []
+	if not is_instance_valid(_effect):
+		return result
+	var waves: Array[Node] = (
+		_effect.get_children()
+		if bool(_effect.get_meta("codex_sword_wave_container", false))
+		else [_effect]
+	)
+	for wave in waves:
+		if wave.has_method("get_travel_offset"):
+			result.append(wave.call("get_travel_offset") as Vector2)
+	return result
+
+
 func get_sword_wave_speed_multiplier() -> float:
 	return SWORD_WAVE_SPEED_MULTIPLIER
 
@@ -236,22 +259,63 @@ func _spawn_effect() -> void:
 
 
 func _spawn_sword_wave(kind: String) -> void:
-	_effect = AUTO_ATTACK_SCENE.instantiate() as Node2D
-	if _effect == null:
-		return
-	add_child(_effect)
-	_effect.z_index = 6
 	var local_origin := _preview_effect_center() + Vector2(34.0, 7.0)
 	var local_target := local_origin + Vector2(minf(210.0, size.x * 0.32), 0.0)
 	var elements: Array = _entry.get("elements", []) as Array
-	var profile := {
+	var direction_count := maxi(1, int(_entry.get("direction_count", 1)))
+	var profile_base := {
 		"elements": elements,
 		"stack_count": int(_entry.get("stack_count", 3 if kind == "finisher" else 0)),
 		"finisher": kind == "finisher",
 		"finisher_name": String(_entry.get("name", "FINISHER")),
 		"local_coordinates": true,
+		"direction_count": direction_count,
+		"spread_degrees": float(_entry.get("spread_degrees", 0.0)),
 	}
-	_effect.call(
+	if direction_count == 1:
+		_effect = AUTO_ATTACK_SCENE.instantiate() as Node2D
+		if _effect == null:
+			return
+		add_child(_effect)
+		_effect.z_index = 6
+		_play_sword_wave(_effect, local_origin, local_target, kind, profile_base)
+	else:
+		_effect = Node2D.new()
+		_effect.set_meta("codex_sword_wave_container", true)
+		add_child(_effect)
+		_effect.z_index = 6
+		for direction_index in direction_count:
+			var wave := AUTO_ATTACK_SCENE.instantiate() as Node2D
+			if wave == null:
+				continue
+			_effect.add_child(wave)
+			var profile := profile_base.duplicate(true)
+			profile["direction_index"] = direction_index
+			var direction_angle := (
+				-180.0 + 360.0 * float(direction_index) / float(direction_count)
+				if float(profile["spread_degrees"]) >= 359.5
+				else lerpf(
+					-float(profile["spread_degrees"]) * 0.5,
+					float(profile["spread_degrees"]) * 0.5,
+					float(direction_index) / float(direction_count - 1)
+				)
+			)
+			var wave_target := local_origin + (
+				local_target - local_origin
+			).rotated(deg_to_rad(direction_angle))
+			_play_sword_wave(wave, local_origin, wave_target, kind, profile)
+	_effect_preview_size = size
+	_replay_remaining = 1.0 if kind != "finisher" else 1.3
+
+
+func _play_sword_wave(
+	wave: Node2D,
+	local_origin: Vector2,
+	local_target: Vector2,
+	kind: String,
+	profile: Dictionary
+) -> void:
+	wave.call(
 		"play",
 		local_origin,
 		local_target,
@@ -263,8 +327,6 @@ func _spawn_sword_wave(kind: String) -> void:
 		float(_entry.get("attack_size_multiplier", 1.0)),
 		profile
 	)
-	_effect_preview_size = size
-	_replay_remaining = 1.0 if kind != "finisher" else 1.3
 
 
 func _spawn_named_skill(profile_id: String) -> void:

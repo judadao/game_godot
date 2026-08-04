@@ -66,6 +66,16 @@ func _check_size(viewport_size: Vector2i) -> void:
 			"icon_path": "res://assets/ui/autumn/cards/generated/flame_imbue.png",
 		},
 		{
+			"id": "echo_volley", "name": "Echo Volley", "category": "infusions",
+			"kind_label": "目前配置 · 攻擊附魔",
+			"description": "以 360° 環形發射 8 枚投射物。",
+			"effect_summary": "劍氣波 +7、散射角度 360 度",
+			"trigger_summary": "打出後使攻擊獲得 1.5 秒附魔。",
+			"preview_kind": "attack_aura", "elements": [], "level": 3,
+			"direction_count": 8, "spread_degrees": 360.0, "stack_count": 7,
+			"icon_path": "res://assets/ui/autumn/cards/generated/echo_volley.png",
+		},
+		{
 			"id": "storm_charge", "name": "風暴充能", "category": "infusions",
 			"kind_label": "雷霆攻擊灌注", "description": "將雷流聚回身體與武器。",
 			"effect_summary": "附加雷電傷害與短暫暈眩",
@@ -182,6 +192,12 @@ func _check_size(viewport_size: Vector2i) -> void:
 			effect_travel_offset.x > 0.0 and absf(effect_travel_offset.y) <= 0.01,
 			"Basic Attack VFX must travel horizontally to the character's right at %s; got %s."
 				% [viewport_size, effect_travel_offset]
+		)
+	elif selected_entry_id == "echo_volley":
+		_expect(
+			int(preview.call("get_sword_wave_count")) == 8,
+			"Level-three Echo Volley must keep all eight production directions at %s."
+				% viewport_size
 		)
 	elif selected_entry_id == "inferno_cremation" and _capture_view == &"live":
 		_expect(

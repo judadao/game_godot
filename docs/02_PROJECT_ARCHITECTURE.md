@@ -421,7 +421,9 @@ UI 對上層提供 setter/configure API與 typed signals：
   mode/quantity/confirmed。
 - `InventoryUI`：以單一古老日記呈現四個章節：背包（素材、關鍵道具、裝備）、
   個人狀態與三個裝備欄位、依 `CardInstance` identity 投影的現有劍魂，以及招式／
-  敵人／劍魂／裝備圖鑑。招式預覽重用 production elemental／named VFX；敵人章節
+  敵人／劍魂／裝備圖鑑。招式清單由 `Game` 只投影目前普攻、目前四格配置、啟用技能
+  與完整正式 Finisher gallery，避免歷史解鎖項目滲入審查；預覽重用套用目前等級後的
+  production elemental／named VFX；敵人章節
   是 `EnemyArchetype.autumn_catalog()` 的靜態參考，不宣稱 discovery 進度。UI 只透過
   `equip_requested` emit 裝備意圖，由 `Game` 驗證後呼叫 `InventoryManager.equip()`、
   重算玩家屬性並同步 Meta save，不擁有 inventory 或戰鬥規則。

@@ -45,9 +45,10 @@ Inventory／Codex focused coverage：
 - `inventory_journal_layout_test.gd`：1152×720、1280×720、1600×900、1920×1080、
   2560×1080、2560×1440 的整本等比 frame、page bounds、center gutter 與極值內容；
   `INVENTORY_JOURNAL_CAPTURE_DIR` 只在 graphical renderer 產生四章 review captures。
-- `inventory_codex_projection_test.gd`：所有已解鎖 card、已學 passive Skill 與
-  Finisher 的唯一 projection、完整說明、preview kind，以及命名技能的元素／進化／
-  Buff milestone metadata。
+- `inventory_codex_projection_test.gd`：目前普攻、四格配置、啟用 passive Skill 與
+  全部 32 個正式 Finisher 的唯一 projection；同時禁止未裝備／未啟用的歷史項目滲入，
+  並驗證目前等級 effect、精確 combat VFX identity、方向數／散射角度，以及命名技能的
+  元素／進化／Buff milestone metadata。
 - `inventory_codex_ui_test.gd`：分頁、projection、selection、production VFX preview
   ownership，以及退役 concept controls 永遠隱藏、相容入口固定回到 live view。
 - `inventory_codex_layout_test.gd`：六解析度 panel/list/active visual/explanation geometry，
