@@ -438,6 +438,10 @@ Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
 | `shop_system_test.gd` / `ui_keyboard_test.gd` | 交易 ownership、方向 focus、quantity controls 與 player input lock |
 | `forge_catalog_test.gd` / `forge_service_test.gd` | offer/recipe schema、Tier gate、購買、鍛造與 sale escrow |
 | `forge_game_integration_test.gd` | 圖紙＋工具購買後鍛造 equipment／Sword Soul、升級、上桌販售、gold 與 meta save |
+| `chapter_one_story_catalog_test.gd` | 第一章廣場 21 句正史、speaker／portrait path／emotion schema 與 completion flag |
+| `chapter_one_dialogue_progression_test.gd` | 逐句 speaker／情緒切換、完成旗標、下一 scene checkpoint 與禁止重播 |
+| `chapter_one_dialogue_ui_test.gd` | 左上動畫頭像與下方對話框在六個標準解析度的邊界／相對位置 |
+| `story_state_migration_test.gd` | schema 8→9 預設 story state 與 schema 9 checkpoint／flags round-trip |
 
 Layout test 另外要求每個 screen 顯示至少三種 distinct functional icon；Button
 必須有文字、icon 或 tooltip，且可見 hit target 不小於 32×32。
@@ -683,7 +687,7 @@ instance.queue_free()
 |---|---|
 | CardInstance | 五牌堆 identity 不變；個別 level；Ember 遵循普通卡 lifecycle；Quickstep 不存在於 catalog/runtime instances |
 | CardCollectionService | add／fusion／exact removal 同步 Meta／Run／Deck 且共享同一 object；partial failure restore pile order、cooldown timing、level 與 unlocked fields |
-| Migration | schema v6 會移除 retired Quickstep，且舊 payload deterministic、idempotent；card/skill/auto-attack 修復可驗證 |
+| Migration | schema v6 會移除 retired Quickstep，schema v9 會安全加入空白第一章 story state，且舊 payload deterministic、idempotent；card/skill/auto-attack/story 修復可驗證 |
 | Cooldown/exhaust | cooldown 到期回 discard；exhaust 不回收；pause 時 timer 不動 |
 | Status | source refresh、最高 armor tier、reduction cap 60%、unblockable bypass、regen/lifesteal |
 | Enemy pursuit | 玩家同層時所有 archetype 都先步行貼近並進入攻擊；Leap 不以撲跳起手；navigation recovery 必須從 slide collider 排除 Player／Enemies，只有真實地形障礙、卡住或玩家在可達上方時才跳，且 stalled 門檻依 `velocity × delta` 計算；落地有重新判斷緩衝 |

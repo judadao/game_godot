@@ -156,6 +156,7 @@ const COMBO_EVOLUTIONS := [
 @onready var ui_root: CanvasLayer = $MenuLayer
 @onready var card_effect_runner: CardEffectRunner = $CardEffectRunner
 @onready var skill_cast_presentation: SkillCastPresentation = $SkillCastPresentation
+@onready var story_director: Node = $StoryDirector
 
 var current_map: Node
 var player: Node
@@ -223,6 +224,10 @@ func _ready() -> void:
 	hud_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	card_effect_runner.process_mode = Node.PROCESS_MODE_PAUSABLE
+	story_director.configure(meta_state)
+	story_director.dialogue_requested.connect(_on_story_dialogue_requested)
+	story_director.story_progress_changed.connect(_on_story_progress_changed)
+	story_director.sequence_finished.connect(_on_story_sequence_finished)
 	if not bool(divine_gift_manager.call("load_catalog")):
 		push_error("Divine Gift catalog failed to load.")
 	if not bool(combo_finisher_catalog.call("load_catalog")):
@@ -398,7 +403,26 @@ func load_current_map(map_scene: PackedScene, spawn_name: StringName = &"PlayerS
 	_update_card_hand_visibility()
 	_apply_town_visual_progress()
 	map_loaded.emit(current_map)
+	if _current_map_matches(TOWN_SCENE_PATH):
+		story_director.request_chapter_one_opening()
 	return current_map
+
+
+func _on_story_dialogue_requested(sequence_id: StringName) -> void:
+	var ui_control := open_ui("DialogueUI", dialogue_scene, false)
+	if ui_control == null or not story_director.start_requested_sequence(sequence_id, ui_control):
+		if ui_control != null:
+			close_ui(ui_control)
+
+
+func _on_story_progress_changed(_story_state: Dictionary) -> void:
+	save_service.save_meta(META_SAVE_PATH, meta_state.to_dict())
+
+
+func _on_story_sequence_finished(_sequence_id: StringName) -> void:
+	var dialogue_ui := get_open_ui("DialogueUI")
+	if dialogue_ui != null:
+		close_ui(dialogue_ui)
 
 
 func load_hud() -> void:
@@ -1321,6 +1345,12 @@ func _on_player_defeated() -> void:
 func _begin_autumn_run(deck_override: Array = []) -> void:
 	if run_state.active:
 		return
+	# Starting an expedition always owns input and time. If the player departs while
+	# the optional Town opening is still visible, cancel that dialogue cleanly so
+	# combat cannot inherit a paused SceneTree or a stale modal stack.
+	var dialogue_ui := get_open_ui("DialogueUI")
+	if dialogue_ui != null:
+		close_ui(dialogue_ui)
 	var fallback_deck: Array[String] = [
 		"healing_light", "flame_imbue", "echo_volley", "storm_charge",
 	]

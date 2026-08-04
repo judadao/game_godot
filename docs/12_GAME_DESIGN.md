@@ -839,7 +839,7 @@ Rest 每個 Run 只能成功使用一次，會把 health 與 mana 恢復到上�
 
 ### 11.2 MetaState
 
-`MetaState` schema version 為 8，保存：
+`MetaState` schema version 為 9，保存：
 
 - persistent resources；
 - village／building progression；
@@ -852,12 +852,19 @@ Rest 每個 Run 只能成功使用一次，會把 health 與 mana 恢復到上�
 - settings；
 - shortcut flags；
 - inventory/town nested state；
+- story chapter、下一段 sequence checkpoint 與 stable story flags；
 - boss state。
 
 舊 payload 在載入時 deterministic、idempotent migration；非法 level、重複/缺失
 instance ID 必須修復並留下 report。Skill arrays 去重，active 只保留 learned IDs；
 schema 8 另移除四個退役被動 ID，且不補入舊 `Iron Momentum` 預設；
 auto attack 缺失或無效時在組裝 Run 時 fallback 到有效已解鎖 attack。
+
+第一章目前以正史場景 1-1「城鎮廣場」作為 playable opening：首次進 Town 自動播放
+21 句對話並由 UI stack 鎖住玩家操作（城鎮環境動畫不中斷），左上頭像依
+line-authored emotion 播放角色既有圖集；完成後
+寫入 `protagonist_town_routine_established`，checkpoint 前進至 `chapter_01_forge`，
+後續進城不重播。1-2～1-5 由同一 StoryDirector／DialogueRunner 接續，不得用另一套 UI。
 
 ### 11.3 Meta save
 

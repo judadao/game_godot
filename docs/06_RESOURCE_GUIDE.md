@@ -747,7 +747,7 @@ extends Resource
 
 ### 9.1 MetaState
 
-`MetaState.SCHEMA_VERSION = 8`。
+`MetaState.SCHEMA_VERSION = 9`。
 
 主要fields：
 
@@ -761,6 +761,7 @@ equipment / equipment_levels
 boss_defeated / shortcuts
 settings
 inventory_state / town_state
+story_state (chapter_id / next_sequence_id / story_flags)
 ```
 
 `auto_attack_card_id` 是戰前 loadout 選擇，必須解析為已解鎖的 attack card；
@@ -769,6 +770,10 @@ inventory_state / town_state
 `iron_momentum`、`ember_reprise`、`battle_tempo`、`grand_strategy`，且不再自動建立
 舊初始技能；新 39 招只有穩定 ID、系列與階級資料，尚未核准的解鎖／配置規則不得由
 loader 或 migration 猜測。
+schema 9 新增 `story_state`；舊存檔不會假造已完成旗標，而是從
+`chapter_01_town_square` 開始。第一章逐句資料由
+`data/story/chapter_01_dialogues.json` schema 1 擁有，角色 portrait path、grid、
+emotion rows 與 sequence speaker reference 都由 `StoryDialogueCatalog` 載入時驗證。
 `inventory_state`與`town_state`是current manager DTO；其他equipment/building fields
 同時保留legacy compatibility。
 

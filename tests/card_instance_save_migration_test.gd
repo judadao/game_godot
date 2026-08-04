@@ -28,7 +28,7 @@ func _run() -> void:
 	meta.apply_dict(legacy_payload)
 	var migrated := meta.to_dict()
 	var instances := migrated.get("selected_card_instances", []) as Array
-	_expect(int(migrated.get("schema_version", 0)) == 8, "Skill-series migration saves must use schema version eight.")
+	_expect(int(migrated.get("schema_version", 0)) == 9, "Story-state migration saves must use schema version nine.")
 	_expect(
 		(migrated.get("learned_skill_ids", []) as Array).is_empty()
 		and (migrated.get("active_skill_ids", []) as Array).is_empty(),

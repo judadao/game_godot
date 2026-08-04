@@ -434,6 +434,10 @@ MenuLayer
 ```
 
 `DialogueUI.tscn` 是自製 Full Rect Control + Panel，不是 Godot Dialog。
+劇情對話的 `PortraitFrame` 固定在左上、`DialoguePanel` 固定在其下方；頭像以
+`TownNPCPortrait.configure_animation_atlas()` 播放既有角色情緒列，不得再用單一
+字母或整張角色圖的廉價晃動代替。六個標準解析度都必須驗證頭像在左側、位於對話框
+上方，且兩者不超出 viewport。
 
 ### 9.2 Modal contract
 

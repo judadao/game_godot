@@ -727,7 +727,7 @@ Town prop/building多為`Sprite2D` scene，groups如`TownProp`、`TownBuilding`�
 | `scenes/ui/hud/HUD.tscn` | `Control` | status/area/objective/prompt |
 | `scenes/ui/cards/CardHandUI.tscn` | `Control` | card fan/AP/combo/boss |
 | `scenes/ui/inventory/InventoryUI.tscn` | `Control` | 古老日記式 backpack／status-equipment／owned Sword Souls／four-section compendium；招式保留 live VFX／concept art |
-| `scenes/ui/dialogue/DialogueUI.tscn` | `Control` | speaker/text/choice interaction |
+| `scenes/ui/dialogue/DialogueUI.tscn` | `Control` | speaker/text/choice interaction 與左上動畫角色頭像 |
 | `scenes/ui/shop/ShopUI.tscn` | `Control` | icon-based merchant catalog transaction intent |
 | `scenes/ui/system/PauseMenu.tscn` | `Control` | pause/settings/save/load/exit-combat intent |
 | `scenes/ui/town/MaterialYardUI.tscn` | `Control` | forging materials and permanent tools |
@@ -743,6 +743,8 @@ Existing examples：
 - Inventory：`InventoryHeader`, `InventoryCategoryTabs`,
   `InventorySlot`, `InventoryDetailPanel`
 - Shop：`ShopItemRow`, `ShopDetailPanel`, `ShopMerchantPanel`
+- Dialogue：`TownNPCPortrait` 以 atlas grid／emotion row 重用城鎮角色動畫；
+  `StoryDirector/DialogueRunner` 保持在 `Game` Scene Tree，不放進 UI scene。
 
 同型元件應instance共享Scene，不複製StyleBox與Node Tree。Theme與元件詳細規範
 見`docs/07_THEME_GUIDE.md`、`docs/08_COMPONENT_LIBRARY.md`。

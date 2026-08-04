@@ -291,12 +291,13 @@ DangerButton (Button, variation = DangerButton)
 
 ```text
 DialogueUI (Control, Full Rect)
+├── PortraitFrame (Panel, upper-left)
+│   ├── PortraitPlaceholder
+│   │   └── PortraitInitial
+│   └── AnimatedPortrait (TownNPCPortrait)
 └── DialoguePanel (Panel)
     ├── SpeakerNamePlate
     │   └── SpeakerName
-    ├── PortraitFrame
-    │   └── PortraitPlaceholder
-    │       └── PortraitInitial
     ├── DialogueText (RichTextLabel)
     ├── ChoicesContainer (VBoxContainer)
     │   ├── ChoiceOne
@@ -315,7 +316,12 @@ func set_speaker_name(display_name: String) -> void
 func set_dialogue_text(text: String) -> void
 func set_choices(new_choices: Array) -> void
 func set_portrait_initial(initial: String) -> void
+func present_story_line(line: Dictionary, speaker: Dictionary) -> bool
 ```
+
+`present_story_line()` 會清除一般 NPC choices、投影 speaker/text，並用 speaker 的
+validated atlas contract 切換逐幀頭像與 authored emotion。靜態商店肖像仍可沿用
+`TownNPCPortrait.set_character_texture()`，兩種模式不可同時顯示。
 
 ### 7.4 Current signals
 

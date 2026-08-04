@@ -127,6 +127,8 @@ Game
 ├── MenuLayer
 │   └── ui_stack managed modal/primary UI
 ├── CardEffectRunner
+├── StoryDirector
+│   └── DialogueRunner
 └── RefCounted state/services
     ├── MetaState
     ├── RunState
@@ -151,6 +153,9 @@ Game
   PlayerBlacksmith、TownHall 等 runtime UI。
 - Dynamic damage number、summon visual、boss telegraph 使用短生命週期 Node/Tween，
   建立端同時負責 cleanup。
+- `StoryDirector` 擁有 chapter checkpoint／story flag 投影與開場觸發；
+  `DialogueRunner` 只依 catalog 將逐句 speaker、文字與情緒投影到既有 `DialogueUI`，
+  不建立第二套對話畫面。
 
 ### 3.3 RefCounted ownership
 
@@ -416,7 +421,8 @@ UI 對上層提供 setter/configure API與 typed signals：
 
 - `HUD`：player/resource/area/objective/prompt projection。
 - `CardHandUI`：cards/AP/combo/boss presentation；emit selection。
-- `DialogueUI`：speaker/text/choices；emit choice/advanced/canceled。
+- `DialogueUI`：speaker/text/choices 與左上角色圖集動畫頭像；
+  `present_story_line()` 接收已驗證 line/speaker projection，emit choice/advanced/canceled。
 - `ShopUI`：圖示化 catalog projection 與結構化商品列；emit
   mode/quantity/confirmed。
 - `InventoryUI`：以單一古老日記呈現四個章節：背包（素材、關鍵道具、裝備）、
@@ -554,7 +560,7 @@ Validated static JSON
 Permanent meta：
 
 - path：`user://saves/meta_progress.json`
-- schema：`MetaState.SCHEMA_VERSION == 7`
+- schema：`MetaState.SCHEMA_VERSION == 9`
 - service：`SaveService`
 - behavior：`.tmp` write → parse validation → backup → rename
 
@@ -1066,12 +1072,14 @@ Dash Edge 與 Gale Drive 保留為 legacy catalog cards，但標記 `combat_hand
 不進 Deck Builder、預設背包或戰鬥獎勵；其 infusion 仍以
 `target_action = "dash"` 暫時投影到玩家固有 Dash，不建立或尋找 Dash 卡。
 
-`MetaState` schema version 8 以 `selected_card_instances` 儲存 instance payload，
+`MetaState` schema version 9 以 `selected_card_instances` 儲存 instance payload，
 同時保留必要的舊 `selected_deck` projection 作 compatibility。舊 card-id 陣列 migration
 必須 deterministic、idempotent，修復非法 level 與重複/缺失 instance ID，並提供
 migration report。schema 6 起另保存 `auto_attack_card_id`、`learned_skill_ids` 與
 `active_skill_ids`；schema 8 會移除 `iron_momentum`、`ember_reprise`、
 `battle_tempo`、`grand_strategy` 四個退役被動 ID，且不再自動補入舊預設。
+schema 9 新增 `story_state`，保存 chapter ID、下一段 sequence checkpoint 與去重後的
+stable story flags；schema 8 與更舊存檔一律安全初始化在第一章城鎮廣場。
 auto attack 缺失或無效時 fallback 到已解鎖的有效 attack，active skill 必須是 learned
 的子集。`RunState.card_instances` 是 expedition
 期間的同一 identity projection，不另造 card-id 等級表。

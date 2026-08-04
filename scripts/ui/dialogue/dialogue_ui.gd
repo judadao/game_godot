@@ -9,7 +9,10 @@ signal choice_selected(index: int, text: String, metadata: Dictionary)
 signal canceled
 
 @onready var speaker_name: Label = $DialoguePanel/SpeakerNamePlate/SpeakerName
-@onready var portrait_initial: Label = $DialoguePanel/PortraitFrame/PortraitPlaceholder/PortraitInitial
+@onready var portrait_frame: Panel = $PortraitFrame
+@onready var portrait_placeholder: Panel = $PortraitFrame/PortraitPlaceholder
+@onready var portrait_initial: Label = $PortraitFrame/PortraitPlaceholder/PortraitInitial
+@onready var animated_portrait: TownNPCPortrait = $PortraitFrame/AnimatedPortrait
 @onready var dialogue_text: RichTextLabel = $DialoguePanel/DialogueText
 @onready var choices_container: VBoxContainer = $DialoguePanel/ChoicesContainer
 @onready var next_arrow: TextureRect = $DialoguePanel/NextArrowIndicator
@@ -77,6 +80,28 @@ func set_choices(new_choices: Array) -> void:
 
 func set_portrait_initial(initial: String) -> void:
 	portrait_initial.text = initial.substr(0, 1).to_upper() if not initial.is_empty() else "?"
+	portrait_placeholder.visible = true
+	animated_portrait.visible = false
+
+
+func present_story_line(line: Dictionary, speaker: Dictionary) -> bool:
+	var display_name := String(speaker.get("display_name", ""))
+	set_speaker_name(display_name)
+	set_dialogue_text(String(line.get("text", "")))
+	set_choices([])
+	next_arrow.visible = true
+	var portrait_variant: Variant = speaker.get("portrait", {})
+	if not portrait_variant is Dictionary:
+		set_portrait_initial(display_name)
+		return false
+	var configured := animated_portrait.configure_animation_atlas(portrait_variant as Dictionary)
+	if configured:
+		portrait_placeholder.visible = false
+		animated_portrait.visible = true
+		animated_portrait.play_state(StringName(line.get("emotion", "idle")))
+	else:
+		set_portrait_initial(display_name)
+	return configured
 
 func _cache_choice_buttons() -> void:
 	_choice_buttons.clear()

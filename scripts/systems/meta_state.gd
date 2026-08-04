@@ -1,7 +1,7 @@
 class_name MetaState
 extends RefCounted
 
-const SCHEMA_VERSION := 8
+const SCHEMA_VERSION := 9
 const RESOURCE_IDS := ["gold", "autumn_wood", "stone", "magic_shard", "autumn_core"]
 const RETIRED_CARD_IDS := ["quickstep"]
 const RETIRED_SKILL_IDS := [
@@ -65,6 +65,11 @@ var shortcuts: Dictionary = {}
 var settings := {"master_volume": 1.0, "camera_shake": 0.65}
 var inventory_state: Dictionary = {}
 var town_state: Dictionary = {}
+var story_state: Dictionary = {
+	"chapter_id": "chapter_01",
+	"next_sequence_id": "chapter_01_town_square",
+	"story_flags": [],
+}
 var _last_migration_report: Dictionary = {}
 
 
@@ -127,6 +132,7 @@ func to_dict() -> Dictionary:
 		"settings": settings.duplicate(true),
 		"inventory_state": inventory_state.duplicate(true),
 		"town_state": town_state.duplicate(true),
+		"story_state": story_state.duplicate(true),
 	}
 
 
@@ -197,6 +203,7 @@ func apply_dict(data: Dictionary) -> void:
 	settings = _safe_dictionary(data.get("settings"), settings)
 	inventory_state = _safe_dictionary(data.get("inventory_state"), inventory_state)
 	town_state = _safe_dictionary(data.get("town_state"), town_state)
+	story_state = _normalize_story_state(data.get("story_state", {}))
 
 
 func normalize_selected_deck(valid_ids: Array[String]) -> Array[String]:
@@ -285,6 +292,23 @@ func get_last_migration_report() -> Dictionary:
 
 func _safe_dictionary(value: Variant, fallback: Dictionary) -> Dictionary:
 	return (value as Dictionary).duplicate(true) if value is Dictionary else fallback.duplicate(true)
+
+
+func _normalize_story_state(value: Variant) -> Dictionary:
+	var incoming := value as Dictionary if value is Dictionary else {}
+	var chapter_id := String(incoming.get("chapter_id", "chapter_01")).strip_edges()
+	var next_sequence_id := String(
+		incoming.get("next_sequence_id", "chapter_01_town_square")
+	).strip_edges()
+	if chapter_id.is_empty():
+		chapter_id = "chapter_01"
+	if next_sequence_id.is_empty():
+		next_sequence_id = "chapter_01_town_square"
+	return {
+		"chapter_id": chapter_id,
+		"next_sequence_id": next_sequence_id,
+		"story_flags": _safe_unique_string_array(incoming.get("story_flags", []), []),
+	}
 
 
 func _safe_integer_dictionary(value: Variant, fallback: Dictionary) -> Dictionary:

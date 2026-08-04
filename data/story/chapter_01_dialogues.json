@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "chapter": {
+    "id": "chapter_01",
+    "title": "序章—沒有過去的人",
+    "opening_sequence_id": "chapter_01_town_square"
+  },
+  "speakers": {
+    "protagonist": {
+      "display_name": "主角",
+      "portrait": {
+        "texture_path": "res://assets/curated/game_own/world/legacy_fantasy/Character/Idle/Idle-Sheet.png",
+        "columns": 4,
+        "rows": 1,
+        "fps": 5.0,
+        "state_rows": {"idle": 0, "chat": 0, "laugh": 0, "happy": 0, "sad": 0, "surprised": 0, "angry": 0}
+      }
+    },
+    "priest": {
+      "display_name": "聖女",
+      "portrait": {
+        "texture_path": "res://assets/town/npc/priest/priest_animation_atlas.png",
+        "columns": 8,
+        "rows": 8,
+        "fps": 6.0,
+        "state_rows": {"idle": 0, "chat": 1, "laugh": 1, "happy": 5, "sad": 6, "surprised": 1, "angry": 7}
+      }
+    }
+  },
+  "sequences": {
+    "chapter_01_town_square": {
+      "chapter_id": "chapter_01",
+      "scene_id": "1-1",
+      "next_sequence_id": "chapter_01_forge",
+      "completion_flags": ["protagonist_town_routine_established"],
+      "lines": [
+        {"speaker": "priest", "emotion": "chat", "text": "喂。"},
+        {"speaker": "protagonist", "emotion": "surprised", "text": "痛。"},
+        {"speaker": "priest", "emotion": "happy", "text": "原來醒著。"},
+        {"speaker": "protagonist", "emotion": "chat", "text": "我一直醒著。"},
+        {"speaker": "priest", "emotion": "chat", "text": "那你杵在這裡做什麼？"},
+        {"speaker": "priest", "emotion": "chat", "text": "平常這個時候，你不是都在打鐵嗎？"},
+        {"speaker": "protagonist", "emotion": "chat", "text": "我本來要去。"},
+        {"speaker": "priest", "emotion": "chat", "text": "然後呢？"},
+        {"speaker": "protagonist", "emotion": "sad", "text": "聽見有人在叫我。"},
+        {"speaker": "priest", "emotion": "surprised", "text": "誰？"},
+        {"speaker": "protagonist", "emotion": "sad", "text": "不知道。回頭以後就忘了。"},
+        {"speaker": "protagonist", "emotion": "happy", "text": "算了。真有急事，總會再叫一次。"},
+        {"speaker": "priest", "emotion": "chat", "text": "上次你也這麼說，後來繞著城牆找了一整天。"},
+        {"speaker": "protagonist", "emotion": "happy", "text": "這次我只找半天。"},
+        {"speaker": "priest", "emotion": "chat", "text": "先回去開爐。守衛的劍天還沒亮就送到了。"},
+        {"speaker": "protagonist", "emotion": "chat", "text": "妳不去教堂？"},
+        {"speaker": "priest", "emotion": "happy", "text": "去。但我要先看著你走到門口。"},
+        {"speaker": "protagonist", "emotion": "chat", "text": "我又不會迷路。"},
+        {"speaker": "protagonist", "emotion": "happy", "text": "我先去打水。"},
+        {"speaker": "priest", "emotion": "chat", "text": "水井在另一邊。"},
+        {"speaker": "protagonist", "emotion": "sad", "text": "……我先開爐。"}
+      ]
+    }
+  }
+}
