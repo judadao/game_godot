@@ -1552,7 +1552,8 @@ the HUD never reads gameplay state directly.
   over-capacity recipes stay visible with disabled grey text. The slots remain
   above one exclusive selection workspace；`SwordSoulSelector` and
   `SkillRecipeSelector` switch through `SelectionModeBar` and never stack
-  simultaneously
+  simultaneously. Recipe choices render 13 catalog-ordered series sections；
+  each section exposes basic／advanced／master as one three-column tier row
 
 ### CombatStatusController
 

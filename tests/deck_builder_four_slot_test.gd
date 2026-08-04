@@ -54,17 +54,43 @@ func _run() -> void:
 			and builder.has_method("is_skill_recipe_selectable"),
 		"Named-skill selection must expose deterministic compatibility diagnostics."
 	)
-	var named_skill_grid := builder.get_node(
+	var named_skill_list := builder.get_node(
 		"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector/RecipeScroll/RecipeChoices"
+	) as VBoxContainer
+	var sword_rain_section := named_skill_list.get_node_or_null(
+		"Series_sword_rain"
+	) as VBoxContainer
+	var sword_rain_tiers := named_skill_list.get_node_or_null(
+		"Series_sword_rain/TierChoices"
 	) as GridContainer
-	var flowing_fire_choice := named_skill_grid.get_node_or_null(
-		"Skill_flowing_fire_night"
+	var moon_wheel_basic := named_skill_list.get_node_or_null(
+		"Series_moon_wheel/TierChoices/Skill_moonwheel_downlight"
+	) as Button
+	var flowing_fire_choice := named_skill_list.get_node_or_null(
+		"Series_fire/TierChoices/Skill_flowing_fire_night"
 	) as Button
 	_expect(
-		named_skill_grid.get_child_count() == 39
+		named_skill_list.get_child_count() == 13
+			and named_skill_list.get_child(0).name == "Series_sword_rain"
+			and named_skill_list.get_child(12).name == "Series_shared_branch_vitality"
+			and sword_rain_section != null
+			and (sword_rain_section.get_node("SeriesHeader") as Label).text.contains("劍雨系列")
+			and sword_rain_tiers != null
+			and sword_rain_tiers.get_child_count() == 3
+			and (sword_rain_tiers.get_child(0) as Button).text.contains("基礎")
+			and (sword_rain_tiers.get_child(1) as Button).text.contains("進階")
+			and (sword_rain_tiers.get_child(2) as Button).text.contains("大師")
 			and flowing_fire_choice != null
 			and flowing_fire_choice.text.contains("流火照夜"),
-		"Expedition selection must use the same 39 official skill names as the Codex."
+		"Expedition selection must group 39 official skills into 13 series with tier order."
+	)
+	var sword_rain_basic := sword_rain_tiers.get_child(0) as Button
+	_expect(
+		moon_wheel_basic != null
+			and not sword_rain_basic.focus_neighbor_bottom.is_empty()
+			and sword_rain_basic.get_node(sword_rain_basic.focus_neighbor_bottom)
+				== moon_wheel_basic,
+		"Keyboard down must preserve the same tier while moving to the next series."
 	)
 	var named_skill_scroll := builder.get_node(
 		"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector/RecipeScroll"
@@ -75,7 +101,12 @@ func _run() -> void:
 	)
 	builder.call("set_skill_recipe_selector_visible", true)
 	await process_frame
-	var last_named_skill := named_skill_grid.get_child(named_skill_grid.get_child_count() - 1) as Button
+	var named_skill_buttons := _collect_named_skill_buttons(named_skill_list)
+	_expect(
+		named_skill_buttons.size() == 39,
+		"Every series section must expose exactly three official skill choices."
+	)
+	var last_named_skill := named_skill_buttons[-1]
 	named_skill_scroll.scroll_vertical = 0
 	last_named_skill.grab_focus()
 	await process_frame
@@ -275,10 +306,10 @@ func _run() -> void:
 			"A fourth distinct requirement must be unavailable because only three formula slots may change."
 		)
 		var blocked_recipe := builder.get_node_or_null(
-			"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector/RecipeScroll/RecipeChoices/Skill_moonwheel_downlight"
+			"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector/RecipeScroll/RecipeChoices/Series_moon_wheel/TierChoices/Skill_moonwheel_downlight"
 		) as Button
 		var selectable_recipe := builder.get_node_or_null(
-			"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector/RecipeScroll/RecipeChoices/Skill_myriad_blades_descend"
+			"Shade/LoadoutPanel/Margin/Column/SelectionWorkspace/SkillRecipeSelector/RecipeScroll/RecipeChoices/Series_sword_rain/TierChoices/Skill_myriad_blades_descend"
 		) as Button
 		_expect(
 			blocked_recipe != null and blocked_recipe.disabled,
@@ -312,6 +343,18 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _collect_named_skill_buttons(list: VBoxContainer) -> Array[Button]:
+	var result: Array[Button] = []
+	for section_variant in list.get_children():
+		var section := section_variant as VBoxContainer
+		var tiers := section.get_node_or_null("TierChoices") as GridContainer
+		if tiers == null:
+			continue
+		for choice_variant in tiers.get_children():
+			result.append(choice_variant as Button)
+	return result
 
 
 func _has_card_type(

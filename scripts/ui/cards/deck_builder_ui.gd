@@ -41,7 +41,8 @@ var _confirm_button: Button
 var _auto_attack_selector: OptionButton
 var _sword_soul_selector: VBoxContainer
 var _skill_recipe_selector: VBoxContainer
-var _recipe_choice_grid: GridContainer
+var _recipe_choice_list: VBoxContainer
+var _recipe_choice_buttons: Array[Button] = []
 var _recipe_scroll: ScrollContainer
 var _sword_soul_mode_button: Button
 var _skill_recipe_mode_button: Button
@@ -429,13 +430,11 @@ func _build_layout() -> void:
 	recipe_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	recipe_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_skill_recipe_selector.add_child(recipe_scroll)
-	_recipe_choice_grid = GridContainer.new()
-	_recipe_choice_grid.name = "RecipeChoices"
-	_recipe_choice_grid.columns = 3
-	_recipe_choice_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_recipe_choice_grid.add_theme_constant_override("h_separation", 7)
-	_recipe_choice_grid.add_theme_constant_override("v_separation", 5)
-	recipe_scroll.add_child(_recipe_choice_grid)
+	_recipe_choice_list = VBoxContainer.new()
+	_recipe_choice_list.name = "RecipeChoices"
+	_recipe_choice_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_recipe_choice_list.add_theme_constant_override("separation", 9)
+	recipe_scroll.add_child(_recipe_choice_list)
 	set_skill_recipe_selector_visible(false)
 
 	_recipe_summary = Label.new()
@@ -788,43 +787,102 @@ func _refresh_slots() -> void:
 
 
 func _rebuild_skill_recipe_choices() -> void:
-	if _recipe_choice_grid == null:
+	if _recipe_choice_list == null:
 		return
-	for child in _recipe_choice_grid.get_children():
-		_recipe_choice_grid.remove_child(child)
+	for child in _recipe_choice_list.get_children():
+		_recipe_choice_list.remove_child(child)
 		child.queue_free()
-	for skill in _skill_catalog.get_all_skills():
-		var skill_id := String(skill.get("id", ""))
-		var recipe := _finisher_recipe_for_skill(skill_id)
-		var selected := _selected_skill_recipe_ids.has(skill_id)
-		var selectable := is_skill_recipe_selectable(skill_id)
-		var choice := Button.new()
-		choice.name = "Skill_%s" % skill_id
-		choice.custom_minimum_size = Vector2(310, 36)
-		choice.toggle_mode = true
-		choice.button_pressed = selected
-		choice.disabled = not selectable
-		choice.text = "%s%s" % [
-			"✓  " if selected else "",
-			_display_name(skill, skill_id),
-		]
-		choice.tooltip_text = "%s\n所需劍魂：%s" % [
-			_display_description(skill),
-			_recipe_requirement_names(recipe),
-		]
-		choice.pressed.connect(_on_skill_recipe_pressed.bind(skill_id))
-		choice.focus_entered.connect(_focus_skill_recipe_choice.bind(choice))
-		_apply_skill_recipe_button_style(choice, selected, selectable)
-		_recipe_choice_grid.add_child(choice)
+	_recipe_choice_buttons.clear()
+	for series in _skill_catalog.get_all_series():
+		var series_id := String(series.get("id", ""))
+		var series_name := String(series.get("name", series_id))
+		var section := VBoxContainer.new()
+		section.name = "Series_%s" % series_id
+		section.add_theme_constant_override("separation", 4)
+		_recipe_choice_list.add_child(section)
+
+		var series_header := Label.new()
+		series_header.name = "SeriesHeader"
+		series_header.text = "◆  %s系列" % series_name
+		series_header.custom_minimum_size = Vector2(0, 28)
+		series_header.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		series_header.add_theme_font_size_override("font_size", 15)
+		series_header.add_theme_color_override("font_color", BRIGHT_GOLD)
+		series_header.add_theme_stylebox_override("normal", _skill_series_header_style())
+		section.add_child(series_header)
+
+		var tier_choices := GridContainer.new()
+		tier_choices.name = "TierChoices"
+		tier_choices.columns = 3
+		tier_choices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		tier_choices.add_theme_constant_override("h_separation", 7)
+		section.add_child(tier_choices)
+		for skill_variant in series.get("skills", []) as Array:
+			var skill := skill_variant as Dictionary
+			var skill_id := String(skill.get("id", ""))
+			var tier_id := String(skill.get("tier", "basic"))
+			var tier_label := _skill_catalog.get_tier_label(tier_id)
+			var recipe := _finisher_recipe_for_skill(skill_id)
+			var selected := _selected_skill_recipe_ids.has(skill_id)
+			var selectable := is_skill_recipe_selectable(skill_id)
+			var choice := Button.new()
+			choice.name = "Skill_%s" % skill_id
+			choice.custom_minimum_size = Vector2(310, 38)
+			choice.toggle_mode = true
+			choice.button_pressed = selected
+			choice.disabled = not selectable
+			choice.text = "%s%s  ·  %s" % [
+				"✓  " if selected else "",
+				tier_label,
+				_display_name(skill, skill_id),
+			]
+			choice.tooltip_text = "%s系列 · %s\n%s\n所需劍魂：%s" % [
+				series_name,
+				tier_label,
+				_display_description(skill),
+				_recipe_requirement_names(recipe),
+			]
+			choice.pressed.connect(_on_skill_recipe_pressed.bind(skill_id))
+			choice.focus_entered.connect(_focus_skill_recipe_choice.bind(choice))
+			_apply_skill_recipe_button_style(
+				choice,
+				selected,
+				selectable,
+				_skill_tier_accent(tier_id)
+			)
+			tier_choices.add_child(choice)
+			_recipe_choice_buttons.append(choice)
 	_wire_skill_recipe_focus_navigation()
+
+
+func _skill_series_header_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.055, 0.047, 0.038, 0.98)
+	style.border_color = Color(OLD_GOLD.r, OLD_GOLD.g, OLD_GOLD.b, 0.74)
+	style.set_border_width(SIDE_LEFT, 3)
+	style.set_border_width(SIDE_BOTTOM, 1)
+	style.content_margin_left = 10.0
+	style.content_margin_right = 8.0
+	return style
+
+
+func _skill_tier_accent(tier_id: String) -> Color:
+	match tier_id:
+		"advanced":
+			return Color(0.48, 0.72, 0.88, 1.0)
+		"master":
+			return BRIGHT_GOLD
+		_:
+			return Color(0.70, 0.68, 0.62, 1.0)
 
 
 func _apply_skill_recipe_button_style(
 	button: Button,
 	selected: bool,
-	selectable: bool
+	selectable: bool,
+	tier_accent: Color
 ) -> void:
-	var accent := BRIGHT_GOLD if selected else Color(0.78, 0.66, 0.48, 1.0)
+	var accent := BRIGHT_GOLD if selected else tier_accent
 	var normal := _button_style(accent, selected, true)
 	var hover := _button_style(accent.lightened(0.15), true, true)
 	var disabled := _button_style(Color(0.30, 0.32, 0.36, 1.0), false, true)
@@ -856,8 +914,8 @@ func _focus_skill_recipe_choice(choice: Control) -> void:
 
 
 func _wire_skill_recipe_focus_navigation() -> void:
-	var choices := _recipe_choice_grid.get_children()
-	var columns := maxi(1, _recipe_choice_grid.columns)
+	var choices := _recipe_choice_buttons
+	var columns := 3
 	for index in choices.size():
 		var choice := choices[index] as Button
 		if choice.disabled:
