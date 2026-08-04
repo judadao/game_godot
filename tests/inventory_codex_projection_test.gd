@@ -73,8 +73,8 @@ func _run() -> void:
 	var flowing_fire := entries_by_id.get("flowing_fire_night", {}) as Dictionary
 	_expect(
 		String(flowing_fire.get("recipe_summary", ""))
-			== "烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1）",
-		"流火照夜 must list its ordered Sword Soul formula and ownership state."
+			== "烈焰灌注 → 烈焰灌注 → 烈焰灌注",
+		"流火照夜 must list only its ordered Sword Soul formula without ownership state."
 	)
 	_expect(
 		String(flowing_fire.get("effect_summary", "")).contains("目前普攻 + 56")

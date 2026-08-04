@@ -95,13 +95,30 @@ func _run() -> void:
 			and not growth.visible,
 		"Technique details must hide the redundant series-vocabulary and VFX-status sections."
 	)
+	var introduction_color := (
+		description_label.get_theme_color("default_color")
+		if description_label != null
+		else Color.WHITE
+	)
+	_expect(
+		description_label != null
+			and is_equal_approx(introduction_color.r, 0.16)
+			and is_equal_approx(introduction_color.g, 0.09)
+			and is_equal_approx(introduction_color.b, 0.04)
+			and introduction_color.a > 0.99,
+		"The italic introduction must use the readable dark-brown RichTextLabel default color instead of falling back to white; got %s."
+			% introduction_color
+	)
 	_expect(
 		effect_label != null
 			and effect_label.text.begins_with("效果與數值\n")
 			and effect_label.text.contains("攻擊力：目前普攻 + 56")
 			and not effect_label.text.contains("劍魂效果：")
 			and recipe_label != null
-			and recipe_label.text == "劍魂組合\n烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1）"
+			and recipe_label.text == "劍魂組合\n烈焰灌注 → 烈焰灌注 → 烈焰灌注"
+			and not recipe_label.text.contains("已編成")
+			and not recipe_label.text.contains("未編成")
+			and not recipe_label.text.contains("未持有")
 			and description_label != null
 			and description_label.text.begins_with("[i]「")
 			and description_label.text.ends_with("」[/i]")
@@ -193,9 +210,9 @@ func _make_codex_entries(catalog: RefCounted) -> Array[Dictionary]:
 			"tier_rank": int(skill.get("tier_rank", 1)),
 			"description": String(skill.get("description", "")),
 			"recipe_summary": (
-				"烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1）"
+				"烈焰灌注 → 烈焰灌注 → 烈焰灌注"
 				if is_flowing_fire
-				else "測試劍魂（未持有） → 測試劍魂（未持有） → 測試劍魂（未持有）"
+				else "測試劍魂 → 測試劍魂 → 測試劍魂"
 			),
 			"effect_summary": (
 				"定位：基礎火焰攻擊\n攻擊力：目前普攻 + 56\n附加效果：燃燒傷害 5"

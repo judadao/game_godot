@@ -774,7 +774,7 @@ autowrap_mode = 2
 [node name="Description" type="RichTextLabel" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.2, 0.15, 0.11, 1)
+theme_override_colors/default_color = Color(0.16, 0.09, 0.04, 1)
 bbcode_enabled = true
 fit_content = true
 scroll_active = false

@@ -4426,23 +4426,8 @@ func _inventory_skill_recipe_summary(recipe: Dictionary) -> String:
 		var card := card_database.get_card(card_id)
 		if card.is_empty():
 			continue
-		names.append("%s（%s）" % [
-			_localized_text(card, "name"),
-			_inventory_sword_soul_ownership_label(card_id),
-		])
+		names.append(_localized_text(card, "name"))
 	return " → ".join(names) if not names.is_empty() else "尚未設定"
-
-
-func _inventory_sword_soul_ownership_label(card_id: String) -> String:
-	var highest_level := 0
-	for instance in meta_state.selected_card_instances:
-		if instance != null and instance.card_id == card_id:
-			highest_level = maxi(highest_level, instance.level)
-	if highest_level > 0:
-		return "已編成 Lv.%d" % highest_level
-	if meta_state.unlocked_cards.has(card_id):
-		return "已持有・未編成"
-	return "未持有"
 
 
 func _inventory_skill_effect_summary(skill: Dictionary, recipe: Dictionary) -> String:
