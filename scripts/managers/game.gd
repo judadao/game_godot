@@ -555,9 +555,21 @@ func load_hud() -> void:
 		_update_hud_player_identity()
 		_update_hud_resources()
 		hud.call("set_currency", wallet_gold)
+		_apply_map_hud_visibility()
 	else:
 		push_error("HUD scene root must be a Control.")
 		hud_instance.queue_free()
+
+
+func _apply_map_hud_visibility() -> void:
+	if hud == null or current_map == null:
+		return
+	var objective_panel := hud.get_node_or_null("TopLeftStack") as CanvasItem
+	var meta_panel := hud.get_node_or_null("TopRightMeta") as CanvasItem
+	if objective_panel != null:
+		objective_panel.visible = not bool(current_map.get_meta("hide_objective_hud", false))
+	if meta_panel != null:
+		meta_panel.visible = not bool(current_map.get_meta("hide_meta_hud", false))
 
 
 func load_card_hand() -> void:

@@ -1,6 +1,183 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=21 format=3]
+
 [ext_resource type="PackedScene" path="res://scenes/maps/boss/RegionalBossArenaTemplate.tscn" id="1"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/autumn_boss_sky_wide_v2.png" id="2_sky"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/autumn_boss_props_v1.png" id="3_props"]
+[ext_resource type="PackedScene" path="res://scenes/monsters/AutumnSmokeOniBoss.tscn" id="4_boss"]
+[ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/autumn_boss_floor_v2.png" id="5_floor"]
+[ext_resource type="Script" path="res://scripts/maps/autumn_boss_arena.gd" id="6_script"]
+
+[sub_resource type="AtlasTexture" id="Wall"]
+atlas = ExtResource("3_props")
+region = Rect2(0, 0, 500, 510)
+[sub_resource type="AtlasTexture" id="Torii"]
+atlas = ExtResource("3_props")
+region = Rect2(500, 0, 536, 510)
+[sub_resource type="AtlasTexture" id="Maple"]
+atlas = ExtResource("3_props")
+region = Rect2(1036, 0, 500, 510)
+[sub_resource type="AtlasTexture" id="Lanterns"]
+atlas = ExtResource("3_props")
+region = Rect2(0, 510, 510, 514)
+[sub_resource type="AtlasTexture" id="SwordGrave"]
+atlas = ExtResource("3_props")
+region = Rect2(510, 510, 526, 514)
+[sub_resource type="AtlasTexture" id="Stairs"]
+atlas = ExtResource("3_props")
+region = Rect2(1036, 510, 500, 514)
+[sub_resource type="AtlasTexture" id="FloorA"]
+atlas = ExtResource("5_floor")
+region = Rect2(20, 418, 416, 72)
+[sub_resource type="AtlasTexture" id="FloorB"]
+atlas = ExtResource("5_floor")
+region = Rect2(436, 418, 416, 72)
+[sub_resource type="AtlasTexture" id="FloorC"]
+atlas = ExtResource("5_floor")
+region = Rect2(852, 418, 416, 72)
+[sub_resource type="AtlasTexture" id="FloorD"]
+atlas = ExtResource("5_floor")
+region = Rect2(1268, 418, 416, 72)
+[sub_resource type="AtlasTexture" id="FloorE"]
+atlas = ExtResource("5_floor")
+region = Rect2(20, 418, 256, 72)
+[sub_resource type="RectangleShape2D" id="FloorShape"]
+size = Vector2(1920, 280)
+[sub_resource type="RectangleShape2D" id="WallShape"]
+size = Vector2(32, 1664)
+
 [node name="AutumnBossArena" instance=ExtResource("1")]
+script = ExtResource("6_script")
+metadata/map_width = 1920
+metadata/map_height = 1664
+metadata/camera_limit_right = 1920
+metadata/camera_limit_bottom = 1664
 metadata/expedition_variant_id = &"autumn"
-[node name="RegionalBossDirector" parent="." index="8"]
+metadata/hide_objective_hud = true
+metadata/hide_meta_hud = true
+metadata/boss_presentation_role = "background_colossus"
+metadata/boss_target_player_height_ratio = 11.25
+metadata/boss_minimum_visible_fraction = 0.8
+metadata/boss_gameplay_safe_left = 360
+metadata/boss_gameplay_safe_right = 1560
+
+[node name="Backdrop" parent="." index="0"]
+texture = ExtResource("2_sky")
+
+[node name="ModularScenery" type="Node2D" parent="." index="1"]
+[node name="BackTorii" type="Sprite2D" parent="ModularScenery"]
+position = Vector2(960, 1145)
+scale = Vector2(0.82, 0.82)
+texture = SubResource("Torii")
+texture_filter = 1
+z_index = -40
+[node name="LeftWallBack" type="Sprite2D" parent="ModularScenery"]
+position = Vector2(170, 820)
+scale = Vector2(1.05, 1.65)
+texture = SubResource("Wall")
+texture_filter = 1
+z_index = -30
+[node name="RightWallBack" type="Sprite2D" parent="ModularScenery"]
+position = Vector2(1750, 845)
+scale = Vector2(-1.02, 1.6)
+texture = SubResource("Wall")
+texture_filter = 1
+z_index = -30
+[node name="LeftMaple" type="Sprite2D" parent="ModularScenery"]
+position = Vector2(190, 1115)
+scale = Vector2(0.88, 0.88)
+texture = SubResource("Maple")
+texture_filter = 1
+z_index = -18
+[node name="RightMaple" type="Sprite2D" parent="ModularScenery"]
+position = Vector2(1730, 1145)
+scale = Vector2(-0.84, 0.84)
+texture = SubResource("Maple")
+texture_filter = 1
+z_index = -18
+[node name="LeftLanterns" type="Sprite2D" parent="ModularScenery"]
+position = Vector2(95, 1750)
+scale = Vector2(0.62, 0.62)
+texture = SubResource("Lanterns")
+texture_filter = 1
+z_index = 3
+[node name="RightStairs" type="Sprite2D" parent="ModularScenery"]
+position = Vector2(810, 1750)
+scale = Vector2(-0.64, 0.64)
+texture = SubResource("Stairs")
+texture_filter = 1
+z_index = 3
+[node name="SwordGrave" type="Sprite2D" parent="ModularScenery"]
+position = Vector2(145, 1325)
+scale = Vector2(0.58, 0.58)
+texture = SubResource("SwordGrave")
+texture_filter = 1
+z_index = 0
+
+[node name="FloorTiles" type="Node2D" parent="." index="2"]
+z_index = 6
+[node name="FloorA" type="Sprite2D" parent="FloorTiles"]
+position = Vector2(208, 1376)
+texture = SubResource("FloorA")
+texture_filter = 1
+[node name="FloorB" type="Sprite2D" parent="FloorTiles"]
+position = Vector2(624, 1376)
+texture = SubResource("FloorB")
+texture_filter = 1
+[node name="FloorC" type="Sprite2D" parent="FloorTiles"]
+position = Vector2(1040, 1376)
+texture = SubResource("FloorC")
+texture_filter = 1
+[node name="FloorD" type="Sprite2D" parent="FloorTiles"]
+position = Vector2(1456, 1376)
+texture = SubResource("FloorD")
+texture_filter = 1
+[node name="FloorE" type="Sprite2D" parent="FloorTiles"]
+position = Vector2(1792, 1376)
+texture = SubResource("FloorE")
+texture_filter = 1
+
+[node name="ArenaOverviewCamera" type="Camera2D" parent="."]
+position = Vector2(960, 1390)
+zoom = Vector2(1.05, 1.05)
+limit_right = 1920
+limit_bottom = 1664
+
+[node name="FloorVisual" parent="." index="3"]
+polygon = PackedVector2Array(0, 1340, 1920, 1340, 1920, 1664, 0, 1664)
+color = Color(0.055, 0.045, 0.065, 0.9)
+[node name="FloorRim" parent="." index="4"]
+points = PackedVector2Array(0, 1340, 1920, 1340)
+width = 5.0
+[node name="ArenaPlatforms" parent="." index="5"]
+portrait_boss_layout = true
+preserve_backdrop_aspect = true
+vary_platform_art = true
+rim_color = Color(0.22, 0.12, 0.09, 0.72)
+arena_width = 1920.0
+arena_height = 1664.0
+floor_top = 1340.0
+platform_art_scale_y = 0.28
+build_floor_art = false
+[node name="CollisionShape2D" parent="ArenaFloor" index="0"]
+position = Vector2(960, 1480)
+shape = SubResource("FloorShape")
+[node name="LeftWall" parent="WorldBounds" index="0"]
+position = Vector2(-16, 832)
+shape = SubResource("WallShape")
+[node name="RightWall" parent="WorldBounds" index="1"]
+position = Vector2(1936, 832)
+shape = SubResource("WallShape")
+[node name="PlayerSpawn" parent="." index="8"]
+position = Vector2(720, 1340)
+[node name="Player" parent="." index="9"]
+position = Vector2(720, 1340)
+[node name="RegionalBossDirector" parent="." index="10"]
+position = Vector2(960, 1340)
+z_index = 7
 expedition_variant_id = &"autumn"
+guardian_scene = ExtResource("4_boss")
+[node name="ExitPortal" parent="." index="11"]
+position = Vector2(85, 1340)
+show_default_visual = false
+
+[editable path="ExitPortal"]

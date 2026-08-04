@@ -1,0 +1,248 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://scripts/monsters/autumn_smoke_oni_boss.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_upper_skull_kabuto_v3.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_lower_jaw_v4.png" id="3"]
+[ext_resource type="Script" path="res://scripts/combat/hurtbox.gd" id="4"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_skeletal_torso_v4.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_skeletal_smoke_pelvis_v4.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_left_upper_arm_v4.png" id="7"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_left_forearm_v4.png" id="8"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_left_hand_katana_up_v4.png" id="9"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_right_upper_arm_v4.png" id="10"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_right_forearm_v4.png" id="11"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_right_hand_katana_up_v4.png" id="12"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_left_hand_katana_down_v3.png" id="13"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_right_hand_katana_down_v3.png" id="14"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/generated/six_arm_oni_cyan_flame_effects_v3.png" id="15"]
+
+[sub_resource type="AtlasTexture" id="EyeFireLeft"]
+atlas = ExtResource("15")
+region = Rect2(0, 0, 207, 207)
+[sub_resource type="AtlasTexture" id="EyeFireRight"]
+atlas = ExtResource("15")
+region = Rect2(207, 0, 207, 207)
+[sub_resource type="AtlasTexture" id="MouthFireLeft"]
+atlas = ExtResource("15")
+region = Rect2(0, 207, 207, 207)
+[sub_resource type="AtlasTexture" id="MouthFireRight"]
+atlas = ExtResource("15")
+region = Rect2(207, 207, 207, 207)
+[sub_resource type="CapsuleShape2D" id="BossShape"]
+radius = 70.0
+height = 250.0
+
+[node name="AutumnSmokeOniBoss" type="CharacterBody2D" groups=["Enemies", "AutumnEnemies", "Bosses"]]
+collision_layer = 2
+collision_mask = 1
+motion_mode = 1
+script = ExtResource("1")
+
+[node name="Visual" type="Node2D" parent="."]
+[node name="ApprovedComposite" type="Sprite2D" parent="Visual"]
+visible = false
+[node name="Pelvis" type="Sprite2D" parent="Visual"]
+position = Vector2(0, -178)
+scale = Vector2(0.46, 0.46)
+texture = ExtResource("6")
+texture_filter = 1
+z_index = 1
+[node name="Torso" type="Sprite2D" parent="Visual"]
+position = Vector2(0, -510)
+scale = Vector2(0.58, 0.58)
+texture = ExtResource("5")
+texture_filter = 1
+z_index = 2
+[node name="SmokeBase" type="Sprite2D" parent="Visual"]
+visible = false
+
+[node name="ArmBackLeft" type="Node2D" parent="Visual"]
+position = Vector2(-205, -445)
+rotation = -1.25
+z_index = -2
+[node name="UpperArm" type="Sprite2D" parent="Visual/ArmBackLeft"]
+position = Vector2(-55, 65)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("7")
+[node name="ElbowPivot" type="Node2D" parent="Visual/ArmBackLeft"]
+position = Vector2(-105, 125)
+rotation = -0.4
+[node name="Forearm" type="Sprite2D" parent="Visual/ArmBackLeft/ElbowPivot"]
+position = Vector2(-45, 60)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("8")
+[node name="WristPivot" type="Node2D" parent="Visual/ArmBackLeft/ElbowPivot"]
+position = Vector2(-95, 115)
+[node name="HandKatana" type="Sprite2D" parent="Visual/ArmBackLeft/ElbowPivot/WristPivot"]
+position = Vector2(-75, 0)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("9")
+
+[node name="ArmBackRight" type="Node2D" parent="Visual"]
+position = Vector2(205, -445)
+rotation = 1.25
+z_index = -2
+[node name="UpperArm" type="Sprite2D" parent="Visual/ArmBackRight"]
+position = Vector2(55, 65)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("10")
+[node name="ElbowPivot" type="Node2D" parent="Visual/ArmBackRight"]
+position = Vector2(105, 125)
+rotation = 0.4
+[node name="Forearm" type="Sprite2D" parent="Visual/ArmBackRight/ElbowPivot"]
+position = Vector2(45, 60)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("11")
+[node name="WristPivot" type="Node2D" parent="Visual/ArmBackRight/ElbowPivot"]
+position = Vector2(95, 115)
+[node name="HandKatana" type="Sprite2D" parent="Visual/ArmBackRight/ElbowPivot/WristPivot"]
+position = Vector2(75, 0)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("12")
+
+[node name="ArmMidLeft" type="Node2D" parent="Visual"]
+position = Vector2(-220, -345)
+rotation = -0.75
+z_index = -1
+[node name="UpperArm" type="Sprite2D" parent="Visual/ArmMidLeft"]
+position = Vector2(-55, 65)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("7")
+[node name="ElbowPivot" type="Node2D" parent="Visual/ArmMidLeft"]
+position = Vector2(-105, 125)
+rotation = -0.15
+[node name="Forearm" type="Sprite2D" parent="Visual/ArmMidLeft/ElbowPivot"]
+position = Vector2(-45, 60)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("8")
+[node name="WristPivot" type="Node2D" parent="Visual/ArmMidLeft/ElbowPivot"]
+position = Vector2(-95, 115)
+[node name="HandKatana" type="Sprite2D" parent="Visual/ArmMidLeft/ElbowPivot/WristPivot"]
+position = Vector2(-75, 0)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("9")
+
+[node name="ArmMidRight" type="Node2D" parent="Visual"]
+position = Vector2(220, -345)
+rotation = 0.75
+z_index = -1
+[node name="UpperArm" type="Sprite2D" parent="Visual/ArmMidRight"]
+position = Vector2(55, 65)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("10")
+[node name="ElbowPivot" type="Node2D" parent="Visual/ArmMidRight"]
+position = Vector2(105, 125)
+rotation = 0.15
+[node name="Forearm" type="Sprite2D" parent="Visual/ArmMidRight/ElbowPivot"]
+position = Vector2(45, 60)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("11")
+[node name="WristPivot" type="Node2D" parent="Visual/ArmMidRight/ElbowPivot"]
+position = Vector2(95, 115)
+[node name="HandKatana" type="Sprite2D" parent="Visual/ArmMidRight/ElbowPivot/WristPivot"]
+position = Vector2(75, 0)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("12")
+
+[node name="ArmFrontLeft" type="Node2D" parent="Visual"]
+position = Vector2(-210, -245)
+rotation = -0.25
+z_index = 3
+[node name="UpperArm" type="Sprite2D" parent="Visual/ArmFrontLeft"]
+position = Vector2(-55, 65)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("7")
+[node name="ElbowPivot" type="Node2D" parent="Visual/ArmFrontLeft"]
+position = Vector2(-105, 125)
+rotation = 0.45
+[node name="Forearm" type="Sprite2D" parent="Visual/ArmFrontLeft/ElbowPivot"]
+position = Vector2(-45, 60)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("8")
+[node name="WristPivot" type="Node2D" parent="Visual/ArmFrontLeft/ElbowPivot"]
+position = Vector2(-95, 115)
+[node name="HandKatana" type="Sprite2D" parent="Visual/ArmFrontLeft/ElbowPivot/WristPivot"]
+position = Vector2(-75, 0)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("13")
+
+[node name="ArmFrontRight" type="Node2D" parent="Visual"]
+position = Vector2(210, -245)
+rotation = 0.25
+z_index = 3
+[node name="UpperArm" type="Sprite2D" parent="Visual/ArmFrontRight"]
+position = Vector2(55, 65)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("10")
+[node name="ElbowPivot" type="Node2D" parent="Visual/ArmFrontRight"]
+position = Vector2(105, 125)
+rotation = -0.45
+[node name="Forearm" type="Sprite2D" parent="Visual/ArmFrontRight/ElbowPivot"]
+position = Vector2(45, 60)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("11")
+[node name="WristPivot" type="Node2D" parent="Visual/ArmFrontRight/ElbowPivot"]
+position = Vector2(95, 115)
+[node name="HandKatana" type="Sprite2D" parent="Visual/ArmFrontRight/ElbowPivot/WristPivot"]
+position = Vector2(75, 0)
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("14")
+
+[node name="HeadPivot" type="Node2D" parent="Visual"]
+position = Vector2(0, -745)
+z_index = 4
+[node name="UpperSkullKabuto" type="Sprite2D" parent="Visual/HeadPivot"]
+scale = Vector2(0.72, 0.72)
+texture = ExtResource("2")
+texture_filter = 1
+[node name="JawPivot" type="Node2D" parent="Visual/HeadPivot"]
+position = Vector2(0, 135)
+[node name="LowerJaw" type="Sprite2D" parent="Visual/HeadPivot/JawPivot"]
+position = Vector2(0, 105)
+scale = Vector2(0.45, 0.45)
+texture = ExtResource("3")
+texture_filter = 1
+[node name="EyeFire" type="Node2D" parent="Visual/HeadPivot"]
+position = Vector2(0, 25)
+z_index = 6
+[node name="Left" type="Sprite2D" parent="Visual/HeadPivot/EyeFire"]
+position = Vector2(-70, 0)
+scale = Vector2(0.48, 0.48)
+texture = SubResource("EyeFireLeft")
+texture_filter = 1
+[node name="Right" type="Sprite2D" parent="Visual/HeadPivot/EyeFire"]
+position = Vector2(70, 0)
+scale = Vector2(0.48, 0.48)
+texture = SubResource("EyeFireRight")
+texture_filter = 1
+z_index = 3
+[node name="MouthFireLeft" type="Sprite2D" parent="Visual/HeadPivot/JawPivot"]
+position = Vector2(-122, 90)
+scale = Vector2(0.54, 0.54)
+texture = SubResource("MouthFireLeft")
+z_index = 3
+[node name="MouthFireRight" type="Sprite2D" parent="Visual/HeadPivot/JawPivot"]
+position = Vector2(122, 90)
+scale = Vector2(0.54, 0.54)
+texture = SubResource("MouthFireRight")
+z_index = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -125)
+shape = SubResource("BossShape")
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("4")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -125)
+shape = SubResource("BossShape")
+[node name="ContactDamageArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ContactDamageArea"]
+position = Vector2(0, -125)
+shape = SubResource("BossShape")
+[node name="HealthBar" type="Node2D" parent="."]
+visible = false

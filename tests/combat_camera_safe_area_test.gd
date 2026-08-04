@@ -67,10 +67,10 @@ func _check_player_safe_area(game: Node, scene_path: String, is_boss: bool) -> v
 	var map := game.get("current_map") as Node
 	var spawn := map.find_child("PlayerSpawn", true, false) as Node2D
 	if is_boss:
-		_expect(
-			spawn.position.y <= 600.0,
-			"%s boss spawn must use the Autumn battle vertical frame." % scene_path
-		)
+		if scene_path.ends_with("AutumnBossArena.tscn") and not scene_path.contains("Hell") and not scene_path.contains("Heaven"):
+			_expect(spawn.position.y <= 1360.0, "%s portrait boss spawn must remain on its floor." % scene_path)
+		else:
+			_expect(spawn.position.y <= 600.0, "%s boss spawn must use the Autumn battle vertical frame." % scene_path)
 	else:
 		var route := map.get_node_or_null("GeneratedRoute")
 		if route != null and route.has_method("get_floor_y_at"):

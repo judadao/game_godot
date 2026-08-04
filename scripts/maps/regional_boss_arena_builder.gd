@@ -6,6 +6,7 @@ const AUTUMN_TERRAIN_ATLAS := preload(
 )
 const FLOOR_REGION := Rect2(14, 320, 994, 170)
 const PLATFORM_REGION := Rect2(24, 684, 506, 198)
+const WOOD_PLATFORM_REGION := Rect2(548, 700, 450, 150)
 const ARENA_WIDTH := 1664.0
 const ARENA_HEIGHT := 900.0
 const FLOOR_TOP := 500.0
@@ -18,6 +19,17 @@ const PLATFORM_LANDING_MARGIN := 16.0
 @export var terrain_modulate := Color.WHITE
 @export var floor_region := FLOOR_REGION
 @export var platform_region := PLATFORM_REGION
+@export var perimeter_boss_layout := false
+@export var vary_platform_art := false
+@export var layout_seed := 87031
+@export_range(0.2, 1.0, 0.01) var floor_art_scale_y := 1.0
+@export_range(0.2, 0.8, 0.01) var platform_art_scale_y := 0.45
+@export var build_floor_art := true
+@export var arena_width := ARENA_WIDTH
+@export var arena_height := ARENA_HEIGHT
+@export var floor_top := FLOOR_TOP
+@export var portrait_boss_layout := false
+@export var preserve_backdrop_aspect := false
 
 const PLATFORM_SPECS := [
 	[Vector2(300, 390), 250.0],
@@ -28,14 +40,42 @@ const PLATFORM_SPECS := [
 	[Vector2(730, 205), 205.0],
 	[Vector2(985, 205), 205.0],
 ]
+const PERIMETER_PLATFORM_SPECS := [
+	[Vector2(832, 120), 196.0],
+	[Vector2(1090, 240), 205.0],
+	[Vector2(570, 315), 205.0],
+	[Vector2(330, 400), 218.0],
+	[Vector2(1340, 365), 218.0],
+	[Vector2(520, 480), 220.0],
+	[Vector2(1150, 475), 220.0],
+]
+const PORTRAIT_PLATFORM_SPECS := [
+	[Vector2(960, 1100), 380.0],
+	[Vector2(600, 1160), 360.0],
+	[Vector2(1320, 1160), 360.0],
+	[Vector2(420, 1220), 400.0],
+	[Vector2(1500, 1220), 400.0],
+	[Vector2(560, 1280), 380.0],
+	[Vector2(1360, 1280), 380.0],
+]
 
 
 func _ready() -> void:
 	_fit_backdrop()
-	_build_floor_art()
-	for index in PLATFORM_SPECS.size():
-		var spec: Array = PLATFORM_SPECS[index]
-		_build_platform(index, spec[0] as Vector2, float(spec[1]))
+	if build_floor_art:
+		_build_floor_art()
+	var platform_specs := PORTRAIT_PLATFORM_SPECS if portrait_boss_layout else (PERIMETER_PLATFORM_SPECS if perimeter_boss_layout else PLATFORM_SPECS)
+	var layout_rng := RandomNumberGenerator.new()
+	layout_rng.seed = layout_seed
+	for index in platform_specs.size():
+		var spec: Array = platform_specs[index]
+		var platform_position := spec[0] as Vector2
+		var platform_width := float(spec[1])
+		if perimeter_boss_layout or portrait_boss_layout:
+			var random_y := 0 if portrait_boss_layout else layout_rng.randi_range(-6, 6)
+			platform_position += Vector2(layout_rng.randi_range(-14, 14), random_y)
+			platform_width += float(layout_rng.randi_range(-18, 18))
+		_build_platform(index, platform_position, platform_width)
 
 
 func _fit_backdrop() -> void:
@@ -45,11 +85,12 @@ func _fit_backdrop() -> void:
 	var texture_size := backdrop.texture.get_size()
 	if texture_size.x <= 0.0 or texture_size.y <= 0.0:
 		return
-	backdrop.position = Vector2(ARENA_WIDTH * 0.5, ARENA_HEIGHT * 0.5)
-	backdrop.scale = Vector2(
-		ARENA_WIDTH / texture_size.x,
-		ARENA_HEIGHT / texture_size.y
-	)
+	backdrop.position = Vector2(arena_width * 0.5, arena_height * 0.5)
+	if preserve_backdrop_aspect:
+		var cover_scale := maxf(arena_width / texture_size.x, arena_height / texture_size.y)
+		backdrop.scale = Vector2.ONE * cover_scale
+	else:
+		backdrop.scale = Vector2(arena_width / texture_size.x, arena_height / texture_size.y)
 
 
 func _build_platform(index: int, platform_position: Vector2, width: float) -> void:
@@ -71,15 +112,20 @@ func _build_platform(index: int, platform_position: Vector2, width: float) -> vo
 		Vector2(width * 0.42, 22), Vector2(-width * 0.42, 22),
 	])
 	visual.color = platform_color
+	visual.visible = terrain_texture == null
 	visual.z_index = 8
 	platform.add_child(visual)
 	if terrain_texture != null:
 		var art := Sprite2D.new()
 		art.name = "TerrainPlatformArt"
-		art.texture = _atlas_texture(platform_region)
-		art.position = Vector2(0, -5.0 + platform_region.size.y * 0.225)
-		art.scale = Vector2(width / platform_region.size.x, 0.45)
+		var chosen_region := WOOD_PLATFORM_REGION if vary_platform_art and index % 3 == 1 else platform_region
+		art.texture = _atlas_texture(chosen_region)
+		art.position = Vector2(0, -5.0 + chosen_region.size.y * platform_art_scale_y * 0.5)
+		art.scale = Vector2(width / chosen_region.size.x, platform_art_scale_y)
 		art.modulate = terrain_modulate
+		if vary_platform_art:
+			art.flip_h = index % 2 == 1
+			art.modulate *= Color(0.94 + float(index % 3) * 0.03, 0.95, 1.0, 1.0)
 		art.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		art.z_index = 9
 		platform.add_child(art)
@@ -87,6 +133,7 @@ func _build_platform(index: int, platform_position: Vector2, width: float) -> vo
 	rim.points = PackedVector2Array([Vector2(-width * 0.5, -5), Vector2(width * 0.5, -5)])
 	rim.width = 7.0
 	rim.default_color = rim_color
+	rim.visible = terrain_texture == null
 	rim.z_index = 10
 	platform.add_child(rim)
 	add_child(platform)
@@ -102,8 +149,8 @@ func _build_floor_art() -> void:
 	var panel := Sprite2D.new()
 	panel.name = "TerrainFloorPanel01"
 	panel.texture = _atlas_texture(safe_region)
-	panel.position = Vector2(ARENA_WIDTH * 0.5, FLOOR_TOP + safe_region.size.y * 0.5)
-	panel.scale = Vector2(ARENA_WIDTH / safe_region.size.x, 1.0)
+	panel.position = Vector2(arena_width * 0.5, floor_top + safe_region.size.y * floor_art_scale_y * 0.5)
+	panel.scale = Vector2(arena_width / safe_region.size.x, floor_art_scale_y)
 	panel.modulate = terrain_modulate
 	panel.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	panel.z_index = 6

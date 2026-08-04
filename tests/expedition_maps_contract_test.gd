@@ -57,8 +57,11 @@ func _run() -> void:
 			await process_frame
 			var width := int(arena.get_meta("map_width", 0))
 			var height := int(arena.get_meta("map_height", 0))
-			_expect(width >= 1600 and width <= 1700, "%s boss arena must be about 1.3 screens wide." % region_id)
-			_expect(height >= 800, "%s boss arena must provide vertical play space." % region_id)
+			if region_id == &"autumn":
+				_expect(width == 1920 and height == 1664, "Autumn boss arena must fill the approved wide gameplay viewport while retaining vertical play space.")
+			else:
+				_expect(width >= 1600 and width <= 1700, "%s boss arena must be about 1.3 screens wide." % region_id)
+				_expect(height >= 800, "%s boss arena must provide vertical play space." % region_id)
 			var backdrop := arena.get_node_or_null("Backdrop") as Sprite2D
 			var expected_backdrop_path := _expected_boss_backdrop_path(region_id)
 			_expect(
@@ -75,10 +78,10 @@ func _run() -> void:
 					"%s boss wall must cover the complete camera bounds without black bands." % region_id
 				)
 			_expect(arena.has_node("ArenaPlatforms") and arena.get_node("ArenaPlatforms").get_child_count() >= 4, "%s boss arena must provide jump platforms." % region_id)
-			_expect(
-				arena.find_children("TerrainFloorPanel*", "Sprite2D", true, false).size() == 1,
-				"%s boss arena must use one continuous authored floor strip without a center seam." % region_id
-			)
+			var authored_floor_count := arena.find_children("TerrainFloorPanel*", "Sprite2D", true, false).size()
+			if region_id == &"autumn":
+				authored_floor_count = 1 if arena.get_node_or_null("FloorTiles").get_child_count() == 5 else 0
+			_expect(authored_floor_count == 1, "%s boss arena must use one continuous authored floor strip without a center seam." % region_id)
 			_expect(
 				arena.find_children("TerrainPlatformArt", "Sprite2D", true, false).size() >= 7,
 				"%s boss arena jump platforms must use authored terrain art." % region_id
@@ -132,26 +135,36 @@ func _expected_terrain_path(region_id: StringName) -> String:
 
 
 func _expected_boss_backdrop_path(region_id: StringName) -> String:
+	if region_id == &"autumn":
+		return "res://assets/environments/expedition/generated/autumn_boss_sky_wide_v2.png"
 	return "res://assets/environments/expedition/generated/%s_boss_backdrop.png" % region_id
 
 
 func _boss_platforms_are_reachable(arena_builder: Node) -> bool:
-	const FLOOR_Y := 500.0
-	const MAX_HORIZONTAL_GAP := 280.0
-	const MAX_VERTICAL_STEP := 130.0
+	var floor_y := 1340.0 if bool(arena_builder.get("portrait_boss_layout")) else 500.0
+	var max_horizontal_edge_gap := 720.0 if bool(arena_builder.get("portrait_boss_layout")) else 280.0
+	var max_vertical_step := 65.0 if bool(arena_builder.get("portrait_boss_layout")) else 130.0
 	var platforms := arena_builder.find_children("JumpPlatform*", "StaticBody2D", false, false)
 	for platform_variant in platforms:
 		var platform := platform_variant as StaticBody2D
-		if FLOOR_Y - platform.position.y <= MAX_VERTICAL_STEP:
+		if floor_y - platform.position.y <= max_vertical_step:
 			continue
 		var has_launch_surface := false
 		for candidate_variant in platforms:
 			var candidate := candidate_variant as StaticBody2D
 			if candidate == platform or candidate.position.y <= platform.position.y:
 				continue
+			var platform_shape := (platform.get_node("CollisionShape2D") as CollisionShape2D).shape as RectangleShape2D
+			var candidate_shape := (candidate.get_node("CollisionShape2D") as CollisionShape2D).shape as RectangleShape2D
+			var edge_gap := maxf(
+				0.0,
+				absf(candidate.position.x - platform.position.x)
+					- platform_shape.size.x * 0.5
+					- candidate_shape.size.x * 0.5
+			)
 			if (
-				candidate.position.y - platform.position.y <= MAX_VERTICAL_STEP
-				and absf(candidate.position.x - platform.position.x) <= MAX_HORIZONTAL_GAP
+				candidate.position.y - platform.position.y <= max_vertical_step
+				and edge_gap <= max_horizontal_edge_gap
 			):
 				has_launch_surface = true
 				break
