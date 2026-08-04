@@ -653,6 +653,10 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
   lists、status/equipment slots、detail panels、equip action
 - public projection API：`set_items()`、`set_player_status()`、
   `set_equipment_entries()`、`set_sword_souls()`、`set_codex_entries()`
+- technique ordering：`set_codex_entries()` 對 39 招使用 projection 的
+  `skill_series_rank`／`tier_rank` 重建 13 組 catalog 順序；系列標題列不可選，
+  每組招式列固定為基本／進階／大師，且 row-to-entry mapping 必須保持 keyboard、
+  programmatic selection 與 scroll-to-selection 正確
 - action boundary：`equip_requested(item_id)`；父 Game 驗證、mutation、save 與 refresh
 - empty/selection/focus：每頁 deterministic initial focus；同一時間恰好一個 page visible
 - safe area：底部保留 32px page-curl inset；Codex Info 的 Panel 內嵌 vertical

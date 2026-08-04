@@ -23,11 +23,14 @@ func _run() -> void:
 	var tier_counts := {"basic": 0, "advanced": 0, "master": 0}
 	var series_counts: Dictionary = {}
 	var vfx_catalog := game.get("named_skill_vfx_catalog") as RefCounted
+	var projection_index := 0
 	for entry_variant in projection:
 		var entry := entry_variant as Dictionary
 		var entry_id := String(entry.get("id", ""))
 		var tier := String(entry.get("tier", ""))
 		var series_id := String(entry.get("skill_series_id", ""))
+		var series_rank := int(entry.get("skill_series_rank", -1))
+		var tier_rank := int(entry.get("tier_rank", 0))
 		_expect(not entry_id.is_empty() and not entries_by_id.has(entry_id), "Technique IDs must be stable and unique: %s." % entry_id)
 		entries_by_id[entry_id] = entry
 		_expect(String(entry.get("catalog_kind", "")) == "skill_series", "%s must identify the new catalog contract." % entry_id)
@@ -36,6 +39,11 @@ func _run() -> void:
 			tier_counts[tier] = int(tier_counts[tier]) + 1
 		series_counts[series_id] = int(series_counts.get(series_id, 0)) + 1
 		_expect(not String(entry.get("skill_series_name", "")).is_empty(), "%s must expose its series name." % entry_id)
+		_expect(
+			series_rank == projection_index / 3 and tier_rank == projection_index % 3 + 1,
+			"%s must project catalog series order and basic/advanced/master tier order; got series=%d tier=%d index=%d."
+				% [entry_id, series_rank, tier_rank, projection_index]
+		)
 		_expect(not String(entry.get("tier_label", "")).is_empty(), "%s must expose its Chinese tier label." % entry_id)
 		_expect(not String(entry.get("description", "")).is_empty(), "%s must expose the approved description." % entry_id)
 		_expect(String(entry.get("trigger_summary", "")).begins_with("動畫："), "%s must expose its approved continuous animation beats." % entry_id)
@@ -43,6 +51,7 @@ func _run() -> void:
 		var legacy_vfx_id := String(entry.get("named_vfx_id", ""))
 		_expect(not legacy_vfx_id.is_empty(), "%s needs a temporary existing VFX mapping." % entry_id)
 		_expect(bool(vfx_catalog.call("has_profile", legacy_vfx_id)), "%s maps to a missing legacy VFX profile: %s." % [entry_id, legacy_vfx_id])
+		projection_index += 1
 
 	_expect(series_counts.size() == 13, "Technique codex must expose all 13 skill series.")
 	for count_variant in series_counts.values():

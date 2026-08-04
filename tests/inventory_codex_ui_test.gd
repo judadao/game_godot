@@ -18,6 +18,7 @@ func _run() -> void:
 	var skill_catalog := (load("res://scripts/systems/skill_recipe_manager.gd") as Script).new() as RefCounted
 	_expect(bool(skill_catalog.call("load_catalog", "res://data/skills.json")), "Codex UI test requires the production skill catalog.")
 	var codex_entries := _make_codex_entries(skill_catalog)
+	codex_entries.reverse()
 	ui.call("set_codex_entries", codex_entries)
 	ui.call("set_mode", &"codex")
 	ui.call("open")
@@ -27,8 +28,28 @@ func _run() -> void:
 	ui.call("select_codex_entry", "flowing_fire_night")
 	await process_frame
 	var preview := ui.get_node("Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Preview")
+	var codex_rows := ui.get_node(
+		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Entries"
+	) as ItemList
 	_expect(ui.call("get_mode") == &"codex", "Codex mode must be selectable.")
 	_expect(ui.call("get_visible_codex_count") == 39, "Codex must list all 39 current skills.")
+	_expect(codex_rows.item_count == 52, "Codex must group 39 skills under 13 visible series headers.")
+	var expected_opening_rows := [
+		"劍雨系列", "基礎 · 戰律希聲", "進階 · 萬劍垂天", "大師 · 驟雨繁音",
+		"月輪系列", "基礎 · 月輪垂光", "進階 · 扶搖月輪", "大師 · 月蝕重輪",
+	]
+	for row_index in expected_opening_rows.size():
+		_expect(
+			codex_rows.get_item_text(row_index) == expected_opening_rows[row_index],
+			"Codex row %d must follow catalog series/tier order; got: %s"
+				% [row_index, codex_rows.get_item_text(row_index)]
+		)
+	_expect(
+		codex_rows.is_item_disabled(0)
+			and codex_rows.is_item_disabled(4)
+			and not codex_rows.is_item_disabled(1),
+		"Series headers must be non-selectable while skill rows remain selectable."
+	)
 	_expect(ui.call("get_selected_codex_id") == "flowing_fire_night", "Codex selection must use the new stable skill ID.")
 	_expect(preview.call("get_preview_kind") == "finisher", "New skills must use the temporary named-animation preview path.")
 	_expect(preview.call("get_active_named_vfx_id") == "inferno_cremation", "流火照夜 must temporarily reuse its mapped existing animation.")
@@ -119,15 +140,22 @@ func _expect(condition: bool, message: String) -> void:
 
 func _make_codex_entries(catalog: RefCounted) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
+	var series_ranks: Dictionary = {}
+	var ordered_series := catalog.call("get_all_series") as Array
+	for series_index in ordered_series.size():
+		series_ranks[String((ordered_series[series_index] as Dictionary).get("id", ""))] = series_index
 	for skill_variant in catalog.call("get_all_skills") as Array:
 		var skill := skill_variant as Dictionary
 		var tier_id := String(skill.get("tier", "basic"))
+		var series_id := String(skill.get("series_id", ""))
 		result.append({
 			"id": String(skill.get("id", "")),
 			"name": String(skill.get("name", "")),
 			"catalog_kind": "skill_series",
 			"category": "skills",
+			"skill_series_id": series_id,
 			"skill_series_name": String(skill.get("series_name", "")),
+			"skill_series_rank": int(series_ranks.get(series_id, 999)),
 			"tier": tier_id,
 			"tier_label": String(catalog.call("get_tier_label", tier_id)),
 			"tier_rank": int(skill.get("tier_rank", 1)),

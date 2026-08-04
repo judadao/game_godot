@@ -14,6 +14,7 @@ const MODE_SWORD_SOULS := &"sword_souls"
 const MODE_CODEX := &"codex"
 const LEGACY_MODE_INVENTORY := &"inventory"
 const CODEX_VIEW_LIVE := &"live"
+const CODEX_SERIES_HEADER_COLOR := Color(0.78, 0.57, 0.28, 1.0)
 const SUPPORTED_ELEMENTS := [
 	"water", "fire", "wind", "lightning", "ice", "poison", "light", "dark", "normal",
 ]
@@ -82,6 +83,8 @@ var current_mode := MODE_INVENTORY
 var selected_index := -1
 var _visible_items: Array[Dictionary] = []
 var _visible_codex: Array[Dictionary] = []
+var _codex_row_entry_indices: Array[int] = []
+var _codex_entry_rows: Array[int] = []
 var _codex_view_mode := CODEX_VIEW_LIVE
 var _active_codex_section := "techniques"
 var _active_concept_region := Rect2()
@@ -222,9 +225,10 @@ func set_category(category: String) -> void:
 func select_codex_entry(entry_id: String) -> void:
 	for index in _visible_codex.size():
 		if String(_visible_codex[index].get("id", "")) == entry_id:
-			codex_list.select(index)
-			call_deferred("_ensure_codex_selection_visible", index)
-			_on_codex_selected(index)
+			var row := _codex_entry_rows[index]
+			codex_list.select(row)
+			call_deferred("_ensure_codex_selection_visible", row)
+			_on_codex_selected(row)
 			return
 
 
@@ -263,9 +267,12 @@ func get_visible_codex_count() -> int:
 
 func get_selected_codex_id() -> String:
 	var selected := codex_list.get_selected_items()
-	if selected.is_empty() or selected[0] >= _visible_codex.size():
+	if selected.is_empty():
 		return ""
-	return String(_visible_codex[selected[0]].get("id", ""))
+	var entry_index := _codex_entry_index_for_row(selected[0])
+	if entry_index < 0:
+		return ""
+	return String(_visible_codex[entry_index].get("id", ""))
 
 
 func set_codex_view_mode(_mode: StringName) -> void:
@@ -402,18 +409,88 @@ func _refresh_codex_list() -> void:
 		return
 	codex_list.clear()
 	_visible_codex.clear()
+	_codex_row_entry_indices.clear()
+	_codex_entry_rows.clear()
 	var section := String(codex_filter.get_item_metadata(codex_filter.selected)) if codex_filter.item_count > 0 else "techniques"
+	var filtered_entries: Array[Dictionary] = []
 	for entry in codex_entries:
 		var entry_section := String(entry.get("section", "techniques"))
 		if entry_section != section:
 			continue
+		filtered_entries.append(entry)
+	if section == "techniques":
+		filtered_entries.sort_custom(_codex_technique_entry_less)
+	var active_series := ""
+	for entry in filtered_entries:
+		var is_series_skill := _is_series_codex_entry(entry)
+		var series_key := _codex_series_key(entry) if is_series_skill else ""
+		if is_series_skill and series_key != active_series:
+			active_series = series_key
+			var header_row := codex_list.add_item(
+				"%s系列" % String(entry.get("skill_series_name", "未分類"))
+			)
+			codex_list.set_item_disabled(header_row, true)
+			codex_list.set_item_selectable(header_row, false)
+			codex_list.set_item_custom_fg_color(header_row, CODEX_SERIES_HEADER_COLOR)
+			_codex_row_entry_indices.append(-1)
+		var visible_index := _visible_codex.size()
 		_visible_codex.append(entry)
-		codex_list.add_item(String(entry.get("name", "未知紀錄")), _load_icon(entry, DEFAULT_ITEM_ICON))
+		var row_label := (
+			"%s · %s" % [
+				String(entry.get("tier_label", "基礎")),
+				String(entry.get("name", "未知紀錄")),
+			]
+			if is_series_skill
+			else String(entry.get("name", "未知紀錄"))
+		)
+		var entry_row := codex_list.add_item(
+			row_label,
+			_load_icon(entry, DEFAULT_ITEM_ICON)
+		)
+		_codex_row_entry_indices.append(visible_index)
+		_codex_entry_rows.append(entry_row)
 	if _visible_codex.is_empty():
 		_clear_codex_details()
 	else:
-		codex_list.select(0)
-		_on_codex_selected(0)
+		codex_list.select(_codex_entry_rows[0])
+		_on_codex_selected(_codex_entry_rows[0])
+
+
+func _codex_technique_entry_less(left: Dictionary, right: Dictionary) -> bool:
+	var left_is_series := _is_series_codex_entry(left)
+	var right_is_series := _is_series_codex_entry(right)
+	if left_is_series != right_is_series:
+		return left_is_series
+	if not left_is_series:
+		return String(left.get("name", "")) < String(right.get("name", ""))
+	var left_rank := int(left.get("skill_series_rank", 999))
+	var right_rank := int(right.get("skill_series_rank", 999))
+	if left_rank != right_rank:
+		return left_rank < right_rank
+	var left_series := String(left.get("skill_series_name", ""))
+	var right_series := String(right.get("skill_series_name", ""))
+	if left_series != right_series:
+		return left_series < right_series
+	var left_tier := int(left.get("tier_rank", 999))
+	var right_tier := int(right.get("tier_rank", 999))
+	if left_tier != right_tier:
+		return left_tier < right_tier
+	return String(left.get("name", "")) < String(right.get("name", ""))
+
+
+func _is_series_codex_entry(entry: Dictionary) -> bool:
+	return String(entry.get("catalog_kind", "")) == "skill_series"
+
+
+func _codex_series_key(entry: Dictionary) -> String:
+	var series_id := String(entry.get("skill_series_id", ""))
+	return series_id if not series_id.is_empty() else String(entry.get("skill_series_name", ""))
+
+
+func _codex_entry_index_for_row(row: int) -> int:
+	if row < 0 or row >= _codex_row_entry_indices.size():
+		return -1
+	return _codex_row_entry_indices[row]
 
 
 func _on_item_selected(index: int) -> void:
@@ -460,7 +537,8 @@ func _on_soul_selected(index: int) -> void:
 	)
 
 
-func _on_codex_selected(index: int) -> void:
+func _on_codex_selected(row: int) -> void:
+	var index := _codex_entry_index_for_row(row)
 	if index < 0 or index >= _visible_codex.size():
 		return
 	var entry := _visible_codex[index]

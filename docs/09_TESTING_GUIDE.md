@@ -46,9 +46,11 @@ Inventory／Codex focused coverage：
   2560×1080、2560×1440 的整本等比 frame、page bounds、center gutter 與極值內容；
   `INVENTORY_JOURNAL_CAPTURE_DIR` 只在 graphical renderer 產生四章 review captures。
 - `inventory_codex_projection_test.gd`：`skills.json` 的 13 系列、39 招唯一 projection；
-  驗證 basic／advanced／master 各 13 招、中文名稱／定位／動畫節拍、退役被動與舊名稱
-  不再出現，以及每招暫用的精確 named VFX profile 確實存在。
-- `inventory_codex_ui_test.gd`：39 招 selection、系列／階級／元素／系列語彙文字、
+  驗證 catalog `skill_series_rank` 與 basic／advanced／master `tier_rank` 順序、各階 13 招、
+  中文名稱／定位／動畫節拍、退役被動與舊名稱不再出現，以及每招暫用的精確
+  named VFX profile 確實存在。
+- `inventory_codex_ui_test.gd`：以反轉輸入驗證 UI 仍重建 13 個不可選系列標題與每組
+  基本／進階／大師三列；另驗證 39 招 selection、系列／階級／元素／系列語彙文字、
   temporary VFX preview ownership，以及退役 concept controls 永遠隱藏、相容入口固定回到 live view。
 - `inventory_codex_layout_test.gd`：六解析度 panel/list/active visual/explanation geometry，
   並投影全部 39 招、逐一實例化其唯一暫用動畫，驗證 `320px` live frame 的水平完整 travel、

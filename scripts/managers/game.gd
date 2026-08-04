@@ -4355,6 +4355,11 @@ func _equipment_effect_summary(item: Dictionary) -> String:
 
 func _inventory_codex_projection() -> Array[Dictionary]:
 	var projection: Array[Dictionary] = []
+	var series_ranks: Dictionary = {}
+	var ordered_series := skill_recipe_manager.get_all_series()
+	for series_index in ordered_series.size():
+		var series_entry := ordered_series[series_index] as Dictionary
+		series_ranks[String(series_entry.get("id", ""))] = series_index
 	for skill_variant in skill_recipe_manager.get_all_skills():
 		var skill := skill_variant as Dictionary
 		var tier_rank := clampi(int(skill.get("tier_rank", 1)), 1, 3)
@@ -4364,13 +4369,15 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 		var elements := (skill.get("combat_elements", []) as Array).duplicate()
 		var animation_beats := skill.get("animation_beats", []) as Array
 		var legacy_vfx_id := String(skill.get("legacy_vfx_id", ""))
+		var series_id := String(skill.get("series_id", ""))
 		projection.append({
 			"id": String(skill.get("id", "")),
 			"name": String(skill.get("name", "未知招式")),
 			"catalog_kind": "skill_series",
 			"category": "skills",
-			"skill_series_id": String(skill.get("series_id", "")),
+			"skill_series_id": series_id,
 			"skill_series_name": series_name,
+			"skill_series_rank": int(series_ranks.get(series_id, 999)),
 			"tier": tier_id,
 			"tier_label": tier_label,
 			"tier_rank": tier_rank,

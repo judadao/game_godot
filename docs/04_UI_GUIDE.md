@@ -572,9 +572,11 @@ HUDLayer
 - 所有章節內容保留 32px painted page-curl safe inset；圖鑑長內容在固定 detail viewport
   內捲動，viewport 下方另保留 26px 無繪製 footer 與內容 BottomInset，不讓最後一行
   落入書頁捲邊或顯示半行
-- 圖鑑招式章左側固定列出 `skills.json` 的 39 招，不再混列目前普攻、四格手牌、
-  舊 passive trigger 或 32 個 Finisher recipe 名稱；右側只顯示現役 `LIVE VFX`，
-  退役 concept boards 不得重新進入玩家圖鑑
+- 圖鑑招式章左側固定列出 `skills.json` 的 39 招，依 catalog 的 13 個正式系列順序
+  分組；每組先顯示不可選取的「系列」標題，再固定排列基本／進階／大師三列。
+  UI 必須依 `skill_series_rank`／`tier_rank` 排序，不能依輸入順序或招式名稱碰巧排列。
+  列表不再混列目前普攻、四格手牌、舊 passive trigger 或 32 個 Finisher recipe 名稱；
+  右側只顯示現役 `LIVE VFX`，退役 concept boards 不得重新進入玩家圖鑑
 - 詳情區投影系列、基本／進階／大師階級、正式元素、系列識別語彙、定位、完整描述與
   animation beats；UI 不從名稱猜測傷害、AP、解鎖或升級規則，並明示「暫用既有動畫」
 - `InventoryCodexPreview` 等待 Container 提供有效尺寸後才生成 production VFX；
