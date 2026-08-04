@@ -73,9 +73,12 @@ func _run() -> void:
 	var effect_label := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Effect"
 	) as Label
+	var recipe_label := ui.get_node_or_null(
+		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Recipe"
+	) as Label
 	var description_label := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Description"
-	) as Label
+	) as RichTextLabel
 	var notes_label := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Trigger"
 	) as Label
@@ -88,29 +91,48 @@ func _run() -> void:
 	)
 	_expect(
 		growth != null
-			and growth.text.contains("系列語彙")
-			and growth.text.contains("特效狀態  暫用既有動畫"),
-		"Codex details must distinguish skill identity from its temporary VFX mapping; got: %s" % (growth.text if growth != null else "<missing>")
+			and growth.text.is_empty()
+			and not growth.visible,
+		"Technique details must hide the redundant series-vocabulary and VFX-status sections."
 	)
 	_expect(
 		effect_label != null
-			and effect_label.text.begins_with("效果\n")
-			and effect_label.text.contains("基礎火焰攻擊")
+			and effect_label.text.begins_with("效果與數值\n")
+			and effect_label.text.contains("攻擊力：目前普攻 + 56")
+			and not effect_label.text.contains("劍魂效果：")
+			and recipe_label != null
+			and recipe_label.text == "劍魂組合\n烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1）"
 			and description_label != null
-			and description_label.text.contains("流火先環繞角色")
-			and description_label.text.contains("持續燃燒區域")
+			and description_label.text.begins_with("[i]「")
+			and description_label.text.ends_with("」[/i]")
+			and description_label.get_parsed_text().contains("流火先環繞角色")
+			and description_label.get_parsed_text().contains("持續燃燒區域")
 			and notes_label != null
-			and notes_label.text.begins_with("說明\n")
-			and notes_label.text.contains("流火在角色周圍")
-			and notes_label.text.contains("貼地燃燒區"),
+			and notes_label.text.is_empty()
+			and not notes_label.visible,
 		"Codex must project the new skill role and description without stale card text; got effect=%s notes=%s" % [effect_label.text if effect_label != null else "<missing>", notes_label.text if notes_label != null else "<missing>"]
+	)
+	_expect(
+		description_label != null
+			and recipe_label != null
+			and effect_label != null
+			and description_label.get_index() < recipe_label.get_index()
+			and recipe_label.get_index() < effect_label.get_index(),
+		"Technique details must read as introduction, Sword Soul formula, then numerical effects."
 	)
 
 	ui.call("select_codex_entry", "celestial_feather_myriad")
 	await process_frame
 	_expect(ui.call("get_selected_codex_id") == "celestial_feather_myriad", "The Master feather skill must be selectable.")
 	_expect(meta.text.contains("系列  羽毛") and meta.text.contains("階級 大師"), "天羽萬象 must be classified as the Feather Master skill; got: %s" % meta.text)
-	_expect(notes_label.text.contains("細羽高速追擊") and notes_label.text.contains("巨型天羽垂直墜落"), "天羽萬象 must expose its new authored choreography description; got: %s" % notes_label.text)
+	_expect(
+		description_label.get_parsed_text().contains("細羽追擊")
+			and description_label.get_parsed_text().contains("巨型天羽垂直墜落")
+			and notes_label.text.is_empty()
+			and not notes_label.visible,
+		"天羽萬象 must place its authored introduction in the leading italic quote without an animation subsection; got: %s"
+			% description_label.get_parsed_text()
+	)
 
 	_expect(
 		ui.has_method("set_codex_view_mode")
@@ -157,6 +179,7 @@ func _make_codex_entries(catalog: RefCounted) -> Array[Dictionary]:
 		var skill := skill_variant as Dictionary
 		var tier_id := String(skill.get("tier", "basic"))
 		var series_id := String(skill.get("series_id", ""))
+		var is_flowing_fire := String(skill.get("id", "")) == "flowing_fire_night"
 		result.append({
 			"id": String(skill.get("id", "")),
 			"name": String(skill.get("name", "")),
@@ -169,9 +192,16 @@ func _make_codex_entries(catalog: RefCounted) -> Array[Dictionary]:
 			"tier_label": String(catalog.call("get_tier_label", tier_id)),
 			"tier_rank": int(skill.get("tier_rank", 1)),
 			"description": String(skill.get("description", "")),
-			"effect_summary": String(skill.get("positioning", "")),
-			"trigger_summary": "動畫：%s" % " → ".join(skill.get("animation_beats", []) as Array),
-			"identity_elements": (skill.get("series_identity_elements", []) as Array).duplicate(),
+			"recipe_summary": (
+				"烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1）"
+				if is_flowing_fire
+				else "測試劍魂（未持有） → 測試劍魂（未持有） → 測試劍魂（未持有）"
+			),
+			"effect_summary": (
+				"定位：基礎火焰攻擊\n攻擊力：目前普攻 + 56\n附加效果：燃燒傷害 5"
+				if is_flowing_fire
+				else "定位：%s\n攻擊力：目前普攻 + 28" % String(skill.get("positioning", ""))
+			),
 			"elements": (skill.get("combat_elements", []) as Array).duplicate(),
 			"element": String((skill.get("combat_elements", ["normal"]) as Array)[0]),
 			"preview_kind": "finisher",

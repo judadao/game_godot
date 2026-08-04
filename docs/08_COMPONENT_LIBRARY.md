@@ -629,7 +629,8 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
   skill catalog，包含系列、基本／進階／大師階級、定位、描述與動畫節拍
 - compatibility：39 招暫時以 `legacy_vfx_map` 重用既有 named VFX；component 只播放
   `named_vfx_id`，不得用 profile display name 或舊 trigger 類型改寫招式資料
-- fit contract：live frame 邏輯高度至少 `320px`；命名終結技以 authored diameter、
+- fit contract：live frame 使用 `190px` 橫向施放舞台，人物位於左側並縮小、招式在
+  同一平地向右施放；命名終結技以 authored diameter、
   完整 travel 與 `0.82` ground anchor 計算縮放／起點，不受舊 `preview_scale` 縮小上限
   限制；圖鑑可把 world directional travel 壓到最多 `220px`，但不可改戰鬥移動距離，
   所有主體和軌跡須放到最大安全尺寸並留在 clip rect
@@ -659,6 +660,10 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
   programmatic selection 與 scroll-to-selection 正確
 - series header state：深色底條搭配亮金文字，不設 disabled；只用 non-selectable
   保留完整對比並阻止 selection
+- technique detail order：`description` 直接以書名號與斜體顯示 1～2 句引言，
+  `recipe_summary` 顯示三張劍魂順序及編成／持有狀態，`effect_summary` 顯示普攻基底
+  加成、組合總效果與終結特性；招式頁不顯示系列語彙、特效狀態、逐張劍魂效果或
+  演出流程。`Recipe` 是 editor-authored Label，不由 runtime 重建
 - action boundary：`equip_requested(item_id)`；父 Game 驗證、mutation、save 與 refresh
 - empty/selection/focus：每頁 deterministic initial focus；同一時間恰好一個 page visible
 - safe area：底部保留 32px page-curl inset；Codex Info 的 Panel 內嵌 vertical

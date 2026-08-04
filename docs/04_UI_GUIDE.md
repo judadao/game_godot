@@ -579,18 +579,22 @@ HUDLayer
   UI 必須依 `skill_series_rank`／`tier_rank` 排序，不能依輸入順序或招式名稱碰巧排列。
   列表不再混列目前普攻、四格手牌、舊 passive trigger 或 32 個 Finisher recipe 名稱；
   右側只顯示現役 `LIVE VFX`，退役 concept boards 不得重新進入玩家圖鑑
-- 詳情區投影系列、基本／進階／大師階級、正式元素、系列識別語彙、定位、完整描述與
-  animation beats；UI 不從名稱猜測傷害、AP、解鎖或升級規則，並明示「暫用既有動畫」
+- 詳情區投影系列、基本／進階／大師階級、正式元素與定位；招式內容固定依「斜體引言
+  → 三張劍魂組合 → 整體效果與數值」排列。引言直接以書名號和斜體置頂，不另設標題；
+  劍魂組合逐張標示已編成等級、已持有未編成或未持有。效果區只列目前普攻基底的
+  攻擊力加成、組合後的總效果與終結特性，不顯示系列語彙、特效狀態、逐張劍魂效果
+  或演出流程；最終數值仍註明會受劍魂等級、裝備與祝福調整
 - `InventoryCodexPreview` 等待 Container 提供有效尺寸後才生成 production VFX；
   劍氣使用 preview-local 起點／終點，resize 時重建，不能混入 viewport stretch
-  座標或逃出 `clip_contents`。Live frame 邏輯高度至少 `320px`；命名終結技依
+  座標或逃出 `clip_contents`。Live frame 使用 `190px` 橫向施放舞台，人物縮小並位於
+  左側、招式在同一平地向右施放，為下方敘述保留較大空間；命名終結技依
   `380px` authored diameter、完整水平 travel 與 `0.82` ground anchor 自動縮放、
   左移方向性起點並貼齊預覽地面；Codex fit 不受舊 `preview_scale` 的縮小上限限制，
   世界方向位移在圖鑑中最多壓縮為 `220px`（不改戰鬥距離），並在安全範圍內放到最大，
   不能只放大外框後繼續裁掉或縮小招式
 - 每招依 `legacy_vfx_map` 投影精確 `named_vfx_id`，暫時重用既有
-  `NamedSkillVFX.tscn` profile；mapping 是 presentation compatibility，不得使舊 profile
-  display name、trigger 類型或 Combo recipe 重新成為圖鑑內容權威
+  `NamedSkillVFX.tscn` profile，並由同 ID 的正式 Combo recipe 提供劍魂順序與 mechanics；
+  舊 profile 的 display name／trigger 類型不可改寫新招式名稱、系列、引言或演出內容
 - 39 招即使尚未有獨立 icon 也不能從列表消失；空 `icon_path` 使用既有 curated journal
   fallback。未來加入正式圖示時由 catalog path 覆蓋，不在 UI 以名稱硬編 icon
 

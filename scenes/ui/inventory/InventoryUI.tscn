@@ -543,12 +543,12 @@ theme_override_constants/separation = 7
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.14, 0.1, 1)
 theme_override_font_sizes/font_size = 21
-text = "現有劍魂 · OWNED SWORD SOULS"
+text = "持有劍魂 · OWNED SWORD SOULS"
 
 [node name="Hint" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Browser"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.35, 0.25, 0.16, 1)
-text = "每一枚劍魂皆保留獨立等級與印記。"
+text = "目前編成 0 / 4；每枚劍魂保留獨立等級與印記。"
 autowrap_mode = 2
 
 [node name="Entries" type="ItemList" parent="Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Browser"]
@@ -698,7 +698,7 @@ theme_override_styles/pressed = SubResource("tab_pressed")
 text = "CONCEPT ART"
 
 [node name="Preview" type="Control" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details"]
-custom_minimum_size = Vector2(0, 320)
+custom_minimum_size = Vector2(0, 190)
 layout_mode = 2
 script = ExtResource("2")
 
@@ -771,9 +771,17 @@ theme_override_colors/font_color = Color(0.37, 0.27, 0.13, 1)
 theme_override_font_sizes/font_size = 13
 autowrap_mode = 2
 
-[node name="Description" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
+[node name="Description" type="RichTextLabel" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_colors/font_color = Color(0.2, 0.15, 0.11, 1)
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="Recipe" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.34, 0.19, 0.07, 1)
 autowrap_mode = 2
 
 [node name="Effect" type="Label" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content"]

@@ -2426,11 +2426,16 @@ func _combo_chain_stack_for_card(card: Dictionary) -> int:
 
 func _build_formula_finisher(
 	base_attack: Dictionary,
-	finisher_entry: Dictionary = {}
+	finisher_entry: Dictionary = {},
+	include_runtime_modifiers: bool = true
 ) -> Dictionary:
 	var finisher := base_attack.duplicate(true)
 	var effect := (finisher.get("effect", {}) as Dictionary).duplicate(true)
-	var gift_effects := divine_gift_manager.call("get_global_effects") as Dictionary
+	var gift_effects: Dictionary = (
+		divine_gift_manager.call("get_global_effects") as Dictionary
+		if include_runtime_modifiers
+		else {}
+	)
 	var recipe := finisher_entry
 	if recipe.is_empty():
 		var pending_queue := run_state.temporary_buffs.get(
@@ -2554,10 +2559,11 @@ func _build_formula_finisher(
 					0.0,
 					float(formula_effect.get("amount", 0.0)) * 0.25
 				)
-	var stacks := run_state.temporary_buffs.get(
-		"persistent_combo_stacks",
-		{}
-	) as Dictionary
+	var stacks: Dictionary = (
+		run_state.temporary_buffs.get("persistent_combo_stacks", {}) as Dictionary
+		if include_runtime_modifiers
+		else {}
+	)
 	var total_stacks := 0
 	for stack_value in stacks.values():
 		total_stacks += maxi(0, int(stack_value))
@@ -2585,9 +2591,11 @@ func _build_formula_finisher(
 		0,
 		int(gift_effects.get("finisher_echoes", 0))
 	)
-	var mutations := divine_gift_manager.call(
-		"get_finisher_mutations"
-	) as Dictionary
+	var mutations: Dictionary = (
+		divine_gift_manager.call("get_finisher_mutations") as Dictionary
+		if include_runtime_modifiers
+		else {}
+	)
 	for mutation_key in [
 		"burn_damage", "burn_duration", "frost_ratio",
 		"frost_duration", "poison_damage", "poison_duration",
@@ -2612,13 +2620,19 @@ func _build_formula_finisher(
 	)
 	if bool(effect.get("piercing", false)):
 		effect["target_count"] = maxi(6, int(effect.get("target_count", 1)))
-	var blessing_overlays := _build_finisher_blessing_overlays()
+	var blessing_overlays: Array[Dictionary] = []
+	if include_runtime_modifiers:
+		blessing_overlays = _build_finisher_blessing_overlays()
 	for blessing_overlay_variant in blessing_overlays:
 		var blessing_overlay := blessing_overlay_variant as Dictionary
 		for gift_element_variant in blessing_overlay.get("elements", []) as Array:
 			_append_vfx_element(elements, String(gift_element_variant))
 	var recipe_name := String(recipe.get("name", "Finisher"))
-	var epithet := String(divine_gift_manager.call("get_epithet_prefix"))
+	var epithet := (
+		String(divine_gift_manager.call("get_epithet_prefix"))
+		if include_runtime_modifiers
+		else ""
+	)
 	finisher["id"] = String(recipe.get("id", "divine_finale"))
 	finisher["name"] = "%s%s" % [epithet, recipe_name]
 	finisher["effect"] = effect
@@ -4367,8 +4381,8 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 		var tier_label := skill_recipe_manager.get_tier_label(tier_id)
 		var series_name := String(skill.get("series_name", "未分類"))
 		var elements := (skill.get("combat_elements", []) as Array).duplicate()
-		var animation_beats := skill.get("animation_beats", []) as Array
 		var legacy_vfx_id := String(skill.get("legacy_vfx_id", ""))
+		var combo_recipe := combo_finisher_catalog.call("get_recipe", legacy_vfx_id) as Dictionary
 		var series_id := String(skill.get("series_id", ""))
 		projection.append({
 			"id": String(skill.get("id", "")),
@@ -4383,9 +4397,8 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"tier_rank": tier_rank,
 			"kind_label": "%s系列 · %s招式" % [series_name, tier_label],
 			"description": String(skill.get("description", "")),
-			"effect_summary": String(skill.get("positioning", "")),
-			"trigger_summary": "動畫：%s" % " → ".join(animation_beats),
-			"identity_elements": (skill.get("series_identity_elements", []) as Array).duplicate(),
+			"recipe_summary": _inventory_skill_recipe_summary(combo_recipe),
+			"effect_summary": _inventory_skill_effect_summary(skill, combo_recipe),
 			"icon_path": (
 				String(skill.get("icon_path", ""))
 				if not String(skill.get("icon_path", "")).is_empty()
@@ -4404,6 +4417,96 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"combo_stack": (tier_rank - 1) * 3,
 		})
 	return projection
+
+
+func _inventory_skill_recipe_summary(recipe: Dictionary) -> String:
+	var names: Array[String] = []
+	for card_id_variant in recipe.get("sequence", []) as Array:
+		var card_id := String(card_id_variant)
+		var card := card_database.get_card(card_id)
+		if card.is_empty():
+			continue
+		names.append("%s（%s）" % [
+			_localized_text(card, "name"),
+			_inventory_sword_soul_ownership_label(card_id),
+		])
+	return " → ".join(names) if not names.is_empty() else "尚未設定"
+
+
+func _inventory_sword_soul_ownership_label(card_id: String) -> String:
+	var highest_level := 0
+	for instance in meta_state.selected_card_instances:
+		if instance != null and instance.card_id == card_id:
+			highest_level = maxi(highest_level, instance.level)
+	if highest_level > 0:
+		return "已編成 Lv.%d" % highest_level
+	if meta_state.unlocked_cards.has(card_id):
+		return "已持有・未編成"
+	return "未持有"
+
+
+func _inventory_skill_effect_summary(skill: Dictionary, recipe: Dictionary) -> String:
+	var lines: Array[String] = ["定位：%s" % String(skill.get("positioning", "未分類"))]
+	if recipe.is_empty():
+		lines.append("攻擊力：依招式內容動態計算")
+		return "\n".join(lines)
+
+	var base_effect := recipe.get("base_effect", {}) as Dictionary
+	var formula_cards: Array[Dictionary] = []
+	for card_id_variant in recipe.get("sequence", []) as Array:
+		var card := card_database.get_card(String(card_id_variant))
+		if not card.is_empty():
+			formula_cards.append(card)
+	var preview_recipe := recipe.duplicate(true)
+	preview_recipe["formula_cards"] = formula_cards
+	var preview_finisher := _build_formula_finisher(
+		{
+			"id": "codex_formula_preview",
+			"name": String(skill.get("name", "招式")),
+			"effect": {"kind": "damage", "amount": 0},
+			"auto_attack_range": COMBO_FINISHER_RANGE,
+			"attack_size_multiplier": 1.0,
+		},
+		preview_recipe,
+		false
+	)
+	var resolved_effect := (preview_finisher.get("effect", {}) as Dictionary).duplicate(true)
+	var attack_power := maxi(0, int(resolved_effect.get("amount", 0)))
+	if attack_power <= 0:
+		lines.append("攻擊力：0（非傷害招式）")
+	else:
+		lines.append("攻擊力：目前普攻 + %d" % attack_power)
+	resolved_effect.erase("amount")
+	resolved_effect.erase("kind")
+	resolved_effect.erase("direction_count")
+	resolved_effect.erase("target_count")
+	resolved_effect.erase("spread_degrees")
+	if base_effect.has("size_multiplier"):
+		resolved_effect["size_multiplier"] = base_effect["size_multiplier"]
+	var resolved_summary := _card_effect_summary(resolved_effect) if not resolved_effect.is_empty() else ""
+	if not resolved_summary.is_empty() and resolved_summary != "依招式內容動態計算":
+		lines.append("附加效果：%s" % resolved_summary)
+	var traits := _inventory_finisher_trait_labels(resolved_effect)
+	if not traits.is_empty():
+		lines.append("終結特性：%s" % "、".join(traits))
+	lines.append("最終數值會依劍魂等級、裝備與祝福調整。")
+	return "\n".join(lines)
+
+
+func _inventory_finisher_trait_labels(effect: Dictionary) -> Array[String]:
+	var labels: Array[String] = []
+	var definitions := {
+		"piercing": "貫穿",
+		"returning_projectiles": "回返彈體",
+		"shatter": "碎裂",
+		"death_spread": "擊倒擴散",
+		"chain_lightning": "連鎖雷擊",
+		"final_burst": "終段爆發",
+	}
+	for key in definitions:
+		if bool(effect.get(key, false)):
+			labels.append(String(definitions[key]))
+	return labels
 
 
 func _inventory_legacy_codex_projection() -> Array[Dictionary]:
@@ -4694,6 +4797,12 @@ func _card_effect_summary(effect: Dictionary) -> String:
 		parts.append("%s %d" % [amount_label, int(effect["amount"])])
 	if effect.has("heal"):
 		parts.append("每次恢復 %d 生命" % int(effect["heal"]))
+	if int(effect.get("finisher_heal", 0)) > 0:
+		parts.append("恢復 %d 生命" % int(effect["finisher_heal"]))
+	if int(effect.get("finisher_guard", 0)) > 0:
+		parts.append("獲得 %d 格擋" % int(effect["finisher_guard"]))
+	if float(effect.get("finisher_energy", 0.0)) > 0.0:
+		parts.append("恢復 %.1f AP" % float(effect["finisher_energy"]))
 	if effect.has("pulses"):
 		parts.append("生效 %d 次" % int(effect["pulses"]))
 	if effect.has("interval"):
@@ -4730,6 +4839,12 @@ func _card_effect_summary(effect: Dictionary) -> String:
 		parts.append("散射角度 %.0f 度" % float(effect["spread_degrees"]))
 	if effect.has("combo_stun"):
 		parts.append("暈眩 %.2f 秒" % float(effect["combo_stun"]))
+	if int(effect.get("projectile_count", 1)) > 1:
+		parts.append("攻擊段數 %d" % int(effect["projectile_count"]))
+	if float(effect.get("damage_reduction", 0.0)) > 0.0:
+		parts.append("傷害減免 %d%%" % roundi(float(effect["damage_reduction"]) * 100.0))
+	if int(effect.get("super_armor_tier", 0)) > 0:
+		parts.append("霸體階級 %d" % int(effect["super_armor_tier"]))
 	if effect.has("size_multiplier"):
 		parts.append("效果尺寸 ×%.2f" % float(effect["size_multiplier"]))
 	if effect.has("attack_range_bonus"):

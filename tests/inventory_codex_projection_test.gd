@@ -46,7 +46,12 @@ func _run() -> void:
 		)
 		_expect(not String(entry.get("tier_label", "")).is_empty(), "%s must expose its Chinese tier label." % entry_id)
 		_expect(not String(entry.get("description", "")).is_empty(), "%s must expose the approved description." % entry_id)
-		_expect(String(entry.get("trigger_summary", "")).begins_with("動畫："), "%s must expose its approved continuous animation beats." % entry_id)
+		_expect(not String(entry.get("recipe_summary", "")).is_empty(), "%s must expose its three-Sword-Soul formula." % entry_id)
+		_expect(String(entry.get("effect_summary", "")).contains("攻擊力："), "%s must expose attack power before its other effects." % entry_id)
+		_expect(
+			not entry.has("trigger_summary") and not entry.has("identity_elements"),
+			"%s must not project removed animation or series-vocabulary description sections." % entry_id
+		)
 		_expect(bool(entry.get("legacy_vfx", false)), "%s must explicitly label its preview as temporary legacy VFX." % entry_id)
 		var legacy_vfx_id := String(entry.get("named_vfx_id", ""))
 		_expect(not legacy_vfx_id.is_empty(), "%s needs a temporary existing VFX mapping." % entry_id)
@@ -65,6 +70,18 @@ func _run() -> void:
 	_expect(String((entries_by_id.get("myriad_blades_descend", {}) as Dictionary).get("name", "")) == "萬劍垂天", "萬劍垂天 must replace 天際流光.")
 	_expect(String((entries_by_id.get("celestial_feather_myriad", {}) as Dictionary).get("name", "")) == "天羽萬象", "天羽萬象 must replace 天光回羽.")
 	_expect(String((entries_by_id.get("thousand_feather_resonance", {}) as Dictionary).get("kind_label", "")).contains("羽毛系列"), "千羽相應 must be classified under the Feather series.")
+	var flowing_fire := entries_by_id.get("flowing_fire_night", {}) as Dictionary
+	_expect(
+		String(flowing_fire.get("recipe_summary", ""))
+			== "烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1） → 烈焰灌注（已編成 Lv.1）",
+		"流火照夜 must list its ordered Sword Soul formula and ownership state."
+	)
+	_expect(
+		String(flowing_fire.get("effect_summary", "")).contains("目前普攻 + 56")
+			and String(flowing_fire.get("effect_summary", "")).contains("燃燒傷害 5")
+			and not String(flowing_fire.get("effect_summary", "")).contains("劍魂效果："),
+		"流火照夜 must aggregate its formula into skill-level values without per-card descriptions."
+	)
 
 	var preview := InventoryCodexPreview.new()
 	preview.size = Vector2(640.0, 320.0)

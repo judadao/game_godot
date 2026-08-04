@@ -16,6 +16,7 @@ const LEGACY_MODE_INVENTORY := &"inventory"
 const CODEX_VIEW_LIVE := &"live"
 const CODEX_SERIES_HEADER_COLOR := Color(1.0, 0.89, 0.58, 1.0)
 const CODEX_SERIES_HEADER_BACKGROUND := Color(0.13, 0.075, 0.035, 0.96)
+const SWORD_SOUL_LOADOUT_CAPACITY := 4
 const SUPPORTED_ELEMENTS := [
 	"water", "fire", "wind", "lightning", "ice", "poison", "light", "dark", "normal",
 ]
@@ -48,6 +49,7 @@ const DEFAULT_SOUL_ICON := preload(
 @onready var status_experience: ProgressBar = $Center/MainPanel/Margin/Layout/Pages/StatusPage/Personal/Content/Experience
 @onready var status_experience_text: Label = $Center/MainPanel/Margin/Layout/Pages/StatusPage/Personal/Content/ExperienceText
 @onready var status_vitals: Label = $Center/MainPanel/Margin/Layout/Pages/StatusPage/Personal/Content/Vitals
+@onready var soul_hint: Label = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Browser/Hint
 @onready var soul_list: ItemList = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Browser/Entries
 @onready var soul_icon: TextureRect = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Icon
 @onready var soul_name: Label = $Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/Name
@@ -70,7 +72,8 @@ const DEFAULT_SOUL_ICON := preload(
 @onready var codex_kind: Label = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Kind
 @onready var codex_meta: Label = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Meta
 @onready var codex_growth: Label = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Growth
-@onready var codex_description: Label = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Description
+@onready var codex_description: RichTextLabel = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Description
+@onready var codex_recipe: Label = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Recipe
 @onready var codex_effect: Label = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Effect
 @onready var codex_trigger: Label = $Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/Trigger
 
@@ -382,11 +385,16 @@ func _refresh_equipment_slots() -> void:
 
 func _refresh_soul_list() -> void:
 	soul_list.clear()
+	soul_hint.text = "目前編成 %d / %d；每枚劍魂保留獨立等級與印記。" % [
+		sword_souls.size(),
+		SWORD_SOUL_LOADOUT_CAPACITY,
+	]
 	for soul in sword_souls:
 		var row_index := soul_list.add_item(
-			"[%s] %s" % [
+			"[%s] %s · Lv.%d" % [
 				String(soul.get("bonus_type_label", "攻擊")),
 				String(soul.get("name", "未知劍魂")),
+				int(soul.get("level", 1)),
 			],
 			_load_icon(soul, DEFAULT_SOUL_ICON)
 		)
@@ -546,18 +554,27 @@ func _on_codex_selected(row: int) -> void:
 	_active_codex_section = String(entry.get("section", "techniques"))
 	codex_name.text = String(entry.get("name", "未知紀錄"))
 	codex_kind.text = String(entry.get("kind_label", "旅途紀錄"))
-	codex_description.text = String(entry.get("description", "尚無說明。"))
-	codex_effect.text = "效果\n%s" % String(entry.get("effect_summary", "尚無效果資料。"))
-	codex_trigger.text = "說明\n%s" % String(entry.get("trigger_summary", "已記錄於旅途日誌。"))
 	if _active_codex_section == "techniques":
+		codex_description.text = "[i]「%s」[/i]" % String(entry.get("description", "尚無說明。"))
+		codex_recipe.text = "劍魂組合\n%s" % String(entry.get("recipe_summary", "尚未設定。"))
+		codex_effect.text = "效果與數值\n%s" % String(entry.get("effect_summary", "尚無效果資料。"))
+		codex_trigger.text = ""
+		codex_trigger.visible = false
 		codex_meta.text = _format_codex_meta(entry)
-		codex_growth.text = _format_codex_growth(entry)
+		codex_growth.text = ""
+		codex_growth.visible = false
 		concept_view.texture = null
 		_active_concept_region = Rect2()
 		preview.call("show_entry", entry)
 	else:
+		codex_description.text = String(entry.get("description", "尚無說明。"))
+		codex_recipe.text = ""
+		codex_effect.text = "效果\n%s" % String(entry.get("effect_summary", "尚無效果資料。"))
+		codex_trigger.text = "說明\n%s" % String(entry.get("trigger_summary", "已記錄於旅途日誌。"))
+		codex_trigger.visible = true
 		codex_meta.text = String(entry.get("meta_summary", ""))
 		codex_growth.text = String(entry.get("growth_summary", ""))
+		codex_growth.visible = true
 		concept_view.texture = null
 		_active_concept_region = Rect2()
 		preview.call("show_entry", {})
@@ -618,6 +635,7 @@ func _clear_codex_details() -> void:
 	codex_meta.text = ""
 	codex_growth.text = ""
 	codex_description.text = ""
+	codex_recipe.text = ""
 	codex_effect.text = ""
 	codex_trigger.text = ""
 	concept_view.texture = null
@@ -685,36 +703,6 @@ func _format_codex_meta(entry: Dictionary) -> String:
 		level,
 		stacks,
 	]
-
-
-func _format_codex_growth(entry: Dictionary) -> String:
-	if String(entry.get("catalog_kind", "")) == "skill_series":
-		var elements := PackedStringArray()
-		for identity_variant in entry.get("identity_elements", []) as Array:
-			elements.append(String(identity_variant))
-		return "系列語彙  %s\n特效狀態  暫用既有動畫" % " · ".join(elements)
-	var level := clampi(int(entry.get("level", entry.get("card_level", 1))), 1, 3)
-	var stacks := maxi(0, int(entry.get("combo_stack", entry.get("buff_stacks", 0))))
-	var layers := entry.get("evolution_layers", []) as Array
-	var active_layer := (
-		_display_trait(String(layers[mini(level - 1, layers.size() - 1)]))
-		if not layers.is_empty()
-		else "基礎招式"
-	)
-	var growth_lines := PackedStringArray(["進化  %s" % active_layer])
-	var milestones := entry.get("stack_milestones", []) as Array
-	var traits := entry.get("stack_traits", []) as Array
-	for index in mini(milestones.size(), traits.size()):
-		var milestone := int(milestones[index])
-		if milestone > stacks:
-			growth_lines.append(
-				"下一層  ×%d — %s" % [
-					milestone,
-					_display_trait(String(traits[index])),
-				]
-			)
-			break
-	return "\n".join(growth_lines)
 
 
 func _entry_element(entry: Dictionary) -> String:

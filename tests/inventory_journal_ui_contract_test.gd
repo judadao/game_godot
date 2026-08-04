@@ -99,6 +99,9 @@ func _run() -> void:
 	var soul_rows := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Browser/Entries"
 	) as ItemList
+	var soul_hint := ui.get_node_or_null(
+		"Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Browser/Hint"
+	) as Label
 	var soul_bonus := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/SwordSoulsPage/Details/Content/BonusType"
 	) as Label
@@ -118,6 +121,12 @@ func _run() -> void:
 	}])
 	_expect(soul_bonus != null and soul_bonus.text == "加乘類型 · 元素", "Selected Sword Soul must show its projected Chinese bonus-type label.")
 	_expect(soul_ability != null and soul_ability.text.contains("攻擊傷害 +4"), "Selected Sword Soul must show its projected short Chinese ability note.")
+	_expect(
+		soul_rows.get_item_text(0).contains("Lv.3")
+			and soul_hint != null
+			and soul_hint.text.contains("目前編成 1 / 4"),
+		"Owned Sword Souls must expose visible levels and the complete loadout count."
+	)
 
 	var codex_filter := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter"
@@ -134,7 +143,12 @@ func _run() -> void:
 	var codex_bottom_inset := ui.get_node_or_null(
 		"Center/MainPanel/Margin/Layout/Pages/CodexPage/Details/Info/InfoFrame/Scroll/Content/BottomInset"
 	) as Control
-	_expect(codex_preview != null and codex_preview.custom_minimum_size.y >= 320.0, "Codex live preview must reserve enough height to show a complete authored move.")
+	_expect(
+		codex_preview != null
+			and codex_preview.custom_minimum_size.y >= 186.0
+			and codex_preview.custom_minimum_size.y <= 194.0,
+		"Codex live preview must be a compact landscape stage so the explanation panel stays large."
+	)
 	_expect(codex_footer_safe != null and codex_footer_safe.custom_minimum_size.y >= 26.0, "Codex details need an unpainted safe footer below the clipped scroll viewport.")
 	_expect(codex_bottom_inset != null and codex_bottom_inset.custom_minimum_size.y >= 28.0, "Codex scroll content needs bottom space so the final line can rise above the footer mask.")
 	for category in ["techniques", "enemies", "sword_souls", "equipment"]:

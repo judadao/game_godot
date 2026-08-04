@@ -91,8 +91,13 @@ func _check_size(viewport_size: Vector2i) -> void:
 		"Active visual must remain above explanation at %s." % viewport_size
 	)
 	_expect(
-		preview.size.y >= 316.0,
-		"Discovery live VFX frame must reserve enough height to read a complete move at %s."
+		preview.size.y >= 186.0 and preview.size.y <= 194.0,
+		"Discovery live VFX frame must be a compact horizontal casting stage at %s."
+			% viewport_size
+	)
+	_expect(
+		preview.size.x / preview.size.y >= 2.0 and info.size.y >= preview.size.y,
+		"The casting stage must stay landscape while the description receives at least equal height at %s."
 			% viewport_size
 	)
 	if selected_entry_id == "flowing_fire_night" and _capture_view == &"live":
@@ -153,25 +158,34 @@ func _check_size(viewport_size: Vector2i) -> void:
 		)
 		_expect(
 			float(preview.call("get_named_effect_estimated_vertical_span"))
-				>= preview.size.y * 0.72,
-			"Named Finisher preview must fill enough of the display frame to remain readable at %s: %s."
+				>= preview.size.y * (0.45 if named_mode == "directional_forward" else 0.65),
+			"Named Finisher preview must remain readable while sharing the stage with its caster at %s: %s."
 				% [viewport_size, named_entry_id]
 		)
 		_expect(
-			not bool(preview.call("character_uses_attack_sheet")),
-			"Named Finisher preview must not obscure its authored move with the old white attack crescent at %s: %s."
+			bool(preview.call("character_uses_attack_sheet")),
+			"Named Finisher preview must show the player actively casting the move at %s: %s."
 				% [viewport_size, named_entry_id]
 		)
-		if named_mode == "directional_forward":
+		_expect(
+			preview.has_method("get_preview_caster_ground_position")
+				and preview.has_method("get_named_effect_estimated_rect"),
+			"Codex preview must expose its caster and ground-effect stage geometry."
+		)
+		if (
+			preview.has_method("get_preview_caster_ground_position")
+			and preview.has_method("get_named_effect_estimated_rect")
+		):
+			var caster_position := preview.call("get_preview_caster_ground_position") as Vector2
+			var effect_rect := preview.call("get_named_effect_estimated_rect") as Rect2
 			_expect(
-				named_position.x < preview.size.x * 0.5,
-				"Directional Finisher preview must start left of center to reserve its forward travel at %s: %s."
+				is_equal_approx(caster_position.y, float(preview.call("get_preview_floor_y"))),
+				"The player must stand on the same flat ground used by the move at %s: %s."
 					% [viewport_size, named_entry_id]
 			)
-		else:
 			_expect(
-				is_equal_approx(named_position.x, preview.size.x * 0.5),
-				"Player-centered Finisher preview must stay centered at %s: %s."
+				effect_rect.position.x >= caster_position.x + 36.0,
+				"The move must be cast into the ground ahead instead of being layered over the player at %s: %s."
 					% [viewport_size, named_entry_id]
 			)
 	ui.queue_free()
@@ -211,8 +225,6 @@ func _make_codex_entries(catalog: RefCounted) -> Array[Dictionary]:
 			"tier_rank": int(skill.get("tier_rank", 1)),
 			"description": String(skill.get("description", "")),
 			"effect_summary": String(skill.get("positioning", "")),
-			"trigger_summary": "動畫：%s" % " → ".join(skill.get("animation_beats", []) as Array),
-			"identity_elements": (skill.get("series_identity_elements", []) as Array).duplicate(),
 			"elements": elements,
 			"element": String(elements[0]) if not elements.is_empty() else "normal",
 			"preview_kind": "finisher",
