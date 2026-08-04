@@ -196,6 +196,18 @@ ERROR:
 
 不要只依靠程序退出碼判定成功，因為 Godot 有時會在退出碼為零時輸出非致命錯誤。
 
+### 5.4 Agent headless／顯示政策
+
+代理進行開發與自動驗證時，不得在使用者桌面開啟 Godot editor、遊戲、F6 scene、
+preview 或 capture 視窗。Focused tests、資源 import、editor parse、scene smoke 與
+main-scene smoke 預設都使用 `--headless`；禁止直接執行裸 `godot` 或非 headless 的
+`godot --editor --path .`。
+
+少數依賴 `frame_post_draw` 的 capture 不能使用 dummy headless renderer。這類工作只有
+在已配置、且不會顯示到使用者桌面的 offscreen／虛擬顯示環境中才可由代理執行。
+若環境沒有這項能力，代理只執行可重現的 headless geometry／behavior contracts，並在
+交付報告標記 graphical／互動視覺驗收尚待使用者自行開啟專案確認；不得自行彈出視窗。
+
 ## 6. UI 與多解析度驗證
 
 AutumnHUD（含內嵌 CardHandUI）至少驗證以下視窗尺寸：

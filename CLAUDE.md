@@ -33,6 +33,9 @@
 - Bug 與 refactor 使用先失敗的回歸測試。
 - 完成前執行 focused tests，並用 `tools/run_godot_tests.sh --suite all --smoke
   --strict-warnings` 執行全量 tests、editor 與 main smoke。
+- AI 執行 Godot 時預設一律使用 `--headless`，不得在使用者桌面開啟 editor、遊戲或
+  preview 視窗；需要 graphical renderer 時只可使用不可見的 offscreen／虛擬顯示，
+  否則標記為待使用者自行開啟驗收。
 - 架構、資料、UI contract、測試或玩法改變時同步更新 docs。
 - commit 前核對 staged files；不得混入使用者變更。
 

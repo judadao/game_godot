@@ -170,6 +170,18 @@ test scripts 判斷畫風好壞。
 - runner 會執行 `--headless --path . --quit-after 300`。
 - UI 依 `04_UI_GUIDE.md` 做多解析度行為／視覺檢查。
 
+### 7.3 Headless 與可見視窗規則
+
+- AI 在開發、import、focused test、editor smoke、scene smoke 與 main smoke 中，
+  預設所有 Godot 命令都必須使用 `--headless`。
+- 未經使用者當次明確要求，不得執行裸 `godot`、`godot --editor`、F6、圖形化 preview，
+  或任何會在使用者桌面開啟視窗的 capture 命令。
+- 必須使用 graphical renderer 的 capture，只能透過不會顯示到使用者桌面的
+  offscreen／虛擬顯示執行；環境不支援時，將該項列為待使用者人工驗收，不得為了
+  勾選 checklist 而開啟視窗。
+- 使用者負責自行啟動專案進行互動與最終視覺確認；AI 回報必須清楚區分已完成的
+  headless 驗證、offscreen evidence 與尚待使用者查看的項目。
+
 ## 8. Risk Analysis
 
 | 風險 | 必查證據 |

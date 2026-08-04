@@ -102,6 +102,13 @@ The repository uses UTF-8 via `.editorconfig`. Follow Godot conventions: use Pas
 ## 5. Testing Guidelines
 
 Headless `SceneTree` tests live under `tests/` and use the `*_test.gd` suffix.
+During agent-driven development, every Godot test, import, editor check, scene
+smoke, and main-project smoke must run without opening a user-visible window.
+Use `--headless` by default and never launch bare `godot`, `godot --editor`, or
+a graphical preview on the user's desktop unless the user explicitly requests
+it. If a capture technically requires a graphical renderer, use a non-visible
+offscreen/virtual display only; when that is unavailable, report the visual
+check as pending for the user, who owns interactive visual acceptance.
 Run every affected test directly:
 
 ```bash
