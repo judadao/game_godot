@@ -86,6 +86,20 @@ func _run() -> void:
 		_expect(_contains_han(String(evolved_reward.get("name", ""))), "昇華神賜名稱不得退回英文。")
 		_expect(_contains_han(String(evolved_reward.get("description", ""))), "昇華神賜說明不得退回英文。")
 		_expect(_queue_preserves_projection(evolved_reward), "Queue 必須原樣保留昇華神賜的效果與 mechanics。")
+		var choice_scene := load(
+			"res://scenes/ui/cards/DivineGiftChoiceCard.tscn"
+		) as PackedScene
+		var choice_card := choice_scene.instantiate()
+		root.add_child(choice_card)
+		choice_card.call("configure", evolved_reward, ["測試效果"] as Array[String])
+		var class_text := String(choice_card.get_node(
+			"CardContent/Header/Identity/EffectClass"
+		).get("text"))
+		_expect(
+			class_text.contains("火") and class_text.contains("毒"),
+			"雙屬性昇華神賜卡必須同時顯示兩個實際生效的屬性效果。"
+		)
+		choice_card.queue_free()
 
 	if _failures == 0:
 		print("PASS: Divine Gift reward projections preserve Chinese copy, effects, elements, and mechanics")

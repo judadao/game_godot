@@ -3242,6 +3242,9 @@ func _get_combo_time_remaining() -> float:
 func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 	var infused := card.duplicate(true)
 	var effect := (infused.get("effect", {}) as Dictionary).duplicate(true)
+	var visual_elements: Array[String] = []
+	if _effect_deals_damage(effect):
+		visual_elements = _active_attack_elements()
 	var equipment_specials := inventory_manager.call("get_special_ability_totals") as Dictionary
 	var gift_effects := divine_gift_manager.call("get_global_effects") as Dictionary
 	var gift_combo_multiplier := maxf(
@@ -3282,11 +3285,10 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 			effect["combo_stun"] = maxf(float(effect.get("combo_stun", 0.0)), 0.15)
 	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
 	if not effects_variant is Array:
-		return infused
+		effects_variant = []
 	var effects := effects_variant as Array
 	var has_flame := false
 	var has_frost := false
-	var visual_elements: Array[String] = []
 	var visual_stack_count := 0
 	var visual_lifesteal := false
 	for infusion_variant in effects:
@@ -3419,6 +3421,16 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 	if String(infused.get("type", "")) == "attack" and has_flame and has_frost:
 		effect["amount"] = int(effect.get("amount", 0)) + 2
 		effect["combo_stun"] = 0.25
+	if _effect_deals_damage(effect):
+		effect["elements"] = visual_elements.duplicate()
+		if visual_elements.has("water"):
+			var water_profile := element_taxonomy.call(
+				"get_effect_profile", "water"
+			) as Dictionary
+			infused["attack_size_multiplier"] = (
+				float(infused.get("attack_size_multiplier", 1.0))
+				* float(water_profile.get("sweep_width_multiplier", 1.0))
+			)
 	if String(infused.get("type", "")) == "attack":
 		effect["amount"] = (
 			int(effect.get("amount", 0))
@@ -3431,7 +3443,7 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 				* maxf(
 					0.35,
 					1.0 - maxf(0.0, float(gift_effects.get("combo_speed_bonus", 0.0)))
-				)
+			)
 		)
 		effect["target_count"] = maxi(
 			int(effect.get("target_count", 1)),
@@ -3446,6 +3458,32 @@ func _apply_combo_infusions_to_card(card: Dictionary) -> Dictionary:
 	}
 	infused["effect"] = effect
 	return infused
+
+
+func _effect_deals_damage(effect: Dictionary) -> bool:
+	var kind := String(effect.get("kind", ""))
+	return (
+		kind in ["damage", "area_damage", "dash_impact", "damage_aura"]
+		or (kind == "area_slow" and int(effect.get("amount", 0)) > 0)
+	)
+
+
+func _active_attack_elements() -> Array[String]:
+	var elements: Array[String] = []
+	_append_vfx_element(
+		elements,
+		String(inventory_manager.call("get_equipped_weapon_element"))
+	)
+	for gift_variant in divine_gift_manager.call("get_inventory") as Array:
+		if not gift_variant is Dictionary:
+			continue
+		var gift := gift_variant as Dictionary
+		var gift_elements := gift.get(
+			"elements", [gift.get("element", "normal")]
+		) as Array
+		for element_variant in gift_elements:
+			_append_vfx_element(elements, String(element_variant))
+	return elements
 
 
 func _on_player_dash_performed(_start_position: Vector2, _end_position: Vector2) -> void:
@@ -4660,7 +4698,16 @@ func _equipment_effect_summary(item: Dictionary) -> String:
 					else "%+d" % int(value)
 				),
 			]
-		)
+			)
+	if StringName(item.get("slot", "")) == &"weapon":
+		var primal_element := String(item.get("primal_element", "normal"))
+		var element_summary := String(element_taxonomy.call(
+			"get_effect_summary", primal_element
+		))
+		parts.append("%s屬性 · %s" % [
+			_element_display_name(primal_element),
+			element_summary,
+		])
 	return " · ".join(parts) if not parts.is_empty() else "沒有面板屬性修正"
 
 
@@ -5131,7 +5178,7 @@ func _element_display_name(element: String) -> String:
 		"poison": "毒",
 		"light": "光",
 		"dark": "暗",
-		"normal": "無屬性",
+		"normal": "普通",
 	}.get(element, "")
 
 

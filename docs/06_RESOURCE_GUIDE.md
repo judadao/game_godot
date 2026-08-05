@@ -331,6 +331,12 @@ neutral→normal。新 catalog 不得保存 alias。`equipment.json` 的每個 w
 陣列保留去重後的 canonical component elements，`element` 只投影第一個 primary
 element；不得用 `evolved` 等新字串取代材料屬性。
 
+`ElementTaxonomy.EFFECT_PROFILES` 是九元素附加效果的唯一 data authority。水／火／風／
+雷／冰／毒／光／暗／普通分別提供潮濺／灼燒／風壓／感電／寒意／中毒／輝癒／蝕命／
+真鋒；`apply_attack_side_effects()` 只合併附加效果，不讀 defender element。
+`get_interaction_multiplier()` 對任意合法或 legacy-normalized 組合固定回傳 `1.0`，禁止
+新增元素弱點、抗性或相剋表。
+
 ### 3.4 Named Skill VFX profile contract
 
 `NamedSkillVFXCatalog` 的 Finisher runtime profile 不是單一 JSON 的重複資料，而是由：

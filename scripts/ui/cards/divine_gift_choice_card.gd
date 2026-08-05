@@ -146,15 +146,39 @@ func _draw_corner(origin: Vector2, horizontal: Vector2, vertical: Vector2, lengt
 func _effect_class_text(choice: Dictionary) -> String:
 	if String(choice.get("action", "")) == "divine_fusion":
 		return "昇華 · 雙神賜融合"
+	var elements := choice.get("elements", []) as Array
+	if elements.size() > 1:
+		var compact_labels: Array[String] = []
+		for element_variant in elements:
+			compact_labels.append(_compact_element_effect_text(String(element_variant)))
+		return "雙屬性 · %s" % " ＋ ".join(compact_labels)
 	var element_labels := {
-		"fire": "業火 · 連段／終結技",
-		"dark": "迴響 · 連段／終結技",
-		"poison": "萬毒 · AP／治療",
-		"lightning": "雷霆 · 元素／擴散",
-		"wind": "天穹 · 速度／範圍",
-		"ice": "零度 · 疊層／公式",
+		"water": "水 · 潮濺／多目標",
+		"fire": "火 · 灼燒／持續傷害",
+		"wind": "風 · 風壓／強擊退",
+		"lightning": "雷 · 感電／短暈",
+		"ice": "冰 · 寒意／緩速",
+		"poison": "毒 · 中毒／持續傷害",
+		"light": "光 · 輝癒／命中恢復",
+		"dark": "暗 · 蝕命／生命竊取",
+		"normal": "普通 · 真鋒／暴擊",
 	}
-	return String(element_labels.get(String(choice.get("element", "normal")), "神賜 · 連段／終結技"))
+	return String(element_labels.get(String(choice.get("element", "normal")), "屬性 · 獨立附加效果"))
+
+
+func _compact_element_effect_text(element: String) -> String:
+	var labels := {
+		"water": "水·潮濺",
+		"fire": "火·灼燒",
+		"wind": "風·風壓",
+		"lightning": "雷·感電",
+		"ice": "冰·寒意",
+		"poison": "毒·中毒",
+		"light": "光·輝癒",
+		"dark": "暗·蝕命",
+		"normal": "普通·真鋒",
+	}
+	return String(labels.get(element, "普通·真鋒"))
 
 
 func _element_accent(element: String) -> Color:

@@ -26,6 +26,11 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 		return {}
 	var effect := (card.get("effect", {}) as Dictionary).duplicate(true)
 	var kind := String(effect.get("kind", ""))
+	if _is_damage_effect(effect):
+		var attack_elements := _resolve_attack_elements(card, effect)
+		effect = _element_taxonomy.call(
+			"apply_attack_side_effects", effect, attack_elements
+		) as Dictionary
 	var hit_presentation := _resolve_hit_presentation(card, effect)
 	var result := {
 		"card_id": String(card.get("id", "")),
@@ -36,9 +41,16 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 		"total": 0,
 		"play_destination": String(card.get("play_destination", "discard")),
 		"cooldown_seconds": float(card.get("cooldown_seconds", 0.0)),
+		"elements": (effect.get("elements", []) as Array).duplicate(),
+		"element_side_effects": (
+			effect.get("element_side_effects", []) as Array
+		).duplicate(),
 	}
+	var knockback_multiplier := maxf(
+		0.0, float(effect.get("knockback_multiplier", 1.0))
+	)
 	if (
-		kind in ["damage", "area_damage", "dash_impact", "damage_aura"]
+		_is_damage_effect(effect)
 		and randf() <= clampf(float(effect.get("critical_chance", 0.0)), 0.0, 1.0)
 	):
 		effect["amount"] = maxi(
@@ -71,11 +83,7 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 					maxi(1, int(effect.get("target_count", direction_count)))
 				)
 			)
-			var resolved_projectile_count := (
-				mini(projectile_count, selected.size())
-				if float(effect.get("spread_degrees", 0.0)) > 0.0
-				else projectile_count
-			)
+			var resolved_projectile_count := mini(projectile_count, selected.size())
 			if directional_sweep:
 				_damage_targets(
 					caster,
@@ -83,7 +91,7 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 					int(effect.get("amount", 0)),
 					result,
 					1,
-					80.0,
+					80.0 * knockback_multiplier,
 					hit_presentation
 				)
 			else:
@@ -93,7 +101,8 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 					int(effect.get("amount", 0)),
 					result,
 					resolved_projectile_count,
-					hit_presentation
+					hit_presentation,
+					80.0 * knockback_multiplier
 				)
 			_apply_infused_statuses(selected, effect)
 			_apply_finisher_mutations(
@@ -111,7 +120,7 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 				int(effect.get("amount", 0)),
 				result,
 				1,
-				float(effect.get("knockback", 180.0)),
+				float(effect.get("knockback", 180.0)) * knockback_multiplier,
 				hit_presentation
 			)
 			_apply_infused_statuses(selected, effect)
@@ -136,7 +145,7 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 				int(effect.get("amount", 0)),
 				result,
 				1,
-				80.0,
+				80.0 * knockback_multiplier,
 				hit_presentation
 			)
 			_apply_infused_statuses(selected, effect)
@@ -158,7 +167,7 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 					status_damage,
 					result,
 					1,
-					float(effect.get("knockback", 180.0)),
+					float(effect.get("knockback", 180.0)) * knockback_multiplier,
 					hit_presentation
 				)
 			_apply_status(
@@ -168,6 +177,8 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 				result,
 				status_damage <= 0
 			)
+			if status_damage > 0:
+				_apply_infused_statuses(selected, effect)
 		"attack_power":
 			var current: Variant = caster.get("attack_power")
 			if current != null:
@@ -177,19 +188,21 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 				caster.set("attack_power", int(current) + int(effect.get("amount", 0)))
 				result["affected"] = 1
 		"damage_aura":
+			var selected := _targets_in_radius(
+				caster,
+				targets,
+				float(effect.get("radius", 110.0))
+			)
 			_damage_targets(
 				caster,
-				_targets_in_radius(
-					caster,
-					targets,
-					float(effect.get("radius", 110.0))
-				),
+				selected,
 				int(effect.get("amount", 0)),
 				result,
 				1,
-				80.0,
+				80.0 * knockback_multiplier,
 				hit_presentation
 			)
+			_apply_infused_statuses(selected, effect)
 		"summon":
 			_resolve_summon(caster, effect, result)
 		"overdrive":
@@ -215,15 +228,50 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 		var lifesteal_restored := 0
 		if caster.has_method("resolve_lifesteal"):
 			lifesteal_restored += int(caster.call("resolve_lifesteal", int(result["total"])))
-		if float(effect.get("lifesteal_ratio", 0.0)) > 0.0 and caster.has_method("restore_health"):
-			lifesteal_restored += int(caster.call(
-				"restore_health",
-				maxi(1, int(round(float(result["total"]) * float(effect["lifesteal_ratio"]))))
-			))
+		lifesteal_restored += _restore_fractional_health(
+			caster,
+			&"element_dark_lifesteal_remainder",
+			int(result["total"]),
+			float(effect.get("lifesteal_ratio", 0.0))
+		)
+		var element_heal_restored := _restore_fractional_health(
+			caster,
+			&"element_light_heal_remainder",
+			int(result["total"]),
+			float(effect.get("heal_on_hit_ratio", 0.0))
+		)
 		result["lifesteal_restored"] = lifesteal_restored
+		result["element_heal_restored"] = element_heal_restored
 
 	effect_resolved.emit(String(card.get("id", "")), result)
 	return result
+
+
+func _is_damage_effect(effect: Dictionary) -> bool:
+	var kind := String(effect.get("kind", ""))
+	return (
+		kind in ["damage", "area_damage", "dash_impact", "damage_aura"]
+		or (kind == "area_slow" and int(effect.get("amount", 0)) > 0)
+	)
+
+
+func _restore_fractional_health(
+	caster: Node,
+	remainder_key: StringName,
+	damage_total: int,
+	ratio: float
+) -> int:
+	if damage_total <= 0 or ratio <= 0.0 or not caster.has_method("restore_health"):
+		return 0
+	var accumulated := (
+		float(caster.get_meta(remainder_key, 0.0))
+		+ float(damage_total) * ratio
+	)
+	var whole_health := floori(accumulated + 0.000001)
+	caster.set_meta(remainder_key, accumulated - float(whole_health))
+	if whole_health <= 0:
+		return 0
+	return int(caster.call("restore_health", whole_health))
 
 
 func _damage_targets(
@@ -259,7 +307,8 @@ func _damage_projectile_volley(
 	raw_damage: int,
 	result: Dictionary,
 	projectile_count: int,
-	hit_presentation: Dictionary = {}
+	hit_presentation: Dictionary = {},
+	knockback: float = 80.0
 ) -> void:
 	if targets.is_empty():
 		return
@@ -275,7 +324,7 @@ func _damage_projectile_volley(
 		if target.has_method("take_hit"):
 			_prepare_target_hit_presentation(target, hit_presentation)
 			var source := (caster as Node2D).global_position if caster is Node2D else Vector2.ZERO
-			dealt = int(target.call("take_hit", raw_damage, source, 80.0))
+			dealt = int(target.call("take_hit", raw_damage, source, knockback))
 		elif target.has_method("take_damage"):
 			dealt = int(target.call("take_damage", raw_damage))
 		if dealt <= 0:
@@ -298,6 +347,23 @@ func _prepare_target_hit_presentation(
 		"prepare_hit_presentation",
 		hit_presentation.duplicate(true)
 	)
+
+
+func _resolve_attack_elements(card: Dictionary, effect: Dictionary) -> Array[String]:
+	var result: Array[String] = []
+	var candidates: Array = []
+	candidates.append_array(effect.get("elements", []) as Array)
+	candidates.append_array(card.get("tags", []) as Array)
+	var visual_profile := card.get("combo_visual_profile", {}) as Dictionary
+	candidates.append_array(visual_profile.get("elements", []) as Array)
+	for candidate_variant in candidates:
+		var element := String(_element_taxonomy.call(
+			"normalize", String(candidate_variant)
+		))
+		if element.is_empty() or result.has(element):
+			continue
+		result.append(element)
+	return result
 
 
 func _resolve_hit_presentation(
@@ -395,9 +461,20 @@ func _apply_infused_statuses(targets: Array, effect: Dictionary) -> void:
 				"damage": int(effect.get("burn_damage", 1)),
 			})
 		if float(effect.get("frost_duration", 0.0)) > 0.0:
+			var slow_duration := float(effect["frost_duration"])
+			var slow_ratio := float(effect.get("frost_ratio", 0.25))
+			if String(effect.get("kind", "")) == "area_slow":
+				slow_duration = maxf(
+					slow_duration,
+					float(effect.get("duration", 0.0))
+				)
+				slow_ratio = maxf(
+					slow_ratio,
+					float(effect.get("ratio", 0.0))
+				)
 			target.call("apply_status", "slow", {
-				"duration": float(effect["frost_duration"]),
-				"ratio": float(effect.get("frost_ratio", 0.25)),
+				"duration": slow_duration,
+				"ratio": slow_ratio,
 			})
 		if float(effect.get("poison_duration", 0.0)) > 0.0:
 			target.call("apply_status", "poison", {

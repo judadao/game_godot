@@ -424,7 +424,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `CardInstance` | `scripts/systems/card_instance.gd` | `instance_id`, `card_id`, `level`, `is_fixed`, `is_growth_locked`, `to_dict`, `from_dict` |
 | `SkillRecipeManager` | `scripts/systems/skill_recipe_manager.gd` | `load_catalog`, `get_all_series`, `get_all_skills`, `get_series`, `get_skill`, `get_tier_label`, `get_legacy_vfx_id`；`configure_loadout`／`record_card` 保留 caller 相容，未定義新觸發規則 |
 | `GrowthChoiceQueue` | `scripts/systems/growth_choice_queue.gd` | `enqueue_wave_blessing`, `enqueue_experience_blessings`, `enqueue_combat_blessing_reward`, `peek`, `resolve` |
-| `ElementTaxonomy` | `scripts/systems/element_taxonomy.gd` | `get_all`, `normalize`, `is_valid`, `get_color`；武器、神賜與戰鬥 VFX 共用的元素命名權威 |
+| `ElementTaxonomy` | `scripts/systems/element_taxonomy.gd` | `get_all`, `normalize`, `is_valid`, `get_color`, `get_effect_profile`, `apply_attack_side_effects`, `get_interaction_multiplier`；武器、神賜、戰鬥效果與 VFX 共用的元素規則權威 |
 | `ElementalGroundTrailCatalog` | `scripts/systems/elemental_ground_trail_catalog.gd` | 驗證火／冰／毒地面路徑 profile、四象限 atlas 與 visual budget |
 | `SaveService` | `scripts/systems/save_service.gd` | `save_meta`, `load_meta` |
 
@@ -694,7 +694,8 @@ service；修改 mappings或處理順序時須用實際 run驗證。
 - `ElementTaxonomy` 是正式元素 ID 的單一權威：
   `water/fire/wind/lightning/ice/poison/light/dark/normal`。舊
   flame／earth／storm／frost／venom／neutral 等名稱只可在輸入邊界正規化，
-  不得成為新的 catalog identity。
+  不得成為新的 catalog identity。元素之間沒有相剋、弱點或抗性倍率；九元素各自
+  投影一個可疊加的攻擊附加效果，`CardEffectRunner` 統一套用狀態、擊退與命中恢復。
 - `NamedSkillVFXCatalog` 將 `combo_finishers.json` 的 32 個正式 Finisher、
   `finisher_vfx_identities.json` 的逐招視覺身份，以及
   `named_skill_vfx_profiles.json` 的五個 Finisher atlas 基底與四個 trigger profile

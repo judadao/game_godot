@@ -406,7 +406,8 @@ Node3D／Camera3D／3D mesh 或 SubViewport 離屏渲染依賴。
 元素資料變更另執行 `element_taxonomy_test.gd`，確認唯一正式列表為
 water／fire／wind／lightning／ice／poison／light／dark／normal、legacy aliases
 只在邊界正規化、每把武器有有效 `primal_element`、base blessing 使用 canonical
-element，且融合 blessing 的 `elements` 陣列保留兩個 canonical component IDs。
+element，且融合 blessing 的 `elements` 陣列保留兩個 canonical component IDs；所有
+攻守元素組合倍率皆為 1.0，九元素都有唯一且可讀的附加效果。
 另以 graphical
 Forward+ renderer 確認火／冰
 粒子、環線、標題層級、世界中心與自動 cleanup；標題 layout 需跑六解析度矩陣。
@@ -447,6 +448,7 @@ Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
 | `shop_system_test.gd` / `ui_keyboard_test.gd` | 交易 ownership、方向 focus、quantity controls 與 player input lock |
 | `forge_catalog_test.gd` / `forge_service_test.gd` | flame／Market stock gate、品質素材／裝備、每圖紙熟練度 Lv.5 覺醒、傳奇機率、購買／鍛造與 sale escrow migration |
 | `forge_depth_system_test.gd` | 四種工法、素材特性、失敗結果、覺醒圖紙流派改造／round-trip、三種定價、流言顧客高價成交，以及 authored 幾何 UI controls |
+| `elemental_side_effects_test.gd` | 九元素附加效果的實際命中、雙目標潮濺、風壓擊退、四種敵方狀態、光／暗恢復，以及武器＋神賜元素 runtime 投影 |
 | `forge_game_integration_test.gd` | Market 擴建、圖紙＋工具購買後鍛造 equipment／Sword Soul、升級、品質上桌販售、gold 與 meta save |
 | `chapter_one_story_catalog_test.gd` | 第一章廣場 21 句正史、speaker／portrait path／emotion schema 與 completion flag |
 | `chapter_one_dialogue_progression_test.gd` | 回顧逐句 speaker／情緒切換、單句 one-shot 停末幀，且完成不寫 flag／checkpoint |

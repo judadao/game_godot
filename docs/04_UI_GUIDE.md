@@ -689,6 +689,8 @@ HUDLayer
   前不投影裝備買家。
 - Blueprint Shop：一般購買流程維持 buy-only；只有選到已持有且已覺醒的圖紙才顯示
   流派選擇與 Rework action，費用、流派說明與「熟練度保留」必須可直接讀到。
+- 武器裝備列與圖鑑效果摘要必須同時顯示原初屬性及其獨立附加效果；神賜選擇卡的
+  類別行使用「屬性 · 效果／用途」，不得顯示或暗示剋制箭頭、弱點倍率或抗性倍率。
 - Town Hall：左側村長肖像，中欄保留 Overview／Town Development；右欄以五個 authored
   project button 切換 Town Hall、Blacksmith、Material Yard、Market、Memory Library，
   顯示下一級實際效果與折扣後成本。
