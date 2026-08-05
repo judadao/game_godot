@@ -603,16 +603,22 @@ func _refresh_workshop() -> void:
 	var level := _building_level()
 	var max_level := int(_town.call("get_max_building_level", &"blacksmith"))
 	var cost := _town.call("get_next_upgrade_cost", &"blacksmith") as Dictionary
+	var next_upgrade := _town.call("get_next_upgrade", &"blacksmith") as Dictionary
+	var fee_discount := float(_town.call(
+		"get_effect_value", &"forge_processing_fee_discount"
+	))
 	workshop_level_label.text = "Workshop Level %d / %d" % [level, max_level]
-	workshop_unlock_label.text = (
-		"Current mastery: Tier %d blueprints  ·  Strengthening cap Lv.%d" % [
-			level,
-			min(level + 1, 3),
-		]
-	)
+	workshop_unlock_label.text = "Current mastery: Tier %d recipes  ·  Processing fee -%d%%" % [
+		level,
+		roundi(fee_discount * 100.0),
+	]
 	workshop_cost_label.text = (
 		"All workshop improvements complete." if cost.is_empty()
-		else "NEXT UPGRADE\n%s" % _format_cost_rows(cost)
+		else "%s\n%s\n\n%s" % [
+			String(next_upgrade.get("name", "NEXT UPGRADE")).to_upper(),
+			String(next_upgrade.get("description", "")),
+			_format_cost_rows(cost),
+		]
 	)
 	upgrade_button.text = "Max Level" if cost.is_empty() else "Upgrade Workshop"
 	upgrade_button.disabled = not bool(_town.call("can_upgrade_building", &"blacksmith"))

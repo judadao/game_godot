@@ -443,7 +443,7 @@ func _check_alternate_states(
 					and overview_content != null
 					and not overview_content.visible
 					and detail_title != null
-					and detail_title.text == "Hall Upgrade",
+					and detail_title.text == "Town Development",
 				"TownHallUI upgrade state must remain readable at %s." % viewport_size
 			)
 		"ShopUI":

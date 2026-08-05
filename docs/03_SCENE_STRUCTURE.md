@@ -812,7 +812,8 @@ MenuLayer
   保持可見並顯示所需火炬 Tier。
 - `PlayerBlacksmithUI` 以 service rail 切換 Forge／Workshop Upgrade／Sales Table；
   recipe rows 由已持有圖紙、工具與 blacksmith level 投影。
-- `TownHallUI` 只保留 Overview／Hall Upgrade 兩個主要入口，左側固定村長肖像。
+- `TownHallUI` 保留 Overview／Town Development 兩個主要入口；Development workspace
+  以五個 authored project button 選擇建築，左側固定村長肖像。
 - 三者的 Full Rect root、semantic window、public API、focus、重開與六解析度
   geometry 由 dedicated tests 保護。
 

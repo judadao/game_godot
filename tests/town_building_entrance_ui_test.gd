@@ -90,18 +90,26 @@ func _run() -> void:
 				"%s UI must receive its building context." % entrance_name
 			)
 		if ui_name in ["MaterialYardUI", "PlayerBlacksmithUI", "TownHallUI"] and ui != null:
-			var expected_button_count := 1 if ui_name == "TownHallUI" else 0
+			var expected_button_count := 5 if ui_name == "TownHallUI" else 0
 			_expect(
 				int(ui.call("get_building_button_count")) == expected_button_count,
 				"%s must expose only controls owned by its current service." % entrance_name
 			)
 		if entrance_name == "MaterialYard" and ui != null:
 			var inventory_manager: RefCounted = game.get("inventory_manager")
+			var forge_service: RefCounted = game.get("forge_service")
 			for resource_id in inventory_manager.call("get_resource_ids"):
 				inventory_manager.call("set_resource_amount", resource_id, 5000)
 			var wood_before := int(
 				inventory_manager.call("get_resource_amount", &"autumn_wood")
 			)
+			var expected_yield := 10
+			for offer_variant in forge_service.call(
+				"get_shop_offers", &"material_store"
+			) as Array:
+				var offer := offer_variant as Dictionary
+				if StringName(offer.get("id", "")) == &"material_wood_bundle":
+					expected_yield = int(offer.get("quantity", expected_yield))
 			game.call(
 				"_on_material_offer_requested",
 				&"material_wood_bundle",
@@ -110,7 +118,7 @@ func _run() -> void:
 			)
 			_expect(
 				int(inventory_manager.call("get_resource_amount", &"autumn_wood"))
-					== wood_before + 10,
+					== wood_before + expected_yield,
 				"Material Yard must deliver purchased forge materials."
 			)
 			var cancel_event := InputEventAction.new()
@@ -129,7 +137,7 @@ func _run() -> void:
 					(meta_state.get("inventory_state") as Dictionary)
 						.get("resources", {})
 						.get("autumn_wood", -1)
-				) == wood_before + 10,
+				) == wood_before + expected_yield,
 				"Material purchases must synchronize to meta inventory state."
 			)
 			_expect(

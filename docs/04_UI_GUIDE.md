@@ -363,7 +363,7 @@ Current Known Risks：
 
 - `ShopWindow` minimum 1040×640。
 - `PlayerBlacksmithWindow` minimum 1080×650。
-- `TownHallWindow` minimum 1060×650。
+- `TownHallWindow` 使用共同 1040×640 frame。
 - `MaterialYardWindow` 的 authored wrapper minimum 1024×620。
 - Pause Menu minimum 320×590。
 - 其餘 script-built modal 仍有固定 660–1040 寬與 460–620 高。
@@ -675,11 +675,12 @@ HUDLayer
 但各自擁有功能專屬資訊架構：
 
 - Material Yard：左側店長肖像，中欄 Materials／Forge Tools offers，右欄商品、
-  持有量、火炬 Tier、數量與購買。
+  持有量、Material Yard level、數量與購買。
 - Player Blacksmith：左側鍛造研究員肖像；Forge 依圖紙鍛造 equipment／Sword Soul，
   Workshop Upgrade 解鎖鍛造上限，Sales Table 顯示商品、顧客與 `+GOLD` 回饋。
-- Town Hall：左側村長肖像，中欄只保留 Overview／Hall Upgrade，右欄顯示當前
-  village stage 或下一級成本。
+- Town Hall：左側村長肖像，中欄保留 Overview／Town Development；右欄以五個 authored
+  project button 切換 Town Hall、Blacksmith、Material Yard、Market、Memory Library，
+  顯示下一級實際效果與折扣後成本。
 
 三者均使用 Full Rect root、dim backdrop、safe margin、center container、semantic
 window 與 authored ScrollContainer；Player Blacksmith 的動態 recipe row 必須只放在

@@ -692,20 +692,27 @@ total-building-level threshold 為 0、3、7。Town 六棟建築的互動範圍�
 
 功能建築 UI 的玩家可見責任：
 
-- Material Yard：以 gold 購買鍛造材料 bundle 與永久工具；高階 stock 隨 Eternal
-  Torch 對應的 village stage 解鎖。
+- Material Yard：Level 0 保留 basic stock；Level 1 解鎖 elite、Level 2 解鎖 boss-grade
+  材料與工具，Level 3 令所有購入 material bundle 數量增加 25%。
 - Player Blacksmith：依已購圖紙、素材與 gold 加工費鍛造 equipment／Sword Soul、升級 blacksmith
-  解鎖 recipe Tier、升級 Sword Soul，並將 crafted equipment 放到單格販售桌，
+  解鎖 recipe Tier；Level 2／3 各降低 5% 加工費。玩家可升級 Sword Soul，並將 crafted equipment 放到單格販售桌，
   顧客結帳後顯示 `+GOLD`。
-- Town Hall：查看 village stage、總建築等級、資源與 Town Hall 升級成本。
+- Market：三級累計提供 10% 購買折扣與 20% 裝備販售加成。
+- Town Hall：查看 village stage、總建築等級與資源，集中選擇並升級五棟建築；
+  Town Hall 三級累計降低其他建築 10% 建設成本。
+- Memory Library：由基礎 10 格起，四級依序增加 4／4／6／6 格，最高 30 格。
 - Sword Soul Shop：buy-only 圖紙 catalog；持有後不能重複購買。
 - Equipment Blueprint Shop：基礎普通裝備直接販售；其餘只販售不可重複購買的圖紙，
   高階成品必須回玩家工坊鍛造。
 
-舊通用 Town progression UI 已退役；三個 dedicated screen 關閉時由 Game
-同步 Meta save、Town visual 與 equipment stats。
+舊通用 Town progression UI 已退役；Player Blacksmith 與 Town Hall 升級成功時由
+Game 立即同步 Meta save、鍛造／商店 economy modifiers、Town visual 與 equipment stats；
+關閉 dedicated screen 時仍執行相同同步作為保險。
 
-目前場景只直接改變 ItemShop、EmptyResidence、EmptyTowerHouse 與 Blacksmith 的部分視覺。Manager 產生的其他 visual flag 尚未完整投影，不得宣稱所有升級都有對應外觀。
+五條升級線會投影到權威 `TownModularVisuals` 的 Material Yard、Player Blacksmith、
+Town Hall、Sword Soul Shop 與 Equipment Blueprint Shop；runtime metadata 記錄 building ID
+與 level，並以克制的暖亮度呈現進度。資料內 visual flags 仍是未來替換分級素材的 contract，
+不得宣稱目前每級已有獨立建築貼圖。
 
 Town presentation 維持 `1942 × 720` gameplay world 與單一中央不滅火炬；
 核准的 Base 分件組圖已取代 Image #2 完整構圖成為 runtime presentation。

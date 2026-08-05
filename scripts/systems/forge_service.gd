@@ -5,6 +5,10 @@ var _catalog: RefCounted
 var _inventory: RefCounted
 var _flame_tier := 0
 var _blacksmith_level := 0
+var _purchase_discount := 0.0
+var _sale_multiplier := 1.0
+var _processing_fee_discount := 0.0
+var _material_yield_multiplier := 1.0
 
 
 func _init(catalog: RefCounted, inventory: RefCounted) -> void:
@@ -26,15 +30,46 @@ func set_progression_levels(flame_tier: int, blacksmith_level: int) -> void:
 	_blacksmith_level = maxi(0, blacksmith_level)
 
 
-func get_shop_offers(shop_id: StringName) -> Array[Dictionary]:
+func set_economy_modifiers(
+	purchase_discount: float,
+	sale_multiplier: float,
+	processing_fee_discount: float,
+	material_yield_multiplier: float = 1.0
+) -> void:
+	_purchase_discount = clampf(purchase_discount, 0.0, 0.75)
+	_sale_multiplier = clampf(sale_multiplier, 1.0, 3.0)
+	_processing_fee_discount = clampf(processing_fee_discount, 0.0, 0.75)
+	_material_yield_multiplier = clampf(material_yield_multiplier, 1.0, 3.0)
+
+
+func get_shop_offers(
+	shop_id: StringName,
+	include_locked: bool = false
+) -> Array[Dictionary]:
 	if not is_configured():
 		return []
-	var offers := _catalog.call("get_shop_offers", shop_id, _flame_tier) as Array
+	var offers := (
+		_catalog.call("get_all_offers") as Array
+		if include_locked
+		else _catalog.call("get_shop_offers", shop_id, _flame_tier) as Array
+	)
 	var result: Array[Dictionary] = []
 	for offer_variant in offers:
 		var offer := (offer_variant as Dictionary).duplicate(true)
+		if StringName(offer.get("shop_id", "")) != shop_id:
+			continue
+		var base_price := int(offer.get("price", 0))
+		offer["base_price"] = base_price
+		offer["price"] = _discounted_amount(base_price, _purchase_discount)
 		var product_kind := StringName(offer.get("product_kind", ""))
 		var product_id := StringName(offer.get("product_id", ""))
+		offer["unlocked"] = bool(_catalog.call("is_offer_unlocked", StringName(
+			offer.get("id", "")
+		), _flame_tier))
+		if product_kind == &"resource":
+			var base_quantity := int(offer.get("quantity", 1))
+			offer["base_quantity"] = base_quantity
+			offer["quantity"] = _material_quantity(base_quantity)
 		if product_kind == &"tool":
 			offer["owned"] = bool(_inventory.call("owns_tool", product_id))
 		elif product_kind == &"blueprint":
@@ -67,7 +102,10 @@ func purchase_offer(offer_id: StringName, quantity: int = 1) -> Dictionary:
 		return _result(false, &"already_owned")
 	if product_kind == &"resource" and not (_inventory.call("get_resource_ids") as Array).has(product_id):
 		return _result(false, &"invalid_product")
-	var total_price := int(offer.get("price", 0)) * quantity
+	var total_price := _discounted_amount(
+		int(offer.get("price", 0)),
+		_purchase_discount
+	) * quantity
 	if not bool(_inventory.call("spend_resources", {&"gold": total_price})):
 		return _result(false, &"insufficient_gold")
 	var granted := false
@@ -76,7 +114,7 @@ func purchase_offer(offer_id: StringName, quantity: int = 1) -> Dictionary:
 			granted = bool(_inventory.call(
 				"add_resource",
 				product_id,
-				int(offer.get("quantity", 1)) * quantity
+				_material_quantity(int(offer.get("quantity", 1))) * quantity
 			))
 		&"tool":
 			granted = bool(_inventory.call("grant_tool", product_id))
@@ -97,7 +135,11 @@ func purchase_offer(offer_id: StringName, quantity: int = 1) -> Dictionary:
 		"offer_id": String(offer_id),
 		"product_kind": String(product_kind),
 		"product_id": String(product_id),
-		"quantity": int(offer.get("quantity", 1)) * quantity,
+		"quantity": (
+			_material_quantity(int(offer.get("quantity", 1)))
+			if product_kind == &"resource"
+			else int(offer.get("quantity", 1))
+		) * quantity,
 		"gold_spent": total_price,
 	})
 
@@ -119,7 +161,14 @@ func get_available_recipes() -> Array[Dictionary]:
 			continue
 		if not _owns_required_tools(recipe):
 			continue
-		result.append(recipe.duplicate(true))
+		var projection := recipe.duplicate(true)
+		var base_fee := int(projection.get("processing_fee", 0))
+		projection["base_processing_fee"] = base_fee
+		projection["processing_fee"] = _discounted_amount(
+			base_fee,
+			_processing_fee_discount
+		)
+		result.append(projection)
 	return result
 
 
@@ -141,7 +190,11 @@ func craft(recipe_id: StringName, quantity: int = 1) -> Dictionary:
 	if not _owns_required_tools(recipe):
 		return _result(false, &"tool_required")
 	var total_cost := _multiply_cost(recipe.get("cost", {}) as Dictionary, quantity)
-	total_cost["gold"] = int(recipe.get("processing_fee", 0)) * quantity
+	var processing_fee := _discounted_amount(
+		int(recipe.get("processing_fee", 0)),
+		_processing_fee_discount
+	) * quantity
+	total_cost["gold"] = processing_fee
 	if not bool(_inventory.call("spend_resources", total_cost)):
 		return _result(false, &"insufficient_resources")
 	var result_kind := StringName(recipe.get("result_kind", ""))
@@ -156,7 +209,7 @@ func craft(recipe_id: StringName, quantity: int = 1) -> Dictionary:
 			"quantity": quantity,
 			"quality": String(recipe.get("quality", "common")),
 			"material_tier": String(recipe.get("material_tier", "normal")),
-			"processing_fee": int(recipe.get("processing_fee", 0)) * quantity,
+			"processing_fee": processing_fee,
 		})
 	if result_kind == &"sword_soul":
 		return _result(true, &"intent_ready", {
@@ -166,7 +219,7 @@ func craft(recipe_id: StringName, quantity: int = 1) -> Dictionary:
 			"quantity": quantity,
 			"quality": String(recipe.get("quality", "common")),
 			"material_tier": String(recipe.get("material_tier", "normal")),
-			"processing_fee": int(recipe.get("processing_fee", 0)) * quantity,
+			"processing_fee": processing_fee,
 		})
 	_refund(total_cost)
 	return _result(false, &"invalid_result")
@@ -175,7 +228,9 @@ func craft(recipe_id: StringName, quantity: int = 1) -> Dictionary:
 func list_for_sale(item_id: StringName, quantity: int, _legacy_unit_price: int = 0) -> Dictionary:
 	if not is_configured():
 		return _result(false, &"not_configured")
-	var unit_price := int(_inventory.call("get_equipment_sale_value", item_id))
+	var unit_price := roundi(
+		float(_inventory.call("get_equipment_sale_value", item_id)) * _sale_multiplier
+	)
 	if unit_price <= 0:
 		return _result(false, &"listing_rejected")
 	if not bool(_inventory.call("list_equipment_for_sale", item_id, quantity, unit_price)):
@@ -214,6 +269,16 @@ func _multiply_cost(cost: Dictionary, quantity: int) -> Dictionary:
 	for resource_variant in cost:
 		result[String(resource_variant)] = int(cost[resource_variant]) * quantity
 	return result
+
+
+func _discounted_amount(base_amount: int, discount: float) -> int:
+	if base_amount <= 0:
+		return 0
+	return maxi(1, floori(float(base_amount) * (1.0 - discount)))
+
+
+func _material_quantity(base_quantity: int) -> int:
+	return maxi(1, ceili(float(base_quantity) * _material_yield_multiplier))
 
 
 func _refund(cost: Dictionary) -> void:

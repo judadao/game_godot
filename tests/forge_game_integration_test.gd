@@ -108,6 +108,46 @@ func _run() -> void:
 		"Forge actions must immediately persist blueprint and inventory state."
 	)
 
+	game.call("close_ui", ui)
+	await process_frame
+	town.call("apply_dict", {"building_levels": {"market": 0}})
+	save_spy.saved_payload.clear()
+	game.call("_open_town_service_ui", &"town_hall")
+	await process_frame
+	var hall_ui := game.call("get_open_ui", "TownHallUI") as Control
+	_expect(hall_ui != null, "Town Hall must open for integrated development management.")
+	if hall_ui != null:
+		hall_ui.call("select_upgrade_building", &"market")
+		var upgraded := bool(hall_ui.call("request_upgrade"))
+		_expect(upgraded, "Town Hall must complete the selected market project.")
+		_expect(
+			int(town.call("get_building_level", &"market")) == 1
+				and not save_spy.saved_payload.is_empty(),
+			"Town Hall upgrades must persist immediately through Game authority."
+		)
+		var discounted_offers := forge.call("get_shop_offers", &"material_store") as Array
+		var discounted_wood := _find_offer(discounted_offers, &"material_wood_bundle")
+		var base_wood := game.get("forge_catalog").call(
+			"get_offer", &"material_wood_bundle"
+		) as Dictionary
+		_expect(
+			int(discounted_wood.get("price", 0)) < int(base_wood.get("price", 0)),
+			"A persisted market upgrade must immediately refresh live forge prices."
+		)
+		var current_map := game.get("current_map") as Node
+		var modular_visuals := current_map.get_node_or_null(
+			"ParallaxBackground/ModularVisuals"
+		) if current_map != null else null
+		var market_visual := _find_object_visual(
+			modular_visuals,
+			"equipment_blueprint_shop"
+		)
+		_expect(
+			market_visual != null
+				and int(market_visual.get_meta("town_upgrade_level", -1)) == 1,
+			"Town upgrades must immediately project onto the authoritative modular building."
+		)
+
 	game.queue_free()
 	await process_frame
 	quit(0 if _failures == 0 else 1)
@@ -127,6 +167,26 @@ func _highest_card_level(meta: MetaState, card_id: StringName) -> int:
 		if StringName(instance.card_id) == card_id:
 			level = maxi(level, int(instance.level))
 	return level
+
+
+func _find_offer(offers: Array, offer_id: StringName) -> Dictionary:
+	for offer_variant in offers:
+		var offer := offer_variant as Dictionary
+		if StringName(offer.get("id", "")) == offer_id:
+			return offer
+	return {}
+
+
+func _find_object_visual(root_node: Node, object_id: String) -> Node:
+	if root_node == null:
+		return null
+	if String(root_node.get_meta("object_id", "")) == object_id:
+		return root_node
+	for child in root_node.get_children():
+		var found := _find_object_visual(child, object_id)
+		if found != null:
+			return found
+	return null
 
 
 func _expect(condition: bool, message: String) -> void:

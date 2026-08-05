@@ -1,7 +1,7 @@
 extends RefCounted
 
 const DEFAULT_DATA_PATH := "res://data/town_upgrades.json"
-const SKILL_MEMORY_CAPACITIES: Array[int] = [10, 14, 18, 24, 30]
+const BASE_SKILL_MEMORY_CAPACITY := 10
 
 var _loaded := false
 var _inventory: RefCounted
@@ -43,25 +43,66 @@ func get_max_building_level(building_id: StringName) -> int:
 	return (building.get("upgrades", []) as Array).size()
 
 
-func get_skill_memory_capacity() -> int:
-	var library_level := clampi(
-		get_building_level(&"memory_library"),
-		0,
-		SKILL_MEMORY_CAPACITIES.size() - 1
-	)
-	return SKILL_MEMORY_CAPACITIES[library_level]
+func get_building_name(building_id: StringName) -> String:
+	var building := _building_by_id.get(String(building_id), {}) as Dictionary
+	return String(building.get("name", String(building_id).capitalize()))
 
 
-func get_next_upgrade_cost(building_id: StringName) -> Dictionary:
+func get_next_upgrade(building_id: StringName) -> Dictionary:
 	var building := _building_by_id.get(String(building_id), {}) as Dictionary
 	if building.is_empty():
 		return {}
-	var current_level := get_building_level(building_id)
 	var upgrades := building.get("upgrades", []) as Array
-	if current_level < 0 or current_level >= upgrades.size():
+	var level := get_building_level(building_id)
+	if level < 0 or level >= upgrades.size():
 		return {}
-	var upgrade := upgrades[current_level] as Dictionary
+	return (upgrades[level] as Dictionary).duplicate(true)
+
+
+func get_building_effects(building_id: StringName) -> Dictionary:
+	var building := _building_by_id.get(String(building_id), {}) as Dictionary
+	var totals: Dictionary = {}
+	var purchased_count := mini(
+		get_building_level(building_id),
+		(building.get("upgrades", []) as Array).size()
+	)
+	for index in purchased_count:
+		var upgrade := (building.get("upgrades", []) as Array)[index] as Dictionary
+		for effect_variant in upgrade.get("effects", {}) as Dictionary:
+			var effect_id := String(effect_variant)
+			totals[effect_id] = float(totals.get(effect_id, 0.0)) + float(
+				(upgrade.get("effects", {}) as Dictionary)[effect_variant]
+			)
+	return totals
+
+
+func get_effect_value(effect_id: StringName) -> float:
+	var total := 0.0
+	for building_id in get_building_ids():
+		total += float(get_building_effects(building_id).get(String(effect_id), 0.0))
+	return total
+
+
+func get_skill_memory_capacity() -> int:
+	return BASE_SKILL_MEMORY_CAPACITY + int(get_effect_value(&"skill_memory_capacity_bonus"))
+
+
+func get_raw_next_upgrade_cost(building_id: StringName) -> Dictionary:
+	var upgrade := get_next_upgrade(building_id)
 	return (upgrade.get("cost", {}) as Dictionary).duplicate(true)
+
+
+func get_next_upgrade_cost(building_id: StringName) -> Dictionary:
+	var cost := get_raw_next_upgrade_cost(building_id)
+	if cost.is_empty() or building_id == &"town_hall":
+		return cost
+	var discount := clampf(get_effect_value(&"town_upgrade_cost_discount"), 0.0, 0.5)
+	if discount <= 0.0:
+		return cost
+	for resource_variant in cost:
+		var amount := int(cost[resource_variant])
+		cost[resource_variant] = maxi(1, floori(float(amount) * (1.0 - discount)))
+	return cost
 
 
 func can_upgrade_building(building_id: StringName) -> bool:
@@ -176,6 +217,12 @@ func _load_data(data_path: String) -> void:
 			if int(upgrade.get("level", -1)) != index + 1:
 				return
 			if (upgrade.get("cost", {}) as Dictionary).is_empty():
+				return
+			if String(upgrade.get("name", "")).is_empty():
+				return
+			if String(upgrade.get("description", "")).is_empty():
+				return
+			if not upgrade.get("effects", {}) is Dictionary:
 				return
 			if String(upgrade.get("visual_flag", "")).is_empty():
 				return

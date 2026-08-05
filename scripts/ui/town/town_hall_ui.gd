@@ -5,6 +5,7 @@ signal closed
 signal opened
 signal toggled(is_open: bool)
 signal canceled
+signal building_upgraded(building_id: StringName, level: int)
 
 const BUILDING_ID := &"town_hall"
 const AGENDA_OVERVIEW := &"overview"
@@ -17,11 +18,11 @@ const RESOURCE_ORDER: Array[StringName] = [
 	&"autumn_core",
 ]
 const BUILDING_SUMMARY: Array[Dictionary] = [
-	{"id": &"town_hall", "name": "Town Hall"},
-	{"id": &"blacksmith", "name": "Player Workshop"},
-	{"id": &"workshop", "name": "Material Yard"},
-	{"id": &"market", "name": "Market"},
-	{"id": &"memory_library", "name": "Memory Library"},
+	{"id": &"town_hall", "name": "Town Hall", "short_name": "Hall"},
+	{"id": &"blacksmith", "name": "Player Workshop", "short_name": "Forge"},
+	{"id": &"workshop", "name": "Material Yard", "short_name": "Yard"},
+	{"id": &"market", "name": "Market", "short_name": "Market"},
+	{"id": &"memory_library", "name": "Memory Library", "short_name": "Library"},
 ]
 
 @onready var close_button: Button = %CloseButton
@@ -41,6 +42,13 @@ const BUILDING_SUMMARY: Array[Dictionary] = [
 @onready var next_level_value: Label = %NextLevelValue
 @onready var level_progress: ProgressBar = %LevelProgress
 @onready var upgrade_status: Label = %UpgradeStatus
+@onready var building_project_grid: GridContainer = %BuildingProjectGrid
+@onready var town_hall_project_button: Button = %TownHallProjectButton
+@onready var blacksmith_project_button: Button = %BlacksmithProjectButton
+@onready var workshop_project_button: Button = %WorkshopProjectButton
+@onready var market_project_button: Button = %MarketProjectButton
+@onready var memory_library_project_button: Button = %MemoryLibraryProjectButton
+@onready var upgrade_effect_description: Label = %UpgradeEffectDescription
 @onready var cost_summary: Label = %CostSummary
 @onready var feedback_label: Label = %FeedbackLabel
 @onready var upgrade_button: Button = %UpgradeButton
@@ -53,6 +61,8 @@ var _selected_agenda: StringName = AGENDA_OVERVIEW
 var _resource_text := ""
 var _resources: Dictionary
 var _upgrade_cost: Dictionary
+var _selected_upgrade_building: StringName = BUILDING_ID
+var _project_buttons: Dictionary
 
 
 func _ready() -> void:
@@ -62,6 +72,17 @@ func _ready() -> void:
 	overview_button.pressed.connect(_select_overview)
 	hall_upgrade_button.pressed.connect(_select_hall_upgrade)
 	upgrade_button.pressed.connect(request_upgrade)
+	_project_buttons = {
+		&"town_hall": town_hall_project_button,
+		&"blacksmith": blacksmith_project_button,
+		&"workshop": workshop_project_button,
+		&"market": market_project_button,
+		&"memory_library": memory_library_project_button,
+	}
+	for building_id_variant in _project_buttons:
+		var building_id := StringName(building_id_variant)
+		var button := _project_buttons[building_id] as Button
+		button.pressed.connect(select_upgrade_building.bind(building_id))
 	_configure_focus()
 	_refresh()
 	_select_agenda(AGENDA_OVERVIEW)
@@ -113,21 +134,42 @@ func set_services(town: RefCounted, inventory: RefCounted) -> void:
 
 
 func get_building_button_count() -> int:
-	return 1 if upgrade_button != null else 0
+	return _project_buttons.size()
 
 
 func get_resource_text() -> String:
 	return _resource_text
 
 
+func select_upgrade_building(building_id: StringName) -> void:
+	if not BUILDING_SUMMARY.any(
+		func(building: Dictionary) -> bool: return building["id"] == building_id
+	):
+		return
+	_selected_upgrade_building = building_id
+	for button_id_variant in _project_buttons:
+		var button_id := StringName(button_id_variant)
+		(_project_buttons[button_id] as Button).set_pressed_no_signal(
+			button_id == _selected_upgrade_building
+		)
+	_refresh()
+	_select_agenda(AGENDA_UPGRADE)
+
+
+func get_selected_upgrade_building() -> StringName:
+	return _selected_upgrade_building
+
+
 func request_upgrade() -> bool:
 	if _town == null or upgrade_button.disabled:
 		return false
-	var upgraded := bool(_town.call("upgrade_building", BUILDING_ID))
+	var upgraded := bool(_town.call("upgrade_building", _selected_upgrade_building))
 	_refresh()
 	_select_agenda(AGENDA_UPGRADE)
 	if upgraded:
-		feedback_label.text = "Construction approved. Town Hall records are updated."
+		var level := int(_town.call("get_building_level", _selected_upgrade_building))
+		building_upgraded.emit(_selected_upgrade_building, level)
+		feedback_label.text = "Construction approved. Town records are updated."
 		feedback_label.add_theme_color_override("font_color", Color(0.58, 0.92, 0.62))
 	else:
 		feedback_label.text = "Construction cannot begin with the current resources."
@@ -159,11 +201,11 @@ func _select_agenda(agenda: StringName) -> void:
 	overview_button.button_pressed = showing_overview
 	hall_upgrade_button.button_pressed = not showing_overview
 	detail_icon.texture = overview_button.icon if showing_overview else hall_upgrade_button.icon
-	detail_title.text = "Village Overview" if showing_overview else "Hall Upgrade"
+	detail_title.text = "Village Overview" if showing_overview else "Town Development"
 	detail_subtitle.text = (
 		"Current stage and building readiness at a glance."
 		if showing_overview
-		else "Review one construction decision and its exact cost."
+		else "Choose a building, review its benefit, and approve construction."
 	)
 	if showing_overview:
 		overview_button.grab_focus()
@@ -244,10 +286,22 @@ func _update_village_overview() -> void:
 
 
 func _update_upgrade() -> void:
-	var level := int(_town.call("get_building_level", BUILDING_ID))
-	var max_level := int(_town.call("get_max_building_level", BUILDING_ID))
-	var cost_variant: Variant = _town.call("get_next_upgrade_cost", BUILDING_ID)
+	var level := int(_town.call("get_building_level", _selected_upgrade_building))
+	var max_level := int(_town.call("get_max_building_level", _selected_upgrade_building))
+	var building_name := String(_town.call("get_building_name", _selected_upgrade_building))
+	var upgrade_variant: Variant = _town.call("get_next_upgrade", _selected_upgrade_building)
+	var upgrade_data := (upgrade_variant as Dictionary) if upgrade_variant is Dictionary else {}
+	var cost_variant: Variant = _town.call("get_next_upgrade_cost", _selected_upgrade_building)
 	_upgrade_cost = (cost_variant as Dictionary) if cost_variant is Dictionary else {}
+	for building in BUILDING_SUMMARY:
+		var building_id := building["id"] as StringName
+		var button := _project_buttons.get(building_id) as Button
+		if button == null:
+			continue
+		var project_level := int(_town.call("get_building_level", building_id))
+		var project_max := int(_town.call("get_max_building_level", building_id))
+		button.text = "%s %d/%d" % [building["short_name"], project_level, project_max]
+		button.set_pressed_no_signal(building_id == _selected_upgrade_building)
 	current_level_value.text = "LEVEL %d" % level
 	next_level_value.text = "MAX" if _upgrade_cost.is_empty() else "LEVEL %d" % (level + 1)
 	level_progress.max_value = maxf(1.0, float(max_level))
@@ -259,10 +313,15 @@ func _update_upgrade() -> void:
 		cost_summary.text = "No further construction is available."
 		upgrade_button.text = "Maximum Level Reached"
 		upgrade_button.disabled = true
-		feedback_label.text = "Town Hall Level %d / %d" % [level, max_level]
+		upgrade_effect_description.text = "%s is fully developed." % building_name
+		feedback_label.text = "%s Level %d / %d" % [building_name, level, max_level]
 		return
 
-	var can_upgrade := bool(_town.call("can_upgrade_building", BUILDING_ID))
+	upgrade_effect_description.text = "%s — %s" % [
+		String(upgrade_data.get("name", "Next Upgrade")),
+		String(upgrade_data.get("description", "")),
+	]
+	var can_upgrade := bool(_town.call("can_upgrade_building", _selected_upgrade_building))
 	upgrade_status.text = "READY" if can_upgrade else "RESOURCES NEEDED"
 	upgrade_status.add_theme_color_override(
 		"font_color",
@@ -270,7 +329,7 @@ func _update_upgrade() -> void:
 	)
 	cost_summary.text = _format_upgrade_cost(_upgrade_cost)
 	upgrade_button.disabled = not can_upgrade
-	upgrade_button.text = "Upgrade to Level %d" % (level + 1)
+	upgrade_button.text = "Upgrade %s to Level %d" % [building_name, level + 1]
 	feedback_label.text = (
 		"All requirements met. Construction can begin."
 		if can_upgrade

@@ -176,6 +176,38 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
+[sub_resource type="StyleBoxFlat" id="ProjectButtonStyle"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.105, 0.09, 0.075, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.31, 0.27, 0.22, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="ProjectSelectedStyle"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.045, 0.19, 0.34, 0.96)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.95, 0.7, 0.28, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [sub_resource type="StyleBoxFlat" id="ProgressBackground"]
 bg_color = Color(0.04, 0.04, 0.043, 1)
 border_width_left = 1
@@ -402,7 +434,7 @@ theme_override_styles/normal = SubResource("AgendaStyle")
 theme_override_styles/pressed = SubResource("AgendaSelectedStyle")
 theme_override_styles/hover = SubResource("AgendaSelectedStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
-text = "Hall Upgrade"
+text = "Town Development"
 alignment = 0
 
 [node name="AgendaSpacer" type="Control" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/AgendaPanel/AgendaLayout"]
@@ -566,6 +598,78 @@ theme_override_font_sizes/font_size = 14
 text = "UNAVAILABLE"
 horizontal_alignment = 2
 
+[node name="BuildingProjectGrid" type="GridContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/DetailPanel/DetailLayout/UpgradeContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 5
+
+[node name="TownHallProjectButton" type="Button" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/DetailPanel/DetailLayout/UpgradeContent/BuildingProjectGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("ProjectButtonStyle")
+theme_override_styles/pressed = SubResource("ProjectSelectedStyle")
+theme_override_styles/hover = SubResource("ProjectSelectedStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Town Hall"
+
+[node name="BlacksmithProjectButton" type="Button" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/DetailPanel/DetailLayout/UpgradeContent/BuildingProjectGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("ProjectButtonStyle")
+theme_override_styles/pressed = SubResource("ProjectSelectedStyle")
+theme_override_styles/hover = SubResource("ProjectSelectedStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Blacksmith"
+
+[node name="WorkshopProjectButton" type="Button" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/DetailPanel/DetailLayout/UpgradeContent/BuildingProjectGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("ProjectButtonStyle")
+theme_override_styles/pressed = SubResource("ProjectSelectedStyle")
+theme_override_styles/hover = SubResource("ProjectSelectedStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Material Yard"
+
+[node name="MarketProjectButton" type="Button" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/DetailPanel/DetailLayout/UpgradeContent/BuildingProjectGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("ProjectButtonStyle")
+theme_override_styles/pressed = SubResource("ProjectSelectedStyle")
+theme_override_styles/hover = SubResource("ProjectSelectedStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Market"
+
+[node name="MemoryLibraryProjectButton" type="Button" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/DetailPanel/DetailLayout/UpgradeContent/BuildingProjectGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("ProjectButtonStyle")
+theme_override_styles/pressed = SubResource("ProjectSelectedStyle")
+theme_override_styles/hover = SubResource("ProjectSelectedStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "Memory Library"
+
 [node name="LevelFlow" type="HBoxContainer" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/DetailPanel/DetailLayout/UpgradeContent"]
 layout_mode = 2
 theme_override_constants/separation = 10
@@ -603,6 +707,14 @@ theme_override_styles/fill = SubResource("ProgressFill")
 max_value = 3.0
 show_percentage = false
 
+[node name="UpgradeEffectDescription" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/DetailPanel/DetailLayout/UpgradeContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.86, 0.88, 1)
+theme_override_font_sizes/font_size = 13
+text = "Select a project to review its next gameplay benefit."
+autowrap_mode = 2
+
 [node name="CostLabel" type="Label" parent="SafeMargin/Center/TownHallWindow/WindowMargin/WindowLayout/Content/DetailPanel/DetailLayout/UpgradeContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.63, 0.7, 0.72, 1)
@@ -636,7 +748,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 focus_mode = 2
-tooltip_text = "Spend the listed resources to upgrade the Town Hall"
+tooltip_text = "Spend the listed resources to complete the selected town project"
 icon = ExtResource("5_upgrade")
 icon_max_width = 24
 expand_icon = true

@@ -171,7 +171,7 @@ func _refresh() -> void:
 	if not is_node_ready():
 		return
 	_store_tier = _resolve_store_tier()
-	tier_label.text = "ETERNAL TORCH  •  TIER %d" % _store_tier
+	tier_label.text = "MATERIAL YARD  •  LEVEL %d" % maxi(0, _store_tier - 1)
 	wallet_label.text = "Wallet  %s G" % _format_number(_resource_amount(&"gold"))
 	_refresh_filter_buttons()
 	_rebuild_offer_rows()
@@ -179,9 +179,9 @@ func _refresh() -> void:
 
 
 func _resolve_store_tier() -> int:
-	if _town == null or not _town.has_method("get_village_stage"):
+	if _town == null or not _town.has_method("get_building_level"):
 		return 1
-	return maxi(1, int(_town.call("get_village_stage")) + 1)
+	return maxi(1, int(_town.call("get_building_level", &"workshop")) + 1)
 
 
 func _set_filter(filter_id: StringName) -> void:

@@ -155,6 +155,14 @@ func _test_town_upgrades_stages_and_visual_projection() -> void:
 	var town = TownManagerScript.new(inventory)
 
 	_expect(town.is_loaded(), "Town upgrade data must load.")
+	_expect(
+		String(town.get_next_upgrade(&"blacksmith").get("description", "")).contains("recipe"),
+		"Every town upgrade must explain its concrete gameplay effect."
+	)
+	_expect(
+		is_equal_approx(float(town.get_effect_value(&"forge_processing_fee_discount")), 0.0),
+		"A new town must not receive unearned upgrade effects."
+	)
 	_expect(town.get_village_stage() == 0, "A new town must begin at village stage zero.")
 	_expect(
 		town.get_village_stage_id() == &"settlement",
@@ -181,8 +189,21 @@ func _test_town_upgrades_stages_and_visual_projection() -> void:
 	)
 
 	_expect(town.upgrade_building(&"blacksmith"), "Blacksmith level one must upgrade.")
+	_expect(
+		int(town.get_effect_value(&"forge_recipe_tier")) == 1,
+		"Blacksmith level one must expose its recipe-tier effect."
+	)
 	_expect(town.upgrade_building(&"workshop"), "Workshop level one must upgrade.")
+	_expect(
+		int(town.get_effect_value(&"material_store_tier")) == 1,
+		"Workshop level one must unlock the basic material-store tier."
+	)
 	_expect(town.upgrade_building(&"market"), "Market level one must upgrade.")
+	_expect(
+		float(town.get_effect_value(&"market_purchase_discount")) > 0.0
+			and float(town.get_effect_value(&"market_sale_bonus")) > 0.0,
+		"Market upgrades must improve both buying and selling."
+	)
 	_expect(town.get_village_stage() == 1, "Three total building levels must reach stage one.")
 	_expect(
 		town.get_village_stage_id() == &"growing_village",
@@ -202,6 +223,13 @@ func _test_town_upgrades_stages_and_visual_projection() -> void:
 	_expect(town.upgrade_building(&"workshop"), "Workshop level two must upgrade.")
 	_expect(town.upgrade_building(&"market"), "Market level two must upgrade.")
 	_expect(town.upgrade_building(&"town_hall"), "Town hall level one must upgrade.")
+	var discounted_library_cost: Dictionary = town.get_next_upgrade_cost(&"memory_library")
+	var raw_library_cost: Dictionary = town.get_raw_next_upgrade_cost(&"memory_library")
+	_expect(
+		int(discounted_library_cost.get("autumn_wood", 0))
+			< int(raw_library_cost.get("autumn_wood", 0)),
+		"Town Hall upgrades must lower the cost of other town construction."
+	)
 	_expect(town.get_village_stage() == 2, "Seven total building levels must reach stage two.")
 	_expect(
 		town.get_village_stage_id() == &"prosperous_town",
@@ -215,6 +243,11 @@ func _test_town_upgrades_stages_and_visual_projection() -> void:
 	_expect(
 		bool(prosperous_projection.get("show_blacksmith_level_2", false)),
 		"Building projection must expose the blacksmith level-two visual."
+	)
+	_expect(town.upgrade_building(&"workshop"), "Workshop level three must upgrade.")
+	_expect(
+		is_equal_approx(float(town.get_effect_value(&"material_bundle_bonus")), 0.25),
+		"Master Stockyard must expose its material bundle yield bonus."
 	)
 
 	var poor_inventory = InventoryManagerScript.new()

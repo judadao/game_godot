@@ -6,38 +6,56 @@
       "upgrades": [
         {
           "level": 1,
+          "name": "Working Forge",
+          "description": "Unlock Tier 1 equipment and Sword Soul recipes.",
           "cost": {"autumn_wood": 10, "stone": 5, "magic_shard": 3},
+          "effects": {"forge_recipe_tier": 1},
           "visual_flag": "show_blacksmith_level_1"
         },
         {
           "level": 2,
+          "name": "Tempered Forge",
+          "description": "Unlock Tier 2 recipes and reduce processing fees by 5%.",
           "cost": {"autumn_wood": 20, "stone": 12, "magic_shard": 8, "gold": 20},
+          "effects": {"forge_recipe_tier": 1, "forge_processing_fee_discount": 0.05},
           "visual_flag": "show_blacksmith_level_2"
         },
         {
           "level": 3,
+          "name": "Master Forge",
+          "description": "Unlock Tier 3 recipes and reduce processing fees by another 5%.",
           "cost": {"autumn_wood": 35, "stone": 25, "magic_shard": 15, "gold": 50},
+          "effects": {"forge_recipe_tier": 1, "forge_processing_fee_discount": 0.05},
           "visual_flag": "show_blacksmith_level_3"
         }
       ]
     },
     {
       "id": "workshop",
-      "name": "Workshop",
+      "name": "Material Yard",
       "upgrades": [
         {
           "level": 1,
+          "name": "Supply Shed",
+          "description": "Stock elite materials and precision forge tools.",
           "cost": {"autumn_wood": 12, "stone": 4, "autumn_core": 2},
+          "effects": {"material_store_tier": 1},
           "visual_flag": "show_workshop_level_1"
         },
         {
           "level": 2,
+          "name": "Craft Depot",
+          "description": "Stock boss-grade materials and masterwork forge tools.",
           "cost": {"autumn_wood": 24, "stone": 10, "autumn_core": 6, "gold": 15},
+          "effects": {"material_store_tier": 1},
           "visual_flag": "show_workshop_level_2"
         },
         {
           "level": 3,
+          "name": "Master Stockyard",
+          "description": "Increase every purchased material bundle by 25%.",
           "cost": {"autumn_wood": 40, "stone": 20, "autumn_core": 12, "gold": 40},
+          "effects": {"material_bundle_bonus": 0.25},
           "visual_flag": "show_workshop_level_3"
         }
       ]
@@ -48,17 +66,26 @@
       "upgrades": [
         {
           "level": 1,
+          "name": "Trading Stalls",
+          "description": "Reduce purchase prices by 3% and raise sale values by 5%.",
           "cost": {"autumn_wood": 8, "autumn_core": 4, "gold": 15},
+          "effects": {"market_purchase_discount": 0.03, "market_sale_bonus": 0.05},
           "visual_flag": "show_market_level_1"
         },
         {
           "level": 2,
+          "name": "Merchant Row",
+          "description": "Reduce purchase prices by another 3% and raise sale values by another 5%.",
           "cost": {"autumn_wood": 18, "stone": 6, "autumn_core": 10, "gold": 35},
+          "effects": {"market_purchase_discount": 0.03, "market_sale_bonus": 0.05},
           "visual_flag": "show_market_level_2"
         },
         {
           "level": 3,
+          "name": "Prosperous Exchange",
+          "description": "Reach a 10% purchase discount and a 20% sale-value bonus.",
           "cost": {"autumn_wood": 30, "stone": 15, "autumn_core": 18, "gold": 70},
+          "effects": {"market_purchase_discount": 0.04, "market_sale_bonus": 0.10},
           "visual_flag": "show_market_level_3"
         }
       ]
@@ -69,17 +96,26 @@
       "upgrades": [
         {
           "level": 1,
+          "name": "Survey Office",
+          "description": "Reduce all other town construction costs by 3%.",
           "cost": {"autumn_wood": 15, "stone": 12, "magic_shard": 4, "autumn_core": 3, "gold": 25},
+          "effects": {"town_upgrade_cost_discount": 0.03},
           "visual_flag": "show_town_hall_level_1"
         },
         {
           "level": 2,
+          "name": "Builders' Council",
+          "description": "Reduce all other town construction costs by another 3%.",
           "cost": {"autumn_wood": 30, "stone": 25, "magic_shard": 10, "autumn_core": 8, "gold": 60},
+          "effects": {"town_upgrade_cost_discount": 0.03},
           "visual_flag": "show_town_hall_level_2"
         },
         {
           "level": 3,
+          "name": "Prosperity Charter",
+          "description": "Reach a 10% discount on all other town construction.",
           "cost": {"autumn_wood": 50, "stone": 45, "magic_shard": 20, "autumn_core": 15, "gold": 120},
+          "effects": {"town_upgrade_cost_discount": 0.04},
           "visual_flag": "show_town_hall_level_3"
         }
       ]
@@ -90,22 +126,34 @@
       "upgrades": [
         {
           "level": 1,
+          "name": "Memory Shelves",
+          "description": "Add 4 Sword Soul memory slots.",
           "cost": {"autumn_wood": 12, "stone": 8, "magic_shard": 4},
+          "effects": {"skill_memory_capacity_bonus": 4},
           "visual_flag": "show_memory_library_level_1"
         },
         {
           "level": 2,
+          "name": "Resonance Archive",
+          "description": "Add 4 more Sword Soul memory slots.",
           "cost": {"autumn_wood": 24, "stone": 16, "magic_shard": 8, "gold": 30},
+          "effects": {"skill_memory_capacity_bonus": 4},
           "visual_flag": "show_memory_library_level_2"
         },
         {
           "level": 3,
+          "name": "Echo Repository",
+          "description": "Add 6 more Sword Soul memory slots.",
           "cost": {"autumn_wood": 40, "stone": 28, "magic_shard": 14, "gold": 65},
+          "effects": {"skill_memory_capacity_bonus": 6},
           "visual_flag": "show_memory_library_level_3"
         },
         {
           "level": 4,
+          "name": "Living Chronicle",
+          "description": "Add 6 final Sword Soul memory slots.",
           "cost": {"autumn_wood": 60, "stone": 45, "magic_shard": 24, "autumn_core": 12, "gold": 120},
+          "effects": {"skill_memory_capacity_bonus": 6},
           "visual_flag": "show_memory_library_level_4"
         }
       ]

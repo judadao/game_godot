@@ -175,7 +175,7 @@ State/system instances由 `Game` 建立並持有，不加入 SceneTree：
 | `skill_recipe_manager` | `SkillRecipeManager` | 13 系列、39 招、基本／進階／大師階級與暫用動畫映射的唯讀 catalog；舊 recipe runtime 僅保留 caller 相容 |
 | `growth_choice_queue` | `GrowthChoiceQueue` | wave、EXP Blessing、菁英／Boss loot 的單一 FIFO queue |
 | `inventory_manager` | unnamed `RefCounted` script | resources/equipment runtime model |
-| `town_manager` | unnamed `RefCounted` script | building levels/village stage |
+| `town_manager` | unnamed `RefCounted` script | building levels、data-driven upgrade effects、discounted construction cost、village stage |
 
 `inventory_manager.gd` 與 `town_manager.gd` 沒有 `class_name`，由 `Game` preload
 script 後 `new()`，以 `call()` 溝通。這是 Current，不應在文件中虛構 typed service。
@@ -465,9 +465,10 @@ UI 對上層提供 setter/configure API與 typed signals：
   是 `EnemyArchetype.autumn_catalog()` 的靜態參考，不宣稱 discovery 進度。UI 只透過
   `equip_requested` emit 裝備意圖，由 `Game` 驗證後呼叫 `InventoryManager.equip()`、
   重算玩家屬性並同步 Meta save，不擁有 inventory 或戰鬥規則。
-- `MaterialYardUI`：依 Eternal Torch／village stage 解鎖的鍛造材料與永久工具。
-- `PlayerBlacksmithUI`：圖紙鍛造、blacksmith 等級、Sword Soul 升級與裝備販售桌。
-- `TownHallUI`：village stage、總建築等級、Town Hall 成本與升級操作。
+- `MaterialYardUI`：Level 0 basic stock、依 workshop level 解鎖的高階鍛造材料／永久工具，
+  以及 Level 3 material bundle yield projection。
+- `PlayerBlacksmithUI`：圖紙鍛造、blacksmith recipe tier／加工費、Sword Soul 升級與裝備販售桌。
+- `TownHallUI`：village stage、總建築等級，以及五棟建築的選擇、效果、折扣後成本與升級操作；成功後以 signal 交回 `Game` 立即存檔與刷新 projection。
 - `PauseMenu`：emit save/load/settings/exit-combat/quit 等 intent；Game 只在 active
   combat Run 啟用退出戰鬥，接收 intent 後以失敗結算保留已得資源並回 Town。
 - `DevModeService`：只由 `development/dev_mode_enabled` 控制目前開發建置；啟用時

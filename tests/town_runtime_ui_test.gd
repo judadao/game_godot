@@ -65,7 +65,7 @@ func _run() -> void:
 		root.add_child(ui)
 		ui.call("set_services", town, inventory)
 		await process_frame
-		var expected_building_actions := 1 if ui_name == "TownHallUI" else 0
+		var expected_building_actions := 5 if ui_name == "TownHallUI" else 0
 		_expect(
 			int(ui.call("get_building_button_count")) == expected_building_actions,
 			"%s must expose only building actions owned by its current view." % ui_name

@@ -265,7 +265,7 @@ UI setter/configure API
 | `evolutions.json` | `EvolutionManager` | `fusion_recipes` | 6 recipes |
 | `skills.json` | `SkillRecipeManager` | `series` | 13 個系列 × basic／advanced／master，共 39 招；另含 retired IDs 與暫用 `legacy_vfx_map` |
 | `equipment.json` | `inventory_manager.gd` | `resource_order`, `starting_resources`, `equipment` | 5 resources, 10 equipment |
-| `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 4 buildings × 3 levels, 3 stages |
+| `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 5 buildings；memory library 4 levels、其餘 3 levels；3 stages；每級含 cost／description／effects／visual flag |
 | `divine_gifts.json` | `DivineGiftManager` | `gifts` | 6 個三級 Run-local 神賜 |
 | `combo_finishers.json` | `ComboFinisherCatalog` | `recipes` | 32 個精確三招終結技配方 |
 | `forge_catalog.json` | `ForgeCatalog` | `material_offers`, `equipment_recipes`, `sword_soul_recipes` | Town 鍛造 offer 與 recipe |

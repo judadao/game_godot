@@ -207,7 +207,15 @@ func _test_town_hall() -> void:
 		return
 	if not _require_methods(
 		ui,
-		["open", "set_services", "set_context", "get_context_id", "get_resource_text"],
+		[
+			"open",
+			"set_services",
+			"set_context",
+			"get_context_id",
+			"get_resource_text",
+			"select_upgrade_building",
+			"get_selected_upgrade_building",
+		],
 		"TownHallUI"
 	):
 		await _free_ui(ui)
@@ -228,14 +236,30 @@ func _test_town_hall() -> void:
 			or _visible_text(ui).contains("Settlement"),
 		"TownHallUI must project the current village stage."
 	)
+	var completed: Array[Dictionary] = []
+	ui.connect(
+		"building_upgraded",
+		func(building_id: StringName, level: int) -> void:
+			completed.append({"building_id": building_id, "level": level})
+	)
+	ui.call("select_upgrade_building", &"workshop")
+	_expect(
+		StringName(ui.call("get_selected_upgrade_building")) == &"workshop",
+		"TownHallUI must expose the selected development project."
+	)
 	var upgrade_button := ui.find_child("UpgradeButton", true, false) as Button
 	_expect(upgrade_button != null, "TownHallUI must expose its authored upgrade action.")
 	if upgrade_button != null:
 		upgrade_button.pressed.emit()
 		await process_frame
 	_expect(
-		int(town.call("get_building_level", &"town_hall")) == 1,
-		"TownHallUI must upgrade town_hall and no other building."
+		int(town.call("get_building_level", &"workshop")) == 1
+			and int(town.call("get_building_level", &"town_hall")) == 0,
+		"TownHallUI must upgrade the selected building and no other building."
+	)
+	_expect(
+		completed == [{"building_id": &"workshop", "level": 1}],
+		"TownHallUI must report the exact completed project for immediate persistence."
 	)
 	await _free_ui(ui)
 

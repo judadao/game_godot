@@ -17,6 +17,7 @@ func _run() -> void:
 	_test_equipment_and_sword_soul_crafting()
 	_test_single_sales_table_slot_resolves_once()
 	_test_equipment_quality_scales_sale_value()
+	_test_town_economy_modifiers_affect_all_forge_transactions()
 	_test_inventory_legacy_migration_and_round_trip()
 	quit(0 if _failures == 0 else 1)
 
@@ -26,6 +27,11 @@ func _test_offer_purchase_is_gated_atomic_and_persistent() -> void:
 	inventory.set_resource_amount(&"gold", 1000)
 	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
 	service.set_progression_levels(0, 1)
+	_expect(
+		service.get_shop_offers(&"material_store", true).size()
+			> service.get_shop_offers(&"material_store").size(),
+		"Material Yard projection must retain locked stock for upgrade previews."
+	)
 
 	var locked_snapshot: Dictionary = inventory.to_dict()
 	var locked_result: Dictionary = service.purchase_offer(&"tool_arcane_calipers")
@@ -206,6 +212,49 @@ func _test_equipment_quality_scales_sale_value() -> void:
 		int(common.get("base_sale_value", 0)) < int(rare.get("base_sale_value", 0))
 			and int(rare.get("base_sale_value", 0)) < int(exceptional.get("base_sale_value", 0)),
 		"Higher-quality equipment must have a higher catalog sale value."
+	)
+
+
+func _test_town_economy_modifiers_affect_all_forge_transactions() -> void:
+	var inventory = InventoryManagerScript.new()
+	for resource_id in inventory.get_resource_ids():
+		inventory.set_resource_amount(resource_id, 1000)
+	inventory.grant_blueprint(&"hunter_bow_blueprint")
+	inventory.grant_tool(&"forging_hammer")
+	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
+	service.set_progression_levels(2, 1)
+	service.set_economy_modifiers(0.10, 1.20, 0.10, 1.25)
+
+	var offer := ForgeCatalogScript.new().get_offer(&"material_wood_bundle")
+	var gold_before_purchase: int = inventory.get_resource_amount(&"gold")
+	var wood_before_purchase: int = inventory.get_resource_amount(&"autumn_wood")
+	var purchase: Dictionary = service.purchase_offer(&"material_wood_bundle")
+	_expect(bool(purchase.get("ok", false)), "Discounted material purchase must succeed.")
+	_expect(
+		int(purchase.get("gold_spent", 0)) < int(offer.get("price", 0))
+			and inventory.get_resource_amount(&"gold")
+				== gold_before_purchase - int(purchase.get("gold_spent", 0)),
+		"Market discount must reduce the actual gold charged for purchases."
+	)
+	_expect(
+		inventory.get_resource_amount(&"autumn_wood") == wood_before_purchase + 13,
+		"Master stockyard bonus must increase the actual material bundle yield."
+	)
+
+	var recipe := ForgeCatalogScript.new().get_recipe(&"forge_hunter_bow")
+	var crafted: Dictionary = service.craft(&"forge_hunter_bow")
+	_expect(bool(crafted.get("ok", false)), "Discounted forge recipe must remain craftable.")
+	_expect(
+		int(crafted.get("processing_fee", 0)) < int(recipe.get("processing_fee", 0)),
+		"Blacksmith discount must reduce the actual processing fee."
+	)
+	var base_sale_value := int(inventory.get_equipment_sale_value(&"hunter_bow"))
+	var listed: Dictionary = service.list_for_sale(&"hunter_bow", 1)
+	var sale_slot := listed.get("sale_slot", {}) as Dictionary
+	_expect(
+		bool(listed.get("ok", false))
+			and int(sale_slot.get("unit_price", 0)) > base_sale_value,
+		"Market sale bonus must raise the value placed in sales-table escrow."
 	)
 
 

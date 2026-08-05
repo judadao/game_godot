@@ -5406,6 +5406,11 @@ func _open_town_service_ui(service_id: StringName) -> void:
 	_refresh_forge_progression()
 	if service_id == &"town_hall":
 		town_ui.call("set_services", town_manager, inventory_manager)
+		_connect_with_source_if_present(
+			town_ui,
+			&"building_upgraded",
+			&"_on_town_building_upgraded"
+		)
 	else:
 		town_ui.call("set_services", town_manager, inventory_manager, forge_service)
 	if service_id == &"material_yard":
@@ -5446,20 +5451,9 @@ func _open_town_service_ui(service_id: StringName) -> void:
 
 
 func _material_store_offer_projection() -> Array[Dictionary]:
-	var result: Array[Dictionary] = []
-	for offer_variant in forge_catalog.call("get_all_offers") as Array:
-		var offer := (offer_variant as Dictionary).duplicate(true)
-		if StringName(offer.get("shop_id", "")) != &"material_store":
-			continue
-		var product_kind := StringName(offer.get("product_kind", ""))
-		var product_id := StringName(offer.get("product_id", ""))
-		offer["owned"] = (
-			inventory_manager.call("owns_tool", product_id)
-			if product_kind == &"tool"
-			else inventory_manager.call("get_resource_amount", product_id)
-		)
-		result.append(offer)
-	return result
+	return forge_service.call(
+		"get_shop_offers", &"material_store", true
+	) as Array[Dictionary]
 
 
 func _forge_recipe_projection() -> Array[Dictionary]:
@@ -5682,6 +5676,16 @@ func _on_blacksmith_workshop_upgraded(ui_control: Control) -> void:
 	ui_control.call("set_sale_state", _player_sale_projection())
 
 
+func _on_town_building_upgraded(
+	_building_id: StringName,
+	_level: int,
+	_ui_control: Control
+) -> void:
+	_refresh_forge_progression()
+	_persist_forge_progress()
+	_apply_town_visual_progress()
+
+
 func _persist_forge_progress() -> void:
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	_sync_progression_to_meta()
@@ -5712,8 +5716,21 @@ func _refresh_forge_progression() -> void:
 	)
 	forge_service.call(
 		"set_progression_levels",
-		maxi(int(town_manager.call("get_village_stage")), expedition_unlock_tier),
+		maxi(
+			maxi(
+				0,
+				int(town_manager.call("get_effect_value", &"material_store_tier"))
+			),
+			expedition_unlock_tier
+		),
 		int(town_manager.call("get_building_level", &"blacksmith"))
+	)
+	forge_service.call(
+		"set_economy_modifiers",
+		float(town_manager.call("get_effect_value", &"market_purchase_discount")),
+		1.0 + float(town_manager.call("get_effect_value", &"market_sale_bonus")),
+		float(town_manager.call("get_effect_value", &"forge_processing_fee_discount")),
+		1.0 + float(town_manager.call("get_effect_value", &"material_bundle_bonus"))
 	)
 
 
@@ -5730,24 +5747,41 @@ func _has_legacy_inventory_progress() -> bool:
 func _apply_town_visual_progress() -> void:
 	if not _current_map_matches(TOWN_SCENE_PATH):
 		return
-	var stage := int(town_manager.call("get_village_stage"))
-	var buildings := current_map.get_node_or_null("Buildings")
-	if buildings == null:
+	var modular_visuals := current_map.get_node_or_null(
+		"ParallaxBackground/ModularVisuals"
+	)
+	if modular_visuals == null:
 		return
-	var market := buildings.get_node_or_null("ItemShop") as CanvasItem
-	var residence := buildings.get_node_or_null("EmptyResidence") as CanvasItem
-	var tower := buildings.get_node_or_null("EmptyTowerHouse") as CanvasItem
-	var blacksmith := buildings.get_node_or_null("Blacksmith") as CanvasItem
-	if market != null:
-		market.modulate = Color.WHITE if stage >= 1 else Color(0.58, 0.52, 0.46, 1.0)
-	if residence != null:
-		residence.modulate = Color.WHITE if stage >= 2 else Color(0.60, 0.54, 0.48, 1.0)
-	if tower != null:
-		tower.modulate = Color(1.08, 0.96, 0.80, 1.0) if stage >= 2 else Color(0.56, 0.52, 0.50, 1.0)
-	if blacksmith != null:
-		var smith_level := int(town_manager.call("get_building_level", &"blacksmith"))
-		blacksmith.modulate = Color(1.0, 0.86 + 0.04 * smith_level, 0.76 + 0.06 * smith_level, 1.0)
+	var building_by_object_id := {
+		"material_yard": &"workshop",
+		"player_blacksmith": &"blacksmith",
+		"town_hall": &"town_hall",
+		"sword_soul_shop": &"memory_library",
+		"equipment_blueprint_shop": &"market",
+	}
+	for child in modular_visuals.get_children():
+		_apply_upgrade_visual_to_branch(child, building_by_object_id)
 	_apply_equipment_stats()
+
+
+func _apply_upgrade_visual_to_branch(node: Node, building_by_object_id: Dictionary) -> void:
+	if node.has_meta("object_id"):
+		var object_id := String(node.get_meta("object_id", ""))
+		if building_by_object_id.has(object_id) and node is CanvasItem:
+			var building_id := building_by_object_id[object_id] as StringName
+			var level := int(town_manager.call("get_building_level", building_id))
+			var maximum := maxi(1, int(town_manager.call("get_max_building_level", building_id)))
+			var progress := float(level) / float(maximum)
+			(node as CanvasItem).self_modulate = Color(
+				1.0 + 0.08 * progress,
+				1.0 + 0.045 * progress,
+				1.0 + 0.015 * progress,
+				1.0
+			)
+			node.set_meta("town_upgrade_building_id", String(building_id))
+			node.set_meta("town_upgrade_level", level)
+	for child in node.get_children():
+		_apply_upgrade_visual_to_branch(child, building_by_object_id)
 
 
 func _apply_equipment_stats() -> void:
