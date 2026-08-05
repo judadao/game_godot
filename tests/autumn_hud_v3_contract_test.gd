@@ -51,7 +51,7 @@ func _run() -> void:
 		_expect(autumn_hud.scene_file_path == AUTUMN_HUD_PATH, "Autumn must use AutumnHUD.")
 		_expect(autumn_hud.name == "HUD", "Autumn map must retain the exact HUD adoption path.")
 		for node_path in [
-			"TopLeftStack/ObjectivePanel",
+			"MapTitleOverlay/MapTitlePanel/MapTitleMargin/MapTitleRows/MapTitle",
 			"TopRightMeta",
 			"TopCenterStack/BossHealth",
 			"BottomStage/PlayerVitals",
@@ -85,6 +85,19 @@ func _run() -> void:
 				autumn_hud.has_method(method_name),
 				"AutumnHUD must expose the %s projection API." % method_name
 			)
+		_expect(
+			not (autumn_hud.get_node("TopLeftStack") as Control).visible,
+			"The combat HUD must remove the persistent left-side MISSIONS panel."
+		)
+		autumn_hud.call("set_area_name", "Autumn Forest")
+		var map_title := autumn_hud.get_node(
+			"MapTitleOverlay/MapTitlePanel/MapTitleMargin/MapTitleRows/MapTitle"
+		) as Label
+		_expect(
+			map_title.text == "AUTUMN FOREST"
+				and (autumn_hud.get_node("MapTitleOverlay") as Control).visible,
+			"Entering a combat map must show its name in a temporary centered overlay."
+		)
 		_expect(
 			not autumn_hud.has_node("BottomStage/CardStage/ActionStrip/CooldownStrip"),
 			"AutumnHUD must use AP instead of a card cooldown strip."

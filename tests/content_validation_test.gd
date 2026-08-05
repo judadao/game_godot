@@ -64,8 +64,8 @@ func _run() -> void:
 	var gifts := DivineGiftManager.new()
 	_expect(gifts.load_catalog(), "Divine Gift content must load.")
 	_expect(
-		gifts.get_reward_choices(20).size() == 6,
-		"Vertical slice must ship six Run-local Divine Gifts."
+		gifts.get_reward_choices(20).size() == 20,
+		"The run must ship twenty distinct Run-local Divine Gifts."
 	)
 
 	var inventory_script := load("res://scripts/systems/inventory_manager.gd")
@@ -120,6 +120,7 @@ func _run() -> void:
 		"res://scenes/ui/cards/CardDiscardUI.tscn",
 		"res://scenes/ui/cards/CardGrowthUI.tscn",
 		"res://scenes/combat/ExperienceGem.tscn",
+		"res://scenes/combat/vfx/EvolvedBackgroundAttack.tscn",
 	]:
 		_expect(ResourceLoader.exists(scene_path), "Required scene must exist: %s" % scene_path)
 	var forest := (load("res://scenes/maps/autumn_forest.tscn") as PackedScene).instantiate()

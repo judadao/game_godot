@@ -24,6 +24,7 @@ const REQUIRED_AUTHORED_PATHS := [
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/TopRow",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/BottomRow",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection",
+	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection/FusionGrid",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/SelectionSummary",
 	"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Footer/ConfirmButton",
@@ -144,16 +145,44 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 			"Large viewports must not create an unfinished empty gulf below Divine Gift cards at %s."
 				% viewport_size
 		)
+	ui.call("present_page", _divine_fusion_page())
+	await process_frame
+	await process_frame
+	var fusion_section := ui.get_node(
+		"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection"
+	) as Control
+	var fusion_grid := ui.get_node(
+		"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection/FusionGrid"
+	) as GridContainer
+	var upgrade_section := ui.get_node(
+		"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection"
+	) as Control
+	var fusion_buttons := ui.call("get_choice_buttons") as Array
+	_expect(
+		fusion_section.visible
+			and not upgrade_section.visible
+			and fusion_grid.get_child_count() == 2
+			and fusion_buttons.size() == 2,
+		"Divine fusions must own a dedicated visible section at %s." % viewport_size
+	)
+	for button_variant in fusion_buttons:
+		var fusion_button := button_variant as Button
+		_expect(
+			panel_rect.encloses(_canvas_rect(fusion_button))
+				and fusion_button.tooltip_text.contains("背景"),
+			"Fusion cards must visibly explain their dedicated background attack at %s."
+			% viewport_size
+		)
 	if not _capture_directory.is_empty():
 		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 		await process_frame
 		await RenderingServer.frame_post_draw
 		var capture_path := _capture_directory.path_join(
-			"card_growth_divine_%dx%d.png" % [viewport_size.x, viewport_size.y]
+			"card_growth_fusion_%dx%d.png" % [viewport_size.x, viewport_size.y]
 		)
 		_expect(
 			viewport.get_texture().get_image().save_png(capture_path) == OK,
-			"Divine Gift visual capture must save at %s." % viewport_size
+			"Divine fusion visual capture must save at %s." % viewport_size
 		)
 
 	viewport.queue_free()
@@ -237,6 +266,43 @@ func _divine_gift_page() -> Dictionary:
 				"finisher_mutations": {"poison_damage": 3, "poison_duration": 5.0},
 				"type": "divine",
 				"card_color": "gold",
+			},
+		],
+	}
+
+
+func _divine_fusion_page() -> Dictionary:
+	return {
+		"event_id": 101,
+		"source": "boss",
+		"choices": [
+			{
+				"choice_id": "boss:101:fusion:fire:lightning",
+				"action": "divine_fusion",
+				"left_gift_id": "fire",
+				"right_gift_id": "lightning",
+				"name": "天火雷劫",
+				"description": "融合火焰與雷霆，保留核心效果並創造專屬攻擊。",
+				"accent_color": "#ff6a24",
+				"background_attack": {
+					"name": "天火雷劫・連鎖天罰",
+					"interval": 2.8,
+					"target_count": 5,
+				},
+			},
+			{
+				"choice_id": "boss:101:fusion:dark:ice",
+				"action": "divine_fusion",
+				"left_gift_id": "dark",
+				"right_gift_id": "ice",
+				"name": "永劫冰淵",
+				"description": "融合黑暗與冰霜，保留核心效果並創造專屬攻擊。",
+				"accent_color": "#8b7cff",
+				"background_attack": {
+					"name": "永劫冰淵・凍界脈動",
+					"interval": 4.2,
+					"target_count": 8,
+				},
 			},
 		],
 	}

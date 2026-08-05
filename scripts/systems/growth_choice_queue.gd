@@ -200,6 +200,8 @@ func _divine_gift_choices(
 			"icon": String(reward.get("icon", "✦")),
 			"element": String(reward.get("element", "normal")),
 			"elements": (reward.get("elements", []) as Array).duplicate(),
+			"fusion_stem": String(reward.get("fusion_stem", "")),
+			"fusion_motif": String(reward.get("fusion_motif", "")),
 			"current_effects": (reward.get("current_effects", {}) as Dictionary).duplicate(true),
 			"next_effects": (reward.get("next_effects", {}) as Dictionary).duplicate(true),
 			"finisher_mutations": (reward.get("finisher_mutations", {}) as Dictionary).duplicate(true),
@@ -208,6 +210,9 @@ func _divine_gift_choices(
 			"type": "divine",
 			"kind": String(reward.get("kind", "base")),
 			"accent_color": String(reward.get("accent_color", "")),
+			"background_attack": (
+				reward.get("background_attack", {}) as Dictionary
+			).duplicate(true),
 			"card_color": (
 				"prismatic"
 				if String(reward.get("kind", "base")) == "evolved"
@@ -238,6 +243,9 @@ func _divine_fusion_choices(
 			"type": "divine",
 			"kind": String(fusion.get("kind", "evolved")),
 			"accent_color": String(fusion.get("accent_color", "#f05cff")),
+			"background_attack": (
+				fusion.get("background_attack", {}) as Dictionary
+			).duplicate(true),
 			"card_color": "prismatic",
 		})
 	return choices

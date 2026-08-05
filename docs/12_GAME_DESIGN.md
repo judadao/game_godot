@@ -243,7 +243,9 @@ pool，但 HUD 只投影剩餘時間、威脅數與 Final Rush，不顯示隱藏
 | 經過時間 | 排程事件 |
 |---:|---|
 | 每 60 秒（60–480 秒） | 生成輪替的 Thornling／Charger／Shaman 強敵群；群數隨時間增加 |
-| 180、360 秒 | 生成輪替的 Harbinger／Thorn Colossus／Ember Warden；後段為複數 |
+| 90 秒 | 第一隻 Boss，與十秒 super horde 同時登場 |
+| 180 秒 | 第二隻單 Boss |
+| 300、360、420、480 秒 | 依序生成 2／2／3／4 隻輪替 Boss；480 秒再與 Final Rush 首波疊加為最大量 |
 | 剩餘 30 秒 | HUD 倒數轉紅並立即追加複數強敵與 Boss |
 | Final Rush | 每 7.5 秒追加強敵群；每 15 秒追加複數 Boss |
 | 00:00 | 立即停止排程、解鎖出口並發放待結算的大量資源與寶箱 |
@@ -251,6 +253,8 @@ pool，但 HUD 只投影剩餘時間、威脅數與 Final Rush，不顯示隱藏
 Final Rush 額外增加 50 alive cap、縮短普通 spawn interval 並提高 batch。
 中途 Boss 與 Final Rush Boss 死亡不會提前結算；玩家只要撐到 00:00 即完成關卡，
 不再追加一隻倒數外的 completion Guardian。
+每次擊敗非 completion Boss 會立即啟動十二秒 rapid-level horde：alive cap +85、batch
++34、interval ×0.15，期間普通怪 XP ×3，形成清場後的快速升等潮。
 
 ### 5.2 敵人行為
 
@@ -268,10 +272,11 @@ Final Rush 額外增加 50 alive cap、縮短普通 spawn interval 並提高 bat
 - 撞牆或水平停滯時自動跳躍脫困；
 - slow、stun、burn 狀態。
 
-每隻一般敵人死亡只產生 1 顆、價值 1 XP 的實體 `ExperienceGem`；不得因視覺分片
-把 1 XP 膨脹成 2 XP。Elite／Boss 仍依總值拆成最多 12 顆。
+一般時每隻一般敵人死亡產生 1 顆、價值 1 XP 的實體 `ExperienceGem`；90 秒 super
+horde 與 Boss 後 rapid-level horde 分別將普通怪總值提高為 2／3，並拆成同數量的
+單點 Gem。Elite／Boss 仍依總值拆成最多 12 顆。
 Gem 生成時先向外短暫散射並落回地面，讓範圍技清場直接形成可見的經驗雨；
-之後只在 72 像素內吸引玩家、30 像素內收集，移動速度由 180 加速至 520。
+落地後停留 0.65 秒才可吸取，之後只在 72 像素內吸引玩家、30 像素內收集，移動速度由 180 加速至 520。
 大量低價 Gem 的總和才是 Run 經驗成長來源，但配合高密度怪群必須維持每怪 1 XP。
 寶石使用高前景層級、青色背光與脈衝亮點，必須能在怪海和秋季地景上清楚辨識。
 每次敵人受擊都要在敵人本體上顯示白閃、壓縮回彈與傷害飄字；致死攻擊改為
@@ -481,10 +486,19 @@ mechanics，因此所有不同神賜欄位直接相加、倍率直接相乘，
 並使用元素組合專屬名稱與 accent color。融合材料 ascended 後不再進獎勵池，
 同一融合不能反覆發生；一般 EXP 頁永遠不提供融合。
 
-神賜 inventory 固定三格。未滿三格時可選新神賜或升級已持有神賜；滿三格後獎勵池
-只保留三格內尚未滿級的升級，不能以新神賜覆蓋舊神賜。融合消耗兩項滿級神賜並生成
-一項昇華神賜，因此會釋出一格。三格內所有 mechanics 與中文稱號前綴持續疊加；
+每項 evolved gift 另有依兩項材料名稱與特徵組成的專屬背景自動攻擊。20 項 base Blessing
+各自提供 fusion stem、geometry motif 與 glow color；融合後兩套幾何會交錯共存，而不是
+只抽取數值屬性。火雷、暗冰、毒風仍各有連鎖、脈動、掃蕩動勢。各 profile
+獨立計時、0 AP、不占手牌且不重設 Basic Attack cooldown；結算前會套用目前劍魂的
+傷害、元素附魔、狀態與投射數效果。Boss／Elite 融合頁必須先預覽攻擊名、頻率與目標數。
+
+神賜 inventory 固定四格。未滿四格時可選新神賜或升級已持有神賜；20 項 catalog 的
+每頁候選優先保證 evolved upgrade，再排已持有 base upgrade，最後才補未發現神賜。滿四格後獎勵池
+只保留四格內尚未滿級的升級，不能以新神賜覆蓋舊神賜。融合消耗兩項滿級神賜並生成
+一項昇華神賜，因此會釋出一格。四格內所有 mechanics 與中文稱號前綴持續疊加；
 「主神賜」只標示最近取得者，不取消較早神賜。基礎與昇華神賜名稱、說明皆使用繁中。
+20 項 base Blessing 中，快節奏玩家選定的六項可在八分鐘前完成三次融合；此時間目標不要求
+三項 evolved Blessing 也全部升至 Lv.3。
 
 正式元素只有 water／fire／wind／lightning／ice／poison／light／dark／normal，
 由 `ElementTaxonomy` 統一命名。每個 base 神賜保留一個 canonical `element`；
@@ -577,13 +591,13 @@ Run 初始：
 
 - level = 1；
 - experience = 0；
-- experience required = 100。
+- experience required = 40。
 
 下一級門檻公式：
 
 ```text
-initial_required = 100
-next_required = ceil(previous_required * 1.30 + 25)
+initial_required = 40
+next_required = ceil(previous_required * 1.20 + 12)
 ```
 
 一次取得大量經驗可跨多級，每一級加入 `pending_level_ups`，不會只保留一次升級。
@@ -718,11 +732,13 @@ total-building-level threshold 為 0、3、7。Town 六棟建築的互動範圍�
 
 - Material Yard：Level 0 保留 basic stock；Level 1 解鎖 elite、Level 2 解鎖 boss-grade
   材料與工具，Level 3 令所有購入 material bundle 數量增加 25%。
-- Player Blacksmith：依已購圖紙、素材與 gold 加工費鍛造 equipment／Sword Soul、升級 blacksmith
+- Player Blacksmith：進場先以幾何熔爐、工作台與商店門呈現可互動工坊，選取物件後才開啟
+  對應功能。依已購圖紙、素材與 gold 加工費鍛造 equipment／Sword Soul、升級 blacksmith
   解鎖 recipe Tier；Level 2／3 各降低 5% 加工費並提高品質控制。普通／稀有／罕見／
   傳奇素材必須分開選用與消耗，越高品質會直接提高鍛造成功率與高品質成品機率。
-  玩家可升級 Sword Soul，並從鐵匠鋪進入獨立玩家商店：店內有主角、顧客、櫃台、
-  招客鈴與實際陳列商品。初始木製交易台提供兩格；Market 1／2／3 只會依序解鎖
+  玩家可升級 Sword Soul，並從鐵匠鋪進入獨立玩家商店：置中 1040×640 frame 上方有
+  主角、顧客、櫃台、招客鈴與實際陳列商品；初始不列管理功能，點商品才顯示庫存／定價，
+  點貨架才管理貨架，點招客鈴才查看流言。初始木製交易台提供兩格；Market 1／2／3 只會依序解鎖
   雪松、鍛鐵與大市集櫃台的購買資格，玩家付費安裝後才擴成 3／4／6 個獨立貨架，
   每格空出後由玩家補貨並選價；定價可選親民定價（80%）、公道定價（100%）或
   精品標價（135%）。親民價以較少單件利潤換取最高成交率，公道價維持平衡；無加成
@@ -996,7 +1012,8 @@ S／↓ 不負責攻擊；`card_group_1` 與 `card_group_2` InputMap actions 已
 現有 HUD／Card Hand 提供：
 
 - health、mana 與玩家資訊；
-- 區域、目標、`MM:SS` survival countdown 與 Final Rush 狀態；
+- 進入戰鬥地圖時在正中央短暫顯示地圖名；左側不常駐 MISSIONS／目標面板；
+- `MM:SS` survival countdown 與 Final Rush 狀態；
 - enemy alive/cap；
 - 目前／門檻／距離下一級的 XP bar；
 - AP；
@@ -1073,7 +1090,7 @@ func add_experience(amount: int) -> int:
 		pending_level_ups += 1
 		queued += 1
 		experience_required = int(
-			ceil(float(experience_required) * 1.30 + 25.0)
+			ceil(float(experience_required) * 1.20 + 12.0)
 		)
 	return queued
 ```
@@ -1156,7 +1173,7 @@ multiple Finishers resolve FIFO. The HUD shows formula slots, persistent stacks,
 owned Divine Gifts, Gift-modified names, and the queued ready state.
 
 具名 Finisher 會同時讀取本 Run 實際持有的所有 Divine Gifts，而不是只讀目前標記的
-primary Gift。最多三項 Gift 依取得順序各自增加一組元素來源粒子與對應光色；同一 Gift
+primary Gift。最多四項 Gift 依取得順序各自增加一組元素來源粒子與對應光色；同一 Gift
 不得重複疊層。evolved Gift 以單一昇華層保留其 component elements、等級與融合強調色，
 已被融合移除的 base Gifts 不再另外顯示。這些疊層只改變 presentation，不建立第二套
 傷害、狀態或融合 authority。
@@ -1375,13 +1392,13 @@ Combo 的攻擊提高採每三層一階：每階增加當前基礎攻擊 amount 
 
 ### Horde-first difficulty
 
-Autumn survival uses enemy density and mixed roles instead of weakening the
-player. The ten-minute countdown opens with 24 enemies, continuously grows concurrent
-caps `40 → 140` and spawn batches `8 → 16`; Final Rush adds another 40 cap plus scheduled Elites and
-Harbingers. Amber Moth Swarm adds fragile high-speed pressure while Grove
-Shaman adds long-range support. Normal roles stay defense-free; their `8.0 → 20.0`
-timeline health scale preserves fragile early crowds while letting later survivors
-absorb follow-up hits and show knockback. Elite is never part of the random normal pool.
+Autumn survival uses enemy density and mixed roles instead of weakening the player. The
+8:30 countdown opens with 30 enemies, continuously grows concurrent caps `48 → 170` and
+spawn batches `10 → 20`; at 1:30 a ten-second super horde and the first Boss create the first
+sharp battlefield change, 3:00 adds the second Boss, 5:00 begins plural Boss waves, and 8:00
+stacks the largest wave with Final Rush. Normal roles stay defense-free; their `10.0 → 26.0`
+timeline health scale lets later survivors absorb follow-up hits and show knockback. Elite is
+never part of the random normal pool.
 自動普攻命中時以世界空間短彈道、命中環、實際傷害數字與 `COMBO ×N / POWER +N`
 直接呈現本次強化，讓玩家不必只靠 HUD 判斷是否生效。
 中性普通攻擊的主形狀是朝前方凸出的白青色 `)` 型空心月牙劍氣，由 core blade、

@@ -17,6 +17,7 @@ const DIVINE_GIFT_CHOICE_SCENE := preload(
 @onready var upgrade_top_row: HBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/TopRow
 @onready var upgrade_bottom_row: HBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/BottomRow
 @onready var fusion_section: VBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection
+@onready var fusion_grid: GridContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection/FusionGrid
 @onready var fallback_section: VBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection
 @onready var fallback_grid: GridContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FallbackSection/FallbackGrid
 @onready var selection_summary: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/SelectionSummary
@@ -78,10 +79,8 @@ func present_page(page: Dictionary) -> void:
 		not upgrades.is_empty()
 		or not new_cards.is_empty()
 		or not divine_gifts.is_empty()
-		or not divine_fusions.is_empty()
 	)
-	upgrade_section.visible = upgrade_section.visible or not fusions.is_empty()
-	fusion_section.visible = false
+	fusion_section.visible = not fusions.is_empty() or not divine_fusions.is_empty()
 	fallback_section.visible = not fallbacks.is_empty()
 	selection_summary.visible = not divine_gifts.is_empty() or not divine_fusions.is_empty()
 	($SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/SectionTitle as Label).text = (
@@ -98,13 +97,14 @@ func present_page(page: Dictionary) -> void:
 	for choice in upgrades:
 		_add_growth_choice_button(choice, _compact_upgrade_text(choice))
 	for choice in fusions:
-		_add_growth_choice_button(choice, _compact_fusion_text(choice))
+		_add_fusion_choice_button(choice, _compact_fusion_text(choice))
 	for choice in divine_gifts:
 		_add_growth_choice_button(choice, _compact_divine_gift_text(choice))
 	for choice in divine_fusions:
-		_add_growth_choice_button(choice, _compact_divine_fusion_text(choice))
+		_add_fusion_choice_button(choice, _compact_divine_fusion_text(choice))
 	for choice in fallbacks:
 		_add_choice_button(fallback_grid, choice, _fallback_text(choice))
+	fusion_section.visible = fusion_grid.get_child_count() > 0
 
 	confirm_button.disabled = _choice_buttons.is_empty()
 	confirm_button.text = "確認選擇"
@@ -201,11 +201,11 @@ func _apply_header() -> void:
 		"elite":
 			title_label.text = "選擇菁英戰利品"
 			source_label.text = "階段菁英"
-			instruction_label.text = "提升已持有的祝福，或融合兩項滿級祝福。"
+			instruction_label.text = "提升祝福，或融合出會繼承劍魂效果的專屬背景自動攻擊。"
 		"boss":
 			title_label.text = "選擇首領戰利品"
 			source_label.text = "BOSS 獎勵"
-			instruction_label.text = "提升已持有的祝福，或融合兩項滿級祝福。"
+			instruction_label.text = "提升祝福，或融合出會繼承劍魂效果的專屬背景自動攻擊。"
 		_:
 			title_label.text = "CARD GROWTH"
 			source_label.text = "PENDING CHOICE"
@@ -224,6 +224,12 @@ func _add_growth_choice_button(choice: Dictionary, display_text: String) -> void
 		return
 	var parent := upgrade_top_row if _choice_buttons.size() < 3 else upgrade_bottom_row
 	_add_choice_button(parent, choice, display_text)
+
+
+func _add_fusion_choice_button(choice: Dictionary, display_text: String) -> void:
+	if _choice_buttons.size() >= MAX_GROWTH_CHOICES:
+		return
+	_add_choice_button(fusion_grid, choice, display_text)
 
 
 func _add_choice_button(parent: Control, choice: Dictionary, display_text: String) -> void:
@@ -496,8 +502,12 @@ func _compact_divine_gift_text(choice: Dictionary) -> String:
 
 
 func _compact_divine_fusion_text(choice: Dictionary) -> String:
-	return "✺  %s\n滿級 + 滿級 → 昇華\n%s" % [
+	var profile := choice.get("background_attack", {}) as Dictionary
+	return "✺  %s\n滿級 + 滿級 → 昇華\n背景自動攻擊：%s｜每 %.1f 秒｜%d 目標\n%s" % [
 		_choice_name(choice, "name", "choice_id", "神賜昇華"),
+		String(profile.get("name", "專屬攻擊")),
+		float(profile.get("interval", 0.0)),
+		int(profile.get("target_count", 1)),
 		_bullet_description(_choice_description(
 			choice,
 			"description",
@@ -523,6 +533,12 @@ func _update_selection_summary() -> void:
 
 func _divine_effect_lines(choice: Dictionary) -> Array[String]:
 	var lines: Array[String] = []
+	var background_attack := choice.get("background_attack", {}) as Dictionary
+	if not background_attack.is_empty():
+		lines.append("✺ 背景自動攻擊：%s（%.1f 秒，繼承劍魂）" % [
+			String(background_attack.get("name", "專屬攻擊")),
+			float(background_attack.get("interval", 0.0)),
+		])
 	var effects := choice.get("next_effects", {}) as Dictionary
 	var effect_order := [
 		"combo_stack_bonus",

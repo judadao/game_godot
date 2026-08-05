@@ -33,8 +33,9 @@ const UI_LAYOUTS := [
 		"identity": "ServiceRail",
 		"title": "TitleLabel",
 		"close": "CloseButton",
-		"terms": ["FORGE", "WORKSHOP", "ENTER MARKET"],
-		"minimum_icons": 3,
+		"terms": ["FORGE", "WORKBENCH", "MARKET DOOR"],
+		"minimum_icons": 1,
+		"minimum_icon_paths": 1,
 	},
 	{
 		"name": "TownHallUI",
@@ -237,10 +238,11 @@ func _check_layout(descriptor: Dictionary, viewport_size: Vector2i) -> void:
 			icon_summary["count"],
 		]
 	)
+	var minimum_icon_paths := int(descriptor.get("minimum_icon_paths", 3))
 	_expect(
-		(icon_summary["paths"] as Dictionary).size() >= 3,
-		"%s must use at least three distinct icon textures at %s."
-		% [descriptor["name"], viewport_size]
+		(icon_summary["paths"] as Dictionary).size() >= minimum_icon_paths,
+		"%s must use at least %d distinct icon textures at %s."
+		% [descriptor["name"], minimum_icon_paths, viewport_size]
 	)
 
 	if should_capture:
@@ -322,31 +324,42 @@ func _check_unified_building_frame(
 		"%s content must begin 10px below the shared header at %s."
 		% [ui_name, viewport_size]
 	)
-	_expect(
-		identity != null
-			and identity.custom_minimum_size.x == 218.0
-			and content != null
-			and is_equal_approx(identity_rect.position.x, content_rect.position.x),
-		"%s must use the shared 218px identity column at %s."
-		% [ui_name, viewport_size]
-	)
-	_expect(
-		portrait != null
-			and portrait.custom_minimum_size == Vector2(218.0, 252.0)
-			and portrait.theme_type_variation == &"TownServicePortrait"
-			and identity != null
-			and is_equal_approx(portrait_rect.position.x, identity_rect.position.x),
-		"%s must use the shared 218x252 Town portrait frame at %s."
-		% [ui_name, viewport_size]
-	)
-	_expect(
-		middle != null
-			and middle.custom_minimum_size.x == 270.0
-			and identity != null
-			and is_equal_approx(middle_rect.position.x, identity_rect.end.x + 12.0),
-		"%s must use the shared 270px middle column at %s."
-		% [ui_name, viewport_size]
-	)
+	if ui_name == "PlayerBlacksmithUI":
+		var workshop_interior := ui.find_child("WorkshopInterior", true, false) as Control
+		_expect(
+			workshop_interior != null
+				and workshop_interior.is_visible_in_tree()
+				and content_rect.encloses(_canvas_rect(workshop_interior))
+				and not (ui.find_child("WorkspaceHolder", true, false) as Control).visible,
+			"PlayerBlacksmithUI must open on one full-width geometric workshop floor at %s."
+			% viewport_size
+		)
+	else:
+		_expect(
+			identity != null
+				and identity.custom_minimum_size.x == 218.0
+				and content != null
+				and is_equal_approx(identity_rect.position.x, content_rect.position.x),
+			"%s must use the shared 218px identity column at %s."
+			% [ui_name, viewport_size]
+		)
+		_expect(
+			portrait != null
+				and portrait.custom_minimum_size == Vector2(218.0, 252.0)
+				and portrait.theme_type_variation == &"TownServicePortrait"
+				and identity != null
+				and is_equal_approx(portrait_rect.position.x, identity_rect.position.x),
+			"%s must use the shared 218x252 Town portrait frame at %s."
+			% [ui_name, viewport_size]
+		)
+		_expect(
+			middle != null
+				and middle.custom_minimum_size.x == 270.0
+				and identity != null
+				and is_equal_approx(middle_rect.position.x, identity_rect.end.x + 12.0),
+			"%s must use the shared 270px middle column at %s."
+			% [ui_name, viewport_size]
+		)
 	_expect(
 		close_button != null
 			and close_button.custom_minimum_size == Vector2(104.0, 42.0)
@@ -408,7 +421,7 @@ func _check_alternate_states(
 				% viewport_size
 			)
 		"PlayerBlacksmithUI":
-			ui.call("select_blacksmith_service", &"workshop_upgrade")
+			(ui.find_child("UpgradeObjectButton", true, false) as Button).pressed.emit()
 			await process_frame
 			_expect(
 				_visible_text(ui).contains("Workshop Level"),
@@ -432,6 +445,43 @@ func _check_alternate_states(
 					and ledger.text.contains("GOLD")
 					and ledger.text.contains("貨架"),
 				"Player market must keep gold and shelf capacity visible at %s."
+				% viewport_size
+			)
+			var market_window := ui.find_child("PlayerMarketWindow", true, false) as Control
+			var store_interior := ui.find_child("StoreInterior", true, false) as Control
+			var market_content := market_window.find_child("Content", true, false) as HBoxContainer
+			var inventory_panel := market_window.find_child("InventoryPanel", true, false) as Control
+			var shelves_panel := market_window.find_child("ShelvesPanel", true, false) as Control
+			var rumor_panel := market_window.find_child("RumorPanel", true, false) as Control
+			_expect(
+				market_window.custom_minimum_size == Vector2(1040.0, 640.0)
+					and market_window.size.x <= 1040.5
+					and market_window.size.y <= 640.5
+					and absf(_canvas_rect(market_window).get_center().x - float(viewport_size.x) * 0.5) <= 1.0
+					and absf(_canvas_rect(market_window).get_center().y - float(viewport_size.y) * 0.5) <= 1.0,
+				"Player market must use the centered 1040x640 service frame at %s."
+				% viewport_size
+			)
+			_expect(
+				store_interior != null
+					and store_interior.size.y >= 300.0
+					and market_content != null
+					and not market_content.visible
+					and not inventory_panel.visible
+					and not shelves_panel.visible
+					and not rumor_panel.visible,
+				"Player market must open on the geometric shop floor with management panels folded away at %s."
+				% viewport_size
+			)
+			(ui.find_child("Product1InteractButton", true, false) as Button).pressed.emit()
+			await process_frame
+			_expect(
+				market_content.is_visible_in_tree()
+					and inventory_panel.is_visible_in_tree()
+					and shelves_panel.is_visible_in_tree()
+					and not rumor_panel.visible
+					and _canvas_rect(inventory_panel).end.x <= _canvas_rect(shelves_panel).position.x,
+				"Selecting a counter object must reveal only its non-overlapping stock interaction at %s."
 				% viewport_size
 			)
 		"TownHallUI":

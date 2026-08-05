@@ -59,8 +59,8 @@ func _run() -> void:
 	)
 	_expect(
 		director.scheduled_elite_times == [60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0, 480.0]
-			and director.scheduled_boss_times == [180.0, 360.0],
-		"Strong enemies must arrive each minute and stage bosses at three-minute milestones."
+			and director.scheduled_boss_times == [90.0, 180.0, 300.0, 360.0, 420.0, 480.0],
+		"Strong enemies must arrive each minute while bosses escalate from 1:30 through the eight-minute peak."
 	)
 	_expect(
 		director.base_density_cap >= 48

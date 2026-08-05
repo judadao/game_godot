@@ -16,6 +16,7 @@ signal market_fixture_purchase_requested(fixture_id: StringName)
 @onready var resource_summary: Label = %MarketResourceSummary
 @onready var candidate_list: VBoxContainer = %MarketCandidateList
 @onready var candidate_template: Button = %MarketCandidateTemplate
+@onready var candidate_empty: Label = %MarketCandidateEmpty
 @onready var quick_button: Button = %MarketQuickButton
 @onready var fair_button: Button = %MarketFairButton
 @onready var luxury_button: Button = %MarketLuxuryButton
@@ -43,6 +44,7 @@ signal market_fixture_purchase_requested(fixture_id: StringName)
 @onready var inventory_panel: PanelContainer = %InventoryPanel
 @onready var shelves_panel: PanelContainer = %ShelvesPanel
 @onready var rumor_panel: PanelContainer = %RumorPanel
+@onready var store_interior: PanelContainer = %StoreInterior
 @onready var shelf_interact_button: Button = %ShelfInteractButton
 @onready var product_interact_buttons: Array[Button] = [
 	%Product1InteractButton,
@@ -205,6 +207,7 @@ func _refresh_candidates() -> void:
 			button.visible = false
 			button.queue_free()
 	_candidate_buttons.clear()
+	candidate_empty.visible = _candidates.is_empty()
 	for candidate in _candidates:
 		var key := _candidate_key(candidate)
 		var button := candidate_template.duplicate() as Button
@@ -334,8 +337,9 @@ func _show_context(context_id: StringName) -> void:
 	context_bar.visible = true
 	context_content.visible = true
 	inventory_panel.visible = context_id == &"stock"
-	shelves_panel.visible = context_id == &"shelves"
+	shelves_panel.visible = context_id in [&"stock", &"shelves"]
 	rumor_panel.visible = context_id == &"rumor"
+	store_interior.custom_minimum_size.y = 180.0
 	context_title.text = {
 		&"stock": "櫃台商品  ·  選擇庫存與定價後補貨",
 		&"shelves": "展示架  ·  選擇要檢查的貨架",
@@ -358,6 +362,9 @@ func _hide_context() -> void:
 	inventory_panel.visible = false
 	shelves_panel.visible = false
 	rumor_panel.visible = false
+	store_interior.custom_minimum_size.y = 350.0
+	if shelf_interact_button != null:
+		shelf_interact_button.grab_focus.call_deferred()
 
 
 func _capture_ambient_origins() -> void:

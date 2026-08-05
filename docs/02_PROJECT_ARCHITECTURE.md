@@ -441,7 +441,8 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `StormChargeVFX` | `scenes/combat/vfx/StormChargeVFX.tscn` | 風暴充能專用的原地五節拍 presentation；固定導電主幹由左右地流依序接入雙腳、持劍手與劍身，接觸時只從劍身下游長出有粗細層級的右向分支，高潮後沿同一路徑回縮；不擁有傷害或 buff 規則 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
-| `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | single countdown、scheduled Elite/Boss、Final Rush、XP gem、money/material bags |
+| `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | single countdown、90 秒十秒 super horde、Boss defeat 後 rapid-level horde、scheduled Elite/Boss、Final Rush、XP gem、money/material bags |
+| `EvolvedBackgroundAttack` | `scenes/combat/vfx/EvolvedBackgroundAttack.tscn` | 昇華神賜專屬背景自動攻擊；把兩個來源的 geometry motif 與 glow color 疊成 code-native presentation，特殊元素組合另保留 chain／nova／gale 動勢；傷害仍由 `Game` 與 `CardEffectRunner` 結算 |
 | `EnemyBase` | `scripts/monsters/enemy_base.gd` | archetype、attack、damage、status、reset；大招致死立即結算玩法，再以 unscaled `impact_hold → dissolve → burst` 保留可讀消滅演出 |
 | `AutumnGuardian` | `scripts/monsters/autumn_guardian.gd` | boss phases/pattern profiles |
 | `AutumnSixArmColossusBoss` | `scripts/monsters/autumn_six_arm_colossus_boss.gd` | Autumn regional boss presentation, six-part armature, vertical jaw weak-point exposure; reuses the Guardian combat API |
@@ -470,12 +471,13 @@ UI 對上層提供 setter/configure API與 typed signals：
   重算玩家屬性並同步 Meta save，不擁有 inventory 或戰鬥規則。
 - `MaterialYardUI`：Level 0 basic stock、依 workshop level 解鎖的高階鍛造材料／永久工具，
   以及 Level 3 material bundle yield projection。
-- `PlayerBlacksmithUI`：圖紙鍛造、每張圖紙 Lv.0–5 熟練度／Lv.5 覺醒、blacksmith
+- `PlayerBlacksmithUI`：初始只呈現可互動的幾何熔爐、工作台與商店入口；玩家選取物件後才展開圖紙鍛造、每張圖紙 Lv.0–5 熟練度／Lv.5 覺醒、blacksmith
   recipe tier／加工費與 Sword Soul 升級。鍛造
   以穩鍛／精煉／急鍛／名匠鍛造選擇成本、成功率與品質風險；販售以親民／公道／
   精品定價，並投影「流言菲語」指定商品、具名顧客與高價倍率。`PlayerMarketUI`
-  是獨立 authored 店內 scene，由鐵匠鋪進入、返回時保留原工作區狀態；店內幾何層
-  呈現主角、既有 Town NPC 顧客、櫃台與實際陳列商品。玩家只對空貨架補貨並選擇
+  是獨立 authored 店內 scene，由鐵匠鋪幾何入口進入、返回時回到工坊場景；置中的
+  1040×640 frame 以緊湊店內狀態列呈現主角、既有 Town NPC 顧客、櫃台與實際陳列商品，
+  初始只顯示店內物件；點選商品、貨架或招客鈴後才顯示該物件所需的局部管理面板。玩家只對空貨架補貨並選擇
   親民／公道／精品價格；顧客由系統週期性自行判斷與結帳。Market 建築等級只解鎖
   可購買的家具階級，實際安裝的木製／雪松／鍛鐵／大市集櫃台才提供 2／3／4／6 格。
   高價接受度由 Market 建築效果及已裝備商旅印章加成，UI 不擁有成交亂數或存檔。
@@ -682,9 +684,14 @@ service；修改 mappings或處理順序時須用實際 run驗證。
   `one_way_collision` 平台，不得穿越 continuous floor。
 - director runtime-spawn enemy/guardian/experience gem。
 - `SurvivalWaveDirector` 是 510 秒倒數、開場 30 隻、`48→170` 連續 density curve、
-  `10→20` spawn batch、每分鐘強敵群、180／360 秒複數 Boss 與最後 30 秒 Final Rush
+  `10→20` spawn batch、每分鐘強敵群、90／180 秒單 Boss、300 秒後複數 Boss 與最後 30 秒 Final Rush
   的唯一 authority；普通怪死亡會立即排入補怪，普通怪 HP 倍率沿 timeline 由
   `10.0→26.0`、傷害由 `1.15→2.20`，00:00 直接完成並解鎖出口。
+- 經過 90 秒時另由同一 director 啟動約十秒 super horde：cap 最多追加 70、batch
+  追加 28、interval 乘 0.18，尾段平滑消退；每次非 completion Boss defeat 啟動
+  十二秒 rapid-level horde，cap 追加 85、batch 追加 34、interval 乘 0.15。
+- super horde 的普通怪 XP 倍率為 2，Boss 後 rapid-level horde 為 3；總值仍拆成
+  單點 `ExperienceGem`。Gem 拋射落地後固定停留 0.65 秒才開始吸取。
 - 同一 director 擲骰並生成實體 reward bag：normal／elite／boss 都有各自 money 與
   material chance，material bag 數量為 1／2／3。material payload 由死亡 enemy archetype 映射，
   收集後只以 `reward_bag_collected` 將明確 resource dictionary 交給 `Game`。
@@ -1123,10 +1130,17 @@ Chain 使用依總 Combo 收緊的獨立接續視窗，不受卡片效果到期�
 標記為 ascended 並永久離開本 Run 的獎勵池，已完成的融合不能再次產生。一般 EXP
 頁不得出現融合；融合只屬於菁英／Boss loot source。
 
-Run 同時最多持有三項神賜。未滿三項時獎勵可出現新神賜或既有神賜升級；滿三項時
+每項 evolved gift 同時保存一個依兩項材料名稱與特徵組成的 `background_attack` profile。
+20 個 base Blessing 各自定義 `fusion_stem`、`fusion_motif` 與 `accent_color`；融合 profile
+固定保留兩個 `geometry_modules` 與兩個 `glow_colors`，特殊元素組合再選用 chain／nova／gale
+的移動方式。`Game` 為每個 profile 維持獨立 timer，以 0 AP、不中斷 Basic
+Attack cooldown 的方式呼叫 `CardEffectRunner`；建卡時先經
+`_apply_combo_infusions_to_card()`，因此目前劍魂的傷害、元素、狀態與投射數會繼承到背景攻擊。
+
+Run 同時最多持有四項神賜。未滿四項時獎勵可出現新神賜或既有神賜升級；滿四項時
 只能出現目前持有且未滿級的升級選項，直到兩項滿級神賜融合並釋出空位。加入或升級
 任一神賜不得覆蓋其他 slot；效果與中文稱號前綴都依取得順序合併投影，HUD 必須顯示
-三個 slot，不能只顯示最後一項或前兩項。
+四個 slot，不能只顯示最後一項或前兩項。
 
 Dash Edge 與 Gale Drive 保留為 legacy catalog cards，但標記 `combat_hand = false`，
 不進 Deck Builder、預設背包或戰鬥獎勵；其 infusion 仍以
@@ -1183,9 +1197,8 @@ Autumn 的唯一 combat presentation root 是
 
 ```text
 AutumnHUD
-├── TopLeftStack
-│   ├── ActiveStatusList
-│   └── ObjectivePanel
+├── MapTitleOverlay（換圖時中央短暫顯示地圖名）
+├── TopLeftStack（compatibility path，runtime hidden）
 ├── TopCenterStack
 │   ├── BossHealth
 │   └── SkillToastStack

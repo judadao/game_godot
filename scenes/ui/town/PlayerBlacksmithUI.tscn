@@ -464,12 +464,262 @@ visible = false
 layout_mode = 2
 text = "Gold 0  |  Wood 0  |  Stone 0  |  Shards 0  |  Cores 0"
 
+[node name="WorkshopContextBar" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+
+[node name="WorkshopContextTitle" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/WorkshopContextBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.98, 0.78, 0.36, 1)
+theme_override_font_sizes/font_size = 17
+text = "物件互動"
+vertical_alignment = 1
+
+[node name="WorkshopBackButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/WorkshopContextBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(164, 40)
+layout_mode = 2
+theme_override_styles/normal = SubResource("ServiceNormal")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "返回工坊場景"
+
 [node name="MainContent" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
+[node name="WorkshopInterior" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="WorkshopCanvas" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior"]
+layout_mode = 2
+
+[node name="BackWall" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.095, 0.075, 0.06, 1)
+mouse_filter = 2
+
+[node name="Floor" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+layout_mode = 1
+anchor_top = 0.64
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.19, 0.125, 0.075, 1)
+mouse_filter = 2
+
+[node name="ForgeObject" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+layout_mode = 1
+anchor_left = 0.035
+anchor_top = 0.1
+anchor_right = 0.35
+anchor_bottom = 0.88
+theme_override_styles/panel = SubResource("ServiceNormal")
+
+[node name="Geometry" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject"]
+layout_mode = 2
+
+[node name="Chimney" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
+layout_mode = 1
+anchor_left = 0.4
+anchor_right = 0.6
+anchor_bottom = 0.28
+color = Color(0.22, 0.2, 0.18, 1)
+mouse_filter = 2
+
+[node name="Body" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
+layout_mode = 1
+anchor_left = 0.18
+anchor_top = 0.2
+anchor_right = 0.82
+anchor_bottom = 0.76
+color = Color(0.31, 0.27, 0.23, 1)
+mouse_filter = 2
+
+[node name="Hearth" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
+layout_mode = 1
+anchor_left = 0.31
+anchor_top = 0.43
+anchor_right = 0.69
+anchor_bottom = 0.65
+color = Color(0.94, 0.34, 0.08, 1)
+mouse_filter = 2
+
+[node name="Name" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
+layout_mode = 1
+anchor_top = 0.75
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 0.78, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+text = "ARCANE FORGE\n熔爐"
+horizontal_alignment = 1
+vertical_alignment = 1
+mouse_filter = 2
+
+[node name="ForgeObjectButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
+unique_name_in_owner = true
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+tooltip_text = "使用熔爐鍛造已取得的圖紙"
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+flat = true
+
+[node name="UpgradeObject" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+layout_mode = 1
+anchor_left = 0.37
+anchor_top = 0.2
+anchor_right = 0.68
+anchor_bottom = 0.88
+theme_override_styles/panel = SubResource("ServiceNormal")
+
+[node name="Geometry" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject"]
+layout_mode = 2
+
+[node name="BenchTop" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
+layout_mode = 1
+anchor_left = 0.12
+anchor_top = 0.28
+anchor_right = 0.88
+anchor_bottom = 0.43
+color = Color(0.55, 0.34, 0.13, 1)
+mouse_filter = 2
+
+[node name="BenchBase" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
+layout_mode = 1
+anchor_left = 0.22
+anchor_top = 0.43
+anchor_right = 0.78
+anchor_bottom = 0.72
+color = Color(0.34, 0.2, 0.09, 1)
+mouse_filter = 2
+
+[node name="Blueprint" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
+layout_mode = 1
+anchor_left = 0.32
+anchor_top = 0.12
+anchor_right = 0.68
+anchor_bottom = 0.3
+color = Color(0.2, 0.55, 0.68, 1)
+mouse_filter = 2
+
+[node name="Name" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
+layout_mode = 1
+anchor_top = 0.74
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(0.63, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "WORKBENCH\n工作台"
+horizontal_alignment = 1
+vertical_alignment = 1
+mouse_filter = 2
+
+[node name="UpgradeObjectButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
+unique_name_in_owner = true
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+tooltip_text = "檢查並改善私人鍛造工坊"
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+flat = true
+
+[node name="MarketObject" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+layout_mode = 1
+anchor_left = 0.71
+anchor_top = 0.08
+anchor_right = 0.965
+anchor_bottom = 0.88
+theme_override_styles/panel = SubResource("ServiceNormal")
+
+[node name="Geometry" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject"]
+layout_mode = 2
+
+[node name="Door" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject/Geometry"]
+layout_mode = 1
+anchor_left = 0.22
+anchor_top = 0.1
+anchor_right = 0.78
+anchor_bottom = 0.76
+color = Color(0.08, 0.18, 0.2, 1)
+mouse_filter = 2
+
+[node name="DoorInset" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject/Geometry"]
+layout_mode = 1
+anchor_left = 0.31
+anchor_top = 0.19
+anchor_right = 0.69
+anchor_bottom = 0.66
+color = Color(0.16, 0.32, 0.34, 1)
+mouse_filter = 2
+
+[node name="Name" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject/Geometry"]
+layout_mode = 1
+anchor_top = 0.76
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(0.64, 0.9, 0.88, 1)
+theme_override_font_sizes/font_size = 18
+text = "MARKET DOOR\n商店入口"
+horizontal_alignment = 1
+vertical_alignment = 1
+mouse_filter = 2
+
+[node name="MarketObjectButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject/Geometry"]
+unique_name_in_owner = true
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+tooltip_text = "走進玩家經營的商店"
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+flat = true
+
+[node name="WorkshopInteractionHint" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -30.0
+offset_bottom = -4.0
+theme_override_colors/font_color = Color(0.75, 0.82, 0.78, 1)
+theme_override_font_sizes/font_size = 14
+text = "WORKSHOP FLOOR  ·  選擇場景物件進行互動"
+horizontal_alignment = 1
+mouse_filter = 2
+
 [node name="ServiceRail" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent"]
+unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(218, 0)
 layout_mode = 2
 
@@ -561,6 +811,8 @@ text = "Enter Market"
 alignment = 0
 
 [node name="WorkspaceHolder" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent"]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

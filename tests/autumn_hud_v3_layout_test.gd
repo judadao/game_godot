@@ -138,6 +138,9 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 			"name": long_formula_name + "主神賜覺醒萬象神化",
 			"level": 3,
 		},
+		{"icon": "焰", "name": long_formula_name + "共鳴恩典", "level": 3},
+		{"icon": "潮", "name": long_formula_name + "潮汐盟約", "level": 2},
+		{"icon": "星", "name": long_formula_name + "星界羅盤", "level": 1},
 	], [], [
 		{"display_name": long_formula_name + "終結技候選"},
 	])
@@ -217,24 +220,28 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	var top_left := hud.get_node("TopLeftStack") as Control
 	var top_center := hud.get_node("TopCenterStack") as Control
 	var top_right := hud.get_node("TopRightMeta") as Control
-	var top_left_rect := _canvas_rect(top_left)
 	var top_center_rect := _canvas_rect(top_center)
 	var top_right_rect := _canvas_rect(top_right)
-	_expect(screen.encloses(top_left_rect), "Top-left status/objective stack must remain on-screen at %s." % viewport_size)
+	_expect(
+		not top_left.visible,
+		"The persistent top-left MISSIONS stack must stay removed at %s." % viewport_size
+	)
 	_expect(screen.encloses(top_center_rect), "Top-center Boss/toast stack must remain on-screen at %s." % viewport_size)
 	_expect(screen.encloses(top_right_rect), "Top-right economy strip must remain on-screen at %s." % viewport_size)
-	_expect(
-		not top_left_rect.intersects(top_center_rect),
-		"Top-left status/objective must not overlap Boss/toast space at %s." % viewport_size
-	)
 	_expect(
 		not top_center_rect.intersects(top_right_rect),
 		"Boss/toast space %s must not overlap the top-right economy strip %s at %s."
 			% [top_center_rect, top_right_rect, viewport_size]
 	)
+	var map_title_overlay := hud.get_node("MapTitleOverlay") as Control
+	var map_title_panel := hud.get_node("MapTitleOverlay/MapTitlePanel") as Control
+	hud.call("set_area_name", "Autumn Forest")
+	await process_frame
 	_expect(
-		top_left_rect.end.y <= bottom_rect.position.y,
-		"Top-left projections must not cover the lower card stage at %s." % viewport_size
+		map_title_overlay.visible
+			and screen.encloses(_canvas_rect(map_title_panel))
+			and _canvas_rect(map_title_panel).get_center().distance_to(screen.get_center()) <= 2.0,
+		"The temporary map title must be centered and on-screen at %s." % viewport_size
 	)
 	_expect(
 		top_center_rect.end.y <= bottom_rect.position.y,

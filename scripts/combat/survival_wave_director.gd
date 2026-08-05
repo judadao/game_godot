@@ -41,7 +41,9 @@ const MONSTER_MATERIALS := {
 @export var scheduled_elite_times: Array[float] = [
 	60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0, 480.0,
 ]
-@export var scheduled_boss_times: Array[float] = [180.0, 360.0]
+@export var scheduled_boss_times: Array[float] = [
+	90.0, 180.0, 300.0, 360.0, 420.0, 480.0,
+]
 @export_range(2.0, 60.0, 0.5) var final_rush_elite_interval := 7.5
 @export_range(5.0, 60.0, 0.5) var final_rush_boss_interval := 15.0
 @export_range(1, 120, 1) var base_density_cap := 48
@@ -52,6 +54,17 @@ const MONSTER_MATERIALS := {
 @export_range(0.1, 1.0, 0.05) var final_rush_spawn_interval_multiplier := 0.40
 @export_range(1, 24, 1) var base_spawn_batch := 10
 @export_range(1, 28, 1) var maximum_spawn_batch := 20
+@export_range(1.0, 600.0, 0.5) var scheduled_horde_time := 90.0
+@export_range(2.0, 30.0, 0.5) var scheduled_horde_duration := 10.0
+@export_range(0, 160, 1) var scheduled_horde_density_bonus := 70
+@export_range(0, 64, 1) var scheduled_horde_batch_bonus := 28
+@export_range(0.05, 1.0, 0.01) var scheduled_horde_interval_multiplier := 0.18
+@export_range(1.0, 5.0, 0.25) var scheduled_horde_experience_multiplier := 2.0
+@export_range(2.0, 30.0, 0.5) var post_boss_horde_duration := 12.0
+@export_range(0, 160, 1) var post_boss_horde_density_bonus := 85
+@export_range(0, 64, 1) var post_boss_horde_batch_bonus := 34
+@export_range(0.05, 1.0, 0.01) var post_boss_horde_interval_multiplier := 0.15
+@export_range(1.0, 8.0, 0.25) var post_boss_experience_multiplier := 3.0
 @export_range(1.0, 30.0, 0.1) var base_normal_health_multiplier := 10.0
 @export_range(1.0, 40.0, 0.1) var maximum_normal_health_multiplier := 26.0
 @export_range(0.25, 2.0, 0.05) var normal_health_curve_exponent := 0.85
@@ -100,6 +113,7 @@ var _exit_unlocked := false
 var _survival_completed := false
 var _rng := RandomNumberGenerator.new()
 var _difficulty_tier := 1
+var _post_boss_horde_remaining := 0.0
 
 
 func configure_difficulty_tier(tier: int) -> void:
@@ -135,6 +149,7 @@ func start_encounter() -> bool:
 	_exit_unlocked = false
 	_survival_completed = false
 	_survival_elapsed = 0.0
+	_post_boss_horde_remaining = 0.0
 	_time_remaining = survival_duration
 	_spawn_remaining = 0.0
 	_recycle_remaining = 0.0
@@ -152,6 +167,7 @@ func advance_survival(delta: float) -> void:
 	if not _running:
 		return
 	var safe_delta := maxf(0.0, delta)
+	_post_boss_horde_remaining = maxf(0.0, _post_boss_horde_remaining - safe_delta)
 	var previous_elapsed := _survival_elapsed
 	_survival_elapsed = minf(survival_duration, _survival_elapsed + safe_delta)
 	_time_remaining = maxf(0.0, survival_duration - _survival_elapsed)
@@ -188,6 +204,7 @@ func get_current_density_cap() -> int:
 	))
 	if is_final_rush():
 		cap += final_rush_density_bonus
+	cap += roundi(float(_current_horde_density_bonus()) * _horde_intensity())
 	cap += 12 * (_difficulty_tier - 1)
 	return maxi(1, cap)
 
@@ -214,6 +231,28 @@ func get_current_enemy_damage_multiplier() -> float:
 
 func get_survival_elapsed() -> float:
 	return _survival_elapsed
+
+
+func is_horde_active() -> bool:
+	return _horde_intensity() > 0.0
+
+
+func get_horde_kind() -> StringName:
+	if _post_boss_horde_remaining > 0.0:
+		return &"post_boss"
+	if _scheduled_horde_intensity() > 0.0:
+		return &"scheduled"
+	return &""
+
+
+func get_current_experience_multiplier() -> float:
+	match get_horde_kind():
+		&"post_boss":
+			return post_boss_experience_multiplier
+		&"scheduled":
+			return scheduled_horde_experience_multiplier
+		_:
+			return 1.0
 
 
 func get_spawned_elite_count() -> int:
@@ -350,7 +389,13 @@ func _strong_enemy_count_for_time(event_time: float) -> int:
 
 
 func _boss_count_for_time(event_time: float) -> int:
-	return clampi(floori(event_time / 180.0), 1, 3)
+	if event_time < 300.0:
+		return 1
+	if event_time < 420.0:
+		return 2
+	if event_time < 480.0:
+		return 3
+	return 4
 
 
 func _final_rush_strong_count(rush_elapsed: float) -> int:
@@ -387,6 +432,9 @@ func _current_spawn_interval() -> float:
 	)
 	if is_final_rush():
 		interval *= final_rush_spawn_interval_multiplier
+	var horde_intensity := _horde_intensity()
+	if horde_intensity > 0.0:
+		interval *= lerpf(1.0, _current_horde_interval_multiplier(), horde_intensity)
 	return maxf(0.05, interval)
 
 
@@ -398,8 +446,42 @@ func _current_spawn_batch() -> int:
 	))
 	if is_final_rush():
 		batch += 2
+	batch += roundi(float(_current_horde_batch_bonus()) * _horde_intensity())
 	batch += 2 * (_difficulty_tier - 1)
 	return maxi(1, batch)
+
+
+func _scheduled_horde_intensity() -> float:
+	var elapsed := _survival_elapsed - scheduled_horde_time
+	if elapsed < 0.0 or elapsed >= scheduled_horde_duration:
+		return 0.0
+	var rise_duration := minf(0.5, scheduled_horde_duration * 0.15)
+	var fade_duration := minf(2.0, scheduled_horde_duration * 0.3)
+	if elapsed < rise_duration:
+		return clampf(elapsed / maxf(0.01, rise_duration), 0.0, 1.0)
+	var fade_start := scheduled_horde_duration - fade_duration
+	if elapsed > fade_start:
+		return clampf((scheduled_horde_duration - elapsed) / maxf(0.01, fade_duration), 0.0, 1.0)
+	return 1.0
+
+
+func _horde_intensity() -> float:
+	if _post_boss_horde_remaining > 0.0:
+		var fade_duration := minf(2.5, post_boss_horde_duration * 0.3)
+		return clampf(_post_boss_horde_remaining / maxf(0.01, fade_duration), 0.0, 1.0)
+	return _scheduled_horde_intensity()
+
+
+func _current_horde_density_bonus() -> int:
+	return post_boss_horde_density_bonus if get_horde_kind() == &"post_boss" else scheduled_horde_density_bonus
+
+
+func _current_horde_batch_bonus() -> int:
+	return post_boss_horde_batch_bonus if get_horde_kind() == &"post_boss" else scheduled_horde_batch_bonus
+
+
+func _current_horde_interval_multiplier() -> float:
+	return post_boss_horde_interval_multiplier if get_horde_kind() == &"post_boss" else scheduled_horde_interval_multiplier
 
 
 func _available_normal_pool() -> Array[StringName]:
@@ -518,12 +600,18 @@ func _on_survival_enemy_defeated(
 		_try_spawn_survival_pickup(reward_position)
 	_try_spawn_reward_bags(reward_position, reward_role, archetype_id, gold)
 	if is_boss:
+		if not completion_boss:
+			_post_boss_horde_remaining = maxf(
+				_post_boss_horde_remaining,
+				post_boss_horde_duration
+			)
+			_spawn_remaining = 0.0
 		boss_defeated.emit(reward_position, completion_boss)
 	_gold += maxi(0, gold)
 	if not completion_boss:
 		_spawn_experience_burst(
 			reward_position,
-			maxi(1, experience),
+			maxi(1, roundi(float(experience) * get_current_experience_multiplier())),
 			6 if is_elite or is_boss else 2
 		)
 	if is_boss and not completion_boss:

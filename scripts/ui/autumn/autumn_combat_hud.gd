@@ -50,6 +50,10 @@ const COMBO_POPUP_MAX_FONT_SIZE := 26
 @onready var _group_label: Label = $BottomStage/ActivityFeed/FeedMargin/FeedRows/InputStrip/GroupBadge
 @onready var _survival_timer_label: Label = $FooterRail/FooterRow/SurvivalTimerLabel
 @onready var _combo_popup: Label = $ComboPopupAnchor/ComboPopup
+@onready var _map_title_overlay: Control = $MapTitleOverlay
+@onready var _map_title_panel: Control = $MapTitleOverlay/MapTitlePanel
+@onready var _map_title: Label = $MapTitleOverlay/MapTitlePanel/MapTitleMargin/MapTitleRows/MapTitle
+@onready var _mission_stack: Control = $TopLeftStack
 
 var _toast_by_key: Dictionary = {}
 var _toast_order: Array[String] = []
@@ -70,6 +74,7 @@ var _projected_action_points := 0.0
 var _last_emphasized_action_points := 0.0
 var _vitals_tweens: Dictionary = {}
 var _combo_popup_tween: Tween
+var _map_title_tween: Tween
 
 
 func _ready() -> void:
@@ -86,6 +91,8 @@ func _ready() -> void:
 	_auto_use_toggle.toggled.connect(auto_use_changed.emit)
 	_on_card_group_changed(_card_hand.get_active_group())
 	_combo_popup.visible = false
+	_mission_stack.visible = false
+	_map_title_overlay.visible = false
 
 
 func _apply_top_rail_geometry() -> void:
@@ -285,9 +292,32 @@ func show_potion_feedback(message: String, successful: bool = true) -> void:
 
 func set_area_name(value: String) -> void:
 	var normalized := value.strip_edges()
-	area_name.text = "%s / MISSIONS" % (
-		normalized.to_upper() if not normalized.is_empty() else "MISSIONS"
-	)
+	var display_name := normalized if not normalized.is_empty() else "UNKNOWN AREA"
+	area_name.text = display_name.to_upper()
+	show_map_title(display_name)
+
+
+func show_map_title(value: String) -> void:
+	if _map_title_overlay == null or _map_title == null:
+		return
+	if _map_title_tween != null and _map_title_tween.is_valid():
+		_map_title_tween.kill()
+	_map_title.text = value.strip_edges().to_upper()
+	_map_title_overlay.visible = true
+	_map_title_overlay.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	_map_title_panel.scale = Vector2(0.96, 0.96)
+	_map_title_panel.pivot_offset = _map_title_panel.size * 0.5
+	_map_title_tween = create_tween()
+	_map_title_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_map_title_tween.set_trans(Tween.TRANS_QUAD)
+	_map_title_tween.set_ease(Tween.EASE_OUT)
+	_map_title_tween.set_parallel(true)
+	_map_title_tween.tween_property(_map_title_overlay, "modulate:a", 1.0, 0.24)
+	_map_title_tween.tween_property(_map_title_panel, "scale", Vector2.ONE, 0.32)
+	_map_title_tween.chain().set_parallel(false)
+	_map_title_tween.tween_interval(1.45)
+	_map_title_tween.tween_property(_map_title_overlay, "modulate:a", 0.0, 0.5)
+	_map_title_tween.tween_callback(func() -> void: _map_title_overlay.visible = false)
 
 
 func set_objective(text: String, progress: String = "") -> void:
@@ -464,7 +494,7 @@ func set_combo_formula(
 	stack_row.add_theme_font_size_override("font_size", 10)
 	stack_row.add_theme_color_override("font_color", Color(0.86, 0.72, 1.0, 1.0))
 	_combo_skill_rows.add_child(stack_row)
-	for gift_variant in gifts.slice(0, 3):
+	for gift_variant in gifts.slice(0, 4):
 		if not gift_variant is Dictionary:
 			continue
 		var gift := gift_variant as Dictionary

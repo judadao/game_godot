@@ -83,6 +83,15 @@ const MATERIAL_QUALITY_LABELS := {
 @onready var close_button: Button = %CloseButton
 @onready var player_blacksmith_window: PanelContainer = $SafeMargin/Center/PlayerBlacksmithWindow
 @onready var player_market_ui: Control = $PlayerMarketUI
+@onready var workshop_interior: PanelContainer = %WorkshopInterior
+@onready var workshop_context_bar: HBoxContainer = %WorkshopContextBar
+@onready var workshop_context_title: Label = %WorkshopContextTitle
+@onready var workshop_back_button: Button = %WorkshopBackButton
+@onready var forge_object_button: Button = %ForgeObjectButton
+@onready var upgrade_object_button: Button = %UpgradeObjectButton
+@onready var market_object_button: Button = %MarketObjectButton
+@onready var service_rail: VBoxContainer = %ServiceRail
+@onready var workspace_holder: VBoxContainer = %WorkspaceHolder
 @onready var forge_service_button: Button = %ForgeServiceButton
 @onready var upgrade_service_button: Button = %UpgradeServiceButton
 @onready var sales_service_button: Button = %SalesServiceButton
@@ -213,9 +222,8 @@ func open() -> void:
 	gold_feedback.text = ""
 	gold_feedback.visible = false
 	visible = true
-	_apply_service()
 	_refresh()
-	_focus_current_workspace()
+	_show_workshop_interior()
 	if not was_visible:
 		opened.emit()
 		toggled.emit(true)
@@ -224,11 +232,13 @@ func open() -> void:
 func close() -> void:
 	if not visible:
 		return
-	visible = false
 	player_market_ui.close()
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused != null and (focused == self or is_ancestor_of(focused)):
 		focused.release_focus()
+		get_viewport().gui_release_focus()
+	visible = false
+	get_viewport().gui_release_focus.call_deferred()
 	closed.emit()
 	toggled.emit(false)
 
@@ -383,6 +393,7 @@ func select_blacksmith_service(service_id: StringName) -> void:
 		return
 	_apply_service()
 	_refresh()
+	_show_workshop_context(service_id)
 	_focus_current_workspace()
 
 
@@ -535,6 +546,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_close_player_market()
 			get_viewport().set_input_as_handled()
 			return
+		if workshop_interior != null and not workshop_interior.visible:
+			_show_workshop_interior()
+			get_viewport().set_input_as_handled()
+			return
 		canceled.emit()
 		close()
 		get_viewport().set_input_as_handled()
@@ -542,6 +557,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _connect_controls() -> void:
 	close_button.pressed.connect(close)
+	workshop_back_button.pressed.connect(_show_workshop_interior)
+	forge_object_button.pressed.connect(select_blacksmith_service.bind(&"forge"))
+	upgrade_object_button.pressed.connect(
+		select_blacksmith_service.bind(&"workshop_upgrade")
+	)
+	market_object_button.pressed.connect(select_blacksmith_service.bind(&"sales_table"))
 	forge_service_button.pressed.connect(select_blacksmith_service.bind(&"forge"))
 	upgrade_service_button.pressed.connect(select_blacksmith_service.bind(&"workshop_upgrade"))
 	sales_service_button.pressed.connect(select_blacksmith_service.bind(&"sales_table"))
@@ -602,7 +623,31 @@ func _close_player_market() -> void:
 	_blacksmith_service = _return_service
 	_apply_service()
 	_refresh()
-	_focus_current_workspace()
+	_show_workshop_interior()
+
+
+func _show_workshop_interior() -> void:
+	if not is_node_ready():
+		return
+	workshop_interior.visible = true
+	workshop_context_bar.visible = false
+	service_rail.visible = false
+	workspace_holder.visible = false
+	forge_object_button.grab_focus()
+
+
+func _show_workshop_context(service_id: StringName) -> void:
+	if not is_node_ready() or service_id == &"sales_table":
+		return
+	workshop_interior.visible = false
+	workshop_context_bar.visible = true
+	service_rail.visible = false
+	workspace_holder.visible = true
+	workshop_context_title.text = (
+		"熔爐 · 選擇圖紙、鍛造法與材料品質"
+		if service_id == &"forge"
+		else "工作台 · 改善私人鍛造工坊"
+	)
 
 
 func _on_market_list_requested(

@@ -131,17 +131,18 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.68, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "FULL-LEVEL FUSION"
+text = "昇華融合 · 專屬背景自動攻擊"
 
 [node name="FusionHint" type="Label" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.72, 0.82, 1)
 theme_override_font_sizes/font_size = 15
-text = "Consumes two distinct LV.3 instances and creates one LV.1 result."
+text = "消耗兩項不同的滿級神賜，創造一項會自動施放、並繼承目前劍魂效果的專屬攻擊。"
 autowrap_mode = 2
 
 [node name="FusionGrid" type="GridContainer" parent="SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/FusionSection"]
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 12
 columns = 3

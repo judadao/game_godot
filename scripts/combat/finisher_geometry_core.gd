@@ -27,7 +27,7 @@ const PARTICLE_LAYER_NAMES: Array[StringName] = [
 ]
 const AUTHORED_OBJECT_LAYER_COUNT := 3
 const BASE_VISUAL_LAYER_COUNT := 6
-const MAX_BLESSING_OVERLAY_PASSES := 3
+const MAX_BLESSING_OVERLAY_PASSES := 4
 const DEFAULT_DIAMETER := 430.0
 const MATERIAL_SHADER := preload("res://shaders/combat/finisher_semantic_material.gdshader")
 const SEMANTIC_PIECE_SCRIPT := preload("res://scripts/combat/finisher_semantic_piece.gd")

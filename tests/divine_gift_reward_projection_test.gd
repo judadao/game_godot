@@ -1,6 +1,6 @@
 extends SceneTree
 
-const BASE_GIFT_COUNT := 6
+const BASE_GIFT_COUNT := 20
 
 var _failures := 0
 
@@ -13,7 +13,7 @@ func _run() -> void:
 	var gifts := DivineGiftManager.new()
 	_expect(gifts.load_catalog(), "神賜資料必須可載入。")
 	var rewards := gifts.get_reward_choices(20)
-	_expect(rewards.size() == BASE_GIFT_COUNT, "未持有神賜時必須投影全部六個 base gift 選項。")
+	_expect(rewards.size() == BASE_GIFT_COUNT, "未持有神賜時必須投影全部二十個 base gift 選項。")
 	var chinese_names: Dictionary = {}
 	for reward in rewards:
 		var gift_id := String(reward.get("gift_id", ""))
@@ -60,6 +60,15 @@ func _run() -> void:
 		for _level in 3:
 			_expect(evolved_manager.add_or_upgrade(gift_id), "融合素材必須能升至滿級：%s" % gift_id)
 	var evolved := evolved_manager.fuse_max_level("resonant_grace", "boundless_font")
+	var composed_attack := evolved.get("background_attack", {}) as Dictionary
+	var geometry_modules := composed_attack.get("geometry_modules", []) as Array
+	_expect(
+		geometry_modules.size() == 2
+			and String((geometry_modules[0] as Dictionary).get("motif", "")) == "pulse_ring"
+			and String((geometry_modules[1] as Dictionary).get("motif", "")) == "venom_orb"
+			and (composed_attack.get("glow_colors", []) as Array).size() == 2,
+		"進化 Blessing 的背景攻擊必須融合兩個來源的幾何 motif 與發光色。"
+	)
 	var evolved_id := String(evolved.get("id", ""))
 	var evolved_reward := _find_reward(evolved_manager.get_reward_choices(20), evolved_id)
 	_expect(not evolved_reward.is_empty(), "未滿級昇華神賜必須投影升級選項。")
@@ -124,6 +133,10 @@ func _queue_preserves_projection(reward: Dictionary) -> bool:
 	for field in ["element", "current_effects", "next_effects", "finisher_mutations"]:
 		if not queued.has(field) or queued[field] != reward.get(field):
 			return false
+	if String(reward.get("kind", "base")) == "base":
+		for trait_field in ["fusion_stem", "fusion_motif", "accent_color"]:
+			if queued.get(trait_field) != reward.get(trait_field):
+				return false
 	if reward.has("elements") and queued.get("elements", []) != reward.get("elements", []):
 		return false
 	return true

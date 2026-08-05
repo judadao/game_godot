@@ -68,6 +68,19 @@ func _run() -> void:
 				and (burst_gem as Node2D).position.y < burst_start.y,
 			"A launched XP gem must scatter before attraction takes over."
 		)
+		burst_gem.call("advance_pickup", 0.2)
+		var settled_position := (burst_gem as Node2D).position
+		burst_gem.call("advance_pickup", 0.25)
+		_expect(
+			(burst_gem as Node2D).position == settled_position
+				and not bool(burst_gem.call("is_collectible")),
+			"A scattered XP gem must visibly rest on the ground before attraction begins."
+		)
+		burst_gem.call("advance_pickup", 0.5)
+		_expect(
+			bool(burst_gem.call("is_collectible")),
+			"A grounded XP gem must become collectible after its settle window."
+		)
 	burst_gem.queue_free()
 
 	var collision_player := CharacterBody2D.new()
@@ -85,11 +98,17 @@ func _run() -> void:
 	collision_gem.call("configure", 9, collision_player)
 	var collision_collected: Array[int] = []
 	collision_gem.connect("collected", func(value: int) -> void: collision_collected.append(value))
+	collision_gem.call("launch", Vector2.ZERO, 0.05)
 	await physics_frame
 	await process_frame
 	_expect(
+		collision_collected.is_empty(),
+		"Physics overlap must not bypass the launch-and-settle presentation window."
+	)
+	collision_gem.call("advance_pickup", 1.0)
+	_expect(
 		collision_collected == [9],
-		"Physics body entry must collect once without mutating Area state inside the signal."
+		"A grounded overlapping gem must collect once after its settle window."
 	)
 	collision_player.queue_free()
 	player.queue_free()

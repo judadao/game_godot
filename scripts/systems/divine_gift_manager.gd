@@ -4,7 +4,7 @@ extends RefCounted
 const DEFAULT_CATALOG_PATH := "res://data/divine_gifts.json"
 const MAX_LEVEL := 3
 const EVOLVED_MAX_LEVEL := 3
-const MAX_OWNED_GIFTS := 3
+const MAX_OWNED_GIFTS := 4
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
 
 var _catalog: Dictionary = {}
@@ -39,11 +39,17 @@ func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
 		var element := String(
 			_element_taxonomy.call("normalize", String(gift.get("element", "")))
 		)
+		var fusion_stem := String(gift.get("fusion_stem", "")).strip_edges()
+		var fusion_motif := String(gift.get("fusion_motif", "")).strip_edges()
+		var accent_color := String(gift.get("accent_color", "")).strip_edges()
 		var levels_variant: Variant = gift.get("effects_by_level", [])
 		if (
 			gift_id.is_empty()
 			or _catalog.has(gift_id)
 			or not bool(_element_taxonomy.call("is_valid", element))
+			or fusion_stem.is_empty()
+			or fusion_motif.is_empty()
+			or not Color.html_is_valid(accent_color)
 			or not levels_variant is Array
 			or (levels_variant as Array).size() != MAX_LEVEL
 		):
@@ -110,6 +116,9 @@ func add_or_upgrade(gift_id: String) -> bool:
 		"prefix": String(definition.get("prefix", "")),
 		"element": String(definition.get("element", "")),
 		"elements": [String(definition.get("element", "normal"))],
+		"fusion_stem": String(definition.get("fusion_stem", gift_id)),
+		"fusion_motif": String(definition.get("fusion_motif", "pulse_ring")),
+		"accent_color": String(definition.get("accent_color", "#f05cff")),
 		"finisher_mutations": (
 			definition.get("finisher_mutations", {}) as Dictionary
 		).duplicate(true),
@@ -147,6 +156,9 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 			"description": String(definition.get("description", "")),
 			"icon": String(definition.get("icon", "✦")),
 			"element": String(definition.get("element", "normal")),
+			"fusion_stem": String(definition.get("fusion_stem", gift_id)),
+			"fusion_motif": String(definition.get("fusion_motif", "pulse_ring")),
+			"accent_color": String(definition.get("accent_color", "#f05cff")),
 			"current_effects": current_effects,
 			"next_effects": _effects_for_level(gift_id, current_level + 1),
 			"finisher_mutations": (
@@ -186,13 +198,17 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 				inherited_mutations,
 				evolved_level + 1
 			),
+			"background_attack": _scaled_background_attack(
+				evolved.get("background_attack", {}) as Dictionary,
+				evolved_level + 1
+			),
 			"accent_color": String(evolved.get("accent_color", "#f05cff")),
 			"level": evolved_level,
 			"next_level": evolved_level + 1,
 			"action": "divine_gift",
 			"kind": "evolved",
 		})
-	choices.shuffle()
+	choices = _prioritize_reward_choices(choices)
 	return choices.slice(0, mini(maxi(0, maximum), choices.size()))
 
 
@@ -202,8 +218,29 @@ func get_upgrade_choices(maximum: int = 3) -> Array[Dictionary]:
 		if int(reward.get("level", 0)) <= 0:
 			continue
 		choices.append(reward.duplicate(true))
-	choices.shuffle()
+	choices = _prioritize_reward_choices(choices)
 	return choices.slice(0, mini(maxi(0, maximum), choices.size()))
+
+
+func _prioritize_reward_choices(choices: Array[Dictionary]) -> Array[Dictionary]:
+	var evolved_upgrades: Array[Dictionary] = []
+	var owned_upgrades: Array[Dictionary] = []
+	var discoveries: Array[Dictionary] = []
+	for choice in choices:
+		if String(choice.get("kind", "base")) == "evolved":
+			evolved_upgrades.append(choice)
+		elif int(choice.get("level", 0)) > 0:
+			owned_upgrades.append(choice)
+		else:
+			discoveries.append(choice)
+	evolved_upgrades.shuffle()
+	owned_upgrades.shuffle()
+	discoveries.shuffle()
+	var result: Array[Dictionary] = []
+	result.append_array(evolved_upgrades)
+	result.append_array(owned_upgrades)
+	result.append_array(discoveries)
+	return result
 
 
 func get_fusion_choices() -> Array[Dictionary]:
@@ -219,7 +256,7 @@ func get_fusion_choices() -> Array[Dictionary]:
 			var right_id := maximum_ids[right_index]
 			var left := _inventory[left_id] as Dictionary
 			var right := _inventory[right_id] as Dictionary
-			var identity := _evolved_identity(_canonical_gift_elements(left, right))
+			var identity := _evolved_identity(left, right)
 			choices.append({
 				"action": "divine_fusion",
 				"left_gift_id": left_id,
@@ -230,6 +267,7 @@ func get_fusion_choices() -> Array[Dictionary]:
 					% [String(left.get("name", left_id)), String(right.get("name", right_id))]
 				),
 				"accent_color": String(identity["accent_color"]),
+				"background_attack": (identity["background_attack"] as Dictionary).duplicate(true),
 				"kind": "evolved",
 			})
 	return choices
@@ -270,7 +308,7 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 		if not evolved_elements.is_empty()
 		else "normal"
 	)
-	var identity := _evolved_identity(evolved_elements)
+	var identity := _evolved_identity(left, right)
 	var evolved := {
 		"id": evolution_id,
 		"name": String(identity["name"]),
@@ -281,6 +319,7 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 		"icon": "✺",
 		"prefix": _evolved_prefix(left, right),
 		"accent_color": String(identity["accent_color"]),
+		"background_attack": (identity["background_attack"] as Dictionary).duplicate(true),
 		"element": primary_element,
 		"elements": evolved_elements,
 		"finisher_mutations": _evolved_mutations(inherited_mutations, 1),
@@ -388,31 +427,110 @@ func _evolved_level_name(base_name: String, level: int) -> String:
 			return base_name
 
 
-func _evolved_identity(elements: Array[String]) -> Dictionary:
+func _evolved_identity(left: Dictionary, right: Dictionary) -> Dictionary:
+	var elements := _canonical_gift_elements(left, right)
 	var sorted := elements.duplicate()
 	sorted.sort()
-	var key := "+".join(sorted)
-	match key:
+	var element_key := "+".join(sorted)
+	var left_stem := String(left.get("fusion_stem", left.get("name", "祝福")))
+	var right_stem := String(right.get("fusion_stem", right.get("name", "祝福")))
+	var evolved_name := "%s・%s" % [left_stem, right_stem]
+	var pattern := "composite_geometry"
+	var attack_suffix := "雙相律動"
+	match element_key:
 		"fire+lightning":
-			return {
-				"name": "天火雷劫",
-				"accent_color": "#ff6a24",
-			}
+			evolved_name = "天火雷劫"
+			pattern = "chain_barrage"
+			attack_suffix = "連鎖天罰"
 		"dark+ice":
-			return {
-				"name": "永劫冰淵",
-				"accent_color": "#8b7cff",
-			}
+			evolved_name = "永劫冰淵"
+			pattern = "abyss_nova"
+			attack_suffix = "凍界脈動"
 		"poison+wind":
-			return {
-				"name": "枯天風暴",
-				"accent_color": "#55e68a",
-			}
+			evolved_name = "枯天風暴"
+			pattern = "venom_gale"
+			attack_suffix = "蝕風迴廊"
+	var left_color := Color.from_string(String(left.get("accent_color", "#f05cff")), Color.MAGENTA)
+	var right_color := Color.from_string(String(right.get("accent_color", "#f05cff")), Color.MAGENTA)
+	var accent := left_color.lerp(right_color, 0.5).lightened(0.12)
+	var modules := _fusion_geometry_modules(left, right)
+	var interval := (_motif_interval(String(left.get("fusion_motif", ""))) + _motif_interval(String(right.get("fusion_motif", "")))) * 0.5
+	var background_attack := {
+		"id": "fusion_%s_%s" % [String(left.get("id", "left")), String(right.get("id", "right"))],
+		"name": "%s・%s" % [evolved_name, attack_suffix],
+		"pattern": pattern,
+		"interval": interval,
+		"damage_scale": 1.0,
+		"target_count": 6,
+		"range": 520.0,
+		"elements": elements.duplicate(),
+		"accent_color": accent.to_html(false),
+		"glow_colors": [left_color.to_html(false), right_color.to_html(false)],
+		"geometry_modules": modules,
+		"description": "%s與%s的幾何攻擊會在背景自動交錯施放。" % [left_stem, right_stem],
+	}
+	return {
+		"name": evolved_name,
+		"accent_color": accent.to_html(false),
+		"background_attack": background_attack,
+	}
+
+
+func _fusion_geometry_modules(left: Dictionary, right: Dictionary) -> Array[Dictionary]:
+	var modules: Array[Dictionary] = []
+	for gift in [left, right]:
+		modules.append({
+			"source_gift_id": String(gift.get("id", "")),
+			"source_name": String(gift.get("name", "")),
+			"stem": String(gift.get("fusion_stem", gift.get("name", ""))),
+			"motif": String(gift.get("fusion_motif", "pulse_ring")),
+			"element": String(gift.get("element", "normal")),
+			"color": String(gift.get("accent_color", "#f05cff")),
+		})
+	return modules
+
+
+func _motif_interval(motif: String) -> float:
+	match motif:
+		"bolt_chain", "choir_bolts", "dawn_blades", "feather_fan":
+			return 2.7
+		"void_diamond", "abyss_eye", "crystal_shard", "mirror_shards":
+			return 3.8
+		"tidal_wave", "moon_waves", "gale_spiral", "venom_petals":
+			return 3.2
 		_:
-			return {
-				"name": "萬象神化",
-				"accent_color": "#f05cff",
-			}
+			return 3.0
+
+
+func get_background_attack_profiles() -> Array[Dictionary]:
+	var profiles: Array[Dictionary] = []
+	for gift_variant in _inventory.values():
+		var gift := gift_variant as Dictionary
+		if String(gift.get("kind", "")) != "evolved":
+			continue
+		var profile := gift.get("background_attack", {}) as Dictionary
+		if profile.is_empty():
+			continue
+		profile = _scaled_background_attack(profile, int(gift.get("level", 1)))
+		profile["source_gift_id"] = String(gift.get("id", ""))
+		profile["source_gift_name"] = String(gift.get("name", ""))
+		profiles.append(profile)
+	return profiles
+
+
+func _scaled_background_attack(profile: Dictionary, level: int) -> Dictionary:
+	var scaled := profile.duplicate(true)
+	var safe_level := clampi(level, 1, EVOLVED_MAX_LEVEL)
+	scaled["damage_scale"] = float(profile.get("damage_scale", 1.0)) * (
+		1.0 + 0.25 * float(safe_level - 1)
+	)
+	scaled["interval"] = maxf(
+		0.6,
+		float(profile.get("interval", 3.0)) * (1.0 - 0.1 * float(safe_level - 1))
+	)
+	scaled["target_count"] = maxi(1, int(profile.get("target_count", 1)) + safe_level - 1)
+	scaled["level"] = safe_level
+	return scaled
 
 
 func _canonical_gift_elements(left: Dictionary, right: Dictionary) -> Array[String]:
@@ -552,10 +670,7 @@ func _ordered_gift_ids() -> Array[String]:
 
 
 func _evolved_prefix(left: Dictionary, right: Dictionary) -> String:
-	var elements: Array[String] = [
-		String(left.get("element", "")),
-		String(right.get("element", "")),
-	]
+	var elements := _canonical_gift_elements(left, right)
 	elements.sort()
 	if elements == ["dark", "ice"]:
 		return "永劫冰獄的"
@@ -563,4 +678,7 @@ func _evolved_prefix(left: Dictionary, right: Dictionary) -> String:
 		return "天火雷劫的"
 	if elements == ["poison", "wind"]:
 		return "枯天風暴的"
-	return "萬象神化的"
+	return "%s・%s者" % [
+		String(left.get("fusion_stem", left.get("name", "祝福"))),
+		String(right.get("fusion_stem", right.get("name", "祝福"))),
+	]

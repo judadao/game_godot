@@ -679,15 +679,16 @@ HUDLayer
 
 - Material Yard：左側店長肖像，中欄 Materials／Forge Tools offers，右欄商品、
   持有量、Material Yard level、數量與購買。
-- Player Blacksmith：左側鍛造研究員肖像；Forge 依圖紙鍛造 equipment／Sword Soul，
+- Player Blacksmith：進場先顯示幾何熔爐、工作台與商店門，不能把服務功能直接列成選單；
+  點選熔爐後才依圖紙鍛造 equipment／Sword Soul，
   Workshop Upgrade 解鎖鍛造上限；recipe detail 顯示該圖紙熟練度、品質機率與
   Lv.5 覺醒狀態。四個 authored 工法按鈕依序顯示 icon／名稱／tooltip，選擇後必須
   在按下 Forge 前更新成本、成功率、品質與素材特性預覽；普通／稀有／罕見／傳奇
   四個 authored 素材品質按鈕必須同步更新精確庫存需求、成功率與成品品質機率。
-  Enter Market 進入獨立 `PlayerMarketUI` 店內 scene，不能把商店經營塞回鐵匠鋪 detail 欄；
-  店內先以可替換的幾何物件呈現櫃台、陳列商品、主角店主、顧客與入口，再以管理層
-  顯示素材／裝備、品質與持有量。店內預設只顯示生活場景；點空展示位才開啟補貨與
-  親民／公道／精品定價，不能同時攤開所有管理操作。顧客使用既有 Town NPC，會自動
+  點選商店門進入獨立 `PlayerMarketUI` 店內 scene，不能把商店經營塞回鐵匠鋪 detail 欄；
+  店內使用置中 1040×640 service frame；上方緊湊狀態列呈現櫃台、陳列商品、主角店主、
+  顧客與入口；初始只顯示店內幾何物件，不能直接列出庫存／貨架／流言功能。點商品展示位
+  才顯示庫存與對應貨架，點牆面貨架只顯示貨架管理，點招客鈴才顯示流言資訊。顧客使用既有 Town NPC，會自動
   逛店、評估價格與結帳，不提供手動「完成交易」按鈕；拒絕高價時商品仍留在架上等待
   下一位客人。親民價成交率最高但單件收入最低，精品價反之；流言顧客、Market 裝潢
   及商旅印章可提高高價接受度。Market 建築 Lv.0／1／2／3 只決定可購買的櫃台階級，
@@ -1165,8 +1166,8 @@ editor preview 只採用一個 authority：
 
 ```text
 AutumnHUD
-├── TopLeftStack
-│   └── ObjectivePanel
+├── MapTitleOverlay（畫面中央、入場後自動淡出）
+├── TopLeftStack（compatibility path，runtime hidden；不得顯示 MISSIONS）
 ├── TopRightMeta
 ├── TopCenterStack
 │   └── BossHealth
@@ -1183,7 +1184,8 @@ AutumnHUD
     └── NavigationHints
 ```
 
-目前目標固定在左上，右上只顯示金錢與選單提示；素材數量留在背包與鍛造相關 UI，
+左側不再常駐目標／MISSIONS；每次傳送或載入戰鬥地圖只在畫面正中央短暫顯示地圖名，
+經淡入、停留與淡出後完全隱藏。右上只顯示金錢與選單提示；素材數量留在背包與鍛造相關 UI，
 不在戰鬥 HUD 顯示意義不明的 SHARD 縮寫。Boss health 使用上方中央的暫時空間。
 底部從 viewport 的 66% 開始，依序放玩家狀態、目前／門檻／距離下一級的 XP、
 即時小數 AP、目前四張牌及右側
@@ -1315,9 +1317,14 @@ UI 必須明示所選 attack 會在 Run 開始後鎖定、免費、自動水平�
 來源且存在兩個不同滿級神賜時才可提供融合；一般 EXP 頁永不提供融合。所有可取得
 神賜都滿級且沒有新選項時，EXP 頁改顯示金錢或素材 fallback。
 
+合法融合必須顯示獨立的「昇華融合・專屬背景自動攻擊」section，不得混在一般升級列
+或隱藏。每張融合卡直接顯示由兩個來源名稱組成的融合名稱、專屬背景攻擊名稱、interval、target count 與
+「繼承劍魂」說明；完整 tooltip 仍保留 description。背景攻擊必須投影兩個來源的幾何 motif
+與發光色，不能退化成只挑幾個數值屬性。五選項上限套用到升級與融合的總和。
+
 玩家可見文案使用「神賜／菁英祝福／昇華」，名稱、說明、階級與融合名稱皆為繁中。
-Autumn HUD 固定容納並顯示三個神賜 slot；滿三項時選擇頁只列既有神賜升級，不得用
-未持有神賜覆蓋任一 slot。三項前綴與效果都持續累加，主要神賜標記只表示最近取得，
+Autumn HUD 固定容納並顯示四個神賜 slot；滿四項時選擇頁只列既有神賜升級，不得用
+未持有神賜覆蓋任一 slot。四項前綴與效果都持續累加，主要神賜標記只表示最近取得，
 不代表其他神賜失效。
 
 ### Responsive contract

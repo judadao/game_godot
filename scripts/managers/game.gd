@@ -149,6 +149,9 @@ const COMBO_EVOLUTIONS := [
 @export var auto_attack_feedback_scene: PackedScene = preload(
 	"res://scenes/combat/AutoAttackFeedback.tscn"
 )
+@export var evolved_background_attack_scene: PackedScene = preload(
+	"res://scenes/combat/vfx/EvolvedBackgroundAttack.tscn"
+)
 @export var elemental_attack_aura_scene: PackedScene = preload(
 	"res://scenes/combat/vfx/ElementalAttackAura.tscn"
 )
@@ -225,6 +228,8 @@ var _pending_reward_instance_ids: Array[String] = []
 var _tactical_slowdown := false
 var _run_auto_attack_card_id := DEFAULT_AUTO_ATTACK_CARD_ID
 var _auto_attack_remaining := 0.0
+var _background_attack_remaining_by_id: Dictionary = {}
+var _last_background_attack_result: Dictionary = {}
 var _resolving_auto_attack_effect := false
 var _auto_attack_hit_stop_generation := 0
 var _named_skill_hit_stop_generation := 0
@@ -354,6 +359,7 @@ func _process(delta: float) -> void:
 	var real_delta := delta / maxf(Engine.time_scale, 0.001)
 	skill_recipe_manager.tick(real_delta)
 	_tick_auto_attack(real_delta)
+	_tick_evolved_background_attacks(real_delta)
 	if _tick_combo_effects(real_delta):
 		_refresh_combo_display()
 	_tick_card_tempo(real_delta)
@@ -574,7 +580,10 @@ func _apply_map_hud_visibility() -> void:
 	var objective_panel := hud.get_node_or_null("TopLeftStack") as CanvasItem
 	var meta_panel := hud.get_node_or_null("TopRightMeta") as CanvasItem
 	if objective_panel != null:
-		objective_panel.visible = not bool(current_map.get_meta("hide_objective_hud", false))
+		objective_panel.visible = (
+			not hud.has_method("show_map_title")
+			and not bool(current_map.get_meta("hide_objective_hud", false))
+		)
 	if meta_panel != null:
 		meta_panel.visible = not bool(current_map.get_meta("hide_meta_hud", false))
 
@@ -1583,6 +1592,8 @@ func _begin_expedition_run(
 	)
 	_run_auto_attack_card_id = _resolve_auto_attack_card_id(meta_state.auto_attack_card_id)
 	_auto_attack_remaining = 0.0
+	_background_attack_remaining_by_id.clear()
+	_last_background_attack_result.clear()
 	_configure_skill_loadout()
 	_last_combo_name = "—"
 	run_state.temporary_buffs["persistent_combo_stacks"] = {}
@@ -1648,6 +1659,8 @@ func _finish_run(victory: bool, outcome: StringName = &"") -> Dictionary:
 	var summary := run_state.finish_run(victory, outcome)
 	victory = bool(summary.get("victory", false))
 	_auto_attack_remaining = 0.0
+	_background_attack_remaining_by_id.clear()
+	_last_background_attack_result.clear()
 	_refresh_combo_runtime_modifiers()
 	_update_player_input_state()
 	_set_tactical_slowdown(false)
@@ -1855,6 +1868,126 @@ func _tick_auto_attack(delta: float) -> void:
 		return
 	if not _try_basic_attack():
 		_auto_attack_remaining = AUTO_ATTACK_RETRY_INTERVAL
+
+
+func _tick_evolved_background_attacks(delta: float) -> void:
+	if player == null or current_map == null:
+		return
+	var profiles := divine_gift_manager.call("get_background_attack_profiles") as Array
+	var active_ids: Dictionary = {}
+	for profile_variant in profiles:
+		if not profile_variant is Dictionary:
+			continue
+		var profile := profile_variant as Dictionary
+		var profile_id := String(profile.get("id", "")).strip_edges()
+		if profile_id.is_empty():
+			continue
+		active_ids[profile_id] = true
+		var remaining := maxf(
+			0.0,
+			float(_background_attack_remaining_by_id.get(profile_id, 0.0))
+				- maxf(0.0, delta)
+		)
+		if remaining > 0.0:
+			_background_attack_remaining_by_id[profile_id] = remaining
+			continue
+		if _cast_evolved_background_attack(profile):
+			_background_attack_remaining_by_id[profile_id] = maxf(
+				0.2,
+				float(profile.get("interval", 3.0))
+			)
+		else:
+			_background_attack_remaining_by_id[profile_id] = AUTO_ATTACK_RETRY_INTERVAL
+	for profile_id_variant in _background_attack_remaining_by_id.keys():
+		if not active_ids.has(String(profile_id_variant)):
+			_background_attack_remaining_by_id.erase(profile_id_variant)
+
+
+func _cast_evolved_background_attack(profile: Dictionary) -> bool:
+	var targets := _get_combat_targets().filter(func(target: Variant) -> bool:
+		return (
+			target is Node2D
+			and is_instance_valid(target)
+			and (player as Node2D).global_position.distance_to(
+				(target as Node2D).global_position
+			) <= maxf(80.0, float(profile.get("range", 480.0)))
+		)
+	)
+	if targets.is_empty():
+		return false
+	var target_count := maxi(1, int(profile.get("target_count", 1)))
+	var selected := _nearest_combat_targets(targets, target_count)
+	var card := _build_background_attack_card(profile)
+	if card.is_empty():
+		return false
+	var result := card_effect_runner.cast(card, player, selected)
+	result["profile_id"] = String(profile.get("id", ""))
+	result["profile_name"] = String(profile.get("name", ""))
+	result["inherits_sword_soul"] = true
+	_last_background_attack_result = result.duplicate(true)
+	_spawn_evolved_background_attack_vfx(profile, selected)
+	return int(result.get("affected", 0)) > 0
+
+
+func _build_background_attack_card(profile: Dictionary) -> Dictionary:
+	var base_card := _get_auto_attack_card()
+	if base_card.is_empty():
+		return {}
+	var base_effect := base_card.get("effect", {}) as Dictionary
+	var target_count := maxi(1, int(profile.get("target_count", 1)))
+	var effect := {
+		"kind": "damage",
+		"amount": maxi(1, roundi(
+			float(base_effect.get("amount", 1))
+				* maxf(0.1, float(profile.get("damage_scale", 1.0)))
+		)),
+		"target_count": target_count,
+		"projectile_count": target_count,
+		"direction_count": target_count,
+		"elements": (profile.get("elements", []) as Array).duplicate(),
+		"knockback_multiplier": 0.35,
+	}
+	match String(profile.get("pattern", "")):
+		"chain_barrage":
+			effect["burn_damage"] = 2
+			effect["burn_duration"] = 2.5
+			effect["combo_stun"] = 0.08
+		"abyss_nova":
+			effect["frost_ratio"] = 0.35
+			effect["frost_duration"] = 2.2
+		"venom_gale":
+			effect["poison_damage"] = 2
+			effect["poison_duration"] = 4.0
+		"prismatic_orbit":
+			effect["combo_stun"] = 0.12
+	var attack := {
+		"id": "background_%s" % String(profile.get("id", "evolved")),
+		"name": String(profile.get("name", "昇華背景攻擊")),
+		"type": "attack",
+		"cost": 0,
+		"effect": effect,
+		"background_attack": true,
+		"inherits_sword_soul": true,
+	}
+	return _apply_combo_infusions_to_card(attack)
+
+
+func _spawn_evolved_background_attack_vfx(
+	profile: Dictionary,
+	targets: Array[Node2D]
+) -> void:
+	if evolved_background_attack_scene == null or current_map == null or not player is Node2D:
+		return
+	var visual := evolved_background_attack_scene.instantiate()
+	current_map.add_child(visual)
+	if visual is Node2D:
+		(visual as Node2D).global_position = (player as Node2D).global_position
+	var points: Array[Vector2] = []
+	for target in targets:
+		if target != null and is_instance_valid(target):
+			points.append(target.global_position)
+	if visual.has_method("play"):
+		visual.call("play", profile, points)
 
 
 func _try_basic_attack() -> bool:
@@ -2940,7 +3073,7 @@ func _build_formula_finisher(
 	return finisher
 
 
-func _build_finisher_blessing_overlays(maximum: int = 3) -> Array[Dictionary]:
+func _build_finisher_blessing_overlays(maximum: int = 4) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	if maximum <= 0:
 		return result

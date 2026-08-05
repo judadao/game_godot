@@ -23,6 +23,7 @@ func _run() -> void:
 	_expect(bool(gifts.call("add_or_upgrade", "resonant_grace")), "Fire Gift level must be retained by VFX projection.")
 	_expect(bool(gifts.call("add_or_upgrade", "prismatic_oath")), "Lightning Gift must enter after Fire.")
 	_expect(bool(gifts.call("add_or_upgrade", "eternal_memory")), "Ice Gift must enter after Lightning.")
+	_expect(bool(gifts.call("add_or_upgrade", "boundless_font")), "Poison Gift must enter as the fourth held Blessing.")
 	gifts.call("set_primary_gift", "eternal_memory")
 
 	var finisher := game.call(
@@ -33,14 +34,14 @@ func _run() -> void:
 	var visual := finisher.get("combo_visual_profile", {}) as Dictionary
 	var overlays := visual.get("blessing_overlays", []) as Array
 	_expect(
-		overlays.size() == 3,
-		"Every owned Gift must project one Finisher overlay, capped at three."
+		overlays.size() == 4,
+		"Every owned Gift must project one Finisher overlay, capped at four."
 	)
 	_expect(
-		_overlay_ids(overlays) == ["resonant_grace", "prismatic_oath", "eternal_memory"],
+		_overlay_ids(overlays) == ["resonant_grace", "prismatic_oath", "eternal_memory", "boundless_font"],
 		"Finisher Gift overlays must keep stable acquisition order, independent of primary selection."
 	)
-	if overlays.size() == 3:
+	if overlays.size() == 4:
 		_expect(
 			int((overlays[0] as Dictionary).get("level", 0)) == 2
 				and String((overlays[0] as Dictionary).get("element", "")) == "fire",
@@ -56,18 +57,18 @@ func _run() -> void:
 	var debug := effect.call("get_finisher_debug_state") as Dictionary
 	var passes := debug.get("blessing_overlay_passes", []) as Array
 	_expect(
-		int(debug.get("blessing_overlay_count", 0)) == 3
-			and int(debug.get("blessing_overlay_limit", 0)) == 3,
-		"FinisherGeometryCore must expose at most three blessing-driven passes."
+		int(debug.get("blessing_overlay_count", 0)) == 4
+			and int(debug.get("blessing_overlay_limit", 0)) == 4,
+		"FinisherGeometryCore must expose at most four blessing-driven passes."
 	)
 	_expect(
-		passes.size() == 3 and passes.all(_pass_has_sourced_particle_and_light),
+		passes.size() == 4 and passes.all(_pass_has_sourced_particle_and_light),
 		"Every blessing pass needs a named source particle and its own light color."
 	)
 	_expect(
 		int(effect.call("get_total_visual_layer_count"))
-			== int(effect.call("get_base_visual_layer_count")) + 6,
-		"Three blessing passes must add one particle and one light layer each."
+			== int(effect.call("get_base_visual_layer_count")) + 8,
+		"Four blessing passes must add one particle and one light layer each."
 	)
 	effect.queue_free()
 

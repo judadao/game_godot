@@ -162,7 +162,34 @@ func _test_player_blacksmith() -> void:
 	)
 	_expect(
 		StringName(ui.call("get_blacksmith_service")) == &"forge",
-		"PlayerBlacksmithUI must open on Forge."
+		"PlayerBlacksmithUI must retain Forge as its default context."
+	)
+	var workshop_interior := ui.find_child("WorkshopInterior", true, false) as Control
+	var workspace_holder := ui.find_child("WorkspaceHolder", true, false) as Control
+	_expect(
+		workshop_interior != null
+			and workshop_interior.is_visible_in_tree()
+			and workspace_holder != null
+			and not workspace_holder.visible,
+		"Entering the blacksmith must show the geometric workshop floor before any function panel."
+	)
+	(ui.find_child("ForgeObjectButton", true, false) as Button).pressed.emit()
+	await process_frame
+	_expect(
+		not workshop_interior.visible
+			and workspace_holder.visible
+			and (ui.find_child("ForgeWorkspace", true, false) as Control).visible,
+		"Selecting the furnace object must open only the forge workspace."
+	)
+	(ui.find_child("WorkshopBackButton", true, false) as Button).pressed.emit()
+	await process_frame
+	_expect(workshop_interior.visible and not workspace_holder.visible, "Closing a forge interaction must return to the workshop floor.")
+	(ui.find_child("UpgradeObjectButton", true, false) as Button).pressed.emit()
+	await process_frame
+	_expect(
+		(ui.find_child("UpgradeWorkspace", true, false) as Control).visible
+			and not (ui.find_child("ForgeWorkspace", true, false) as Control).visible,
+		"Selecting the workbench object must open only workshop improvement controls."
 	)
 	var workshop_upgrade_requests := [0]
 	ui.connect(
@@ -212,13 +239,18 @@ func _test_player_blacksmith() -> void:
 	var market_ui := ui.find_child("PlayerMarketUI", true, false) as Control
 	var market_content := ui.find_child("Content", true, false) as HBoxContainer
 	_expect(
-		market_content != null and not market_content.visible,
-		"The shop must begin as an uncluttered interior instead of listing every interaction."
+		market_content != null
+			and not market_content.visible
+			and (ui.find_child("StoreInterior", true, false) as Control).size.y >= 300.0,
+		"The market must open on the shop floor without listing its management functions."
 	)
 	(ui.find_child("Product1InteractButton", true, false) as Button).pressed.emit()
 	await process_frame
 	_expect(
 		market_content.visible
+			and (ui.find_child("InventoryPanel", true, false) as Control).visible
+			and (ui.find_child("ShelvesPanel", true, false) as Control).visible
+			and not (ui.find_child("RumorPanel", true, false) as Control).visible
 			and _visible_text(ui).contains("魔力碎片")
 			and _visible_text(ui).contains("稀有")
 			and _visible_text(ui).contains("8 GOLD"),
@@ -253,6 +285,13 @@ func _test_player_blacksmith() -> void:
 	)
 	(ui.find_child("ShelfInteractButton", true, false) as Button).pressed.emit()
 	await process_frame
+	_expect(
+		market_content.visible
+			and not (ui.find_child("InventoryPanel", true, false) as Control).visible
+			and (ui.find_child("ShelvesPanel", true, false) as Control).visible
+			and not (ui.find_child("RumorPanel", true, false) as Control).visible,
+		"Selecting the physical wall shelf must expose only shelf management."
+	)
 	(ui.find_child("MarketFixtureButton", true, false) as Button).pressed.emit()
 	_expect(
 		fixture_requests == [&"cedar_display"],
@@ -282,10 +321,12 @@ func _test_player_blacksmith() -> void:
 	(ui.find_child("BackButton", true, false) as Button).pressed.emit()
 	await process_frame
 	_expect(
-		StringName(ui.call("get_blacksmith_service")) == &"forge"
-			and not market_ui.visible,
-		"Leaving the shop scene must return to the previous workshop state."
+		not market_ui.visible
+			and workshop_interior.visible,
+		"Leaving the shop scene must return to the geometric workshop floor."
 	)
+	(ui.find_child("ForgeObjectButton", true, false) as Button).pressed.emit()
+	await process_frame
 	var craft_requests: Array[StringName] = []
 	ui.connect(
 		"craft_requested",
@@ -301,11 +342,13 @@ func _test_player_blacksmith() -> void:
 		craft_requests == [&"forge_iron_sword"],
 		"Forge must emit the selected blueprint recipe."
 	)
+	(ui.find_child("WorkshopBackButton", true, false) as Button).pressed.emit()
+	await process_frame
 	_expect(
-		_visible_text(ui).contains("Forge")
-			and _visible_text(ui).contains("Workshop")
-			and _visible_text(ui).contains("Enter Market"),
-		"PlayerBlacksmithUI must keep Forge, workshop upgrade, and sales discoverable."
+		_visible_text(ui).contains("ARCANE FORGE")
+			and _visible_text(ui).contains("WORKBENCH")
+			and _visible_text(ui).contains("MARKET DOOR"),
+		"PlayerBlacksmithUI must keep Forge, workshop upgrade, and sales discoverable as physical objects."
 	)
 	await _free_ui(ui)
 
