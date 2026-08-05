@@ -17,7 +17,7 @@ func _run() -> void:
 	_test_awakened_blueprint_school_can_be_reworked_and_saved()
 	_test_schema_four_blueprint_migrates_to_balanced_school()
 	_test_rumor_customer_and_price_strategy_change_sale_result()
-	_test_declined_luxury_listing_requires_cancel_before_retry()
+	_test_luxury_listing_waits_for_a_qualified_customer()
 	await _test_geometry_ui_exposes_the_new_choices()
 	quit(0 if _failures == 0 else 1)
 
@@ -148,7 +148,7 @@ func _test_rumor_customer_and_price_strategy_change_sale_result() -> void:
 			and StringName(slot.get("rumor_id", "")) == &"frontier_hunt",
 		"Matching display goods must activate their rumor and preserve the chosen price strategy."
 	)
-	var sold := service.resolve_sale() as Dictionary
+	var sold := service.try_customer_purchase() as Dictionary
 	_expect(bool(sold.get("ok", false)), "A matching rumor customer must always complete the purchase.")
 	_expect(
 		String(sold.get("customer_name", "")).contains("Captain")
@@ -158,36 +158,22 @@ func _test_rumor_customer_and_price_strategy_change_sale_result() -> void:
 	)
 
 
-func _test_declined_luxury_listing_requires_cancel_before_retry() -> void:
-	var declined_result: Dictionary = {}
-	var declined_service: RefCounted
-	var declined_inventory: RefCounted
-	for seed_value in 100:
-		var inventory = _prepared_inventory()
-		inventory.add_equipment_count(&"hunter_bow", 1, &"common")
-		var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
-		service.set_progression_levels(3, 3, 3)
-		service.set_random_seed(seed_value)
-		service.list_for_sale(&"equipment", &"hunter_bow", &"common", 1, &"luxury")
-		var result := service.resolve_sale() as Dictionary
-		if StringName(result.get("code", "")) == &"customer_declined":
-			declined_result = result
-			declined_service = service
-			declined_inventory = inventory
-			break
-	_expect(not declined_result.is_empty(), "Seeded luxury pricing must cover customer refusal.")
-	var retry := declined_service.call("resolve_sale") as Dictionary
+func _test_luxury_listing_waits_for_a_qualified_customer() -> void:
+	var inventory = _prepared_inventory()
+	inventory.add_equipment_count(&"hunter_bow", 1, &"common")
+	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
+	service.set_progression_levels(3, 3, 3)
+	service.list_for_sale(&"equipment", &"hunter_bow", &"common", 1, &"luxury")
+	var first_visit := service.try_customer_purchase() as Dictionary
+	var second_visit := service.try_customer_purchase() as Dictionary
 	_expect(
-		StringName(retry.get("code", "")) == &"customer_declined_locked",
-		"A refused luxury quote must lock repeat checkout instead of allowing click-spam retries."
+		StringName(first_visit.get("code", "")) == &"customer_passed"
+			and StringName(second_visit.get("code", "")) == &"customer_passed",
+		"Luxury pricing without demand bonuses must be rejected by ordinary customers."
 	)
-	var canceled := declined_service.call("cancel_sale") as Dictionary
 	_expect(
-		bool(canceled.get("ok", false))
-			and int(declined_inventory.call(
-				"get_equipment_quality_count", &"hunter_bow", &"common"
-			)) == 1,
-		"Canceling a refused listing must return the item so the player can choose another price."
+		not (inventory.get_sale_slot() as Dictionary).is_empty(),
+		"Rejected luxury goods must stay stocked for a later qualified customer."
 	)
 
 
@@ -231,24 +217,46 @@ func _test_geometry_ui_exposes_the_new_choices() -> void:
 	).instantiate() as Control
 	root.add_child(blacksmith)
 	await process_frame
+	var forge_inventory = _prepared_inventory()
+	var forge_service = ForgeServiceScript.new(ForgeCatalogScript.new(), forge_inventory)
+	forge_service.set_progression_levels(3, 3, 3)
+	blacksmith.call("set_services", null, forge_inventory, forge_service)
+	blacksmith.call("set_recipes", forge_service.get_available_recipes())
+	blacksmith.call("select_material_quality", &"rare")
+	_expect(
+		StringName(blacksmith.call("get_selected_material_quality")) == &"rare",
+		"Blacksmith UI must let the player choose which exact material quality to forge with."
+	)
 	for control_name in [
 		"SteadyMethodButton", "RefineMethodButton", "RushMethodButton",
 		"MasterworkMethodButton", "QuickPriceButton", "FairPriceButton",
 		"LuxuryPriceButton", "RumorLabel", "CancelListingButton",
+		"MaterialQualityRow", "CommonMaterialButton", "RareMaterialButton",
+		"ExceptionalMaterialButton", "LegendaryMaterialButton",
+		"SaleShelfRow", "SaleShelf1Button", "SaleShelf6Button",
 	]:
 		_expect(
 			blacksmith.find_child(control_name, true, false) != null,
 			"Blacksmith UI must expose the authored %s control." % control_name
 		)
 	blacksmith.call("set_sale_state", {
-		"status": "customer_ready",
-		"item_id": "hunter_bow",
-		"item_name": "Hunter Bow · Rare",
-		"crafted_count": 1,
-		"rumor_id": "frontier_hunt",
-		"rumor_title": "流言菲語：北境狩獵隊整裝",
-		"customer_name": "Frontier Captain Rhea",
-		"rumor_multiplier": 1.8,
+		"status": "multi_shelf",
+		"capacity": 6,
+		"shelves": [{
+			"shelf_index": 0,
+			"status": "customer_ready",
+			"item_id": "hunter_bow",
+			"item_name": "Hunter Bow · Rare",
+			"crafted_count": 1,
+			"rumor_id": "frontier_hunt",
+			"rumor_title": "流言菲語：北境狩獵隊整裝",
+			"customer_name": "Frontier Captain Rhea",
+			"rumor_multiplier": 1.8,
+		}, {"shelf_index": 1, "status": "empty"},
+		{"shelf_index": 2, "status": "empty"},
+		{"shelf_index": 3, "status": "empty"},
+		{"shelf_index": 4, "status": "empty"},
+		{"shelf_index": 5, "status": "empty"}],
 		"candidates": [],
 	})
 	await process_frame
@@ -261,6 +269,12 @@ func _test_geometry_ui_exposes_the_new_choices() -> void:
 	_expect(
 		cancel_button.visible and not cancel_button.disabled,
 		"An active listing must expose a clear cancel-and-reprice action."
+	)
+	blacksmith.call("select_sale_shelf", 5)
+	_expect(
+		int(blacksmith.call("get_selected_sale_shelf")) == 5
+			and (blacksmith.find_child("SaleShelf6Button", true, false) as Button).visible,
+		"Market upgrades must expose and independently select all six authored sale shelves."
 	)
 	blacksmith.queue_free()
 	await process_frame

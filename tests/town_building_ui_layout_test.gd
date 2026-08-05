@@ -33,7 +33,7 @@ const UI_LAYOUTS := [
 		"identity": "ServiceRail",
 		"title": "TitleLabel",
 		"close": "CloseButton",
-		"terms": ["FORGE", "WORKSHOP", "SALES TABLE"],
+		"terms": ["FORGE", "WORKSHOP", "ENTER MARKET"],
 		"minimum_icons": 3,
 	},
 	{
@@ -418,17 +418,20 @@ func _check_alternate_states(
 			ui.call("select_blacksmith_service", &"sales_table")
 			await process_frame
 			_expect(
-				_visible_text(ui).contains("Workshop Sales Table"),
-				"PlayerBlacksmithUI sales state must remain readable at %s."
+				_visible_text(ui).contains("PLAYER MARKET")
+					and _visible_text(ui).contains("主角")
+					and _visible_text(ui).contains("顧客")
+					and _visible_text(ui).contains("待補貨"),
+				"PlayerBlacksmithUI must enter the readable geometric shop interior at %s."
 				% viewport_size
 			)
-			var ledger := ui.find_child("WorkshopLedger", true, false) as Label
+			var ledger := ui.find_child("MarketResourceSummary", true, false) as Label
 			_expect(
 				ledger != null
 					and ledger.is_visible_in_tree()
-					and ledger.text.contains("Workshop Lv.")
-					and ledger.text.contains("Gold"),
-				"PlayerBlacksmithUI must keep workshop level and resources visible at %s."
+					and ledger.text.contains("GOLD")
+					and ledger.text.contains("貨架"),
+				"Player market must keep gold and shelf capacity visible at %s."
 				% viewport_size
 			)
 		"TownHallUI":
@@ -455,7 +458,12 @@ func _check_alternate_states(
 				"ShopUI equipment blueprint state must retain its title at %s."
 				% viewport_size
 			)
-	_check_visible_non_scroll_controls_inside(ui, ui_name, window_rect, viewport_size)
+	var active_window_rect := window_rect
+	if ui_name == "PlayerBlacksmithUI":
+		var market_window := ui.find_child("PlayerMarketWindow", true, false) as Control
+		if market_window != null and market_window.is_visible_in_tree():
+			active_window_rect = _canvas_rect(market_window)
+	_check_visible_non_scroll_controls_inside(ui, ui_name, active_window_rect, viewport_size)
 
 
 func _check_visible_non_scroll_controls_inside(

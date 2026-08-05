@@ -5568,6 +5568,16 @@ func _open_town_service_ui(service_id: StringName) -> void:
 		)
 		_connect_with_source_if_present(
 			town_ui,
+			&"customer_purchase_check_requested",
+			&"_on_market_customer_purchase_check_requested"
+		)
+		_connect_with_source_if_present(
+			town_ui,
+			&"market_fixture_purchase_requested",
+			&"_on_market_fixture_purchase_requested"
+		)
+		_connect_with_source_if_present(
+			town_ui,
 			&"upgrade_sword_soul_requested",
 			&"_on_blacksmith_upgrade_sword_soul_requested"
 		)
@@ -5693,7 +5703,6 @@ func _sword_soul_progress(card_id: StringName) -> Dictionary:
 
 
 func _player_sale_projection() -> Dictionary:
-	var slot := inventory_manager.call("get_sale_slot") as Dictionary
 	var candidates: Array[Dictionary] = []
 	for candidate_variant in forge_service.call("get_sale_candidates") as Array:
 		var candidate := (candidate_variant as Dictionary).duplicate(true)
@@ -5711,14 +5720,28 @@ func _player_sale_projection() -> Dictionary:
 			StringName(candidate.get("quality", "common"))
 		)
 		candidates.append(candidate)
+	var capacity := int(forge_service.call("get_sale_shelf_capacity"))
+	var shelves: Array[Dictionary] = []
+	for shelf_index in capacity:
+		var slot := inventory_manager.call(
+			"get_sale_slot", shelf_index
+		) as Dictionary
+		shelves.append(_project_sale_shelf(slot, shelf_index))
+	return {
+		"status": "multi_shelf",
+		"capacity": capacity,
+		"shelves": shelves,
+		"candidates": candidates,
+		"fixture_state": forge_service.call("get_market_fixture_state") as Dictionary,
+		"equipment_sales_unlocked": int(town_manager.call(
+			"get_building_level", &"market"
+		)) >= 1,
+	}
+
+
+func _project_sale_shelf(slot: Dictionary, shelf_index: int) -> Dictionary:
 	if slot.is_empty():
-		return {
-			"status": "empty",
-			"candidates": candidates,
-			"equipment_sales_unlocked": int(town_manager.call(
-				"get_building_level", &"market"
-			)) >= 1,
-		}
+		return {"shelf_index": shelf_index, "status": "empty"}
 	var item_id := StringName(slot.get("item_id", ""))
 	var item_kind := StringName(slot.get("item_kind", "equipment"))
 	var quality := StringName(slot.get("quality", "common"))
@@ -5732,7 +5755,13 @@ func _player_sale_projection() -> Dictionary:
 	)
 	var customer_state := StringName(slot.get("customer_state", "ready"))
 	var sale_status := "customer_declined" if customer_state == &"declined" else "customer_ready"
+	var strategy_name: String = {
+		"quick": "親民定價",
+		"fair": "公道定價",
+		"luxury": "精品標價",
+	}.get(String(slot.get("price_strategy", "fair")), "公道定價")
 	return {
+		"shelf_index": shelf_index,
 		"item_kind": String(item_kind),
 		"item_id": String(item_id),
 		"item_name": "%s · %s" % [item_name, _forge_quality_label(quality)],
@@ -5741,24 +5770,20 @@ func _player_sale_projection() -> Dictionary:
 		"status": sale_status,
 		"table_label": "%s 已以「%s」陳列於販售桌。" % [
 			item_name,
-			String(slot.get("price_strategy", "fair")).capitalize(),
+			strategy_name,
 		],
 		"customer_label": (
-			"顧客拒絕本次精品標價；請撤下商品並重新定價。"
-			if customer_state == &"declined" else "%s 願以 %d 金幣購買。" % [
-				String(slot.get("customer_name", "Town Customer")),
+			"先前顧客沒有購買；商品仍留在架上等待下一位客人。"
+			if customer_state == &"declined" else "顧客會自行評估 %d 金幣的售價。" % (
 				int(slot.get("quantity", 0)) * int(slot.get("unit_price", 0))
-			]
+			)
 		),
 		"rumor_id": slot.get("rumor_id", ""),
 		"rumor_title": slot.get("rumor_title", ""),
 		"customer_name": slot.get("customer_name", "Town Customer"),
 		"rumor_multiplier": slot.get("rumor_multiplier", 1.0),
 		"price_strategy": slot.get("price_strategy", "fair"),
-		"candidates": candidates,
-		"equipment_sales_unlocked": int(town_manager.call(
-			"get_building_level", &"market"
-		)) >= 1,
+		"sale_chance": slot.get("sale_chance", 1.0),
 	}
 
 
@@ -5796,14 +5821,22 @@ func _on_material_offer_requested(
 func _on_blacksmith_craft_requested(
 	recipe_id: StringName,
 	method_or_ui: Variant = &"steady",
+	quality_or_ui: Variant = &"common",
 	ui_control: Control = null
 ) -> void:
 	var method_id: StringName = &"steady"
+	var material_quality: StringName = &"common"
 	if method_or_ui is Control:
 		ui_control = method_or_ui as Control
 	else:
 		method_id = StringName(method_or_ui)
-	var result := forge_service.call("craft", recipe_id, 1, method_id) as Dictionary
+	if quality_or_ui is Control:
+		ui_control = quality_or_ui as Control
+	else:
+		material_quality = StringName(quality_or_ui)
+	var result := forge_service.call(
+		"craft", recipe_id, 1, method_id, material_quality
+	) as Dictionary
 	var success := bool(result.get("ok", false))
 	if (
 		success
@@ -5841,20 +5874,27 @@ func _on_blacksmith_list_for_sale_requested(
 	item_id: StringName,
 	quality: StringName,
 	strategy_or_ui: Variant = &"fair",
+	shelf_or_ui: Variant = -1,
 	ui_control: Control = null
 ) -> void:
 	var price_strategy: StringName = &"fair"
+	var shelf_index := -1
 	if strategy_or_ui is Control:
 		ui_control = strategy_or_ui as Control
 	else:
 		price_strategy = StringName(strategy_or_ui)
+	if shelf_or_ui is Control:
+		ui_control = shelf_or_ui as Control
+	else:
+		shelf_index = int(shelf_or_ui)
 	var result := forge_service.call(
 		"list_for_sale",
 		item_kind,
 		item_id,
 		quality,
 		1,
-		price_strategy
+		price_strategy,
+		shelf_index
 	) as Dictionary
 	var success := bool(result.get("ok", false))
 	result["message"] = (
@@ -5867,8 +5907,16 @@ func _on_blacksmith_list_for_sale_requested(
 		ui_control.call("show_action_result", result)
 
 
-func _on_blacksmith_resolve_sale_requested(ui_control: Control) -> void:
-	var result := forge_service.call("resolve_sale") as Dictionary
+func _on_blacksmith_resolve_sale_requested(
+	shelf_or_ui: Variant = 0,
+	ui_control: Control = null
+) -> void:
+	var shelf_index := 0
+	if shelf_or_ui is Control:
+		ui_control = shelf_or_ui as Control
+	else:
+		shelf_index = int(shelf_or_ui)
+	var result := forge_service.call("resolve_sale", shelf_index) as Dictionary
 	var success := bool(result.get("ok", false))
 	result["message"] = (
 		"顧客已完成購買。"
@@ -5876,20 +5924,74 @@ func _on_blacksmith_resolve_sale_requested(ui_control: Control) -> void:
 	)
 	_persist_forge_progress()
 	result["sale_state"] = _player_sale_projection()
-	ui_control.call("show_sale_result", result)
-	ui_control.call("set_sale_state", result["sale_state"])
+	if is_instance_valid(ui_control):
+		ui_control.call("show_sale_result", result)
+		ui_control.call("set_sale_state", result["sale_state"])
 
 
-func _on_blacksmith_cancel_sale_requested(ui_control: Control) -> void:
-	var result := forge_service.call("cancel_sale") as Dictionary
+func _on_blacksmith_cancel_sale_requested(
+	shelf_or_ui: Variant = 0,
+	ui_control: Control = null
+) -> void:
+	var shelf_index := 0
+	if shelf_or_ui is Control:
+		ui_control = shelf_or_ui as Control
+	else:
+		shelf_index = int(shelf_or_ui)
+	var result := forge_service.call("cancel_sale", shelf_index) as Dictionary
 	var success := bool(result.get("ok", false))
 	result["message"] = (
 		"商品已撤下，可重新選擇定價。"
 		if success else _forge_result_message(StringName(result.get("code", "")))
 	)
 	_persist_forge_progress()
-	ui_control.call("show_sale_result", result)
-	ui_control.call("set_sale_state", _player_sale_projection())
+	if is_instance_valid(ui_control):
+		ui_control.call("show_sale_result", result)
+		ui_control.call("set_sale_state", _player_sale_projection())
+
+
+func _on_market_customer_purchase_check_requested(
+	shelf_or_ui: Variant = 0,
+	ui_control: Control = null
+) -> void:
+	var shelf_index := 0
+	if shelf_or_ui is Control:
+		ui_control = shelf_or_ui as Control
+	else:
+		shelf_index = int(shelf_or_ui)
+	var result := forge_service.call("try_customer_purchase", shelf_index) as Dictionary
+	var success := bool(result.get("ok", false))
+	result["message"] = (
+		"顧客完成購買，貨架已空出等待補貨。"
+		if success else (
+			"顧客覺得價格太高，逛了一圈後離開。"
+			if StringName(result.get("code", "")) == &"customer_passed"
+			else _forge_result_message(StringName(result.get("code", "")))
+		)
+	)
+	if success:
+		_persist_forge_progress()
+	result["sale_state"] = _player_sale_projection()
+	if is_instance_valid(ui_control):
+		ui_control.call("set_sale_state", result["sale_state"])
+		ui_control.call("show_sale_result", result)
+
+
+func _on_market_fixture_purchase_requested(
+	fixture_id: StringName,
+	ui_control: Control
+) -> void:
+	var result := forge_service.call("purchase_market_fixture", fixture_id) as Dictionary
+	var success := bool(result.get("ok", false))
+	result["message"] = (
+		"新櫃台已安裝，可用交易位置增加。"
+		if success else _forge_result_message(StringName(result.get("code", "")))
+	)
+	if success:
+		_persist_forge_progress()
+	if is_instance_valid(ui_control):
+		ui_control.call("set_sale_state", _player_sale_projection())
+		ui_control.call("show_action_result", result)
 
 
 func _on_blacksmith_upgrade_sword_soul_requested(
@@ -5997,7 +6099,11 @@ func _refresh_forge_progression() -> void:
 		1.0 + float(town_manager.call("get_effect_value", &"market_sale_bonus")),
 		float(town_manager.call("get_effect_value", &"forge_processing_fee_discount")),
 		1.0 + float(town_manager.call("get_effect_value", &"material_bundle_bonus")),
-		float(town_manager.call("get_effect_value", &"forge_quality_bonus"))
+		float(town_manager.call("get_effect_value", &"forge_quality_bonus")),
+		float(town_manager.call("get_effect_value", &"market_customer_interest_bonus"))
+			+ float((inventory_manager.call("get_special_ability_totals") as Dictionary).get(
+				"market_customer_interest_bonus", 0.0
+			))
 	)
 
 
@@ -6722,10 +6828,14 @@ func _forge_result_message(code: StringName) -> String:
 			return "名匠鍛造只對 Lv.5 覺醒圖紙開放。"
 		&"unknown_forge_method":
 			return "找不到所選的鍛造工法。"
-		&"customer_declined":
-			return "一般顧客拒絕精品標價；請撤下商品後改用其他定價。"
-		&"customer_declined_locked":
-			return "本次報價已被拒絕；請先撤下商品再重新定價。"
+		&"customer_passed":
+			return "這位顧客沒有購買；商品會留在架上等待下一位客人。"
+		&"market_building_too_low":
+			return "先升級商店建築，才能購買這個階級的櫃台。"
+		&"previous_market_fixture_required":
+			return "櫃台家具必須依階級逐步升級。"
+		&"market_fixture_owned":
+			return "這座櫃台已經安裝。"
 		&"blueprint_not_awakened":
 			return "圖紙熟練度達 Lv.5 覺醒後才能改換流派。"
 		&"blueprint_school_unchanged":

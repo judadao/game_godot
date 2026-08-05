@@ -471,9 +471,14 @@ UI 對上層提供 setter/configure API與 typed signals：
 - `MaterialYardUI`：Level 0 basic stock、依 workshop level 解鎖的高階鍛造材料／永久工具，
   以及 Level 3 material bundle yield projection。
 - `PlayerBlacksmithUI`：圖紙鍛造、每張圖紙 Lv.0–5 熟練度／Lv.5 覺醒、blacksmith
-  recipe tier／加工費、Sword Soul 升級，以及依品質列出素材／裝備的販售桌。鍛造
-  以穩鍛／精煉／急鍛／名匠鍛造選擇成本、成功率與品質風險；販售以快速／公道／
-  精品定價，並投影「流言菲語」指定商品、具名顧客與高價倍率。
+  recipe tier／加工費與 Sword Soul 升級。鍛造
+  以穩鍛／精煉／急鍛／名匠鍛造選擇成本、成功率與品質風險；販售以親民／公道／
+  精品定價，並投影「流言菲語」指定商品、具名顧客與高價倍率。`PlayerMarketUI`
+  是獨立 authored 店內 scene，由鐵匠鋪進入、返回時保留原工作區狀態；店內幾何層
+  呈現主角、既有 Town NPC 顧客、櫃台與實際陳列商品。玩家只對空貨架補貨並選擇
+  親民／公道／精品價格；顧客由系統週期性自行判斷與結帳。Market 建築等級只解鎖
+  可購買的家具階級，實際安裝的木製／雪松／鍛鐵／大市集櫃台才提供 2／3／4／6 格。
+  高價接受度由 Market 建築效果及已裝備商旅印章加成，UI 不擁有成交亂數或存檔。
 - `TownHallUI`：village stage、總建築等級，以及五棟建築的選擇、效果、折扣後成本與升級操作；成功後以 signal 交回 `Game` 立即存檔與刷新 projection。
 - `PauseMenu`：emit save/load/settings/exit-combat/quit 等 intent；Game 只在 active
   combat Run 啟用退出戰鬥，接收 intent 後以失敗結算保留已得資源並回 Town。
@@ -494,8 +499,10 @@ Dev mode 使用 `dev_meta_progress.json` 與 `dev_quick_save*`，不覆寫正式
 仍負責最終同步與 world visual projection。UI 不應新增 domain 規則，直接 service mutation
 仍是 Known Risk；舊的通用 Town progression screen 已退役。
 
-InventoryManager schema 5 以品質堆疊保存素材與裝備，並保存圖紙 craft count、
-熟練等級、awakening／school 與含定價、流言顧客 metadata 的單格 sale escrow；
+InventoryManager schema 6 以品質堆疊保存素材與裝備，並保存圖紙 craft count、
+熟練等級、awakening／school 與含定價、流言顧客 metadata 的 `sale_slots` escrow；
+舊 `sale_slot` 載入時遷移到第一格。鍛造必須選普通／稀有／罕見／傳奇素材品質，
+只消耗該品質堆疊，並由 ForgeService 將品質直接投影到成功率與成品品質機率；
 ForgeService 是工法、素材特性、品質／失敗結果、圖紙流派改造、Market stock gate
 與流言成交的唯一規則 owner。RunState 另保留戰鬥素材袋的品質，回城結算後才寫入
 InventoryManager；UI／Game 不自行重算品質。

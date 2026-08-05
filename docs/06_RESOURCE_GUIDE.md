@@ -1025,7 +1025,7 @@ Current `Game._open_town_service_ui()` 將同一份 TownManager/InventoryManager
 
 - Material Yard：emit `purchase_requested`，由 ForgeService 驗證火炬 Tier、gold、
   材料 bundle 與永久工具。
-- Player Blacksmith：保留 legacy craft/list signal，正式流程 emit 帶 method／pricing
+- Player Blacksmith：保留 legacy craft/list signal，正式流程 emit 帶 method／material quality／pricing／shelf index
   的 intent；鍛造依 owned blueprint、required tools、blacksmith level、material cost、
   processing fee、forge method 與 blueprint school 驗證。圖紙商的流派改造 intent 也
   只由 ForgeService 扣費與 mutation。
@@ -1034,19 +1034,21 @@ Current `Game._open_town_service_ui()` 將同一份 TownManager/InventoryManager
 `data/forge_catalog.json` 是 offers/recipes authority。equipment offer 只允許資料標記為
 `direct_purchase` 的基礎成品；recipe 必須宣告 `quality`、`material_tier` 與正整數
 `processing_fee`。Inventory DTO 額外保存
-schema 5 的 `inventory_state` 保存 `resource_quality_counts`、
+schema 6 的 `inventory_state` 保存 `resource_quality_counts`、
 `equipment_quality_counts`、`equipped_quality`、`blueprint_proficiency`，以及
-`equipment_counts`、`owned_blueprints`、`owned_tools` 與單格 `sale_slot` escrow；
+`equipment_counts`、`owned_blueprints`、`owned_tools` 與多格 `sale_slots` escrow；
 legacy `owned_equipment` 載入時遷移為 count。Forge 交易成功時立即同步 manager
 DTO 至 Meta 並儲存；關閉 UI 時仍執行最終同步與世界投影。
 
 每張圖紙成功打造一件增加一級熟練度，最高 Lv.5；Lv.5 第一次達成時回傳
 `blueprint_awakened_now`，代表主角完成圖紙改良。覺醒前 legendary 機率固定為 0，
 覺醒後該圖紙才有傳奇成品機率，並以 `school` 保存衡鍛／銳鋒／省材／名印／共鳴
-其中一個流派；舊 schema 缺少 school 時遷移為 `balanced`。`sale_slot` 另保存
+其中一個流派；舊 schema 缺少 school 時遷移為 `balanced`。每個 `sale_slots` entry 另保存
 `base_unit_price`、`price_strategy`、sale chance、rumor／customer ID 與倍率，讓存檔
-中的上架商品仍能以相同條件結算。普通／菁英／Boss 素材袋分別進入普通／稀有／
+中的上架商品仍能以相同條件獨立結算；舊單格 `sale_slot` 遷移到第一格。普通／菁英／Boss 素材袋分別進入普通／稀有／
 罕見品質堆疊，Run 結算的保留率與通關 15% 加成會逐品質保存。
+Forge preview／craft 接收明確 material quality，只能支付該品質素材堆疊；稀有、罕見、
+傳奇品質依序增加成功率與成品品質機率，覺醒圖紙另可取得神作機率加成。
 
 ### 11.3 Projection copy
 

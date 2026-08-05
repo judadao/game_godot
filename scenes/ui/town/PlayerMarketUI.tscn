@@ -1,0 +1,800 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/town/player_market_ui.gd" id="1_script"]
+[ext_resource type="Theme" path="res://scenes/ui/town/TownServiceFrameTheme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon50_1.png" id="3_market"]
+[ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon1_1.png" id="4_back"]
+[ext_resource type="Texture2D" path="res://assets/town/npc/characters/traveler_animation_atlas.png" id="5_traveler"]
+[ext_resource type="Texture2D" path="res://assets/town/npc/characters/witch_animation_atlas.png" id="6_witch"]
+[ext_resource type="Texture2D" path="res://assets/town/npc/characters/innkeeper_animation_atlas.png" id="7_innkeeper"]
+
+[sub_resource type="AtlasTexture" id="TravelerFrame"]
+atlas = ExtResource("5_traveler")
+region = Rect2(0, 0, 144, 152)
+
+[sub_resource type="AtlasTexture" id="WitchFrame"]
+atlas = ExtResource("6_witch")
+region = Rect2(0, 0, 144, 152)
+
+[sub_resource type="AtlasTexture" id="InnkeeperFrame"]
+atlas = ExtResource("7_innkeeper")
+region = Rect2(0, 0, 144, 152)
+
+[sub_resource type="StyleBoxFlat" id="WindowStyle"]
+bg_color = Color(0.045, 0.048, 0.05, 0.99)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.67, 0.49, 0.24, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+content_margin_left = 14.0
+content_margin_top = 12.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+bg_color = Color(0.07, 0.07, 0.068, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.36, 0.3, 0.21, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="ButtonStyle"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.1, 0.105, 0.105, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.38, 0.42, 0.4, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="SelectedStyle"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.31, 0.2, 0.075, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.98, 0.75, 0.3, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="PlayerMarketUI" type="Control"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="MarketBackdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.005, 0.008, 0.01, 0.96)
+
+[node name="SafeMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="PlayerMarketWindow" type="PanelContainer" parent="SafeMargin"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("WindowStyle")
+
+[node name="WindowMargin" type="MarginContainer" parent="SafeMargin/PlayerMarketWindow"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="MarketLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderIcon" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Header"]
+custom_minimum_size = Vector2(46, 46)
+layout_mode = 2
+texture = ExtResource("3_market")
+texture_filter = 1
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TitleBlock" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Header/TitleBlock"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 24
+text = "PLAYER MARKET"
+
+[node name="Subtitle" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Header/TitleBlock"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.72, 0.73, 1)
+theme_override_font_sizes/font_size = 13
+text = "管理商品、貨架、價格策略與流言顧客"
+
+[node name="BackButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(168, 44)
+layout_mode = 2
+icon = ExtResource("4_back")
+icon_max_width = 20
+expand_icon = true
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+text = "返回鐵匠鋪"
+
+[node name="MarketResourceSummary" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.82, 0.55, 1)
+theme_override_font_sizes/font_size = 15
+text = "店鋪資金  ·  0 GOLD   |   貨架 0 / 2"
+vertical_alignment = 1
+
+[node name="StoreInterior" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout"]
+custom_minimum_size = Vector2(0, 210)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="InteriorCanvas" type="Control" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior"]
+layout_mode = 2
+
+[node name="BackWall" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.16, 0.12, 0.085, 1)
+
+[node name="Floor" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -54.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0.25, 0.17, 0.095, 1)
+
+[node name="WallShelf" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 28.0
+offset_right = 272.0
+offset_bottom = 104.0
+color = Color(0.29, 0.19, 0.095, 1)
+
+[node name="ShelfInteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/WallShelf"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+tooltip_text = "查看展示架與各貨架狀態"
+flat = true
+
+[node name="ShelfGoods" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/WallShelf"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.96, 0.77, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+text = "▣ 礦石   ◆ 結晶   ▤ 木材\n▰ 裝備   ✦ 劍魂   ◇ 素材"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ShopDoor" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -126.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = 154.0
+grow_horizontal = 0
+color = Color(0.055, 0.09, 0.105, 1)
+
+[node name="DoorLabel" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ShopDoor"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.58, 0.78, 0.82, 1)
+text = "入口\n顧客列隊"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DoorInteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ShopDoor"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+tooltip_text = "離開店面並返回鐵匠鋪"
+flat = true
+
+[node name="Counter" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 304.0
+offset_top = 108.0
+offset_right = -166.0
+offset_bottom = 184.0
+grow_horizontal = 2
+color = Color(0.38, 0.23, 0.09, 1)
+
+[node name="CounterTop" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = -8.0
+offset_bottom = 4.0
+grow_horizontal = 2
+color = Color(0.69, 0.45, 0.17, 1)
+
+[node name="Product1" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 24.0
+offset_top = -42.0
+offset_right = 154.0
+offset_bottom = -8.0
+theme_override_colors/font_color = Color(1, 0.83, 0.45, 1)
+text = "▣ 待補貨"
+horizontal_alignment = 1
+[node name="Product1InteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 24.0
+offset_top = -42.0
+offset_right = 154.0
+offset_bottom = -8.0
+tooltip_text = "補貨或替換這個櫃台商品"
+flat = true
+[node name="Product2" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 164.0
+offset_top = -42.0
+offset_right = 294.0
+offset_bottom = -8.0
+theme_override_colors/font_color = Color(0.63, 0.86, 1, 1)
+text = "◆ 待補貨"
+horizontal_alignment = 1
+[node name="Product2InteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 164.0
+offset_top = -42.0
+offset_right = 294.0
+offset_bottom = -8.0
+tooltip_text = "補貨或替換這個櫃台商品"
+flat = true
+[node name="Product3" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 304.0
+offset_top = -42.0
+offset_right = 434.0
+offset_bottom = -8.0
+theme_override_colors/font_color = Color(0.83, 0.66, 1, 1)
+text = "✦ 待補貨"
+horizontal_alignment = 1
+[node name="Product3InteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 304.0
+offset_top = -42.0
+offset_right = 434.0
+offset_bottom = -8.0
+tooltip_text = "補貨或替換這個櫃台商品"
+flat = true
+
+[node name="Bell" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -58.0
+offset_top = -40.0
+offset_right = -12.0
+offset_bottom = -8.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 0.78, 0.22, 1)
+theme_override_font_sizes/font_size = 18
+text = "◉ 鈴"
+
+[node name="BellInteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -64.0
+offset_top = -46.0
+offset_right = -6.0
+offset_bottom = -4.0
+grow_horizontal = 0
+tooltip_text = "搖鈴招呼顧客並查看流言"
+flat = true
+
+[node name="Protagonist" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 330.0
+offset_top = 42.0
+offset_right = 402.0
+offset_bottom = 112.0
+
+[node name="Head" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Protagonist"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+color = Color(0.84, 0.72, 0.61, 1)
+[node name="Name" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Protagonist"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.9, 1, 1)
+text = "主角\n店主"
+horizontal_alignment = 1
+
+[node name="Customer" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -268.0
+offset_top = 62.0
+offset_right = -196.0
+offset_bottom = 138.0
+grow_horizontal = 0
+
+[node name="Head" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Customer"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+color = Color(0.72, 0.55, 0.42, 1)
+[node name="Name" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Customer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.64, 1)
+text = "顧客"
+horizontal_alignment = 1
+
+[node name="CustomerInteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -280.0
+offset_top = 50.0
+offset_right = -184.0
+offset_bottom = 148.0
+grow_horizontal = 0
+tooltip_text = "招呼正在櫃台前等待的顧客"
+flat = true
+
+[node name="AmbientCustomer1" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -112.0
+offset_top = 88.0
+offset_right = -72.0
+offset_bottom = 150.0
+grow_horizontal = 0
+[node name="Head" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/AmbientCustomer1"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+color = Color(0.62, 0.7, 0.78, 1)
+[node name="Body" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/AmbientCustomer1"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+color = Color(0.25, 0.44, 0.52, 1)
+
+[node name="AmbientCustomer2" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 178.0
+offset_top = 112.0
+offset_right = 218.0
+offset_bottom = 174.0
+[node name="Head" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/AmbientCustomer2"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+color = Color(0.83, 0.66, 0.5, 1)
+[node name="Body" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/AmbientCustomer2"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+color = Color(0.48, 0.24, 0.31, 1)
+
+[node name="CounterCustomerNPC" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -292.0
+offset_top = 36.0
+offset_right = -172.0
+offset_bottom = 166.0
+grow_horizontal = 0
+texture = SubResource("TravelerFrame")
+texture_filter = 1
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BrowsingCustomerNPC" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 134.0
+offset_top = 76.0
+offset_right = 238.0
+offset_bottom = 184.0
+texture = SubResource("WitchFrame")
+texture_filter = 1
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QueueCustomerNPC" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -132.0
+offset_top = 70.0
+offset_right = -34.0
+offset_bottom = 174.0
+grow_horizontal = 0
+texture = SubResource("InnkeeperFrame")
+texture_filter = 1
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HangingLamp" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 480.0
+offset_top = 4.0
+offset_right = -480.0
+offset_bottom = 34.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.72, 0.25, 1)
+theme_override_font_sizes/font_size = 20
+text = "╲  ✦  ╱"
+horizontal_alignment = 1
+
+[node name="MarketCustomerSpeech" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 430.0
+offset_top = 18.0
+offset_right = -300.0
+offset_bottom = 58.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.91, 0.72, 1)
+text = "「今天有什麼好貨？」"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ContextBar" type="HBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+
+[node name="ContextTitle" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/ContextBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.98, 0.8, 0.42, 1)
+theme_override_font_sizes/font_size = 16
+text = "物件互動"
+vertical_alignment = 1
+
+[node name="ContextCloseButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/ContextBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(126, 36)
+layout_mode = 2
+theme_override_styles/normal = SubResource("ButtonStyle")
+text = "收起互動"
+
+[node name="Content" type="HBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="InventoryPanel" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(330, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="InventoryLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Heading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.97, 0.8, 0.46, 1)
+theme_override_font_sizes/font_size = 19
+text = "1  選擇要販售的商品"
+
+[node name="CandidateScroll" type="ScrollContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="MarketCandidateList" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout/CandidateScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="MarketCandidateTemplate" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout/CandidateScroll/MarketCandidateList"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+text = "商品\n品質 · 庫存 · 售價"
+alignment = 0
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+
+[node name="PriceHeading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.82, 0.82, 1)
+text = "2  定價策略"
+
+[node name="PriceRow" type="HBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="MarketQuickButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout/PriceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+text = "快速"
+
+[node name="MarketFairButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout/PriceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+text = "公道"
+
+[node name="MarketLuxuryButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout/PriceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+text = "精品"
+
+[node name="MarketListButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_styles/normal = SubResource("SelectedStyle")
+text = "上架到選定貨架"
+
+[node name="ShelvesPanel" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="ShelvesLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel"]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="Heading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.97, 0.8, 0.46, 1)
+theme_override_font_sizes/font_size = 19
+text = "3  管理展示貨架"
+
+[node name="ShelfGrid" type="GridContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 7
+theme_override_constants/v_separation = 7
+
+[node name="MarketShelf1Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+text = "貨架 1\n空貨架"
+[node name="MarketShelf2Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+text = "貨架 2\n空貨架"
+[node name="MarketShelf3Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+text = "貨架 3\n空貨架"
+[node name="MarketShelf4Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+text = "貨架 4\n空貨架"
+[node name="MarketShelf5Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+text = "貨架 5\n空貨架"
+[node name="MarketShelf6Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+text = "貨架 6\n空貨架"
+
+[node name="MarketFixtureButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_styles/normal = SubResource("ButtonStyle")
+theme_override_styles/pressed = SubResource("SelectedStyle")
+text = "目前櫃台：木製交易台 · 2 格"
+
+[node name="ShelfDetail" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("ButtonStyle")
+
+[node name="DetailLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="MarketItemName" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail/DetailLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.56, 1)
+theme_override_font_sizes/font_size = 18
+text = "選擇左側商品"
+
+[node name="MarketItemStatus" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail/DetailLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "這個貨架目前空著，可用左側商品補貨。"
+autowrap_mode = 2
+
+[node name="MarketCustomerStatus" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail/DetailLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.82, 0.82, 1)
+text = "上架後會顯示來訪顧客與成交狀態。"
+autowrap_mode = 2
+
+[node name="RumorPanel" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="RumorLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/RumorPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Heading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/RumorPanel/RumorLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.93, 0.7, 0.96, 1)
+theme_override_font_sizes/font_size = 19
+text = "流言菲語"
+
+[node name="MarketRumorLabel" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/RumorPanel/RumorLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.88, 0.76, 0.93, 1)
+theme_override_font_sizes/font_size = 14
+text = "◇ 選擇符合流言的商品，能吸引願意高價收購的特別顧客。"
+autowrap_mode = 2
+
+[node name="MarketFeedbackLabel" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/RumorPanel/RumorLayout"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.72, 0.72, 1)
+text = "選擇貨架開始經營。"
+autowrap_mode = 2

@@ -192,23 +192,105 @@ func _test_player_blacksmith() -> void:
 			"count": 4,
 			"unit_price": 8,
 		}],
+		"fixture_state": {
+			"active": {"id": "basic_counter", "name": "木製交易台", "capacity": 2},
+			"next": {
+				"id": "cedar_display",
+				"name": "雪松展示櫃",
+				"capacity": 3,
+				"required_market_level": 1,
+				"building_ready": true,
+				"can_purchase": true,
+				"cost": {"gold": 90, "autumn_wood": 12},
+			},
+		},
 	})
 	_expect(
 		StringName(ui.call("get_blacksmith_service")) == &"sales_table",
 		"PlayerBlacksmithUI must expose quality material and equipment sales."
 	)
+	var market_ui := ui.find_child("PlayerMarketUI", true, false) as Control
+	var market_content := ui.find_child("Content", true, false) as HBoxContainer
 	_expect(
-		_visible_text(ui).contains("魔力碎片")
+		market_content != null and not market_content.visible,
+		"The shop must begin as an uncluttered interior instead of listing every interaction."
+	)
+	(ui.find_child("Product1InteractButton", true, false) as Button).pressed.emit()
+	await process_frame
+	_expect(
+		market_content.visible
+			and _visible_text(ui).contains("魔力碎片")
 			and _visible_text(ui).contains("稀有")
 			and _visible_text(ui).contains("8 GOLD"),
-		"Sales Table must present item quality, owned quantity, and unit price."
+		"Clicking an empty display position must open only its stock and price controls."
+	)
+	var candidate_list := ui.find_child("MarketCandidateList", true, false) as VBoxContainer
+	var candidate_button: Button
+	for child in candidate_list.get_children():
+		if child is Button and (child as Button).visible:
+			candidate_button = child as Button
+			break
+	_expect(
+		market_ui != null
+			and market_ui.visible
+			and candidate_button != null
+			and _visible_text(ui).contains("主角")
+			and _visible_text(ui).contains("顧客")
+			and _visible_text(ui).contains("待補貨"),
+		"Entering the market must show a real geometric shop interior with owner, customer, counter goods, and management controls."
+	)
+	if candidate_button != null:
+		candidate_button.pressed.emit()
+		await process_frame
+	_expect(
+		ui.find_child("MarketItemName", true, false).get("text") == "魔力碎片",
+		"Selecting a shop product must rebuild its row safely and update the counter detail."
+	)
+	var fixture_requests: Array[StringName] = []
+	ui.connect(
+		"market_fixture_purchase_requested",
+		func(fixture_id: StringName) -> void: fixture_requests.append(fixture_id)
+	)
+	(ui.find_child("ShelfInteractButton", true, false) as Button).pressed.emit()
+	await process_frame
+	(ui.find_child("MarketFixtureButton", true, false) as Button).pressed.emit()
+	_expect(
+		fixture_requests == [&"cedar_display"],
+		"The physical display shelf must expose the next eligible furniture purchase."
+	)
+	var customer_checks: Array[int] = []
+	ui.connect(
+		"customer_purchase_check_requested",
+		func(shelf_index: int) -> void: customer_checks.append(shelf_index)
+	)
+	ui.call("set_sale_state", {
+		"capacity": 2,
+		"shelves": [{
+			"shelf_index": 0,
+			"status": "customer_ready",
+			"item_name": "魔力碎片 · 稀有",
+			"sale_chance": 0.70,
+		}],
+		"candidates": [],
+	})
+	market_ui.call("_process", 3.0)
+	_expect(
+		customer_checks == [0]
+			and ui.find_child("MarketResolveButton", true, false) == null,
+		"Customers must initiate checkout automatically without a manual resolve-sale action."
+	)
+	(ui.find_child("BackButton", true, false) as Button).pressed.emit()
+	await process_frame
+	_expect(
+		StringName(ui.call("get_blacksmith_service")) == &"forge"
+			and not market_ui.visible,
+		"Leaving the shop scene must return to the previous workshop state."
 	)
 	var craft_requests: Array[StringName] = []
 	ui.connect(
 		"craft_requested",
 		func(recipe_id: StringName) -> void: craft_requests.append(recipe_id)
 	)
-	ui.call("select_blacksmith_service", &"forge")
 	_expect(
 		_visible_text(ui).contains("圖紙已覺醒")
 			and _visible_text(ui).contains("傳奇 3%"),
@@ -222,7 +304,7 @@ func _test_player_blacksmith() -> void:
 	_expect(
 		_visible_text(ui).contains("Forge")
 			and _visible_text(ui).contains("Workshop")
-			and _visible_text(ui).contains("Sales"),
+			and _visible_text(ui).contains("Enter Market"),
 		"PlayerBlacksmithUI must keep Forge, workshop upgrade, and sales discoverable."
 	)
 	await _free_ui(ui)

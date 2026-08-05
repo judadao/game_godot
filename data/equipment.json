@@ -177,7 +177,7 @@
       "direct_purchase": false,
       "base_sale_value": 185,
       "effects": {"shop_discount": 0.1},
-      "special_ability": {"id": "rare_stock", "description": "Wandering merchants offer an extra rare choice.", "description_zh": "流浪商人會額外提供 1 個稀有選項。", "merchant_bonus_choice": 1}
+      "special_ability": {"id": "rare_stock", "description": "Wandering merchants offer an extra rare choice and premium shop customers are more receptive.", "description_zh": "流浪商人會額外提供 1 個稀有選項，且精品標價的顧客接受度提高。", "merchant_bonus_choice": 1, "market_customer_interest_bonus": 0.18}
     }
   ]
 }

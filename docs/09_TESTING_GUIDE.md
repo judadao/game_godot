@@ -446,8 +446,9 @@ Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
 | `town_building_ui_layout_test.gd` | 六解析度的 window/controls/text/icon 邊界，以及共同 Theme、1040×640 frame、58px header、218／270px 欄寬與 Close variation |
 | `town_building_ui_lifecycle_test.gd` | open/close/ui_cancel signals、focus release/restore、重開不重複 controls |
 | `shop_system_test.gd` / `ui_keyboard_test.gd` | 交易 ownership、方向 focus、quantity controls 與 player input lock |
-| `forge_catalog_test.gd` / `forge_service_test.gd` | flame／Market stock gate、品質素材／裝備、每圖紙熟練度 Lv.5 覺醒、傳奇機率、購買／鍛造與 sale escrow migration |
-| `forge_depth_system_test.gd` | 四種工法、素材特性、失敗結果、覺醒圖紙流派改造／round-trip、三種定價、流言顧客高價成交，以及 authored 幾何 UI controls |
+| `forge_catalog_test.gd` / `forge_service_test.gd` | flame／Market stock gate、精確品質素材消耗與鍛造加成、每圖紙熟練度 Lv.5 覺醒、傳奇機率、購買／鍛造、2–6 個獨立 sale shelves 與 legacy escrow migration |
+| `forge_depth_system_test.gd` | 四種工法、素材特性、失敗結果、覺醒圖紙流派改造／round-trip、三種定價、流言顧客高價成交、素材品質與六貨架 authored controls |
+| `forge_service_test.gd` | 櫃台家具逐階購買與建築門檻、實際貨架容量、親民／公道／精品成交率取捨、自動顧客拒買後保留商品 |
 | `elemental_side_effects_test.gd` | 九元素附加效果的實際命中、雙目標潮濺、風壓擊退、四種敵方狀態、光／暗恢復，以及武器＋神賜元素 runtime 投影 |
 | `forge_game_integration_test.gd` | Market 擴建、圖紙＋工具購買後鍛造 equipment／Sword Soul、升級、品質上桌販售、gold 與 meta save |
 | `chapter_one_story_catalog_test.gd` | 第一章廣場 21 句正史、speaker／portrait path／emotion schema 與 completion flag |

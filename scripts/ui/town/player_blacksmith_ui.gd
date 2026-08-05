@@ -6,7 +6,11 @@ signal closed
 signal toggled(is_open: bool)
 signal canceled
 signal craft_requested(recipe_id: StringName)
-signal craft_with_method_requested(recipe_id: StringName, method_id: StringName)
+signal craft_with_method_requested(
+	recipe_id: StringName,
+	method_id: StringName,
+	material_quality: StringName
+)
 signal list_for_sale_requested(
 	item_kind: StringName,
 	item_id: StringName,
@@ -16,10 +20,13 @@ signal list_for_sale_with_strategy_requested(
 	item_kind: StringName,
 	item_id: StringName,
 	quality: StringName,
-	price_strategy: StringName
+	price_strategy: StringName,
+	shelf_index: int
 )
-signal resolve_sale_requested
-signal cancel_sale_requested
+signal resolve_sale_requested(shelf_index: int)
+signal cancel_sale_requested(shelf_index: int)
+signal customer_purchase_check_requested(shelf_index: int)
+signal market_fixture_purchase_requested(fixture_id: StringName)
 signal upgrade_sword_soul_requested(card_id: StringName)
 signal workshop_upgraded
 
@@ -60,8 +67,22 @@ const SLOT_LABELS := {
 	&"accessory": "Accessory",
 	&"sword_soul": "Sword Soul",
 }
+const MATERIAL_QUALITY_ORDER: Array[StringName] = [
+	&"common",
+	&"rare",
+	&"exceptional",
+	&"legendary",
+]
+const MATERIAL_QUALITY_LABELS := {
+	&"common": "普通",
+	&"rare": "稀有",
+	&"exceptional": "罕見",
+	&"legendary": "傳奇",
+}
 
 @onready var close_button: Button = %CloseButton
+@onready var player_blacksmith_window: PanelContainer = $SafeMargin/Center/PlayerBlacksmithWindow
+@onready var player_market_ui: Control = $PlayerMarketUI
 @onready var forge_service_button: Button = %ForgeServiceButton
 @onready var upgrade_service_button: Button = %UpgradeServiceButton
 @onready var sales_service_button: Button = %SalesServiceButton
@@ -85,6 +106,10 @@ const SLOT_LABELS := {
 @onready var refine_method_button: Button = %RefineMethodButton
 @onready var rush_method_button: Button = %RushMethodButton
 @onready var masterwork_method_button: Button = %MasterworkMethodButton
+@onready var common_material_button: Button = %CommonMaterialButton
+@onready var rare_material_button: Button = %RareMaterialButton
+@onready var exceptional_material_button: Button = %ExceptionalMaterialButton
+@onready var legendary_material_button: Button = %LegendaryMaterialButton
 @onready var craft_button: Button = %CraftButton
 @onready var equip_button: Button = %EquipButton
 @onready var strengthen_button: Button = %StrengthenButton
@@ -108,12 +133,19 @@ const SLOT_LABELS := {
 @onready var resolve_sale_button: Button = %ResolveSaleButton
 @onready var cancel_listing_button: Button = %CancelListingButton
 @onready var gold_feedback: Label = %GoldFeedback
+@onready var sale_shelf_1_button: Button = %SaleShelf1Button
+@onready var sale_shelf_2_button: Button = %SaleShelf2Button
+@onready var sale_shelf_3_button: Button = %SaleShelf3Button
+@onready var sale_shelf_4_button: Button = %SaleShelf4Button
+@onready var sale_shelf_5_button: Button = %SaleShelf5Button
+@onready var sale_shelf_6_button: Button = %SaleShelf6Button
 
 var _town: RefCounted
 var _inventory: RefCounted
 var _forge_service: RefCounted
 var _context_id: StringName = &"player_blacksmith"
 var _blacksmith_service: StringName = &"forge"
+var _return_service: StringName = &"forge"
 var _recipes: Array[Dictionary] = []
 var _recipes_explicitly_set := false
 var _selected_recipe_id: StringName
@@ -121,10 +153,15 @@ var _recipe_by_id: Dictionary = {}
 var _recipe_buttons: Array[Button] = []
 var _building_buttons: Array[Button] = []
 var _sale_state: Dictionary = {}
+var _sale_overview: Dictionary = {}
+var _sale_shelves: Array[Dictionary] = []
+var _sale_shelf_buttons: Array[Button] = []
+var _selected_sale_shelf := 0
 var _sale_candidates: Array[Dictionary] = []
 var _sale_candidate_buttons: Array[Button] = []
 var _selected_sale_candidate_key := ""
 var _selected_forge_method: StringName = &"steady"
+var _selected_material_quality: StringName = &"common"
 var _selected_price_strategy: StringName = &"fair"
 var _icon_cache: Dictionary = {}
 var _resource_value_labels: Dictionary
@@ -149,7 +186,16 @@ func _ready() -> void:
 	_row_selected_style = recipe_row_template.get_theme_stylebox("pressed")
 	_service_normal_style = upgrade_service_button.get_theme_stylebox("normal")
 	_service_selected_style = forge_service_button.get_theme_stylebox("normal")
+	_sale_shelf_buttons = [
+		sale_shelf_1_button,
+		sale_shelf_2_button,
+		sale_shelf_3_button,
+		sale_shelf_4_button,
+		sale_shelf_5_button,
+		sale_shelf_6_button,
+	]
 	_connect_controls()
+	_connect_market_controls()
 	gold_feedback.text = ""
 	gold_feedback.visible = false
 	visible = false
@@ -160,6 +206,9 @@ func _ready() -> void:
 func open() -> void:
 	var was_visible := visible
 	_blacksmith_service = &"forge"
+	_return_service = &"forge"
+	player_blacksmith_window.visible = true
+	player_market_ui.close()
 	_has_action_feedback = false
 	gold_feedback.text = ""
 	gold_feedback.visible = false
@@ -176,6 +225,7 @@ func close() -> void:
 	if not visible:
 		return
 	visible = false
+	player_market_ui.close()
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused != null and (focused == self or is_ancestor_of(focused)):
 		focused.release_focus()
@@ -212,6 +262,7 @@ func set_services(
 	_town = town
 	_inventory = inventory
 	_forge_service = forge_service
+	player_market_ui.set_services(inventory)
 	if not _recipes_explicitly_set:
 		_recipes = _project_recipes_from_services()
 	if is_node_ready():
@@ -232,17 +283,65 @@ func set_recipes(recipes: Array) -> void:
 
 
 func set_sale_state(state: Dictionary) -> void:
-	_sale_state = state.duplicate(true)
+	_sale_overview = state.duplicate(true)
 	_sale_candidates.clear()
 	for candidate_variant in state.get("candidates", []) as Array:
 		if candidate_variant is Dictionary:
 			_sale_candidates.append((candidate_variant as Dictionary).duplicate(true))
+	_sale_shelves.clear()
+	if state.has("shelves"):
+		for shelf_variant in state.get("shelves", []) as Array:
+			if shelf_variant is Dictionary:
+				_sale_shelves.append((shelf_variant as Dictionary).duplicate(true))
+	else:
+		var legacy_shelf := state.duplicate(true)
+		legacy_shelf.erase("candidates")
+		legacy_shelf["shelf_index"] = 0
+		_sale_shelves.append(legacy_shelf)
+	var capacity := clampi(int(state.get("capacity", _sale_shelves.size())), 1, 6)
+	while _sale_shelves.size() < capacity:
+		_sale_shelves.append({
+			"shelf_index": _sale_shelves.size(),
+			"status": "empty",
+		})
+	_selected_sale_shelf = clampi(_selected_sale_shelf, 0, capacity - 1)
+	_sale_state = _sale_shelves[_selected_sale_shelf].duplicate(true)
+	_sale_overview["capacity"] = capacity
+	_sale_overview["shelves"] = _sale_shelves.duplicate(true)
+	_sale_overview["candidates"] = _sale_candidates.duplicate(true)
 	if _find_sale_candidate(_selected_sale_candidate_key).is_empty():
 		_selected_sale_candidate_key = (
 			_sale_candidate_key(_sale_candidates[0]) if not _sale_candidates.is_empty() else ""
 		)
 	if is_node_ready():
+		player_market_ui.set_sale_state(_sale_overview)
 		_refresh_sales_table()
+
+
+func select_material_quality(quality: StringName) -> void:
+	if not MATERIAL_QUALITY_ORDER.has(quality):
+		return
+	_selected_material_quality = quality
+	_has_action_feedback = false
+	if is_node_ready():
+		_refresh_recipe_detail()
+
+
+func get_selected_material_quality() -> StringName:
+	return _selected_material_quality
+
+
+func select_sale_shelf(shelf_index: int) -> void:
+	if shelf_index < 0 or shelf_index >= _sale_shelves.size():
+		return
+	_selected_sale_shelf = shelf_index
+	_sale_state = _sale_shelves[shelf_index].duplicate(true)
+	if is_node_ready():
+		_refresh_sales_table()
+
+
+func get_selected_sale_shelf() -> int:
+	return _selected_sale_shelf
 
 
 func show_sale_result(result: Dictionary) -> void:
@@ -259,17 +358,26 @@ func show_sale_result(result: Dictionary) -> void:
 	gold_feedback.visible = true
 	if result.has("sale_state") and result["sale_state"] is Dictionary:
 		set_sale_state(result["sale_state"] as Dictionary)
+	if player_market_ui.visible:
+		player_market_ui.show_sale_result(result)
 
 
 func show_action_result(result: Dictionary) -> void:
 	var successful := bool(result.get("ok", result.get("success", false)))
 	_set_feedback(String(result.get("message", "Action complete.")), successful)
+	if player_market_ui.visible:
+		player_market_ui.show_action_result(result)
 	_refresh()
 
 
 func select_blacksmith_service(service_id: StringName) -> void:
 	if not VALID_SERVICES.has(service_id):
 		return
+	if service_id == &"sales_table":
+		_open_player_market()
+		return
+	if player_market_ui.visible:
+		_close_player_market()
 	_blacksmith_service = service_id
 	if not is_node_ready():
 		return
@@ -323,7 +431,11 @@ func craft_selected_recipe() -> void:
 	if _selected_recipe_id.is_empty():
 		return
 	craft_requested.emit(_selected_recipe_id)
-	craft_with_method_requested.emit(_selected_recipe_id, _selected_forge_method)
+	craft_with_method_requested.emit(
+		_selected_recipe_id,
+		_selected_forge_method,
+		_selected_material_quality
+	)
 	_set_feedback("Crafting request sent to the forge.", true)
 
 
@@ -404,20 +516,25 @@ func request_list_for_sale() -> void:
 		StringName(candidate.get("item_kind", "")),
 		StringName(candidate.get("item_id", "")),
 		StringName(candidate.get("quality", "common")),
-		_selected_price_strategy
+		_selected_price_strategy,
+		_selected_sale_shelf
 	)
 
 
 func request_resolve_sale() -> void:
-	resolve_sale_requested.emit()
+	resolve_sale_requested.emit(_selected_sale_shelf)
 
 
 func request_cancel_sale() -> void:
-	cancel_sale_requested.emit()
+	cancel_sale_requested.emit(_selected_sale_shelf)
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel"):
+		if player_market_ui.visible:
+			_close_player_market()
+			get_viewport().set_input_as_handled()
+			return
 		canceled.emit()
 		close()
 		get_viewport().set_input_as_handled()
@@ -433,6 +550,12 @@ func _connect_controls() -> void:
 	refine_method_button.pressed.connect(_select_forge_method.bind(&"refine"))
 	rush_method_button.pressed.connect(_select_forge_method.bind(&"rush"))
 	masterwork_method_button.pressed.connect(_select_forge_method.bind(&"masterwork"))
+	common_material_button.pressed.connect(select_material_quality.bind(&"common"))
+	rare_material_button.pressed.connect(select_material_quality.bind(&"rare"))
+	exceptional_material_button.pressed.connect(
+		select_material_quality.bind(&"exceptional")
+	)
+	legendary_material_button.pressed.connect(select_material_quality.bind(&"legendary"))
 	equip_button.pressed.connect(equip_selected_equipment)
 	strengthen_button.pressed.connect(strengthen_selected_equipment)
 	upgrade_button.pressed.connect(upgrade_service_building)
@@ -442,12 +565,79 @@ func _connect_controls() -> void:
 	quick_price_button.pressed.connect(_select_price_strategy.bind(&"quick"))
 	fair_price_button.pressed.connect(_select_price_strategy.bind(&"fair"))
 	luxury_price_button.pressed.connect(_select_price_strategy.bind(&"luxury"))
+	for shelf_index in _sale_shelf_buttons.size():
+		_sale_shelf_buttons[shelf_index].pressed.connect(
+			select_sale_shelf.bind(shelf_index)
+		)
+
+
+func _connect_market_controls() -> void:
+	player_market_ui.back_requested.connect(_close_player_market)
+	player_market_ui.list_for_sale_requested.connect(_on_market_list_requested)
+	player_market_ui.customer_purchase_check_requested.connect(
+		_on_market_customer_purchase_check_requested
+	)
+	player_market_ui.market_fixture_purchase_requested.connect(
+		_on_market_fixture_purchase_requested
+	)
+
+
+func _open_player_market() -> void:
+	if player_market_ui.visible:
+		return
+	_return_service = _blacksmith_service if _blacksmith_service != &"sales_table" else &"forge"
+	_blacksmith_service = &"sales_table"
+	_apply_service()
+	player_blacksmith_window.visible = false
+	player_market_ui.set_services(_inventory)
+	player_market_ui.set_sale_state(_sale_overview)
+	player_market_ui.open()
+
+
+func _close_player_market() -> void:
+	if not player_market_ui.visible:
+		return
+	player_market_ui.close()
+	player_blacksmith_window.visible = true
+	_blacksmith_service = _return_service
+	_apply_service()
+	_refresh()
+	_focus_current_workspace()
+
+
+func _on_market_list_requested(
+	item_kind: StringName,
+	item_id: StringName,
+	quality: StringName,
+	price_strategy: StringName,
+	shelf_index: int
+) -> void:
+	list_for_sale_requested.emit(item_kind, item_id, quality)
+	list_for_sale_with_strategy_requested.emit(
+		item_kind, item_id, quality, price_strategy, shelf_index
+	)
+
+
+func _on_market_resolve_requested(shelf_index: int) -> void:
+	resolve_sale_requested.emit(shelf_index)
+
+
+func _on_market_cancel_requested(shelf_index: int) -> void:
+	cancel_sale_requested.emit(shelf_index)
+
+
+func _on_market_customer_purchase_check_requested(shelf_index: int) -> void:
+	customer_purchase_check_requested.emit(shelf_index)
+
+
+func _on_market_fixture_purchase_requested(fixture_id: StringName) -> void:
+	market_fixture_purchase_requested.emit(fixture_id)
 
 
 func _apply_service() -> void:
 	forge_workspace.visible = _blacksmith_service == &"forge"
 	upgrade_workspace.visible = _blacksmith_service == &"workshop_upgrade"
-	sales_workspace.visible = _blacksmith_service == &"sales_table"
+	sales_workspace.visible = false
 	var buttons := {
 		&"forge": forge_service_button,
 		&"workshop_upgrade": upgrade_service_button,
@@ -534,7 +724,8 @@ func _refresh_recipe_catalog() -> void:
 func _clear_recipe_rows() -> void:
 	for button in _recipe_buttons:
 		if is_instance_valid(button):
-			button.free()
+			button.visible = false
+			button.queue_free()
 	_recipe_buttons.clear()
 
 
@@ -604,22 +795,30 @@ func _refresh_recipe_detail() -> void:
 	var craft_preview: Dictionary = {}
 	if _forge_service != null and _forge_service.has_method("get_craft_preview"):
 		craft_preview = _forge_service.call(
-			"get_craft_preview", _selected_recipe_id, _selected_forge_method
+			"get_craft_preview",
+			_selected_recipe_id,
+			_selected_forge_method,
+			_selected_material_quality
 		) as Dictionary
 	if not bool(craft_preview.get("unlocked", true)):
 		_selected_forge_method = &"steady"
 		craft_preview = _forge_service.call(
-			"get_craft_preview", _selected_recipe_id, _selected_forge_method
+			"get_craft_preview",
+			_selected_recipe_id,
+			_selected_forge_method,
+			_selected_material_quality
 		) as Dictionary
 	if not craft_preview.is_empty():
 		chances = craft_preview.get("quality_chances", chances) as Dictionary
 	var method := craft_preview.get("method", {}) as Dictionary
+	var quality_profile := craft_preview.get("material_quality_profile", {}) as Dictionary
 	var material_trait := craft_preview.get("material_trait_profile", {}) as Dictionary
 	var school_profile := craft_preview.get("blueprint_school_profile", {}) as Dictionary
 	recipe_description.text = (
 		"[color=#f0c967][b]%s品質鍛造[/b][/color]\n%s\n\n"
 		+ "[color=#9fdde5]圖紙熟練度 Lv.%d / 5[/color]  ·  %s\n"
 		+ "%s %s  ·  %s\n"
+		+ "使用 %s素材  ·  成功 %+d%%  ·  品質 %+d%%\n"
 		+ "成功 %.0f%%  ·  稀有 %.0f%%  ·  罕見 %.0f%%  ·  傳奇 %.0f%%"
 	) % [
 		quality_label,
@@ -632,6 +831,11 @@ func _refresh_recipe_detail() -> void:
 			String(school_profile.get("name", "未覺醒流派")),
 			String(material_trait.get("name", "一般素材")),
 		],
+		String(quality_profile.get(
+			"name", MATERIAL_QUALITY_LABELS.get(_selected_material_quality, "普通")
+		)),
+		roundi(float(quality_profile.get("success_bonus", 0.0)) * 100.0),
+		roundi(float(quality_profile.get("quality_bonus", 0.0)) * 100.0),
 		float(craft_preview.get("success_chance", 1.0)) * 100.0,
 		float(chances.get("rare", 0.0)) * 100.0,
 		float(chances.get("exceptional", 0.0)) * 100.0,
@@ -645,14 +849,18 @@ func _refresh_recipe_detail() -> void:
 		cost = cost.duplicate(true)
 		cost.erase("gold")
 	var sale_value := int(recipe.get("sale_value", 0))
-	recipe_cost_label.text = "MATERIALS  ·  %s\nPROCESSING FEE  ·  GOLD %d%s" % [
+	recipe_cost_label.text = "%s MATERIALS  ·  %s\nPROCESSING FEE  ·  GOLD %d%s" % [
+		String(MATERIAL_QUALITY_LABELS.get(_selected_material_quality, "普通")),
 		_format_cost(cost),
 		processing_fee,
 		"  ·  SALE %d" % sale_value if sale_value > 0 else "",
 	]
-	craft_button.disabled = not unlocked
+	craft_button.disabled = (
+		not unlocked or not bool(craft_preview.get("materials_available", true))
+	)
 	craft_button.text = "Forge"
 	_refresh_forge_method_buttons(recipe)
+	_refresh_material_quality_buttons()
 	var is_equipment := not is_sword_soul
 	equip_button.visible = is_equipment and owned
 	equip_button.disabled = not owned or equipped
@@ -731,6 +939,7 @@ func _refresh_workshop() -> void:
 
 
 func _refresh_sales_table() -> void:
+	_refresh_sale_shelf_buttons()
 	_rebuild_sale_candidates()
 	var state := _sale_state
 	var selected_candidate := _find_sale_candidate(_selected_sale_candidate_key)
@@ -807,7 +1016,8 @@ func _refresh_sales_table() -> void:
 func _rebuild_sale_candidates() -> void:
 	for button in _sale_candidate_buttons:
 		if is_instance_valid(button):
-			button.free()
+			button.visible = false
+			button.queue_free()
 	_sale_candidate_buttons.clear()
 	for candidate in _sale_candidates:
 		var key := _sale_candidate_key(candidate)
@@ -837,6 +1047,61 @@ func _select_forge_method(method_id: StringName) -> void:
 	_selected_forge_method = method_id
 	_has_action_feedback = false
 	_refresh_recipe_detail()
+
+
+func _refresh_material_quality_buttons() -> void:
+	var buttons := {
+		&"common": common_material_button,
+		&"rare": rare_material_button,
+		&"exceptional": exceptional_material_button,
+		&"legendary": legendary_material_button,
+	}
+	var profiles: Dictionary = {}
+	if _forge_service != null and _forge_service.has_method("get_material_quality_profiles"):
+		profiles = _forge_service.call("get_material_quality_profiles") as Dictionary
+	for quality in MATERIAL_QUALITY_ORDER:
+		var button := buttons[quality] as Button
+		var profile := profiles.get(quality, {}) as Dictionary
+		var selected := quality == _selected_material_quality
+		button.button_pressed = selected
+		button.add_theme_stylebox_override(
+			"normal",
+			_service_selected_style if selected else _service_normal_style
+		)
+		button.tooltip_text = "%s素材：成功率 %+d%%、成品品質 %+d%%。鍛造時只會消耗這個品質的素材。" % [
+			String(MATERIAL_QUALITY_LABELS.get(quality, String(quality))),
+			roundi(float(profile.get("success_bonus", 0.0)) * 100.0),
+			roundi(float(profile.get("quality_bonus", 0.0)) * 100.0),
+		]
+
+
+func _refresh_sale_shelf_buttons() -> void:
+	var capacity := clampi(int(_sale_overview.get(
+		"capacity", maxi(2, _sale_shelves.size())
+	)), 1, _sale_shelf_buttons.size())
+	for shelf_index in _sale_shelf_buttons.size():
+		var button := _sale_shelf_buttons[shelf_index]
+		button.visible = shelf_index < capacity
+		if not button.visible:
+			continue
+		var shelf := (
+			_sale_shelves[shelf_index]
+			if shelf_index < _sale_shelves.size()
+			else {"status": "empty"}
+		) as Dictionary
+		var status := String(shelf.get("status", "empty"))
+		var status_label := "空"
+		if status == "customer_ready":
+			status_label = "待售"
+		elif status == "customer_declined":
+			status_label = "拒絕"
+		button.text = "架%d\n%s" % [shelf_index + 1, status_label]
+		button.button_pressed = shelf_index == _selected_sale_shelf
+		button.add_theme_stylebox_override(
+			"normal",
+			_service_selected_style
+			if shelf_index == _selected_sale_shelf else _service_normal_style
+		)
 
 
 func _select_price_strategy(strategy_id: StringName) -> void:
@@ -1056,6 +1321,12 @@ func _configure_focus_navigation() -> void:
 	var method_buttons: Array[Button] = [
 		steady_method_button, refine_method_button, rush_method_button, masterwork_method_button,
 	]
+	var quality_buttons: Array[Button] = [
+		common_material_button,
+		rare_material_button,
+		exceptional_material_button,
+		legendary_material_button,
+	]
 	for index in method_buttons.size():
 		var method_button := method_buttons[index]
 		method_button.focus_neighbor_left = method_button.get_path_to(
@@ -1064,7 +1335,21 @@ func _configure_focus_navigation() -> void:
 		method_button.focus_neighbor_right = method_button.get_path_to(
 			method_buttons[mini(method_buttons.size() - 1, index + 1)]
 		)
-		method_button.focus_neighbor_bottom = method_button.get_path_to(craft_button)
+		method_button.focus_neighbor_bottom = method_button.get_path_to(
+			quality_buttons[mini(index, quality_buttons.size() - 1)]
+		)
+	for index in quality_buttons.size():
+		var quality_button := quality_buttons[index]
+		quality_button.focus_neighbor_left = quality_button.get_path_to(
+			quality_buttons[maxi(0, index - 1)]
+		)
+		quality_button.focus_neighbor_right = quality_button.get_path_to(
+			quality_buttons[mini(quality_buttons.size() - 1, index + 1)]
+		)
+		quality_button.focus_neighbor_top = quality_button.get_path_to(
+			method_buttons[mini(index, method_buttons.size() - 1)]
+		)
+		quality_button.focus_neighbor_bottom = quality_button.get_path_to(craft_button)
 	var price_buttons: Array[Button] = [
 		quick_price_button, fair_price_button, luxury_price_button,
 	]
@@ -1077,6 +1362,15 @@ func _configure_focus_navigation() -> void:
 			price_buttons[mini(price_buttons.size() - 1, index + 1)]
 		)
 		price_button.focus_neighbor_bottom = price_button.get_path_to(list_for_sale_button)
+	for index in _sale_shelf_buttons.size():
+		var shelf_button := _sale_shelf_buttons[index]
+		shelf_button.focus_neighbor_left = shelf_button.get_path_to(
+			_sale_shelf_buttons[maxi(0, index - 1)]
+		)
+		shelf_button.focus_neighbor_right = shelf_button.get_path_to(
+			_sale_shelf_buttons[mini(_sale_shelf_buttons.size() - 1, index + 1)]
+		)
+		shelf_button.focus_neighbor_bottom = shelf_button.get_path_to(fair_price_button)
 	resolve_sale_button.focus_neighbor_right = resolve_sale_button.get_path_to(cancel_listing_button)
 	cancel_listing_button.focus_neighbor_left = cancel_listing_button.get_path_to(resolve_sale_button)
 	forge_service_button.focus_neighbor_right = forge_service_button.get_path_to(
@@ -1086,7 +1380,7 @@ func _configure_focus_navigation() -> void:
 		upgrade_button
 	)
 	sales_service_button.focus_neighbor_right = sales_service_button.get_path_to(
-		fair_price_button
+		sale_shelf_1_button
 	)
 
 
@@ -1097,7 +1391,7 @@ func _focus_current_workspace() -> void:
 		&"workshop_upgrade":
 			upgrade_button.grab_focus()
 		&"sales_table":
-			list_for_sale_button.grab_focus()
+			_sale_shelf_buttons[_selected_sale_shelf].grab_focus()
 		_:
 			if not _recipe_buttons.is_empty():
 				_recipe_buttons[0].grab_focus()

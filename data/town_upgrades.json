@@ -67,25 +67,25 @@
         {
           "level": 1,
           "name": "Trading Stalls",
-          "description": "Open equipment sales and Tier 2 blueprints; reduce prices by 3% and raise sale values by 5%.",
+          "description": "Open equipment sales and Tier 2 blueprints; unlock the three-slot cedar display and improve premium-customer interest.",
           "cost": {"autumn_wood": 8, "autumn_core": 4, "gold": 15},
-          "effects": {"market_purchase_discount": 0.03, "market_sale_bonus": 0.05, "market_stock_tier": 1, "market_equipment_sales_unlocked": 1},
+          "effects": {"market_purchase_discount": 0.03, "market_sale_bonus": 0.05, "market_stock_tier": 1, "market_equipment_sales_unlocked": 1, "market_customer_interest_bonus": 0.05},
           "visual_flag": "show_market_level_1"
         },
         {
           "level": 2,
           "name": "Merchant Row",
-          "description": "Expand stock to Tier 3 blueprints; reduce prices by another 3% and raise sale values by another 5%.",
+          "description": "Unlock the four-slot iron display and Tier 3 blueprints; further improve premium-customer interest.",
           "cost": {"autumn_wood": 18, "stone": 6, "autumn_core": 10, "gold": 35},
-          "effects": {"market_purchase_discount": 0.03, "market_sale_bonus": 0.05, "market_stock_tier": 1},
+          "effects": {"market_purchase_discount": 0.03, "market_sale_bonus": 0.05, "market_stock_tier": 1, "market_customer_interest_bonus": 0.07},
           "visual_flag": "show_market_level_2"
         },
         {
           "level": 3,
           "name": "Prosperous Exchange",
-          "description": "Complete the exchange; reach a 10% purchase discount and a 20% sale-value bonus.",
+          "description": "Unlock the six-slot grand counter; reach a 10% purchase discount, 20% sale bonus, and stronger premium demand.",
           "cost": {"autumn_wood": 30, "stone": 15, "autumn_core": 18, "gold": 70},
-          "effects": {"market_purchase_discount": 0.04, "market_sale_bonus": 0.10, "market_stock_tier": 1},
+          "effects": {"market_purchase_discount": 0.04, "market_sale_bonus": 0.10, "market_stock_tier": 1, "market_customer_interest_bonus": 0.10},
           "visual_flag": "show_market_level_3"
         }
       ]

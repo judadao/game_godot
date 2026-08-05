@@ -45,6 +45,8 @@ func apply_runtime_unlocks(
 				inventory_manager.call("grant_blueprint", product_id)
 			&"tool":
 				inventory_manager.call("grant_tool", product_id)
+	for fixture_id in [&"cedar_display", &"iron_display", &"grand_counter"]:
+		inventory_manager.call("grant_tool", fixture_id)
 
 	var card_ids: Array[String] = []
 	for card_variant in card_database.call("get_all_cards") as Array:

@@ -16,6 +16,9 @@ func _run() -> void:
 	_test_basic_equipment_purchase_and_advanced_purchase_rejection()
 	_test_equipment_and_sword_soul_crafting()
 	_test_single_sales_table_slot_resolves_once()
+	_test_market_supports_multiple_persistent_sale_shelves()
+	_test_market_fixture_gates_capacity_and_automatic_customers()
+	_test_material_quality_directly_changes_forge_outcomes()
 	_test_equipment_quality_scales_sale_value()
 	_test_material_quality_sales_and_market_equipment_unlock()
 	_test_blueprint_proficiency_awakens_legendary_quality()
@@ -164,6 +167,7 @@ func _test_single_sales_table_slot_resolves_once() -> void:
 	inventory.add_equipment_count(&"iron_sword", 2)
 	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
 	service.set_progression_levels(0, 0, 1)
+	service.set_sale_shelf_capacity(1)
 	var expected_sale_price := int(inventory.get_equipment(&"iron_sword").get("base_sale_value", 0))
 	var listed: Dictionary = service.list_for_sale(&"iron_sword", 1)
 	_expect(bool(listed.get("ok", false)), "One crafted item must be listable.")
@@ -179,6 +183,7 @@ func _test_single_sales_table_slot_resolves_once() -> void:
 	restored_inventory.apply_dict(inventory.to_dict())
 	var restored_service = ForgeServiceScript.new(ForgeCatalogScript.new(), restored_inventory)
 	restored_service.set_progression_levels(0, 0, 1)
+	restored_service.set_sale_shelf_capacity(1)
 	var restored_slot := restored_inventory.get_sale_slot() as Dictionary
 	_expect(
 		String(restored_slot.get("item_id", "")) == "iron_sword"
@@ -203,6 +208,171 @@ func _test_single_sales_table_slot_resolves_once() -> void:
 	)
 
 
+func _test_market_supports_multiple_persistent_sale_shelves() -> void:
+	var inventory = InventoryManagerScript.new()
+	inventory.set_resource_amount(&"gold", 0)
+	inventory.add_equipment_count(&"iron_sword", 4)
+	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
+	service.set_progression_levels(0, 0, 1)
+	service.set_sale_shelf_capacity(3)
+	for shelf_index in 3:
+		var listed := service.list_for_sale(
+			&"equipment", &"iron_sword", &"common", 1, &"fair", shelf_index
+		) as Dictionary
+		_expect(
+			bool(listed.get("ok", false))
+				and int(listed.get("shelf_index", -1)) == shelf_index,
+			"Each unlocked market shelf must accept its own independent listing."
+		)
+	_expect(
+		not bool(service.list_for_sale(
+			&"equipment", &"iron_sword", &"common", 1, &"fair", 3
+		).get("ok", false)),
+		"Listing outside the unlocked shelf capacity must be rejected."
+	)
+	var restored_inventory = InventoryManagerScript.new()
+	restored_inventory.apply_dict(inventory.to_dict())
+	var restored_service = ForgeServiceScript.new(
+		ForgeCatalogScript.new(), restored_inventory
+	)
+	restored_service.set_progression_levels(0, 0, 1)
+	restored_service.set_sale_shelf_capacity(3)
+	_expect(
+		(restored_inventory.get_sale_slots() as Array).size() == 3,
+		"Every occupied sale shelf must survive the inventory save round-trip."
+	)
+	var resolved := restored_service.resolve_sale(1) as Dictionary
+	var remaining_slots := restored_inventory.get_sale_slots() as Array
+	_expect(
+		bool(resolved.get("ok", false))
+			and (remaining_slots[0] as Dictionary).has("item_id")
+			and (remaining_slots[1] as Dictionary).is_empty()
+			and (remaining_slots[2] as Dictionary).has("item_id"),
+		"Resolving one shelf must not clear or pay out the other shelf listings."
+	)
+
+
+func _test_market_fixture_gates_capacity_and_automatic_customers() -> void:
+	var inventory = InventoryManagerScript.new()
+	inventory.set_resource_amount(&"gold", 1000)
+	inventory.set_resource_amount(&"autumn_wood", 100)
+	inventory.set_resource_amount(&"stone", 100)
+	inventory.set_resource_amount(&"autumn_core", 100)
+	inventory.add_equipment_count(&"iron_sword", 2)
+	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
+	service.set_progression_levels(0, 0, 0)
+	_expect(
+		service.get_sale_shelf_capacity() == 2,
+		"The basic shop must begin with only two physical counter positions."
+	)
+	_expect(
+		not bool(service.purchase_market_fixture(&"cedar_display").get("ok", false)),
+		"A stronger counter must remain unavailable before the shop building is upgraded."
+	)
+	service.set_progression_levels(0, 0, 1)
+	_expect(
+		service.get_sale_shelf_capacity() == 2,
+		"A building upgrade alone must not create additional counter furniture."
+	)
+	var fixture_purchase := service.purchase_market_fixture(&"cedar_display") as Dictionary
+	_expect(
+		bool(fixture_purchase.get("ok", false))
+			and service.get_sale_shelf_capacity() == 3
+			and inventory.owns_tool(&"cedar_display"),
+		"Purchasing an eligible fixture must persist ownership and expand actual shelf capacity."
+	)
+	var quick_preview := service.get_sale_preview(
+		&"equipment", &"iron_sword", &"common", &"quick"
+	) as Dictionary
+	var luxury_preview := service.get_sale_preview(
+		&"equipment", &"iron_sword", &"common", &"luxury"
+	) as Dictionary
+	_expect(
+		int(quick_preview.get("unit_price", 0)) < int(luxury_preview.get("unit_price", 0))
+			and float(quick_preview.get("sale_chance", 0.0))
+				> float(luxury_preview.get("sale_chance", 1.0)),
+		"Low prices must trade unit profit for a much higher automatic purchase chance."
+	)
+	service.set_random_seed(1)
+	_expect(
+		bool(service.list_for_sale(
+			&"equipment", &"iron_sword", &"common", 1, &"luxury", 0
+		).get("ok", false)),
+		"The automatic-customer fixture must accept a luxury listing."
+	)
+	var visit := service.try_customer_purchase(0) as Dictionary
+	_expect(
+		StringName(visit.get("code", "")) == &"customer_passed"
+			and not (inventory.get_sale_slot(0) as Dictionary).is_empty(),
+		"A customer rejecting an expensive item must leave it stocked for a later visitor."
+	)
+	service.set_economy_modifiers(0.0, 1.0, 0.0, 1.0, 0.0, 0.50)
+	var improved_preview := service.get_sale_preview(
+		&"equipment", &"iron_sword", &"common", &"luxury"
+	) as Dictionary
+	_expect(
+		float(improved_preview.get("sale_chance", 0.0))
+			> float(luxury_preview.get("sale_chance", 1.0)),
+		"Shop-building and equipment bonuses must improve premium-price acceptance."
+	)
+	inventory.add_equipment_count(&"merchant_seal", 1, &"exceptional")
+	_expect(
+		inventory.equip(&"merchant_seal")
+			and float(inventory.get_special_ability_totals().get(
+				"market_customer_interest_bonus", 0.0
+			)) > 0.0,
+		"Equipping the Merchant Seal must expose its premium-customer interest bonus."
+	)
+
+
+func _test_material_quality_directly_changes_forge_outcomes() -> void:
+	var inventory = InventoryManagerScript.new()
+	for resource_id in inventory.get_resource_ids():
+		inventory.set_resource_amount(resource_id, 0)
+	inventory.set_resource_amount(&"gold", 1000)
+	inventory.add_resource(&"autumn_wood", 20, &"common")
+	inventory.add_resource(&"stone", 10, &"common")
+	inventory.add_resource(&"autumn_wood", 20, &"exceptional")
+	inventory.add_resource(&"stone", 10, &"exceptional")
+	inventory.grant_blueprint(&"hunter_bow_blueprint")
+	inventory.grant_tool(&"forging_hammer")
+	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
+	service.set_progression_levels(3, 1, 1)
+	var common_preview := service.get_craft_preview(
+		&"forge_hunter_bow", &"steady", &"common"
+	) as Dictionary
+	var exceptional_preview := service.get_craft_preview(
+		&"forge_hunter_bow", &"steady", &"exceptional"
+	) as Dictionary
+	_expect(
+		bool(exceptional_preview.get("materials_available", false))
+			and float(exceptional_preview.get("success_chance", 0.0))
+				> float(common_preview.get("success_chance", 0.0))
+			and float((exceptional_preview.get("quality_chances", {}) as Dictionary).get(
+				"exceptional", 0.0
+			)) > float((common_preview.get("quality_chances", {}) as Dictionary).get(
+				"exceptional", 0.0
+			)),
+		"Choosing exceptional materials must visibly improve success and output quality odds."
+	)
+	var common_wood_before := inventory.get_resource_quality_amount(
+		&"autumn_wood", &"common"
+	)
+	var exceptional_wood_before := inventory.get_resource_quality_amount(
+		&"autumn_wood", &"exceptional"
+	)
+	var crafted := service.craft(
+		&"forge_hunter_bow", 1, &"steady", &"exceptional"
+	) as Dictionary
+	_expect(
+		bool(crafted.get("ok", false))
+			and StringName(crafted.get("material_quality", "")) == &"exceptional"
+			and inventory.get_resource_quality_amount(&"autumn_wood", &"common")
+				== common_wood_before
+			and inventory.get_resource_quality_amount(&"autumn_wood", &"exceptional")
+				< exceptional_wood_before,
+		"Forge must consume the selected material-quality stacks instead of aggregate stock."
+	)
 func _test_equipment_quality_scales_sale_value() -> void:
 	var inventory = InventoryManagerScript.new()
 	var common := inventory.get_equipment(&"hunter_bow")
@@ -382,6 +552,13 @@ func _test_inventory_legacy_migration_and_round_trip() -> void:
 		"equipment_levels": {"iron_sword": 2},
 		"owned_blueprints": ["iron_sword_blueprint"],
 		"owned_tools": ["forging_hammer"],
+		"sale_slot": {
+			"item_kind": "equipment",
+			"item_id": "iron_sword",
+			"quality": "common",
+			"quantity": 1,
+			"unit_price": 25,
+		},
 	})
 	_expect(
 		inventory.get_equipment_count(&"iron_sword") == 1,
@@ -390,6 +567,10 @@ func _test_inventory_legacy_migration_and_round_trip() -> void:
 	_expect(inventory.get_equipment_level(&"iron_sword") == 2, "Legacy level must survive migration.")
 	_expect(inventory.owns_blueprint(&"iron_sword_blueprint"), "Blueprint ownership must apply.")
 	_expect(inventory.owns_tool(&"forging_hammer"), "Tool ownership must apply.")
+	_expect(
+		StringName(inventory.get_sale_slot(0).get("item_id", "")) == &"iron_sword",
+		"Legacy single-slot listings must migrate into the first multi-shelf slot."
+	)
 
 	var dto: Dictionary = inventory.to_dict()
 	_expect(

@@ -17,6 +17,7 @@ const FEATURE_SCENES := [
 	"res://scenes/ui/system/PauseMenu.tscn",
 	"res://scenes/ui/town/MaterialYardUI.tscn",
 	"res://scenes/ui/town/PlayerBlacksmithUI.tscn",
+	"res://scenes/ui/town/PlayerMarketUI.tscn",
 	"res://scenes/ui/town/TownHallUI.tscn",
 	"res://scenes/ui/town/TownResidenceUI.tscn",
 	"res://tests/fixtures/scenes/AutumnSlime.tscn",
@@ -41,6 +42,7 @@ const FEATURE_SCRIPTS := [
 	"res://scripts/ui/system/pause_menu.gd",
 	"res://scripts/ui/town/material_yard_ui.gd",
 	"res://scripts/ui/town/player_blacksmith_ui.gd",
+	"res://scripts/ui/town/player_market_ui.gd",
 	"res://scripts/ui/town/town_hall_ui.gd",
 	"res://scripts/ui/town/town_residence_ui.gd",
 ]

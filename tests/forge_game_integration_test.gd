@@ -45,6 +45,21 @@ func _run() -> void:
 		"Forge integration fixture must expand the market before selling equipment."
 	)
 	game.call("_refresh_forge_progression")
+	_expect(
+		int(forge.call("get_sale_shelf_capacity")) == 2,
+		"Market Level 1 must unlock furniture without granting free counter space."
+	)
+	_expect(
+		float((forge.call(
+			"get_sale_preview", &"resource", &"autumn_wood", &"common", &"luxury"
+		) as Dictionary).get("sale_chance", 0.0)) > 0.0,
+		"Market decoration upgrades must establish some demand for premium prices."
+	)
+	_expect(
+		bool(forge.call("purchase_market_fixture", &"cedar_display").get("ok", false))
+			and int(forge.call("get_sale_shelf_capacity")) == 3,
+		"An eligible purchased display must expand the workshop to three sale shelves."
+	)
 
 	for offer_id in [
 		&"tool_forging_hammer",
@@ -94,6 +109,8 @@ func _run() -> void:
 		&"equipment",
 		&"hunter_bow",
 		inventory.call("get_highest_equipment_quality", &"hunter_bow"),
+		&"quick",
+		0,
 		ui
 	)
 	_expect(
@@ -101,7 +118,8 @@ func _run() -> void:
 		"Crafted equipment must move into the persistent sales-table escrow."
 	)
 	var gold_before_sale := int(inventory.call("get_resource_amount", &"gold"))
-	game.call("_on_blacksmith_resolve_sale_requested", ui)
+	forge.call("set_random_seed", 1)
+	game.call("_on_market_customer_purchase_check_requested", 0, ui)
 	_expect(
 		(inventory.call("get_sale_slot") as Dictionary).is_empty(),
 		"Customer checkout must clear the sales table."

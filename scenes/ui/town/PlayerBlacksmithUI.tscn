@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" uid="uid://bl4jfw2re34g3" path="res://scripts/ui/town/player_blacksmith_ui.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/ui/town/TownNPCPortrait.tscn" id="2_portrait"]
@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/shop/generated/shop_sign.png" id="10_sign"]
 [ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon1_1.png" id="11_close"]
 [ext_resource type="Theme" path="res://scenes/ui/town/TownServiceFrameTheme.tres" id="12_frame_theme"]
+[ext_resource type="PackedScene" path="res://scenes/ui/town/PlayerMarketUI.tscn" id="14_market_ui"]
 
 [sub_resource type="StyleBoxFlat" id="WindowStyle"]
 content_margin_left = 2.0
@@ -546,7 +547,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 texture_filter = 1
-tooltip_text = "Display crafted equipment for customers"
+tooltip_text = "Enter the player-run shop interior"
 icon = ExtResource("5_sales")
 icon_max_width = 34
 expand_icon = true
@@ -556,7 +557,7 @@ theme_override_styles/normal = SubResource("ServiceNormal")
 theme_override_styles/hover = SubResource("HoverStyle")
 theme_override_styles/pressed = SubResource("ServiceSelected")
 theme_override_styles/focus = SubResource("FocusStyle")
-text = "Sales Table"
+text = "Enter Market"
 alignment = 0
 
 [node name="WorkspaceHolder" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent"]
@@ -800,6 +801,66 @@ theme_override_styles/pressed = SubResource("PrimaryStyle")
 theme_override_styles/disabled = SubResource("DisabledStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
 text = "✦ 名匠"
+
+[node name="MaterialQualityGuide" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.82, 0.88, 1)
+theme_override_font_sizes/font_size = 12
+text = "3  MATERIAL QUALITY  ·  Higher grades improve success and output quality"
+text_overrun_behavior = 3
+
+[node name="MaterialQualityRow" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="CommonMaterialButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/MaterialQualityRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "普通素材：無額外鍛造加成"
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+theme_override_styles/disabled = SubResource("DisabledStyle")
+text = "◇ 普通"
+
+[node name="RareMaterialButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/MaterialQualityRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "稀有素材：提高成功率與高品質機率"
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+theme_override_styles/disabled = SubResource("DisabledStyle")
+text = "◆ 稀有"
+
+[node name="ExceptionalMaterialButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/MaterialQualityRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "罕見素材：大幅提高成功率與成品品質"
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+theme_override_styles/disabled = SubResource("DisabledStyle")
+text = "✦ 罕見"
+
+[node name="LegendaryMaterialButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/MaterialQualityRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "傳奇素材：最高品質加成；覺醒圖紙另提高神作機率"
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+theme_override_styles/disabled = SubResource("DisabledStyle")
+text = "✺ 傳奇"
 
 [node name="ForgeActions" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
 layout_mode = 2
@@ -1131,7 +1192,72 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_colors/font_color = Color(0.97, 0.82, 0.49, 1)
 theme_override_font_sizes/font_size = 20
-text = "Workshop Sales Table"
+text = "Workshop Sales Table  ·  Display Shelves"
+
+[node name="SaleShelfRow" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="SaleShelf1Button" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter/SaleShelfRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "切換到販售架 1"
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+text = "架1"
+
+[node name="SaleShelf2Button" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter/SaleShelfRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "切換到販售架 2"
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+text = "架2"
+
+[node name="SaleShelf3Button" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter/SaleShelfRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "市場 Lv.1 解鎖販售架 3"
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+text = "架3"
+
+[node name="SaleShelf4Button" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter/SaleShelfRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "市場 Lv.2 解鎖販售架 4"
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+text = "架4"
+
+[node name="SaleShelf5Button" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter/SaleShelfRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "市場 Lv.3 解鎖販售架 5"
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+text = "架5"
+
+[node name="SaleShelf6Button" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter/SaleShelfRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "市場 Lv.3 解鎖販售架 6"
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+text = "架6"
 
 [node name="RumorBoard" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter"]
 custom_minimum_size = Vector2(0, 68)
@@ -1259,3 +1385,5 @@ theme_override_styles/pressed = SubResource("HoverStyle")
 theme_override_styles/disabled = SubResource("DisabledStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
 text = "↩ 撤下／重新定價"
+
+[node name="PlayerMarketUI" parent="." instance=ExtResource("14_market_ui")]

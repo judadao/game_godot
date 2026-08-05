@@ -37,10 +37,22 @@ const MATERIAL_TRAITS := {
 	&"magic_shard": {"id": "arcane", "name": "導魔結晶", "description": "提高罕見品質的形成機會。", "success_bonus": 0.0, "quality_bonus": 0.04},
 	&"autumn_core": {"id": "volatile", "name": "活性核心", "description": "更容易誕生神作，但火候較難控制。", "success_bonus": -0.03, "quality_bonus": 0.06},
 }
+const MATERIAL_QUALITY_PROFILES := {
+	&"common": {"name": "普通", "success_bonus": 0.0, "quality_bonus": 0.0, "masterpiece_bonus": 0.0},
+	&"rare": {"name": "稀有", "success_bonus": 0.02, "quality_bonus": 0.04, "masterpiece_bonus": 0.0},
+	&"exceptional": {"name": "罕見", "success_bonus": 0.04, "quality_bonus": 0.10, "masterpiece_bonus": 0.01},
+	&"legendary": {"name": "傳奇", "success_bonus": 0.06, "quality_bonus": 0.18, "masterpiece_bonus": 0.03},
+}
 const PRICE_STRATEGIES: Array[Dictionary] = [
-	{"id": "quick", "name": "快速成交", "icon": "▶", "multiplier": 0.80, "sale_chance": 1.0, "description": "價格較低，普通顧客一定會買。"},
-	{"id": "fair", "name": "公道定價", "icon": "◆", "multiplier": 1.0, "sale_chance": 1.0, "description": "按市場行情販售，收入穩定。"},
-	{"id": "luxury", "name": "精品標價", "icon": "✦", "multiplier": 1.35, "sale_chance": 0.45, "description": "一般顧客可能離開；符合流言時必定高價成交。"},
+	{"id": "quick", "name": "親民定價", "icon": "▶", "multiplier": 0.80, "sale_chance": 0.96, "description": "單件收入較少，但幾乎每位顧客都願意購買。"},
+	{"id": "fair", "name": "公道定價", "icon": "◆", "multiplier": 1.0, "sale_chance": 0.70, "description": "按市場行情販售，客流與收入均衡。"},
+	{"id": "luxury", "name": "精品標價", "icon": "✦", "multiplier": 1.35, "sale_chance": 0.0, "description": "一般顧客不會購買；流言、裝潢與設備能建立高價客群。"},
+]
+const MARKET_FIXTURES: Array[Dictionary] = [
+	{"id": "basic_counter", "name": "木製交易台", "capacity": 2, "required_market_level": 0, "cost": {}},
+	{"id": "cedar_display", "name": "雪松展示櫃", "capacity": 3, "required_market_level": 1, "cost": {"gold": 90, "autumn_wood": 12}},
+	{"id": "iron_display", "name": "鍛鐵陳列櫃", "capacity": 4, "required_market_level": 2, "cost": {"gold": 220, "stone": 12, "autumn_wood": 20}},
+	{"id": "grand_counter", "name": "大市集交易櫃", "capacity": 6, "required_market_level": 3, "cost": {"gold": 480, "stone": 24, "autumn_core": 12}},
 ]
 const RUMORS: Array[Dictionary] = [
 	{"id": "frontier_hunt", "title": "流言菲語：北境狩獵隊整裝", "item_kind": "equipment", "item_ids": ["hunter_bow"], "minimum_quality": "rare", "customer_id": "frontier_captain", "customer_name": "Frontier Captain Rhea", "multiplier": 1.80, "hint": "稀有以上獵弓會吸引北境隊長。"},
@@ -59,6 +71,8 @@ var _sale_multiplier := 1.0
 var _processing_fee_discount := 0.0
 var _material_yield_multiplier := 1.0
 var _quality_bonus := 0.0
+var _customer_interest_bonus := 0.0
+var _sale_shelf_capacity := 2
 
 
 func _init(catalog: RefCounted, inventory: RefCounted) -> void:
@@ -111,6 +125,77 @@ func get_active_rumors() -> Array[Dictionary]:
 	return RUMORS.duplicate(true)
 
 
+func get_material_quality_profiles() -> Dictionary:
+	return MATERIAL_QUALITY_PROFILES.duplicate(true)
+
+
+func get_market_fixture_state() -> Dictionary:
+	var fixtures: Array[Dictionary] = []
+	var active := MARKET_FIXTURES[0].duplicate(true)
+	for fixture in MARKET_FIXTURES:
+		var projection := fixture.duplicate(true)
+		var fixture_id := StringName(fixture.get("id", ""))
+		var required_level := int(fixture.get("required_market_level", 0))
+		var owned := required_level == 0 or bool(_inventory.call("owns_tool", fixture_id))
+		var building_ready := _market_level >= required_level
+		projection["owned"] = owned
+		projection["building_ready"] = building_ready
+		projection["can_purchase"] = (
+			building_ready and not owned and _previous_fixture_owned(required_level)
+		)
+		if owned and building_ready and int(fixture.get("capacity", 0)) >= int(active.get("capacity", 0)):
+			active = projection.duplicate(true)
+		fixtures.append(projection)
+	var next_fixture: Dictionary = {}
+	for fixture in fixtures:
+		if bool(fixture.get("owned", false)):
+			continue
+		next_fixture = fixture.duplicate(true)
+		break
+	return {
+		"active": active,
+		"fixtures": fixtures,
+		"next": next_fixture,
+		"building_level": _market_level,
+	}
+
+
+func purchase_market_fixture(fixture_id: StringName) -> Dictionary:
+	if not is_configured():
+		return _result(false, &"not_configured")
+	var fixture := _find_entry(MARKET_FIXTURES, fixture_id)
+	if fixture.is_empty() or fixture_id == &"basic_counter":
+		return _result(false, &"unknown_market_fixture")
+	var required_level := int(fixture.get("required_market_level", 0))
+	if _market_level < required_level:
+		return _result(false, &"market_building_too_low")
+	if bool(_inventory.call("owns_tool", fixture_id)):
+		return _result(false, &"market_fixture_owned")
+	if not _previous_fixture_owned(required_level):
+		return _result(false, &"previous_market_fixture_required")
+	var cost := fixture.get("cost", {}) as Dictionary
+	if not bool(_inventory.call("spend_resources", cost)):
+		return _result(false, &"insufficient_resources")
+	if not bool(_inventory.call("grant_tool", fixture_id)):
+		_refund(cost)
+		return _result(false, &"market_fixture_purchase_failed")
+	_apply_market_fixture_capacity()
+	return _result(true, &"market_fixture_purchased", {
+		"fixture": fixture.duplicate(true),
+		"capacity": _sale_shelf_capacity,
+	})
+
+
+func set_sale_shelf_capacity(capacity: int) -> void:
+	_sale_shelf_capacity = clampi(capacity, 1, 6)
+	_inventory.call("set_sale_slot_capacity", _sale_shelf_capacity)
+	_sale_shelf_capacity = int(_inventory.call("get_sale_slot_capacity"))
+
+
+func get_sale_shelf_capacity() -> int:
+	return _sale_shelf_capacity
+
+
 func get_sale_preview(
 	item_kind: StringName,
 	item_id: StringName,
@@ -140,7 +225,8 @@ func get_sale_preview(
 				* float(strategy.get("multiplier", 1.0))
 				* float(rumor.get("multiplier", 1.0))
 		),
-		"sale_chance": 1.0 if not rumor.is_empty() else float(strategy.get("sale_chance", 1.0)),
+		"sale_chance": 1.0 if not rumor.is_empty() else _sale_chance(strategy),
+		"customer_interest_bonus": _customer_interest_bonus,
 	}
 
 
@@ -178,6 +264,7 @@ func set_progression_levels(
 	_flame_tier = maxi(0, flame_tier)
 	_blacksmith_level = maxi(0, blacksmith_level)
 	_market_level = maxi(0, flame_tier if market_level < 0 else market_level)
+	_apply_market_fixture_capacity()
 
 
 func set_economy_modifiers(
@@ -185,13 +272,15 @@ func set_economy_modifiers(
 	sale_multiplier: float,
 	processing_fee_discount: float,
 	material_yield_multiplier: float = 1.0,
-	quality_bonus: float = 0.0
+	quality_bonus: float = 0.0,
+	customer_interest_bonus: float = 0.0
 ) -> void:
 	_purchase_discount = clampf(purchase_discount, 0.0, 0.75)
 	_sale_multiplier = clampf(sale_multiplier, 1.0, 3.0)
 	_processing_fee_discount = clampf(processing_fee_discount, 0.0, 0.75)
 	_material_yield_multiplier = clampf(material_yield_multiplier, 1.0, 3.0)
 	_quality_bonus = clampf(quality_bonus, 0.0, 0.25)
+	_customer_interest_bonus = clampf(customer_interest_bonus, 0.0, 0.65)
 
 
 func get_shop_offers(
@@ -343,12 +432,19 @@ func get_available_recipes() -> Array[Dictionary]:
 	return result
 
 
-func get_craft_preview(recipe_id: StringName, method_id: StringName = &"steady") -> Dictionary:
+func get_craft_preview(
+	recipe_id: StringName,
+	method_id: StringName = &"steady",
+	material_quality: StringName = &"common"
+) -> Dictionary:
 	if not is_configured():
 		return {}
 	var recipe := _catalog.call("get_recipe", recipe_id) as Dictionary
 	var method := _method_by_id(method_id)
-	if recipe.is_empty() or method.is_empty():
+	var material_quality_profile := MATERIAL_QUALITY_PROFILES.get(
+		material_quality, {}
+	) as Dictionary
+	if recipe.is_empty() or method.is_empty() or material_quality_profile.is_empty():
 		return {}
 	var blueprint_id := StringName(recipe.get("blueprint_id", ""))
 	var proficiency := _inventory.call("get_blueprint_proficiency", blueprint_id) as Dictionary
@@ -368,6 +464,7 @@ func get_craft_preview(recipe_id: StringName, method_id: StringName = &"steady")
 	var success_chance := clampf(
 		float(method.get("success_chance", 0.9))
 			+ float(material_trait.get("success_bonus", 0.0))
+			+ float(material_quality_profile.get("success_bonus", 0.0))
 			+ (0.04 if school == &"balanced" else 0.0),
 		0.35,
 		0.995
@@ -375,9 +472,14 @@ func get_craft_preview(recipe_id: StringName, method_id: StringName = &"steady")
 	var quality_bonus := (
 		float(method.get("quality_bonus", 0.0))
 		+ float(material_trait.get("quality_bonus", 0.0))
+		+ float(material_quality_profile.get("quality_bonus", 0.0))
 		+ _school_quality_bonus(school)
 	)
 	var masterpiece_chance := float(method.get("masterpiece_chance", 0.0))
+	if awakened:
+		masterpiece_chance += float(
+			material_quality_profile.get("masterpiece_bonus", 0.0)
+		)
 	if school == &"elemental_resonance":
 		masterpiece_chance += 0.03
 	success_chance = minf(success_chance, 1.0 - masterpiece_chance)
@@ -387,6 +489,12 @@ func get_craft_preview(recipe_id: StringName, method_id: StringName = &"steady")
 		"method": method,
 		"unlocked": unlocked,
 		"cost": cost,
+		"material_quality": String(material_quality),
+		"material_quality_profile": material_quality_profile,
+		"blueprint_awakened": awakened,
+		"materials_available": bool(_inventory.call(
+			"can_afford_quality_resources", cost, material_quality
+		)),
 		"processing_fee": fee,
 		"success_chance": success_chance,
 		"quality_chances": _quality_chances(
@@ -406,7 +514,8 @@ func get_craft_preview(recipe_id: StringName, method_id: StringName = &"steady")
 func craft(
 	recipe_id: StringName,
 	quantity: int = 1,
-	method_id: StringName = &"steady"
+	method_id: StringName = &"steady",
+	material_quality: StringName = &"common"
 ) -> Dictionary:
 	if not is_configured():
 		return _result(false, &"not_configured")
@@ -424,14 +533,16 @@ func craft(
 		return _result(false, &"blueprint_required")
 	if not _owns_required_tools(recipe):
 		return _result(false, &"tool_required")
-	var preview := get_craft_preview(recipe_id, method_id)
+	var preview := get_craft_preview(recipe_id, method_id, material_quality)
 	if preview.is_empty():
 		return _result(false, &"unknown_forge_method")
 	if not bool(preview.get("unlocked", false)):
 		return _result(false, &"forge_method_locked")
 	var total_cost := _multiply_cost(preview.get("cost", {}) as Dictionary, quantity)
 	var processing_fee := int(preview.get("processing_fee", 0)) * quantity
-	if not bool(_inventory.call("spend_resources", total_cost)):
+	if not bool(_inventory.call(
+		"spend_quality_resources", total_cost, material_quality
+	)):
 		return _result(false, &"insufficient_resources")
 	var result_kind := StringName(recipe.get("result_kind", ""))
 	var result_id := StringName(recipe.get("result_id", ""))
@@ -439,7 +550,10 @@ func craft(
 	var chances := preview.get("quality_chances", {}) as Dictionary
 	var success_chance := float(preview.get("success_chance", 0.9))
 	var method := preview.get("method", {}) as Dictionary
+	var quality_profile := preview.get("material_quality_profile", {}) as Dictionary
 	var masterpiece_chance := float(method.get("masterpiece_chance", 0.0))
+	if bool(preview.get("blueprint_awakened", false)):
+		masterpiece_chance += float(quality_profile.get("masterpiece_bonus", 0.0))
 	if StringName(preview.get("blueprint_school", "")) == &"elemental_resonance":
 		masterpiece_chance += 0.03
 	var quality_counts: Dictionary = {}
@@ -460,7 +574,11 @@ func craft(
 		) + 1
 		produced_quantity += 1
 	if int(outcome_counts.get("scrap", 0)) > 0:
-		_grant_scrap_return(recipe.get("cost", {}) as Dictionary, int(outcome_counts["scrap"]))
+		_grant_scrap_return(
+			recipe.get("cost", {}) as Dictionary,
+			int(outcome_counts["scrap"]),
+			material_quality
+		)
 	if result_kind == &"equipment":
 		for quality_variant in quality_counts:
 			if not bool(_inventory.call(
@@ -469,7 +587,7 @@ func craft(
 				int(quality_counts[quality_variant]),
 				StringName(quality_variant)
 			)):
-				_refund(total_cost)
+				_refund_quality_resources(total_cost, material_quality)
 				return _result(false, &"craft_failed")
 		var updated_proficiency := (
 			_inventory.call("record_blueprint_craft", blueprint_id, produced_quantity) as Dictionary
@@ -484,6 +602,7 @@ func craft(
 			"outcome_counts": outcome_counts,
 			"forge_method": String(method_id),
 			"material_trait": preview.get("material_trait", ""),
+			"material_quality": String(material_quality),
 			"proficiency": updated_proficiency,
 			"blueprint_awakened_now": bool(updated_proficiency.get("awakened_now", false)),
 			"material_tier": String(recipe.get("material_tier", "normal")),
@@ -504,6 +623,7 @@ func craft(
 			"outcome_counts": outcome_counts,
 			"forge_method": String(method_id),
 			"material_trait": preview.get("material_trait", ""),
+			"material_quality": String(material_quality),
 			"proficiency": updated_proficiency,
 			"blueprint_awakened_now": bool(updated_proficiency.get("awakened_now", false)),
 			"material_tier": String(recipe.get("material_tier", "normal")),
@@ -517,7 +637,7 @@ func craft(
 			&"intent_ready" if produced_quantity > 0 else &"craft_scrap",
 			payload
 		)
-	_refund(total_cost)
+	_refund_quality_resources(total_cost, material_quality)
 	return _result(false, &"invalid_result")
 
 
@@ -560,7 +680,8 @@ func list_for_sale(
 	item_id_or_quantity: Variant,
 	quality_or_legacy_price: Variant = 0,
 	quantity: int = 1,
-	price_strategy: StringName = &"fair"
+	price_strategy: StringName = &"fair",
+	shelf_index: int = -1
 ) -> Dictionary:
 	if not is_configured():
 		return _result(false, &"not_configured")
@@ -578,6 +699,11 @@ func list_for_sale(
 	if item_kind == &"equipment" and _market_level < 1:
 		return _result(false, &"equipment_sales_locked")
 	if not [&"resource", &"equipment"].has(item_kind) or quantity <= 0:
+		return _result(false, &"listing_rejected")
+	var resolved_shelf_index := shelf_index
+	if resolved_shelf_index < 0:
+		resolved_shelf_index = _first_empty_sale_shelf()
+	if resolved_shelf_index < 0 or resolved_shelf_index >= _sale_shelf_capacity:
 		return _result(false, &"listing_rejected")
 	var base_value := int(_inventory.call(
 		"get_resource_sale_value" if item_kind == &"resource" else "get_equipment_sale_value",
@@ -604,7 +730,8 @@ func list_for_sale(
 		"base_unit_price": base_unit_price,
 		"price_strategy": String(price_strategy),
 		"price_multiplier": float(strategy.get("multiplier", 1.0)),
-		"sale_chance": 1.0 if not rumor.is_empty() else float(strategy.get("sale_chance", 1.0)),
+		"sale_chance": 1.0 if not rumor.is_empty() else _sale_chance(strategy),
+		"customer_interest_bonus": _customer_interest_bonus,
 		"rumor_id": String(rumor.get("id", "")),
 		"rumor_title": String(rumor.get("title", "")),
 		"customer_id": String(rumor.get("customer_id", "ordinary_customer")),
@@ -612,37 +739,60 @@ func list_for_sale(
 		"customer_state": "ready",
 		"rumor_multiplier": rumor_multiplier,
 	}
-	if not bool(_inventory.call(method, item_id, quantity, unit_price, quality, metadata)):
+	if not bool(_inventory.call(
+		method,
+		item_id,
+		quantity,
+		unit_price,
+		quality,
+		metadata,
+		resolved_shelf_index
+	)):
 		return _result(false, &"listing_rejected")
 	return _result(true, &"listed", {
-		"sale_slot": _inventory.call("get_sale_slot") as Dictionary,
+		"sale_slot": _inventory.call(
+			"get_sale_slot", resolved_shelf_index
+		) as Dictionary,
+		"shelf_index": resolved_shelf_index,
 	})
 
 
-func resolve_sale() -> Dictionary:
+func resolve_sale(shelf_index: int = 0) -> Dictionary:
 	if not is_configured():
 		return _result(false, &"not_configured")
-	var slot := _inventory.call("get_sale_slot") as Dictionary
+	var slot := _inventory.call("get_sale_slot", shelf_index) as Dictionary
 	if slot.is_empty():
 		return _result(false, &"no_active_listing")
-	if StringName(slot.get("customer_state", "ready")) == &"declined":
-		return _result(false, &"customer_declined_locked")
-	if _quality_rng.randf() > float(slot.get("sale_chance", 1.0)):
-		_inventory.call("mark_sale_declined")
-		return _result(false, &"customer_declined", {
-			"customer_name": "Town Customer",
-			"price_strategy": slot.get("price_strategy", "fair"),
-		})
-	var sale_result := _inventory.call("resolve_sale") as Dictionary
+	var sale_result := _inventory.call("resolve_sale", shelf_index) as Dictionary
 	if sale_result.is_empty():
 		return _result(false, &"no_active_listing")
 	return _result(true, &"sold", sale_result)
 
 
-func cancel_sale() -> Dictionary:
+func try_customer_purchase(shelf_index: int = 0) -> Dictionary:
 	if not is_configured():
 		return _result(false, &"not_configured")
-	if not bool(_inventory.call("cancel_sale")):
+	var slot := _inventory.call("get_sale_slot", shelf_index) as Dictionary
+	if slot.is_empty():
+		return _result(false, &"no_active_listing")
+	var chance := clampf(float(slot.get("sale_chance", 1.0)), 0.0, 1.0)
+	if _quality_rng.randf() > chance:
+		return _result(false, &"customer_passed", {
+			"customer_name": "Town Customer",
+			"price_strategy": slot.get("price_strategy", "fair"),
+			"sale_chance": chance,
+			"shelf_index": shelf_index,
+		})
+	var sale_result := _inventory.call("resolve_sale", shelf_index) as Dictionary
+	if sale_result.is_empty():
+		return _result(false, &"no_active_listing")
+	return _result(true, &"sold", sale_result)
+
+
+func cancel_sale(shelf_index: int = 0) -> Dictionary:
+	if not is_configured():
+		return _result(false, &"not_configured")
+	if not bool(_inventory.call("cancel_sale", shelf_index)):
 		return _result(false, &"no_active_listing")
 	return _result(true, &"listing_canceled")
 
@@ -841,13 +991,49 @@ func _roll_process_outcome(
 	return &"flawed" if failure_roll < 0.68 else &"prototype"
 
 
-func _grant_scrap_return(base_cost: Dictionary, scrap_count: int) -> void:
+func _grant_scrap_return(
+	base_cost: Dictionary,
+	scrap_count: int,
+	material_quality: StringName = &"common"
+) -> void:
 	if scrap_count <= 0:
 		return
 	for resource_variant in base_cost:
 		var returned := floori(float(base_cost[resource_variant]) * 0.25) * scrap_count
 		if returned > 0:
-			_inventory.call("add_resource", StringName(resource_variant), returned)
+			_inventory.call(
+				"add_resource",
+				StringName(resource_variant),
+				returned,
+				material_quality
+			)
+
+
+func _first_empty_sale_shelf() -> int:
+	for shelf_index in _sale_shelf_capacity:
+		if (_inventory.call("get_sale_slot", shelf_index) as Dictionary).is_empty():
+			return shelf_index
+	return -1
+
+
+func _apply_market_fixture_capacity() -> void:
+	var fixture_state := get_market_fixture_state()
+	var active := fixture_state.get("active", {}) as Dictionary
+	set_sale_shelf_capacity(int(active.get("capacity", 2)))
+
+
+func _previous_fixture_owned(required_level: int) -> bool:
+	if required_level <= 1:
+		return true
+	var previous := MARKET_FIXTURES[required_level - 1] as Dictionary
+	return bool(_inventory.call("owns_tool", StringName(previous.get("id", ""))))
+
+
+func _sale_chance(strategy: Dictionary) -> float:
+	var base_chance := float(strategy.get("sale_chance", 1.0))
+	var strategy_id := StringName(strategy.get("id", "fair"))
+	var bonus_scale := 1.0 if strategy_id == &"luxury" else 0.35
+	return clampf(base_chance + _customer_interest_bonus * bonus_scale, 0.0, 1.0)
 
 
 func _matching_rumor(
@@ -891,6 +1077,17 @@ func _refund(cost: Dictionary) -> void:
 			"add_resource",
 			StringName(resource_variant),
 			int(cost[resource_variant])
+		)
+
+
+func _refund_quality_resources(cost: Dictionary, material_quality: StringName) -> void:
+	for resource_variant in cost:
+		var resource_id := StringName(resource_variant)
+		_inventory.call(
+			"add_resource",
+			resource_id,
+			int(cost[resource_variant]),
+			&"common" if resource_id == &"gold" else material_quality
 		)
 
 

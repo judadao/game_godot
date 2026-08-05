@@ -28,6 +28,11 @@ func _run() -> void:
 	for item_variant in inventory.call("get_equipment_catalog") as Array:
 		var item_id := StringName((item_variant as Dictionary).get("id", ""))
 		_expect(bool(inventory.call("has_equipment", item_id)), "%s must be owned in dev mode." % item_id)
+	for fixture_id in [&"cedar_display", &"iron_display", &"grand_counter"]:
+		_expect(
+			bool(inventory.call("owns_tool", fixture_id)),
+			"%s must be installed in dev mode." % fixture_id
+		)
 
 	var meta := game.get("meta_state") as MetaState
 	var card_database: RefCounted = game.get("card_database")
