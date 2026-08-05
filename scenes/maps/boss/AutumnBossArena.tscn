@@ -55,7 +55,7 @@ metadata/expedition_variant_id = &"autumn"
 metadata/hide_objective_hud = true
 metadata/hide_meta_hud = true
 metadata/boss_presentation_role = "background_colossus"
-metadata/boss_target_player_height_ratio = 11.25
+metadata/boss_target_player_height_ratio = 5.7
 metadata/boss_minimum_visible_fraction = 0.8
 metadata/boss_gameplay_safe_left = 360
 metadata/boss_gameplay_safe_right = 1560
@@ -137,7 +137,7 @@ texture = SubResource("FloorE")
 texture_filter = 1
 
 [node name="ArenaOverviewCamera" type="Camera2D" parent="."]
-position = Vector2(960, 1390)
+position = Vector2(960, 1280)
 zoom = Vector2(1.05, 1.05)
 limit_right = 1920
 limit_bottom = 1664

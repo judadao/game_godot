@@ -89,7 +89,7 @@ func _run() -> void:
 			var arena_builder := arena.get_node("ArenaPlatforms")
 			_expect(
 				_boss_platforms_are_reachable(arena_builder),
-				"%s boss platforms must form a monster-reachable chain." % region_id
+				"%s boss platforms must form a player-reachable chain." % region_id
 			)
 			_expect(
 				_boss_platform_collisions_are_stable(arena_builder),
@@ -142,8 +142,8 @@ func _expected_boss_backdrop_path(region_id: StringName) -> String:
 
 func _boss_platforms_are_reachable(arena_builder: Node) -> bool:
 	var floor_y := 1340.0 if bool(arena_builder.get("portrait_boss_layout")) else 500.0
-	var max_horizontal_edge_gap := 720.0 if bool(arena_builder.get("portrait_boss_layout")) else 280.0
-	var max_vertical_step := 65.0 if bool(arena_builder.get("portrait_boss_layout")) else 130.0
+	var max_horizontal_edge_gap := 300.0 if bool(arena_builder.get("portrait_boss_layout")) else 280.0
+	var max_vertical_step := 205.0 if bool(arena_builder.get("portrait_boss_layout")) else 130.0
 	var platforms := arena_builder.find_children("JumpPlatform*", "StaticBody2D", false, false)
 	for platform_variant in platforms:
 		var platform := platform_variant as StaticBody2D

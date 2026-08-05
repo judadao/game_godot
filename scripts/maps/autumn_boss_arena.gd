@@ -1,8 +1,8 @@
 extends Node2D
 
 const CAMERA_X := 960.0
-const CAMERA_MIN_Y := 1020.0
-const CAMERA_MAX_Y := 1390.0
+const CAMERA_MIN_Y := 420.0
+const CAMERA_MAX_Y := 1280.0
 const CAMERA_PLAYER_OFFSET_Y := 50.0
 const BOSS_PRESENTATION_Z := 0
 const PLAYER_FOREGROUND_Z := 30
@@ -24,6 +24,7 @@ func _ready() -> void:
 		overview_camera.enabled = true
 	if player != null:
 		player.z_index = PLAYER_FOREGROUND_Z
+		player.set("jump_velocity", -680.0)
 	if boss_director != null and boss_director.has_signal("boss_spawned"):
 		boss_director.connect("boss_spawned", _on_boss_spawned)
 
@@ -53,7 +54,7 @@ func _on_boss_spawned(boss: Node, _completion_boss: bool, _remaining: float) -> 
 	_active_background_boss = boss_visual
 	boss_visual.z_index = BOSS_PRESENTATION_Z
 	boss_visual.set_meta("presentation_role", "background_colossus")
-	boss_visual.set_meta("target_player_height_ratio", 11.25)
+	boss_visual.set_meta("target_player_height_ratio", 5.7)
 	boss_visual.set_meta("minimum_visible_fraction", 0.8)
 	boss_visual.set_meta("keep_gameplay_lanes_clear", true)
 	if boss_visual is CollisionObject2D:

@@ -91,7 +91,7 @@ func _run() -> void:
 	sorted_platforms.sort_custom(func(a: Node, b: Node) -> bool: return (a as Node2D).position.y < (b as Node2D).position.y)
 	for index in range(1, sorted_platforms.size()):
 		var gap := (sorted_platforms[index] as Node2D).position.y - (sorted_platforms[index - 1] as Node2D).position.y
-		_expect(gap <= 65.0, "Successive portrait platforms must retain practical jump-height margin.")
+		_expect(gap <= 205.0, "Successive portrait platforms must remain inside the boss-room jump-height budget.")
 	_expect(
 		director is Node2D and (director as Node2D).position.distance_to(Vector2(960, 1340)) <= 1.0,
 		"The smoke oni boss must spawn on the central ground stage."
