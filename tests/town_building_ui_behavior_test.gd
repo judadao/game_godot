@@ -141,6 +141,9 @@ func _test_player_blacksmith() -> void:
 			"kind": "weapon",
 			"tier": 1,
 			"cost": {"autumn_wood": 5, "stone": 3},
+			"proficiency_level": 5,
+			"blueprint_awakened": true,
+			"quality_chances": {"rare": 0.30, "exceptional": 0.10, "legendary": 0.03},
 			"unlocked": true,
 		},
 	])
@@ -177,9 +180,28 @@ func _test_player_blacksmith() -> void:
 	)
 
 	ui.call("select_blacksmith_service", &"sales_table")
+	ui.call("set_sale_state", {
+		"status": "empty",
+		"equipment_sales_unlocked": false,
+		"candidates": [{
+			"item_kind": "resource",
+			"item_id": "magic_shard",
+			"item_name": "魔力碎片",
+			"quality": "rare",
+			"quality_label": "稀有",
+			"count": 4,
+			"unit_price": 8,
+		}],
+	})
 	_expect(
 		StringName(ui.call("get_blacksmith_service")) == &"sales_table",
-		"PlayerBlacksmithUI must expose crafted-equipment sales."
+		"PlayerBlacksmithUI must expose quality material and equipment sales."
+	)
+	_expect(
+		_visible_text(ui).contains("魔力碎片")
+			and _visible_text(ui).contains("稀有")
+			and _visible_text(ui).contains("8 GOLD"),
+		"Sales Table must present item quality, owned quantity, and unit price."
 	)
 	var craft_requests: Array[StringName] = []
 	ui.connect(
@@ -187,6 +209,11 @@ func _test_player_blacksmith() -> void:
 		func(recipe_id: StringName) -> void: craft_requests.append(recipe_id)
 	)
 	ui.call("select_blacksmith_service", &"forge")
+	_expect(
+		_visible_text(ui).contains("圖紙已覺醒")
+			and _visible_text(ui).contains("傳奇 3%"),
+		"Forge detail must show blueprint proficiency awakening and legendary odds."
+	)
 	ui.call("craft_selected_recipe")
 	_expect(
 		craft_requests == [&"forge_iron_sword"],

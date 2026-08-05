@@ -6,7 +6,11 @@ signal closed
 signal toggled(is_open: bool)
 signal canceled
 signal craft_requested(recipe_id: StringName)
-signal list_for_sale_requested(item_id: StringName)
+signal list_for_sale_requested(
+	item_kind: StringName,
+	item_id: StringName,
+	quality: StringName
+)
 signal resolve_sale_requested
 signal upgrade_sword_soul_requested(card_id: StringName)
 signal workshop_upgraded
@@ -78,6 +82,8 @@ const SLOT_LABELS := {
 @onready var workshop_cost_label: Label = %WorkshopCostLabel
 @onready var upgrade_button: Button = %UpgradeButton
 @onready var sale_item_icon: TextureRect = %SaleItemIcon
+@onready var sale_candidate_list: VBoxContainer = %SaleCandidateList
+@onready var sale_candidate_template: Button = %SaleCandidateTemplate
 @onready var sale_item_name: Label = %SaleItemName
 @onready var sale_count_label: Label = %SaleCountLabel
 @onready var sale_status_label: Label = %SaleStatusLabel
@@ -98,6 +104,9 @@ var _recipe_by_id: Dictionary = {}
 var _recipe_buttons: Array[Button] = []
 var _building_buttons: Array[Button] = []
 var _sale_state: Dictionary = {}
+var _sale_candidates: Array[Dictionary] = []
+var _sale_candidate_buttons: Array[Button] = []
+var _selected_sale_candidate_key := ""
 var _icon_cache: Dictionary = {}
 var _resource_value_labels: Dictionary
 var _row_normal_style: StyleBox
@@ -205,6 +214,14 @@ func set_recipes(recipes: Array) -> void:
 
 func set_sale_state(state: Dictionary) -> void:
 	_sale_state = state.duplicate(true)
+	_sale_candidates.clear()
+	for candidate_variant in state.get("candidates", []) as Array:
+		if candidate_variant is Dictionary:
+			_sale_candidates.append((candidate_variant as Dictionary).duplicate(true))
+	if _find_sale_candidate(_selected_sale_candidate_key).is_empty():
+		_selected_sale_candidate_key = (
+			_sale_candidate_key(_sale_candidates[0]) if not _sale_candidates.is_empty() else ""
+		)
 	if is_node_ready():
 		_refresh_sales_table()
 
@@ -355,10 +372,14 @@ func request_upgrade() -> bool:
 
 
 func request_list_for_sale() -> void:
-	var item_id := _selected_sale_item_id()
-	if item_id.is_empty():
+	var candidate := _find_sale_candidate(_selected_sale_candidate_key)
+	if candidate.is_empty():
 		return
-	list_for_sale_requested.emit(item_id)
+	list_for_sale_requested.emit(
+		StringName(candidate.get("item_kind", "")),
+		StringName(candidate.get("item_id", "")),
+		StringName(candidate.get("quality", "common"))
+	)
 
 
 func request_resolve_sale() -> void:
@@ -494,6 +515,8 @@ func _refresh_recipe_rows() -> void:
 			tier,
 			"READY" if unlocked else "LOCKED",
 		]
+		var proficiency_level := int(recipe.get("proficiency_level", 0))
+		button.text += "  ·  熟練 %d/5" % proficiency_level
 		button.disabled = not bool(recipe.get("visible", true))
 		button.add_theme_stylebox_override(
 			"normal",
@@ -537,7 +560,22 @@ func _refresh_recipe_detail() -> void:
 		else (Color(0.98, 0.78, 0.35) if unlocked else Color(0.95, 0.48, 0.40))
 	)
 	var description := String(recipe.get("description", "將這份圖紙鍛造成永久裝備。"))
-	recipe_description.text = "[color=#f0c967][b]%s品質鍛造[/b][/color]\n%s" % [quality_label, description]
+	var proficiency_level := int(recipe.get("proficiency_level", 0))
+	var awakened := bool(recipe.get("blueprint_awakened", false))
+	var chances := recipe.get("quality_chances", {}) as Dictionary
+	recipe_description.text = (
+		"[color=#f0c967][b]%s品質鍛造[/b][/color]\n%s\n\n"
+		+ "[color=#9fdde5]圖紙熟練度 Lv.%d / 5[/color]  ·  %s\n"
+		+ "稀有 %.0f%%  ·  罕見 %.0f%%  ·  傳奇 %.0f%%"
+	) % [
+		quality_label,
+		description,
+		proficiency_level,
+		"圖紙已覺醒" if awakened else "Lv.5 時主角會改良圖紙",
+		float(chances.get("rare", 0.0)) * 100.0,
+		float(chances.get("exceptional", 0.0)) * 100.0,
+		float(chances.get("legendary", 0.0)) * 100.0,
+	]
 	var processing_fee := int(recipe.get("processing_fee", 0))
 	var sale_value := int(recipe.get("sale_value", 0))
 	recipe_cost_label.text = "MATERIALS  ·  %s\nPROCESSING FEE  ·  GOLD %d%s" % [
@@ -625,11 +663,15 @@ func _refresh_workshop() -> void:
 
 
 func _refresh_sales_table() -> void:
+	_rebuild_sale_candidates()
 	var state := _sale_state
-	var item_id := StringName(state.get("item_id", _selected_equipment_id()))
+	var selected_candidate := _find_sale_candidate(_selected_sale_candidate_key)
+	var item_id := StringName(state.get("item_id", selected_candidate.get("item_id", "")))
 	var recipe := _recipe_for_result(item_id)
-	var item_name := String(state.get("item_name", recipe.get("name", item_id)))
-	var count := int(state.get("crafted_count", _equipment_count(item_id)))
+	var item_name := String(state.get(
+		"item_name", selected_candidate.get("item_name", recipe.get("name", item_id))
+	))
+	var count := int(state.get("crafted_count", selected_candidate.get("count", 0)))
 	var status := String(state.get("status", "empty"))
 	sale_item_icon.texture = _texture_from_variant(
 		state.get("texture", state.get("icon", null))
@@ -637,7 +679,13 @@ func _refresh_sales_table() -> void:
 	if sale_item_icon.texture == null:
 		sale_item_icon.texture = _recipe_icon(recipe)
 	sale_item_name.text = item_name if not item_name.is_empty() else "Select crafted equipment"
-	sale_count_label.text = "CRAFTED INVENTORY  ·  %d AVAILABLE" % count
+	var quality_label := String(selected_candidate.get("quality_label", ""))
+	var unit_price := int(selected_candidate.get("unit_price", 0))
+	sale_count_label.text = "SALE INVENTORY  ·  %d AVAILABLE%s" % [
+		count,
+		"\n%s  ·  %d GOLD EACH" % [quality_label, unit_price]
+		if status == "empty" and not selected_candidate.is_empty() else "",
+	]
 	sale_status_label.text = String(state.get(
 		"table_label",
 		"Item displayed on the sales table." if status != "empty"
@@ -648,9 +696,55 @@ func _refresh_sales_table() -> void:
 		"Customer is ready to purchase." if status == "customer_ready"
 		else "Waiting for a customer..."
 	))
-	list_for_sale_button.disabled = item_id.is_empty() or count <= 0
+	list_for_sale_button.disabled = (
+		status != "empty" or selected_candidate.is_empty() or count <= 0
+	)
 	resolve_sale_button.disabled = status != "customer_ready"
 	gold_feedback.visible = not gold_feedback.text.strip_edges().is_empty()
+
+
+func _rebuild_sale_candidates() -> void:
+	for button in _sale_candidate_buttons:
+		if is_instance_valid(button):
+			button.free()
+	_sale_candidate_buttons.clear()
+	for candidate in _sale_candidates:
+		var key := _sale_candidate_key(candidate)
+		var button := sale_candidate_template.duplicate() as Button
+		button.visible = true
+		button.focus_mode = Control.FOCUS_ALL
+		button.text = "%s  ·  %s  ·  ×%d  ·  %d GOLD" % [
+			String(candidate.get("item_name", candidate.get("item_id", ""))),
+			String(candidate.get("quality_label", "普通")),
+			int(candidate.get("count", 0)),
+			int(candidate.get("unit_price", 0)),
+		]
+		button.button_pressed = key == _selected_sale_candidate_key
+		button.pressed.connect(_select_sale_candidate.bind(key))
+		sale_candidate_list.add_child(button)
+		_sale_candidate_buttons.append(button)
+
+
+func _select_sale_candidate(key: String) -> void:
+	if _find_sale_candidate(key).is_empty():
+		return
+	_selected_sale_candidate_key = key
+	_refresh_sales_table()
+
+
+func _sale_candidate_key(candidate: Dictionary) -> String:
+	return "%s:%s:%s" % [
+		candidate.get("item_kind", ""),
+		candidate.get("item_id", ""),
+		candidate.get("quality", "common"),
+	]
+
+
+func _find_sale_candidate(key: String) -> Dictionary:
+	for candidate in _sale_candidates:
+		if _sale_candidate_key(candidate) == key:
+			return candidate
+	return {}
 
 
 func _project_recipes_from_services() -> Array[Dictionary]:

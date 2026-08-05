@@ -17,6 +17,8 @@ func _run() -> void:
 	_test_equipment_and_sword_soul_crafting()
 	_test_single_sales_table_slot_resolves_once()
 	_test_equipment_quality_scales_sale_value()
+	_test_material_quality_sales_and_market_equipment_unlock()
+	_test_blueprint_proficiency_awakens_legendary_quality()
 	_test_town_economy_modifiers_affect_all_forge_transactions()
 	_test_inventory_legacy_migration_and_round_trip()
 	quit(0 if _failures == 0 else 1)
@@ -88,7 +90,7 @@ func _test_equipment_and_sword_soul_crafting() -> void:
 	for resource_id in inventory.get_resource_ids():
 		inventory.set_resource_amount(resource_id, 1000)
 	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
-	service.set_progression_levels(3, 1)
+	service.set_progression_levels(3, 1, 1)
 
 	_expect(
 		bool(service.purchase_offer(&"equipment_blueprint_hunter_bow").get("ok", false)),
@@ -135,7 +137,9 @@ func _test_equipment_and_sword_soul_crafting() -> void:
 		"Crafting must charge the recipe processing fee for every forged item."
 	)
 	_expect(
-		String(crafted.get("quality", "")) == "common"
+		int((crafted.get("quality_counts", {}) as Dictionary).values().reduce(
+			func(total: int, count: Variant) -> int: return total + int(count), 0
+		)) == 2
 			and String(crafted.get("material_tier", "")) == "normal",
 		"Craft results must expose their equipment quality and material tier."
 	)
@@ -159,6 +163,7 @@ func _test_single_sales_table_slot_resolves_once() -> void:
 	inventory.set_resource_amount(&"gold", 0)
 	inventory.add_equipment_count(&"iron_sword", 2)
 	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
+	service.set_progression_levels(0, 0, 1)
 	var expected_sale_price := int(inventory.get_equipment(&"iron_sword").get("base_sale_value", 0))
 	var listed: Dictionary = service.list_for_sale(&"iron_sword", 1)
 	_expect(bool(listed.get("ok", false)), "One crafted item must be listable.")
@@ -173,6 +178,7 @@ func _test_single_sales_table_slot_resolves_once() -> void:
 	var restored_inventory = InventoryManagerScript.new()
 	restored_inventory.apply_dict(inventory.to_dict())
 	var restored_service = ForgeServiceScript.new(ForgeCatalogScript.new(), restored_inventory)
+	restored_service.set_progression_levels(0, 0, 1)
 	var restored_slot := restored_inventory.get_sale_slot() as Dictionary
 	_expect(
 		String(restored_slot.get("item_id", "")) == "iron_sword"
@@ -209,9 +215,117 @@ func _test_equipment_quality_scales_sale_value() -> void:
 		"Equipment must expose the common, rare, and exceptional quality ladder."
 	)
 	_expect(
+		inventory.get_equipment_sale_value(&"hunter_bow", &"legendary")
+			> inventory.get_equipment_sale_value(&"hunter_bow", &"exceptional"),
+		"Awakened legendary equipment must sell for more than exceptional equipment."
+	)
+	_expect(
 		int(common.get("base_sale_value", 0)) < int(rare.get("base_sale_value", 0))
 			and int(rare.get("base_sale_value", 0)) < int(exceptional.get("base_sale_value", 0)),
 		"Higher-quality equipment must have a higher catalog sale value."
+	)
+	inventory.add_equipment_count(&"hunter_bow", 1, &"common")
+	_expect(inventory.equip(&"hunter_bow"), "Quality fixture equipment must equip.")
+	inventory.add_equipment_count(&"hunter_bow", 1, &"legendary")
+	_expect(
+		inventory.get_equipped_quality(&"weapon") == &"legendary"
+			and float(inventory.get_effect_totals().get("attack", 0.0)) > 3.0
+			and float(inventory.get_special_ability_totals().get("card_damage_bonus", 0.0)) > 1.0,
+		"A newly forged higher-quality copy must improve the equipped effects and numeric abilities."
+	)
+
+
+func _test_material_quality_sales_and_market_equipment_unlock() -> void:
+	var inventory = InventoryManagerScript.new()
+	inventory.set_resource_amount(&"gold", 0)
+	inventory.set_resource_amount(&"magic_shard", 0)
+	_expect(
+		inventory.add_resource(&"magic_shard", 2, &"rare"),
+		"Monster materials must be storable as an explicit quality stack."
+	)
+	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
+	service.set_progression_levels(0, 0, 0)
+	var candidates: Array = service.get_sale_candidates()
+	_expect(
+		_has_sale_candidate(candidates, &"resource", &"magic_shard", &"rare"),
+		"A new market must let the player sell quality monster materials before forging unlocks."
+	)
+	var material_sale := service.list_for_sale(
+		&"resource", &"magic_shard", &"rare", 1
+	) as Dictionary
+	_expect(bool(material_sale.get("ok", false)), "A quality material must be listable for sale.")
+	var material_slot := inventory.get_sale_slot()
+	_expect(
+		StringName(material_slot.get("item_kind", "")) == &"resource"
+			and StringName(material_slot.get("quality", "")) == &"rare",
+		"Sales escrow must preserve material kind and quality."
+	)
+	var material_result := service.resolve_sale()
+	_expect(
+		bool(material_result.get("ok", false))
+			and int(material_result.get("gold", 0))
+				== inventory.get_resource_sale_value(&"magic_shard", &"rare"),
+		"A rare material sale must pay its quality-adjusted value."
+	)
+
+	inventory.add_equipment_count(&"iron_sword", 1, &"common")
+	var locked_sale := service.list_for_sale(
+		&"equipment", &"iron_sword", &"common", 1
+	) as Dictionary
+	_expect(
+		StringName(locked_sale.get("code", "")) == &"equipment_sales_locked",
+		"Equipment sales must remain locked until the market is expanded."
+	)
+	service.set_progression_levels(0, 0, 1)
+	_expect(
+		bool(service.list_for_sale(
+			&"equipment", &"iron_sword", &"common", 1
+		).get("ok", false)),
+		"The first market expansion must unlock equipment sales."
+	)
+
+
+func _test_blueprint_proficiency_awakens_legendary_quality() -> void:
+	var inventory = InventoryManagerScript.new()
+	for resource_id in inventory.get_resource_ids():
+		inventory.set_resource_amount(resource_id, 10000)
+	inventory.grant_blueprint(&"hunter_bow_blueprint")
+	inventory.grant_tool(&"forging_hammer")
+	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
+	service.set_progression_levels(3, 3, 3)
+	var initial_recipe := _find_entry(service.get_available_recipes(), &"forge_hunter_bow")
+	var initial_chances := initial_recipe.get("quality_chances", {}) as Dictionary
+	_expect(
+		int(initial_recipe.get("proficiency_level", -1)) == 0
+			and not bool(initial_recipe.get("blueprint_awakened", true))
+			and is_zero_approx(float(initial_chances.get("legendary", 0.0))),
+		"A new blueprint must begin at proficiency zero with legendary quality locked."
+	)
+
+	for _craft_index in 5:
+		var crafted := service.craft(&"forge_hunter_bow") as Dictionary
+		_expect(bool(crafted.get("ok", false)), "Proficiency setup crafts must succeed.")
+	var proficiency := inventory.get_blueprint_proficiency(&"hunter_bow_blueprint")
+	_expect(
+		int(proficiency.get("level", 0)) == 5
+			and bool(proficiency.get("awakened", false)),
+		"Five successful crafts must trigger the protagonist's blueprint improvement awakening."
+	)
+	var awakened_recipe := _find_entry(service.get_available_recipes(), &"forge_hunter_bow")
+	var awakened_chances := awakened_recipe.get("quality_chances", {}) as Dictionary
+	_expect(
+		bool(awakened_recipe.get("blueprint_awakened", false))
+			and float(awakened_chances.get("legendary", 0.0)) > 0.0
+			and float(awakened_chances.get("rare", 0.0))
+				> float(initial_chances.get("rare", 0.0)),
+		"Blueprint awakening must unlock legendary results and repeated crafting must improve rare odds."
+	)
+	var dto := inventory.to_dict()
+	var restored = InventoryManagerScript.new()
+	restored.apply_dict(dto)
+	_expect(
+		restored.get_blueprint_proficiency(&"hunter_bow_blueprint") == proficiency,
+		"Blueprint proficiency and awakening must survive Inventory DTO round-trip."
 	)
 
 
@@ -222,7 +336,7 @@ func _test_town_economy_modifiers_affect_all_forge_transactions() -> void:
 	inventory.grant_blueprint(&"hunter_bow_blueprint")
 	inventory.grant_tool(&"forging_hammer")
 	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
-	service.set_progression_levels(2, 1)
+	service.set_progression_levels(2, 1, 1)
 	service.set_economy_modifiers(0.10, 1.20, 0.10, 1.25)
 
 	var offer := ForgeCatalogScript.new().get_offer(&"material_wood_bundle")
@@ -249,7 +363,9 @@ func _test_town_economy_modifiers_affect_all_forge_transactions() -> void:
 		"Blacksmith discount must reduce the actual processing fee."
 	)
 	var base_sale_value := int(inventory.get_equipment_sale_value(&"hunter_bow"))
-	var listed: Dictionary = service.list_for_sale(&"hunter_bow", 1)
+	var listed: Dictionary = service.list_for_sale(
+		&"equipment", &"hunter_bow", inventory.get_highest_equipment_quality(&"hunter_bow"), 1
+	)
 	var sale_slot := listed.get("sale_slot", {}) as Dictionary
 	_expect(
 		bool(listed.get("ok", false))
@@ -289,6 +405,31 @@ func _has_entry(entries: Array, entry_id: StringName) -> bool:
 	for entry_variant in entries:
 		var entry := entry_variant as Dictionary
 		if StringName(entry.get("id", "")) == entry_id:
+			return true
+	return false
+
+
+func _find_entry(entries: Array, entry_id: StringName) -> Dictionary:
+	for entry_variant in entries:
+		var entry := entry_variant as Dictionary
+		if StringName(entry.get("id", "")) == entry_id:
+			return entry
+	return {}
+
+
+func _has_sale_candidate(
+	entries: Array,
+	item_kind: StringName,
+	item_id: StringName,
+	quality: StringName
+) -> bool:
+	for entry_variant in entries:
+		var entry := entry_variant as Dictionary
+		if (
+			StringName(entry.get("item_kind", "")) == item_kind
+			and StringName(entry.get("item_id", "")) == item_id
+			and StringName(entry.get("quality", "")) == quality
+		):
 			return true
 	return false
 

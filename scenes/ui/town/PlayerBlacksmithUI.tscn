@@ -923,14 +923,40 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_colors/font_color = Color(0.97, 0.82, 0.49, 1)
 theme_override_font_sizes/font_size = 20
-text = "Crafted Stock"
+text = "Sale Stock"
 
 [node name="SalesHint" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.58, 0.64, 0.65, 1)
 theme_override_font_sizes/font_size = 13
-text = "The selected forged equipment can be displayed for visiting customers."
+text = "Sell materials first; market expansion brings equipment buyers and stronger blueprints."
 autowrap_mode = 2
+
+[node name="SaleCandidateScroll" type="ScrollContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory"]
+custom_minimum_size = Vector2(0, 170)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="SaleCandidateList" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory/SaleCandidateScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="SaleCandidateTemplate" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory/SaleCandidateScroll/SaleCandidateList"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+focus_mode = 0
+text = "素材 · 普通 · ×1 · 2 GOLD"
+alignment = 0
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("InsetStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/pressed = SubResource("HoverStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
 
 [node name="SaleCountFrame" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory"]
 custom_minimum_size = Vector2(0, 96)
@@ -942,7 +968,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.86, 0.92, 1)
 theme_override_font_sizes/font_size = 17
-text = "CRAFTED INVENTORY  ·  0 AVAILABLE"
+text = "SALE INVENTORY  ·  0 AVAILABLE"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2

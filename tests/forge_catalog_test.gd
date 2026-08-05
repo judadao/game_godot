@@ -80,7 +80,10 @@ func _test_shop_offers_are_partitioned_and_flame_gated() -> void:
 	)
 
 	var soul_offers: Array = catalog.get_shop_offers(&"sword_soul_shop", 3)
-	var equipment_offers: Array = catalog.get_shop_offers(&"equipment_blueprint_shop", 3)
+	var starter_equipment_offers: Array = catalog.get_shop_offers(
+		&"equipment_blueprint_shop", 3, 0
+	)
+	var equipment_offers: Array = catalog.get_shop_offers(&"equipment_blueprint_shop", 3, 3)
 	_expect(not soul_offers.is_empty(), "Sword Soul Shop must sell blueprint offers.")
 	_expect(not equipment_offers.is_empty(), "Equipment merchant must sell blueprint offers.")
 	for offer in soul_offers:
@@ -93,6 +96,12 @@ func _test_shop_offers_are_partitioned_and_flame_gated() -> void:
 		_has_entry(equipment_offers, &"equipment_direct_iron_sword")
 			and _has_entry(equipment_offers, &"equipment_blueprint_hunter_bow"),
 		"Equipment merchant must sell basic equipment directly and advanced designs separately."
+	)
+	_expect(
+		_has_entry(starter_equipment_offers, &"equipment_direct_iron_sword")
+			and _has_entry(starter_equipment_offers, &"equipment_blueprint_hunter_bow")
+			and not _has_entry(starter_equipment_offers, &"equipment_blueprint_apprentice_staff"),
+		"Market expansion must grow equipment stock beyond the starting direct-purchase basics."
 	)
 
 

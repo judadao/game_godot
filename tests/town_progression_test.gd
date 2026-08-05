@@ -220,8 +220,17 @@ func _test_town_upgrades_stages_and_visual_projection() -> void:
 	)
 
 	_expect(town.upgrade_building(&"blacksmith"), "Blacksmith level two must upgrade.")
+	_expect(
+		float(town.get_effect_value(&"forge_quality_bonus")) > 0.0,
+		"Tempered Forge must improve the live high-quality crafting chance."
+	)
 	_expect(town.upgrade_building(&"workshop"), "Workshop level two must upgrade.")
 	_expect(town.upgrade_building(&"market"), "Market level two must upgrade.")
+	_expect(
+		int(town.get_effect_value(&"market_stock_tier")) == 2
+			and int(town.get_effect_value(&"market_equipment_sales_unlocked")) == 1,
+		"Market expansion must unlock equipment buyers and stronger blueprint stock."
+	)
 	_expect(town.upgrade_building(&"town_hall"), "Town hall level one must upgrade.")
 	var discounted_library_cost: Dictionary = town.get_next_upgrade_cost(&"memory_library")
 	var raw_library_cost: Dictionary = town.get_raw_next_upgrade_cost(&"memory_library")

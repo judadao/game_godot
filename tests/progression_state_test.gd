@@ -65,11 +65,18 @@ func _run() -> void:
 	victory_run.call("begin_run")
 	victory_run.call("add_reward", "gold", 100)
 	victory_run.call("add_reward", "autumn_wood", 20)
+	victory_run.call("add_reward", "magic_shard", 10, &"rare")
 	var victory_summary := victory_run.call("finish_run", true) as Dictionary
 	_expect(
 		int(victory_summary.get("gold", 0)) == 115
 			and int((victory_summary.get("materials", {}) as Dictionary).get("autumn_wood", 0)) == 23,
 		"A successful clear must add exactly 15 percent to bagged gold and materials."
+	)
+	_expect(
+		int((((victory_summary.get("material_qualities", {}) as Dictionary).get(
+			"magic_shard", {}
+		) as Dictionary).get("rare", 0))) == 12,
+		"Material quality must survive the 15 percent clear bonus settlement."
 	)
 	_expect(
 		is_equal_approx(float(victory_summary.get("completion_bonus_rate", 0.0)), 0.15),
@@ -95,6 +102,23 @@ func _run() -> void:
 		int(abandon_summary.get("gold", -1)) == 0
 			and (abandon_summary.get("materials", {}) as Dictionary).is_empty(),
 		"Exit Combat must discard every reward collected during the current run."
+	)
+	var mixed_quality_run: RefCounted = run_script.new()
+	mixed_quality_run.call("begin_run")
+	mixed_quality_run.call("add_reward", "stone", 1, &"common")
+	mixed_quality_run.call("add_reward", "stone", 1, &"rare")
+	var mixed_quality_summary := mixed_quality_run.call("finish_run", false, &"death") as Dictionary
+	var mixed_quality_counts := (
+		(mixed_quality_summary.get("material_qualities", {}) as Dictionary).get("stone", {})
+		as Dictionary
+	)
+	var mixed_quality_total := 0
+	for quality_count in mixed_quality_counts.values():
+		mixed_quality_total += int(quality_count)
+	_expect(
+		int((mixed_quality_summary.get("materials", {}) as Dictionary).get("stone", 0)) == 1
+			and mixed_quality_total == 1,
+		"Quality settlement must never retain more units than the aggregate death-retention total."
 	)
 
 	_expect(bool(save.call("save_meta", TEST_SAVE_PATH, meta.call("to_dict"))), "Meta save must succeed.")

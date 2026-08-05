@@ -1059,14 +1059,20 @@ func _on_survival_boss_defeated(
 	call_deferred("_show_combat_blessing_choices", "boss")
 
 
-func _on_reward_bag_collected(_kind: StringName, reward: Dictionary) -> void:
+func _on_reward_bag_collected(kind: StringName, reward: Dictionary) -> void:
 	if not run_state.active:
 		return
 	for resource_variant in reward:
 		var resource_id := String(resource_variant)
-		var amount := int(reward[resource_variant]) * maxi(1, run_state.expedition_power_tier)
+		var base_amount := int(reward[resource_variant])
+		var amount := base_amount * maxi(1, run_state.expedition_power_tier)
 		if amount > 0:
-			run_state.add_reward(resource_id, amount)
+			var quality := &"common"
+			if kind == &"material" and base_amount >= 3:
+				quality = &"exceptional"
+			elif kind == &"material" and base_amount >= 2:
+				quality = &"rare"
+			run_state.add_reward(resource_id, amount, quality)
 
 
 func _on_boss_stage_completed() -> void:
@@ -1660,7 +1666,18 @@ func _finish_run(victory: bool, outcome: StringName = &"") -> Dictionary:
 		)
 	inventory_manager.call("add_resource", &"gold", maxi(0, int(summary.get("gold", 0))))
 	var materials: Variant = summary.get("materials", {})
-	if materials is Dictionary:
+	var material_qualities := summary.get("material_qualities", {}) as Dictionary
+	if not material_qualities.is_empty():
+		for resource_id in material_qualities:
+			var quality_counts := material_qualities[resource_id] as Dictionary
+			for quality_variant in quality_counts:
+				inventory_manager.call(
+					"add_resource",
+					StringName(resource_id),
+					maxi(0, int(quality_counts[quality_variant])),
+					StringName(quality_variant)
+				)
+	elif materials is Dictionary:
 		for resource_id in materials:
 			inventory_manager.call(
 				"add_resource",
@@ -4261,7 +4278,11 @@ func _inventory_projection() -> Array[Dictionary]:
 			"description": label_data[1],
 			"category": "materials",
 			"kind_label": "鍛造素材",
-			"stats": "永久存放於城鎮工坊。",
+			"stats": "品質庫存：%s" % _forge_quality_stack_summary(
+				inventory_manager.call(
+					"get_resource_quality_counts", StringName(key)
+				) as Dictionary
+			),
 			"quantity": quantity,
 			"icon_path": label_data[2],
 		})
@@ -4281,6 +4302,11 @@ func _inventory_projection() -> Array[Dictionary]:
 			int(inventory_manager.call("get_max_equipment_level")),
 			_equipment_effect_summary(equipment),
 		]
+		owned["stats"] += "\n品質庫存：%s" % _forge_quality_stack_summary(
+			inventory_manager.call(
+				"get_equipment_quality_counts", StringName(equipment_id)
+			) as Dictionary
+		)
 		owned["icon_path"] = _journal_equipment_icon(equipment)
 		owned["equipped"] = StringName(inventory_manager.call("get_equipped", StringName(equipment.get("slot", "")))) == StringName(equipment_id)
 		projection.append(owned)
@@ -4346,10 +4372,16 @@ func _inventory_equipment_projection() -> Array[Dictionary]:
 			})
 			continue
 		var item := inventory_manager.call("get_equipment", item_id) as Dictionary
+		var equipped_quality := StringName(inventory_manager.call("get_equipped_quality", slot))
 		result.append({
 			"slot": String(slot),
 			"id": String(item_id),
-			"name": _localized_text(item, "name"),
+			"name": "%s · %s" % [
+				_localized_text(item, "name"),
+				_forge_quality_label(equipped_quality),
+			],
+			"quality": String(equipped_quality),
+			"quality_label": _forge_quality_label(equipped_quality),
 			"level": int(inventory_manager.call("get_equipment_level", item_id)),
 			"stats": _equipment_effect_summary(item),
 			"icon_path": _journal_equipment_icon(item),
@@ -5554,12 +5586,23 @@ func _equipment_forge_description(item: Dictionary) -> String:
 
 func _forge_quality_label(quality: StringName) -> String:
 	match quality:
+		&"legendary":
+			return "傳奇"
 		&"rare":
 			return "稀有"
 		&"exceptional":
 			return "罕見"
 		_:
 			return "普通"
+
+
+func _forge_quality_stack_summary(counts: Dictionary) -> String:
+	var parts: Array[String] = []
+	for quality in [&"common", &"rare", &"exceptional", &"legendary"]:
+		var count := int(counts.get(String(quality), 0))
+		if count > 0:
+			parts.append("%s ×%d" % [_forge_quality_label(quality), count])
+	return "、".join(parts) if not parts.is_empty() else "無"
 
 
 func _forge_blueprint_icon(blueprint_id: StringName) -> String:
@@ -5583,21 +5626,72 @@ func _sword_soul_progress(card_id: StringName) -> Dictionary:
 
 func _player_sale_projection() -> Dictionary:
 	var slot := inventory_manager.call("get_sale_slot") as Dictionary
+	var candidates: Array[Dictionary] = []
+	for candidate_variant in forge_service.call("get_sale_candidates") as Array:
+		var candidate := (candidate_variant as Dictionary).duplicate(true)
+		var item_kind := StringName(candidate.get("item_kind", ""))
+		var item_id := StringName(candidate.get("item_id", ""))
+		candidate["item_name"] = (
+			_localized_text(
+				inventory_manager.call("get_equipment", item_id) as Dictionary,
+				"name"
+			)
+			if item_kind == &"equipment"
+			else _forge_material_name(item_id)
+		)
+		candidate["quality_label"] = _forge_quality_label(
+			StringName(candidate.get("quality", "common"))
+		)
+		candidates.append(candidate)
 	if slot.is_empty():
-		return {"status": "empty"}
+		return {
+			"status": "empty",
+			"candidates": candidates,
+			"equipment_sales_unlocked": int(town_manager.call(
+				"get_building_level", &"market"
+			)) >= 1,
+		}
 	var item_id := StringName(slot.get("item_id", ""))
-	var item := inventory_manager.call("get_equipment", item_id) as Dictionary
-	var item_name := _localized_text(item, "name")
+	var item_kind := StringName(slot.get("item_kind", "equipment"))
+	var quality := StringName(slot.get("quality", "common"))
+	var item_name := (
+		_localized_text(
+			inventory_manager.call("get_equipment", item_id) as Dictionary,
+			"name"
+		)
+		if item_kind == &"equipment"
+		else _forge_material_name(item_id)
+	)
 	return {
+		"item_kind": String(item_kind),
 		"item_id": String(item_id),
-		"item_name": item_name,
-		"crafted_count": int(inventory_manager.call("get_equipment_count", item_id)),
+		"item_name": "%s · %s" % [item_name, _forge_quality_label(quality)],
+		"quality": String(quality),
+		"crafted_count": int(slot.get("quantity", 0)),
 		"status": "customer_ready",
 		"table_label": "%s 已陳列於販售桌。" % item_name,
 		"customer_label": "顧客願以 %d 金幣購買。" % (
 			int(slot.get("quantity", 0)) * int(slot.get("unit_price", 0))
 		),
+		"candidates": candidates,
+		"equipment_sales_unlocked": int(town_manager.call(
+			"get_building_level", &"market"
+		)) >= 1,
 	}
+
+
+func _forge_material_name(resource_id: StringName) -> String:
+	match resource_id:
+		&"autumn_wood":
+			return "秋木"
+		&"stone":
+			return "石材"
+		&"magic_shard":
+			return "魔力碎片"
+		&"autumn_core":
+			return "秋核"
+		_:
+			return String(resource_id).replace("_", " ").capitalize()
 
 
 func _on_material_offer_requested(
@@ -5630,7 +5724,11 @@ func _on_blacksmith_craft_requested(
 		if not meta_state.unlocked_cards.has(card_id):
 			meta_state.unlocked_cards.append(card_id)
 	result["message"] = (
-		"鍛造完成，成品已可使用。"
+		(
+			"主角完成了圖紙改良：圖紙已覺醒，今後可鍛造出傳奇品質。"
+			if bool(result.get("blueprint_awakened_now", false))
+			else "鍛造完成，圖紙熟練度已提升。"
+		)
 		if success else _forge_result_message(StringName(result.get("code", "")))
 	)
 	_persist_forge_progress()
@@ -5640,17 +5738,21 @@ func _on_blacksmith_craft_requested(
 
 
 func _on_blacksmith_list_for_sale_requested(
+	item_kind: StringName,
 	item_id: StringName,
+	quality: StringName,
 	ui_control: Control
 ) -> void:
 	var result := forge_service.call(
 		"list_for_sale",
+		item_kind,
 		item_id,
+		quality,
 		1
 	) as Dictionary
 	var success := bool(result.get("ok", false))
 	result["message"] = (
-		"裝備已放上販售桌，顧客已經抵達。"
+		"商品已放上販售桌，顧客已經抵達。"
 		if success else _forge_result_message(StringName(result.get("code", "")))
 	)
 	_persist_forge_progress()
@@ -5767,14 +5869,16 @@ func _refresh_forge_progression() -> void:
 			),
 			expedition_unlock_tier
 		),
-		int(town_manager.call("get_building_level", &"blacksmith"))
+		int(town_manager.call("get_building_level", &"blacksmith")),
+		int(town_manager.call("get_building_level", &"market"))
 	)
 	forge_service.call(
 		"set_economy_modifiers",
 		float(town_manager.call("get_effect_value", &"market_purchase_discount")),
 		1.0 + float(town_manager.call("get_effect_value", &"market_sale_bonus")),
 		float(town_manager.call("get_effect_value", &"forge_processing_fee_discount")),
-		1.0 + float(town_manager.call("get_effect_value", &"material_bundle_bonus"))
+		1.0 + float(town_manager.call("get_effect_value", &"material_bundle_bonus")),
+		float(town_manager.call("get_effect_value", &"forge_quality_bonus"))
 	)
 
 
@@ -6453,6 +6557,8 @@ func _forge_result_message(code: StringName) -> String:
 			return "工坊缺少所需素材。"
 		&"listing_rejected":
 			return "販售桌目前已占用，或此物品無法上架。"
+		&"equipment_sales_locked":
+			return "先擴建市場，才會有願意購買裝備的顧客。"
 		&"no_active_listing":
 			return "請先把已鍛造的裝備放上販售桌。"
 		&"sword_soul_not_owned":

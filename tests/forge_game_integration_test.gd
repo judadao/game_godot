@@ -31,7 +31,7 @@ func _run() -> void:
 	var meta: MetaState = game.get("meta_state")
 	var save_spy := InMemorySaveService.new()
 	game.set("save_service", save_spy)
-	town.call("apply_dict", {"building_levels": {"blacksmith": 0}})
+	town.call("apply_dict", {"building_levels": {"blacksmith": 0, "market": 0}})
 	var clean_resources: Dictionary = {}
 	for resource_id in inventory.call("get_resource_ids"):
 		clean_resources[String(resource_id)] = 5000
@@ -39,6 +39,10 @@ func _run() -> void:
 	_expect(
 		bool(town.call("upgrade_building", &"blacksmith")),
 		"Forge integration fixture must unlock workshop Tier 1."
+	)
+	_expect(
+		bool(town.call("upgrade_building", &"market")),
+		"Forge integration fixture must expand the market before selling equipment."
 	)
 	game.call("_refresh_forge_progression")
 
@@ -85,7 +89,13 @@ func _run() -> void:
 		"Player workshop must upgrade a forged Sword Soul."
 	)
 
-	game.call("_on_blacksmith_list_for_sale_requested", &"hunter_bow", ui)
+	game.call(
+		"_on_blacksmith_list_for_sale_requested",
+		&"equipment",
+		&"hunter_bow",
+		inventory.call("get_highest_equipment_quality", &"hunter_bow"),
+		ui
+	)
 	_expect(
 		not (inventory.call("get_sale_slot") as Dictionary).is_empty(),
 		"Crafted equipment must move into the persistent sales-table escrow."

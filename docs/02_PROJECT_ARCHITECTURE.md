@@ -469,7 +469,8 @@ UI 對上層提供 setter/configure API與 typed signals：
   重算玩家屬性並同步 Meta save，不擁有 inventory 或戰鬥規則。
 - `MaterialYardUI`：Level 0 basic stock、依 workshop level 解鎖的高階鍛造材料／永久工具，
   以及 Level 3 material bundle yield projection。
-- `PlayerBlacksmithUI`：圖紙鍛造、blacksmith recipe tier／加工費、Sword Soul 升級與裝備販售桌。
+- `PlayerBlacksmithUI`：圖紙鍛造、每張圖紙 Lv.0–5 熟練度／Lv.5 覺醒、blacksmith
+  recipe tier／加工費、Sword Soul 升級，以及依品質列出素材／裝備的販售桌。
 - `TownHallUI`：village stage、總建築等級，以及五棟建築的選擇、效果、折扣後成本與升級操作；成功後以 signal 交回 `Game` 立即存檔與刷新 projection。
 - `PauseMenu`：emit save/load/settings/exit-combat/quit 等 intent；Game 只在 active
   combat Run 啟用退出戰鬥，接收 intent 後以失敗結算保留已得資源並回 Town。
@@ -489,6 +490,11 @@ Dev mode 使用 `dev_meta_progress.json` 與 `dev_quick_save*`，不覆寫正式
 `Game` 透過 `ForgeService` 驗證，成功後立即同步 Meta/save。`Game.close_ui()`
 仍負責最終同步與 world visual projection。UI 不應新增 domain 規則，直接 service mutation
 仍是 Known Risk；舊的通用 Town progression screen 已退役。
+
+InventoryManager schema 4 以品質堆疊保存素材與裝備，並保存圖紙 craft count、
+熟練等級與 awakening；ForgeService 是品質機率、Market stock gate 與單格 sale
+escrow 的唯一規則 owner。RunState 另保留戰鬥素材袋的品質，回城結算後才寫入
+InventoryManager；UI／Game 不自行重算品質。
 
 ## 6. Signal 與跨系統資料流
 

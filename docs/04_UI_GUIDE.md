@@ -611,6 +611,9 @@ HUDLayer
 
 `inventory_ui.gd`：
 
+- 素材與裝備列的 stats 顯示各品質庫存；狀態頁的已裝備名稱顯示實際裝備品質，
+  不再只顯示 catalog 基礎品質。
+
 - `set_gold()`、`set_items()`、`set_player_status()`、`set_equipment_entries()`、
   `set_sword_souls()`、`set_codex_entries()`、`set_mode()`
 - `equip_requested(item_id)` 只送出使用者意圖；`Game` 是唯一 mutation owner，成功後
@@ -677,7 +680,9 @@ HUDLayer
 - Material Yard：左側店長肖像，中欄 Materials／Forge Tools offers，右欄商品、
   持有量、Material Yard level、數量與購買。
 - Player Blacksmith：左側鍛造研究員肖像；Forge 依圖紙鍛造 equipment／Sword Soul，
-  Workshop Upgrade 解鎖鍛造上限，Sales Table 顯示商品、顧客與 `+GOLD` 回饋。
+  Workshop Upgrade 解鎖鍛造上限；recipe detail 顯示該圖紙熟練度、品質機率與
+  Lv.5 覺醒狀態。Sales Table 以可捲動 rows 顯示素材／裝備、品質、持有量與單價，
+  並保留顧客與 `+GOLD` 回饋；Market Lv.1 前不投影裝備買家。
 - Town Hall：左側村長肖像，中欄保留 Overview／Town Development；右欄以五個 authored
   project button 切換 Town Hall、Blacksmith、Material Yard、Market、Memory Library，
   顯示下一級實際效果與折扣後成本。

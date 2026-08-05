@@ -636,9 +636,11 @@ Apprentice Staff 分別為 normal／wind／water。InventoryManager 驗證其屬
 
 Iron Sword、Leather Armor、Vitality Charm 是普通品質的基礎成品，可在裝備商以純
 gold 直接購買。其他裝備只能先取得圖紙，再以普通怪／Elite／Boss 對應強度素材和
-加工費於 Player Blacksmith 打造。裝備品質固定分為普通（common）、稀有（rare）、
-罕見（exceptional）；品質越高，配方素材階級、加工費與 `base_sale_value` 越高，
-裝備能力仍由各自 `effects`／`special_ability` 定義。
+加工費於 Player Blacksmith 打造。裝備成品品質分為普通（common）、稀有（rare）、
+罕見（exceptional）與傳奇（legendary）；品質越高，販售價與實際裝備的
+`effects`／數值型 `special_ability` 倍率越高。每張圖紙各自保存 Lv.0–5 熟練度，
+每次成功打造一件提升一級並增加高品質機率；Lv.5 觸發一次主角改良圖紙的覺醒，
+只有覺醒圖紙能產生傳奇品質。
 
 裝備可購買或鍛造、裝備、卸下，正式持久化上限為 level 15。目前可執行的精確成本與
 效果曲線只實作到 level 3；Lv.4–15 不外推數值，等 OB 補齊中間素材 authority 與曲線後再開放。現有成本為：
@@ -698,15 +700,20 @@ total-building-level threshold 為 0、3、7。Town 六棟建築的互動範圍�
 - Material Yard：Level 0 保留 basic stock；Level 1 解鎖 elite、Level 2 解鎖 boss-grade
   材料與工具，Level 3 令所有購入 material bundle 數量增加 25%。
 - Player Blacksmith：依已購圖紙、素材與 gold 加工費鍛造 equipment／Sword Soul、升級 blacksmith
-  解鎖 recipe Tier；Level 2／3 各降低 5% 加工費。玩家可升級 Sword Soul，並將 crafted equipment 放到單格販售桌，
-  顧客結帳後顯示 `+GOLD`。
-- Market：三級累計提供 10% 購買折扣與 20% 裝備販售加成。
+  解鎖 recipe Tier；Level 2／3 各降低 5% 加工費並提高品質控制。玩家可升級 Sword Soul，
+  並將素材或成品依品質放到單格販售桌，顧客結帳後顯示 `+GOLD`。
+- Market：未擴建時可先販售戰鬥素材；Level 1 開放裝備買家與 Tier 2 圖紙，Level 2
+  開放 Tier 3 圖紙，三級累計提供 10% 購買折扣與 20% 販售加成。
 - Town Hall：查看 village stage、總建築等級與資源，集中選擇並升級五棟建築；
   Town Hall 三級累計降低其他建築 10% 建設成本。
 - Memory Library：由基礎 10 格起，四級依序增加 4／4／6／6 格，最高 30 格。
 - Sword Soul Shop：buy-only 圖紙 catalog；持有後不能重複購買。
 - Equipment Blueprint Shop：基礎普通裝備直接販售；其餘只販售不可重複購買的圖紙，
   高階成品必須回玩家工坊鍛造。
+
+戰鬥素材袋依敵人位階保留品質：普通怪為普通、菁英為稀有、Boss 為罕見；安全撤退、
+死亡 65% 保留與通關 15% 加成都逐品質結算。初期即能靠素材／怪物戰利品累積 gold，
+再投入 blacksmith、market 與 Town 升級，形成打造品質與販售收益互相推進的循環。
 
 舊通用 Town progression UI 已退役；Player Blacksmith 與 Town Hall 升級成功時由
 Game 立即同步 Meta save、鍛造／商店 economy modifiers、Town visual 與 equipment stats；

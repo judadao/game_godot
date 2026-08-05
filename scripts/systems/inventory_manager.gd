@@ -1,10 +1,22 @@
 extends RefCounted
 
 const DEFAULT_DATA_PATH := "res://data/equipment.json"
-const SAVE_SCHEMA_VERSION := 3
+const SAVE_SCHEMA_VERSION := 4
 const VALID_SLOTS: Array[StringName] = [&"weapon", &"armor", &"accessory"]
-const VALID_QUALITIES: Array[StringName] = [&"common", &"rare", &"exceptional"]
+const VALID_QUALITIES: Array[StringName] = [&"common", &"rare", &"exceptional", &"legendary"]
 const VALID_MATERIAL_TIERS: Array[StringName] = [&"normal", &"elite", &"boss"]
+const QUALITY_MULTIPLIERS := {
+	&"common": 1.0,
+	&"rare": 1.25,
+	&"exceptional": 1.60,
+	&"legendary": 2.40,
+}
+const RESOURCE_SALE_VALUES := {
+	&"autumn_wood": 2,
+	&"stone": 3,
+	&"magic_shard": 6,
+	&"autumn_core": 12,
+}
 const MAX_EQUIPMENT_LEVEL := 15
 const IMPLEMENTED_EFFECT_LEVEL_CAP := 3
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
@@ -12,16 +24,24 @@ const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy
 var _loaded := false
 var _resource_ids: Array[StringName] = []
 var _resources: Dictionary = {}
+var _resource_quality_counts: Dictionary = {}
 var _equipment_catalog: Array[Dictionary] = []
 var _equipment_by_id: Dictionary = {}
 var _owned_equipment: Dictionary = {}
 var _equipment_counts: Dictionary = {}
+var _equipment_quality_counts: Dictionary = {}
 var _equipment_levels: Dictionary = {}
+var _blueprint_proficiency: Dictionary = {}
 var _owned_blueprints: Dictionary = {}
 var _owned_tools: Dictionary = {}
 var _sale_slot: Dictionary = {}
 var _progression_unlocks: Dictionary = {}
 var _equipped: Dictionary = {
+	"weapon": StringName(),
+	"armor": StringName(),
+	"accessory": StringName(),
+}
+var _equipped_quality: Dictionary = {
 	"weapon": StringName(),
 	"armor": StringName(),
 	"accessory": StringName(),
@@ -49,11 +69,21 @@ func get_resource_amount(resource_id: StringName) -> int:
 	return int(_resources.get(String(resource_id), 0))
 
 
-func add_resource(resource_id: StringName, amount: int) -> bool:
+func add_resource(
+	resource_id: StringName,
+	amount: int,
+	quality: StringName = &"common"
+) -> bool:
 	var key := String(resource_id)
-	if not _resources.has(key) or amount <= 0:
+	if not _resources.has(key) or amount <= 0 or not VALID_QUALITIES.has(quality):
+		return false
+	if resource_id == &"gold" and quality != &"common":
 		return false
 	_resources[key] = int(_resources[key]) + amount
+	if resource_id != &"gold":
+		_ensure_resource_quality_buckets(resource_id)
+		var quality_counts := _resource_quality_counts[key] as Dictionary
+		quality_counts[String(quality)] = int(quality_counts.get(String(quality), 0)) + amount
 	return true
 
 
@@ -62,7 +92,33 @@ func set_resource_amount(resource_id: StringName, amount: int) -> bool:
 	if not _resources.has(key) or amount < 0:
 		return false
 	_resources[key] = amount
+	if resource_id != &"gold":
+		_ensure_resource_quality_buckets(resource_id)
+		var quality_counts := _resource_quality_counts[key] as Dictionary
+		for quality in VALID_QUALITIES:
+			quality_counts[String(quality)] = amount if quality == &"common" else 0
 	return true
+
+
+func get_resource_quality_amount(resource_id: StringName, quality: StringName) -> int:
+	if resource_id == &"gold" or not VALID_QUALITIES.has(quality):
+		return 0
+	var quality_counts := _resource_quality_counts.get(String(resource_id), {}) as Dictionary
+	return int(quality_counts.get(String(quality), 0))
+
+
+func get_resource_quality_counts(resource_id: StringName) -> Dictionary:
+	return (
+		_resource_quality_counts.get(String(resource_id), {}) as Dictionary
+	).duplicate(true)
+
+
+func get_resource_sale_value(resource_id: StringName, quality: StringName) -> int:
+	if not RESOURCE_SALE_VALUES.has(resource_id) or not VALID_QUALITIES.has(quality):
+		return 0
+	return maxi(1, roundi(
+		float(RESOURCE_SALE_VALUES[resource_id]) * float(QUALITY_MULTIPLIERS[quality])
+	))
 
 
 func can_afford(cost: Dictionary) -> bool:
@@ -83,7 +139,10 @@ func spend_resources(cost: Dictionary) -> bool:
 		return false
 	for resource_variant in cost:
 		var resource_id := String(resource_variant)
-		_resources[resource_id] = int(_resources[resource_id]) - int(cost[resource_variant])
+		var amount := int(cost[resource_variant])
+		_resources[resource_id] = int(_resources[resource_id]) - amount
+		if resource_id != "gold":
+			_consume_resource_quality(StringName(resource_id), amount)
 	return true
 
 
@@ -126,9 +185,22 @@ func purchase_equipment(item_id: StringName) -> bool:
 	return false
 
 
-func get_equipment_sale_value(item_id: StringName) -> int:
+func get_equipment_sale_value(
+	item_id: StringName,
+	quality: StringName = StringName()
+) -> int:
 	var item := get_equipment(item_id)
-	return maxi(0, int(item.get("base_sale_value", 0)))
+	if item.is_empty():
+		return 0
+	var catalog_quality := StringName(item.get("quality", "common"))
+	var target_quality := catalog_quality if quality.is_empty() else quality
+	if not VALID_QUALITIES.has(target_quality):
+		return 0
+	var catalog_multiplier := float(QUALITY_MULTIPLIERS.get(catalog_quality, 1.0))
+	var target_multiplier := float(QUALITY_MULTIPLIERS.get(target_quality, 1.0))
+	return maxi(1, roundi(
+		float(item.get("base_sale_value", 0)) * target_multiplier / catalog_multiplier
+	))
 
 
 func has_equipment(item_id: StringName) -> bool:
@@ -139,33 +211,125 @@ func get_equipment_count(item_id: StringName) -> int:
 	return int(_equipment_counts.get(String(item_id), 0))
 
 
-func add_equipment_count(item_id: StringName, quantity: int) -> bool:
+func add_equipment_count(
+	item_id: StringName,
+	quantity: int,
+	quality: StringName = StringName()
+) -> bool:
 	var key := String(item_id)
 	if not _equipment_by_id.has(key) or quantity <= 0:
 		return false
+	var resolved_quality := quality
+	if resolved_quality.is_empty():
+		resolved_quality = StringName((_equipment_by_id[key] as Dictionary).get("quality", "common"))
+	if not VALID_QUALITIES.has(resolved_quality):
+		return false
 	_equipment_counts[key] = get_equipment_count(item_id) + quantity
+	_ensure_equipment_quality_buckets(item_id)
+	var quality_counts := _equipment_quality_counts[key] as Dictionary
+	quality_counts[String(resolved_quality)] = int(
+		quality_counts.get(String(resolved_quality), 0)
+	) + quantity
 	_owned_equipment[key] = true
 	if not _equipment_levels.has(key):
 		_equipment_levels[key] = 1
+	for slot in VALID_SLOTS:
+		if StringName(_equipped.get(String(slot), StringName())) != item_id:
+			continue
+		var equipped_quality := get_equipped_quality(slot)
+		if VALID_QUALITIES.find(resolved_quality) > VALID_QUALITIES.find(equipped_quality):
+			_equipped_quality[String(slot)] = resolved_quality
 	return true
 
 
-func remove_equipment_count(item_id: StringName, quantity: int) -> bool:
+func remove_equipment_count(
+	item_id: StringName,
+	quantity: int,
+	quality: StringName = StringName()
+) -> bool:
 	var key := String(item_id)
 	var current := get_equipment_count(item_id)
 	if quantity <= 0 or current < quantity:
 		return false
+	var resolved_quality := quality
+	if resolved_quality.is_empty():
+		resolved_quality = get_highest_equipment_quality(item_id)
+	if get_equipment_quality_count(item_id, resolved_quality) < quantity:
+		return false
 	var remaining := current - quantity
 	for slot in VALID_SLOTS:
-		if StringName(_equipped.get(String(slot), StringName())) == item_id and remaining <= 0:
+		if StringName(_equipped.get(String(slot), StringName())) != item_id:
+			continue
+		if remaining <= 0:
+			return false
+		if (
+			get_equipped_quality(slot) == resolved_quality
+			and get_equipment_quality_count(item_id, resolved_quality) <= quantity
+		):
 			return false
 	if remaining > 0:
 		_equipment_counts[key] = remaining
+		var quality_counts := _equipment_quality_counts[key] as Dictionary
+		quality_counts[String(resolved_quality)] = int(
+			quality_counts.get(String(resolved_quality), 0)
+		) - quantity
 		return true
 	_equipment_counts.erase(key)
+	_equipment_quality_counts.erase(key)
 	_owned_equipment.erase(key)
 	_equipment_levels.erase(key)
 	return true
+
+
+func get_equipment_quality_count(item_id: StringName, quality: StringName) -> int:
+	if not VALID_QUALITIES.has(quality):
+		return 0
+	var quality_counts := _equipment_quality_counts.get(String(item_id), {}) as Dictionary
+	return int(quality_counts.get(String(quality), 0))
+
+
+func get_equipment_quality_counts(item_id: StringName) -> Dictionary:
+	return (
+		_equipment_quality_counts.get(String(item_id), {}) as Dictionary
+	).duplicate(true)
+
+
+func get_highest_equipment_quality(item_id: StringName) -> StringName:
+	for index in range(VALID_QUALITIES.size() - 1, -1, -1):
+		var quality := VALID_QUALITIES[index]
+		if get_equipment_quality_count(item_id, quality) > 0:
+			return quality
+	return StringName()
+
+
+func get_blueprint_proficiency(blueprint_id: StringName) -> Dictionary:
+	var key := String(blueprint_id)
+	var state := _blueprint_proficiency.get(key, {}) as Dictionary
+	if state.is_empty():
+		return {"craft_count": 0, "level": 0, "awakened": false}
+	return state.duplicate(true)
+
+
+func record_blueprint_craft(blueprint_id: StringName, quantity: int = 1) -> Dictionary:
+	var key := String(blueprint_id)
+	if key.is_empty() or quantity <= 0 or not _owned_blueprints.has(key):
+		return {}
+	var state := get_blueprint_proficiency(blueprint_id)
+	var previous_awakened := bool(state.get("awakened", false))
+	var craft_count := int(state.get("craft_count", 0)) + quantity
+	var level := mini(5, craft_count)
+	state = {
+		"craft_count": craft_count,
+		"level": level,
+		"awakened": level >= 5,
+		"awakened_now": level >= 5 and not previous_awakened,
+	}
+	_blueprint_proficiency[key] = {
+		"craft_count": craft_count,
+		"level": level,
+		"awakened": level >= 5,
+	}
+	return state
 
 
 func owns_blueprint(blueprint_id: StringName) -> bool:
@@ -209,6 +373,7 @@ func equip(item_id: StringName) -> bool:
 	if not VALID_SLOTS.has(slot):
 		return false
 	_equipped[String(slot)] = item_id
+	_equipped_quality[String(slot)] = get_highest_equipment_quality(item_id)
 	return true
 
 
@@ -219,6 +384,7 @@ func unequip(slot: StringName) -> bool:
 	if StringName(_equipped.get(key, StringName())).is_empty():
 		return false
 	_equipped[key] = StringName()
+	_equipped_quality[key] = StringName()
 	return true
 
 
@@ -226,6 +392,12 @@ func get_equipped(slot: StringName) -> StringName:
 	if not VALID_SLOTS.has(slot):
 		return StringName()
 	return StringName(_equipped.get(String(slot), StringName()))
+
+
+func get_equipped_quality(slot: StringName) -> StringName:
+	if not VALID_SLOTS.has(slot):
+		return StringName()
+	return StringName(_equipped_quality.get(String(slot), StringName()))
 
 
 func get_equipped_weapon_element() -> String:
@@ -249,9 +421,18 @@ func get_effect_totals() -> Dictionary:
 			get_implemented_effect_level_cap(item_id)
 		)
 		var level_multiplier := 1.0 + 0.5 * float(implemented_level - 1)
+		var catalog_quality := StringName(item.get("quality", "common"))
+		var equipped_quality := get_equipped_quality(slot)
+		var quality_multiplier := (
+			float(QUALITY_MULTIPLIERS.get(equipped_quality, 1.0))
+			/ float(QUALITY_MULTIPLIERS.get(catalog_quality, 1.0))
+		)
 		for effect_variant in effects:
 			var effect_id := String(effect_variant)
-			totals[effect_id] = float(totals.get(effect_id, 0.0)) + float(effects[effect_variant]) * level_multiplier
+			totals[effect_id] = (
+				float(totals.get(effect_id, 0.0))
+				+ float(effects[effect_variant]) * level_multiplier * quality_multiplier
+			)
 			if is_equal_approx(float(totals[effect_id]), roundf(float(totals[effect_id]))):
 				totals[effect_id] = int(roundf(float(totals[effect_id])))
 	return totals
@@ -267,11 +448,19 @@ func get_special_ability_totals() -> Dictionary:
 		if not _meets_upgrade_requirement(item):
 			continue
 		var ability := item.get("special_ability", {}) as Dictionary
+		var catalog_quality := StringName(item.get("quality", "common"))
+		var equipped_quality := get_equipped_quality(slot)
+		var quality_multiplier := (
+			float(QUALITY_MULTIPLIERS.get(equipped_quality, 1.0))
+			/ float(QUALITY_MULTIPLIERS.get(catalog_quality, 1.0))
+		)
 		for key_variant in ability:
 			var key := String(key_variant)
 			var value: Variant = ability[key_variant]
 			if value is int or value is float:
-				totals[key] = float(totals.get(key, 0.0)) + float(value)
+				totals[key] = (
+					float(totals.get(key, 0.0)) + float(value) * quality_multiplier
+				)
 	return totals
 
 
@@ -331,14 +520,47 @@ func get_sale_slot() -> Dictionary:
 func list_equipment_for_sale(
 	item_id: StringName,
 	quantity: int,
-	unit_price: int
+	unit_price: int,
+	quality: StringName = StringName()
 ) -> bool:
 	if not _sale_slot.is_empty() or quantity <= 0 or unit_price <= 0:
 		return false
-	if not remove_equipment_count(item_id, quantity):
+	var resolved_quality := quality
+	if resolved_quality.is_empty():
+		resolved_quality = get_highest_equipment_quality(item_id)
+	if not remove_equipment_count(item_id, quantity, resolved_quality):
 		return false
 	_sale_slot = {
+		"item_kind": "equipment",
 		"item_id": String(item_id),
+		"quality": String(resolved_quality),
+		"quantity": quantity,
+		"unit_price": unit_price,
+	}
+	return true
+
+
+func list_resource_for_sale(
+	resource_id: StringName,
+	quantity: int,
+	unit_price: int,
+	quality: StringName = &"common"
+) -> bool:
+	if (
+		not _sale_slot.is_empty()
+		or resource_id == &"gold"
+		or quantity <= 0
+		or unit_price <= 0
+		or get_resource_quality_amount(resource_id, quality) < quantity
+	):
+		return false
+	_resources[String(resource_id)] = get_resource_amount(resource_id) - quantity
+	var quality_counts := _resource_quality_counts[String(resource_id)] as Dictionary
+	quality_counts[String(quality)] = int(quality_counts.get(String(quality), 0)) - quantity
+	_sale_slot = {
+		"item_kind": "resource",
+		"item_id": String(resource_id),
+		"quality": String(quality),
 		"quantity": quantity,
 		"unit_price": unit_price,
 	}
@@ -363,8 +585,15 @@ func cancel_sale() -> bool:
 	if _sale_slot.is_empty():
 		return false
 	var item_id := StringName(_sale_slot.get("item_id", ""))
+	var item_kind := StringName(_sale_slot.get("item_kind", "equipment"))
+	var quality := StringName(_sale_slot.get("quality", "common"))
 	var quantity := int(_sale_slot.get("quantity", 0))
-	if not add_equipment_count(item_id, quantity):
+	var restored := (
+		add_resource(item_id, quantity, quality)
+		if item_kind == &"resource"
+		else add_equipment_count(item_id, quantity, quality)
+	)
+	if not restored:
 		return false
 	_sale_slot.clear()
 	return true
@@ -374,11 +603,15 @@ func to_dict() -> Dictionary:
 	return {
 		"schema_version": SAVE_SCHEMA_VERSION,
 		"resources": _resources.duplicate(true),
+		"resource_quality_counts": _resource_quality_counts.duplicate(true),
 		"owned_equipment": _sorted_string_keys(_owned_equipment),
 		"equipment_counts": _equipment_counts.duplicate(true),
+		"equipment_quality_counts": _equipment_quality_counts.duplicate(true),
 		"equipment_levels": _equipment_levels.duplicate(true),
 		"equipped": _equipped.duplicate(true),
+		"equipped_quality": _equipped_quality.duplicate(true),
 		"owned_blueprints": get_owned_blueprints(),
+		"blueprint_proficiency": _blueprint_proficiency.duplicate(true),
 		"owned_tools": get_owned_tools(),
 		"sale_slot": _sale_slot.duplicate(true),
 	}
@@ -391,8 +624,10 @@ func apply_dict(data: Dictionary) -> void:
 			var key := String(resource_id)
 			if saved_resources.has(key):
 				_resources[key] = maxi(0, int(saved_resources[key]))
+	_restore_resource_quality_counts(data.get("resource_quality_counts", {}))
 	_owned_equipment.clear()
 	_equipment_counts.clear()
+	_equipment_quality_counts.clear()
 	_equipment_levels.clear()
 	var saved_counts: Variant = data.get("equipment_counts", {})
 	if saved_counts is Dictionary and not (saved_counts as Dictionary).is_empty():
@@ -401,6 +636,7 @@ func apply_dict(data: Dictionary) -> void:
 			var count := maxi(0, int((saved_counts as Dictionary)[item_id_variant]))
 			if _equipment_by_id.has(item_id) and count > 0:
 				_equipment_counts[item_id] = count
+				_restore_equipment_quality_count(item_id, count, data.get("equipment_quality_counts", {}))
 				_owned_equipment[item_id] = true
 				_equipment_levels[item_id] = 1
 	else:
@@ -410,6 +646,7 @@ func apply_dict(data: Dictionary) -> void:
 				var item_id := String(item_id_variant)
 				if _equipment_by_id.has(item_id):
 					_equipment_counts[item_id] = 1
+					_restore_equipment_quality_count(item_id, 1, {})
 					_owned_equipment[item_id] = true
 					_equipment_levels[item_id] = 1
 	var saved_levels: Variant = data.get("equipment_levels", {})
@@ -423,6 +660,7 @@ func apply_dict(data: Dictionary) -> void:
 	var saved_equipped: Variant = data.get("equipped", {})
 	for slot in VALID_SLOTS:
 		_equipped[String(slot)] = StringName()
+		_equipped_quality[String(slot)] = StringName()
 	if saved_equipped is Dictionary:
 		for slot in VALID_SLOTS:
 			var item_id := StringName(saved_equipped.get(String(slot), StringName()))
@@ -430,17 +668,35 @@ func apply_dict(data: Dictionary) -> void:
 				_equipped[String(slot)] = StringName()
 			elif _owned_equipment.has(String(item_id)) and StringName((_equipment_by_id[String(item_id)] as Dictionary).get("slot", "")) == slot:
 				_equipped[String(slot)] = item_id
+				var saved_equipped_quality := data.get("equipped_quality", {}) as Dictionary
+				var quality := StringName(saved_equipped_quality.get(String(slot), ""))
+				_equipped_quality[String(slot)] = (
+					quality
+					if get_equipment_quality_count(item_id, quality) > 0
+					else get_highest_equipment_quality(item_id)
+				)
 	_owned_blueprints = _string_array_to_set(data.get("owned_blueprints", []))
+	_restore_blueprint_proficiency(data.get("blueprint_proficiency", {}))
 	_owned_tools = _string_array_to_set(data.get("owned_tools", []))
 	_sale_slot.clear()
 	var saved_sale_slot: Variant = data.get("sale_slot", {})
 	if saved_sale_slot is Dictionary:
 		var item_id := String((saved_sale_slot as Dictionary).get("item_id", ""))
+		var item_kind := StringName((saved_sale_slot as Dictionary).get("item_kind", "equipment"))
+		var quality := StringName((saved_sale_slot as Dictionary).get("quality", ""))
 		var quantity := int((saved_sale_slot as Dictionary).get("quantity", 0))
 		var unit_price := int((saved_sale_slot as Dictionary).get("unit_price", 0))
-		if _equipment_by_id.has(item_id) and quantity > 0 and unit_price > 0:
+		if quality.is_empty() and _equipment_by_id.has(item_id):
+			quality = StringName((_equipment_by_id[item_id] as Dictionary).get("quality", "common"))
+		var valid_item := (
+			item_kind == &"equipment" and _equipment_by_id.has(item_id)
+			or item_kind == &"resource" and RESOURCE_SALE_VALUES.has(StringName(item_id))
+		)
+		if valid_item and VALID_QUALITIES.has(quality) and quantity > 0 and unit_price > 0:
 			_sale_slot = {
+				"item_kind": String(item_kind),
 				"item_id": item_id,
+				"quality": String(quality),
 				"quantity": quantity,
 				"unit_price": unit_price,
 			}
@@ -469,6 +725,10 @@ func _load_data(data_path: String) -> void:
 			return
 		_resource_ids.append(resource_id)
 		_resources[key] = int(amount_variant)
+		if resource_id != &"gold":
+			_ensure_resource_quality_buckets(resource_id)
+			var quality_counts := _resource_quality_counts[key] as Dictionary
+			quality_counts["common"] = int(amount_variant)
 
 	for item_variant in equipment:
 		if not item_variant is Dictionary:
@@ -529,6 +789,100 @@ func _is_non_negative_whole_number(value: Variant) -> bool:
 func _meets_upgrade_requirement(item: Dictionary) -> bool:
 	var requirement := String(item.get("upgrade_requirement", ""))
 	return requirement.is_empty() or bool(_progression_unlocks.get(requirement, false))
+
+
+func _ensure_resource_quality_buckets(resource_id: StringName) -> void:
+	var key := String(resource_id)
+	if not _resource_quality_counts.has(key):
+		_resource_quality_counts[key] = {}
+	var quality_counts := _resource_quality_counts[key] as Dictionary
+	for quality in VALID_QUALITIES:
+		if not quality_counts.has(String(quality)):
+			quality_counts[String(quality)] = 0
+
+
+func _ensure_equipment_quality_buckets(item_id: StringName) -> void:
+	var key := String(item_id)
+	if not _equipment_quality_counts.has(key):
+		_equipment_quality_counts[key] = {}
+	var quality_counts := _equipment_quality_counts[key] as Dictionary
+	for quality in VALID_QUALITIES:
+		if not quality_counts.has(String(quality)):
+			quality_counts[String(quality)] = 0
+
+
+func _consume_resource_quality(resource_id: StringName, amount: int) -> void:
+	_ensure_resource_quality_buckets(resource_id)
+	var remaining := amount
+	var quality_counts := _resource_quality_counts[String(resource_id)] as Dictionary
+	for quality in VALID_QUALITIES:
+		if remaining <= 0:
+			break
+		var available := int(quality_counts.get(String(quality), 0))
+		var consumed := mini(available, remaining)
+		quality_counts[String(quality)] = available - consumed
+		remaining -= consumed
+
+
+func _restore_resource_quality_counts(saved_variant: Variant) -> void:
+	var saved := saved_variant as Dictionary if saved_variant is Dictionary else {}
+	for resource_id in _resource_ids:
+		if resource_id == &"gold":
+			continue
+		_ensure_resource_quality_buckets(resource_id)
+		var key := String(resource_id)
+		var source := saved.get(key, {}) as Dictionary
+		var quality_counts := _resource_quality_counts[key] as Dictionary
+		var assigned := 0
+		for quality in VALID_QUALITIES:
+			var amount := maxi(0, int(source.get(String(quality), 0)))
+			quality_counts[String(quality)] = amount
+			assigned += amount
+		if source.is_empty() or assigned != int(_resources.get(key, 0)):
+			for quality in VALID_QUALITIES:
+				quality_counts[String(quality)] = (
+					int(_resources.get(key, 0)) if quality == &"common" else 0
+				)
+
+
+func _restore_equipment_quality_count(
+	item_id: String,
+	total_count: int,
+	saved_variant: Variant
+) -> void:
+	_ensure_equipment_quality_buckets(StringName(item_id))
+	var saved := saved_variant as Dictionary if saved_variant is Dictionary else {}
+	var source := saved.get(item_id, {}) as Dictionary
+	var quality_counts := _equipment_quality_counts[item_id] as Dictionary
+	var assigned := 0
+	for quality in VALID_QUALITIES:
+		var amount := maxi(0, int(source.get(String(quality), 0)))
+		quality_counts[String(quality)] = amount
+		assigned += amount
+	if source.is_empty() or assigned != total_count:
+		var catalog_quality := StringName(
+			(_equipment_by_id[item_id] as Dictionary).get("quality", "common")
+		)
+		for quality in VALID_QUALITIES:
+			quality_counts[String(quality)] = total_count if quality == catalog_quality else 0
+
+
+func _restore_blueprint_proficiency(saved_variant: Variant) -> void:
+	_blueprint_proficiency.clear()
+	if not saved_variant is Dictionary:
+		return
+	for blueprint_variant in saved_variant:
+		var blueprint_id := String(blueprint_variant)
+		if not _owned_blueprints.has(blueprint_id):
+			continue
+		var saved_state := (saved_variant as Dictionary).get(blueprint_id, {}) as Dictionary
+		var craft_count := maxi(0, int(saved_state.get("craft_count", 0)))
+		var level := clampi(int(saved_state.get("level", mini(5, craft_count))), 0, 5)
+		_blueprint_proficiency[blueprint_id] = {
+			"craft_count": craft_count,
+			"level": level,
+			"awakened": level >= 5 and bool(saved_state.get("awakened", true)),
+		}
 
 
 func _sorted_string_keys(source: Dictionary) -> Array[String]:

@@ -577,8 +577,9 @@ Current fields：
 - `name`
 - `slot`
 - weapon 專用 `primal_element`
-- `quality`：`common`／`rare`／`exceptional`
-- `quality_label_zh`：普通／稀有／罕見
+- `quality`：catalog 基礎品質 `common`／`rare`／`exceptional`；runtime 圖紙覺醒後
+  可產生第四品質 `legendary`
+- `quality_label_zh`：普通／稀有／罕見；傳奇由 runtime projection 提供
 - `material_tier`：`normal`／`elite`／`boss`
 - `direct_purchase`
 - 基礎成品專用 `purchase_cost`（只能包含 `gold`）
@@ -608,10 +609,14 @@ InventoryManager持有：
 
 ```text
 _resources
+_resource_quality_counts
 _equipment_catalog / _equipment_by_id
 _owned_equipment
+_equipment_quality_counts
 _equipment_levels
 _equipped { weapon, armor, accessory }
+_equipped_quality { weapon, armor, accessory }
+_blueprint_proficiency
 ```
 
 Persistence API：
@@ -621,8 +626,10 @@ Persistence API：
 
 Mutation API：
 
-- resource add/set/spend
-- equipment add/purchase/equip/unequip/upgrade
+- resource add/set/spend 與 common／rare／exceptional／legendary 品質堆疊
+- equipment add/purchase/equip/unequip/upgrade 與品質堆疊
+- blueprint craft count／Lv.0–5 proficiency／Lv.5 awakening
+- quality-aware material／equipment sale escrow
 
 UI不得直接改以上private dictionaries。
 
@@ -1019,9 +1026,16 @@ Current `Game._open_town_service_ui()` 將同一份 TownManager/InventoryManager
 `data/forge_catalog.json` 是 offers/recipes authority。equipment offer 只允許資料標記為
 `direct_purchase` 的基礎成品；recipe 必須宣告 `quality`、`material_tier` 與正整數
 `processing_fee`。Inventory DTO 額外保存
+schema 4 的 `inventory_state` 保存 `resource_quality_counts`、
+`equipment_quality_counts`、`equipped_quality`、`blueprint_proficiency`，以及
 `equipment_counts`、`owned_blueprints`、`owned_tools` 與單格 `sale_slot` escrow；
 legacy `owned_equipment` 載入時遷移為 count。Forge 交易成功時立即同步 manager
 DTO 至 Meta 並儲存；關閉 UI 時仍執行最終同步與世界投影。
+
+每張圖紙成功打造一件增加一級熟練度，最高 Lv.5；Lv.5 第一次達成時回傳
+`blueprint_awakened_now`，代表主角完成圖紙改良。覺醒前 legendary 機率固定為 0，
+覺醒後該圖紙才有傳奇成品機率。普通／菁英／Boss 素材袋分別進入普通／稀有／
+罕見品質堆疊，Run 結算的保留率與通關 15% 加成會逐品質保存。
 
 ### 11.3 Projection copy
 

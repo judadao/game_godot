@@ -7,7 +7,7 @@
         {
           "level": 1,
           "name": "Working Forge",
-          "description": "Unlock Tier 1 equipment and Sword Soul recipes.",
+          "description": "Unlock Tier 1 equipment and Sword Soul recipes; blueprint practice can now grow.",
           "cost": {"autumn_wood": 10, "stone": 5, "magic_shard": 3},
           "effects": {"forge_recipe_tier": 1},
           "visual_flag": "show_blacksmith_level_1"
@@ -15,17 +15,17 @@
         {
           "level": 2,
           "name": "Tempered Forge",
-          "description": "Unlock Tier 2 recipes and reduce processing fees by 5%.",
+          "description": "Unlock Tier 2 recipes, improve quality control, and reduce processing fees by 5%.",
           "cost": {"autumn_wood": 20, "stone": 12, "magic_shard": 8, "gold": 20},
-          "effects": {"forge_recipe_tier": 1, "forge_processing_fee_discount": 0.05},
+          "effects": {"forge_recipe_tier": 1, "forge_processing_fee_discount": 0.05, "forge_quality_bonus": 0.02},
           "visual_flag": "show_blacksmith_level_2"
         },
         {
           "level": 3,
           "name": "Master Forge",
-          "description": "Unlock Tier 3 recipes and reduce processing fees by another 5%.",
+          "description": "Unlock Tier 3 recipes, improve quality control, and reduce processing fees by another 5%.",
           "cost": {"autumn_wood": 35, "stone": 25, "magic_shard": 15, "gold": 50},
-          "effects": {"forge_recipe_tier": 1, "forge_processing_fee_discount": 0.05},
+          "effects": {"forge_recipe_tier": 1, "forge_processing_fee_discount": 0.05, "forge_quality_bonus": 0.03},
           "visual_flag": "show_blacksmith_level_3"
         }
       ]
@@ -67,25 +67,25 @@
         {
           "level": 1,
           "name": "Trading Stalls",
-          "description": "Reduce purchase prices by 3% and raise sale values by 5%.",
+          "description": "Open equipment sales and Tier 2 blueprints; reduce prices by 3% and raise sale values by 5%.",
           "cost": {"autumn_wood": 8, "autumn_core": 4, "gold": 15},
-          "effects": {"market_purchase_discount": 0.03, "market_sale_bonus": 0.05},
+          "effects": {"market_purchase_discount": 0.03, "market_sale_bonus": 0.05, "market_stock_tier": 1, "market_equipment_sales_unlocked": 1},
           "visual_flag": "show_market_level_1"
         },
         {
           "level": 2,
           "name": "Merchant Row",
-          "description": "Reduce purchase prices by another 3% and raise sale values by another 5%.",
+          "description": "Expand stock to Tier 3 blueprints; reduce prices by another 3% and raise sale values by another 5%.",
           "cost": {"autumn_wood": 18, "stone": 6, "autumn_core": 10, "gold": 35},
-          "effects": {"market_purchase_discount": 0.03, "market_sale_bonus": 0.05},
+          "effects": {"market_purchase_discount": 0.03, "market_sale_bonus": 0.05, "market_stock_tier": 1},
           "visual_flag": "show_market_level_2"
         },
         {
           "level": 3,
           "name": "Prosperous Exchange",
-          "description": "Reach a 10% purchase discount and a 20% sale-value bonus.",
+          "description": "Complete the exchange; reach a 10% purchase discount and a 20% sale-value bonus.",
           "cost": {"autumn_wood": 30, "stone": 15, "autumn_core": 18, "gold": 70},
-          "effects": {"market_purchase_discount": 0.04, "market_sale_bonus": 0.10},
+          "effects": {"market_purchase_discount": 0.04, "market_sale_bonus": 0.10, "market_stock_tier": 1},
           "visual_flag": "show_market_level_3"
         }
       ]

@@ -11,7 +11,7 @@ const VALID_SHOPS: Array[StringName] = [
 ]
 const VALID_PRODUCT_KINDS: Array[StringName] = [&"resource", &"tool", &"blueprint", &"equipment"]
 const VALID_RESULT_KINDS: Array[StringName] = [&"equipment", &"sword_soul"]
-const VALID_QUALITIES: Array[StringName] = [&"common", &"rare", &"exceptional"]
+const VALID_QUALITIES: Array[StringName] = [&"common", &"rare", &"exceptional", &"legendary"]
 const VALID_MATERIAL_TIERS: Array[StringName] = [&"normal", &"elite", &"boss"]
 
 var _loaded := false
@@ -38,25 +38,38 @@ func get_offer(offer_id: StringName) -> Dictionary:
 	return offer.duplicate(true)
 
 
-func get_shop_offers(shop_id: StringName, flame_tier: int) -> Array[Dictionary]:
+func get_shop_offers(
+	shop_id: StringName,
+	flame_tier: int,
+	market_level: int = -1
+) -> Array[Dictionary]:
 	if not VALID_SHOPS.has(shop_id) or flame_tier < 0:
 		return []
+	var resolved_market_level := flame_tier if market_level < 0 else market_level
 	var result: Array[Dictionary] = []
 	for offer in _offers:
 		if StringName(offer.get("shop_id", "")) != shop_id:
 			continue
 		if int(offer.get("required_flame_tier", 0)) > flame_tier:
 			continue
+		if int(offer.get("required_market_level", 0)) > resolved_market_level:
+			continue
 		result.append(offer.duplicate(true))
 	return result
 
 
-func is_offer_unlocked(offer_id: StringName, flame_tier: int) -> bool:
+func is_offer_unlocked(
+	offer_id: StringName,
+	flame_tier: int,
+	market_level: int = -1
+) -> bool:
 	var offer := get_offer(offer_id)
+	var resolved_market_level := flame_tier if market_level < 0 else market_level
 	return (
 		not offer.is_empty()
 		and flame_tier >= 0
 		and int(offer.get("required_flame_tier", 0)) <= flame_tier
+		and int(offer.get("required_market_level", 0)) <= resolved_market_level
 	)
 
 
@@ -151,6 +164,9 @@ func _validate_offer(
 		return false
 	if not _is_non_negative_integer(offer.get("required_flame_tier")):
 		push_error("Forge offer flame tier must be non-negative: %s" % offer_id)
+		return false
+	if not _is_non_negative_integer(offer.get("required_market_level", 0)):
+		push_error("Forge offer market level must be non-negative: %s" % offer_id)
 		return false
 	if icon_path.is_empty() or not ResourceLoader.exists(icon_path):
 		push_error("Forge offer icon does not exist: %s" % icon_path)

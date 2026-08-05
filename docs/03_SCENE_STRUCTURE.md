@@ -813,7 +813,8 @@ MenuLayer
 - `MaterialYardUI` 以 Materials／Forge Tools filter 切換資料驅動 offers，鎖定項目
   保持可見並顯示所需火炬 Tier。
 - `PlayerBlacksmithUI` 以 service rail 切換 Forge／Workshop Upgrade／Sales Table；
-  recipe rows 由已持有圖紙、工具與 blacksmith level 投影。
+  recipe rows 由已持有圖紙、工具與 blacksmith level 投影，Sales Table 的
+  `SaleCandidateList` 則只建立 ForgeService 提供的品質素材／裝備 rows。
 - `TownHallUI` 保留 Overview／Town Development 兩個主要入口；Development workspace
   以五個 authored project button 選擇建築，左側固定村長肖像。
 - 三者的 Full Rect root、semantic window、public API、focus、重開與六解析度

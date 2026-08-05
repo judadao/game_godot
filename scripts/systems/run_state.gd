@@ -27,6 +27,7 @@ var combo_count := 0
 var temporary_buffs: Dictionary = {}
 var gold_earned := 0
 var materials_earned: Dictionary = {}
+var material_quality_earned: Dictionary = {}
 var defeated_enemies := 0
 var elite_defeated := false
 var boss_defeated := false
@@ -80,6 +81,17 @@ func finish_run(victory: bool, requested_outcome: StringName = &"") -> Dictionar
 			retained_materials[resource_id] = roundi(
 				float(retained_materials[resource_id]) * (1.0 + CLEAR_BONUS_RATE)
 			)
+	var retained_material_qualities: Dictionary = {}
+	for resource_id in retained_materials:
+		var source_qualities := material_quality_earned.get(resource_id, {}) as Dictionary
+		if source_qualities.is_empty() and int(materials_earned.get(resource_id, 0)) > 0:
+			source_qualities = {"common": int(materials_earned[resource_id])}
+		var retained_qualities := _distribute_quality_total(
+			source_qualities,
+			int(retained_materials[resource_id])
+		)
+		if not retained_qualities.is_empty():
+			retained_material_qualities[resource_id] = retained_qualities
 	var summary := {
 		"victory": settled_victory,
 		"outcome": String(outcome),
@@ -87,6 +99,7 @@ func finish_run(victory: bool, requested_outcome: StringName = &"") -> Dictionar
 		"base_materials": materials_earned.duplicate(true),
 		"gold": retained_gold,
 		"materials": retained_materials,
+		"material_qualities": retained_material_qualities,
 		"retention_rate": retention_rate,
 		"completion_bonus_rate": CLEAR_BONUS_RATE if settled_victory else 0.0,
 		"chest_reward": (
@@ -105,13 +118,53 @@ func finish_run(victory: bool, requested_outcome: StringName = &"") -> Dictionar
 	return summary
 
 
-func add_reward(resource_id: String, amount: int) -> void:
+func add_reward(
+	resource_id: String,
+	amount: int,
+	quality: StringName = &"common"
+) -> void:
 	if amount <= 0:
 		return
 	if resource_id == "gold":
 		gold_earned += amount
 	else:
 		materials_earned[resource_id] = int(materials_earned.get(resource_id, 0)) + amount
+		if not material_quality_earned.has(resource_id):
+			material_quality_earned[resource_id] = {}
+		var quality_counts := material_quality_earned[resource_id] as Dictionary
+		quality_counts[String(quality)] = int(
+			quality_counts.get(String(quality), 0)
+		) + amount
+
+
+func _distribute_quality_total(source: Dictionary, target_total: int) -> Dictionary:
+	if source.is_empty() or target_total <= 0:
+		return {}
+	var source_total := 0
+	for count_variant in source.values():
+		source_total += maxi(0, int(count_variant))
+	if source_total <= 0:
+		return {}
+	var result: Dictionary = {}
+	var remainders: Array[Dictionary] = []
+	var assigned := 0
+	for quality_variant in source:
+		var exact := float(maxi(0, int(source[quality_variant]))) * float(target_total) / float(source_total)
+		var base := floori(exact)
+		if base > 0:
+			result[String(quality_variant)] = base
+		assigned += base
+		remainders.append({"quality": String(quality_variant), "fraction": exact - float(base)})
+	remainders.sort_custom(func(left: Dictionary, right: Dictionary) -> bool:
+		return float(left.get("fraction", 0.0)) > float(right.get("fraction", 0.0))
+	)
+	var remainder_index := 0
+	while assigned < target_total and not remainders.is_empty():
+		var quality := String(remainders[remainder_index % remainders.size()].get("quality", "common"))
+		result[quality] = int(result.get(quality, 0)) + 1
+		assigned += 1
+		remainder_index += 1
+	return result
 
 
 func add_experience(amount: int) -> int:
@@ -230,6 +283,7 @@ func _reset_transient() -> void:
 	temporary_buffs.clear()
 	gold_earned = 0
 	materials_earned.clear()
+	material_quality_earned.clear()
 	defeated_enemies = 0
 	elite_defeated = false
 	boss_defeated = false
