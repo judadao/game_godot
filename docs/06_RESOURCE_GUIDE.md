@@ -804,7 +804,8 @@ gold_earned / materials_earned
 defeated_enemies / elite_defeated / boss_defeated
 ```
 
-`finish_run()`產生summary後reset transient state。不要把RunState直接serialize成meta，
+`finish_run()` 以 `victory`／`safe_retreat`／`death`／`abandon` 結算並產生 summary 後
+reset transient state；保留率依序為 115%（完成加成）／100%／65%／0%。不要把RunState直接serialize成meta，
 除非產品需求明確改成run resume並完成migration/tests。
 
 ### 9.3 DeckManager

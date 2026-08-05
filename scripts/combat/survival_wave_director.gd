@@ -18,7 +18,13 @@ signal survival_pickup_collected(item_id: StringName)
 signal reward_bag_spawned(pickup: Node, kind: StringName, reward: Dictionary)
 signal reward_bag_collected(kind: StringName, reward: Dictionary)
 
-const OPENING_SPAWN_COUNT := 24
+const OPENING_SPAWN_COUNT := 30
+const STRONG_ENEMY_VARIANTS: Array[StringName] = [
+	&"thornling", &"charger", &"grove_shaman",
+]
+const STAGE_BOSS_VARIANTS: Array[StringName] = [
+	&"heartwood_harbinger", &"thorn_colossus", &"ember_warden",
+]
 const MONSTER_MATERIALS := {
 	"sprout": "autumn_wood",
 	"hopper": "stone",
@@ -30,25 +36,24 @@ const MONSTER_MATERIALS := {
 	"guardian": "autumn_core",
 }
 
-@export_range(30.0, 1800.0, 1.0) var survival_duration := 600.0
-@export_range(10.0, 120.0, 1.0) var final_rush_duration := 60.0
+@export_range(30.0, 1800.0, 1.0) var survival_duration := 510.0
+@export_range(10.0, 120.0, 1.0) var final_rush_duration := 30.0
 @export var scheduled_elite_times: Array[float] = [
-	45.0, 90.0, 135.0, 180.0, 225.0, 270.0,
-	315.0, 360.0, 405.0, 450.0, 495.0,
+	60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0, 480.0,
 ]
-@export var scheduled_boss_times: Array[float] = [300.0, 480.0]
-@export_range(2.0, 60.0, 0.5) var final_rush_elite_interval := 15.0
-@export_range(5.0, 60.0, 0.5) var final_rush_boss_interval := 30.0
-@export_range(1, 120, 1) var base_density_cap := 40
-@export_range(1, 200, 1) var maximum_density_cap := 140
-@export_range(0, 80, 1) var final_rush_density_bonus := 40
-@export_range(0.05, 5.0, 0.05) var base_spawn_interval := 0.40
-@export_range(0.05, 5.0, 0.01) var minimum_spawn_interval := 0.09
-@export_range(0.1, 1.0, 0.05) var final_rush_spawn_interval_multiplier := 0.45
-@export_range(1, 16, 1) var base_spawn_batch := 8
-@export_range(1, 20, 1) var maximum_spawn_batch := 16
-@export_range(1.0, 20.0, 0.1) var base_normal_health_multiplier := 8.0
-@export_range(1.0, 30.0, 0.1) var maximum_normal_health_multiplier := 20.0
+@export var scheduled_boss_times: Array[float] = [180.0, 360.0]
+@export_range(2.0, 60.0, 0.5) var final_rush_elite_interval := 7.5
+@export_range(5.0, 60.0, 0.5) var final_rush_boss_interval := 15.0
+@export_range(1, 120, 1) var base_density_cap := 48
+@export_range(1, 240, 1) var maximum_density_cap := 170
+@export_range(0, 100, 1) var final_rush_density_bonus := 50
+@export_range(0.05, 5.0, 0.05) var base_spawn_interval := 0.35
+@export_range(0.05, 5.0, 0.01) var minimum_spawn_interval := 0.08
+@export_range(0.1, 1.0, 0.05) var final_rush_spawn_interval_multiplier := 0.40
+@export_range(1, 24, 1) var base_spawn_batch := 10
+@export_range(1, 28, 1) var maximum_spawn_batch := 20
+@export_range(1.0, 30.0, 0.1) var base_normal_health_multiplier := 10.0
+@export_range(1.0, 40.0, 0.1) var maximum_normal_health_multiplier := 26.0
 @export_range(0.25, 2.0, 0.05) var normal_health_curve_exponent := 0.85
 @export var normal_enemy_unlocks: Dictionary = {
 	"sprout": 0.0,
@@ -92,6 +97,7 @@ var _next_final_rush_elite_time := INF
 var _next_final_rush_boss_time := INF
 var _final_rush_started := false
 var _exit_unlocked := false
+var _survival_completed := false
 var _rng := RandomNumberGenerator.new()
 
 
@@ -122,6 +128,7 @@ func start_encounter() -> bool:
 	_next_final_rush_boss_time = INF
 	_final_rush_started = false
 	_exit_unlocked = false
+	_survival_completed = false
 	_survival_elapsed = 0.0
 	_time_remaining = survival_duration
 	_spawn_remaining = 0.0
@@ -150,7 +157,7 @@ func advance_survival(delta: float) -> void:
 	_spawn_scheduled_events(previous_elapsed, _survival_elapsed)
 	_spawn_final_rush_events(previous_elapsed, _survival_elapsed)
 	if _time_remaining <= 0.0:
-		_spawn_completion_boss()
+		_complete_survival()
 	else:
 		_spawn_remaining -= safe_delta
 		var spawn_passes := 0
@@ -189,6 +196,10 @@ func get_current_normal_health_multiplier() -> float:
 		maxf(base_normal_health_multiplier, maximum_normal_health_multiplier),
 		pow(_timeline_progress(), normal_health_curve_exponent)
 	)
+
+
+func get_current_enemy_damage_multiplier() -> float:
+	return lerpf(1.15, 2.20, pow(_timeline_progress(), 0.9))
 
 
 func get_survival_elapsed() -> float:
@@ -239,14 +250,14 @@ func _spawn_scheduled_events(previous_elapsed: float, current_elapsed: float) ->
 			break
 		_scheduled_elite_index += 1
 		if event_time > previous_elapsed and event_time < survival_duration:
-			_spawn_elite()
+			_spawn_elite_wave(_strong_enemy_count_for_time(event_time))
 	while _scheduled_boss_index < _boss_schedule.size():
 		var event_time := maxf(0.0, _boss_schedule[_scheduled_boss_index])
 		if event_time > current_elapsed:
 			break
 		_scheduled_boss_index += 1
 		if event_time > previous_elapsed and event_time < survival_duration:
-			_spawn_boss(false)
+			_spawn_boss_wave(_boss_count_for_time(event_time))
 
 
 func _spawn_final_rush_events(_previous_elapsed: float, current_elapsed: float) -> void:
@@ -261,20 +272,31 @@ func _spawn_final_rush_events(_previous_elapsed: float, current_elapsed: float) 
 		_next_final_rush_elite_time <= current_elapsed
 		and _next_final_rush_elite_time < survival_duration
 	):
-		_spawn_elite()
+		_spawn_elite_wave(_final_rush_strong_count(_next_final_rush_elite_time - rush_start))
 		_next_final_rush_elite_time += maxf(0.1, final_rush_elite_interval)
 	while (
 		_next_final_rush_boss_time <= current_elapsed
 		and _next_final_rush_boss_time < survival_duration
 	):
-		_spawn_boss(false)
+		_spawn_boss_wave(_final_rush_boss_count(_next_final_rush_boss_time - rush_start))
 		_next_final_rush_boss_time += maxf(0.1, final_rush_boss_interval)
 
 
 func _spawn_elite() -> void:
 	_spawned_elite_count += 1
-	var elite := _spawn_survival_enemy(&"elite", false)
+	var variant_index := (_spawned_elite_count - 1) % STRONG_ENEMY_VARIANTS.size()
+	var archetype_id := STRONG_ENEMY_VARIANTS[variant_index]
+	var elite := _spawn_survival_enemy(archetype_id, false)
 	if elite != null:
+		elite.set_meta("survival_role", "elite")
+		elite.set_meta("strong_variant_id", String(archetype_id))
+		if elite.has_method("apply_survival_health_multiplier"):
+			elite.call(
+				"apply_survival_health_multiplier",
+				get_current_normal_health_multiplier() * 1.75
+			)
+		if elite is Node2D:
+			(elite as Node2D).scale *= Vector2(1.16, 1.16)
 		elite_spawned.emit(elite, _time_remaining)
 
 
@@ -284,6 +306,16 @@ func _spawn_boss(completion_boss: bool) -> void:
 		_completion_boss_spawn_count += 1
 	var boss := _spawn_survival_enemy(&"guardian", true, completion_boss)
 	if boss != null:
+		var variant_id := STAGE_BOSS_VARIANTS[(_spawned_boss_count - 1) % STAGE_BOSS_VARIANTS.size()]
+		boss.set_meta("boss_variant_id", String(variant_id))
+		if boss.has_method("configure_survival_variant"):
+			boss.call("configure_survival_variant", variant_id)
+		if boss.has_method("apply_survival_health_multiplier"):
+			boss.call(
+				"apply_survival_health_multiplier",
+				lerpf(1.0, 2.4, pow(_timeline_progress(), 0.8))
+			)
+		_apply_survival_damage_scale(boss)
 		boss_spawned.emit(boss, completion_boss, _time_remaining)
 
 
@@ -291,6 +323,46 @@ func _spawn_completion_boss() -> void:
 	if _completion_boss_spawn_count > 0:
 		return
 	_spawn_boss(true)
+
+
+func _spawn_elite_wave(count: int) -> void:
+	for _index in maxi(1, count):
+		_spawn_elite()
+
+
+func _spawn_boss_wave(count: int) -> void:
+	for _index in maxi(1, count):
+		_spawn_boss(false)
+
+
+func _strong_enemy_count_for_time(event_time: float) -> int:
+	return clampi(1 + floori(event_time / 120.0), 1, 5)
+
+
+func _boss_count_for_time(event_time: float) -> int:
+	return clampi(floori(event_time / 180.0), 1, 3)
+
+
+func _final_rush_strong_count(rush_elapsed: float) -> int:
+	return clampi(3 + floori(maxf(0.0, rush_elapsed) / 10.0), 3, 5)
+
+
+func _final_rush_boss_count(rush_elapsed: float) -> int:
+	return clampi(2 + floori(maxf(0.0, rush_elapsed) / 15.0), 2, 3)
+
+
+func _complete_survival() -> void:
+	if _survival_completed:
+		return
+	_survival_completed = true
+	_running = false
+	_exit_unlocked = true
+	for enemy in _active_enemies:
+		if enemy != null and is_instance_valid(enemy):
+			enemy.queue_free()
+	_active_enemies.clear()
+	progress_changed.emit(0, get_current_density_cap())
+	boss_stage_completed.emit()
 
 
 func _timeline_progress() -> float:
@@ -389,6 +461,7 @@ func _spawn_survival_enemy(
 			"apply_survival_health_multiplier",
 			get_current_normal_health_multiplier()
 		)
+	_apply_survival_damage_scale(enemy)
 	if enemy.has_signal("defeated"):
 		enemy.connect(
 			"defeated",
@@ -396,6 +469,19 @@ func _spawn_survival_enemy(
 		)
 	_active_enemies.append(enemy)
 	return enemy
+
+
+func _apply_survival_damage_scale(enemy: Node) -> void:
+	if enemy == null:
+		return
+	var archetype_variant: Variant = enemy.get("archetype")
+	if not archetype_variant is Resource:
+		return
+	var archetype_resource := archetype_variant as Resource
+	var base_damage := maxi(1, int(archetype_resource.get("attack_damage")))
+	var multiplier := get_current_enemy_damage_multiplier()
+	archetype_resource.set("attack_damage", maxi(1, roundi(float(base_damage) * multiplier)))
+	enemy.set_meta("survival_damage_multiplier", multiplier)
 
 
 func _on_survival_enemy_defeated(
@@ -410,7 +496,7 @@ func _on_survival_enemy_defeated(
 	var reward_position := (enemy as Node2D).global_position if enemy is Node2D else global_position
 	_active_enemies.erase(enemy)
 	var archetype_id := StringName(enemy.get_meta("encounter_archetype_id", ""))
-	var is_elite := archetype_id == &"elite"
+	var is_elite := String(enemy.get_meta("survival_role", "")) == "elite"
 	var reward_role := &"boss" if is_boss else (&"elite" if is_elite else &"normal")
 	if _running and not is_boss and _time_remaining > 0.0:
 		_spawn_remaining = minf(_spawn_remaining, 0.05)

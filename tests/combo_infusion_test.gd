@@ -53,17 +53,17 @@ func _run() -> void:
 	run.temporary_buffs["combo_chain_skills"] = {}
 	run.temporary_buffs["combo_chain_order"] = []
 	_expect(
-		int(game.call("_get_combo_stack_cap")) == 5,
-		"Each Sword Soul must start with a five-stack Combo cap."
+		int(game.call("_get_combo_stack_cap")) == 10,
+		"Each Sword Soul must expose the ten-stack Combo cap without equipment gating."
 	)
 	var cap_test_card := database_card(game, "flame_imbue")
 	for _stack_index in 7:
 		game.call("_record_combo_chain", cap_test_card)
 	var capped_skills := run.temporary_buffs.get("combo_chain_skills", {}) as Dictionary
 	_expect(
-		int(capped_skills.get("烈焰灌注", 0)) == 5
-			and int(run.temporary_buffs.get("combo_chain_count", 0)) == 5,
-		"Repeated casts must stop the individual Sword Soul and effective damage chain at five stacks."
+		int(capped_skills.get("烈焰灌注", 0)) == 7
+			and int(run.temporary_buffs.get("combo_chain_count", 0)) == 7,
+		"The base Sword Soul chain must continue past five stacks toward ten."
 	)
 	var inventory := game.get("inventory_manager") as RefCounted
 	if not bool(inventory.call("has_equipment", &"focus_amulet")):
@@ -75,7 +75,7 @@ func _run() -> void:
 	)
 	_expect(
 		int(game.call("_get_combo_stack_cap")) == 10,
-		"Focus Amulet must raise the Sword Soul Combo cap from five to the hard maximum of ten."
+		"Combo-cap equipment must never raise the hard maximum beyond ten."
 	)
 	run.temporary_buffs["active_infusions"] = []
 	run.temporary_buffs["combo_levels"] = {}
@@ -238,10 +238,10 @@ func _run() -> void:
 		int(chain_skills.get("烈焰灌注", 0)) == 2,
 		"Combo feedback must retain the localized per-Sword-Soul stack count."
 	)
-	for _stack_index in 3:
+	for _stack_index in 8:
 		_expect(
 			bool(game.call("_resolve_combo_card", database_card(game, "flame_imbue"))),
-			"A Sword Soul must continue stacking until its default cap of five."
+			"A Sword Soul must continue stacking until its default cap of ten."
 		)
 	for _overflow_index in 4:
 		_expect(
@@ -254,10 +254,10 @@ func _run() -> void:
 	) as Dictionary
 	var milestone_effect := milestone_attack.get("effect", {}) as Dictionary
 	_expect(
-		int(run.temporary_buffs.get("combo_chain_count", 0)) == 5
-			and float(milestone_effect.get("lifesteal_ratio", 0.0)) < 0.05
-			and float(milestone_effect.get("combo_stun", 0.0)) < 0.15,
-		"Spamming one Sword Soul must stop at five and cannot reach the stronger multi-Soul milestones alone."
+		int(run.temporary_buffs.get("combo_chain_count", 0)) == 10
+			and float(milestone_effect.get("lifesteal_ratio", 0.0)) >= 0.05
+			and float(milestone_effect.get("combo_stun", 0.0)) >= 0.15,
+		"Reaching the very short ten-stack window must unlock the strongest Combo milestones."
 	)
 	var original_hud := game.get("hud") as Control
 	var feedback_hud := FeedbackHUD.new()
@@ -274,7 +274,7 @@ func _run() -> void:
 		is_equal_approx(deck.energy, energy_before_rejected_cast)
 			and feedback_hud.cast_feedback_ids.is_empty()
 			and String(capped_feedback.get("name", "")) == "烈焰灌注"
-			and int(capped_feedback.get("count", 0)) == 5,
+			and int(capped_feedback.get("count", 0)) == 10,
 		"Pressing a capped Sword Soul must repeat only the capped left label, without spending AP or playing a false card-cast animation."
 	)
 	deck.energy = 1.0

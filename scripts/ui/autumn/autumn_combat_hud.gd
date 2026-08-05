@@ -300,7 +300,7 @@ func set_survival_timer(remaining: float, _total: float, final_rush: bool) -> vo
 	var seconds := maxi(0, int(ceil(remaining)))
 	var time_text := "%02d:%02d" % [seconds / 60, seconds % 60]
 	var state_text := (
-		"FINAL BOSS"
+		"SURVIVED"
 		if remaining <= 0.0
 		else ("FINAL RUSH" if final_rush else "SURVIVE")
 	)

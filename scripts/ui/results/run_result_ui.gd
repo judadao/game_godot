@@ -26,7 +26,16 @@ func close() -> void:
 func set_result(victory: bool, summary: Dictionary) -> void:
 	if _title == null:
 		return
-	_title.text = "AUTUMN TREE VICTORY" if victory else "EXPEDITION ENDED"
+	var outcome := StringName(summary.get("outcome", "victory" if victory else "death"))
+	match outcome:
+		&"victory":
+			_title.text = "EXPEDITION VICTORY"
+		&"safe_retreat":
+			_title.text = "SAFE EXTRACTION"
+		&"abandon":
+			_title.text = "EXPEDITION ABANDONED"
+		_:
+			_title.text = "EXPEDITION FAILED"
 	_title.add_theme_color_override(
 		"font_color",
 		Color(1.0, 0.78, 0.28) if victory else Color(0.88, 0.47, 0.38)
@@ -36,16 +45,28 @@ func set_result(victory: bool, summary: Dictionary) -> void:
 	for resource_id in materials:
 		material_lines.append("%s  +%d" % [String(resource_id).capitalize(), int(materials[resource_id])])
 	var bonus_rate := float(summary.get("completion_bonus_rate", 0.0))
-	var reward_note := (
-		"Clear bonus  +%d%%" % roundi(bonus_rate * 100.0)
-		if bonus_rate > 0.0
-		else "All collected bags retained after defeat"
+	var reward_note := ""
+	match outcome:
+		&"victory":
+			reward_note = "Clear bonus  +%d%% · Victory chest secured" % roundi(bonus_rate * 100.0)
+		&"safe_retreat":
+			reward_note = "Safe extraction · all collected bags retained"
+		&"abandon":
+			reward_note = "Exit Combat · all run loot lost"
+		_:
+			reward_note = "Defeat penalty · 65% of collected loot retained"
+	var chest := summary.get("chest_reward", {}) as Dictionary
+	var chest_line := (
+		"\nChest  %s" % String(chest.get("item_id", "")).replace("_", " ").capitalize()
+		if not chest.is_empty()
+		else ""
 	)
-	_summary.text = "[center]Enemies defeated  %d\nGold retained  +%d\n%s\n%s\n\nPermanent Town progress has been saved.[/center]" % [
+	_summary.text = "[center]Enemies defeated  %d\nGold retained  +%d\n%s\n%s%s\n\nPermanent Town progress has been saved.[/center]" % [
 		int(summary.get("defeated_enemies", 0)),
 		int(summary.get("gold", 0)),
 		"\n".join(material_lines),
 		reward_note,
+		chest_line,
 	]
 
 

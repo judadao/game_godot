@@ -93,22 +93,14 @@ func _run() -> void:
 	)
 
 	director.call("advance_survival", float(director.get("survival_duration")) + 1.0)
-	var guardian: Node
-	for enemy in director.get_active_enemies():
-		if enemy.is_in_group("Bosses") and bool(enemy.get_meta("completion_boss", false)):
-			guardian = enemy
-			break
-	_expect(guardian != null, "The survival countdown must culminate in a completion Guardian.")
-	if guardian != null:
-		guardian.call("take_hit", 99999, Vector2.ZERO, 0.0)
 	await process_frame
 	await process_frame
-	_expect(not bool(director.get("_running")), "Defeating the boss must stop survival spawning.")
-	_expect((game.get("meta_state") as MetaState).boss_defeated, "Boss victory must become permanent progress.")
-	_expect((game.get("meta_state") as MetaState).dash_upgrade_unlocked, "Heartwood Guardian victory must unlock Dash equipment growth.")
+	_expect(not bool(director.get("_running")), "Surviving 8:30 must stop survival spawning immediately.")
+	_expect((game.get("meta_state") as MetaState).boss_defeated, "Survival completion must become permanent progress.")
+	_expect((game.get("meta_state") as MetaState).dash_upgrade_unlocked, "Survival completion must unlock Dash equipment growth.")
 	_expect(
 		int((game.get("meta_state") as MetaState).resources.get("autumn_core", 0)) >= 1,
-		"Boss victory must award an Autumn Core."
+		"Survival completion must award Autumn Cores."
 	)
 	var east_portal: Node = game.get("current_map").get_node("EastSafePortal")
 	_expect(not bool(east_portal.get("locked")), "Boss victory must preserve the east return route.")
@@ -163,8 +155,8 @@ func _run() -> void:
 		"Death must return the player to the authoritative Town main scene."
 	)
 	_expect(
-		int((game.get("meta_state") as MetaState).resources.get("gold", 0)) == permanent_gold_before + 11,
-		"Death must retain earned permanent gold."
+		int((game.get("meta_state") as MetaState).resources.get("gold", 0)) == permanent_gold_before + 7,
+		"Death must retain 65 percent of earned permanent gold."
 	)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
 	game.queue_free()

@@ -43,6 +43,8 @@ func _run() -> void:
 	var time_events: Array[Dictionary] = []
 	var elite_reward_events: Array[Vector2] = []
 	var experience_drop_values: Array[int] = []
+	var completion_events: Array[bool] = []
+	director.connect("boss_stage_completed", func() -> void: completion_events.append(true))
 	director.connect(
 		"elite_defeated",
 		func(world_position: Vector2) -> void: elite_reward_events.append(world_position)
@@ -88,8 +90,8 @@ func _run() -> void:
 		)
 	_expect(bool(director.call("start_encounter")), "Survival encounter must start.")
 	_expect(
-		(director.call("get_active_enemies") as Array).size() == 24,
-		"Survival must open with a twenty-four-enemy pressure wave."
+		(director.call("get_active_enemies") as Array).size() == 30,
+		"Survival must open with a thirty-enemy pressure wave."
 	)
 	_expect(
 		not director.has_signal("phase_time_changed"),
@@ -110,8 +112,8 @@ func _run() -> void:
 		var archetype := first_normal.get("archetype") as EnemyArchetype
 		expected_normal_shards = archetype.experience_reward
 		_expect(
-			float(first_normal.get_meta("survival_health_multiplier", 0.0)) == 8.0,
-			"Opening horde enemies must receive the 8x survival health floor."
+			float(first_normal.get_meta("survival_health_multiplier", 0.0)) == 10.0,
+			"Opening horde enemies must receive the 10x survival health floor."
 		)
 		director.set("_spawn_remaining", 10.0)
 		director.call(
@@ -142,7 +144,7 @@ func _run() -> void:
 	)
 	var first_elite: Node
 	for enemy in director.call("get_active_enemies") as Array:
-		if String(enemy.get_meta("encounter_archetype_id", "")) == "elite":
+		if String(enemy.get_meta("survival_role", "")) == "elite":
 			first_elite = enemy
 			break
 	_expect(first_elite != null, "Scheduled elite event must create an elite enemy instance.")
@@ -172,16 +174,31 @@ func _run() -> void:
 			and int(director.call("get_spawned_boss_count")) >= 2,
 		"Final Rush must immediately add both elite and boss pressure."
 	)
+	var strong_variants: Dictionary = {}
+	var boss_variants: Dictionary = {}
+	for active_enemy in director.call("get_active_enemies") as Array:
+		var strong_variant := String(active_enemy.get_meta("strong_variant_id", ""))
+		var boss_variant := String(active_enemy.get_meta("boss_variant_id", ""))
+		if not strong_variant.is_empty():
+			strong_variants[strong_variant] = true
+		if not boss_variant.is_empty():
+			boss_variants[boss_variant] = true
+	_expect(
+		strong_variants.size() >= 3 and boss_variants.size() >= 3,
+		"Strong-enemy and stage-boss events must rotate through multiple combat variants."
+	)
 	director.call("advance_survival", 0.3)
 	_expect(
 		is_zero_approx(float(director.call("get_time_remaining")))
-			and int(director.call("get_completion_boss_spawn_count")) == 1,
-		"Countdown completion must spawn exactly one completion Guardian."
+			and int(director.call("get_completion_boss_spawn_count")) == 0
+			and completion_events.size() == 1
+			and bool(director.call("is_exit_unlocked")),
+		"Surviving the countdown must complete immediately and unlock extraction."
 	)
 	director.call("advance_survival", 2.0)
 	_expect(
-		int(director.call("get_completion_boss_spawn_count")) == 1,
-		"Completion Guardian must never be duplicated after the timer expires."
+		completion_events.size() == 1,
+		"Survival completion must only emit once after the timer expires."
 	)
 	_expect(
 		time_events.any(func(event: Dictionary) -> bool: return bool(event["final_rush"])),
@@ -240,9 +257,9 @@ func _run() -> void:
 	) as EnemyBase
 	_expect(
 		late_sprout != null
-			and int(late_sprout.health) == 200
-			and int(late_sprout.archetype.max_health) == 200,
-		"A normal enemy spawned at the end of the timeline must receive the 20x health scale."
+			and int(late_sprout.health) == 260
+			and int(late_sprout.archetype.max_health) == 260,
+		"A normal enemy spawned at the end of the timeline must receive the 26x health scale."
 	)
 	director.queue_free()
 	await process_frame

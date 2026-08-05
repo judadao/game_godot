@@ -5,6 +5,11 @@ const INITIAL_EXPERIENCE_REQUIRED := 100
 const EXPERIENCE_REQUIREMENT_MULTIPLIER := 1.30
 const EXPERIENCE_REQUIREMENT_FLAT_GROWTH := 25.0
 const CLEAR_BONUS_RATE := 0.15
+const DEATH_RETENTION_RATE := 0.65
+const OUTCOME_VICTORY := &"victory"
+const OUTCOME_SAFE_RETREAT := &"safe_retreat"
+const OUTCOME_DEATH := &"death"
+const OUTCOME_ABANDON := &"abandon"
 
 var active := false
 var level := 1
@@ -53,22 +58,42 @@ func begin_run(
 		starting_deck.append(instance.card_id)
 
 
-func finish_run(victory: bool) -> Dictionary:
-	var retained_gold := gold_earned
-	var retained_materials := materials_earned.duplicate(true)
-	if victory:
+func finish_run(victory: bool, requested_outcome: StringName = &"") -> Dictionary:
+	var outcome := requested_outcome
+	if outcome not in [OUTCOME_VICTORY, OUTCOME_SAFE_RETREAT, OUTCOME_DEATH, OUTCOME_ABANDON]:
+		outcome = OUTCOME_VICTORY if victory else OUTCOME_DEATH
+	var settled_victory := outcome == OUTCOME_VICTORY
+	var retention_rate := 1.0
+	if outcome == OUTCOME_DEATH:
+		retention_rate = DEATH_RETENTION_RATE
+	elif outcome == OUTCOME_ABANDON:
+		retention_rate = 0.0
+	var retained_gold := roundi(float(gold_earned) * retention_rate)
+	var retained_materials: Dictionary = {}
+	for resource_id in materials_earned:
+		var retained_amount := roundi(float(materials_earned[resource_id]) * retention_rate)
+		if retained_amount > 0:
+			retained_materials[resource_id] = retained_amount
+	if settled_victory:
 		retained_gold = roundi(float(retained_gold) * (1.0 + CLEAR_BONUS_RATE))
 		for resource_id in retained_materials:
 			retained_materials[resource_id] = roundi(
 				float(retained_materials[resource_id]) * (1.0 + CLEAR_BONUS_RATE)
 			)
 	var summary := {
-		"victory": victory,
+		"victory": settled_victory,
+		"outcome": String(outcome),
 		"base_gold": gold_earned,
 		"base_materials": materials_earned.duplicate(true),
 		"gold": retained_gold,
 		"materials": retained_materials,
-		"completion_bonus_rate": CLEAR_BONUS_RATE if victory else 0.0,
+		"retention_rate": retention_rate,
+		"completion_bonus_rate": CLEAR_BONUS_RATE if settled_victory else 0.0,
+		"chest_reward": (
+			(temporary_buffs.get("completion_chest_reward", {}) as Dictionary).duplicate(true)
+			if settled_victory
+			else {}
+		),
 		"defeated_enemies": defeated_enemies,
 		"elite_defeated": elite_defeated,
 		"boss_defeated": boss_defeated,

@@ -53,24 +53,23 @@ func _run() -> void:
 
 	var director := SurvivalWaveDirector.new()
 	_expect(
-		is_equal_approx(director.survival_duration, 600.0)
-			and is_equal_approx(director.final_rush_duration, 60.0),
-		"Autumn survival must last ten minutes with a one-minute Final Rush."
+		is_equal_approx(director.survival_duration, 510.0)
+			and is_equal_approx(director.final_rush_duration, 30.0),
+		"Expedition survival must last 8:30 with a red thirty-second Final Rush."
 	)
 	_expect(
-		not director.scheduled_elite_times.is_empty()
-			and is_equal_approx(director.scheduled_elite_times[0], 45.0)
-			and director.scheduled_elite_times.size() >= 10,
-		"The first in-run blessing must arrive at forty-five seconds and continue regularly."
+		director.scheduled_elite_times == [60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0, 480.0]
+			and director.scheduled_boss_times == [180.0, 360.0],
+		"Strong enemies must arrive each minute and stage bosses at three-minute milestones."
 	)
 	_expect(
-		director.base_density_cap >= 40
-			and director.maximum_density_cap >= 140
-			and director.base_spawn_batch >= 8
-			and director.maximum_spawn_batch >= 16
-			and director.final_rush_density_bonus >= 40
-			and director.base_spawn_interval <= 0.40
-			and director.minimum_spawn_interval <= 0.10,
+		director.base_density_cap >= 48
+			and director.maximum_density_cap >= 170
+			and director.base_spawn_batch >= 10
+			and director.maximum_spawn_batch >= 20
+			and director.final_rush_density_bonus >= 50
+			and director.base_spawn_interval <= 0.35
+			and director.minimum_spawn_interval <= 0.08,
 		"Survival countdown must begin as a dense horde, refill rapidly, and spike during Final Rush."
 	)
 	_expect(
@@ -84,6 +83,10 @@ func _run() -> void:
 		director.has_method("get_current_normal_health_multiplier"),
 		"Survival director must expose one authoritative normal-enemy health curve."
 	)
+	_expect(
+		director.has_method("get_current_enemy_damage_multiplier"),
+		"Survival director must expose one time-driven enemy damage curve."
+	)
 	if director.has_method("get_current_normal_health_multiplier"):
 		director.set("_survival_elapsed", 0.0)
 		var opening_health_scale := float(director.call("get_current_normal_health_multiplier"))
@@ -92,10 +95,10 @@ func _run() -> void:
 		director.set("_survival_elapsed", director.survival_duration)
 		var ending_health_scale := float(director.call("get_current_normal_health_multiplier"))
 		_expect(
-			is_equal_approx(opening_health_scale, 8.0)
-				and middle_health_scale >= 14.0
-				and ending_health_scale >= 20.0,
-			"Normal enemies must open at 8x health and grow smoothly to 20x so first-minute Combo cannot erase every role at the screen edge."
+			is_equal_approx(opening_health_scale, 10.0)
+				and middle_health_scale >= 18.0
+				and ending_health_scale >= 26.0,
+			"Normal enemies must open at 10x health and grow smoothly to 26x across the compressed timeline."
 		)
 	_expect(
 		director.normal_enemy_unlocks.size() >= 6

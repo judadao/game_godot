@@ -40,12 +40,12 @@ func _run() -> void:
 	meta.set("inventory_state", {"owned_equipment": ["iron_sword"], "equipment_levels": {"iron_sword": 2}})
 	meta.set("town_state", {"building_levels": {"blacksmith": 2}})
 
-	var summary := run.call("finish_run", false) as Dictionary
+	var summary := run.call("finish_run", false, &"death") as Dictionary
 	meta.call("apply_run_summary", summary)
-	_expect(int(summary.get("gold", 0)) == 120, "Death must retain every collected gold bag.")
+	_expect(int(summary.get("gold", 0)) == 78, "Death must retain 65 percent of collected gold bags.")
 	_expect(
-		(summary.get("materials", {}) as Dictionary) == {"autumn_wood": 8, "magic_shard": 3},
-		"Death must retain every collected material bag without a penalty."
+		(summary.get("materials", {}) as Dictionary) == {"autumn_wood": 5, "magic_shard": 2},
+		"Death must retain 65 percent of collected material bags."
 	)
 	_expect(
 		is_zero_approx(float(summary.get("completion_bonus_rate", -1.0))),
@@ -55,8 +55,8 @@ func _run() -> void:
 	_expect((run.get("temporary_cards") as Array).is_empty(), "Finishing a run must clear temporary cards.")
 	_expect(int(run.get("combo_count")) == 0, "Finishing a run must clear combo progress.")
 	_expect((run.get("temporary_buffs") as Dictionary).is_empty(), "Finishing a run must clear temporary buffs.")
-	_expect(int((meta.get("resources") as Dictionary).get("gold", 0)) == 170, "Death must retain earned gold.")
-	_expect(int((meta.get("resources") as Dictionary).get("autumn_wood", 0)) == 8, "Death must retain building materials.")
+	_expect(int((meta.get("resources") as Dictionary).get("gold", 0)) == 128, "Death must apply the 35 percent loss once.")
+	_expect(int((meta.get("resources") as Dictionary).get("autumn_wood", 0)) == 5, "Death must apply the material penalty once.")
 	_expect(int(meta.get("village_level")) == 2, "Death must retain Town progression.")
 	_expect((meta.get("equipment") as Dictionary).get("weapon") == "iron_sword", "Death must retain equipment.")
 	_expect(bool((meta.get("shortcuts") as Dictionary).get("forest_gate", false)), "Death must retain shortcuts.")
@@ -74,6 +74,27 @@ func _run() -> void:
 	_expect(
 		is_equal_approx(float(victory_summary.get("completion_bonus_rate", 0.0)), 0.15),
 		"Victory summaries must expose the 15 percent clear bonus contract."
+	)
+
+	var retreat_run: RefCounted = run_script.new()
+	retreat_run.call("begin_run")
+	retreat_run.call("add_reward", "gold", 101)
+	retreat_run.call("add_reward", "stone", 7)
+	var retreat_summary := retreat_run.call("finish_run", false, &"safe_retreat") as Dictionary
+	_expect(
+		int(retreat_summary.get("gold", 0)) == 101
+			and (retreat_summary.get("materials", {}) as Dictionary) == {"stone": 7},
+		"A physical extraction portal must retain the full collected haul."
+	)
+	var abandon_run: RefCounted = run_script.new()
+	abandon_run.call("begin_run")
+	abandon_run.call("add_reward", "gold", 101)
+	abandon_run.call("add_reward", "stone", 7)
+	var abandon_summary := abandon_run.call("finish_run", false, &"abandon") as Dictionary
+	_expect(
+		int(abandon_summary.get("gold", -1)) == 0
+			and (abandon_summary.get("materials", {}) as Dictionary).is_empty(),
+		"Exit Combat must discard every reward collected during the current run."
 	)
 
 	_expect(bool(save.call("save_meta", TEST_SAVE_PATH, meta.call("to_dict"))), "Meta save must succeed.")

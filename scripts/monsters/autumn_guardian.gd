@@ -24,6 +24,35 @@ func _ready() -> void:
 	super._ready()
 
 
+func configure_survival_variant(variant_id: StringName) -> bool:
+	var profile := _build_guardian_archetype()
+	match variant_id:
+		&"thorn_colossus":
+			profile.display_name = "Thorn Colossus"
+			profile.max_health = 760
+			profile.attack_damage = 29
+			profile.defense = 9
+			profile.speed = 54.0
+			profile.visual_color = Color(0.28, 0.48, 0.16, 1.0)
+			profile.visual_scale = Vector2(1.95, 1.9)
+		&"ember_warden":
+			profile.display_name = "Ember Warden"
+			profile.max_health = 640
+			profile.attack_damage = 34
+			profile.defense = 4
+			profile.speed = 88.0
+			profile.attack_cooldown = 1.05
+			profile.visual_color = Color(0.92, 0.24, 0.06, 1.0)
+			profile.visual_scale = Vector2(1.62, 1.62)
+		&"heartwood_harbinger":
+			profile.display_name = "Heartwood Harbinger"
+		_:
+			return false
+	apply_archetype(profile)
+	set_meta("boss_variant_id", String(variant_id))
+	return true
+
+
 func get_phase_patterns(requested_phase: int) -> Array:
 	return (PHASE_PATTERNS.get(clampi(requested_phase, 1, 3), []) as Array).duplicate()
 

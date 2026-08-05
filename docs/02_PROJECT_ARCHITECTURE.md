@@ -662,10 +662,10 @@ service；修改 mappings或處理順序時須用實際 run驗證。
 - 程序平台段與 flat breathing-room chunk 必須交錯；Player 按 ↓ 時只可穿越
   `one_way_collision` 平台，不得穿越 continuous floor。
 - director runtime-spawn enemy/guardian/experience gem。
-- `SurvivalWaveDirector` 是 600 秒倒數、開場 24 隻、`40→140` 連續 density curve、
-  `8→16` spawn batch、定時 Elite／Boss 與 Final Rush 的唯一 authority；普通怪死亡會
-  立即排入補怪，普通怪 HP 倍率沿 timeline 由 `8.0→20.0`，只有 00:00 completion
-  Guardian 可完成 Run。
+- `SurvivalWaveDirector` 是 510 秒倒數、開場 30 隻、`48→170` 連續 density curve、
+  `10→20` spawn batch、每分鐘強敵群、180／360 秒複數 Boss 與最後 30 秒 Final Rush
+  的唯一 authority；普通怪死亡會立即排入補怪，普通怪 HP 倍率沿 timeline 由
+  `10.0→26.0`、傷害由 `1.15→2.20`，00:00 直接完成並解鎖出口。
 - 同一 director 擲骰並生成實體 reward bag：normal／elite／boss 都有各自 money 與
   material chance，material bag 數量為 1／2／3。material payload 由死亡 enemy archetype 映射，
   收集後只以 `reward_bag_collected` 將明確 resource dictionary 交給 `Game`。

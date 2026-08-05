@@ -744,8 +744,9 @@ Current `PauseMenu`：
 - nested screen 開關後 focus 回到合理 owner。
 - Save/Load feedback顯示在 footer，但不得假裝 save 成功。
 - Exit Combat 永遠保留在 ButtonStack；只有 active Run 且位於正式戰鬥地圖時
-  可操作，其他地圖使用真正的 `disabled` 狀態反灰。觸發後由 Game 以撤退結算
-  本輪並直接載入 Town，PauseMenu 不直接存取 RunState。
+  可操作，其他地圖使用真正的 `disabled` 狀態反灰。tooltip 必須說明這是放棄戰鬥、
+  本局掉落全部失去；觸發後由 Game 以 `abandon` 結算並直接載入 Town，PauseMenu
+  不直接存取 RunState。走到地圖實體出口才是保留全部掉落的 `safe_retreat`。
 - `DEV 地圖` 只在集中式 dev mode 啟用時顯示。子頁接收 Game 注入的正式 route、
   world variant 與 Boss 房清單，選擇後只 emit `dev_map_requested(scene_path)`；
   Game 捨棄目前測試 Run、不結算攻略進度，再建立必要的測試 Run 與載入 map。

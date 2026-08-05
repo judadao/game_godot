@@ -40,6 +40,7 @@ func _ready() -> void:
 	save_button.pressed.connect(save_requested.emit)
 	load_button.pressed.connect(load_requested.emit)
 	exit_combat_button.pressed.connect(exit_combat_requested.emit)
+	exit_combat_button.tooltip_text = "Abandon this battle and lose every reward collected in this run."
 	dev_maps_button.pressed.connect(_open_dev_maps)
 	settings_button.pressed.connect(_open_settings)
 	settings_back.pressed.connect(_close_settings)

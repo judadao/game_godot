@@ -57,7 +57,7 @@ const CARD_TEMPO_POWER_CARD_DRAIN := 4
 const COMBAT_CAMERA_SAFE_OFFSET_Y := 90.0
 const MAX_COMBO_ABILITIES := 8
 const MAX_COMBO_LEVEL := 3
-const BASE_COMBO_STACK_CAP := 5
+const BASE_COMBO_STACK_CAP := 10
 const MAX_COMBO_STACK_CAP := 10
 const COMBO_CHAIN_OPENING_DURATION := 2.0
 const COMBO_CHAIN_PRESSURE_DURATION := 1.3
@@ -68,6 +68,14 @@ const MAX_COMBO_EFFECT_DURATION := 2.0
 const MAX_COMBO_DURATION := 2.5
 const DEFAULT_AUTO_ATTACK_CARD_ID := "ember_bolt"
 const DEFAULT_AUTO_ATTACK_INTERVAL := 1.0
+const SURVIVAL_CHEST_EQUIPMENT: Array[StringName] = [
+	&"hunter_bow", &"apprentice_staff", &"chain_armor", &"mage_robe",
+	&"swift_ring", &"focus_amulet",
+]
+const SURVIVAL_CHEST_BLUEPRINTS: Array[StringName] = [
+	&"flame_imbue_blueprint", &"frostburst_imbue_blueprint",
+	&"storm_charge_blueprint", &"venom_edge_blueprint",
+]
 const JOURNAL_ICON_ROOT := "res://assets/ui/fantasy_icons_16x16/png/Separately/"
 const JOURNAL_EQUIPMENT_ICON_ROOT := "res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/"
 const JOURNAL_ITEM_ICONS := {
@@ -876,7 +884,7 @@ func _on_pause_exit_combat_requested(pause_ui: Control) -> void:
 	if not _can_exit_active_combat():
 		return
 	close_ui(pause_ui)
-	_finish_run(false)
+	_finish_run(false, RunState.OUTCOME_ABANDON)
 	_pending_player_state.clear()
 	player = null
 	load_current_map(
@@ -893,7 +901,7 @@ func _on_dev_map_requested(scene_path: String, pause_ui: Control) -> void:
 		return
 	close_ui(pause_ui)
 	if run_state.active:
-		run_state.finish_run(false)
+		run_state.finish_run(false, RunState.OUTCOME_ABANDON)
 		growth_choice_queue.clear()
 		skill_recipe_manager.reset_runtime()
 		_auto_attack_remaining = 0.0
@@ -1011,7 +1019,7 @@ func _on_survival_time_changed(
 ) -> void:
 	if hud != null and hud.has_method("set_objective"):
 		var objective := (
-			"DEFEAT THE HEARTWOOD GUARDIAN"
+			"SURVIVED — REACH THE EXIT PORTAL"
 			if remaining <= 0.0
 			else ("FINAL RUSH — SURVIVE" if final_rush else "SURVIVE UNTIL DAWN")
 		)
@@ -1054,20 +1062,24 @@ func _on_reward_bag_collected(_kind: StringName, reward: Dictionary) -> void:
 func _on_boss_stage_completed() -> void:
 	if not run_state.active:
 		return
+	_tracked_survival_boss = null
+	if card_hand_ui != null and card_hand_ui.has_method("hide_boss_health"):
+		card_hand_ui.call("hide_boss_health")
 	run_state.boss_defeated = true
 	meta_state.boss_defeated = true
 	meta_state.dash_upgrade_unlocked = true
 	inventory_manager.call("set_progression_unlocks", {"dash_upgrade_unlocked": true})
 	var tier := maxi(1, run_state.expedition_power_tier)
-	run_state.add_reward("autumn_wood", 12 * tier)
-	run_state.add_reward("stone", 8 * tier)
-	run_state.add_reward("magic_shard", 7 * tier)
-	run_state.add_reward("autumn_core", tier)
+	run_state.add_reward("gold", 240 * tier)
+	run_state.add_reward("autumn_wood", 30 * tier)
+	run_state.add_reward("stone", 24 * tier)
+	run_state.add_reward("magic_shard", 18 * tier)
+	run_state.add_reward("autumn_core", 3 * tier)
+	run_state.temporary_buffs["completion_chest_reward"] = _select_survival_chest_reward()
 	meta_state.shortcuts["expedition_power_tier"] = maxi(
 		int(meta_state.shortcuts.get("expedition_power_tier", 1)),
 		tier
 	)
-	_discover_equipment_reward()
 	if current_map != null:
 		for portal_name in ["EastSafePortal", "EastReturnPortal", "ExitPortal"]:
 			var exit_portal := current_map.get_node_or_null(portal_name)
@@ -1441,11 +1453,8 @@ func _wire_boss_hud() -> void:
 	var archetype: Variant = selected_boss.get("archetype")
 	if archetype is Resource:
 		maximum = int(archetype.get("max_health"))
-	var name_text := (
-		"HEARTWOOD GUARDIAN"
-		if bool(selected_boss.get_meta("completion_boss", false))
-		else "HEARTWOOD HARBINGER"
-	)
+	var name_text := String(selected_boss.get_meta("boss_variant_id", "heartwood_harbinger"))
+	name_text = name_text.replace("_", " ").to_upper()
 	card_hand_ui.call(
 		"set_boss_health",
 		name_text,
@@ -1461,11 +1470,8 @@ func _on_survival_boss_health_changed(
 ) -> void:
 	if boss != _tracked_survival_boss or card_hand_ui == null:
 		return
-	var name_text := (
-		"HEARTWOOD GUARDIAN"
-		if bool(boss.get_meta("completion_boss", false))
-		else "HEARTWOOD HARBINGER"
-	)
+	var name_text := String(boss.get_meta("boss_variant_id", "heartwood_harbinger"))
+	name_text = name_text.replace("_", " ").to_upper()
 	card_hand_ui.call("set_boss_health", name_text, current, maximum)
 
 
@@ -1507,7 +1513,7 @@ func _on_player_defeated() -> void:
 	if player == null or current_map == null:
 		return
 	player.call("set_input_enabled", false)
-	var summary := _finish_run(false)
+	var summary := _finish_run(false, RunState.OUTCOME_DEATH)
 	await get_tree().create_timer(0.8).timeout
 	_pending_player_state.clear()
 	player = null
@@ -1620,10 +1626,11 @@ func _get_card_copy_count(card_id: String) -> int:
 	return int(card_collection_service.call("get_copy_count", card_id))
 
 
-func _finish_run(victory: bool) -> Dictionary:
+func _finish_run(victory: bool, outcome: StringName = &"") -> Dictionary:
 	if not run_state.active:
 		return {}
-	var summary := run_state.finish_run(victory)
+	var summary := run_state.finish_run(victory, outcome)
+	victory = bool(summary.get("victory", false))
 	_auto_attack_remaining = 0.0
 	_refresh_combo_runtime_modifiers()
 	_update_player_input_state()
@@ -1657,11 +1664,45 @@ func _finish_run(victory: bool) -> Dictionary:
 				StringName(resource_id),
 				maxi(0, int(materials[resource_id]))
 			)
+	_apply_completion_chest_reward(summary.get("chest_reward", {}) as Dictionary)
 	_sync_progression_to_meta()
 	save_service.save_meta(_meta_save_path(), meta_state.to_dict())
 	if hud != null and hud.has_method("set_currency"):
 		hud.call("set_currency", wallet_gold)
 	return summary
+
+
+func _select_survival_chest_reward() -> Dictionary:
+	var available_blueprints: Array[StringName] = []
+	for blueprint_id in SURVIVAL_CHEST_BLUEPRINTS:
+		if not bool(inventory_manager.call("owns_blueprint", blueprint_id)):
+			available_blueprints.append(blueprint_id)
+	if run_state.defeated_enemies % 2 == 0 and not available_blueprints.is_empty():
+		var blueprint_index := run_state.defeated_enemies % available_blueprints.size()
+		return {
+			"kind": "sword_soul_blueprint",
+			"item_id": String(available_blueprints[blueprint_index]),
+		}
+	var equipment_index := run_state.defeated_enemies % SURVIVAL_CHEST_EQUIPMENT.size()
+	return {
+		"kind": "equipment",
+		"item_id": String(SURVIVAL_CHEST_EQUIPMENT[equipment_index]),
+	}
+
+
+func _apply_completion_chest_reward(reward: Dictionary) -> bool:
+	var item_id := StringName(reward.get("item_id", ""))
+	if item_id.is_empty():
+		return false
+	match StringName(reward.get("kind", "")):
+		&"sword_soul_blueprint":
+			return bool(inventory_manager.call("grant_blueprint", item_id))
+		&"equipment":
+			if bool(inventory_manager.call("has_equipment", item_id)):
+				inventory_manager.call("add_resource", &"gold", 120)
+				return true
+			return bool(inventory_manager.call("add_equipment", item_id))
+	return false
 
 
 func _on_card_selected(index: int) -> void:
@@ -5866,7 +5907,10 @@ func _on_portal_entered(_portal: Node, target_scene_path: String, target_spawn_n
 		return
 	elif canonical_target == BATTLE_PORTAL_HUB_SCENE_PATH and run_state.active:
 		var victory := run_state.boss_defeated
-		var summary := _finish_run(victory)
+		var summary := _finish_run(
+			victory,
+			RunState.OUTCOME_VICTORY if victory else RunState.OUTCOME_SAFE_RETREAT
+		)
 		_pending_player_state.clear()
 		player = null
 		load_current_map(load(resolved_target) as PackedScene, target_spawn_name)
@@ -5874,14 +5918,17 @@ func _on_portal_entered(_portal: Node, target_scene_path: String, target_spawn_n
 		return
 	elif canonical_target == AUTUMN_SAFE_ZONE_SCENE_PATH and run_state.active:
 		var victory := run_state.boss_defeated
-		var summary := _finish_run(victory)
+		var summary := _finish_run(
+			victory,
+			RunState.OUTCOME_VICTORY if victory else RunState.OUTCOME_SAFE_RETREAT
+		)
 		_pending_player_state.clear()
 		player = null
 		load_current_map(load(resolved_target) as PackedScene, target_spawn_name)
 		_show_run_result(victory, summary)
 		return
 	elif canonical_target == TOWN_SCENE_PATH and run_state.active:
-		_finish_run(false)
+		_finish_run(false, RunState.OUTCOME_SAFE_RETREAT)
 		_pending_player_state.clear()
 		player = null
 	elif run_state.active and run_state.boss_defeated:

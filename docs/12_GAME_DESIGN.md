@@ -229,25 +229,25 @@ route bounds 的位置生成。距離玩家超過 1200px 的一般怪會回收�
 
 ### 5.1 生存倒數
 
-`SurvivalWaveDirector` 使用單一 600 秒倒數，不再公開或依賴 survival phase。
-開場先生成 24 隻普通敵人；alive cap 由 40 連續提高到 140，spawn batch 由 8 提高到 16，
-spawn interval 由 0.40 秒連續縮短到 0.09 秒。普通怪死亡時會在 0.05 秒內排入補怪，Enemy role 依經過時間逐步加入
+`SurvivalWaveDirector` 使用單一 510 秒（8:30）倒數，不再公開或依賴 survival phase。
+開場先生成 30 隻普通敵人；alive cap 由 48 連續提高到 170，spawn batch 由 10 提高到 20，
+spawn interval 由 0.35 秒連續縮短到 0.08 秒。普通怪死亡時會在 0.05 秒內排入補怪，Enemy role 依經過時間逐步加入
 pool，但 HUD 只投影剩餘時間、威脅數與 Final Rush，不顯示隱藏的 unlock threshold。
-普通怪的基礎生命倍率在開場為 8.0，依同一條生存時間軸平滑提高，於 10:00 達到
-20.0；Moth 仍是相對脆弱怪，其餘角色即使面對前段 Combo／暴擊也有機會進入
+普通怪的基礎生命倍率在開場為 10.0，依同一條生存時間軸平滑提高，於 8:30 達到
+26.0；傷害倍率同時由 1.15 提高到 2.20。Moth 仍是相對脆弱怪，其餘角色即使面對前段 Combo／暴擊也有機會進入
 畫面中段，並以連續命中與擊退形成交戰。
 
 | 經過時間 | 排程事件 |
 |---:|---|
-| 45 秒起、每 45 秒至 495 秒 | 各生成一隻 Crimson Grove Elite；擊殺後可升級或融合神賜 |
-| 300、480 秒 | 生成一隻不負責結算的 Heartwood Harbinger |
-| 剩餘 60 秒 | 進入 Final Rush，立即追加 Elite 與 Harbinger |
-| Final Rush | 每 15 秒追加 Elite；每 30 秒追加 Harbinger |
-| 00:00 | 停止一般排程並生成唯一 completion Guardian |
+| 每 60 秒（60–480 秒） | 生成輪替的 Thornling／Charger／Shaman 強敵群；群數隨時間增加 |
+| 180、360 秒 | 生成輪替的 Harbinger／Thorn Colossus／Ember Warden；後段為複數 |
+| 剩餘 30 秒 | HUD 倒數轉紅並立即追加複數強敵與 Boss |
+| Final Rush | 每 7.5 秒追加強敵群；每 15 秒追加複數 Boss |
+| 00:00 | 立即停止排程、解鎖出口並發放待結算的大量資源與寶箱 |
 
-Final Rush 額外增加 40 alive cap、縮短普通 spawn interval 並提高 batch。
-中途 Boss 與 Final Rush Boss 死亡不會提前結算；只有帶
-`completion_boss` metadata 的 00:00 Guardian 死亡會完成關卡。
+Final Rush 額外增加 50 alive cap、縮短普通 spawn interval 並提高 batch。
+中途 Boss 與 Final Rush Boss 死亡不會提前結算；玩家只要撐到 00:00 即完成關卡，
+不再追加一隻倒數外的 completion Guardian。
 
 ### 5.2 敵人行為
 
@@ -427,8 +427,8 @@ Basic Attack 不反覆顯示名稱；只有實際造成傷害且沒有施法演�
 ### 7.1 Combo cards
 
 `combo` 與 catalog 收錄的 `healing` 都可作為終結技公式材料。每個劍魂的 Combo
-基礎上限為 5 層；裝備與神賜可提高有效上限，但任何來源相加後都不得超過 10 層。
-專注護符提供 +5 上限，因此可將單一劍魂由 5 層提高至 10 層。傷害 chain、限時效果、
+基礎上限與全域硬上限皆為 10 層；舊裝備與神賜的 cap bonus 保留相容資料，但不得再
+把有效上限提高到 10 以上。傷害 chain、限時效果、
 永久公式 stack、卡面層數與 HUD 提示皆讀取同一有效上限。Combo 每次使用會永久增加公式用 stack，但該卡提供的 attack
 infusion／status 各自維持 1.5 秒，且彼此獨立倒數。某一效果到期時
 只移除自己的修正並立即以剩餘效果重建攻擊 profile；例如 Giant Arc 到期後尺寸
@@ -869,9 +869,10 @@ Rest 每個 Run 只能成功使用一次，會把 health 與 mana 恢復到上�
 - run gold、materials；
 - defeated enemy／elite／boss flags。
 
-`finish_run()` 產生 summary 後重置 transient state。失敗 summary 原額保留已拾取
-gold／materials；勝利 summary 以 `completion_bonus_rate = 0.15` 加成後回傳，同時保留
-`base_gold`／`base_materials` 供結算 UI 說明來源。
+`finish_run()` 產生 summary 後重置 transient state，並由 `outcome` 明確區分四種結算：
+走到實體出口為 `safe_retreat`、全額保留；死亡為 `death`、保留 65%；Pause 的
+Exit Combat 為 `abandon`、本局掉落全失；00:00 完成為 `victory`、全額加 15% 並兌現
+待結算寶箱。summary 保留 `base_gold`／`base_materials` 供結算 UI 說明來源。
 
 ### 11.2 MetaState
 

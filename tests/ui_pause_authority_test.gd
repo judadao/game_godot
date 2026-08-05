@@ -106,8 +106,8 @@ func _run() -> void:
 	)
 	_expect(
 		int((game.get("meta_state") as MetaState).resources.get("gold", 0))
-			== permanent_gold_before + 7,
-		"Exiting combat must retain permanent rewards earned before retreat."
+			== permanent_gold_before,
+		"Exit Combat must abandon every reward collected during the current run."
 	)
 	_expect(
 		game.get("current_map").scene_file_path

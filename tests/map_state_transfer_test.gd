@@ -51,8 +51,18 @@ func _run() -> void:
 	run.materials_earned = {"autumn_wood": 4}
 	game.call("_finish_run", false)
 	_expect(not run.active and run.level == 1, "Finishing a failed run must reset transient state.")
-	_expect(int(meta.resources.get("gold", 0)) == gold_before + 35, "Failed-run gold must transfer to permanent state.")
-	_expect(int(meta.resources.get("autumn_wood", 0)) == wood_before + 4, "Failed-run materials must transfer to permanent state.")
+	_expect(int(meta.resources.get("gold", 0)) == gold_before + 23, "Death must retain 65 percent of run gold.")
+	_expect(int(meta.resources.get("autumn_wood", 0)) == wood_before + 3, "Death must retain 65 percent of run materials.")
+
+	game.call("_begin_autumn_run")
+	run.gold_earned = 35
+	run.materials_earned = {"autumn_wood": 4}
+	game.call("_finish_run", false, RunState.OUTCOME_SAFE_RETREAT)
+	_expect(
+		int(meta.resources.get("gold", 0)) == gold_before + 58
+			and int(meta.resources.get("autumn_wood", 0)) == wood_before + 7,
+		"A physical extraction portal must retain the entire second-run haul."
+	)
 
 	game.queue_free()
 	await process_frame
