@@ -19,7 +19,7 @@ func _init() -> void:
 	_expect(
 		int(sprint_run.call("add_experience", 445)) == 5
 			and sprint_run.level == 6,
-		"The fast XP curve must supply the five level pages needed beside pre-eight-minute elite and boss rewards."
+		"The fast XP curve must supply five level pages inside the six-minute run."
 	)
 	quit(0 if _failures == 0 else 1)
 

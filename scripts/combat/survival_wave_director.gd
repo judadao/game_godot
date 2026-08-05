@@ -36,13 +36,13 @@ const MONSTER_MATERIALS := {
 	"guardian": "autumn_core",
 }
 
-@export_range(30.0, 1800.0, 1.0) var survival_duration := 510.0
+@export_range(30.0, 1800.0, 1.0) var survival_duration := 360.0
 @export_range(10.0, 120.0, 1.0) var final_rush_duration := 30.0
 @export var scheduled_elite_times: Array[float] = [
-	60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0, 480.0,
+	60.0, 120.0, 180.0, 240.0, 300.0,
 ]
 @export var scheduled_boss_times: Array[float] = [
-	90.0, 180.0, 300.0, 360.0, 420.0, 480.0,
+	60.0, 180.0, 300.0,
 ]
 @export_range(2.0, 60.0, 0.5) var final_rush_elite_interval := 7.5
 @export_range(5.0, 60.0, 0.5) var final_rush_boss_interval := 15.0
@@ -359,11 +359,15 @@ func _spawn_boss(completion_boss: bool) -> void:
 		boss.set_meta("boss_variant_id", String(variant_id))
 		if boss.has_method("configure_survival_variant"):
 			boss.call("configure_survival_variant", variant_id)
+		var is_minor_boss := _survival_elapsed <= 61.0 and _spawned_boss_count == 1
+		boss.set_meta("survival_boss_rank", "minor" if is_minor_boss else "major")
 		if boss.has_method("apply_survival_health_multiplier"):
 			boss.call(
 				"apply_survival_health_multiplier",
-				lerpf(1.0, 2.4, pow(_timeline_progress(), 0.8))
+				0.72 if is_minor_boss else lerpf(1.0, 2.4, pow(_timeline_progress(), 0.8))
 			)
+		if is_minor_boss and boss is Node2D:
+			(boss as Node2D).scale *= Vector2(0.86, 0.86)
 		_apply_survival_damage_scale(boss)
 		boss_spawned.emit(boss, completion_boss, _time_remaining)
 
@@ -391,11 +395,9 @@ func _strong_enemy_count_for_time(event_time: float) -> int:
 func _boss_count_for_time(event_time: float) -> int:
 	if event_time < 300.0:
 		return 1
-	if event_time < 420.0:
+	if event_time < 330.0:
 		return 2
-	if event_time < 480.0:
-		return 3
-	return 4
+	return 3
 
 
 func _final_rush_strong_count(rush_elapsed: float) -> int:

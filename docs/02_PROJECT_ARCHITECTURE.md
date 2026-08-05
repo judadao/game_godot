@@ -442,7 +442,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
 | `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | single countdown、90 秒十秒 super horde、Boss defeat 後 rapid-level horde、scheduled Elite/Boss、Final Rush、XP gem、money/material bags |
-| `EvolvedBackgroundAttack` | `scenes/combat/vfx/EvolvedBackgroundAttack.tscn` | 昇華神賜專屬背景自動攻擊；把兩個來源的 geometry motif 與 glow color 疊成 code-native presentation，特殊元素組合另保留 chain／nova／gale 動勢；傷害仍由 `Game` 與 `CardEffectRunner` 結算 |
+| `EvolvedBackgroundAttack` | `scenes/combat/vfx/EvolvedBackgroundAttack.tscn` | 昇華神賜專屬背景自動攻擊；把兩個來源的 geometry motif 與 glow color 疊成外光暈／能量本體／近白核心三層粗亮線條，並以三拍擴張聖環、八向光節點與十字裁決光建立神聖節奏；特殊元素組合另保留 chain／nova／gale 動勢；傷害仍由 `Game` 與 `CardEffectRunner` 結算 |
 | `EnemyBase` | `scripts/monsters/enemy_base.gd` | archetype、attack、damage、status、reset；大招致死立即結算玩法，再以 unscaled `impact_hold → dissolve → burst` 保留可讀消滅演出 |
 | `AutumnGuardian` | `scripts/monsters/autumn_guardian.gd` | boss phases/pattern profiles |
 | `AutumnSixArmColossusBoss` | `scripts/monsters/autumn_six_arm_colossus_boss.gd` | Autumn regional boss presentation, six-part armature, vertical jaw weak-point exposure; reuses the Guardian combat API |
@@ -683,8 +683,8 @@ service；修改 mappings或處理順序時須用實際 run驗證。
 - 程序平台段與 flat breathing-room chunk 必須交錯；Player 按 ↓ 時只可穿越
   `one_way_collision` 平台，不得穿越 continuous floor。
 - director runtime-spawn enemy/guardian/experience gem。
-- `SurvivalWaveDirector` 是 510 秒倒數、開場 30 隻、`48→170` 連續 density curve、
-  `10→20` spawn batch、每分鐘強敵群、90／180 秒單 Boss、300 秒後複數 Boss 與最後 30 秒 Final Rush
+- `SurvivalWaveDirector` 是 360 秒倒數、開場 30 隻、`48→170` 連續 density curve、
+  `10→20` spawn batch、每分鐘強敵群、60 秒小 Boss、180 秒第二 Boss、300 秒複數 Boss 與最後 30 秒 Final Rush
   的唯一 authority；普通怪死亡會立即排入補怪，普通怪 HP 倍率沿 timeline 由
   `10.0→26.0`、傷害由 `1.15→2.20`，00:00 直接完成並解鎖出口。
 - 經過 90 秒時另由同一 director 啟動約十秒 super horde：cap 最多追加 70、batch
@@ -1131,16 +1131,22 @@ Chain 使用依總 Combo 收緊的獨立接續視窗，不受卡片效果到期�
 頁不得出現融合；融合只屬於菁英／Boss loot source。
 
 每項 evolved gift 同時保存一個依兩項材料名稱與特徵組成的 `background_attack` profile。
-20 個 base Blessing 各自定義 `fusion_stem`、`fusion_motif` 與 `accent_color`；融合 profile
+8 個 base Blessing 各自定義唯一的 `fusion_stem`、`fusion_motif`、`accent_color` 與普攻狀態；第一批只開放
+10 個 authored fusion recipe，其中部分還要求已裝備指定觸媒。融合 profile
 固定保留兩個 `geometry_modules` 與兩個 `glow_colors`，特殊元素組合再選用 chain／nova／gale
 的移動方式。`Game` 為每個 profile 維持獨立 timer，以 0 AP、不中斷 Basic
 Attack cooldown 的方式呼叫 `CardEffectRunner`；建卡時先經
-`_apply_combo_infusions_to_card()`，因此目前劍魂的傷害、元素、狀態與投射數會繼承到背景攻擊。
+`_apply_combo_infusions_to_card()`，因此目前劍魂與全部持有神賜的傷害、元素、狀態與投射數會同時繼承到
+普通攻擊、傷害招式與背景攻擊。背景攻擊 runtime profile 再依 Combo、神賜數與總等級提高
+`size_scale`、`instance_count`、`rhythm_speed`、target count 與 damage scale，從單一小型幾何物件成長為多重陣列。
 
-Run 同時最多持有四項神賜。未滿四項時獎勵可出現新神賜或既有神賜升級；滿四項時
+Run 同時最多持有三項神賜。未滿三項時獎勵可出現新神賜或既有神賜升級；滿三項時
 只能出現目前持有且未滿級的升級選項，直到兩項滿級神賜融合並釋出空位。加入或升級
 任一神賜不得覆蓋其他 slot；效果與中文稱號前綴都依取得順序合併投影，HUD 必須顯示
-四個 slot，不能只顯示最後一項或前兩項。
+三個 slot，不能只顯示最後一項或前兩項。
+每個 base reward 同時投影所有 authored `fusion_hints`，包含搭配神賜、結果名稱、
+目前是否持有搭檔及裝備門檻。只要三選候選池存在能與持有神賜形成指定配方的項目，
+`get_reward_choices(3)` 就先保留至少一項這類融合路線，再補其他升級或新神賜。
 
 Dash Edge 與 Gale Drive 保留為 legacy catalog cards，但標記 `combat_hand = false`，
 不進 Deck Builder、預設背包或戰鬥獎勵；其 infusion 仍以

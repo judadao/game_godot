@@ -1169,11 +1169,21 @@ func _current_divine_stage_key() -> String:
 	return "%s:%d" % [map_path, event_number]
 
 
+func _sync_divine_fusion_equipment_context() -> void:
+	var equipped_ids: Array[String] = []
+	for slot in [&"weapon", &"armor", &"accessory"]:
+		var item_id := String(inventory_manager.call("get_equipped", slot))
+		if not item_id.is_empty():
+			equipped_ids.append(item_id)
+	divine_gift_manager.call("set_equipped_item_ids", equipped_ids)
+
+
 func _show_combat_blessing_choices(source: String) -> void:
 	if not run_state.active:
 		return
+	_sync_divine_fusion_equipment_context()
 	var upgrades := divine_gift_manager.call("get_upgrade_choices", 3) as Array
-	var fusions := divine_gift_manager.call("get_fusion_choices") as Array
+	var fusions := divine_gift_manager.call("get_fusion_choices", 3) as Array
 	if growth_choice_queue.call(
 		"enqueue_combat_blessing_reward",
 		source,
@@ -1372,6 +1382,7 @@ func _apply_growth_resolution_uncommitted(choice: Dictionary) -> bool:
 				_refresh_combo_display()
 			return applied
 		"divine_fusion":
+			_sync_divine_fusion_equipment_context()
 			var evolved := divine_gift_manager.call(
 				"fuse_max_level",
 				String(choice.get("left_gift_id", "")),
@@ -1878,7 +1889,7 @@ func _tick_evolved_background_attacks(delta: float) -> void:
 	for profile_variant in profiles:
 		if not profile_variant is Dictionary:
 			continue
-		var profile := profile_variant as Dictionary
+		var profile := _runtime_background_attack_profile(profile_variant as Dictionary)
 		var profile_id := String(profile.get("id", "")).strip_edges()
 		if profile_id.is_empty():
 			continue
@@ -1901,6 +1912,37 @@ func _tick_evolved_background_attacks(delta: float) -> void:
 	for profile_id_variant in _background_attack_remaining_by_id.keys():
 		if not active_ids.has(String(profile_id_variant)):
 			_background_attack_remaining_by_id.erase(profile_id_variant)
+
+
+func _runtime_background_attack_profile(profile: Dictionary) -> Dictionary:
+	var amplified := profile.duplicate(true)
+	var combo_chain := maxi(0, int(run_state.temporary_buffs.get("combo_chain_count", 0)))
+	var inventory := divine_gift_manager.call("get_inventory") as Array
+	var total_levels := 0
+	for gift_variant in inventory:
+		if gift_variant is Dictionary:
+			total_levels += maxi(1, int((gift_variant as Dictionary).get("level", 1)))
+	var support_count := inventory.size()
+	var growth_points := (
+		combo_chain
+		+ maxi(0, total_levels - support_count)
+		+ maxi(0, support_count - 1) * 2
+	)
+	var size_scale := clampf(0.72 + float(growth_points) * 0.13, 0.72, 4.2)
+	var instance_count := clampi(1 + floori(float(growth_points) / 3.0), 1, 12)
+	var rhythm_speed := clampf(1.0 + float(growth_points) * 0.09, 1.0, 3.5)
+	amplified["size_scale"] = size_scale
+	amplified["instance_count"] = instance_count
+	amplified["rhythm_speed"] = rhythm_speed
+	amplified["destruction_tier"] = clampi(floori(float(growth_points) / 5.0), 0, 4)
+	amplified["combo_chain"] = combo_chain
+	amplified["supporting_blessing_count"] = support_count
+	amplified["target_count"] = maxi(1, int(profile.get("target_count", 1)) + instance_count - 1)
+	amplified["damage_scale"] = float(profile.get("damage_scale", 1.0)) * (
+		1.0 + float(growth_points) * 0.08
+	)
+	amplified["interval"] = maxf(0.35, float(profile.get("interval", 3.0)) / rhythm_speed)
+	return amplified
 
 
 func _cast_evolved_background_attack(profile: Dictionary) -> bool:

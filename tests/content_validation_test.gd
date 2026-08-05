@@ -64,8 +64,8 @@ func _run() -> void:
 	var gifts := DivineGiftManager.new()
 	_expect(gifts.load_catalog(), "Divine Gift content must load.")
 	_expect(
-		gifts.get_reward_choices(20).size() == 20,
-		"The run must ship twenty distinct Run-local Divine Gifts."
+		gifts.get_reward_choices(20).size() == 8,
+		"The run must ship eight distinct Run-local Divine Gifts."
 	)
 
 	var inventory_script := load("res://scripts/systems/inventory_manager.gd")

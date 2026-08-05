@@ -4,8 +4,20 @@ extends RefCounted
 const DEFAULT_CATALOG_PATH := "res://data/divine_gifts.json"
 const MAX_LEVEL := 3
 const EVOLVED_MAX_LEVEL := 3
-const MAX_OWNED_GIFTS := 4
+const MAX_OWNED_GIFTS := 3
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
+const FUSION_RECIPES: Array[Dictionary] = [
+	{"id": "thunderflame_wheel", "left": "resonant_grace", "right": "prismatic_oath", "name": "雷焰天輪", "attack_suffix": "天輪脈衝", "pattern": "chain_barrage"},
+	{"id": "netherfrost_domain", "left": "echoing_will", "right": "eternal_memory", "name": "冥霜靜界", "attack_suffix": "靜界崩解", "pattern": "abyss_nova"},
+	{"id": "venomgale_funeral", "left": "boundless_font", "right": "celestial_momentum", "name": "毒風花葬", "attack_suffix": "花葬旋流", "pattern": "venom_gale"},
+	{"id": "radiant_tide_cloister", "left": "tidal_covenant", "right": "radiant_mercy", "name": "聖潮回廊", "attack_suffix": "回廊潮光", "pattern": "prismatic_orbit"},
+	{"id": "embernight_echo", "left": "resonant_grace", "right": "echoing_will", "name": "燼夜迴響", "attack_suffix": "燼夜返響", "pattern": "abyss_nova"},
+	{"id": "scarlet_plague_crown", "left": "resonant_grace", "right": "boundless_font", "name": "赤疫王冠", "attack_suffix": "疫冠焚輪", "pattern": "venom_gale", "required_equipment_id": "iron_sword", "required_equipment_name": "鐵劍"},
+	{"id": "skyfall_meridian", "left": "prismatic_oath", "right": "tidal_covenant", "name": "天瀑雷脈", "attack_suffix": "雷脈奔流", "pattern": "chain_barrage", "required_equipment_id": "apprentice_staff", "required_equipment_name": "學徒法杖"},
+	{"id": "firmament_tide_eye", "left": "celestial_momentum", "right": "tidal_covenant", "name": "蒼穹潮眼", "attack_suffix": "潮眼旋嵐", "pattern": "prismatic_orbit", "required_equipment_id": "hunter_bow", "required_equipment_name": "獵弓"},
+	{"id": "aurora_holy_lance", "left": "eternal_memory", "right": "radiant_mercy", "name": "極光聖槍", "attack_suffix": "聖槍晶陣", "pattern": "prismatic_orbit", "required_equipment_id": "focus_amulet", "required_equipment_name": "專注護符"},
+	{"id": "eclipsed_mercy", "left": "echoing_will", "right": "radiant_mercy", "name": "蝕光慈悲", "attack_suffix": "蝕光審判", "pattern": "abyss_nova", "required_equipment_id": "vitality_charm", "required_equipment_name": "活力護符"},
+]
 
 var _catalog: Dictionary = {}
 var _inventory: Dictionary = {}
@@ -15,6 +27,7 @@ var _primary_gift_id := ""
 var _ascended_base_ids: Dictionary = {}
 var _completed_fusions: Dictionary = {}
 var _element_taxonomy: RefCounted = ELEMENT_TAXONOMY_SCRIPT.new()
+var _equipped_item_ids: Dictionary = {}
 
 
 func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
@@ -67,6 +80,19 @@ func reset_run() -> void:
 	_primary_gift_id = ""
 	_ascended_base_ids.clear()
 	_completed_fusions.clear()
+	_equipped_item_ids.clear()
+
+
+func set_equipped_item_ids(item_ids: Array) -> void:
+	_equipped_item_ids.clear()
+	for item_id_variant in item_ids:
+		var item_id := String(item_id_variant).strip_edges()
+		if not item_id.is_empty():
+			_equipped_item_ids[item_id] = true
+
+
+func get_fusion_recipes() -> Array[Dictionary]:
+	return FUSION_RECIPES.duplicate(true)
 
 
 func has_gift(gift_id: String) -> bool:
@@ -122,6 +148,9 @@ func add_or_upgrade(gift_id: String) -> bool:
 		"finisher_mutations": (
 			definition.get("finisher_mutations", {}) as Dictionary
 		).duplicate(true),
+		"basic_attack_statuses": _basic_attack_statuses([
+			String(definition.get("element", "normal")),
+		]),
 		"level": 1,
 		"max_level": MAX_LEVEL,
 		"kind": "base",
@@ -150,6 +179,7 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 			if current_level > 0
 			else {}
 		)
+		var fusion_hints := _fusion_hints_for_gift(gift_id, current_level)
 		choices.append({
 			"gift_id": gift_id,
 			"name": String(definition.get("name", gift_id)),
@@ -164,6 +194,11 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 			"finisher_mutations": (
 				definition.get("finisher_mutations", {}) as Dictionary
 			).duplicate(true),
+			"basic_attack_statuses": _basic_attack_statuses([
+				String(definition.get("element", "normal")),
+			]),
+			"fusion_hints": fusion_hints,
+			"merge_with_owned": _has_owned_merge_partner(fusion_hints),
 			"level": current_level,
 			"next_level": current_level + 1,
 			"action": "divine_gift",
@@ -202,6 +237,11 @@ func get_reward_choices(maximum: int = 3) -> Array[Dictionary]:
 				evolved.get("background_attack", {}) as Dictionary,
 				evolved_level + 1
 			),
+			"basic_attack_statuses": _basic_attack_statuses(
+				evolved.get("elements", []) as Array
+			),
+			"fusion_hints": [],
+			"merge_with_owned": false,
 			"accent_color": String(evolved.get("accent_color", "#f05cff")),
 			"level": evolved_level,
 			"next_level": evolved_level + 1,
@@ -224,26 +264,36 @@ func get_upgrade_choices(maximum: int = 3) -> Array[Dictionary]:
 
 func _prioritize_reward_choices(choices: Array[Dictionary]) -> Array[Dictionary]:
 	var evolved_upgrades: Array[Dictionary] = []
+	var merge_progress: Array[Dictionary] = []
 	var owned_upgrades: Array[Dictionary] = []
+	var compatible_discoveries: Array[Dictionary] = []
 	var discoveries: Array[Dictionary] = []
 	for choice in choices:
 		if String(choice.get("kind", "base")) == "evolved":
 			evolved_upgrades.append(choice)
+		elif bool(choice.get("merge_with_owned", false)) and int(choice.get("level", 0)) > 0:
+			merge_progress.append(choice)
 		elif int(choice.get("level", 0)) > 0:
 			owned_upgrades.append(choice)
+		elif bool(choice.get("merge_with_owned", false)):
+			compatible_discoveries.append(choice)
 		else:
 			discoveries.append(choice)
 	evolved_upgrades.shuffle()
+	merge_progress.shuffle()
 	owned_upgrades.shuffle()
+	compatible_discoveries.shuffle()
 	discoveries.shuffle()
 	var result: Array[Dictionary] = []
+	result.append_array(merge_progress)
+	result.append_array(compatible_discoveries)
 	result.append_array(evolved_upgrades)
 	result.append_array(owned_upgrades)
 	result.append_array(discoveries)
 	return result
 
 
-func get_fusion_choices() -> Array[Dictionary]:
+func get_fusion_choices(maximum: int = 3) -> Array[Dictionary]:
 	var maximum_ids: Array[String] = []
 	for gift_id_variant in _inventory:
 		var gift := _inventory[gift_id_variant] as Dictionary
@@ -256,11 +306,18 @@ func get_fusion_choices() -> Array[Dictionary]:
 			var right_id := maximum_ids[right_index]
 			var left := _inventory[left_id] as Dictionary
 			var right := _inventory[right_id] as Dictionary
+			var recipe := _fusion_recipe(left_id, right_id)
+			if recipe.is_empty() or not _fusion_requirements_met(recipe):
+				continue
 			var identity := _evolved_identity(left, right)
+			var fusion_elements := _canonical_gift_elements(left, right)
 			choices.append({
 				"action": "divine_fusion",
 				"left_gift_id": left_id,
 				"right_gift_id": right_id,
+				"fusion_recipe_id": String(recipe.get("id", "")),
+				"required_equipment_id": String(recipe.get("required_equipment_id", "")),
+				"required_equipment_name": String(recipe.get("required_equipment_name", "")),
 				"name": String(identity["name"]),
 				"description": (
 					"融合「%s」與「%s」，保留兩者核心效果並獲得新的昇華能力。"
@@ -268,9 +325,13 @@ func get_fusion_choices() -> Array[Dictionary]:
 				),
 				"accent_color": String(identity["accent_color"]),
 				"background_attack": (identity["background_attack"] as Dictionary).duplicate(true),
+				"element": String(fusion_elements[0]) if not fusion_elements.is_empty() else "normal",
+				"elements": fusion_elements,
+				"basic_attack_statuses": _basic_attack_statuses(fusion_elements),
 				"kind": "evolved",
 			})
-	return choices
+	choices.shuffle()
+	return choices.slice(0, mini(maxi(0, maximum), choices.size()))
 
 
 func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
@@ -284,6 +345,9 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 		or int(left.get("level", 0)) < MAX_LEVEL
 		or int(right.get("level", 0)) < MAX_LEVEL
 	):
+		return {}
+	var recipe := _fusion_recipe(left_id, right_id)
+	if recipe.is_empty() or not _fusion_requirements_met(recipe):
 		return {}
 	var fusion_key := _fusion_key(left_id, right_id)
 	if _completed_fusions.has(fusion_key):
@@ -320,6 +384,7 @@ func fuse_max_level(left_id: String, right_id: String) -> Dictionary:
 		"prefix": _evolved_prefix(left, right),
 		"accent_color": String(identity["accent_color"]),
 		"background_attack": (identity["background_attack"] as Dictionary).duplicate(true),
+		"basic_attack_statuses": _basic_attack_statuses(evolved_elements),
 		"element": primary_element,
 		"elements": evolved_elements,
 		"finisher_mutations": _evolved_mutations(inherited_mutations, 1),
@@ -450,6 +515,11 @@ func _evolved_identity(left: Dictionary, right: Dictionary) -> Dictionary:
 			evolved_name = "枯天風暴"
 			pattern = "venom_gale"
 			attack_suffix = "蝕風迴廊"
+	var recipe := _fusion_recipe(String(left.get("id", "")), String(right.get("id", "")))
+	if not recipe.is_empty():
+		evolved_name = String(recipe.get("name", evolved_name))
+		pattern = String(recipe.get("pattern", pattern))
+		attack_suffix = String(recipe.get("attack_suffix", attack_suffix))
 	var left_color := Color.from_string(String(left.get("accent_color", "#f05cff")), Color.MAGENTA)
 	var right_color := Color.from_string(String(right.get("accent_color", "#f05cff")), Color.MAGENTA)
 	var accent := left_color.lerp(right_color, 0.5).lightened(0.12)
@@ -554,6 +624,39 @@ func get_global_effects() -> Dictionary:
 	return _merge_effects(effects)
 
 
+func get_basic_attack_status_profiles() -> Array[Dictionary]:
+	var profiles: Array[Dictionary] = []
+	var seen_elements: Dictionary = {}
+	for gift_id in _ordered_gift_ids():
+		var gift := _inventory[gift_id] as Dictionary
+		var elements := gift.get("elements", [gift.get("element", "normal")]) as Array
+		for profile in _basic_attack_statuses(elements):
+			var element := String(profile.get("element", "normal"))
+			if seen_elements.has(element):
+				continue
+			seen_elements[element] = true
+			profile["source_gift_id"] = gift_id
+			profile["source_gift_name"] = String(gift.get("name", gift_id))
+			profiles.append(profile)
+	return profiles
+
+
+func _basic_attack_statuses(elements: Array) -> Array[Dictionary]:
+	var profiles: Array[Dictionary] = []
+	var seen: Dictionary = {}
+	for element_variant in elements:
+		var element := String(
+			_element_taxonomy.call("normalize", String(element_variant), "normal")
+		)
+		if seen.has(element):
+			continue
+		seen[element] = true
+		profiles.append(
+			_element_taxonomy.call("get_effect_profile", element) as Dictionary
+		)
+	return profiles
+
+
 func set_primary_gift(gift_id: String) -> bool:
 	if not _inventory.has(gift_id):
 		return false
@@ -655,6 +758,81 @@ func _fusion_key(left_id: String, right_id: String) -> String:
 	var ids: Array[String] = [left_id, right_id]
 	ids.sort()
 	return "%s+%s" % ids
+
+
+func _fusion_recipe(left_id: String, right_id: String) -> Dictionary:
+	var requested := [left_id, right_id]
+	requested.sort()
+	for recipe in FUSION_RECIPES:
+		var authored := [String(recipe.get("left", "")), String(recipe.get("right", ""))]
+		authored.sort()
+		if authored == requested:
+			return recipe
+	return {}
+
+
+func _fusion_requirements_met(recipe: Dictionary) -> bool:
+	var equipment_id := String(recipe.get("required_equipment_id", "")).strip_edges()
+	return equipment_id.is_empty() or _equipped_item_ids.has(equipment_id)
+
+
+func _fusion_hints_for_gift(gift_id: String, current_level: int) -> Array[Dictionary]:
+	var hints: Array[Dictionary] = []
+	for recipe in FUSION_RECIPES:
+		var left_id := String(recipe.get("left", ""))
+		var right_id := String(recipe.get("right", ""))
+		if gift_id != left_id and gift_id != right_id:
+			continue
+		var partner_id := right_id if gift_id == left_id else left_id
+		var partner_definition := _catalog.get(partner_id, {}) as Dictionary
+		var partner := _inventory.get(partner_id, {}) as Dictionary
+		var partner_owned := (
+			not partner.is_empty()
+			and String(partner.get("kind", "base")) == "base"
+		)
+		var equipment_id := String(recipe.get("required_equipment_id", ""))
+		var equipment_ready := _fusion_requirements_met(recipe)
+		hints.append({
+			"fusion_recipe_id": String(recipe.get("id", "")),
+			"result_name": String(recipe.get("name", "神賜昇華")),
+			"partner_gift_id": partner_id,
+			"partner_name": String(partner_definition.get("name", partner_id)),
+			"partner_owned": partner_owned,
+			"partner_level": int(partner.get("level", 0)),
+			"required_equipment_id": equipment_id,
+			"required_equipment_name": String(recipe.get("required_equipment_name", "")),
+			"equipment_ready": equipment_ready,
+			"ready_after_selection": (
+				partner_owned
+				and int(partner.get("level", 0)) >= MAX_LEVEL
+				and current_level + 1 >= MAX_LEVEL
+				and equipment_ready
+			),
+		})
+	hints.sort_custom(_sort_fusion_hints)
+	return hints
+
+
+func _has_owned_merge_partner(hints: Array[Dictionary]) -> bool:
+	for hint in hints:
+		if bool(hint.get("partner_owned", false)):
+			return true
+	return false
+
+
+func _fusion_hint_priority(hint: Dictionary) -> int:
+	var priority := 0
+	if bool(hint.get("partner_owned", false)):
+		priority += 20
+	if bool(hint.get("equipment_ready", false)):
+		priority += 5
+	if bool(hint.get("ready_after_selection", false)):
+		priority += 100
+	return priority
+
+
+func _sort_fusion_hints(left: Dictionary, right: Dictionary) -> bool:
+	return _fusion_hint_priority(left) > _fusion_hint_priority(right)
 
 
 func _ordered_gift_ids() -> Array[String]:

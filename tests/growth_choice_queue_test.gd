@@ -77,13 +77,19 @@ func _initialize() -> void:
 	)
 	queue.clear()
 
-	var fusions: Array[Dictionary] = [{
-		"left_gift_id": "resonant_grace",
-		"right_gift_id": "boundless_font",
-		"name": "煉獄毒泉",
-		"description": "融合兩項滿級神賜。",
-	}]
-	var owned_upgrades: Array[Dictionary] = [blessing_rewards[1]]
+	var fusions: Array[Dictionary] = []
+	for index in 6:
+		fusions.append({
+			"left_gift_id": "left_%d" % index,
+			"right_gift_id": "right_%d" % index,
+			"name": "融合型態 %d" % index,
+			"description": "融合兩項滿級神賜。",
+		})
+	var owned_upgrades: Array[Dictionary] = [
+		blessing_rewards[1],
+		blessing_rewards[1].merged({"gift_id": "upgrade_two", "name": "升級二"}, true),
+		blessing_rewards[1].merged({"gift_id": "upgrade_three", "name": "升級三"}, true),
+	]
 	_expect(
 		queue.enqueue_combat_blessing_reward("elite", owned_upgrades, fusions),
 		"Elite loot must accept owned upgrades and Blessing merges."
@@ -95,6 +101,12 @@ func _initialize() -> void:
 				"divine_fusion": true,
 			},
 		"Elite loot must contain only owned upgrade and merge actions."
+	)
+	var elite_choices := queue.peek().get("choices", []) as Array
+	_expect(
+		elite_choices.size() == 5
+			and _action_count(queue.peek(), "divine_fusion") == 3,
+		"合法融合多於三種時，戰利品頁必須優先隨機保留三種，再用升級補滿五個選項。"
 	)
 	_expect(
 		queue.skip_optional_reward().is_empty(),
@@ -120,6 +132,14 @@ func _actions(page: Dictionary) -> Dictionary:
 	var result: Dictionary = {}
 	for choice_variant in page.get("choices", []) as Array:
 		result[String((choice_variant as Dictionary).get("action", ""))] = true
+	return result
+
+
+func _action_count(page: Dictionary, action: String) -> int:
+	var result := 0
+	for choice_variant in page.get("choices", []) as Array:
+		if String((choice_variant as Dictionary).get("action", "")) == action:
+			result += 1
 	return result
 
 

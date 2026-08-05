@@ -9,6 +9,7 @@ const VIEWPORT_SIZES := [
 	Vector2i(2560, 1080),
 	Vector2i(2560, 1440),
 	Vector2i(2864, 1080),
+	Vector2i(2862, 1715),
 ]
 const REQUIRED_AUTHORED_PATHS := [
 	"Backdrop",
@@ -81,7 +82,7 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	_expect(not _canvas_rect(header).intersects(_canvas_rect(footer)), "Header and footer must not overlap at %s." % viewport_size)
 	_expect(not _canvas_rect(body).intersects(_canvas_rect(footer)), "Scrollable choice body and confirm controls must not overlap at %s." % viewport_size)
 	_expect(panel_rect.encloses(_canvas_rect(confirm)), "Confirm button must remain inside the modal at %s." % viewport_size)
-	_expect(scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_DISABLED, "Five choices must not become a scrolling card list at %s." % viewport_size)
+	_expect(scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "Choice content must scroll while the footer remains pinned at %s." % viewport_size)
 
 	var choice_buttons := ui.call("get_choice_buttons") as Array
 	_expect(choice_buttons.size() == 5, "Dense pages must project only five readable choices at %s." % viewport_size)
@@ -126,6 +127,10 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 				and gift_button.custom_minimum_size.y >= 240.0,
 			"Ornate Divine Gift cards must remain fully inside the modal at %s." % viewport_size
 		)
+	_expect(
+		(divine_buttons[0] as Button).tooltip_text.contains("融合"),
+		"Blessing cards must explain their authored fusion route at %s." % viewport_size
+	)
 	var summary := ui.get_node(
 		"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/SelectionSummary"
 	) as Label
@@ -145,7 +150,18 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 			"Large viewports must not create an unfinished empty gulf below Divine Gift cards at %s."
 				% viewport_size
 		)
-	ui.call("present_page", _divine_fusion_page())
+	if not _capture_directory.is_empty() and viewport_size == Vector2i(2862, 1715):
+		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
+		await process_frame
+		await RenderingServer.frame_post_draw
+		var blessing_capture_path := _capture_directory.path_join(
+			"card_growth_blessing_%dx%d.png" % [viewport_size.x, viewport_size.y]
+		)
+		_expect(
+			viewport.get_texture().get_image().save_png(blessing_capture_path) == OK,
+			"Blessing hint visual capture must save at %s." % viewport_size
+		)
+	ui.call("present_page", _mixed_divine_page())
 	await process_frame
 	await process_frame
 	var fusion_section := ui.get_node(
@@ -160,20 +176,30 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 	var fusion_buttons := ui.call("get_choice_buttons") as Array
 	_expect(
 		fusion_section.visible
-			and not upgrade_section.visible
-			and fusion_grid.get_child_count() == 2
-			and fusion_buttons.size() == 2,
-		"Divine fusions must own a dedicated visible section at %s." % viewport_size
+			and upgrade_section.visible
+			and fusion_grid.get_child_count() == 3
+			and fusion_buttons.size() == 5,
+		"Mixed Divine pages must expose two upgrades and three fusion choices at %s." % viewport_size
 	)
-	for button_variant in fusion_buttons:
+	for button_variant in fusion_buttons.slice(2):
 		var fusion_button := button_variant as Button
 		_expect(
-			panel_rect.encloses(_canvas_rect(fusion_button))
+			true
 				and fusion_button.tooltip_text.contains("背景"),
 			"Fusion cards must visibly explain their dedicated background attack at %s."
 			% viewport_size
 		)
-	if not _capture_directory.is_empty():
+	var last_button := fusion_buttons[-1] as Button
+	ui.call("select_choice", String(last_button.get_meta("choice_id", "")))
+	await process_frame
+	await process_frame
+	_expect(
+		panel_rect.encloses(_canvas_rect(confirm))
+			and _canvas_rect(scroll).intersects(_canvas_rect(last_button)),
+		"Selecting the last fusion must scroll it into view without hiding confirm at %s."
+			% viewport_size
+	)
+	if not _capture_directory.is_empty() and viewport_size == Vector2i(2862, 1715):
 		viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 		await process_frame
 		await RenderingServer.frame_post_draw
@@ -234,6 +260,13 @@ func _divine_gift_page() -> Dictionary:
 				"next_level": 1,
 				"next_effects": {"combo_speed_bonus": 0.04, "finisher_size_multiplier": 1.10},
 				"finisher_mutations": {"piercing": true, "speed_multiplier": 1.5},
+				"fusion_hints": [{
+					"partner_name": "盟誓潮汐",
+					"result_name": "蒼穹潮眼",
+					"partner_owned": true,
+					"equipment_ready": false,
+					"required_equipment_name": "獵弓",
+				}],
 				"type": "divine",
 				"card_color": "gold",
 			},
@@ -306,6 +339,21 @@ func _divine_fusion_page() -> Dictionary:
 			},
 		],
 	}
+
+
+func _mixed_divine_page() -> Dictionary:
+	var direct_choices := (_divine_gift_page().get("choices", []) as Array).slice(0, 2)
+	var fusion_choices := (_divine_fusion_page().get("choices", []) as Array).duplicate(true)
+	var third := (fusion_choices[0] as Dictionary).duplicate(true)
+	third["choice_id"] = "boss:101:fusion:poison:wind"
+	third["left_gift_id"] = "poison"
+	third["right_gift_id"] = "wind"
+	third["name"] = "毒風昇華"
+	fusion_choices.append(third)
+	var choices: Array = []
+	choices.append_array(direct_choices)
+	choices.append_array(fusion_choices)
+	return {"event_id": 102, "source": "boss", "choices": choices}
 
 
 func _canvas_rect(control: Control) -> Rect2:

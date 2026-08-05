@@ -232,20 +232,21 @@ route bounds 的位置生成。距離玩家超過 1200px 的一般怪會回收�
 
 ### 5.1 生存倒數
 
-`SurvivalWaveDirector` 使用單一 510 秒（8:30）倒數，不再公開或依賴 survival phase。
+`SurvivalWaveDirector` 使用單一 360 秒（6:00）倒數，不再公開或依賴 survival phase。
 開場先生成 30 隻普通敵人；alive cap 由 48 連續提高到 170，spawn batch 由 10 提高到 20，
 spawn interval 由 0.35 秒連續縮短到 0.08 秒。普通怪死亡時會在 0.05 秒內排入補怪，Enemy role 依經過時間逐步加入
 pool，但 HUD 只投影剩餘時間、威脅數與 Final Rush，不顯示隱藏的 unlock threshold。
-普通怪的基礎生命倍率在開場為 10.0，依同一條生存時間軸平滑提高，於 8:30 達到
+普通怪的基礎生命倍率在開場為 10.0，依同一條生存時間軸平滑提高，於 6:00 達到
 26.0；傷害倍率同時由 1.15 提高到 2.20。Moth 仍是相對脆弱怪，其餘角色即使面對前段 Combo／暴擊也有機會進入
 畫面中段，並以連續命中與擊退形成交戰。
 
 | 經過時間 | 排程事件 |
 |---:|---|
-| 每 60 秒（60–480 秒） | 生成輪替的 Thornling／Charger／Shaman 強敵群；群數隨時間增加 |
-| 90 秒 | 第一隻 Boss，與十秒 super horde 同時登場 |
+| 每 60 秒（60–300 秒） | 生成輪替的 Thornling／Charger／Shaman 強敵群；群數隨時間增加 |
+| 60 秒 | 第一隻小 Boss；生命倍率 0.72、視覺比例 0.86，先建立明確戰場變化 |
+| 90 秒 | 十秒 super horde，與小 Boss 錯開 30 秒 |
 | 180 秒 | 第二隻單 Boss |
-| 300、360、420、480 秒 | 依序生成 2／2／3／4 隻輪替 Boss；480 秒再與 Final Rush 首波疊加為最大量 |
+| 300 秒 | 生成 2 隻輪替 Boss，開始複數 Boss 壓力 |
 | 剩餘 30 秒 | HUD 倒數轉紅並立即追加複數強敵與 Boss |
 | Final Rush | 每 7.5 秒追加強敵群；每 15 秒追加複數 Boss |
 | 00:00 | 立即停止排程、解鎖出口並發放待結算的大量資源與寶箱 |
@@ -486,19 +487,29 @@ mechanics，因此所有不同神賜欄位直接相加、倍率直接相乘，
 並使用元素組合專屬名稱與 accent color。融合材料 ascended 後不再進獎勵池，
 同一融合不能反覆發生；一般 EXP 頁永遠不提供融合。
 
-每項 evolved gift 另有依兩項材料名稱與特徵組成的專屬背景自動攻擊。20 項 base Blessing
-各自提供 fusion stem、geometry motif 與 glow color；融合後兩套幾何會交錯共存，而不是
+每項 evolved gift 另有依兩項材料名稱與特徵組成的專屬背景自動攻擊。若同時存在超過
+三種合法融合型態，每次菁英／Boss 頁只隨機顯示三種供玩家選擇，再以既有升級補至五選。
+8 項 base Blessing
+各自提供 fusion stem、geometry motif 與 glow color；融合後兩套幾何以寬光暈、飽和能量條
+與近白核心三層交錯共存，並依「蓄光／共鳴／裁決」三拍擴張聖環、八向節點與十字光芒，而不是
 只抽取數值屬性。火雷、暗冰、毒風仍各有連鎖、脈動、掃蕩動勢。各 profile
 獨立計時、0 AP、不占手牌且不重設 Basic Attack cooldown；結算前會套用目前劍魂的
-傷害、元素附魔、狀態與投射數效果。Boss／Elite 融合頁必須先預覽攻擊名、頻率與目標數。
+傷害、元素附魔、狀態與投射數效果。第一批只有 10 個指定進階融合型態，其中 5 個另需裝備觸媒；
+未列入配方的任意組合不能融合。Boss／Elite 融合頁必須先預覽攻擊名、頻率、目標數與已裝備觸媒。
 
-神賜 inventory 固定四格。未滿四格時可選新神賜或升級已持有神賜；20 項 catalog 的
-每頁候選優先保證 evolved upgrade，再排已持有 base upgrade，最後才補未發現神賜。滿四格後獎勵池
-只保留四格內尚未滿級的升級，不能以新神賜覆蓋舊神賜。融合消耗兩項滿級神賜並生成
-一項昇華神賜，因此會釋出一格。四格內所有 mechanics 與中文稱號前綴持續疊加；
+新融合的背景攻擊從 `size_scale 0.72`、單一幾何 instance 開始。Combo Chain、另外兩格神賜與所有
+神賜等級會共同提高尺寸、同屏 instance、三拍速度、target count 與 damage scale；高成長時形成多重
+交錯陣列。8 種神賜狀態同時套用到普通攻擊、所有傷害招式與背景攻擊，治療／純輔助招式不觸發。
+
+神賜 inventory 固定三格。未滿三格時可選新神賜或升級已持有神賜；8 項 catalog 的
+每張 base 候選都提示 authored 融合搭檔、結果與裝備門檻；只要候選池中存在能與持有神賜
+形成指定配方的選項，三選一就優先保留至少一張。其餘順位再補 evolved upgrade、已持有 base
+upgrade 與未發現神賜。滿三格後獎勵池
+只保留三格內尚未滿級的升級，不能以新神賜覆蓋舊神賜。融合消耗兩項滿級神賜並生成
+一項昇華神賜，因此會釋出一格。三格內所有 mechanics 與中文稱號前綴持續疊加；
 「主神賜」只標示最近取得者，不取消較早神賜。基礎與昇華神賜名稱、說明皆使用繁中。
-20 項 base Blessing 中，快節奏玩家選定的六項可在八分鐘前完成三次融合；此時間目標不要求
-三項 evolved Blessing 也全部升至 Lv.3。
+三格限制代表單場不保證把所有持有項都升滿或完成三次融合；六分鐘流程優先提供快速、明確的
+一次到兩次合法昇華，熟練玩家再利用 Boss 後 rapid-level horde 追求滿級 evolved。
 
 正式元素只有 water／fire／wind／lightning／ice／poison／light／dark／normal，
 由 `ElementTaxonomy` 統一命名。每個 base 神賜保留一個 canonical `element`；
@@ -611,7 +622,7 @@ Autumn combat HUD 必須持續顯示目前 XP、下一級門檻與 `NEXT` 尚缺
 一般 EXP 不提供新卡、卡牌升級或融合，而是每一級從新神賜／既有神賜升級中選一項。
 當所有可用神賜都滿級時，該頁改抽金錢或素材。菁英與 Boss 戰利品只列既有神賜
 升級／合法 evolved gift 融合。`CardGrowthUI` 以來源標籤、符印、短名稱、等級與最多
-三點效果呈現，同一 FIFO 逐頁處理跨級事件。
+三點效果呈現；base 卡其中一點保留給融合相性／觸媒提示，同一 FIFO 逐頁處理跨級事件。
 
 ## 9. 城鎮、資源與裝備
 
@@ -1173,7 +1184,7 @@ multiple Finishers resolve FIFO. The HUD shows formula slots, persistent stacks,
 owned Divine Gifts, Gift-modified names, and the queued ready state.
 
 具名 Finisher 會同時讀取本 Run 實際持有的所有 Divine Gifts，而不是只讀目前標記的
-primary Gift。最多四項 Gift 依取得順序各自增加一組元素來源粒子與對應光色；同一 Gift
+primary Gift。最多三項 Gift 依取得順序各自增加一組元素來源粒子與對應光色；同一 Gift
 不得重複疊層。evolved Gift 以單一昇華層保留其 component elements、等級與融合強調色，
 已被融合移除的 base Gifts 不再另外顯示。這些疊層只改變 presentation，不建立第二套
 傷害、狀態或融合 authority。
@@ -1393,10 +1404,10 @@ Combo 的攻擊提高採每三層一階：每階增加當前基礎攻擊 amount 
 ### Horde-first difficulty
 
 Autumn survival uses enemy density and mixed roles instead of weakening the player. The
-8:30 countdown opens with 30 enemies, continuously grows concurrent caps `48 → 170` and
-spawn batches `10 → 20`; at 1:30 a ten-second super horde and the first Boss create the first
-sharp battlefield change, 3:00 adds the second Boss, 5:00 begins plural Boss waves, and 8:00
-stacks the largest wave with Final Rush. Normal roles stay defense-free; their `10.0 → 26.0`
+6:00 countdown opens with 30 enemies, continuously grows concurrent caps `48 → 170` and
+spawn batches `10 → 20`; a minor Boss creates the first sharp battlefield change at 1:00,
+1:30 adds the ten-second super horde, 3:00 adds the second Boss, and 5:00 begins plural Boss waves
+before the 5:30 Final Rush reaches maximum pressure. Normal roles stay defense-free; their `10.0 → 26.0`
 timeline health scale lets later survivors absorb follow-up hits and show knockback. Elite is
 never part of the random normal pool.
 自動普攻命中時以世界空間短彈道、命中環、實際傷害數字與 `COMBO ×N / POWER +N`

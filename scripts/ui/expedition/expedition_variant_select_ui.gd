@@ -79,5 +79,5 @@ func _entry_tooltip(entry: Dictionary) -> String:
 	return "%s｜強度階級 %d｜%s" % [
 		String(entry.get("display_name", "")),
 		maxi(1, int(entry.get("power_tier", 1))),
-		"Boss 戰" if bool(entry.get("is_boss", false)) else "8:30 戰鬥地圖",
+		"Boss 戰" if bool(entry.get("is_boss", false)) else "6:00 戰鬥地圖",
 	]

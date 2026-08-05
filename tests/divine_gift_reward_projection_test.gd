@@ -1,6 +1,6 @@
 extends SceneTree
 
-const BASE_GIFT_COUNT := 20
+const BASE_GIFT_COUNT := 8
 
 var _failures := 0
 
@@ -13,8 +13,10 @@ func _run() -> void:
 	var gifts := DivineGiftManager.new()
 	_expect(gifts.load_catalog(), "神賜資料必須可載入。")
 	var rewards := gifts.get_reward_choices(20)
-	_expect(rewards.size() == BASE_GIFT_COUNT, "未持有神賜時必須投影全部二十個 base gift 選項。")
+	_expect(rewards.size() == BASE_GIFT_COUNT, "未持有神賜時必須投影全部八個 base gift 選項。")
 	var chinese_names: Dictionary = {}
+	var motifs: Dictionary = {}
+	var status_ids: Dictionary = {}
 	for reward in rewards:
 		var gift_id := String(reward.get("gift_id", ""))
 		var name := String(reward.get("name", "")).strip_edges()
@@ -39,9 +41,31 @@ func _run() -> void:
 		_expect(_contains_han(description), "神賜選項說明不得退回英文：%s" % gift_id)
 		_expect(not chinese_names.has(name), "神賜中文名稱必須唯一：%s" % name)
 		chinese_names[name] = gift_id
+		var motif := String(reward.get("fusion_motif", ""))
+		var basic_statuses := reward.get("basic_attack_statuses", []) as Array
+		var fusion_hints := reward.get("fusion_hints", []) as Array
+		_expect(not motif.is_empty() and not motifs.has(motif), "Each Blessing needs a unique geometry motif: %s" % gift_id)
+		_expect(basic_statuses.size() == 1, "Each base Blessing needs one normal-attack status: %s" % gift_id)
+		_expect(not fusion_hints.is_empty(), "Each Blessing card must expose at least one authored fusion hint: %s" % gift_id)
+		if basic_statuses.size() == 1:
+			var status_id := String((basic_statuses[0] as Dictionary).get("effect_id", ""))
+			_expect(not status_id.is_empty() and not status_ids.has(status_id), "Each Blessing needs a distinct normal-attack status: %s" % gift_id)
+			status_ids[status_id] = true
+		motifs[motif] = true
 		_expect(_queue_preserves_projection(reward), "GrowthChoiceQueue 必須原樣保留 base gift 顯示欄位：%s" % gift_id)
 
 	_expect(gifts.add_or_upgrade("resonant_grace"), "測試必須能取得煉獄恩典。")
+	_expect(motifs.size() == BASE_GIFT_COUNT and status_ids.size() == BASE_GIFT_COUNT, "All eight Blessings must remain visually and mechanically distinct.")
+	var recommended := gifts.get_reward_choices(3)
+	var has_merge_route := false
+	for reward in recommended:
+		if bool(reward.get("merge_with_owned", false)):
+			has_merge_route = true
+			break
+	_expect(
+		has_merge_route,
+		"Three-choice rewards must include an authored fusion partner whenever one is available."
+	)
 	var owned_reward := _find_reward(gifts.get_reward_choices(20), "resonant_grace")
 	_expect(not owned_reward.is_empty(), "未滿級既有神賜必須進入升級獎勵池。")
 	if not owned_reward.is_empty():
@@ -59,6 +83,7 @@ func _run() -> void:
 	for gift_id in ["resonant_grace", "boundless_font"]:
 		for _level in 3:
 			_expect(evolved_manager.add_or_upgrade(gift_id), "融合素材必須能升至滿級：%s" % gift_id)
+	evolved_manager.set_equipped_item_ids(["iron_sword"])
 	var evolved := evolved_manager.fuse_max_level("resonant_grace", "boundless_font")
 	var composed_attack := evolved.get("background_attack", {}) as Dictionary
 	var geometry_modules := composed_attack.get("geometry_modules", []) as Array
@@ -130,7 +155,7 @@ func _queue_preserves_projection(reward: Dictionary) -> bool:
 		or not _contains_han(String(queued.get("description", "")))
 	):
 		return false
-	for field in ["element", "current_effects", "next_effects", "finisher_mutations"]:
+	for field in ["element", "current_effects", "next_effects", "finisher_mutations", "basic_attack_statuses", "fusion_hints", "merge_with_owned"]:
 		if not queued.has(field) or queued[field] != reward.get(field):
 			return false
 	if String(reward.get("kind", "base")) == "base":

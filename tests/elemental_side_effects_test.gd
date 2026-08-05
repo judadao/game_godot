@@ -219,6 +219,8 @@ func _test_game_projects_weapon_and_blessing_elements() -> void:
 	)
 	var gift_manager := game.get("divine_gift_manager") as RefCounted
 	gift_manager.call("add_or_upgrade", "resonant_grace")
+	gift_manager.call("add_or_upgrade", "boundless_font")
+	gift_manager.call("add_or_upgrade", "eternal_memory")
 	var card_database := game.get("card_database") as RefCounted
 	var attack := card_database.call("get_card", "ember_bolt") as Dictionary
 	var infused := game.call("_apply_combo_infusions_to_card", attack) as Dictionary
@@ -226,8 +228,8 @@ func _test_game_projects_weapon_and_blessing_elements() -> void:
 		(infused.get("effect", {}) as Dictionary).get("elements", []) as Array
 	)
 	_expect(
-		elements.has("wind") and elements.has("fire"),
-		"Runtime attacks must carry both equipped weapon and active blessing elements."
+		elements.has("wind") and elements.has("fire") and elements.has("poison") and elements.has("ice"),
+		"Normal attacks must carry the equipped weapon plus all three active Blessing states."
 	)
 	var skill := card_database.call("get_card", "frost_bind") as Dictionary
 	var infused_skill := game.call("_apply_combo_infusions_to_card", skill) as Dictionary
@@ -235,8 +237,12 @@ func _test_game_projects_weapon_and_blessing_elements() -> void:
 		(infused_skill.get("effect", {}) as Dictionary).get("elements", []) as Array
 	)
 	_expect(
-		skill_elements.has("wind") and skill_elements.has("fire"),
-		"Damaging skill cards must inherit equipped weapon and blessing elements."
+		skill_elements.has("wind") and skill_elements.has("fire") and skill_elements.has("poison") and skill_elements.has("ice"),
+		"Every damaging skill must inherit the equipped weapon plus all three active Blessing states."
+	)
+	_expect(
+		(gift_manager.call("get_basic_attack_status_profiles") as Array).size() == 3,
+		"Three Blessing slots must project three explicit normal-attack status profiles."
 	)
 	if not bool(inventory.call("has_equipment", &"apprentice_staff")):
 		inventory.call("add_equipment", &"apprentice_staff")

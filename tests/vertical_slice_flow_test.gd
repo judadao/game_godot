@@ -95,7 +95,7 @@ func _run() -> void:
 	director.call("advance_survival", float(director.get("survival_duration")) + 1.0)
 	await process_frame
 	await process_frame
-	_expect(not bool(director.get("_running")), "Surviving 8:30 must stop survival spawning immediately.")
+	_expect(not bool(director.get("_running")), "Surviving 6:00 must stop survival spawning immediately.")
 	_expect((game.get("meta_state") as MetaState).boss_defeated, "Survival completion must become permanent progress.")
 	_expect((game.get("meta_state") as MetaState).dash_upgrade_unlocked, "Survival completion must unlock Dash equipment growth.")
 	_expect(

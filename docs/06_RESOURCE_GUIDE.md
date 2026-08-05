@@ -266,7 +266,7 @@ UI setter/configure API
 | `skills.json` | `SkillRecipeManager` | `series` | 13 個系列 × basic／advanced／master，共 39 招；另含 retired IDs 與暫用 `legacy_vfx_map` |
 | `equipment.json` | `inventory_manager.gd` | `resource_order`, `starting_resources`, `equipment` | 5 resources, 10 equipment |
 | `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 5 buildings；memory library 4 levels、其餘 3 levels；3 stages；每級含 cost／description／effects／visual flag |
-| `divine_gifts.json` | `DivineGiftManager` | `gifts` | 20 個三級 Run-local 神賜；每項含可組合的幾何與發光特徵 |
+| `divine_gifts.json` | `DivineGiftManager` | `gifts` | 8 個三級 Run-local 神賜；每項含唯一幾何、發光色與普攻／傷害招式狀態 |
 | `combo_finishers.json` | `ComboFinisherCatalog` | `recipes` | 32 個精確三招終結技配方 |
 | `forge_catalog.json` | `ForgeCatalog` | `material_offers`, `equipment_recipes`, `sword_soul_recipes` | Town 鍛造 offer 與 recipe |
 | `named_skill_vfx_profiles.json` | `NamedSkillVFXCatalog` | `profiles` | 32 個 Finisher 與 4 個退役 trigger 的動畫 profile；只作 presentation library，不定義現役技能名稱／分類 |
@@ -409,7 +409,7 @@ signature。Finisher 另建立 `FinisherGeometryCore`，固定隱藏七個完整
 只顯示 authored body、tight/wide glow 與三個 bounded particle layers，並讓 runtime diagnostics 回傳逐招 identity、
 storyboard、semantic object、legacy-atlas 關閉狀態、base layer count 與 total layer count。
 `Game._build_formula_finisher()` 另將目前實際持有的 Divine Gifts 依取得順序投影為
-`combo_visual_profile.blessing_overlays`；以 Gift id 去重、上限四項。每項保留 level、
+`combo_visual_profile.blessing_overlays`；以 Gift id 去重、上限三項。每項保留 level、
 canonical `elements`、kind、evolved component ids 與 accent color。融合後只投影新的
 evolved Gift 一層，不再重複投影已離開 inventory 的兩個 base Gifts。
 `FinisherGeometryCore` 為每項 overlay 建立一個具元素來源輪廓的粒子 pass 與一個對應
@@ -837,7 +837,7 @@ instance。Basic Attack 只以 `MetaState.auto_attack_card_id` 與 run-local loc
 
 `data/divine_gifts.json` 每筆資料包含 `id`、`name`、`description`、`icon`、
 `prefix`、`element`、`fusion_stem`、`fusion_motif`、`accent_color`、`finisher_mutations`
-與三筆 `effects_by_level`。catalog 固定包含 20 項；每級效果
+與三筆 `effects_by_level`。catalog 固定包含 8 項；每級效果
 必須對 Combo 或終結技有可觀察影響；主神賜的稱號前綴與原終結技名稱組合，所有
 持有神賜的 mechanics 則合併套用。Manager inventory 只存在於 Run，重複 ID 升級
 至 Lv.3。兩個不同 Lv.3 融合後建立 dynamic evolved entry；材料標記 ascended，
@@ -847,15 +847,19 @@ canonical ElementTaxonomy ID；融合結果的 `elements` 陣列保留兩個材�
 另保存兩個 `geometry_modules` 與 `glow_colors`，確保名稱、形狀、顏色和元素都由兩項材料融合。
 
 神賜玩家可見 `name`／`description` 與所有動態融合名稱均為繁中；stable ID 與元素
-canonical value 不翻譯。Manager 同時最多保存四項 inventory entry：有空位時 reward
-可混合新神賜與既有升級；為避免 20 項 catalog 稀釋成長，候選先保證 evolved upgrade、
-再排已持有 base upgrade，最後才補未發現神賜。滿四項時只能回傳既有未滿級 entry。融合原子移除兩項材料
+canonical value 不翻譯。Manager 同時最多保存三項 inventory entry：有空位時 reward
+可混合新神賜與既有升級。每個 base reward 必須投影全部 authored `fusion_hints`；候選先排
+已有搭檔的 base 升級／新神賜，確保三選存在合法路線時至少出現一項，再補 evolved upgrade、
+其他已持有 base upgrade 與未發現神賜。
+滿三項時只能回傳既有未滿級 entry。融合只接受 `FUSION_RECIPES` 的第一批 10 個進階型態；
+有 `required_equipment_id` 的配方必須由 Game 同步目前 weapon／armor／accessory 後才可顯示與結算。融合原子移除兩項材料
 並加入一項 evolved entry，因此釋出一格。所有 inventory entry 的 effects、mutation
 與 prefix 依取得順序聚合，不得由 primary entry 覆蓋。
 
 來源 gating 由 `GrowthChoiceQueue` 負責：EXP 使用 `get_reward_choices()`，只投影新神賜
 ／既有升級且無候選時 fallback；Elite／Boss 使用 `get_upgrade_choices()` 加上
-`get_fusion_choices()`，不得投影未持有的新神賜。一般 EXP 永遠不包含 fusion action。
+`get_fusion_choices(3)`，從所有合法配對洗牌後只投影三種；queue 優先保留這三種，再以
+既有升級補至五選。不得投影未持有的新神賜。一般 EXP 永遠不包含 fusion action。
 
 `data/combo_finishers.json` 每筆 recipe 包含穩定 `id`、中文 `name`／`description`、
 `role`、精確三項 `sequence`、`required_skills` 與 `base_effect`。

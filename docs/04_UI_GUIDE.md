@@ -1316,15 +1316,21 @@ UI 必須明示所選 attack 會在 Run 開始後鎖定、免費、自動水平�
 實心 badge、粗金框與金色光暈，並在確認鈕上方同步「已選」效果摘要。只有菁英／Boss
 來源且存在兩個不同滿級神賜時才可提供融合；一般 EXP 頁永不提供融合。所有可取得
 神賜都滿級且沒有新選項時，EXP 頁改顯示金錢或素材 fallback。
+Base 神賜卡的效果區必須直接提示最接近的 authored 融合搭檔與結果；搭檔已持有時標成
+「可融合路線」，本次選擇會讓雙方達到 Lv.3 且觸媒成立時標成「選後可立即融合」，
+缺少指定裝備時在同一行標示門檻。三選池只要存在可推進的指定配方，就至少保留一張。
 
 合法融合必須顯示獨立的「昇華融合・專屬背景自動攻擊」section，不得混在一般升級列
 或隱藏。每張融合卡直接顯示由兩個來源名稱組成的融合名稱、專屬背景攻擊名稱、interval、target count 與
 「繼承劍魂」說明；完整 tooltip 仍保留 description。背景攻擊必須投影兩個來源的幾何 motif
-與發光色，不能退化成只挑幾個數值屬性。五選項上限套用到升級與融合的總和。
+與發光色，不能退化成只挑幾個數值屬性。合法融合超過三種時，每次隨機抽三種並優先
+保留在融合 section，再以最多兩個既有升級補滿五選；同一頁不得顯示第四種融合。
+融合只接受第一批 10 個 authored recipe；需要裝備觸媒者只在觸媒已裝備時顯示，卡面同時標示
+「儀式觸媒（已裝備）」與兩個來源會附著到普通攻擊、傷害招式及背景攻擊的狀態。
 
 玩家可見文案使用「神賜／菁英祝福／昇華」，名稱、說明、階級與融合名稱皆為繁中。
-Autumn HUD 固定容納並顯示四個神賜 slot；滿四項時選擇頁只列既有神賜升級，不得用
-未持有神賜覆蓋任一 slot。四項前綴與效果都持續累加，主要神賜標記只表示最近取得，
+Autumn HUD 固定容納並顯示三個神賜 slot；滿三項時選擇頁只列既有神賜升級，不得用
+未持有神賜覆蓋任一 slot。三項前綴與效果都持續累加，主要神賜標記只表示最近取得，
 不代表其他神賜失效。
 
 ### Responsive contract
@@ -1350,6 +1356,8 @@ Combo Chain 清單、四格 Deck Builder、interaction prompt 與 world-safe are
 
 `res://scenes/ui/cards/CardGrowthUI.tscn` 是 wave reward、EXP Blessing 與菁英／Boss
 Blessing loot 的單一 modal。
+`ChoiceScroll` 使用垂直 auto scroll；Header、SelectionSummary 與 Footer 不進入捲動內容，
+在 1152×720 到 2862×1715 都必須保持確認按鈕可見。選到畫面外的最後一張融合卡時自動捲入可視區。
 舊 `LevelUpUI` 與 Autumn Blessing popup 不再是這條流程的 authority。
 
 Growth choice card 必須以卡牌類型色、catalog icon、AP／level 關鍵資料協助掃讀。

@@ -141,33 +141,31 @@ func _run() -> void:
 	)
 
 	var horde_director: Node = script.new()
-	horde_director.set("survival_duration", 510.0)
+	horde_director.set("survival_duration", 360.0)
 	horde_director.set("scheduled_horde_time", 90.0)
 	horde_director.set("scheduled_horde_duration", 10.0)
 	root.add_child(horde_director)
 	_expect(
-		horde_director.get("scheduled_boss_times") == [
-			90.0, 180.0, 300.0, 360.0, 420.0, 480.0,
-		]
-			and int(horde_director.call("_boss_count_for_time", 90.0)) == 1
+		horde_director.get("scheduled_boss_times") == [60.0, 180.0, 300.0]
+			and int(horde_director.call("_boss_count_for_time", 60.0)) == 1
 			and int(horde_director.call("_boss_count_for_time", 180.0)) == 1
 			and int(horde_director.call("_boss_count_for_time", 300.0)) == 2
-			and int(horde_director.call("_boss_count_for_time", 480.0)) == 4,
-		"Boss pressure must land at 1:30, 3:00, become plural at 5:00, and peak at 8:00."
+			and int(horde_director.call("_boss_count_for_time", 330.0)) == 3,
+		"Boss pressure must land at 1:00, return at 3:00, become plural at 5:00, and peak in the final rush."
 	)
-	var pre_eight_minute_growth_events := 0
+	var pre_final_rush_growth_events := 0
 	for elite_time_variant in horde_director.get("scheduled_elite_times") as Array:
-		if float(elite_time_variant) < 480.0:
-			pre_eight_minute_growth_events += 1
+		if float(elite_time_variant) < 330.0:
+			pre_final_rush_growth_events += 1
 	for boss_time_variant in horde_director.get("scheduled_boss_times") as Array:
 		var boss_time := float(boss_time_variant)
-		if boss_time < 480.0:
-			pre_eight_minute_growth_events += int(
+		if boss_time < 330.0:
+			pre_final_rush_growth_events += int(
 				horde_director.call("_boss_count_for_time", boss_time)
 			)
 	_expect(
-		pre_eight_minute_growth_events == 16,
-		"Before 8:00, seven elite and nine boss rewards must combine with five fast XP levels to fund all three fusions."
+		pre_final_rush_growth_events == 9,
+		"Before the final rush, five elite and four Boss rewards must sustain rapid six-minute growth."
 	)
 	_expect(bool(horde_director.call("start_encounter")), "Horde timing fixture must start.")
 	var baseline_cap := int(horde_director.call("get_current_density_cap"))
@@ -177,7 +175,7 @@ func _run() -> void:
 			and StringName(horde_director.call("get_horde_kind")) == &"scheduled"
 			and int(horde_director.call("get_current_density_cap")) >= baseline_cap + 55
 			and float(horde_director.call("get_current_experience_multiplier")) >= 2.0,
-		"At 1:30 a ten-second super horde must sharply raise density and XP drops."
+		"At 1:30 a ten-second super horde must sharply raise density and XP drops after the 1:00 minor Boss."
 	)
 	horde_director.call("advance_survival", 10.5)
 	_expect(
@@ -233,6 +231,16 @@ func _run() -> void:
 	_expect(
 		int(director.call("get_spawned_boss_count")) == 1,
 		"Crossing the configured boss time must spawn one non-completion boss."
+	)
+	var minor_boss: Node
+	for enemy in director.call("get_active_enemies") as Array:
+		if String(enemy.get_meta("encounter_archetype_id", "")) == "guardian":
+			minor_boss = enemy
+			break
+	_expect(
+		minor_boss != null
+			and String(minor_boss.get_meta("survival_boss_rank", "")) == "minor",
+		"The first scheduled Boss must be explicitly marked as the smaller one-minute Boss."
 	)
 	director.call("advance_survival", 0.11)
 	_expect(bool(director.call("is_final_rush")), "The final countdown window must enter Final Rush.")

@@ -10,6 +10,7 @@ const FALLBACK_REWARDS: Array[Dictionary] = [
 	{"magic_shard": 4},
 ]
 const MAX_EXPERIENCE_CHOICES := 5
+const MAX_FUSION_CHOICES := 3
 
 var _entries: Array[Dictionary] = []
 var _next_event_id := 1
@@ -62,11 +63,11 @@ func enqueue_combat_blessing_reward(
 	if normalized_source not in ["elite", "boss"]:
 		return false
 	var event_id := _claim_event_id()
-	var choices := _divine_gift_choices(event_id, upgrades, normalized_source)
-	for fusion_choice in _divine_fusion_choices(event_id, fusions, normalized_source):
+	var choices := _divine_fusion_choices(event_id, fusions, normalized_source)
+	for upgrade_choice in _divine_gift_choices(event_id, upgrades, normalized_source):
 		if choices.size() >= MAX_EXPERIENCE_CHOICES:
 			break
-		choices.append(fusion_choice)
+		choices.append(upgrade_choice)
 	if choices.is_empty():
 		return false
 	_entries.append(_make_entry(event_id, normalized_source, choices))
@@ -79,11 +80,11 @@ func enqueue_divine_gifts(
 	fusions: Array[Dictionary]
 ) -> bool:
 	var event_id := _claim_event_id()
-	var choices := _divine_gift_choices(event_id, rewards, "divine")
-	for fusion_choice in _divine_fusion_choices(event_id, fusions, "divine"):
+	var choices := _divine_fusion_choices(event_id, fusions, "divine")
+	for reward_choice in _divine_gift_choices(event_id, rewards, "divine"):
 		if choices.size() >= MAX_EXPERIENCE_CHOICES:
 			break
-		choices.append(fusion_choice)
+		choices.append(reward_choice)
 	if choices.is_empty():
 		return false
 	_entries.append(_make_entry(event_id, "divine", choices))
@@ -205,6 +206,13 @@ func _divine_gift_choices(
 			"current_effects": (reward.get("current_effects", {}) as Dictionary).duplicate(true),
 			"next_effects": (reward.get("next_effects", {}) as Dictionary).duplicate(true),
 			"finisher_mutations": (reward.get("finisher_mutations", {}) as Dictionary).duplicate(true),
+			"basic_attack_statuses": (
+				reward.get("basic_attack_statuses", []) as Array
+			).duplicate(true),
+			"fusion_hints": (
+				reward.get("fusion_hints", []) as Array
+			).duplicate(true),
+			"merge_with_owned": bool(reward.get("merge_with_owned", false)),
 			"level": int(reward.get("level", 0)),
 			"next_level": int(reward.get("next_level", 1)),
 			"type": "divine",
@@ -238,6 +246,11 @@ func _divine_fusion_choices(
 			"action": "divine_fusion",
 			"left_gift_id": left_id,
 			"right_gift_id": right_id,
+			"fusion_recipe_id": String(fusion.get("fusion_recipe_id", "")),
+			"required_equipment_id": String(fusion.get("required_equipment_id", "")),
+			"required_equipment_name": String(fusion.get("required_equipment_name", "")),
+			"element": String(fusion.get("element", "normal")),
+			"elements": (fusion.get("elements", []) as Array).duplicate(),
 			"name": String(fusion.get("name", "神賜昇華")),
 			"description": String(fusion.get("description", "")),
 			"type": "divine",
@@ -246,9 +259,13 @@ func _divine_fusion_choices(
 			"background_attack": (
 				fusion.get("background_attack", {}) as Dictionary
 			).duplicate(true),
+			"basic_attack_statuses": (
+				fusion.get("basic_attack_statuses", []) as Array
+			).duplicate(true),
 			"card_color": "prismatic",
 		})
-	return choices
+	choices.shuffle()
+	return choices.slice(0, mini(MAX_FUSION_CHOICES, choices.size()))
 
 
 func _fallback_choices(event_id: int) -> Array[Dictionary]:

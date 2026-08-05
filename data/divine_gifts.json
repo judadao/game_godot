@@ -1,124 +1,140 @@
 {
   "gifts": [
     {
-      "id": "resonant_grace", "name": "煉獄恩典", "description": "每次連段都會累積額外共鳴，並強化具名終結技。", "prefix": "煉獄業火的", "element": "fire", "icon": "✦",
-      "fusion_stem": "鳴焰", "fusion_motif": "pulse_ring", "accent_color": "#ff6438",
+      "id": "resonant_grace",
+      "name": "共鳴恩典",
+      "description": "戰意以三拍聖環燃起，普攻附著燃燒，昇華後化為脈衝火輪。",
+      "prefix": "共鳴焰輪的",
+      "element": "fire",
+      "icon": "焰",
+      "fusion_stem": "曦裁",
+      "fusion_motif": "pulse_ring",
+      "accent_color": "#ff6438",
       "finisher_mutations": {"burn_damage": 4, "burn_duration": 4.0, "final_burst": true},
-      "effects_by_level": [{"combo_stack_bonus": 1, "finisher_damage_multiplier": 1.10}, {"combo_stack_bonus": 1, "combo_effect_multiplier": 1.10, "finisher_damage_multiplier": 1.20}, {"combo_stack_bonus": 2, "combo_effect_multiplier": 1.15, "finisher_damage_multiplier": 1.35}]
+      "effects_by_level": [
+        {"combo_stack_bonus": 1, "finisher_damage_multiplier": 1.10},
+        {"combo_stack_bonus": 1, "combo_effect_multiplier": 1.10, "finisher_damage_multiplier": 1.20},
+        {"combo_stack_bonus": 2, "combo_effect_multiplier": 1.15, "finisher_damage_multiplier": 1.35}
+      ]
     },
     {
-      "id": "echoing_will", "name": "迴響意志", "description": "強化每次連段，並使具名終結技追加一次迴響。", "prefix": "無盡迴響的", "element": "dark", "icon": "↻",
-      "fusion_stem": "幽響", "fusion_motif": "echo_arc", "accent_color": "#9b69d9",
+      "id": "echoing_will",
+      "name": "迴響意志",
+      "description": "攻勢留下層層回聲，普攻汲取生命，昇華後以錯位弧光反覆追擊。",
+      "prefix": "回聲不滅的",
+      "element": "dark",
+      "icon": "響",
+      "fusion_stem": "幽契",
+      "fusion_motif": "echo_arc",
+      "accent_color": "#9b69d9",
       "finisher_mutations": {"finisher_echoes": 1, "echo_decay": 0.7},
-      "effects_by_level": [{"combo_effect_multiplier": 1.08, "finisher_damage_multiplier": 1.08}, {"combo_effect_multiplier": 1.16, "finisher_damage_multiplier": 1.16}, {"combo_effect_multiplier": 1.25, "finisher_damage_multiplier": 1.25, "finisher_echoes": 1}]
+      "effects_by_level": [
+        {"combo_effect_multiplier": 1.08, "finisher_damage_multiplier": 1.08},
+        {"combo_effect_multiplier": 1.16, "finisher_damage_multiplier": 1.16},
+        {"combo_effect_multiplier": 1.25, "finisher_damage_multiplier": 1.25, "finisher_echoes": 1}
+      ]
     },
     {
-      "id": "boundless_font", "name": "萬毒源泉", "description": "每次連段返還 AP，具名終結技則會恢復生命。", "prefix": "萬毒蝕心的", "element": "poison", "icon": "◆",
-      "fusion_stem": "蝕泉", "fusion_motif": "venom_orb", "accent_color": "#85dc3f",
+      "id": "boundless_font",
+      "name": "無盡源泉",
+      "description": "毒息結成連珠花核，普攻施加中毒，昇華後讓毒性沿敵群擴散。",
+      "prefix": "無盡毒泉的",
+      "element": "poison",
+      "icon": "毒",
+      "fusion_stem": "毒華",
+      "fusion_motif": "venom_orb",
+      "accent_color": "#85dc3f",
       "finisher_mutations": {"poison_damage": 3, "poison_duration": 5.0, "death_spread": true},
-      "effects_by_level": [{"combo_ap_refund": 0.10, "finisher_heal": 2}, {"combo_ap_refund": 0.20, "finisher_heal": 4}, {"combo_ap_refund": 0.35, "finisher_heal": 7}]
+      "effects_by_level": [
+        {"combo_ap_refund": 0.10, "finisher_heal": 2},
+        {"combo_ap_refund": 0.20, "finisher_heal": 4},
+        {"combo_ap_refund": 0.35, "finisher_heal": 7}
+      ]
     },
     {
-      "id": "prismatic_oath", "name": "雷霆誓約", "description": "使每次連段帶有元素力量，並讓具名終結技擴散元素效果。", "prefix": "天罰雷霆的", "element": "lightning", "icon": "◇",
-      "fusion_stem": "雷稜", "fusion_motif": "bolt_chain", "accent_color": "#a986ff",
+      "id": "prismatic_oath",
+      "name": "稜光誓約",
+      "description": "雷光折成斷續能量鏈，普攻短暫暈眩，昇華後在目標間連鎖跳躍。",
+      "prefix": "雷霆稜光的",
+      "element": "lightning",
+      "icon": "雷",
+      "fusion_stem": "雷律",
+      "fusion_motif": "bolt_chain",
+      "accent_color": "#a986ff",
       "finisher_mutations": {"combo_stun": 0.6, "chain_lightning": true},
-      "effects_by_level": [{"combo_element_bonus": 1, "finisher_element_damage": 2}, {"combo_element_bonus": 2, "finisher_element_damage": 4}, {"combo_element_bonus": 3, "finisher_element_damage": 7}]
+      "effects_by_level": [
+        {"combo_element_bonus": 1, "finisher_element_damage": 2},
+        {"combo_element_bonus": 2, "finisher_element_damage": 4},
+        {"combo_element_bonus": 3, "finisher_element_damage": 7}
+      ]
     },
     {
-      "id": "celestial_momentum", "name": "天穹疾勢", "description": "每次連段都會加快戰鬥節奏，使具名終結技更大、更快。", "prefix": "天穹神速的", "element": "wind", "icon": "»",
-      "fusion_stem": "天風", "fusion_motif": "gale_spiral", "accent_color": "#76efcf",
+      "id": "celestial_momentum",
+      "name": "天穹動勢",
+      "description": "疾風以三臂螺旋加速，普攻增強擊退，昇華後貫穿並擴張攻擊軌跡。",
+      "prefix": "天穹疾風的",
+      "element": "wind",
+      "icon": "風",
+      "fusion_stem": "天旋",
+      "fusion_motif": "gale_spiral",
+      "accent_color": "#76efcf",
       "finisher_mutations": {"piercing": true, "speed_multiplier": 1.5},
-      "effects_by_level": [{"combo_speed_bonus": 0.04, "finisher_size_multiplier": 1.10}, {"combo_speed_bonus": 0.08, "finisher_size_multiplier": 1.22}, {"combo_speed_bonus": 0.14, "finisher_size_multiplier": 1.38}]
+      "effects_by_level": [
+        {"combo_speed_bonus": 0.04, "finisher_size_multiplier": 1.10},
+        {"combo_speed_bonus": 0.08, "finisher_size_multiplier": 1.22},
+        {"combo_speed_bonus": 0.14, "finisher_size_multiplier": 1.38}
+      ]
     },
     {
-      "id": "eternal_memory", "name": "絕對零度", "description": "使每次連段保留更多力量，並讓具名終結技讀取更深層的公式。", "prefix": "絕對零度的", "element": "ice", "icon": "∞",
-      "fusion_stem": "霜憶", "fusion_motif": "crystal_shard", "accent_color": "#8eeaff",
+      "id": "eternal_memory",
+      "name": "永恆記憶",
+      "description": "冰晶化作四向長槍，普攻施加緩速，昇華後凍結並粉碎殘留記憶。",
+      "prefix": "絕對零度的",
+      "element": "ice",
+      "icon": "晶",
+      "fusion_stem": "霜銘",
+      "fusion_motif": "crystal_shard",
+      "accent_color": "#8eeaff",
       "finisher_mutations": {"frost_ratio": 0.65, "frost_duration": 4.5, "shatter": true},
-      "effects_by_level": [{"combo_stack_cap_bonus": 2, "finisher_history_bonus": 0}, {"combo_stack_cap_bonus": 3, "finisher_history_bonus": 1}, {"combo_stack_cap_bonus": 5, "finisher_history_bonus": 2}]
+      "effects_by_level": [
+        {"combo_stack_cap_bonus": 2, "finisher_history_bonus": 0},
+        {"combo_stack_cap_bonus": 3, "finisher_history_bonus": 1},
+        {"combo_stack_cap_bonus": 5, "finisher_history_bonus": 2}
+      ]
     },
     {
-      "id": "tidal_covenant", "name": "潮汐盟約", "description": "潮水在敵群之間往返，將單點攻勢擴成連續波紋。", "prefix": "滄潮者", "element": "water", "icon": "潮",
-      "fusion_stem": "滄潮", "fusion_motif": "tidal_wave", "accent_color": "#36b8ff",
+      "id": "tidal_covenant",
+      "name": "潮汐盟約",
+      "description": "潮線分成三層推進，普攻濺射額外目標，昇華後形成寬廣往復浪潮。",
+      "prefix": "深潮盟誓的",
+      "element": "water",
+      "icon": "潮",
+      "fusion_stem": "滄潮",
+      "fusion_motif": "tidal_wave",
+      "accent_color": "#36b8ff",
       "finisher_mutations": {"projectile_count_bonus": 2, "sweep_width_multiplier": 1.25},
-      "effects_by_level": [{"combo_stack_bonus": 1, "finisher_size_multiplier": 1.08}, {"combo_stack_bonus": 2, "finisher_size_multiplier": 1.16}, {"combo_stack_bonus": 3, "finisher_size_multiplier": 1.28}]
+      "effects_by_level": [
+        {"combo_stack_bonus": 1, "finisher_size_multiplier": 1.08},
+        {"combo_stack_bonus": 2, "finisher_size_multiplier": 1.16},
+        {"combo_stack_bonus": 3, "finisher_size_multiplier": 1.28}
+      ]
     },
     {
-      "id": "radiant_mercy", "name": "曜光慈悲", "description": "每次命中都留下微光，終結時回收為治癒護幕。", "prefix": "曜恩者", "element": "light", "icon": "曜",
-      "fusion_stem": "曜恩", "fusion_motif": "radiant_cross", "accent_color": "#ffe991",
+      "id": "radiant_mercy",
+      "name": "輝光慈悲",
+      "description": "聖光展開十字裁線，普攻命中回復生命，昇華後降下明亮終結裁決。",
+      "prefix": "輝光慈悲的",
+      "element": "light",
+      "icon": "光",
+      "fusion_stem": "聖裁",
+      "fusion_motif": "radiant_cross",
+      "accent_color": "#ffe991",
       "finisher_mutations": {"heal_on_hit_ratio": 0.05, "final_burst": true},
-      "effects_by_level": [{"finisher_heal": 2, "combo_effect_multiplier": 1.05}, {"finisher_heal": 5, "combo_effect_multiplier": 1.10}, {"finisher_heal": 9, "combo_effect_multiplier": 1.18}]
-    },
-    {
-      "id": "void_ledger", "name": "虛空天秤", "description": "把承受與造成的傷害記入暗影帳冊，於終結時清算。", "prefix": "虛衡者", "element": "dark", "icon": "衡",
-      "fusion_stem": "虛衡", "fusion_motif": "void_diamond", "accent_color": "#7551bd",
-      "finisher_mutations": {"lifesteal_ratio": 0.06, "finisher_echoes": 1},
-      "effects_by_level": [{"finisher_damage_multiplier": 1.08, "finisher_heal": 1}, {"finisher_damage_multiplier": 1.17, "finisher_heal": 3}, {"finisher_damage_multiplier": 1.30, "finisher_heal": 5}]
-    },
-    {
-      "id": "iron_vow", "name": "玄鐵誓志", "description": "沉重誓言穩住攻勢，讓普通斬擊更容易造成致命一擊。", "prefix": "玄鐵者", "element": "normal", "icon": "鐵",
-      "fusion_stem": "玄鐵", "fusion_motif": "iron_polygon", "accent_color": "#dce9f2",
-      "finisher_mutations": {"critical_chance": 0.08, "piercing": true},
-      "effects_by_level": [{"finisher_damage_multiplier": 1.06, "combo_stack_cap_bonus": 1}, {"finisher_damage_multiplier": 1.15, "combo_stack_cap_bonus": 2}, {"finisher_damage_multiplier": 1.28, "combo_stack_cap_bonus": 4}]
-    },
-    {
-      "id": "ember_crown", "name": "赤焰王冠", "description": "火星聚成王冠，定時降下環狀焰刃焚燒敵群。", "prefix": "焰冠者", "element": "fire", "icon": "冠",
-      "fusion_stem": "焰冠", "fusion_motif": "crown_spokes", "accent_color": "#ff8a2b",
-      "finisher_mutations": {"burn_damage": 5, "burn_duration": 3.5},
-      "effects_by_level": [{"finisher_element_damage": 2, "finisher_size_multiplier": 1.06}, {"finisher_element_damage": 5, "finisher_size_multiplier": 1.14}, {"finisher_element_damage": 9, "finisher_size_multiplier": 1.25}]
-    },
-    {
-      "id": "thunder_choir", "name": "雷鳴聖詠", "description": "雷聲彼此唱和，讓每段連鎖電弧尋找新的目標。", "prefix": "雷詠者", "element": "lightning", "icon": "雷",
-      "fusion_stem": "雷詠", "fusion_motif": "choir_bolts", "accent_color": "#c29cff",
-      "finisher_mutations": {"chain_lightning": true, "combo_stun": 0.8},
-      "effects_by_level": [{"combo_element_bonus": 1, "combo_speed_bonus": 0.03}, {"combo_element_bonus": 2, "combo_speed_bonus": 0.07}, {"combo_element_bonus": 4, "combo_speed_bonus": 0.12}]
-    },
-    {
-      "id": "glacial_mirror", "name": "霜鏡之心", "description": "冰鏡複寫攻勢輪廓，破裂時以晶片向外反射。", "prefix": "霜鏡者", "element": "ice", "icon": "鏡",
-      "fusion_stem": "霜鏡", "fusion_motif": "mirror_shards", "accent_color": "#b8f5ff",
-      "finisher_mutations": {"frost_ratio": 0.72, "shatter": true},
-      "effects_by_level": [{"finisher_history_bonus": 1, "finisher_damage_multiplier": 1.05}, {"finisher_history_bonus": 2, "finisher_damage_multiplier": 1.12}, {"finisher_history_bonus": 4, "finisher_damage_multiplier": 1.22}]
-    },
-    {
-      "id": "venom_bloom", "name": "蝕毒花契", "description": "毒素在落點開花，持續侵蝕附近的敵人。", "prefix": "毒華者", "element": "poison", "icon": "華",
-      "fusion_stem": "毒華", "fusion_motif": "venom_petals", "accent_color": "#a7f05a",
-      "finisher_mutations": {"poison_damage": 4, "death_spread": true},
-      "effects_by_level": [{"combo_ap_refund": 0.08, "finisher_element_damage": 1}, {"combo_ap_refund": 0.16, "finisher_element_damage": 3}, {"combo_ap_refund": 0.28, "finisher_element_damage": 6}]
-    },
-    {
-      "id": "gale_feather", "name": "天風羽印", "description": "風羽沿戰場邊緣盤旋，從不同角度穿透敵陣。", "prefix": "風羽者", "element": "wind", "icon": "羽",
-      "fusion_stem": "風羽", "fusion_motif": "feather_fan", "accent_color": "#9bffd8",
-      "finisher_mutations": {"piercing": true, "speed_multiplier": 1.7},
-      "effects_by_level": [{"combo_speed_bonus": 0.05, "finisher_damage_multiplier": 1.04}, {"combo_speed_bonus": 0.10, "finisher_damage_multiplier": 1.10}, {"combo_speed_bonus": 0.17, "finisher_damage_multiplier": 1.20}]
-    },
-    {
-      "id": "moonlit_well", "name": "月潮靈井", "description": "月色牽引水流，定期在腳下展開治癒潮圈。", "prefix": "月泉者", "element": "water", "icon": "月",
-      "fusion_stem": "月泉", "fusion_motif": "moon_waves", "accent_color": "#79cfff",
-      "finisher_mutations": {"heal_on_hit_ratio": 0.03, "projectile_count_bonus": 1},
-      "effects_by_level": [{"finisher_heal": 2, "finisher_size_multiplier": 1.05}, {"finisher_heal": 5, "finisher_size_multiplier": 1.12}, {"finisher_heal": 8, "finisher_size_multiplier": 1.22}]
-    },
-    {
-      "id": "dawn_verdict", "name": "晨曦裁決", "description": "曙光鎖定受創敵人，以交叉光刃完成裁決。", "prefix": "曦裁者", "element": "light", "icon": "曦",
-      "fusion_stem": "曦裁", "fusion_motif": "dawn_blades", "accent_color": "#fff2ae",
-      "finisher_mutations": {"final_burst": true, "critical_chance": 0.06},
-      "effects_by_level": [{"finisher_element_damage": 2, "combo_effect_multiplier": 1.04}, {"finisher_element_damage": 5, "combo_effect_multiplier": 1.09}, {"finisher_element_damage": 10, "combo_effect_multiplier": 1.16}]
-    },
-    {
-      "id": "abyssal_eye", "name": "深淵魔眼", "description": "魔眼在遠處張開，將敵群拖入收縮的暗色幾何域。", "prefix": "淵瞳者", "element": "dark", "icon": "瞳",
-      "fusion_stem": "淵瞳", "fusion_motif": "abyss_eye", "accent_color": "#ba6cff",
-      "finisher_mutations": {"lifesteal_ratio": 0.05, "echo_decay": 0.8},
-      "effects_by_level": [{"combo_effect_multiplier": 1.06, "finisher_history_bonus": 1}, {"combo_effect_multiplier": 1.13, "finisher_history_bonus": 2}, {"combo_effect_multiplier": 1.23, "finisher_history_bonus": 4}]
-    },
-    {
-      "id": "war_drums", "name": "戰神鼓動", "description": "幾何鼓面反覆震響，使連段速度與終結威力同步上升。", "prefix": "戰鼓者", "element": "normal", "icon": "鼓",
-      "fusion_stem": "戰鼓", "fusion_motif": "drum_pulse", "accent_color": "#f0c676",
-      "finisher_mutations": {"critical_chance": 0.05, "speed_multiplier": 1.3},
-      "effects_by_level": [{"combo_speed_bonus": 0.03, "combo_stack_bonus": 1}, {"combo_speed_bonus": 0.07, "combo_stack_bonus": 2}, {"combo_speed_bonus": 0.13, "combo_stack_bonus": 3}]
-    },
-    {
-      "id": "star_compass", "name": "星界羅盤", "description": "星點連成導引線，讓背景攻擊更準確地覆蓋敵群。", "prefix": "星軌者", "element": "normal", "icon": "星",
-      "fusion_stem": "星軌", "fusion_motif": "star_compass", "accent_color": "#e7ddff",
-      "finisher_mutations": {"projectile_count_bonus": 2, "piercing": true},
-      "effects_by_level": [{"combo_stack_cap_bonus": 1, "finisher_size_multiplier": 1.05}, {"combo_stack_cap_bonus": 3, "finisher_size_multiplier": 1.13}, {"combo_stack_cap_bonus": 5, "finisher_size_multiplier": 1.24}]
+      "effects_by_level": [
+        {"finisher_heal": 2, "combo_effect_multiplier": 1.05},
+        {"finisher_heal": 5, "combo_effect_multiplier": 1.10},
+        {"finisher_heal": 9, "combo_effect_multiplier": 1.18}
+      ]
     }
   ]
 }

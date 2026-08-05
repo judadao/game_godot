@@ -13,6 +13,7 @@ const DIVINE_GIFT_CHOICE_SCENE := preload(
 @onready var modal_panel: PanelContainer = $SafeMargin/ModalCenter/ModalPanel
 @onready var source_label: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Source
 @onready var instruction_label: Label = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Header/Instruction
+@onready var choice_scroll: ScrollContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll
 @onready var upgrade_section: VBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection
 @onready var upgrade_top_row: HBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/TopRow
 @onready var upgrade_bottom_row: HBoxContainer = $SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/Body/ChoiceScroll/ChoiceSections/UpgradeSection/UpgradeGrid/BottomRow
@@ -49,6 +50,7 @@ func present_page(page: Dictionary) -> void:
 	_selected_choice_id = ""
 	_confirmed = false
 	_clear_choice_buttons()
+	choice_scroll.scroll_vertical = 0
 	_apply_header()
 
 	var upgrades: Array[Dictionary] = []
@@ -127,6 +129,7 @@ func present_page(page: Dictionary) -> void:
 		else "必須完成一項選擇，無法略過此畫面。"
 	)
 	visible = true
+	_apply_responsive_modal_geometry()
 	if not _choice_buttons.is_empty():
 		_wire_focus_navigation()
 		_select_choice(String(_choice_buttons[0].get_meta("choice_id", "")))
@@ -343,6 +346,16 @@ func _select_choice(choice_id: String) -> void:
 	_selected_choice_id = choice_id
 	confirm_button.disabled = false
 	_update_selection_summary()
+	var selected_button := _choice_button_for_id(choice_id)
+	if selected_button != null:
+		choice_scroll.call_deferred("ensure_control_visible", selected_button)
+
+
+func _choice_button_for_id(choice_id: String) -> Button:
+	for button in _choice_buttons:
+		if String(button.get_meta("choice_id", "")) == choice_id:
+			return button
+	return null
 
 
 func _clear_choice_buttons() -> void:
@@ -533,8 +546,43 @@ func _update_selection_summary() -> void:
 
 func _divine_effect_lines(choice: Dictionary) -> Array[String]:
 	var lines: Array[String] = []
+	var status_names: Array[String] = []
+	for status_variant in choice.get("basic_attack_statuses", []) as Array:
+		if not status_variant is Dictionary:
+			continue
+		var status := status_variant as Dictionary
+		status_names.append(String(status.get("name", "元素附著")))
+	if not status_names.is_empty():
+		lines.append("⚔ 普攻／傷害招式：%s" % " + ".join(status_names))
+	var fusion_hint := _best_fusion_hint(
+		choice.get("fusion_hints", []) as Array
+	)
+	if not fusion_hint.is_empty() and lines.size() < 3:
+		var hint_prefix := "◇ 融合相性"
+		if bool(fusion_hint.get("ready_after_selection", false)):
+			hint_prefix = "◇ 選後可立即融合"
+		elif bool(fusion_hint.get("partner_owned", false)):
+			hint_prefix = "◇ 可融合路線"
+		var hint_line := "%s：%s → %s" % [
+			hint_prefix,
+			String(fusion_hint.get("partner_name", "另一神賜")),
+			String(fusion_hint.get("result_name", "神賜昇華")),
+		]
+		var required_equipment := String(
+			fusion_hint.get("required_equipment_name", "")
+		).strip_edges()
+		if not required_equipment.is_empty():
+			hint_line += (
+				"｜%s已裝備" % required_equipment
+				if bool(fusion_hint.get("equipment_ready", false))
+				else "｜需%s" % required_equipment
+			)
+		lines.append(hint_line)
+	var equipment_name := String(choice.get("required_equipment_name", "")).strip_edges()
+	if not equipment_name.is_empty():
+		lines.append("◆ 儀式觸媒：%s（已裝備）" % equipment_name)
 	var background_attack := choice.get("background_attack", {}) as Dictionary
-	if not background_attack.is_empty():
+	if not background_attack.is_empty() and lines.size() < 3:
 		lines.append("✺ 背景自動攻擊：%s（%.1f 秒，繼承劍魂）" % [
 			String(background_attack.get("name", "專屬攻擊")),
 			float(background_attack.get("interval", 0.0)),
@@ -595,6 +643,26 @@ func _divine_effect_lines(choice: Dictionary) -> Array[String]:
 	if lines.size() == 1:
 		lines.append("⚔ 強化具名終結技的特殊機制")
 	return lines
+
+
+func _best_fusion_hint(hints: Array) -> Dictionary:
+	var best: Dictionary = {}
+	var best_score := -1
+	for hint_variant in hints:
+		if not hint_variant is Dictionary:
+			continue
+		var hint := hint_variant as Dictionary
+		var score := 0
+		if bool(hint.get("partner_owned", false)):
+			score += 20
+		if bool(hint.get("equipment_ready", false)):
+			score += 5
+		if bool(hint.get("ready_after_selection", false)):
+			score += 100
+		if score > best_score:
+			best = hint
+			best_score = score
+	return best
 
 
 func _divine_mechanic_line(mutations: Dictionary) -> String:

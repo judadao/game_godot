@@ -34,7 +34,7 @@ func _run() -> void:
 	game.call("_begin_autumn_run")
 	game.set_process(false)
 	var gifts := game.get("divine_gift_manager") as RefCounted
-	for gift_id in ["resonant_grace", "boundless_font"]:
+	for gift_id in ["resonant_grace", "prismatic_oath"]:
 		for _level in 3:
 			_expect(bool(gifts.call("add_or_upgrade", gift_id)), "Fusion materials must reach Lv.3.")
 	game.call("_on_elite_defeated", Vector2.ZERO)
@@ -59,6 +59,30 @@ func _run() -> void:
 	var fusion_section := growth_ui.find_child("FusionSection", true, false) as Control
 	var fusion_grid := growth_ui.find_child("FusionGrid", true, false) as GridContainer
 	var fusion_profile := fusion_choice.get("background_attack", {}) as Dictionary
+	var attack_preview := (load(
+		"res://scenes/combat/vfx/EvolvedBackgroundAttack.tscn"
+	) as PackedScene).instantiate()
+	var energy_widths := attack_preview.call("get_energy_line_widths") as PackedFloat32Array
+	var cadence_profile := attack_preview.call("get_cadence_profile") as Dictionary
+	var supported_motifs := attack_preview.call("get_supported_blessing_motifs") as Array
+	_expect(
+		energy_widths.size() == 3
+			and energy_widths[0] >= 24.0
+			and energy_widths[1] >= 9.0
+			and energy_widths[2] >= 4.0,
+		"Fusion geometry must render as a thick glow, saturated energy body, and bright core instead of thin lines."
+	)
+	_expect(
+		int(cadence_profile.get("beats", 0)) == 3
+			and float(cadence_profile.get("duration", 0.0)) >= 0.9
+			and bool(cadence_profile.get("sacred_halo", false)),
+		"Fusion geometry must stage a readable three-beat sacred halo cadence."
+	)
+	_expect(
+		supported_motifs.size() == 8,
+		"The eight Blessings must have eight explicitly authored geometry motifs."
+	)
+	attack_preview.free()
 	_expect(
 		fusion_section != null
 			and fusion_section.is_visible_in_tree()
@@ -90,6 +114,27 @@ func _run() -> void:
 		"An evolved Blessing must retain an independently ticking background attack profile."
 	)
 	var run := game.get("run_state") as RunState
+	var base_runtime_profile := game.call(
+		"_runtime_background_attack_profile",
+		evolved.get("background_attack", {}) as Dictionary
+	) as Dictionary
+	gifts.call("add_or_upgrade", "eternal_memory")
+	gifts.call("add_or_upgrade", "radiant_mercy")
+	run.temporary_buffs["combo_chain_count"] = 10
+	var catastrophic_profile := game.call(
+		"_runtime_background_attack_profile",
+		evolved.get("background_attack", {}) as Dictionary
+	) as Dictionary
+	_expect(
+		float(base_runtime_profile.get("size_scale", 0.0)) < 1.0
+			and int(base_runtime_profile.get("instance_count", 0)) == 1
+			and float(catastrophic_profile.get("size_scale", 0.0)) >= 2.4
+			and int(catastrophic_profile.get("instance_count", 0)) >= 5
+			and float(catastrophic_profile.get("rhythm_speed", 0.0)) >= 2.2
+			and int(catastrophic_profile.get("target_count", 0)) > int(base_runtime_profile.get("target_count", 0))
+			and float(catastrophic_profile.get("interval", 99.0)) < float(base_runtime_profile.get("interval", 0.0)),
+		"A new fusion must begin as one small object, then Combo and supporting Blessings must make it larger, more numerous, and faster."
+	)
 	var inherited_base := game.call(
 		"_build_background_attack_card", evolved.get("background_attack", {}) as Dictionary
 	) as Dictionary

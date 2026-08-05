@@ -53,14 +53,14 @@ func _run() -> void:
 
 	var director := SurvivalWaveDirector.new()
 	_expect(
-		is_equal_approx(director.survival_duration, 510.0)
+		is_equal_approx(director.survival_duration, 360.0)
 			and is_equal_approx(director.final_rush_duration, 30.0),
-		"Expedition survival must last 8:30 with a red thirty-second Final Rush."
+		"Expedition survival must last 6:00 with a red thirty-second Final Rush."
 	)
 	_expect(
-		director.scheduled_elite_times == [60.0, 120.0, 180.0, 240.0, 300.0, 360.0, 420.0, 480.0]
-			and director.scheduled_boss_times == [90.0, 180.0, 300.0, 360.0, 420.0, 480.0],
-		"Strong enemies must arrive each minute while bosses escalate from 1:30 through the eight-minute peak."
+		director.scheduled_elite_times == [60.0, 120.0, 180.0, 240.0, 300.0]
+			and director.scheduled_boss_times == [60.0, 180.0, 300.0],
+		"Strong enemies must arrive each minute while a minor Boss appears at 1:00 and plural Boss pressure begins at 5:00."
 	)
 	_expect(
 		director.base_density_cap >= 48
