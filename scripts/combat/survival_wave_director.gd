@@ -99,6 +99,11 @@ var _final_rush_started := false
 var _exit_unlocked := false
 var _survival_completed := false
 var _rng := RandomNumberGenerator.new()
+var _difficulty_tier := 1
+
+
+func configure_difficulty_tier(tier: int) -> void:
+	_difficulty_tier = clampi(tier, 1, 4)
 
 
 func _process(delta: float) -> void:
@@ -183,6 +188,7 @@ func get_current_density_cap() -> int:
 	))
 	if is_final_rush():
 		cap += final_rush_density_bonus
+	cap += 12 * (_difficulty_tier - 1)
 	return maxi(1, cap)
 
 
@@ -191,15 +197,19 @@ func get_current_alive_cap() -> int:
 
 
 func get_current_normal_health_multiplier() -> float:
-	return lerpf(
+	var timeline_multiplier := lerpf(
 		base_normal_health_multiplier,
 		maxf(base_normal_health_multiplier, maximum_normal_health_multiplier),
 		pow(_timeline_progress(), normal_health_curve_exponent)
 	)
+	return timeline_multiplier * (1.0 + 0.25 * float(_difficulty_tier - 1))
 
 
 func get_current_enemy_damage_multiplier() -> float:
-	return lerpf(1.15, 2.20, pow(_timeline_progress(), 0.9))
+	return (
+		lerpf(1.15, 2.20, pow(_timeline_progress(), 0.9))
+		* (1.0 + 0.15 * float(_difficulty_tier - 1))
+	)
 
 
 func get_survival_elapsed() -> float:
@@ -388,6 +398,7 @@ func _current_spawn_batch() -> int:
 	))
 	if is_final_rush():
 		batch += 2
+	batch += 2 * (_difficulty_tier - 1)
 	return maxi(1, batch)
 
 

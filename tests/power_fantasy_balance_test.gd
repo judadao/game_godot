@@ -87,9 +87,18 @@ func _run() -> void:
 		director.has_method("get_current_enemy_damage_multiplier"),
 		"Survival director must expose one time-driven enemy damage curve."
 	)
+	_expect(
+		director.has_method("configure_difficulty_tier"),
+		"Expedition directors must accept the selected world's strength tier."
+	)
 	if director.has_method("get_current_normal_health_multiplier"):
 		director.set("_survival_elapsed", 0.0)
 		var opening_health_scale := float(director.call("get_current_normal_health_multiplier"))
+		director.call("configure_difficulty_tier", 4)
+		var heaven_opening_health_scale := float(director.call("get_current_normal_health_multiplier"))
+		var heaven_opening_damage_scale := float(director.call("get_current_enemy_damage_multiplier"))
+		var heaven_opening_density := int(director.call("get_current_density_cap"))
+		director.call("configure_difficulty_tier", 1)
 		director.set("_survival_elapsed", director.survival_duration * 0.5)
 		var middle_health_scale := float(director.call("get_current_normal_health_multiplier"))
 		director.set("_survival_elapsed", director.survival_duration)
@@ -100,12 +109,42 @@ func _run() -> void:
 				and ending_health_scale >= 26.0,
 			"Normal enemies must open at 10x health and grow smoothly to 26x across the compressed timeline."
 		)
+		_expect(
+			heaven_opening_health_scale > opening_health_scale
+				and heaven_opening_damage_scale > 1.15
+				and heaven_opening_density > director.base_density_cap,
+			"Heaven tier must raise enemy durability, damage, and pressure above Autumn at the same timeline point."
+		)
 	_expect(
 		director.normal_enemy_unlocks.size() >= 6
 			and not director.normal_enemy_unlocks.has("elite"),
 		"Autumn survival must mix six normal archetypes while scheduling elites separately."
 	)
 	director.free()
+
+	var autumn_boss_director := RegionalBossDirector.new()
+	root.add_child(autumn_boss_director)
+	autumn_boss_director.call("configure_difficulty_tier", 1)
+	_expect(autumn_boss_director.start_encounter(), "Autumn Boss strength baseline must start.")
+	var autumn_boss := autumn_boss_director.get_active_enemies()[0] as Node
+	var autumn_boss_damage := int((autumn_boss.get("archetype") as Resource).get("attack_damage"))
+	var autumn_boss_health := int((autumn_boss.get("archetype") as Resource).get("max_health"))
+	autumn_boss_director.queue_free()
+	await process_frame
+
+	var heaven_boss_director := RegionalBossDirector.new()
+	root.add_child(heaven_boss_director)
+	heaven_boss_director.call("configure_difficulty_tier", 4)
+	_expect(heaven_boss_director.start_encounter(), "Heaven Boss strength baseline must start.")
+	var heaven_boss := heaven_boss_director.get_active_enemies()[0] as Node
+	var heaven_boss_damage := int((heaven_boss.get("archetype") as Resource).get("attack_damage"))
+	var heaven_boss_health := int((heaven_boss.get("archetype") as Resource).get("max_health"))
+	_expect(
+		heaven_boss_damage > autumn_boss_damage and heaven_boss_health > autumn_boss_health,
+		"Heaven Bosses must deal more base attack damage and have more health than Autumn Bosses."
+	)
+	heaven_boss_director.queue_free()
+	await process_frame
 
 	var enemy_catalog := EnemyArchetype.autumn_catalog()
 	var normal_enemy_ids: Array[StringName] = [

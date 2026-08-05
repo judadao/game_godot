@@ -27,7 +27,14 @@ func _check_hub_layout(viewport_size: Vector2i) -> void:
 	root.add_child(viewport)
 	var hub := HUB_SCENE.instantiate()
 	viewport.add_child(hub)
-	hub.call("configure_progression", {"chapter_id": "chapter_04"}, {"heaven_autumn": 4}, {})
+	hub.call(
+		"configure_progression",
+		{"chapter_id": "chapter_04"},
+		{"heaven_autumn": 4},
+		{"heaven_autumn": 4},
+		{"heaven_autumn": true},
+		{}
+	)
 	await process_frame
 	await process_frame
 	var safe_rect := Rect2(Vector2.ZERO, Vector2(1600, 720))

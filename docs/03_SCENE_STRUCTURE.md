@@ -284,10 +284,12 @@ Town 的六個建築 UI 觸發由 `BuildingEntrances` 獨立擁有；每個 Area
 
 `res://scenes/maps/battle_portal_hub.tscn` 是獨立可玩 map。Town 的唯一
 `BattleGateway` 先進入此大廳；大廳的 `RegionPortals` 固定有 Autumn、Crystal、
-Hell、Heaven 四個入口槽位，篇章只替換槽位所投影的變體。中央 `BossPortal`
-平時封印且沒有 target；任一當前變體完成四次攻略時才亮起並指向該變體 Boss 房。
-待戰期間其他入口仍可互動，但標籤統一顯示「強大的敵人正在靠近...」，不顯示
-內部 clear count。Town return 使用無大型門體的左側互動出口。
+Hell、Heaven 四個入口槽位。篇章開啟後舊世界不被替換；Portal 以
+`expedition_variant_options` metadata 投影該槽已開放的 normal／Hell／Heaven
+變體，只有一項時直接進既有 loadout，多項時由
+`ExpeditionVariantSelectUI.tscn` 的按鈕選擇。中央 `BossPortal` 平時封印且沒有
+target；每個變體四片碎片組成鑰匙後才加入可選 Boss 通道，且可同時保留多把鑰匙。
+Town return 使用無大型門體的左側互動出口。
 該出口的互動區與最左側 Autumn portal 必須保持大於一個 Player body 寬度的
 水平淨空，避免玩家同時進入兩個 portal interaction candidates。
 Town 入口沿用背景圖內建的大型藍色門作為唯一視覺，因此

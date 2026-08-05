@@ -1,7 +1,7 @@
 class_name MetaState
 extends RefCounted
 
-const SCHEMA_VERSION := 10
+const SCHEMA_VERSION := 11
 const EXPEDITION_VARIANT_IDS: Array[StringName] = [
 	&"autumn", &"crystal",
 	&"hell_autumn", &"hell_crystal", &"hell",
@@ -98,6 +98,28 @@ var region_boss_defeated: Dictionary = {
 	"heaven_crystal": false,
 	"disorder_hell": false,
 }
+var region_boss_fragments: Dictionary = {
+	"autumn": 0,
+	"crystal": 0,
+	"heaven": 0,
+	"hell": 0,
+	"hell_autumn": 0,
+	"hell_crystal": 0,
+	"heaven_autumn": 0,
+	"heaven_crystal": 0,
+	"disorder_hell": 0,
+}
+var region_boss_keys: Dictionary = {
+	"autumn": false,
+	"crystal": false,
+	"heaven": false,
+	"hell": false,
+	"hell_autumn": false,
+	"hell_crystal": false,
+	"heaven_autumn": false,
+	"heaven_crystal": false,
+	"disorder_hell": false,
+}
 var _last_migration_report: Dictionary = {}
 
 
@@ -163,6 +185,8 @@ func to_dict() -> Dictionary:
 		"story_state": story_state.duplicate(true),
 		"region_clear_counts": region_clear_counts.duplicate(true),
 		"region_boss_defeated": region_boss_defeated.duplicate(true),
+		"region_boss_fragments": region_boss_fragments.duplicate(true),
+		"region_boss_keys": region_boss_keys.duplicate(true),
 	}
 
 
@@ -236,6 +260,12 @@ func apply_dict(data: Dictionary) -> void:
 	story_state = _normalize_story_state(data.get("story_state", {}))
 	region_clear_counts = _normalize_region_clear_counts(data.get("region_clear_counts", {}))
 	region_boss_defeated = _normalize_region_boss_flags(data.get("region_boss_defeated", {}))
+	region_boss_fragments = _normalize_region_fragment_counts(
+		data.get("region_boss_fragments", {})
+	)
+	region_boss_keys = _normalize_region_boss_flags(data.get("region_boss_keys", {}))
+	if incoming_schema < 11:
+		_migrate_region_fragments_from_clears()
 
 
 func get_region_clear_count(region_id: StringName) -> int:
@@ -247,21 +277,42 @@ func record_region_clear(region_id: StringName) -> bool:
 		return false
 	var key := String(region_id)
 	region_clear_counts[key] = get_region_clear_count(region_id) + 1
+	if not is_region_boss_defeated(region_id) and not has_region_boss_key(region_id):
+		region_boss_fragments[key] = mini(
+			REGION_BOSS_UNLOCK_CLEAR_COUNT,
+			get_region_boss_fragment_count(region_id) + 1
+		)
+		if get_region_boss_fragment_count(region_id) >= REGION_BOSS_UNLOCK_CLEAR_COUNT:
+			region_boss_keys[key] = true
 	return true
 
 
 func is_region_boss_ready(region_id: StringName) -> bool:
 	return (
 		EXPEDITION_VARIANT_IDS.has(region_id)
-		and get_region_clear_count(region_id) >= REGION_BOSS_UNLOCK_CLEAR_COUNT
+		and has_region_boss_key(region_id)
 		and not is_region_boss_defeated(region_id)
 	)
+
+
+func get_region_boss_fragment_count(region_id: StringName) -> int:
+	return clampi(
+		int(region_boss_fragments.get(String(region_id), 0)),
+		0,
+		REGION_BOSS_UNLOCK_CLEAR_COUNT
+	)
+
+
+func has_region_boss_key(region_id: StringName) -> bool:
+	return bool(region_boss_keys.get(String(region_id), false))
 
 
 func mark_region_boss_defeated(region_id: StringName) -> bool:
 	if not EXPEDITION_VARIANT_IDS.has(region_id):
 		return false
-	region_boss_defeated[String(region_id)] = true
+	var key := String(region_id)
+	region_boss_defeated[key] = true
+	region_boss_keys[key] = false
 	return true
 
 
@@ -388,6 +439,32 @@ func _normalize_region_boss_flags(value: Variant) -> Dictionary:
 	for region_id in EXPEDITION_VARIANT_IDS:
 		normalized[String(region_id)] = bool(incoming.get(String(region_id), false))
 	return normalized
+
+
+func _normalize_region_fragment_counts(value: Variant) -> Dictionary:
+	var incoming := value as Dictionary if value is Dictionary else {}
+	var normalized: Dictionary = {}
+	for region_id in EXPEDITION_VARIANT_IDS:
+		normalized[String(region_id)] = clampi(
+			int(incoming.get(String(region_id), 0)),
+			0,
+			REGION_BOSS_UNLOCK_CLEAR_COUNT
+		)
+	return normalized
+
+
+func _migrate_region_fragments_from_clears() -> void:
+	for region_id in EXPEDITION_VARIANT_IDS:
+		var key := String(region_id)
+		var fragments := mini(
+			REGION_BOSS_UNLOCK_CLEAR_COUNT,
+			get_region_clear_count(region_id)
+		)
+		region_boss_fragments[key] = fragments
+		region_boss_keys[key] = (
+			fragments >= REGION_BOSS_UNLOCK_CLEAR_COUNT
+			and not is_region_boss_defeated(region_id)
+		)
 
 
 func _safe_integer_dictionary(value: Variant, fallback: Dictionary) -> Dictionary:

@@ -1176,6 +1176,16 @@ status progress panel。skill toast 最多三筆、約 1.5 秒淡出；相同技
 刷新既有 toast。viewport 寬度低於 1200px 時，Boss panel／bar 會縮為 312／280px，
 確保 1152×720 的中央 Boss 資訊不與右上 GOLD／SETTINGS 面板重疊。
 
+### Expedition world selector
+
+`res://scenes/ui/expedition/ExpeditionVariantSelectUI.tscn` 是戰鬥聖所同槽多世界與
+中央多 Boss 鑰匙的唯一選擇 UI。全螢幕 root 與 `CenterContainer` 負責置中，
+`PanelContainer` 內使用 `MarginContainer`／`VBoxContainer`／`ScrollContainer`；
+每個已開放世界建立一個直接 `Button`，不得換成下拉選單。按鈕顯示世界名、嚴格
+強度階級，以及該變體自己的碎片 `n/4`／鑰匙完成狀態。九個 Boss 通道同時可用時
+仍必須能捲動，1152×720、1280×720、1600×900、1920×1080、2560×1440 與
+2560×1080 均不得超出 viewport。
+
 ### Autumn structured cards
 
 Autumn Battle V2 renders each visible card through

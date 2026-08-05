@@ -141,6 +141,9 @@ const COMBO_EVOLUTIONS := [
 @export var town_residence_scene: PackedScene = preload("res://scenes/ui/town/TownResidenceUI.tscn")
 @export var run_result_scene: PackedScene = preload("res://scenes/ui/results/RunResultUI.tscn")
 @export var deck_builder_scene: PackedScene = preload("res://scenes/ui/cards/DeckBuilderUI.tscn")
+@export var expedition_variant_select_scene: PackedScene = preload(
+	"res://scenes/ui/expedition/ExpeditionVariantSelectUI.tscn"
+)
 @export var card_discard_scene: PackedScene = preload("res://scenes/ui/cards/CardDiscardUI.tscn")
 @export var card_growth_scene: PackedScene = preload("res://scenes/ui/cards/CardGrowthUI.tscn")
 @export var auto_attack_feedback_scene: PackedScene = preload(
@@ -470,6 +473,8 @@ func _configure_expedition_map_progression() -> void:
 		"configure_progression",
 		meta_state.story_state,
 		meta_state.region_clear_counts,
+		meta_state.region_boss_fragments,
+		meta_state.region_boss_keys,
 		meta_state.region_boss_defeated
 	)
 
@@ -974,6 +979,11 @@ func _wire_encounter_directors() -> void:
 	for director in current_map.get_tree().get_nodes_in_group("EncounterDirectors"):
 		if not current_map.is_ancestor_of(director):
 			continue
+		if run_state.active and director.has_method("configure_difficulty_tier"):
+			director.call(
+				"configure_difficulty_tier",
+				maxi(1, run_state.expedition_power_tier)
+			)
 		var is_survival_timeline := director.has_signal("survival_time_changed")
 		if not is_survival_timeline:
 			_connect_if_present(director, &"wave_started", &"_on_run_wave_started")
@@ -1643,14 +1653,7 @@ func _finish_run(victory: bool, outcome: StringName = &"") -> Dictionary:
 		if bool(summary.get("is_boss_run", false)):
 			meta_state.mark_region_boss_defeated(completed_variant)
 		else:
-			var chapter_id := String(meta_state.story_state.get("chapter_id", "chapter_01"))
-			var pending_variant := expedition_catalog.get_pending_boss_variant(
-				chapter_id,
-				meta_state.region_clear_counts,
-				meta_state.region_boss_defeated
-			)
-			if pending_variant.is_empty():
-				meta_state.record_region_clear(completed_variant)
+			meta_state.record_region_clear(completed_variant)
 		meta_state.shortcuts["expedition_power_tier"] = maxi(
 			int(meta_state.shortcuts.get("expedition_power_tier", 1)),
 			int(summary.get("expedition_power_tier", 1))
@@ -5891,6 +5894,14 @@ func _discover_equipment_reward() -> String:
 func _on_portal_entered(_portal: Node, target_scene_path: String, target_spawn_name: StringName, interactor: Node) -> void:
 	if interactor != null and interactor != player:
 		return
+	if not run_state.active and _portal != null:
+		var option_variant: Variant = _portal.get_meta("expedition_variant_options", [])
+		if option_variant is Array and (option_variant as Array).size() > 1:
+			_open_expedition_variant_selector(
+				option_variant as Array,
+				target_spawn_name
+			)
+			return
 	var canonical_target := _canonical_map_scene_path(target_scene_path)
 	var resolved_target := _resolve_main_scene_path(canonical_target)
 	if target_scene_path.is_empty() or not ResourceLoader.exists(resolved_target):
@@ -5937,12 +5948,50 @@ func _on_portal_entered(_portal: Node, target_scene_path: String, target_spawn_n
 	load_current_map(packed, target_spawn_name)
 
 
+func _open_expedition_variant_selector(entries: Array, target_spawn_name: StringName) -> void:
+	if get_open_ui("ExpeditionVariantSelectUI") != null:
+		return
+	var ui_control := open_ui(
+		"ExpeditionVariantSelectUI",
+		expedition_variant_select_scene,
+		true
+	)
+	if ui_control == null:
+		return
+	ui_control.call("configure", "選擇戰鬥世界", entries)
+	ui_control.connect(
+		"variant_selected",
+		_on_expedition_variant_selected.bind(ui_control, target_spawn_name),
+		CONNECT_ONE_SHOT
+	)
+	ui_control.connect(
+		"cancelled",
+		close_ui.bind(ui_control),
+		CONNECT_ONE_SHOT
+	)
+
+
+func _on_expedition_variant_selected(
+	entry: Dictionary,
+	ui_control: Control,
+	target_spawn_name: StringName
+) -> void:
+	var target_scene_path := String(entry.get("target_scene_path", ""))
+	var resolved_target := _resolve_main_scene_path(target_scene_path)
+	if target_scene_path.is_empty() or not ResourceLoader.exists(resolved_target):
+		push_warning("Selected expedition scene is not available: %s" % target_scene_path)
+		return
+	close_ui(ui_control)
+	_open_deck_builder(target_scene_path, target_spawn_name)
+
+
 func _open_deck_builder(target_scene_path: String, target_spawn_name: StringName) -> void:
 	if get_open_ui("DeckBuilderUI") != null:
 		return
 	var ui_control := open_ui("DeckBuilderUI", deck_builder_scene, true)
 	if ui_control == null:
 		return
+	ui_control.set_meta("expedition_target_scene_path", target_scene_path)
 	var discovered: Array[Dictionary] = []
 	var valid_ids: Array[String] = []
 	for card in card_database.get_all_cards():

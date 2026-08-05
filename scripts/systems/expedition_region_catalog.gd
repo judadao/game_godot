@@ -10,15 +10,15 @@ const VARIANT_ORDER: Array[StringName] = [
 	&"heaven_autumn", &"heaven_crystal", &"disorder_hell", &"heaven",
 ]
 const VARIANT_DEFINITIONS := {
-	&"autumn": {"display_name": "秋季戰場", "slot_id": &"autumn", "route_scene_path": "res://scenes/maps/autumn_forest.tscn", "boss_scene_path": "res://scenes/maps/boss/AutumnBossArena.tscn", "power_tier": 1},
-	&"crystal": {"display_name": "水晶洞窟", "slot_id": &"crystal", "route_scene_path": "res://scenes/maps/crystal_caves.tscn", "boss_scene_path": "res://scenes/maps/boss/CrystalBossArena.tscn", "power_tier": 1},
-	&"hell_autumn": {"display_name": "地獄秋季", "slot_id": &"autumn", "route_scene_path": "res://scenes/maps/expedition/HellAutumnRoute.tscn", "boss_scene_path": "res://scenes/maps/boss/HellAutumnBossArena.tscn", "power_tier": 2},
-	&"hell_crystal": {"display_name": "地獄水晶", "slot_id": &"crystal", "route_scene_path": "res://scenes/maps/expedition/HellCrystalRoute.tscn", "boss_scene_path": "res://scenes/maps/boss/HellCrystalBossArena.tscn", "power_tier": 2},
-	&"hell": {"display_name": "地獄裂隙", "slot_id": &"hell", "route_scene_path": "res://scenes/maps/hell_rift.tscn", "boss_scene_path": "res://scenes/maps/boss/HellBossArena.tscn", "power_tier": 3},
-	&"heaven_autumn": {"display_name": "天堂秋季", "slot_id": &"autumn", "route_scene_path": "res://scenes/maps/expedition/HeavenAutumnRoute.tscn", "boss_scene_path": "res://scenes/maps/boss/HeavenAutumnBossArena.tscn", "power_tier": 3},
-	&"heaven_crystal": {"display_name": "天堂水晶", "slot_id": &"crystal", "route_scene_path": "res://scenes/maps/expedition/HeavenCrystalRoute.tscn", "boss_scene_path": "res://scenes/maps/boss/HeavenCrystalBossArena.tscn", "power_tier": 3},
-	&"disorder_hell": {"display_name": "無序地獄", "slot_id": &"hell", "route_scene_path": "res://scenes/maps/expedition/DisorderHellRoute.tscn", "boss_scene_path": "res://scenes/maps/boss/DisorderHellBossArena.tscn", "power_tier": 4},
-	&"heaven": {"display_name": "天堂聖域", "slot_id": &"heaven", "route_scene_path": "res://scenes/maps/heaven_sanctuary.tscn", "boss_scene_path": "res://scenes/maps/boss/HeavenBossArena.tscn", "power_tier": 4},
+	&"autumn": {"display_name": "秋季戰場", "fragment_name": "秋天碎片", "slot_id": &"autumn", "route_scene_path": "res://scenes/maps/autumn_forest.tscn", "boss_scene_path": "res://scenes/maps/boss/AutumnBossArena.tscn", "power_tier": 1},
+	&"crystal": {"display_name": "水晶洞窟", "fragment_name": "水晶碎片", "slot_id": &"crystal", "route_scene_path": "res://scenes/maps/crystal_caves.tscn", "boss_scene_path": "res://scenes/maps/boss/CrystalBossArena.tscn", "power_tier": 2},
+	&"hell_autumn": {"display_name": "地獄秋季", "fragment_name": "地獄秋季碎片", "slot_id": &"autumn", "route_scene_path": "res://scenes/maps/expedition/HellAutumnRoute.tscn", "boss_scene_path": "res://scenes/maps/boss/HellAutumnBossArena.tscn", "power_tier": 3},
+	&"hell_crystal": {"display_name": "地獄水晶", "fragment_name": "地獄水晶碎片", "slot_id": &"crystal", "route_scene_path": "res://scenes/maps/expedition/HellCrystalRoute.tscn", "boss_scene_path": "res://scenes/maps/boss/HellCrystalBossArena.tscn", "power_tier": 3},
+	&"hell": {"display_name": "地獄裂隙", "fragment_name": "地獄碎片", "slot_id": &"hell", "route_scene_path": "res://scenes/maps/hell_rift.tscn", "boss_scene_path": "res://scenes/maps/boss/HellBossArena.tscn", "power_tier": 3},
+	&"heaven_autumn": {"display_name": "天堂秋季", "fragment_name": "天堂秋季碎片", "slot_id": &"autumn", "route_scene_path": "res://scenes/maps/expedition/HeavenAutumnRoute.tscn", "boss_scene_path": "res://scenes/maps/boss/HeavenAutumnBossArena.tscn", "power_tier": 4},
+	&"heaven_crystal": {"display_name": "天堂水晶", "fragment_name": "天堂水晶碎片", "slot_id": &"crystal", "route_scene_path": "res://scenes/maps/expedition/HeavenCrystalRoute.tscn", "boss_scene_path": "res://scenes/maps/boss/HeavenCrystalBossArena.tscn", "power_tier": 4},
+	&"disorder_hell": {"display_name": "無序地獄", "fragment_name": "無序地獄碎片", "slot_id": &"hell", "route_scene_path": "res://scenes/maps/expedition/DisorderHellRoute.tscn", "boss_scene_path": "res://scenes/maps/boss/DisorderHellBossArena.tscn", "power_tier": 4},
+	&"heaven": {"display_name": "天堂聖域", "fragment_name": "天堂碎片", "slot_id": &"heaven", "route_scene_path": "res://scenes/maps/heaven_sanctuary.tscn", "boss_scene_path": "res://scenes/maps/boss/HeavenBossArena.tscn", "power_tier": 4},
 }
 
 
@@ -42,6 +42,10 @@ func get_display_name(variant_id: StringName) -> String:
 	return String(get_definition(variant_id).get("display_name", variant_id))
 
 
+func get_fragment_name(variant_id: StringName) -> String:
+	return String(get_definition(variant_id).get("fragment_name", "%s碎片" % get_display_name(variant_id)))
+
+
 func get_route_scene_path(variant_id: StringName) -> String:
 	return String(get_definition(variant_id).get("route_scene_path", ""))
 
@@ -59,9 +63,9 @@ func get_active_variant_ids(chapter_id: String) -> Array[StringName]:
 		1, 2:
 			return [&"autumn", &"crystal"]
 		3:
-			return [&"hell_autumn", &"hell_crystal", &"hell"]
+			return [&"autumn", &"crystal", &"hell_autumn", &"hell_crystal", &"hell"]
 		_:
-			return [&"heaven_autumn", &"heaven_crystal", &"disorder_hell", &"heaven"]
+			return VARIANT_ORDER.duplicate()
 
 
 func get_available_region_ids(chapter_id: String) -> Array[StringName]:
@@ -82,11 +86,32 @@ func get_pending_boss_variant(
 	return &""
 
 
-func get_variant_for_slot(chapter_id: String, slot_id: StringName) -> StringName:
+func get_ready_boss_variants(
+	chapter_id: String,
+	boss_keys: Dictionary,
+	boss_defeated: Dictionary
+) -> Array[StringName]:
+	var result: Array[StringName] = []
+	for variant_id in get_active_variant_ids(chapter_id):
+		if (
+			bool(boss_keys.get(String(variant_id), false))
+			and not bool(boss_defeated.get(String(variant_id), false))
+		):
+			result.append(variant_id)
+	return result
+
+
+func get_slot_variant_ids(chapter_id: String, slot_id: StringName) -> Array[StringName]:
+	var result: Array[StringName] = []
 	for variant_id in get_active_variant_ids(chapter_id):
 		if StringName(get_definition(variant_id).get("slot_id", &"")) == slot_id:
-			return variant_id
-	return &""
+			result.append(variant_id)
+	return result
+
+
+func get_variant_for_slot(chapter_id: String, slot_id: StringName) -> StringName:
+	var variants := get_slot_variant_ids(chapter_id, slot_id)
+	return variants[0] if not variants.is_empty() else &""
 
 
 func get_region_id_for_scene(scene_path: String) -> StringName:

@@ -451,7 +451,11 @@ Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
 | `chapter_one_dialogue_progression_test.gd` | 回顧逐句 speaker／情緒切換、單句 one-shot 停末幀，且完成不寫 flag／checkpoint |
 | `chapter_one_dialogue_ui_test.gd` | 左上半身動畫頭像、無選項文字空間與下方對話框在六個標準解析度的邊界／相對位置 |
 | `story_review_codex_test.gd` | 圖鑑劇情回顧 projection、直接分類切換、播放 intent、read-only 完成與 Town 禁止自動觸發 |
-| `story_state_migration_test.gd` | schema 8→9 預設 story state 與 schema 9 checkpoint／flags round-trip |
+| `story_state_migration_test.gd` | schema 8→9 預設 story state、schema 10 clear count→schema 11 fragments／keys migration 與 round-trip |
+| `expedition_region_progression_test.gd` | retained normal／Hell／Heaven slot choices、strict tier 1–4、獨立四片碎片與多把 Boss key |
+| `battle_portal_hub_test.gd` | 四固定入口投影多世界 options、封印狀態與中央多 Boss key |
+| `expedition_variant_select_ui_test.gd` | 六解析度直接按鈕、世界名、強度、碎片進度與 panel bounds |
+| `expedition_game_flow_test.gd` | selector→loadout exact route、各變體獨立結算、Boss key 消耗與 tier reward |
 
 Layout test 另外要求每個 screen 顯示至少三種 distinct functional icon；Button
 必須有文字、icon 或 tooltip，且可見 hit target 不小於 32×32。

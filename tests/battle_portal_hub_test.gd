@@ -29,21 +29,55 @@ func _run() -> void:
 	var boss := hub.get_node("BossPortal")
 	_expect(bool(boss.get("locked")) and String(boss.get("target_scene_path")).is_empty(), "The central boss gate must begin sealed.")
 
-	hub.call("configure_progression", {"chapter_id": "chapter_03"}, {"hell_autumn": 2, "hell_crystal": 0, "hell": 0}, {})
-	_expect(String(hub.get_node("RegionPortals/AutumnPortal").get_meta("expedition_variant_id")) == "hell_autumn", "Hell chapter must corrupt the Autumn slot.")
-	_expect(String(hub.get_node("RegionPortals/CrystalPortal").get_meta("expedition_variant_id")) == "hell_crystal", "Hell chapter must corrupt the Crystal slot.")
+	hub.call(
+		"configure_progression",
+		{"chapter_id": "chapter_03"},
+		{"hell_autumn": 2, "hell_crystal": 0, "hell": 0},
+		{"hell_autumn": 2},
+		{},
+		{}
+	)
+	var autumn_options := hub.get_node("RegionPortals/AutumnPortal").get_meta("expedition_variant_options", []) as Array
+	var crystal_options := hub.get_node("RegionPortals/CrystalPortal").get_meta("expedition_variant_options", []) as Array
+	_expect(
+		_option_ids(autumn_options) == ["autumn", "hell_autumn"],
+		"Hell chapter Autumn portal must offer normal and Hell battlefields."
+	)
+	_expect(
+		_option_ids(crystal_options) == ["crystal", "hell_crystal"],
+		"Hell chapter Crystal portal must offer normal and Hell battlefields."
+	)
 	_expect(String(hub.get_node("RegionPortals/HellPortal").get_meta("expedition_variant_id")) == "hell", "Hell chapter must open Hell.")
 	_expect(bool(hub.get_node("RegionPortals/HeavenPortal").get("locked")), "Heaven must remain sealed during the Hell chapter.")
 	_expect("/ 4" not in (hub.get_node("PortalLabels/AutumnLabel") as Label).text, "Region labels must not expose clear-count bookkeeping.")
 
-	hub.call("configure_progression", {"chapter_id": "chapter_04"}, {"heaven_autumn": 4}, {})
-	_expect(String(hub.get_node("RegionPortals/AutumnPortal").get_meta("expedition_variant_id")) == "heaven_autumn", "Heaven chapter must sanctify the Autumn slot.")
-	_expect(String(hub.get_node("RegionPortals/HellPortal").get_meta("expedition_variant_id")) == "disorder_hell", "Hell must become Disorder Hell after its commander falls.")
-	_expect(not bool(boss.get("locked")), "Four clears must make the central boss gate triggerable.")
-	_expect(String(boss.get("target_scene_path")).ends_with("HeavenAutumnBossArena.tscn"), "The boss gate must target the eligible current variant.")
+	hub.call(
+		"configure_progression",
+		{"chapter_id": "chapter_04"},
+		{"autumn": 4, "heaven_autumn": 4},
+		{"autumn": 4, "heaven_autumn": 4},
+		{"autumn": true, "heaven_autumn": true},
+		{}
+	)
+	autumn_options = hub.get_node("RegionPortals/AutumnPortal").get_meta("expedition_variant_options", []) as Array
+	var hell_options := hub.get_node("RegionPortals/HellPortal").get_meta("expedition_variant_options", []) as Array
 	_expect(
-		"強大的敵人正在靠近..." in (hub.get_node("PortalLabels/CrystalLabel") as Label).text,
-		"Farmable routes must show the pending-boss warning instead of a clear count."
+		_option_ids(autumn_options) == ["autumn", "hell_autumn", "heaven_autumn"],
+		"Heaven chapter must retain all three Autumn battlefield choices."
+	)
+	_expect(
+		_option_ids(hell_options) == ["hell", "disorder_hell"],
+		"Hell portal must retain Hell and add Disorder Hell after Heaven opens."
+	)
+	_expect(not bool(boss.get("locked")), "Four clears must make the central boss gate triggerable.")
+	var boss_options := boss.get_meta("expedition_variant_options", []) as Array
+	_expect(
+		_option_ids(boss_options) == ["autumn", "heaven_autumn"],
+		"The central gate must retain every independently assembled Boss key."
+	)
+	_expect(
+		"2 把" in (hub.get_node("BossLabel") as Label).text,
+		"The central gate label must summarize all available Boss passage keys."
 	)
 
 	hub.queue_free()
@@ -56,3 +90,11 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _option_ids(options: Array) -> Array[String]:
+	var result: Array[String] = []
+	for option_variant in options:
+		if option_variant is Dictionary:
+			result.append(String((option_variant as Dictionary).get("variant_id", "")))
+	return result

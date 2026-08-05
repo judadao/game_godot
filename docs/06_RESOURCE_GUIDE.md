@@ -753,7 +753,7 @@ extends Resource
 
 ### 9.1 MetaState
 
-`MetaState.SCHEMA_VERSION = 9`。
+`MetaState.SCHEMA_VERSION = 11`。
 
 主要fields：
 
@@ -768,6 +768,7 @@ boss_defeated / shortcuts
 settings
 inventory_state / town_state
 story_state (chapter_id / next_sequence_id / story_flags)
+region_clear_counts / region_boss_fragments / region_boss_keys / region_boss_defeated
 ```
 
 `auto_attack_card_id` 是戰前 loadout 選擇，必須解析為已解鎖的 attack card；
@@ -783,6 +784,10 @@ emotion rows 與 sequence speaker reference 都由 `StoryDialogueCatalog` 載入
 同一 catalog 的 `review_sections` 是圖鑑劇情回顧清單；portrait 必須宣告
 `crop_mode = half_body` 與 `one_shot = true`。目前回顧播放不寫入 `story_state`，正式
 Town 觸發仍待後續核准。
+schema 10 保存九個遠征變體的 clear count 與 Boss completion；schema 11 新增每個
+變體獨立的 Boss passage fragment 與 assembled key。從 schema 10 載入時，以既有
+clear count（最多四片）遷移碎片，達四片且 Boss 未完成者組成鑰匙；不得把某變體
+的碎片或鑰匙投影到同一 portal slot 的其他世界。
 `inventory_state`與`town_state`是current manager DTO；其他equipment/building fields
 同時保留legacy compatibility。
 

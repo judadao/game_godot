@@ -198,17 +198,19 @@ wrappers，讓 portal、HUD、save 與既有測試不需知道實作已抽離：
 | `res://scenes/maps/hell_rift.tscn` | `res://scenes/maps/expedition/HellRoute.tscn` | `HellRoute` |
 | `res://scenes/maps/heaven_sanctuary.tscn` | `res://scenes/maps/expedition/HeavenRoute.tscn` | `HeavenRoute` |
 
-正式遠征由 `ExpeditionRegionCatalog` 以四個穩定 portal slot 與九個篇章變體管理：
-初期為 Autumn／Crystal；Hell 篇改為 Hell Autumn／Hell Crystal／Hell；Heaven
-篇改為 Heaven Autumn／Heaven Crystal／Disorder Hell／Heaven。變體各自保留
-clear count、Boss completion 與 power tier，不共用四次攻略進度。舊
+正式遠征由 `ExpeditionRegionCatalog` 以四個穩定 portal slot 與九個篇章變體管理。
+初期開放 Autumn／Crystal；Hell 篇保留兩者並加入 Hell Autumn／Hell Crystal／Hell；
+Heaven 篇再加入 Heaven Autumn／Heaven Crystal／Disorder Hell／Heaven。Autumn 與
+Crystal 槽位因此可分別顯示 normal／Hell／Heaven 三個直接選擇按鈕，Hell 槽位可選
+Hell／Disorder Hell。變體各自保留 clear count、Boss passage fragments、assembled key、
+Boss completion 與 power tier，不共用四次攻略進度。舊
 Forbidden Graveyard scene 只保留 compatibility，不再是正式遠征入口。
 
-`ExpeditionRegionCatalog.get_pending_boss_variant()` 是中央 Boss 待戰的單一判定：
-當任一當前變體達到四次且 Boss 尚未討伐，該變體取得中央門。在此期間其他戰區
-仍可進入與取得戰利品，但 `Game._finish_run()` 不再增加任何路線 clear count；待戰
-Boss 被擊敗後才恢復累計。Hub 不顯示 clear count，只投影「可進入」、
-「強大的敵人正在靠近...」或完成狀態。
+每次成功通關只替該精確變體增加一片對應碎片；四片會組成該變體的 Boss passage
+key。中央 Boss 門可同時持有多把可用鑰匙，並以
+`ExpeditionVariantSelectUI.tscn` 的直接按鈕選擇對應 Boss 房。完成一把鑰匙不會阻塞
+其他變體繼續累積碎片，Boss 勝利只消耗並完成被選中的那一條 progression。
+`Game._finish_run()` 是通關寫入點，Hub 只投影 `MetaState`，不自行修改永久進度。
 
 除既有 `AutumnBattleMapV2` 外，長程地圖共用 editor-authored
 `ExpeditionRouteTemplate.tscn` 與 runtime `ThemedExpeditionRoute` 生成的 24 個可替換
@@ -600,7 +602,7 @@ Validated static JSON
 Permanent meta：
 
 - path：正式 `user://saves/meta_progress.json`；dev `user://saves/dev_meta_progress.json`
-- schema：`MetaState.SCHEMA_VERSION == 10`
+- schema：`MetaState.SCHEMA_VERSION == 11`
 - service：`SaveService`
 - behavior：`.tmp` write → parse validation → backup → rename
 

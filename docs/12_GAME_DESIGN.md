@@ -140,16 +140,19 @@ Town 是起始 Hub，現有內容包括：
 戰鬥傳送聖所依 `story_state.chapter_id` 投影當前世界世代：
 
 - Chapter 1–2：Autumn、Crystal。
-- Hell chapter：Hell Autumn、Hell Crystal、Hell；前兩張地圖加入地獄材質與更強敵人。
-- Heaven chapter：Heaven Autumn、Heaven Crystal、Disorder Hell、Heaven；Hell 在大統領被擊敗後轉為無序狀態。
+- Hell chapter：Autumn 可選 normal／Hell Autumn，Crystal 可選 normal／Hell Crystal，
+  並開放 Hell；舊戰場不會被替換。
+- Heaven chapter：Autumn 與 Crystal 各可選 normal／Hell／Heaven，Hell 可選
+  Hell／Disorder Hell，並開放 Heaven。
 
-每個變體各自成功攻略四次，中央 Boss 石門才會解除該變體封印。Boss 房不會由
-篇章自動載入；玩家必須靠近並觸發已解封的中央門。路線與 Boss 的 power tier
-會提高敵人生命／密度與 material bag 倍率；已達到的最高 tier 同時提高鍛造商店
+每次成功攻略會取得該精確變體的一片命名碎片；四片組成該變體 Boss 通道鑰匙，
+中央 Boss 石門才會提供該 Boss 房。多把鑰匙可同時存在，以直接按鈕選擇，不會
+互相阻塞或消耗。Boss 房不會由篇章自動載入；玩家必須靠近並觸發已解封的中央門。
+路線與 Boss 嚴格採 Autumn 1 < Crystal 2 < Hell 3 < Heaven／Disorder 4；tier
+會提高敵人生命、傷害、密度、spawn batch 與 material bag 倍率；已達到的最高 tier 同時提高鍛造商店
 可見圖紙階級，因此裝備與劍魂招式供應會隨 Hell／Heaven 世代提升。
-一旦中央門進入待戰狀態，其他戰區仍可反覆進入、戰鬥與帶回掉落，但所有戰區的
-攻略次數暫停累計，直到該 Boss 被擊敗。傳送區只提示「強大的敵人正在靠近...」，
-不直接展示攻略次數。
+Boss 鑰匙完成後，其他世界仍繼續累積自己的通關、碎片與鑰匙；擊敗 Boss 只完成
+並消耗所選變體的鑰匙。
 
 ### 3.3 Autumn
 
@@ -818,8 +821,8 @@ progress 0.65 後才開始，會一起調整天空、雲、場景物件、NPC、
 
 Town 不再直接排列各戰區傳送門，也不保留東西 fast travel。唯一的
 `BattleGateway` 進入 `battle_portal_hub.tscn`：大廳左右各兩個戰區入口，中央
-保留未來尾王 Portal 空位。Autumn、Crystal Caves、Forbidden Graveyard 已接線；
-第四戰區入口目前可見但鎖定，因為第四張正式戰鬥 map 尚未存在。
+為可同時持有多把通道鑰匙的區域 Boss Portal。四個固定入口為 Autumn、Crystal、
+Hell、Heaven；篇章只增加同槽可選世界，不移除前一世代。
 
 ### 9.4 兩套 inventory/economy
 

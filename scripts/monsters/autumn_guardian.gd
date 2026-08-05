@@ -96,7 +96,16 @@ func _apply_attack_pattern(pattern: StringName, telegraphed_direction: float = 0
 				and absf(target_offset.y) <= 72.0
 			)
 	if inside_warning and target.has_method("take_hit"):
-		target.call("take_hit", int(profile["damage"]), global_position, 280.0 if pattern == &"ember_burst" else 180.0)
+		var damage_multiplier := maxf(
+			1.0,
+			float(get_meta("expedition_damage_multiplier", 1.0))
+		)
+		target.call(
+			"take_hit",
+			maxi(1, roundi(float(profile["damage"]) * damage_multiplier)),
+			global_position,
+			280.0 if pattern == &"ember_burst" else 180.0
+		)
 
 
 func _attack_reach(pattern: StringName) -> float:
