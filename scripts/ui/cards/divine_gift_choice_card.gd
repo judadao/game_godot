@@ -17,6 +17,7 @@ func configure(choice: Dictionary, effect_lines: Array[String]) -> void:
 	var level_label := get_node("CardContent/Header/Identity/Level") as Label
 	var class_label := get_node("CardContent/Header/Identity/EffectClass") as Label
 	var description_label := get_node("CardContent/Description") as Label
+	var merge_status_label := get_node("CardContent/EffectsTitle") as Label
 	var effect_list := get_node("CardContent/EffectList") as VBoxContainer
 	_accent = Color.from_string(
 		String(choice.get("accent_color", "")),
@@ -39,6 +40,7 @@ func configure(choice: Dictionary, effect_lines: Array[String]) -> void:
 		"description",
 		"改變連段招式與具名終結技。"
 	))
+	_configure_merge_status(choice, merge_status_label)
 	for child in effect_list.get_children():
 		(child as Label).visible = false
 	for index in mini(_effect_lines.size(), effect_list.get_child_count()):
@@ -51,6 +53,76 @@ func configure(choice: Dictionary, effect_lines: Array[String]) -> void:
 		"\n".join(_effect_lines),
 	]
 	set_selected_state(false)
+
+
+func _configure_merge_status(choice: Dictionary, label: Label) -> void:
+	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(3)
+	style.set_border_width_all(1)
+	style.content_margin_left = 7.0
+	style.content_margin_right = 7.0
+	var action := String(choice.get("action", ""))
+	if action == "divine_fusion":
+		label.text = "昇華結果｜兩項滿級神賜已符合融合條件"
+		label.tooltip_text = label.text
+		label.add_theme_color_override("font_color", GOLD.lightened(0.22))
+		style.bg_color = Color(GOLD.r, GOLD.g, GOLD.b, 0.12)
+		style.border_color = Color(GOLD.r, GOLD.g, GOLD.b, 0.52)
+		label.add_theme_stylebox_override("normal", style)
+		return
+	if String(choice.get("kind", "base")) == "evolved":
+		label.text = "昇華神賜效果預覽"
+		label.tooltip_text = label.text
+		label.add_theme_color_override("font_color", _accent.lightened(0.24))
+		style.bg_color = Color(_accent.r, _accent.g, _accent.b, 0.10)
+		style.border_color = Color(_accent.r, _accent.g, _accent.b, 0.42)
+		label.add_theme_stylebox_override("normal", style)
+		return
+	var hint := _best_owned_fusion_hint(
+		choice.get("fusion_hints", []) as Array
+	)
+	if hint.is_empty():
+		label.text = "目前持有神賜無法與這張融合"
+		label.tooltip_text = label.text
+		label.add_theme_color_override("font_color", Color(0.66, 0.63, 0.58, 1.0))
+		style.bg_color = Color(0.18, 0.17, 0.16, 0.72)
+		style.border_color = Color(0.38, 0.35, 0.30, 0.76)
+		label.add_theme_stylebox_override("normal", style)
+		return
+	var partner_name := String(hint.get("partner_name", "已持有神賜"))
+	var result_name := String(hint.get("result_name", "神賜昇華"))
+	var equipment_name := String(hint.get("required_equipment_name", "")).strip_edges()
+	if bool(hint.get("ready_after_selection", false)):
+		label.text = "選這張即可融合｜你已持有「%s」" % partner_name
+	elif not equipment_name.is_empty() and not bool(hint.get("equipment_ready", false)):
+		label.text = "可組合｜你已持有「%s」・還缺%s" % [partner_name, equipment_name]
+	else:
+		label.text = "可融合｜你已持有「%s」" % partner_name
+	label.tooltip_text = "%s\n融合結果：%s" % [label.text, result_name]
+	label.add_theme_color_override("font_color", Color(1.0, 0.91, 0.52, 1.0))
+	style.bg_color = Color(0.24, 0.18, 0.035, 0.92)
+	style.border_color = Color(1.0, 0.72, 0.20, 0.92)
+	label.add_theme_stylebox_override("normal", style)
+
+
+func _best_owned_fusion_hint(hints: Array) -> Dictionary:
+	var best: Dictionary = {}
+	var best_score := -1
+	for hint_variant in hints:
+		if not hint_variant is Dictionary:
+			continue
+		var hint := hint_variant as Dictionary
+		if not bool(hint.get("partner_owned", false)):
+			continue
+		var score := 0
+		if bool(hint.get("equipment_ready", false)):
+			score += 10
+		if bool(hint.get("ready_after_selection", false)):
+			score += 100
+		if score > best_score:
+			best = hint
+			best_score = score
+	return best
 
 
 func set_selected_state(selected: bool) -> void:

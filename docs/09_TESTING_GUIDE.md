@@ -724,7 +724,7 @@ instance.queue_free()
 | Combo formula | catalog 合法 Combo／Healing 都可記錄；32 個精確已學會 AAA/ABC 配方；順序錯誤不觸發；純治療／防禦支援為零基礎傷害；多招 FIFO 排隊；下一發自動水平攻擊逐一施放；formula stacks 不消耗；各卡效果維持獨立 1.5 秒，單一效果到期只撤銷自己的 modifier；Combo Chain 依總 Combo 動態收緊：1–3 層為 2.0 秒，第 4 層為 1.3 秒，之後每層減少 0.1 秒，第 10 層只剩 0.7 秒且最低 0.6 秒；專注護符最後加上 0.5 秒；每個劍魂基礎與硬上限皆為 10，效果數、增傷 chain、卡面與提示必須共用同一有效上限 |
 | Divine Gifts | catalog 固定 8 項，分別對應火燒、暗吸血、毒、雷暈、風擊退、冰緩、水濺射、光回復，且各有唯一繁中名稱、fusion stem／motif／色彩；每個 EXP level 必選新／升級；三選池有 authored 搭檔時至少保留一條融合路線並投影搭檔、結果、持有／裝備／選後 ready 狀態；菁英／Boss 必選既有升級／合法融合；最多 3 slot；全 inventory 的前綴、mechanics 與攻擊狀態依序累加；選擇頁與 HUD 不得露出英文名稱／說明 |
 | Reward bags | normal／elite／boss 各自有可測 money roll；只有 elite／boss 有 material roll；素材 ID 由 monster archetype 決定；實體 bag 收集只 emit／結算一次 |
-| Growth card readability | upgrade/new/fusion choice 顯示 icon、類型色、AP/level；神賜使用 88px 符印、中文效果分類、2–3 條 next effect/mechanics，其中 base 卡直接顯示融合相性／裝備門檻；獨立 selected badge 與摘要；八種解析度不裁切，2862×1715 的五張混合頁可捲到最後一張且確認鈕固定可見 |
+| Growth card readability | upgrade/new/fusion choice 顯示 icon、類型色、AP/level；神賜使用 88px 符印、中文效果分類、2–3 條 next effect/mechanics；每張 base 候選在效果上方另有常駐融合狀態帶，明寫可搭配的已持有神賜名稱／缺少觸媒，或明示目前沒有搭檔；獨立 selected badge 與摘要；八種解析度不裁切，2862×1715 的五張混合頁可捲到最後一張且確認鈕固定可見 |
 | Dash | ↑ 只觸發 Jump；Space 觸發玩家固有 Dash；不進牌庫/手牌、不耗 AP；Dash Combo infusions 使用 `target_action=dash` |
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |
 | Dev mode | project default-on、headless test isolation、全資源／裝備／劍魂／招式 projection、正式 map entry 存在；ESC selector 在六尺寸內可操作；Town→Crystal→Town 直切會建立／捨棄測試 Run 且不結算 |

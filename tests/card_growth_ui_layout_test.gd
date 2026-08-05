@@ -131,6 +131,18 @@ func _check_viewport(viewport_size: Vector2i) -> void:
 		(divine_buttons[0] as Button).tooltip_text.contains("融合"),
 		"Blessing cards must explain their authored fusion route at %s." % viewport_size
 	)
+	var compatible_status := (divine_buttons[0] as Button).get_node(
+		"CardContent/EffectsTitle"
+	) as Label
+	var incompatible_status := (divine_buttons[1] as Button).get_node(
+		"CardContent/EffectsTitle"
+	) as Label
+	_expect(
+		compatible_status.text.contains("你已持有「盟誓潮汐」")
+			and incompatible_status.text.contains("目前持有"),
+		"Every candidate must plainly state which owned Blessing can merge, or that none can, at %s."
+			% viewport_size
+	)
 	var summary := ui.get_node(
 		"SafeMargin/ModalCenter/ModalPanel/ModalMargin/Content/SelectionSummary"
 	) as Label

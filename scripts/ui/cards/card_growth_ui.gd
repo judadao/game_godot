@@ -558,20 +558,22 @@ func _divine_effect_lines(choice: Dictionary) -> Array[String]:
 		choice.get("fusion_hints", []) as Array
 	)
 	if not fusion_hint.is_empty() and lines.size() < 3:
-		var hint_prefix := "◇ 融合相性"
-		if bool(fusion_hint.get("ready_after_selection", false)):
-			hint_prefix = "◇ 選後可立即融合"
-		elif bool(fusion_hint.get("partner_owned", false)):
-			hint_prefix = "◇ 可融合路線"
-		var hint_line := "%s：%s → %s" % [
-			hint_prefix,
-			String(fusion_hint.get("partner_name", "另一神賜")),
-			String(fusion_hint.get("result_name", "神賜昇華")),
-		]
+		var partner_owned := bool(fusion_hint.get("partner_owned", false))
+		var hint_line := "◇ 目前持有神賜無法與此候選融合"
+		if partner_owned:
+			hint_line = "◇ 你已持有【%s】｜可融合：%s" % [
+				String(fusion_hint.get("partner_name", "另一神賜")),
+				String(fusion_hint.get("result_name", "神賜昇華")),
+			]
+			if bool(fusion_hint.get("ready_after_selection", false)):
+				hint_line = "◇ 選下後可融合【%s】→ %s" % [
+					String(fusion_hint.get("partner_name", "另一神賜")),
+					String(fusion_hint.get("result_name", "神賜昇華")),
+				]
 		var required_equipment := String(
 			fusion_hint.get("required_equipment_name", "")
 		).strip_edges()
-		if not required_equipment.is_empty():
+		if partner_owned and not required_equipment.is_empty():
 			hint_line += (
 				"｜%s已裝備" % required_equipment
 				if bool(fusion_hint.get("equipment_ready", false))

@@ -99,11 +99,15 @@ clip_text = true
 text_overrun_behavior = 3
 
 [node name="EffectsTitle" type="Label" parent="CardContent"]
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.72, 0.28, 1)
-theme_override_font_sizes/font_size = 11
-text = "效果預覽"
+theme_override_font_sizes/font_size = 12
+text = "目前持有神賜無法與這張融合"
+vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="EffectList" type="VBoxContainer" parent="CardContent"]
 layout_mode = 2
