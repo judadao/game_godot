@@ -98,6 +98,40 @@ func peek() -> Dictionary:
 	return _entries[0].duplicate(true)
 
 
+func refresh_front_divine_choices(
+	rewards: Array[Dictionary],
+	fusions: Array[Dictionary]
+) -> Dictionary:
+	if _entries.is_empty():
+		return {}
+	var entry := _entries[0] as Dictionary
+	var source := String(entry.get("source", "")).to_lower()
+	if source not in ["experience", "elite", "boss", "divine"]:
+		return entry.duplicate(true)
+	var event_id := int(entry.get("event_id", 0))
+	var choices: Array[Dictionary] = []
+	if source == "experience":
+		choices = _divine_gift_choices(event_id, rewards, "level")
+	elif source in ["elite", "boss"]:
+		choices = _divine_fusion_choices(event_id, fusions, source)
+		for upgrade_choice in _divine_gift_choices(event_id, rewards, source):
+			if choices.size() >= MAX_EXPERIENCE_CHOICES:
+				break
+			choices.append(upgrade_choice)
+	else:
+		choices = _divine_fusion_choices(event_id, fusions, "divine")
+		for reward_choice in _divine_gift_choices(event_id, rewards, "divine"):
+			if choices.size() >= MAX_EXPERIENCE_CHOICES:
+				break
+			choices.append(reward_choice)
+	if choices.is_empty():
+		choices = _fallback_choices(event_id)
+	entry["choices"] = choices
+	_entries[0] = entry
+	queue_changed.emit(_entries.size())
+	return entry.duplicate(true)
+
+
 func resolve(choice_id: String) -> Dictionary:
 	if _entries.is_empty() or choice_id.is_empty():
 		return {}

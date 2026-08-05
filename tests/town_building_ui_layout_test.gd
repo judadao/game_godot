@@ -453,13 +453,22 @@ func _check_alternate_states(
 			var inventory_panel := market_window.find_child("InventoryPanel", true, false) as Control
 			var shelves_panel := market_window.find_child("ShelvesPanel", true, false) as Control
 			var rumor_panel := market_window.find_child("RumorPanel", true, false) as Control
+			var expected_market_scale := clampf(
+				minf(float(viewport_size.x) / 1280.0, float(viewport_size.y) / 720.0),
+				0.78,
+				2.0
+			)
+			var market_canvas_rect := _canvas_rect(market_window)
 			_expect(
 				market_window.custom_minimum_size == Vector2(1040.0, 640.0)
 					and market_window.size.x <= 1040.5
 					and market_window.size.y <= 640.5
-					and absf(_canvas_rect(market_window).get_center().x - float(viewport_size.x) * 0.5) <= 1.0
-					and absf(_canvas_rect(market_window).get_center().y - float(viewport_size.y) * 0.5) <= 1.0,
-				"Player market must use the centered 1040x640 service frame at %s."
+					and market_canvas_rect.size.distance_to(
+						Vector2(1040.0, 640.0) * expected_market_scale
+					) <= 2.0
+					and absf(market_canvas_rect.get_center().x - float(viewport_size.x) * 0.5) <= 1.0
+					and absf(market_canvas_rect.get_center().y - float(viewport_size.y) * 0.5) <= 1.0,
+				"Player market must scale its centered 1040x640 service frame with the viewport at %s."
 				% viewport_size
 			)
 			_expect(

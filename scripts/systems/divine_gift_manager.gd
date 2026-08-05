@@ -7,16 +7,16 @@ const EVOLVED_MAX_LEVEL := 3
 const MAX_OWNED_GIFTS := 3
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
 const FUSION_RECIPES: Array[Dictionary] = [
-	{"id": "thunderflame_wheel", "left": "resonant_grace", "right": "prismatic_oath", "name": "雷焰天輪", "attack_suffix": "天輪脈衝", "pattern": "chain_barrage"},
-	{"id": "netherfrost_domain", "left": "echoing_will", "right": "eternal_memory", "name": "冥霜靜界", "attack_suffix": "靜界崩解", "pattern": "abyss_nova"},
-	{"id": "venomgale_funeral", "left": "boundless_font", "right": "celestial_momentum", "name": "毒風花葬", "attack_suffix": "花葬旋流", "pattern": "venom_gale"},
-	{"id": "radiant_tide_cloister", "left": "tidal_covenant", "right": "radiant_mercy", "name": "聖潮回廊", "attack_suffix": "回廊潮光", "pattern": "prismatic_orbit"},
-	{"id": "embernight_echo", "left": "resonant_grace", "right": "echoing_will", "name": "燼夜迴響", "attack_suffix": "燼夜返響", "pattern": "abyss_nova"},
-	{"id": "scarlet_plague_crown", "left": "resonant_grace", "right": "boundless_font", "name": "赤疫王冠", "attack_suffix": "疫冠焚輪", "pattern": "venom_gale", "required_equipment_id": "iron_sword", "required_equipment_name": "鐵劍"},
-	{"id": "skyfall_meridian", "left": "prismatic_oath", "right": "tidal_covenant", "name": "天瀑雷脈", "attack_suffix": "雷脈奔流", "pattern": "chain_barrage", "required_equipment_id": "apprentice_staff", "required_equipment_name": "學徒法杖"},
-	{"id": "firmament_tide_eye", "left": "celestial_momentum", "right": "tidal_covenant", "name": "蒼穹潮眼", "attack_suffix": "潮眼旋嵐", "pattern": "prismatic_orbit", "required_equipment_id": "hunter_bow", "required_equipment_name": "獵弓"},
-	{"id": "aurora_holy_lance", "left": "eternal_memory", "right": "radiant_mercy", "name": "極光聖槍", "attack_suffix": "聖槍晶陣", "pattern": "prismatic_orbit", "required_equipment_id": "focus_amulet", "required_equipment_name": "專注護符"},
-	{"id": "eclipsed_mercy", "left": "echoing_will", "right": "radiant_mercy", "name": "蝕光慈悲", "attack_suffix": "蝕光審判", "pattern": "abyss_nova", "required_equipment_id": "vitality_charm", "required_equipment_name": "活力護符"},
+	{"id": "thunderflame_wheel", "left": "resonant_grace", "right": "prismatic_oath", "name": "雷焰天輪", "attack_suffix": "天輪脈衝", "pattern": "chain_barrage", "subject_asset_path": "res://assets/generated/vfx/blessings/evolved/thunderflame_wheel.png", "subject_motion": "chakram_orbit"},
+	{"id": "netherfrost_domain", "left": "echoing_will", "right": "eternal_memory", "name": "冥霜靜界", "attack_suffix": "靜界崩解", "pattern": "abyss_nova", "subject_asset_path": "res://assets/generated/vfx/blessings/evolved/netherfrost_domain.png", "subject_motion": "execution_slam"},
+	{"id": "venomgale_funeral", "left": "boundless_font", "right": "celestial_momentum", "name": "毒風花葬", "attack_suffix": "花葬旋流", "pattern": "venom_gale", "subject_asset_path": "res://assets/generated/vfx/blessings/evolved/venomgale_funeral.png", "subject_motion": "feather_fan"},
+	{"id": "radiant_tide_cloister", "left": "tidal_covenant", "right": "radiant_mercy", "name": "聖潮回廊", "attack_suffix": "回廊潮光", "pattern": "prismatic_orbit", "subject_asset_path": "res://assets/generated/vfx/blessings/evolved/radiant_tide_cloister.png", "subject_motion": "trident_sweep"},
+	{"id": "embernight_echo", "left": "resonant_grace", "right": "echoing_will", "name": "燼夜迴響", "attack_suffix": "燼夜返響", "pattern": "abyss_nova", "subject_asset_path": "res://assets/generated/vfx/blessings/evolved/embernight_echo.png", "subject_motion": "twin_saber_cross"},
+	{"id": "scarlet_plague_crown", "left": "resonant_grace", "right": "boundless_font", "name": "赤疫王冠", "attack_suffix": "疫冠焚輪", "pattern": "venom_gale", "subject_asset_path": "res://assets/generated/vfx/blessings/evolved/scarlet_plague_crown.png", "subject_motion": "crown_barrage", "required_equipment_id": "iron_sword", "required_equipment_name": "鐵劍"},
+	{"id": "skyfall_meridian", "left": "prismatic_oath", "right": "tidal_covenant", "name": "天瀑雷脈", "attack_suffix": "雷脈奔流", "pattern": "chain_barrage", "subject_asset_path": "res://assets/generated/vfx/blessings/evolved/skyfall_meridian.png", "subject_motion": "lightning_spear", "required_equipment_id": "apprentice_staff", "required_equipment_name": "學徒法杖"},
+	{"id": "firmament_tide_eye", "left": "celestial_momentum", "right": "tidal_covenant", "name": "蒼穹潮眼", "attack_suffix": "潮眼旋嵐", "pattern": "prismatic_orbit", "subject_asset_path": "res://assets/generated/vfx/blessings/evolved/firmament_tide_eye.png", "subject_motion": "warhorse_charge", "required_equipment_id": "hunter_bow", "required_equipment_name": "獵弓"},
+	{"id": "aurora_holy_lance", "left": "eternal_memory", "right": "radiant_mercy", "name": "極光聖槍", "attack_suffix": "聖槍晶陣", "pattern": "prismatic_orbit", "subject_asset_path": "res://assets/generated/vfx/blessings/evolved/aurora_holy_lance.png", "subject_motion": "lance_rain", "required_equipment_id": "focus_amulet", "required_equipment_name": "專注護符"},
+	{"id": "eclipsed_mercy", "left": "echoing_will", "right": "radiant_mercy", "name": "蝕光慈悲", "attack_suffix": "蝕光審判", "pattern": "abyss_nova", "subject_asset_path": "res://assets/generated/vfx/blessings/evolved/eclipsed_mercy.png", "subject_motion": "reaper_harvest", "required_equipment_id": "vitality_charm", "required_equipment_name": "活力護符"},
 ]
 
 var _catalog: Dictionary = {}
@@ -55,6 +55,9 @@ func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
 		var fusion_stem := String(gift.get("fusion_stem", "")).strip_edges()
 		var fusion_motif := String(gift.get("fusion_motif", "")).strip_edges()
 		var accent_color := String(gift.get("accent_color", "")).strip_edges()
+		var attack_vfx_asset_path := String(
+			gift.get("attack_vfx_asset_path", "")
+		).strip_edges()
 		var levels_variant: Variant = gift.get("effects_by_level", [])
 		if (
 			gift_id.is_empty()
@@ -63,6 +66,8 @@ func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
 			or fusion_stem.is_empty()
 			or fusion_motif.is_empty()
 			or not Color.html_is_valid(accent_color)
+			or attack_vfx_asset_path.is_empty()
+			or not ResourceLoader.exists(attack_vfx_asset_path)
 			or not levels_variant is Array
 			or (levels_variant as Array).size() != MAX_LEVEL
 		):
@@ -145,6 +150,7 @@ func add_or_upgrade(gift_id: String) -> bool:
 		"fusion_stem": String(definition.get("fusion_stem", gift_id)),
 		"fusion_motif": String(definition.get("fusion_motif", "pulse_ring")),
 		"accent_color": String(definition.get("accent_color", "#f05cff")),
+		"attack_vfx_asset_path": String(definition.get("attack_vfx_asset_path", "")),
 		"finisher_mutations": (
 			definition.get("finisher_mutations", {}) as Dictionary
 		).duplicate(true),
@@ -516,10 +522,14 @@ func _evolved_identity(left: Dictionary, right: Dictionary) -> Dictionary:
 			pattern = "venom_gale"
 			attack_suffix = "蝕風迴廊"
 	var recipe := _fusion_recipe(String(left.get("id", "")), String(right.get("id", "")))
+	var subject_asset_path := ""
+	var subject_motion := "composite_orbit"
 	if not recipe.is_empty():
 		evolved_name = String(recipe.get("name", evolved_name))
 		pattern = String(recipe.get("pattern", pattern))
 		attack_suffix = String(recipe.get("attack_suffix", attack_suffix))
+		subject_asset_path = String(recipe.get("subject_asset_path", ""))
+		subject_motion = String(recipe.get("subject_motion", subject_motion))
 	var left_color := Color.from_string(String(left.get("accent_color", "#f05cff")), Color.MAGENTA)
 	var right_color := Color.from_string(String(right.get("accent_color", "#f05cff")), Color.MAGENTA)
 	var accent := left_color.lerp(right_color, 0.5).lightened(0.12)
@@ -537,7 +547,9 @@ func _evolved_identity(left: Dictionary, right: Dictionary) -> Dictionary:
 		"accent_color": accent.to_html(false),
 		"glow_colors": [left_color.to_html(false), right_color.to_html(false)],
 		"geometry_modules": modules,
-		"description": "%s與%s的幾何攻擊會在背景自動交錯施放。" % [left_stem, right_stem],
+		"subject_asset_path": subject_asset_path,
+		"subject_motion": subject_motion,
+		"description": "%s與%s的進化主體會在背景自動交錯施放。" % [left_stem, right_stem],
 	}
 	return {
 		"name": evolved_name,
@@ -585,6 +597,31 @@ func get_background_attack_profiles() -> Array[Dictionary]:
 		profile["source_gift_id"] = String(gift.get("id", ""))
 		profile["source_gift_name"] = String(gift.get("name", ""))
 		profiles.append(profile)
+	return profiles
+
+
+func get_basic_attack_visual_profiles() -> Array[Dictionary]:
+	var profiles: Array[Dictionary] = []
+	for gift_id in _ordered_gift_ids():
+		var gift := _inventory[gift_id] as Dictionary
+		var kind := String(gift.get("kind", ""))
+		var asset_path := String(gift.get("attack_vfx_asset_path", ""))
+		if kind == "evolved":
+			var background_attack := gift.get("background_attack", {}) as Dictionary
+			asset_path = String(background_attack.get("subject_asset_path", ""))
+		elif kind != "base":
+			continue
+		if asset_path.is_empty():
+			continue
+		profiles.append({
+			"gift_id": gift_id,
+			"name": String(gift.get("name", gift_id)),
+			"element": String(gift.get("element", "normal")),
+			"asset_path": asset_path,
+			"accent_color": String(gift.get("accent_color", "#ffffff")),
+			"level": clampi(int(gift.get("level", 1)), 1, MAX_LEVEL),
+			"evolved": kind == "evolved",
+		})
 	return profiles
 
 

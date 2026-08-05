@@ -1,7 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/evolved_background_attack.gd" id="1_script"]
 
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 0
+
 [node name="EvolvedBackgroundAttack" type="Node2D"]
 z_index = 18
+material = SubResource("CanvasItemMaterial_add")
 script = ExtResource("1_script")

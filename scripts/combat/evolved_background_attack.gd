@@ -21,11 +21,16 @@ var _local_targets: Array[Vector2] = []
 var _elapsed := 0.0
 var _duration := 0.96
 var _accent := Color(0.94, 0.36, 1.0, 1.0)
+var _subject_texture: Texture2D
 
 
 func play(profile: Dictionary, world_targets: Array[Vector2]) -> void:
 	_profile = profile.duplicate(true)
 	_accent = Color.from_string(String(profile.get("accent_color", "#f05cff")), _accent)
+	_subject_texture = null
+	var subject_path := String(profile.get("subject_asset_path", ""))
+	if not subject_path.is_empty() and ResourceLoader.exists(subject_path):
+		_subject_texture = load(subject_path) as Texture2D
 	_local_targets.clear()
 	for world_position in world_targets:
 		_local_targets.append(to_local(world_position))
@@ -74,6 +79,24 @@ func get_runtime_escalation() -> Dictionary:
 	}
 
 
+func get_subject_asset_path() -> String:
+	return String(_profile.get("subject_asset_path", ""))
+
+
+func get_subject_motion() -> StringName:
+	return StringName(_profile.get("subject_motion", ""))
+
+
+func get_subject_instance_count() -> int:
+	return mini(4, maxi(1, int(_profile.get("instance_count", 1)))) if _subject_texture != null else 0
+
+
+func debug_set_progress(progress: float) -> void:
+	_elapsed = clampf(progress, 0.0, 0.999) * _duration
+	set_process(false)
+	queue_redraw()
+
+
 func _draw() -> void:
 	if _profile.is_empty():
 		return
@@ -93,6 +116,77 @@ func _draw() -> void:
 		"prismatic_orbit":
 			_draw_prismatic_orbit(color, progress)
 	_draw_geometry_modules(progress, alpha)
+	_draw_concrete_subjects(progress, alpha)
+
+
+func _draw_concrete_subjects(progress: float, alpha: float) -> void:
+	if _subject_texture == null:
+		return
+	var motion := String(_profile.get("subject_motion", "composite_orbit"))
+	var count := mini(4, maxi(1, int(_profile.get("instance_count", 1))))
+	var size_scale := clampf(float(_profile.get("size_scale", 0.72)), 0.5, 2.4)
+	var base_width := clampf(90.0 * size_scale, 64.0, 216.0)
+	var texture_aspect := float(_subject_texture.get_height()) / maxf(1.0, float(_subject_texture.get_width()))
+	var subject_size := Vector2(base_width, base_width * texture_aspect)
+	var rhythmic_alpha := clampf(alpha * (0.72 + 0.28 * sin(progress * PI)), 0.0, 1.0)
+	for index in count:
+		var phase := fmod(progress - float(index) * 0.055 + 1.0, 1.0)
+		var target := _local_targets[index % _local_targets.size()] if not _local_targets.is_empty() else Vector2.ZERO
+		var transform := _subject_transform(motion, phase, index, count, target, size_scale)
+		var subject_position := transform.get("position", Vector2.ZERO) as Vector2
+		var subject_rotation := float(transform.get("rotation", 0.0))
+		var pulse_scale := float(transform.get("scale", 1.0)) * (0.86 + 0.14 * sin(phase * PI))
+		var subject_alpha := rhythmic_alpha * float(transform.get("alpha", 1.0))
+		draw_set_transform(subject_position, subject_rotation, Vector2.ONE * pulse_scale)
+		draw_texture_rect(
+			_subject_texture,
+			Rect2(-subject_size * 0.5, subject_size),
+			false,
+			Color(1.0, 1.0, 1.0, subject_alpha)
+		)
+		if int(_profile.get("destruction_tier", 0)) >= 2:
+			draw_set_transform(subject_position - Vector2.from_angle(subject_rotation) * 22.0, subject_rotation - 0.06, Vector2.ONE * pulse_scale * 1.06)
+			draw_texture_rect(
+				_subject_texture,
+				Rect2(-subject_size * 0.5, subject_size),
+				false,
+				Color(_accent, subject_alpha * 0.12)
+			)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+func _subject_transform(
+	motion: String,
+	phase: float,
+	index: int,
+	count: int,
+	target: Vector2,
+	size_scale: float
+) -> Dictionary:
+	var spread := (float(index) - float(count - 1) * 0.5)
+	match motion:
+		"chakram_orbit":
+			return {"position": target * phase + Vector2.from_angle(phase * TAU * 1.8 + index) * 72.0 * size_scale, "rotation": phase * TAU * 3.0 + index, "scale": 0.82}
+		"execution_slam":
+			return {"position": target + Vector2(spread * 34.0, lerpf(-330.0, 12.0, ease(phase, -2.4))), "rotation": PI * 0.5 + spread * 0.05, "scale": 1.05}
+		"feather_fan":
+			var fan_angle := -0.72 + TAU * 0.23 * float(index) / float(maxi(1, count - 1))
+			return {"position": Vector2.from_angle(fan_angle) * lerpf(30.0, 250.0, phase) + target * phase * 0.35, "rotation": fan_angle, "scale": 0.72}
+		"trident_sweep":
+			return {"position": Vector2(lerpf(-300.0, target.x, phase), target.y + spread * 34.0), "rotation": target.angle(), "scale": 0.86}
+		"twin_saber_cross":
+			return {"position": target * phase + Vector2(0.0, spread * 26.0), "rotation": target.angle() + (-0.62 if index % 2 == 0 else 0.62), "scale": 0.82}
+		"crown_barrage":
+			return {"position": target * 0.72 + Vector2.from_angle(phase * TAU + index * TAU / float(count)) * 82.0 * size_scale, "rotation": sin(phase * TAU) * 0.16, "scale": 0.72}
+		"lightning_spear", "lance_rain":
+			return {"position": target + Vector2(spread * 44.0, lerpf(-380.0 - absf(spread) * 44.0, 0.0, ease(phase, -3.0))), "rotation": PI * 0.5, "scale": 0.82}
+		"warhorse_charge":
+			return {"position": Vector2(lerpf(-420.0 - index * 70.0, target.x + 90.0, phase), target.y + spread * 30.0), "rotation": 0.0, "scale": 1.12}
+		"reaper_harvest":
+			var harvest_angle := lerpf(-PI * 0.92, PI * 0.18, phase) + spread * 0.08
+			return {"position": target * 0.45 + Vector2.from_angle(harvest_angle) * 155.0 * size_scale, "rotation": harvest_angle + PI * 0.48, "scale": 1.0}
+		_:
+			return {"position": target * phase + Vector2.from_angle(phase * TAU + index) * 48.0 * size_scale, "rotation": phase * TAU, "scale": 0.9}
 
 
 func _draw_sacred_cadence(progress: float, alpha: float) -> void:
@@ -103,7 +197,7 @@ func _draw_sacred_cadence(progress: float, alpha: float) -> void:
 	var radius := lerpf(44.0 + beat_index * 18.0, 132.0 + beat_index * 22.0, beat_progress)
 	var rotation := -PI * 0.5 + beat_index * PI * 0.125
 	var sacred_color := _accent.lightened(0.52)
-	var beat_alpha := alpha * (0.58 + pulse * 0.42)
+	var beat_alpha := alpha * (0.24 + pulse * 0.24)
 	_draw_energy_arc(radius, rotation, rotation + TAU, sacred_color, beat_alpha, 0.72)
 	_draw_energy_arc(radius * 0.66, -rotation, -rotation + TAU * 0.92, sacred_color, beat_alpha * 0.72, 0.42)
 	for node_index in 8:

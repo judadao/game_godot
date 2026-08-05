@@ -1209,10 +1209,13 @@ func _get_run_deck_size() -> int:
 func _open_next_growth_choice() -> void:
 	if growth_choice_queue.is_empty() or get_open_ui("CardGrowthUI") != null:
 		return
+	var page := _refresh_front_divine_growth_page()
+	if page.is_empty():
+		return
 	var ui_control := open_ui("CardGrowthUI", card_growth_scene, true)
 	if ui_control == null:
 		return
-	ui_control.call("present_page", growth_choice_queue.peek())
+	ui_control.call("present_page", page)
 	ui_control.connect(
 		"choice_confirmed",
 		_on_growth_choice_confirmed.bind(ui_control)
@@ -1244,7 +1247,9 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 		)
 		return
 	if not _apply_growth_resolution(selected):
-		ui_control.call("present_page", page)
+		var refreshed_page := _refresh_front_divine_growth_page()
+		if not refreshed_page.is_empty():
+			ui_control.call("present_page", refreshed_page)
 		return
 	if growth_choice_queue.resolve(choice_id).is_empty():
 		return
@@ -1257,6 +1262,27 @@ func _on_growth_choice_confirmed(choice_id: String, ui_control: Control) -> void
 		call_deferred("_open_next_growth_choice")
 	elif run_state.pending_level_ups > 0:
 		call_deferred("_enqueue_experience_growth")
+
+
+func _refresh_front_divine_growth_page() -> Dictionary:
+	var page := growth_choice_queue.peek()
+	var source := String(page.get("source", "")).to_lower()
+	if source not in ["experience", "elite", "boss", "divine"]:
+		return page
+	_sync_divine_fusion_equipment_context()
+	var rewards: Array[Dictionary] = []
+	var fusions: Array[Dictionary] = []
+	if source == "experience" or source == "divine":
+		rewards = divine_gift_manager.call("get_reward_choices", 3) as Array
+	else:
+		rewards = divine_gift_manager.call("get_upgrade_choices", 3) as Array
+	if source in ["elite", "boss", "divine"]:
+		fusions = divine_gift_manager.call("get_fusion_choices", 3) as Array
+	return growth_choice_queue.call(
+		"refresh_front_divine_choices",
+		rewards,
+		fusions
+	) as Dictionary
 
 
 func _on_growth_reward_skipped(ui_control: Control) -> void:
@@ -2480,6 +2506,12 @@ func _spawn_auto_attack_feedback(
 		0,
 		int(effect.get("amount", 0)) - int(base_effect.get("amount", 0))
 	)
+	var visual_profile := (
+		card.get("combo_visual_profile", {}) as Dictionary
+	).duplicate(true)
+	visual_profile["blessing_attack_profiles"] = divine_gift_manager.call(
+		"get_basic_attack_visual_profiles"
+	) as Array
 	feedback.call(
 		"play",
 		_auto_attack_origin(),
@@ -2490,7 +2522,7 @@ func _spawn_auto_attack_feedback(
 		bool(result.get("critical", false)),
 		float(card.get("projectile_speed_multiplier", 1.0)),
 		float(card.get("attack_size_multiplier", 1.0)),
-		card.get("combo_visual_profile", {}) as Dictionary
+		visual_profile
 	)
 
 

@@ -58,6 +58,7 @@ signal market_fixture_purchase_requested(fixture_id: StringName)
 @onready var counter_customer_npc: TextureRect = %CounterCustomerNPC
 @onready var browsing_customer_npc: TextureRect = %BrowsingCustomerNPC
 @onready var queue_customer_npc: TextureRect = %QueueCustomerNPC
+@onready var player_market_window: PanelContainer = $SafeMargin/PlayerMarketWindow
 
 var _inventory: RefCounted
 var _sale_overview: Dictionary = {}
@@ -97,13 +98,16 @@ func _ready() -> void:
 	customer_interact_button.pressed.connect(_show_customer_comment)
 	bell_interact_button.pressed.connect(_show_context.bind(&"rumor"))
 	door_interact_button.pressed.connect(_request_back)
+	resized.connect(_apply_viewport_scale)
 	for shelf_index in shelf_buttons.size():
 		shelf_buttons[shelf_index].pressed.connect(select_shelf.bind(shelf_index))
 	visible = false
+	call_deferred("_apply_viewport_scale")
 
 
 func open() -> void:
 	visible = true
+	_apply_viewport_scale()
 	_ambient_origins.clear()
 	call_deferred("_capture_ambient_origins")
 	_customer_check_elapsed = 0.0
@@ -112,6 +116,19 @@ func open() -> void:
 	_refresh()
 	if _selected_shelf < shelf_buttons.size() and shelf_buttons[_selected_shelf].visible:
 		shelf_buttons[_selected_shelf].grab_focus()
+
+
+func _apply_viewport_scale() -> void:
+	if player_market_window == null:
+		return
+	var reference_size := Vector2(1280.0, 720.0)
+	var window_size := Vector2(1040.0, 640.0)
+	var viewport_scale := minf(size.x / reference_size.x, size.y / reference_size.y)
+	viewport_scale = clampf(viewport_scale, 0.78, 2.0)
+	player_market_window.size = window_size
+	player_market_window.position = (size - window_size) * 0.5
+	player_market_window.pivot_offset = window_size * 0.5
+	player_market_window.scale = Vector2.ONE * viewport_scale
 
 
 func close() -> void:

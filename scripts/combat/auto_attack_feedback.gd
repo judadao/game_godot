@@ -68,6 +68,7 @@ const PREMIUM_CRESCENT_LAYERS: Array[StringName] = [
 @onready var damage_label: Label = $DamageLabel
 @onready var combo_label: Label = $ComboLabel
 @onready var premium_crescent_layer: Node2D = $PremiumCrescentLayer
+@onready var blessing_attack_overlay: Node2D = $BlessingAttackOverlay
 
 var _target_offset := Vector2.ZERO
 var _travel_progress := 0.0
@@ -85,6 +86,7 @@ var _did_hit := false
 var _elemental_aura: Node2D
 var _combo_tier := 0
 var _suppress_attack_geometry := false
+var _travel_tween: Tween
 
 
 func play(
@@ -131,6 +133,15 @@ func play(
 	)
 	premium_crescent_layer.visible = not _suppress_attack_geometry
 	premium_crescent_layer.call("set_progress", _travel_progress, _impact_progress)
+	blessing_attack_overlay.call(
+		"configure",
+		visual_profile.get("blessing_attack_profiles", []) as Array,
+		_target_offset,
+		_stack_count,
+		_attack_size_multiplier,
+		_combo_tier
+	)
+	blessing_attack_overlay.call("set_progress", _travel_progress, _impact_progress)
 	damage_label.text = "%s%d" % ["CRIT  -" if critical else "-", maxi(0, damage)]
 	damage_label.add_theme_color_override("font_color", _accent)
 	combo_label.text = (
@@ -150,27 +161,27 @@ func play(
 	queue_redraw()
 
 	var speed_scale := maxf(0.80, projectile_speed_multiplier)
-	var travel_tween := create_tween()
-	travel_tween.tween_method(
+	_travel_tween = create_tween()
+	_travel_tween.tween_method(
 		_set_travel_progress,
 		0.0,
 		LAUNCH_PROGRESS,
 		ANTICIPATION_DURATION / speed_scale
 	)
-	travel_tween.tween_method(
+	_travel_tween.tween_method(
 		_set_travel_progress,
 		LAUNCH_PROGRESS,
 		1.0,
 		TRAVEL_DURATION / speed_scale
 	)
-	travel_tween.tween_callback(_show_impact)
-	travel_tween.tween_method(
+	_travel_tween.tween_callback(_show_impact)
+	_travel_tween.tween_method(
 		_set_impact_progress,
 		0.0,
 		1.0,
 		IMPACT_DURATION
 	)
-	travel_tween.tween_callback(_finish)
+	_travel_tween.tween_callback(_finish)
 
 
 func get_combo_text() -> String:
@@ -205,6 +216,17 @@ func get_spread_degrees() -> float:
 
 func get_combo_visual_tier() -> int:
 	return _combo_tier
+
+
+func get_blessing_overlay_object_count() -> int:
+	return int(blessing_attack_overlay.call("get_object_count"))
+
+
+func debug_set_progress(travel_progress: float, impact_progress: float = 0.0) -> void:
+	if _travel_tween != null and _travel_tween.is_valid():
+		_travel_tween.kill()
+	_set_travel_progress(travel_progress)
+	_set_impact_progress(impact_progress)
 
 
 func get_direction_angle_degrees() -> float:
@@ -632,8 +654,8 @@ func _draw_generated_stage(
 ) -> void:
 	if texture == null or mask == null or alpha <= 0.001:
 		return
-	var spectacle_scale := float([1.0, 1.08, 1.18, 1.30][_combo_tier])
-	var size := base_size * _attack_size_multiplier * spectacle_scale
+	var spectacle_scale := float([1.0, 1.06, 1.12, 1.20][_combo_tier])
+	var size := base_size * _attack_size_multiplier * spectacle_scale * 0.82
 	var source_rect := _generated_source_rect(frame_index)
 	var normal := direction.orthogonal()
 
@@ -653,7 +675,7 @@ func _draw_generated_stage(
 			center + offset,
 			direction,
 			size * (1.07 + float(combo_pass) * 0.045),
-			Color(_combo_color(), alpha * (0.34 - float(combo_pass) * 0.055))
+			Color(_combo_color(), alpha * (0.24 - float(combo_pass) * 0.038))
 		)
 
 	for element_index in _visual_elements.size():
@@ -667,7 +689,7 @@ func _draw_generated_stage(
 			center - direction * 3.0 + lane_offset,
 			direction,
 			size * (1.13 + float(element_index) * 0.025),
-			Color(colors[0], alpha * 0.58)
+			Color(colors[0], alpha * 0.38)
 		)
 		_draw_generated_frame(
 			mask,
@@ -675,7 +697,7 @@ func _draw_generated_stage(
 			center + lane_offset,
 			direction,
 			size * (1.055 + float(element_index) * 0.018),
-			Color(colors[1], alpha * 0.52)
+			Color(colors[1], alpha * 0.34)
 		)
 
 	if _lifesteal:
@@ -780,7 +802,7 @@ func _draw_generated_stage(
 		center,
 		direction,
 		size,
-		Color(1.0, 1.0, 1.0, alpha * (1.0 - frame_blend))
+		Color(1.0, 1.0, 1.0, alpha * 0.78 * (1.0 - frame_blend))
 	)
 	if upper_frame != lower_frame and frame_blend > 0.001:
 		_draw_generated_frame(
@@ -789,7 +811,7 @@ func _draw_generated_stage(
 			center,
 			direction,
 			size,
-			Color(1.0, 1.0, 1.0, alpha * frame_blend)
+			Color(1.0, 1.0, 1.0, alpha * 0.78 * frame_blend)
 		)
 	if stage == &"directional_impact":
 		var flash_progress := clampf(
@@ -1771,12 +1793,14 @@ func _set_travel_progress(value: float) -> void:
 	if _elemental_aura != null and is_instance_valid(_elemental_aura):
 		_elemental_aura.position = _travel_point(_travel_progress)
 	premium_crescent_layer.call("set_progress", _travel_progress, _impact_progress)
+	blessing_attack_overlay.call("set_progress", _travel_progress, _impact_progress)
 	queue_redraw()
 
 
 func _set_impact_progress(value: float) -> void:
 	_impact_progress = clampf(value, 0.0, 1.0)
 	premium_crescent_layer.call("set_progress", _travel_progress, _impact_progress)
+	blessing_attack_overlay.call("set_progress", _travel_progress, _impact_progress)
 	queue_redraw()
 
 

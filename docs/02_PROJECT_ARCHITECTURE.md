@@ -442,7 +442,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
 | `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | single countdown、90 秒十秒 super horde、Boss defeat 後 rapid-level horde、scheduled Elite/Boss、Final Rush、XP gem、money/material bags |
-| `EvolvedBackgroundAttack` | `scenes/combat/vfx/EvolvedBackgroundAttack.tscn` | 昇華神賜專屬背景自動攻擊；把兩個來源的 geometry motif 與 glow color 疊成外光暈／能量本體／近白核心三層粗亮線條，並以三拍擴張聖環、八向光節點與十字裁決光建立神聖節奏；特殊元素組合另保留 chain／nova／gale 動勢；傷害仍由 `Game` 與 `CardEffectRunner` 結算 |
+| `EvolvedBackgroundAttack` | `scenes/combat/vfx/EvolvedBackgroundAttack.tscn` | 昇華神賜專屬背景自動攻擊；10 個配方各自持有可辨識的具體主體（天輪、斬首冰刃、毒羽、潮槍、雙刀、疫冠、雷槍、戰馬、極光槍、死神）與獨立 motion，來源 geometry motif／三拍聖環只作次要節奏層；Combo、等級與支援神賜增加主體數量、尺寸、速度與殘影；傷害仍由 `Game` 與 `CardEffectRunner` 結算 |
 | `EnemyBase` | `scripts/monsters/enemy_base.gd` | archetype、attack、damage、status、reset；大招致死立即結算玩法，再以 unscaled `impact_hold → dissolve → burst` 保留可讀消滅演出 |
 | `AutumnGuardian` | `scripts/monsters/autumn_guardian.gd` | boss phases/pattern profiles |
 | `AutumnSixArmColossusBoss` | `scripts/monsters/autumn_six_arm_colossus_boss.gd` | Autumn regional boss presentation, six-part armature, vertical jaw weak-point exposure; reuses the Guardian combat API |
@@ -475,12 +475,16 @@ UI 對上層提供 setter/configure API與 typed signals：
   recipe tier／加工費與 Sword Soul 升級。鍛造
   以穩鍛／精煉／急鍛／名匠鍛造選擇成本、成功率與品質風險；販售以親民／公道／
   精品定價，並投影「流言菲語」指定商品、具名顧客與高價倍率。`PlayerMarketUI`
-  是獨立 authored 店內 scene，由鐵匠鋪幾何入口進入、返回時回到工坊場景；置中的
-  1040×640 frame 以緊湊店內狀態列呈現主角、既有 Town NPC 顧客、櫃台與實際陳列商品，
+  是獨立 authored 店內 scene，由鐵匠鋪幾何入口進入、返回時回到工坊場景；
+  1040×640 authored frame 以 1280×720 為 1× 基準，依 viewport 在 `0.78–2.0×` 內等比置中，
+  並以緊湊店內狀態列呈現主角、既有 Town NPC 顧客、櫃台與實際陳列商品，
   初始只顯示店內物件；點選商品、貨架或招客鈴後才顯示該物件所需的局部管理面板。玩家只對空貨架補貨並選擇
   親民／公道／精品價格；顧客由系統週期性自行判斷與結帳。Market 建築等級只解鎖
   可購買的家具階級，實際安裝的木製／雪松／鍛鐵／大市集櫃台才提供 2／3／4／6 格。
   高價接受度由 Market 建築效果及已裝備商旅印章加成，UI 不擁有成交亂數或存檔。
+  `PlayerMarketUI/StoreInterior/InteriorCanvas` 使用可獨立替換的 background、midground、
+  foreground 三層及六格裝潢 atlas；互動 hotspot 保持透明且不被美術層攔截，貨架、
+  櫃台商品、顧客、招客鈴與出入口仍由原按鈕／signal contract 擁有。
 - `TownHallUI`：village stage、總建築等級，以及五棟建築的選擇、效果、折扣後成本與升級操作；成功後以 signal 交回 `Game` 立即存檔與刷新 projection。
 - `PauseMenu`：emit save/load/settings/exit-combat/quit 等 intent；Game 只在 active
   combat Run 啟用退出戰鬥，接收 intent 後以失敗結算保留已得資源並回 Town。
@@ -1138,7 +1142,13 @@ Chain 使用依總 Combo 收緊的獨立接續視窗，不受卡片效果到期�
 Attack cooldown 的方式呼叫 `CardEffectRunner`；建卡時先經
 `_apply_combo_infusions_to_card()`，因此目前劍魂與全部持有神賜的傷害、元素、狀態與投射數會同時繼承到
 普通攻擊、傷害招式與背景攻擊。背景攻擊 runtime profile 再依 Combo、神賜數與總等級提高
-`size_scale`、`instance_count`、`rhythm_speed`、target count 與 damage scale，從單一小型幾何物件成長為多重陣列。
+`size_scale`、`instance_count`、`rhythm_speed`、target count 與 damage scale，從單一具體主體成長為多重陣列；
+視覺主體同屏最多四個，避免角色、敵人與 contact point 被遮住，傷害與 target 成長不受此視覺上限影響。
+每個 base Blessing 另以 `attack_vfx_asset_path` 指向具體小型攻擊物件；
+`BlessingAttackOverlay` 將持有神賜投影到普通攻擊路徑，Lv.1 從單一小物件開始，等級、
+Combo 與 stack 逐步增加數量、尺寸、分流與殘影。三槽高成長時同屏具體物件總數最多十二個、
+單體寬度最多 96px，並降低基本劍氣白核與殘影曝光，確保方向、持劍者與命中目標仍可辨識。10 個融合 recipe 的
+`subject_asset_path`／`subject_motion` 是背景攻擊主體權威，不得退回一張通用幾何素材。
 
 Run 同時最多持有三項神賜。未滿三項時獎勵可出現新神賜或既有神賜升級；滿三項時
 只能出現目前持有且未滿級的升級選項，直到兩項滿級神賜融合並釋出空位。加入或升級

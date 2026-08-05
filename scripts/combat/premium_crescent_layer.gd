@@ -29,7 +29,7 @@ var _combo_tier := 0
 
 func configure(target_offset: Vector2, attack_scale: float, combo_tier: int) -> void:
 	_target_offset = target_offset
-	_attack_scale = clampf(attack_scale, 1.0, 3.0)
+	_attack_scale = clampf(attack_scale * 0.82, 0.78, 2.4)
 	_combo_tier = clampi(combo_tier, 0, 3)
 	queue_redraw()
 

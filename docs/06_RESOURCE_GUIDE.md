@@ -266,7 +266,7 @@ UI setter/configure API
 | `skills.json` | `SkillRecipeManager` | `series` | 13 個系列 × basic／advanced／master，共 39 招；另含 retired IDs 與暫用 `legacy_vfx_map` |
 | `equipment.json` | `inventory_manager.gd` | `resource_order`, `starting_resources`, `equipment` | 5 resources, 10 equipment |
 | `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 5 buildings；memory library 4 levels、其餘 3 levels；3 stages；每級含 cost／description／effects／visual flag |
-| `divine_gifts.json` | `DivineGiftManager` | `gifts` | 8 個三級 Run-local 神賜；每項含唯一幾何、發光色與普攻／傷害招式狀態 |
+| `divine_gifts.json` | `DivineGiftManager` | `gifts` | 8 個三級 Run-local 神賜；每項含唯一 motif、發光色、`attack_vfx_asset_path` 具體普攻物件與普攻／傷害招式狀態 |
 | `combo_finishers.json` | `ComboFinisherCatalog` | `recipes` | 32 個精確三招終結技配方 |
 | `forge_catalog.json` | `ForgeCatalog` | `material_offers`, `equipment_recipes`, `sword_soul_recipes` | Town 鍛造 offer 與 recipe |
 | `named_skill_vfx_profiles.json` | `NamedSkillVFXCatalog` | `profiles` | 32 個 Finisher 與 4 個退役 trigger 的動畫 profile；只作 presentation library，不定義現役技能名稱／分類 |
@@ -274,6 +274,11 @@ UI setter/configure API
 | `elemental_ground_trail_profiles.json` | `ElementalGroundTrailCatalog` | `profiles` | 火焰路徑、冰裂分岔與毒灘的四槽 atlas 拼裝資料 |
 | `town_npc_interactions.json` | `TownNPCInteractionCatalog` | `interactions` | 9 種 Town presentation interaction、雙方 animation sequence、角色／archetype selector、距離、cooldown 與 weight |
 | `town_npc_character_profiles.json` | `TownNPCCharacterProfileCatalog` | `profiles` | 祭司、女巫、科學家的六時段 presentation rhythm、logical locations、專屬 action 與 partner interaction allowlist |
+
+神賜具體物件位於 `assets/generated/vfx/blessings/base/` 與 `evolved/`；素材必須是真透明的單一
+火刃／影匕／毒種／雷苦無／風羽／冰刃／潮鏢／日輪刃或進化主體，使用 MaterialYard 相容的
+大型色塊、粗輪廓與有限色階。Player Market 的 background／midground／foreground／六格裝潢 atlas
+位於 `assets/ui/town/player_market/generated/`，同樣不得烘焙 checkerboard、密集微紋理或寫實高光。
 
 既有共用內容數量與 cross-reference 由 `tests/content_validation_test.gd` 驗證；Town interaction
 schema、ID、selector、sequence 與 deterministic query 另由
@@ -851,6 +856,14 @@ canonical value 不翻譯。Manager 同時最多保存三項 inventory entry：�
 可混合新神賜與既有升級。每個 base reward 必須投影全部 authored `fusion_hints`；候選先排
 已有搭檔的 base 升級／新神賜，確保三選存在合法路線時至少出現一項，再補 evolved upgrade、
 其他已持有 base upgrade 與未發現神賜。
+`assets/generated/vfx/blessings/base/` 保存 8 個帶真 alpha 的普攻物件；
+`assets/generated/vfx/blessings/evolved/` 保存 10 個帶真 alpha 的融合主體。每個 recipe
+必須有唯一 `subject_asset_path` 與 `subject_motion`，runtime 不得以黑底 additive 方框
+或同一張通用圖替代。
+
+`assets/ui/town/player_market/generated/` 保存鐵匠販售店的 background、midground、
+foreground 與 3×2 decor atlas。中／前景與 atlas 必須保留真 alpha；場景以 AtlasTexture
+切出六件裝潢，禁止將功能文字烘進圖片。
 滿三項時只能回傳既有未滿級 entry。融合只接受 `FUSION_RECIPES` 的第一批 10 個進階型態；
 有 `required_equipment_id` 的配方必須由 Game 同步目前 weapon／armor／accessory 後才可顯示與結算。融合原子移除兩項材料
 並加入一項 evolved entry，因此釋出一格。所有 inventory entry 的 effects、mutation
