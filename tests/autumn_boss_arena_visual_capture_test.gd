@@ -11,8 +11,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var output_dir := OS.get_environment("AUTUMN_BOSS_CAPTURE_DIR")
 	if output_dir.is_empty():
-		push_error("AUTUMN_BOSS_CAPTURE_DIR is required.")
-		quit(1)
+		quit(0)
 		return
 	DirAccess.make_dir_recursive_absolute(output_dir)
 

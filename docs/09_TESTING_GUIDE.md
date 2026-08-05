@@ -364,6 +364,15 @@ $env:FINISHER_VFX_CAPTURE_DIR = 'D:\tmp\finisher_vfx_review'
 Remove-Item Env:FINISHER_VFX_CAPTURE_DIR
 ```
 
+秋霖六臂 Boss 的結構合約由 `autumn_colossus_boss_scene_test.gd` 與
+`autumn_boss_arena_art_test.gd` 驗證。視覺整合後，使用非 headless、隱藏的獨立 Godot
+程序執行 `autumn_colossus_visual_capture_test.gd`、
+`autumn_boss_arena_visual_capture_test.gd` 與 `autumn_boss_camera_capture_test.gd`。
+三者分別輸出原生 Boss、1920×1664 全場與固定 3×2 六切片、1920×800 實際鏡頭；
+任何 asset、scale、position、z-order 或 composition 修改都必須重跑三套證據並交由
+獨立 reviewer 檢查。dummy headless renderer 不會送出 `frame_post_draw`，不得用它宣稱
+完成視覺檢查。
+
 ### 6.1 Finisher VFX 原創品質門檻
 
 「高階 2D JRPG／Octopath-level」在本專案只表示品質門檻：清楚的 anticipation

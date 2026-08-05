@@ -442,6 +442,7 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 | `SurvivalWaveDirector` | `scripts/combat/survival_wave_director.gd` | single countdown、scheduled Elite/Boss、Final Rush、XP gem、money/material bags |
 | `EnemyBase` | `scripts/monsters/enemy_base.gd` | archetype、attack、damage、status、reset；大招致死立即結算玩法，再以 unscaled `impact_hold → dissolve → burst` 保留可讀消滅演出 |
 | `AutumnGuardian` | `scripts/monsters/autumn_guardian.gd` | boss phases/pattern profiles |
+| `AutumnSixArmColossusBoss` | `scripts/monsters/autumn_six_arm_colossus_boss.gd` | Autumn regional boss presentation, six-part armature, vertical jaw weak-point exposure; reuses the Guardian combat API |
 | `Hurtbox` | `scripts/combat/hurtbox.gd` | `receive_hit()` adapter |
 | `ExperienceGem` | `scripts/combat/experience_gem.gd` | configure/attract/collect |
 

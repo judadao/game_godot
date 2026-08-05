@@ -316,6 +316,11 @@ Autumn Guardian 的目前規則：
 - falling acorns；
 - ember burst。
 
+秋霖區域 Boss 房以 `AutumnSixArmColossusBoss` 投影相同 Guardian phases 與傷害 API。
+Boss 是平台後層的巨物，不參與平台碰撞；六隻握刀手負責後續攻擊動畫，玩家可攻擊的
+特殊弱點只在下顎沿 Y 軸張開後出現於口腔青燐核心。舊
+`AutumnSmokeOniBoss` 資產與 scene 保留，預定之後作為 Elite 先行登場。
+
 Guardian 死亡後：
 
 - 停止 director；

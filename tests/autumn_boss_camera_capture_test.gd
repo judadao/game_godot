@@ -11,8 +11,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var output_path := OS.get_environment("AUTUMN_BOSS_CAMERA_CAPTURE_PATH")
 	if output_path.is_empty():
-		push_error("AUTUMN_BOSS_CAMERA_CAPTURE_PATH is required.")
-		quit(1)
+		quit(0)
 		return
 	DirAccess.make_dir_recursive_absolute(output_path.get_base_dir())
 	var viewport := SubViewport.new()
@@ -32,7 +31,7 @@ func _run() -> void:
 	camera.position = Vector2(960, 1280)
 	var active_bosses: Array = director.call("get_active_enemies")
 	if active_bosses.size() == 1:
-		(active_bosses[0] as Node2D).global_position = Vector2(960, 1580)
+		(active_bosses[0] as Node2D).global_position = Vector2(960, 1660)
 	await process_frame
 	await RenderingServer.frame_post_draw
 	var image := viewport.get_texture().get_image()

@@ -1,0 +1,431 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/monsters/autumn_six_arm_colossus_boss.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/autumn_colossus/autumn_colossus_body_parts.png" id="2_body"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/autumn_colossus/autumn_colossus_torso.png" id="3_torso"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/autumn_colossus/autumn_colossus_limb_parts.png" id="4_limbs"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/autumn_colossus/autumn_colossus_spirit_fire.png" id="5_fire"]
+[ext_resource type="Script" path="res://scripts/combat/hurtbox.gd" id="6_hurtbox"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/autumn_colossus/autumn_colossus_lower_jaw.png" id="7_jaw"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/autumn_colossus/autumn_colossus_joint_cover.png" id="8_joint"]
+[ext_resource type="Texture2D" path="res://assets/enemies/bosses/autumn_colossus/autumn_colossus_bone_knuckle.png" id="9_knuckle"]
+
+[sub_resource type="AtlasTexture" id="UpperSkullKabuto"]
+atlas = ExtResource("2_body")
+region = Rect2(0, 0, 627, 627)
+[sub_resource type="AtlasTexture" id="Pelvis"]
+atlas = ExtResource("2_body")
+region = Rect2(650, 627, 604, 627)
+[sub_resource type="AtlasTexture" id="LeftUpperArm"]
+atlas = ExtResource("4_limbs")
+region = Rect2(0, 0, 512, 512)
+[sub_resource type="AtlasTexture" id="LeftForearm"]
+atlas = ExtResource("4_limbs")
+region = Rect2(512, 0, 512, 512)
+[sub_resource type="AtlasTexture" id="LeftHandKatana"]
+atlas = ExtResource("4_limbs")
+region = Rect2(1024, 0, 512, 512)
+[sub_resource type="AtlasTexture" id="RightUpperArm"]
+atlas = ExtResource("4_limbs")
+region = Rect2(0, 512, 512, 512)
+[sub_resource type="AtlasTexture" id="RightForearm"]
+atlas = ExtResource("4_limbs")
+region = Rect2(512, 512, 512, 512)
+[sub_resource type="AtlasTexture" id="RightHandKatana"]
+atlas = ExtResource("4_limbs")
+region = Rect2(1024, 552, 512, 472)
+[sub_resource type="AtlasTexture" id="EyeFireLeft"]
+atlas = ExtResource("5_fire")
+region = Rect2(0, 0, 627, 627)
+[sub_resource type="AtlasTexture" id="EyeFireRight"]
+atlas = ExtResource("5_fire")
+region = Rect2(627, 0, 627, 627)
+[sub_resource type="AtlasTexture" id="JawCore"]
+atlas = ExtResource("5_fire")
+region = Rect2(0, 627, 627, 627)
+[sub_resource type="AtlasTexture" id="GhostSkull"]
+atlas = ExtResource("5_fire")
+region = Rect2(627, 627, 627, 627)
+[sub_resource type="CapsuleShape2D" id="BossShape"]
+radius = 78.0
+height = 282.0
+[sub_resource type="CircleShape2D" id="JawCoreShape"]
+radius = 36.0
+
+[node name="AutumnSixArmColossusBoss" type="CharacterBody2D" groups=["Enemies", "AutumnEnemies", "Bosses"]]
+collision_layer = 2
+collision_mask = 1
+motion_mode = 1
+script = ExtResource("1_script")
+metadata/source_concept = "res://docs/art_concepts/autumn_six_arm_oni_key_concept_v2_redlight_ghostfire.png"
+metadata/legacy_boss_scene = "res://scenes/monsters/AutumnSmokeOniBoss.tscn"
+metadata/legacy_boss_preserved = true
+metadata/presentation_role = "background_colossus"
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Armature" type="Node2D" parent="Visual"]
+
+[node name="ArmTopLeft" type="Node2D" parent="Visual/Armature"]
+position = Vector2(-136, -457)
+rotation = 0.55
+z_index = -3
+[node name="ShoulderJoint" type="Sprite2D" parent="Visual/Armature/ArmTopLeft"]
+scale = Vector2(0.072, 0.072)
+texture = ExtResource("8_joint")
+texture_filter = 1
+z_index = 8
+[node name="UpperArm" type="Sprite2D" parent="Visual/Armature/ArmTopLeft"]
+position = Vector2(-101, -47)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("LeftUpperArm")
+texture_filter = 1
+[node name="ElbowPivot" type="Node2D" parent="Visual/Armature/ArmTopLeft"]
+position = Vector2(-135, 0)
+[node name="ElbowJoint" type="Sprite2D" parent="Visual/Armature/ArmTopLeft/ElbowPivot"]
+scale = Vector2(0.055, 0.055)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="Forearm" type="Sprite2D" parent="Visual/Armature/ArmTopLeft/ElbowPivot"]
+position = Vector2(-95, -65)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("LeftForearm")
+texture_filter = 1
+[node name="WristPivot" type="Node2D" parent="Visual/Armature/ArmTopLeft/ElbowPivot"]
+position = Vector2(-135, 0)
+[node name="WristJoint" type="Sprite2D" parent="Visual/Armature/ArmTopLeft/ElbowPivot/WristPivot"]
+scale = Vector2(0.045, 0.045)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="HandKatana" type="Sprite2D" parent="Visual/Armature/ArmTopLeft/ElbowPivot/WristPivot"]
+position = Vector2(-79, -66)
+scale = Vector2(-0.43, 0.43)
+texture = SubResource("LeftHandKatana")
+texture_filter = 1
+z_index = 2
+
+[node name="ArmTopRight" type="Node2D" parent="Visual/Armature"]
+position = Vector2(136, -457)
+rotation = -0.55
+z_index = -3
+[node name="ShoulderJoint" type="Sprite2D" parent="Visual/Armature/ArmTopRight"]
+scale = Vector2(-0.072, 0.072)
+texture = ExtResource("8_joint")
+texture_filter = 1
+z_index = 8
+[node name="UpperArm" type="Sprite2D" parent="Visual/Armature/ArmTopRight"]
+position = Vector2(84, -38)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("RightUpperArm")
+texture_filter = 1
+[node name="ElbowPivot" type="Node2D" parent="Visual/Armature/ArmTopRight"]
+position = Vector2(135, 0)
+[node name="ElbowJoint" type="Sprite2D" parent="Visual/Armature/ArmTopRight/ElbowPivot"]
+scale = Vector2(-0.055, 0.055)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="Forearm" type="Sprite2D" parent="Visual/Armature/ArmTopRight/ElbowPivot"]
+position = Vector2(68, -48)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("RightForearm")
+texture_filter = 1
+[node name="WristPivot" type="Node2D" parent="Visual/Armature/ArmTopRight/ElbowPivot"]
+position = Vector2(135, 0)
+[node name="WristJoint" type="Sprite2D" parent="Visual/Armature/ArmTopRight/ElbowPivot/WristPivot"]
+scale = Vector2(-0.045, 0.045)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="HandKatana" type="Sprite2D" parent="Visual/Armature/ArmTopRight/ElbowPivot/WristPivot"]
+position = Vector2(76, -64)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("RightHandKatana")
+texture_filter = 1
+z_index = 2
+
+[node name="ArmMidLeft" type="Node2D" parent="Visual/Armature"]
+position = Vector2(-136, -410)
+rotation = 0.72
+z_index = -2
+[node name="ShoulderJoint" type="Sprite2D" parent="Visual/Armature/ArmMidLeft"]
+scale = Vector2(0.072, 0.072)
+texture = ExtResource("8_joint")
+texture_filter = 1
+z_index = 8
+[node name="UpperArm" type="Sprite2D" parent="Visual/Armature/ArmMidLeft"]
+position = Vector2(-101, -47)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("LeftUpperArm")
+texture_filter = 1
+[node name="ElbowPivot" type="Node2D" parent="Visual/Armature/ArmMidLeft"]
+position = Vector2(-135, 0)
+[node name="ElbowJoint" type="Sprite2D" parent="Visual/Armature/ArmMidLeft/ElbowPivot"]
+scale = Vector2(0.055, 0.055)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="Forearm" type="Sprite2D" parent="Visual/Armature/ArmMidLeft/ElbowPivot"]
+position = Vector2(-95, -65)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("LeftForearm")
+texture_filter = 1
+[node name="WristPivot" type="Node2D" parent="Visual/Armature/ArmMidLeft/ElbowPivot"]
+position = Vector2(-135, 0)
+rotation = 0.48
+[node name="WristJoint" type="Sprite2D" parent="Visual/Armature/ArmMidLeft/ElbowPivot/WristPivot"]
+scale = Vector2(0.045, 0.045)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="HandKatana" type="Sprite2D" parent="Visual/Armature/ArmMidLeft/ElbowPivot/WristPivot"]
+position = Vector2(-79, -66)
+scale = Vector2(-0.43, 0.43)
+texture = SubResource("LeftHandKatana")
+texture_filter = 1
+z_index = 2
+
+[node name="ArmMidRight" type="Node2D" parent="Visual/Armature"]
+position = Vector2(136, -410)
+rotation = -0.72
+z_index = -2
+[node name="ShoulderJoint" type="Sprite2D" parent="Visual/Armature/ArmMidRight"]
+scale = Vector2(-0.072, 0.072)
+texture = ExtResource("8_joint")
+texture_filter = 1
+z_index = 8
+[node name="UpperArm" type="Sprite2D" parent="Visual/Armature/ArmMidRight"]
+position = Vector2(84, -38)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("RightUpperArm")
+texture_filter = 1
+[node name="ElbowPivot" type="Node2D" parent="Visual/Armature/ArmMidRight"]
+position = Vector2(135, 0)
+[node name="ElbowJoint" type="Sprite2D" parent="Visual/Armature/ArmMidRight/ElbowPivot"]
+scale = Vector2(-0.055, 0.055)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="Forearm" type="Sprite2D" parent="Visual/Armature/ArmMidRight/ElbowPivot"]
+position = Vector2(68, -48)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("RightForearm")
+texture_filter = 1
+[node name="WristPivot" type="Node2D" parent="Visual/Armature/ArmMidRight/ElbowPivot"]
+position = Vector2(135, 0)
+rotation = -0.48
+[node name="WristJoint" type="Sprite2D" parent="Visual/Armature/ArmMidRight/ElbowPivot/WristPivot"]
+scale = Vector2(-0.045, 0.045)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="HandKatana" type="Sprite2D" parent="Visual/Armature/ArmMidRight/ElbowPivot/WristPivot"]
+position = Vector2(76, -64)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("RightHandKatana")
+texture_filter = 1
+z_index = 2
+
+[node name="ArmLowLeft" type="Node2D" parent="Visual/Armature"]
+position = Vector2(-136, -341)
+rotation = -0.42
+z_index = 3
+[node name="ShoulderJoint" type="Sprite2D" parent="Visual/Armature/ArmLowLeft"]
+scale = Vector2(0.072, 0.072)
+texture = ExtResource("8_joint")
+texture_filter = 1
+z_index = 8
+[node name="UpperArm" type="Sprite2D" parent="Visual/Armature/ArmLowLeft"]
+position = Vector2(-101, -47)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("LeftUpperArm")
+texture_filter = 1
+[node name="ElbowPivot" type="Node2D" parent="Visual/Armature/ArmLowLeft"]
+position = Vector2(-135, 0)
+[node name="ElbowJoint" type="Sprite2D" parent="Visual/Armature/ArmLowLeft/ElbowPivot"]
+scale = Vector2(0.055, 0.055)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="Forearm" type="Sprite2D" parent="Visual/Armature/ArmLowLeft/ElbowPivot"]
+position = Vector2(-95, -65)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("LeftForearm")
+texture_filter = 1
+[node name="WristPivot" type="Node2D" parent="Visual/Armature/ArmLowLeft/ElbowPivot"]
+position = Vector2(-135, 0)
+rotation = 2.62
+[node name="WristJoint" type="Sprite2D" parent="Visual/Armature/ArmLowLeft/ElbowPivot/WristPivot"]
+scale = Vector2(0.045, 0.045)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="HandKatana" type="Sprite2D" parent="Visual/Armature/ArmLowLeft/ElbowPivot/WristPivot"]
+position = Vector2(-79, -66)
+scale = Vector2(-0.43, 0.43)
+texture = SubResource("LeftHandKatana")
+texture_filter = 1
+z_index = 2
+
+[node name="ArmLowRight" type="Node2D" parent="Visual/Armature"]
+position = Vector2(136, -341)
+rotation = 0.42
+z_index = 3
+[node name="ShoulderJoint" type="Sprite2D" parent="Visual/Armature/ArmLowRight"]
+scale = Vector2(-0.072, 0.072)
+texture = ExtResource("8_joint")
+texture_filter = 1
+z_index = 8
+[node name="UpperArm" type="Sprite2D" parent="Visual/Armature/ArmLowRight"]
+position = Vector2(84, -38)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("RightUpperArm")
+texture_filter = 1
+[node name="ElbowPivot" type="Node2D" parent="Visual/Armature/ArmLowRight"]
+position = Vector2(135, 0)
+[node name="ElbowJoint" type="Sprite2D" parent="Visual/Armature/ArmLowRight/ElbowPivot"]
+scale = Vector2(-0.055, 0.055)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="Forearm" type="Sprite2D" parent="Visual/Armature/ArmLowRight/ElbowPivot"]
+position = Vector2(68, -48)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("RightForearm")
+texture_filter = 1
+[node name="WristPivot" type="Node2D" parent="Visual/Armature/ArmLowRight/ElbowPivot"]
+position = Vector2(135, 0)
+rotation = -2.62
+[node name="WristJoint" type="Sprite2D" parent="Visual/Armature/ArmLowRight/ElbowPivot/WristPivot"]
+scale = Vector2(-0.045, 0.045)
+texture = ExtResource("9_knuckle")
+texture_filter = 1
+z_index = 4
+[node name="HandKatana" type="Sprite2D" parent="Visual/Armature/ArmLowRight/ElbowPivot/WristPivot"]
+position = Vector2(76, -64)
+scale = Vector2(0.43, 0.43)
+texture = SubResource("RightHandKatana")
+texture_filter = 1
+z_index = 2
+
+[node name="Core" type="Node2D" parent="Visual"]
+z_index = 1
+[node name="Torso" type="Sprite2D" parent="Visual/Core"]
+position = Vector2(0, -350)
+scale = Vector2(0.34, 0.34)
+texture = ExtResource("3_torso")
+texture_filter = 1
+z_index = 1
+[node name="Pelvis" type="Sprite2D" parent="Visual/Core"]
+position = Vector2(0, -100)
+scale = Vector2(0.44, 0.44)
+texture = SubResource("Pelvis")
+texture_filter = 1
+z_index = 2
+[node name="HeadPivot" type="Node2D" parent="Visual/Core"]
+position = Vector2(0, -640)
+z_index = 4
+[node name="UpperSkullKabuto" type="Sprite2D" parent="Visual/Core/HeadPivot"]
+position = Vector2(-28, 0)
+scale = Vector2(0.46, 0.46)
+texture = SubResource("UpperSkullKabuto")
+texture_filter = 1
+[node name="JawPivot" type="Node2D" parent="Visual/Core/HeadPivot"]
+position = Vector2(0, 116)
+[node name="LowerJaw" type="Sprite2D" parent="Visual/Core/HeadPivot/JawPivot"]
+scale = Vector2(0.135, 0.145)
+texture = ExtResource("7_jaw")
+texture_filter = 1
+z_index = 2
+
+[node name="SpiritFire" type="Node2D" parent="Visual"]
+z_index = 5
+[node name="EyeFire" type="Node2D" parent="Visual/SpiritFire"]
+position = Vector2(-8, -584)
+[node name="Left" type="Sprite2D" parent="Visual/SpiritFire/EyeFire"]
+position = Vector2(-25, 0)
+scale = Vector2(0.05, 0.05)
+texture = SubResource("EyeFireLeft")
+texture_filter = 1
+[node name="Right" type="Sprite2D" parent="Visual/SpiritFire/EyeFire"]
+position = Vector2(25, 0)
+scale = Vector2(0.05, 0.05)
+texture = SubResource("EyeFireRight")
+texture_filter = 1
+[node name="JawCoreFlame" type="Node2D" parent="Visual/SpiritFire"]
+visible = false
+position = Vector2(-8, -510)
+[node name="Core" type="Sprite2D" parent="Visual/SpiritFire/JawCoreFlame"]
+position = Vector2(0, 0)
+scale = Vector2(0.115, 0.115)
+texture = SubResource("JawCore")
+texture_filter = 1
+[node name="JawCoreWeakPoint" type="Area2D" parent="Visual/SpiritFire"]
+position = Vector2(-8, -510)
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("6_hurtbox")
+receiver_path = NodePath("../../..")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Visual/SpiritFire/JawCoreWeakPoint"]
+shape = SubResource("JawCoreShape")
+[node name="GhostSkulls" type="Node2D" parent="Visual/SpiritFire"]
+z_index = -1
+[node name="LeftHigh" type="Sprite2D" parent="Visual/SpiritFire/GhostSkulls"]
+position = Vector2(-410, -670)
+scale = Vector2(0.1, 0.1)
+modulate = Color(0.5, 0.67, 0.82, 0.48)
+texture = SubResource("GhostSkull")
+texture_filter = 1
+[node name="RightHigh" type="Sprite2D" parent="Visual/SpiritFire/GhostSkulls"]
+position = Vector2(410, -670)
+scale = Vector2(-0.1, 0.1)
+modulate = Color(0.5, 0.67, 0.82, 0.48)
+texture = SubResource("GhostSkull")
+texture_filter = 1
+[node name="LeftMid" type="Sprite2D" parent="Visual/SpiritFire/GhostSkulls"]
+position = Vector2(-515, -445)
+scale = Vector2(0.085, 0.085)
+modulate = Color(0.46, 0.62, 0.78, 0.42)
+texture = SubResource("GhostSkull")
+texture_filter = 1
+[node name="RightMid" type="Sprite2D" parent="Visual/SpiritFire/GhostSkulls"]
+position = Vector2(515, -445)
+scale = Vector2(-0.085, 0.085)
+modulate = Color(0.46, 0.62, 0.78, 0.42)
+texture = SubResource("GhostSkull")
+texture_filter = 1
+[node name="LeftLow" type="Sprite2D" parent="Visual/SpiritFire/GhostSkulls"]
+position = Vector2(-435, -210)
+scale = Vector2(0.09, 0.09)
+modulate = Color(0.48, 0.65, 0.8, 0.44)
+texture = SubResource("GhostSkull")
+texture_filter = 1
+[node name="RightLow" type="Sprite2D" parent="Visual/SpiritFire/GhostSkulls"]
+position = Vector2(435, -210)
+scale = Vector2(-0.09, 0.09)
+modulate = Color(0.48, 0.65, 0.8, 0.44)
+texture = SubResource("GhostSkull")
+texture_filter = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -230)
+shape = SubResource("BossShape")
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 0
+monitorable = false
+script = ExtResource("6_hurtbox")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -230)
+shape = SubResource("BossShape")
+[node name="ContactDamageArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ContactDamageArea"]
+position = Vector2(0, -230)
+shape = SubResource("BossShape")
+[node name="HealthBar" type="Node2D" parent="."]
+visible = false

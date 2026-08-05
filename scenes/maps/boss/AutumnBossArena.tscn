@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" path="res://scenes/maps/boss/RegionalBossArenaTemplate.tscn" id="1"]
 [ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/autumn_boss_sky_wide_v2.png" id="2_sky"]
 [ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/autumn_boss_props_v1.png" id="3_props"]
-[ext_resource type="PackedScene" path="res://scenes/monsters/AutumnSmokeOniBoss.tscn" id="4_boss"]
+[ext_resource type="PackedScene" path="res://scenes/monsters/AutumnSixArmColossusBoss.tscn" id="4_boss"]
 [ext_resource type="Texture2D" path="res://assets/environments/expedition/generated/autumn_boss_floor_v2.png" id="5_floor"]
 [ext_resource type="Script" path="res://scripts/maps/autumn_boss_arena.gd" id="6_script"]
 

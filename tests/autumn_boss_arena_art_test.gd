@@ -52,24 +52,24 @@ func _run() -> void:
 	_expect(guardian_scene != null, "Autumn boss director must own a dedicated boss scene.")
 	if guardian_scene != null:
 		_expect(
-			guardian_scene.resource_path == "res://scenes/monsters/AutumnSmokeOniBoss.tscn",
-			"Autumn boss director must spawn the smoke oni samurai."
+			guardian_scene.resource_path == "res://scenes/monsters/AutumnSixArmColossusBoss.tscn",
+			"Autumn boss director must spawn the approved six-arm colossus."
 		)
 		var boss := guardian_scene.instantiate()
-		_expect(boss.has_node("Visual/HeadPivot/UpperSkullKabuto"), "Smoke oni boss must own a separate upper skull and kabuto.")
-		_expect(boss.has_node("Visual/HeadPivot/JawPivot/LowerJaw"), "Smoke oni boss must own an independently animated lower jaw.")
-		_expect(boss.has_node("Visual/Torso") and boss.has_node("Visual/Pelvis"), "Smoke oni torso and pelvis must remain separate animation parts.")
-		var boss_arms := boss.get_node("Visual").get_children().filter(
+		_expect(boss.has_node("Visual/Core/HeadPivot/UpperSkullKabuto"), "Colossus boss must own a separate upper skull and kabuto.")
+		_expect(boss.has_node("Visual/Core/HeadPivot/JawPivot/LowerJaw"), "Colossus boss must own an independently animated lower jaw.")
+		_expect(boss.has_node("Visual/Core/Torso") and boss.has_node("Visual/Core/Pelvis"), "Colossus torso and pelvis must remain separate animation parts.")
+		var boss_arms := boss.get_node("Visual/Armature").get_children().filter(
 			func(child: Node) -> bool: return child.name.begins_with("Arm")
 		)
-		_expect(boss_arms.size() == 6, "Smoke oni boss must expose six independent shoulder pivots.")
+		_expect(boss_arms.size() == 6, "Colossus boss must expose six independent shoulder pivots.")
 		for arm_variant in boss_arms:
 			var arm := arm_variant as Node
 			_expect(
 				arm.has_node("UpperArm")
 					and arm.has_node("ElbowPivot/Forearm")
 					and arm.has_node("ElbowPivot/WristPivot/HandKatana"),
-				"Every smoke oni arm must expose upper-arm, elbow, forearm, wrist, hand, and katana parts."
+				"Every colossus arm must expose upper-arm, elbow, forearm, wrist, hand, and katana parts."
 			)
 		boss.free()
 		_expect(bool(director.call("start_encounter")), "Autumn boss encounter must start for presentation verification.")

@@ -599,6 +599,13 @@ Boss另有`Bosses` group、phase/drop signals。HealthBar是world-space display�
 impact delay；`EnemyBase` 會立即停用碰撞並 emit `defeated`，但以真實時間保留
 `UltimateDeathPresentation` 到 impact 後完成 dissolve／burst 才釋放節點。
 
+秋霖區域 Boss 的 authoritative scene 是
+`scenes/monsters/AutumnSixArmColossusBoss.tscn`。`Visual/Core` 分離上顎頭盔、
+垂直開合下顎、胸骨與骨盆；`Visual/Armature` 固定含六個 shoulder pivot，每個都保留
+`UpperArm -> ElbowPivot/Forearm -> WristPivot/HandKatana` 動畫鏈；青燐眼火與口腔弱點
+由 `Visual/SpiritFire` 擁有。`AutumnSmokeOniBoss.tscn` 保留為未來 Elite 候選，不是
+目前區域 Boss authority，也不得因替換 Boss 而刪除或覆寫。
+
 ### 7.3 Director ownership
 
 `AutumnRunDirector`屬於map Scene並加入`EncounterDirectors` group。它可runtime：
