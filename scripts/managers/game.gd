@@ -353,12 +353,6 @@ func _process(delta: float) -> void:
 	regen_rate += _get_card_tempo_regen_bonus()
 	if hud != null and hud.has_method("set_action_point_regen"):
 		hud.call("set_action_point_regen", regen_rate)
-	if hud != null and hud.has_method("set_material_count"):
-		hud.call(
-			"set_material_count",
-			int(inventory_manager.call("get_resource_amount", &"magic_shard"))
-			+ int(run_state.materials_earned.get("magic_shard", 0))
-		)
 	var regenerated := deck_manager.regenerate_energy(delta, regen_rate)
 	if regenerated > 0.0:
 		run_state.energy = deck_manager.energy
@@ -5480,10 +5474,9 @@ func _forge_recipe_projection() -> Array[Dictionary]:
 			recipe["kind"] = source.get("slot", "equipment")
 			recipe["name"] = source.get("name", result_id)
 			recipe["description"] = _equipment_forge_description(source)
-			recipe["tier"] = source.get(
-				"quality_tier",
-				recipe.get("required_blacksmith_level", 1)
-			)
+			recipe["tier"] = recipe.get("required_blacksmith_level", 1)
+			recipe["quality_label"] = source.get("quality_label_zh", "普通")
+			recipe["sale_value"] = source.get("base_sale_value", 0)
 		else:
 			source = card_database.get_card(String(result_id))
 			recipe["kind"] = "sword_soul"
@@ -5493,6 +5486,7 @@ func _forge_recipe_projection() -> Array[Dictionary]:
 				"Forge this Sword Soul from its permanent design."
 			)
 			recipe["tier"] = recipe.get("required_blacksmith_level", 1)
+			recipe["quality_label"] = _forge_quality_label(StringName(recipe.get("quality", "common")))
 			var sword_soul_progress := _sword_soul_progress(result_id)
 			recipe["owned"] = bool(sword_soul_progress.get("owned", false))
 			recipe["level"] = int(sword_soul_progress.get("level", 0))
@@ -5518,6 +5512,16 @@ func _equipment_forge_description(item: Dictionary) -> String:
 			]
 		)
 	return "%s. %s." % [slot, ", ".join(effect_parts)]
+
+
+func _forge_quality_label(quality: StringName) -> String:
+	match quality:
+		&"rare":
+			return "稀有"
+		&"exceptional":
+			return "罕見"
+		_:
+			return "普通"
 
 
 func _forge_blueprint_icon(blueprint_id: StringName) -> String:
@@ -5601,14 +5605,10 @@ func _on_blacksmith_list_for_sale_requested(
 	item_id: StringName,
 	ui_control: Control
 ) -> void:
-	var item := inventory_manager.call("get_equipment", item_id) as Dictionary
-	var purchase_cost := item.get("purchase_cost", {}) as Dictionary
-	var unit_price := maxi(10, int(purchase_cost.get("gold", 40)) / 2)
 	var result := forge_service.call(
 		"list_for_sale",
 		item_id,
-		1,
-		unit_price
+		1
 	) as Dictionary
 	var success := bool(result.get("ok", false))
 	result["message"] = (
@@ -6168,6 +6168,7 @@ func _forge_shop_items(shop_id: StringName) -> Array[Dictionary]:
 		var offer := (offer_variant as Dictionary).duplicate(true)
 		var owned_variant: Variant = offer.get("owned", false)
 		var owned_count := int(owned_variant) if owned_variant is int else int(bool(owned_variant))
+		var product_kind := String(offer.get("product_kind", ""))
 		var icon_path := String(offer.get("icon_path", ""))
 		result.append({
 			"id": String(offer.get("id", "")),
@@ -6179,9 +6180,9 @@ func _forge_shop_items(shop_id: StringName) -> Array[Dictionary]:
 				)
 			),
 			"price": int(offer.get("price", 0)),
-			"stock": 0 if owned_count > 0 else 1,
+			"stock": 99 if product_kind == "equipment" else (0 if owned_count > 0 else 1),
 			"owned_count": owned_count,
-			"product_kind": String(offer.get("product_kind", "")),
+			"product_kind": product_kind,
 			"product_id": String(offer.get("product_id", "")),
 			"target_kind": String(offer.get("target_kind", "")),
 			"target_id": String(offer.get("target_id", "")),
@@ -6285,15 +6286,17 @@ func _purchase_forge_shop_offer(
 	shop_id: StringName
 ) -> void:
 	if mode != "buy":
-		ui_control.call("set_transaction_feedback", "Blueprint merchants only sell designs.", false)
+		ui_control.call("set_transaction_feedback", "This merchant only sells equipment and designs.", false)
 		return
 	var offer_id := StringName(item.get("id", ""))
 	var result := forge_service.call("purchase_offer", offer_id, quantity) as Dictionary
 	var success := bool(result.get("ok", false))
+	var product_kind := String(item.get("product_kind", ""))
 	var message := (
-		"Blueprint added to your Player Blacksmith workshop."
-		if success
-		else _forge_result_message(StringName(result.get("code", "")))
+		("Basic equipment added to your inventory."
+		if product_kind == "equipment"
+		else "Blueprint added to your Player Blacksmith workshop.")
+		if success else _forge_result_message(StringName(result.get("code", "")))
 	)
 	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
 	_sync_progression_to_meta()

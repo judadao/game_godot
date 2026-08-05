@@ -4,6 +4,7 @@ extends RefCounted
 const INITIAL_EXPERIENCE_REQUIRED := 100
 const EXPERIENCE_REQUIREMENT_MULTIPLIER := 1.30
 const EXPERIENCE_REQUIREMENT_FLAT_GROWTH := 25.0
+const CLEAR_BONUS_RATE := 0.15
 
 var active := false
 var level := 1
@@ -53,10 +54,21 @@ func begin_run(
 
 
 func finish_run(victory: bool) -> Dictionary:
+	var retained_gold := gold_earned
+	var retained_materials := materials_earned.duplicate(true)
+	if victory:
+		retained_gold = roundi(float(retained_gold) * (1.0 + CLEAR_BONUS_RATE))
+		for resource_id in retained_materials:
+			retained_materials[resource_id] = roundi(
+				float(retained_materials[resource_id]) * (1.0 + CLEAR_BONUS_RATE)
+			)
 	var summary := {
 		"victory": victory,
-		"gold": gold_earned,
-		"materials": materials_earned.duplicate(true),
+		"base_gold": gold_earned,
+		"base_materials": materials_earned.duplicate(true),
+		"gold": retained_gold,
+		"materials": retained_materials,
+		"completion_bonus_rate": CLEAR_BONUS_RATE if victory else 0.0,
 		"defeated_enemies": defeated_enemies,
 		"elite_defeated": elite_defeated,
 		"boss_defeated": boss_defeated,

@@ -577,7 +577,12 @@ Current fields：
 - `name`
 - `slot`
 - weapon 專用 `primal_element`
-- `purchase_cost`
+- `quality`：`common`／`rare`／`exceptional`
+- `quality_label_zh`：普通／稀有／罕見
+- `material_tier`：`normal`／`elite`／`boss`
+- `direct_purchase`
+- 基礎成品專用 `purchase_cost`（只能包含 `gold`）
+- `base_sale_value`
 - `effects`
 - `special_ability`
 
@@ -589,8 +594,8 @@ Loader validation：
 - equipment ID非空且唯一。
 - slot在`VALID_SLOTS`。
 - weapon 的 `primal_element` 必須通過 `ElementTaxonomy.is_valid()`。
-- effects與purchase cost非空。
-- cost是正整數值。
+- effects非空；quality、material tier 必須落在固定集合。
+- base sale value 是正整數；direct purchase 裝備必須具有唯一的正整數 gold cost。
 - effect value是int或float。
 
 `special_ability`目前由data提供且content test要求非空，但
@@ -1002,10 +1007,12 @@ Current `Game._open_town_service_ui()` 將同一份 TownManager/InventoryManager
 - Material Yard：emit `purchase_requested`，由 ForgeService 驗證火炬 Tier、gold、
   材料 bundle 與永久工具。
 - Player Blacksmith：emit craft/list/resolve/Sword Soul upgrade intent；鍛造依
-  owned blueprint、required tools、blacksmith level 與 resource cost 驗證。
+  owned blueprint、required tools、blacksmith level、material cost 與 processing fee 驗證。
 - Town Hall：`upgrade_building("town_hall")`。
 
-`data/forge_catalog.json` 是 offers/recipes authority。Inventory DTO 額外保存
+`data/forge_catalog.json` 是 offers/recipes authority。equipment offer 只允許資料標記為
+`direct_purchase` 的基礎成品；recipe 必須宣告 `quality`、`material_tier` 與正整數
+`processing_fee`。Inventory DTO 額外保存
 `equipment_counts`、`owned_blueprints`、`owned_tools` 與單格 `sale_slot` escrow；
 legacy `owned_equipment` 載入時遷移為 count。Forge 交易成功時立即同步 manager
 DTO 至 Meta 並儲存；關閉 UI 時仍執行最終同步與世界投影。

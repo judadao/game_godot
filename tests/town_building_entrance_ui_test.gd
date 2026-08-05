@@ -167,12 +167,9 @@ func _run() -> void:
 				&"equipment_blueprint_shop"
 			) as Array
 			_expect(
-				not catalog.is_empty()
-					and String((catalog[0] as Dictionary).get("product_kind", ""))
-						== "blueprint"
-					and String((catalog[0] as Dictionary).get("target_kind", ""))
-						== "equipment",
-				"The converted residence must sell equipment blueprints."
+				_catalog_has_product(catalog, &"equipment")
+					and _catalog_has_product(catalog, &"blueprint", &"equipment"),
+				"The equipment residence must sell basic gear and advanced blueprints."
 			)
 		if ui_name == "TownResidenceUI" and ui != null:
 			var close_button := ui.get_node(
@@ -208,3 +205,17 @@ func _expect(condition: bool, message: String) -> void:
 		return
 	_failures += 1
 	push_error(message)
+
+
+func _catalog_has_product(
+	catalog: Array,
+	product_kind: StringName,
+	target_kind: StringName = StringName()
+) -> bool:
+	for item_variant in catalog:
+		var item := item_variant as Dictionary
+		if StringName(item.get("product_kind", "")) != product_kind:
+			continue
+		if target_kind.is_empty() or StringName(item.get("target_kind", "")) == target_kind:
+			return true
+	return false

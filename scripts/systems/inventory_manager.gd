@@ -3,6 +3,8 @@ extends RefCounted
 const DEFAULT_DATA_PATH := "res://data/equipment.json"
 const SAVE_SCHEMA_VERSION := 3
 const VALID_SLOTS: Array[StringName] = [&"weapon", &"armor", &"accessory"]
+const VALID_QUALITIES: Array[StringName] = [&"common", &"rare", &"exceptional"]
+const VALID_MATERIAL_TIERS: Array[StringName] = [&"normal", &"elite", &"boss"]
 const MAX_EQUIPMENT_LEVEL := 15
 const IMPLEMENTED_EFFECT_LEVEL_CAP := 3
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
@@ -113,12 +115,20 @@ func add_equipment(item_id: StringName) -> bool:
 
 func purchase_equipment(item_id: StringName) -> bool:
 	var item := get_equipment(item_id)
-	if item.is_empty() or has_equipment(item_id):
+	if item.is_empty() or not bool(item.get("direct_purchase", false)):
 		return false
 	var cost := item.get("purchase_cost", {}) as Dictionary
-	if cost.is_empty() or not spend_resources(cost):
+	if cost.size() != 1 or not cost.has("gold") or not spend_resources(cost):
 		return false
-	return add_equipment(item_id)
+	if add_equipment_count(item_id, 1):
+		return true
+	add_resource(&"gold", int(cost.get("gold", 0)))
+	return false
+
+
+func get_equipment_sale_value(item_id: StringName) -> int:
+	var item := get_equipment(item_id)
+	return maxi(0, int(item.get("base_sale_value", 0)))
 
 
 func has_equipment(item_id: StringName) -> bool:
@@ -467,10 +477,22 @@ func _load_data(data_path: String) -> void:
 		var item_id := String(item.get("id", ""))
 		var slot := StringName(item.get("slot", ""))
 		var effects := item.get("effects", {}) as Dictionary
+		var direct_purchase := bool(item.get("direct_purchase", false))
 		var purchase_cost := item.get("purchase_cost", {}) as Dictionary
+		var quality := StringName(item.get("quality", ""))
+		var material_tier := StringName(item.get("material_tier", ""))
+		var base_sale_value: Variant = item.get("base_sale_value", 0)
 		if item_id.is_empty() or _equipment_by_id.has(item_id):
 			return
-		if not VALID_SLOTS.has(slot) or effects.is_empty() or purchase_cost.is_empty():
+		if (
+			not VALID_SLOTS.has(slot)
+			or effects.is_empty()
+			or not VALID_QUALITIES.has(quality)
+			or not VALID_MATERIAL_TIERS.has(material_tier)
+			or not _is_positive_whole_number(base_sale_value)
+		):
+			return
+		if direct_purchase and (purchase_cost.size() != 1 or not purchase_cost.has("gold")):
 			return
 		if (
 			slot == &"weapon"

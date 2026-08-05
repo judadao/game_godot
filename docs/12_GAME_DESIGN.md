@@ -293,11 +293,12 @@ Pickup 在 180 像素內會追蹤玩家，未拾取時 18 秒後消失；Elite�
 completion Guardian 不進普通掉落擲骰，保留各自既有獎勵責任。
 
 錢袋與素材袋沿用相同的實體追蹤／拾取生命週期，但使用獨立擲骰。普通怪、Elite、
-Boss 的錢袋機率分別為 6%、65%、90%；只有 Elite／Boss 可擲素材袋，機率分別為
-45%、85%。素材袋 payload 由死亡 archetype 決定：Sprout／Thornling 為
+Boss 的錢袋機率分別為 6%、65%、90%；三者的素材袋機率分別為 10%、45%、85%，
+單袋素材數量依序為 1、2、3。素材袋 payload 由死亡 archetype 決定：Sprout／Thornling 為
 `autumn_wood`，Hopper／Charger 為 `stone`，Moth／Shaman 為 `magic_shard`，
 Crimson Elite／Guardian 為 `autumn_core`。拾取後才加入 Run reward summary；同一袋
-只能結算一次。
+只能結算一次。死亡結算保留全部已拾取金袋與素材袋；成功通關則在兩類袋裝獎勵上
+統一加成 15%，四捨五入為整數後寫入永久資源。
 
 ### 5.3 Guardian
 
@@ -630,7 +631,13 @@ Apprentice Staff 分別為 normal／wind／water。InventoryManager 驗證其屬
 九元素並可投影目前裝備武器的原初屬性；目前沒有證據表示此欄位會自行轉換傷害，
 因此不得把武器身份資料描述成額外 elemental damage。
 
-裝備可購買、裝備、卸下，正式持久化上限為 level 15。目前可執行的精確成本與
+Iron Sword、Leather Armor、Vitality Charm 是普通品質的基礎成品，可在裝備商以純
+gold 直接購買。其他裝備只能先取得圖紙，再以普通怪／Elite／Boss 對應強度素材和
+加工費於 Player Blacksmith 打造。裝備品質固定分為普通（common）、稀有（rare）、
+罕見（exceptional）；品質越高，配方素材階級、加工費與 `base_sale_value` 越高，
+裝備能力仍由各自 `effects`／`special_ability` 定義。
+
+裝備可購買或鍛造、裝備、卸下，正式持久化上限為 level 15。目前可執行的精確成本與
 效果曲線只實作到 level 3；Lv.4–15 不外推數值，等 OB 補齊中間素材 authority 與曲線後再開放。現有成本為：
 
 玩家可在古老日記式 InventoryUI 的背包裝備分類檢視持有物並直接送出裝備意圖；
@@ -687,12 +694,13 @@ total-building-level threshold 為 0、3、7。Town 六棟建築的互動範圍�
 
 - Material Yard：以 gold 購買鍛造材料 bundle 與永久工具；高階 stock 隨 Eternal
   Torch 對應的 village stage 解鎖。
-- Player Blacksmith：依已購圖紙鍛造 equipment／Sword Soul、升級 blacksmith
+- Player Blacksmith：依已購圖紙、素材與 gold 加工費鍛造 equipment／Sword Soul、升級 blacksmith
   解鎖 recipe Tier、升級 Sword Soul，並將 crafted equipment 放到單格販售桌，
   顧客結帳後顯示 `+GOLD`。
 - Town Hall：查看 village stage、總建築等級、資源與 Town Hall 升級成本。
-- Sword Soul Shop／Equipment Blueprint Shop：buy-only 圖紙 catalog；持有後不能
-  重複購買，實際成品只能回玩家工坊鍛造。
+- Sword Soul Shop：buy-only 圖紙 catalog；持有後不能重複購買。
+- Equipment Blueprint Shop：基礎普通裝備直接販售；其餘只販售不可重複購買的圖紙，
+  高階成品必須回玩家工坊鍛造。
 
 舊通用 Town progression UI 已退役；三個 dedicated screen 關閉時由 Game
 同步 Meta save、Town visual 與 equipment stats。
@@ -854,7 +862,9 @@ Rest 每個 Run 只能成功使用一次，會把 health 與 mana 恢復到上�
 - run gold、materials；
 - defeated enemy／elite／boss flags。
 
-`finish_run()` 產生 summary 後重置 transient state。
+`finish_run()` 產生 summary 後重置 transient state。失敗 summary 原額保留已拾取
+gold／materials；勝利 summary 以 `completion_bonus_rate = 0.15` 加成後回傳，同時保留
+`base_gold`／`base_materials` 供結算 UI 說明來源。
 
 ### 11.2 MetaState
 

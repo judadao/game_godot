@@ -31,8 +31,11 @@ func _run() -> void:
 	var meta: MetaState = game.get("meta_state")
 	var save_spy := InMemorySaveService.new()
 	game.set("save_service", save_spy)
+	town.call("apply_dict", {"building_levels": {"blacksmith": 0}})
+	var clean_resources: Dictionary = {}
 	for resource_id in inventory.call("get_resource_ids"):
-		inventory.call("set_resource_amount", resource_id, 5000)
+		clean_resources[String(resource_id)] = 5000
+	inventory.call("apply_dict", {"resources": clean_resources})
 	_expect(
 		bool(town.call("upgrade_building", &"blacksmith")),
 		"Forge integration fixture must unlock workshop Tier 1."
@@ -41,7 +44,7 @@ func _run() -> void:
 
 	for offer_id in [
 		&"tool_forging_hammer",
-		&"equipment_blueprint_iron_sword",
+		&"equipment_blueprint_hunter_bow",
 		&"sword_soul_blueprint_flame_imbue",
 	]:
 		var purchase := forge.call("purchase_offer", offer_id, 1) as Dictionary
@@ -64,9 +67,9 @@ func _run() -> void:
 		"Owned Tier 1 equipment and Sword Soul blueprints must become forge recipes."
 	)
 
-	game.call("_on_blacksmith_craft_requested", &"forge_iron_sword", ui)
+	game.call("_on_blacksmith_craft_requested", &"forge_hunter_bow", ui)
 	_expect(
-		int(inventory.call("get_equipment_count", &"iron_sword")) == 1,
+		int(inventory.call("get_equipment_count", &"hunter_bow")) == 1,
 		"Forging an equipment blueprint must create crafted inventory."
 	)
 
@@ -82,7 +85,7 @@ func _run() -> void:
 		"Player workshop must upgrade a forged Sword Soul."
 	)
 
-	game.call("_on_blacksmith_list_for_sale_requested", &"iron_sword", ui)
+	game.call("_on_blacksmith_list_for_sale_requested", &"hunter_bow", ui)
 	_expect(
 		not (inventory.call("get_sale_slot") as Dictionary).is_empty(),
 		"Crafted equipment must move into the persistent sales-table escrow."

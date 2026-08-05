@@ -42,6 +42,15 @@ func _run() -> void:
 
 	var summary := run.call("finish_run", false) as Dictionary
 	meta.call("apply_run_summary", summary)
+	_expect(int(summary.get("gold", 0)) == 120, "Death must retain every collected gold bag.")
+	_expect(
+		(summary.get("materials", {}) as Dictionary) == {"autumn_wood": 8, "magic_shard": 3},
+		"Death must retain every collected material bag without a penalty."
+	)
+	_expect(
+		is_zero_approx(float(summary.get("completion_bonus_rate", -1.0))),
+		"A defeated run must not receive the clear bonus."
+	)
 	_expect(int(run.get("level")) == 1, "Finishing a run must reset run level.")
 	_expect((run.get("temporary_cards") as Array).is_empty(), "Finishing a run must clear temporary cards.")
 	_expect(int(run.get("combo_count")) == 0, "Finishing a run must clear combo progress.")
@@ -51,6 +60,21 @@ func _run() -> void:
 	_expect(int(meta.get("village_level")) == 2, "Death must retain Town progression.")
 	_expect((meta.get("equipment") as Dictionary).get("weapon") == "iron_sword", "Death must retain equipment.")
 	_expect(bool((meta.get("shortcuts") as Dictionary).get("forest_gate", false)), "Death must retain shortcuts.")
+
+	var victory_run: RefCounted = run_script.new()
+	victory_run.call("begin_run")
+	victory_run.call("add_reward", "gold", 100)
+	victory_run.call("add_reward", "autumn_wood", 20)
+	var victory_summary := victory_run.call("finish_run", true) as Dictionary
+	_expect(
+		int(victory_summary.get("gold", 0)) == 115
+			and int((victory_summary.get("materials", {}) as Dictionary).get("autumn_wood", 0)) == 23,
+		"A successful clear must add exactly 15 percent to bagged gold and materials."
+	)
+	_expect(
+		is_equal_approx(float(victory_summary.get("completion_bonus_rate", 0.0)), 0.15),
+		"Victory summaries must expose the 15 percent clear bonus contract."
+	)
 
 	_expect(bool(save.call("save_meta", TEST_SAVE_PATH, meta.call("to_dict"))), "Meta save must succeed.")
 	var loaded := save.call("load_meta", TEST_SAVE_PATH) as Dictionary

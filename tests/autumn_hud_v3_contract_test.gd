@@ -78,7 +78,6 @@ func _run() -> void:
 			"show_card_cast_feedback",
 			"show_combo_popup",
 			"set_combo_chain",
-			"set_material_count",
 			"set_survival_timer",
 			"set_experience",
 		]:

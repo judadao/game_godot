@@ -485,10 +485,12 @@ func _refresh_recipe_rows() -> void:
 		var recipe := _recipe_by_id.get(recipe_id, {}) as Dictionary
 		var kind := String(recipe.get("kind", recipe.get("result_kind", "equipment")))
 		var tier := int(recipe.get("tier", recipe.get("quality_tier", 0)))
+		var quality_label := String(recipe.get("quality_label", "普通"))
 		var unlocked := bool(recipe.get("unlocked", true))
-		button.text = "%s\n%s  ·  TIER %d  ·  %s" % [
+		button.text = "%s\n%s  ·  %s  ·  TIER %d  ·  %s" % [
 			String(recipe.get("name", recipe_id)),
 			kind.replace("_", " ").to_upper(),
+			quality_label,
 			tier,
 			"READY" if unlocked else "LOCKED",
 		]
@@ -522,9 +524,12 @@ func _refresh_recipe_detail() -> void:
 	var cost := recipe.get("cost", recipe.get("craft_cost", {})) as Dictionary
 	recipe_preview.texture = _recipe_icon(recipe)
 	recipe_name_label.text = String(recipe.get("name", _selected_recipe_id))
-	recipe_type_label.text = "%s  ·  TIER %d" % [
+	var quality_label := String(recipe.get("quality_label", "普通"))
+	var material_tier := String(recipe.get("material_tier", "normal")).to_upper()
+	recipe_type_label.text = "%s  ·  %s  ·  %s MATERIAL" % [
 		String(SLOT_LABELS.get(kind, String(kind).replace("_", " ").capitalize())).to_upper(),
-		int(recipe.get("tier", recipe.get("quality_tier", 0))),
+		quality_label,
+		material_tier,
 	]
 	recipe_status_label.text = "OWNED" if owned else ("READY TO FORGE" if unlocked else "LOCKED")
 	recipe_status_label.modulate = (
@@ -532,8 +537,14 @@ func _refresh_recipe_detail() -> void:
 		else (Color(0.98, 0.78, 0.35) if unlocked else Color(0.95, 0.48, 0.40))
 	)
 	var description := String(recipe.get("description", "將這份圖紙鍛造成永久裝備。"))
-	recipe_description.text = "[color=#f0c967][b]鍛造圖紙[/b][/color]\n%s" % description
-	recipe_cost_label.text = "FORGE COST  ·  %s" % _format_cost(cost)
+	recipe_description.text = "[color=#f0c967][b]%s品質鍛造[/b][/color]\n%s" % [quality_label, description]
+	var processing_fee := int(recipe.get("processing_fee", 0))
+	var sale_value := int(recipe.get("sale_value", 0))
+	recipe_cost_label.text = "MATERIALS  ·  %s\nPROCESSING FEE  ·  GOLD %d%s" % [
+		_format_cost(cost),
+		processing_fee,
+		"  ·  SALE %d" % sale_value if sale_value > 0 else "",
+	]
 	craft_button.disabled = not unlocked
 	craft_button.text = "Forge"
 	var is_equipment := not is_sword_soul

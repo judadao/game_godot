@@ -64,6 +64,7 @@ const MONSTER_MATERIALS := {
 @export_range(0.0, 1.0, 0.005) var normal_money_bag_chance := 0.06
 @export_range(0.0, 1.0, 0.005) var elite_money_bag_chance := 0.65
 @export_range(0.0, 1.0, 0.005) var boss_money_bag_chance := 0.90
+@export_range(0.0, 1.0, 0.005) var normal_material_bag_chance := 0.10
 @export_range(0.0, 1.0, 0.005) var elite_material_bag_chance := 0.45
 @export_range(0.0, 1.0, 0.005) var boss_material_bag_chance := 0.85
 @export var spawn_around_player := false
@@ -549,16 +550,21 @@ func roll_reward_bags(
 			1.0 if role != &"normal" else 0.5
 		)))
 		rewards.append({"kind": "money", "reward": {"gold": gold_amount}})
-	if role not in [&"elite", &"boss"]:
-		return rewards
-	var material_chance := (
-		elite_material_bag_chance if role == &"elite" else boss_material_bag_chance
-	)
+	var material_chance := normal_material_bag_chance
+	if role == &"elite":
+		material_chance = elite_material_bag_chance
+	elif role == &"boss":
+		material_chance = boss_material_bag_chance
 	if material_roll >= 0.0 and material_roll < clampf(material_chance, 0.0, 1.0):
 		var material_id := get_monster_material(archetype_id)
+		var material_quantity := 1
+		if role == &"elite":
+			material_quantity = 2
+		elif role == &"boss":
+			material_quantity = 3
 		rewards.append({
 			"kind": "material",
-			"reward": {String(material_id): 1 if role == &"elite" else 2},
+			"reward": {String(material_id): material_quantity},
 		})
 	return rewards
 

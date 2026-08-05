@@ -288,7 +288,7 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -362.0
+offset_left = -270.0
 offset_top = 12.0
 offset_right = -12.0
 offset_bottom = 66.0
@@ -313,19 +313,6 @@ custom_minimum_size = Vector2(58, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.84, 0.35, 1)
 theme_override_font_sizes/font_size = 18
-text = "0"
-
-[node name="MaterialLabel" type="Label" parent="TopRightMeta/MetaRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.35, 0.74, 0.98, 1)
-theme_override_font_sizes/font_size = 15
-text = "SHARD"
-
-[node name="MaterialValue" type="Label" parent="TopRightMeta/MetaRow"]
-custom_minimum_size = Vector2(78, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.47, 0.82, 1, 1)
-theme_override_font_sizes/font_size = 16
 text = "0"
 
 [node name="MenuHints" type="Label" parent="TopRightMeta/MetaRow"]

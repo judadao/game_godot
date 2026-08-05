@@ -35,10 +35,17 @@ func set_result(victory: bool, summary: Dictionary) -> void:
 	var material_lines: Array[String] = []
 	for resource_id in materials:
 		material_lines.append("%s  +%d" % [String(resource_id).capitalize(), int(materials[resource_id])])
-	_summary.text = "[center]Enemies defeated  %d\nGold retained  +%d\n%s\n\nPermanent Town progress has been saved.[/center]" % [
+	var bonus_rate := float(summary.get("completion_bonus_rate", 0.0))
+	var reward_note := (
+		"Clear bonus  +%d%%" % roundi(bonus_rate * 100.0)
+		if bonus_rate > 0.0
+		else "All collected bags retained after defeat"
+	)
+	_summary.text = "[center]Enemies defeated  %d\nGold retained  +%d\n%s\n%s\n\nPermanent Town progress has been saved.[/center]" % [
 		int(summary.get("defeated_enemies", 0)),
 		int(summary.get("gold", 0)),
 		"\n".join(material_lines),
+		reward_note,
 	]
 
 

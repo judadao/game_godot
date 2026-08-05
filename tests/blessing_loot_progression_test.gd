@@ -69,13 +69,19 @@ func _run() -> void:
 			"roll_reward_bags", &"boss", 0.0, 0.0, &"guardian", 120
 		) as Array
 		_expect(
-			_has_kind(normal_rewards, "money") and not _has_kind(normal_rewards, "material"),
-			"Normal monsters may drop money bags but must never drop material bags."
+			_has_kind(normal_rewards, "money") and _has_kind(normal_rewards, "material"),
+			"Normal monsters must be able to drop both money and basic material bags."
 		)
 		_expect(
 			_has_kind(elite_rewards, "money") and _has_kind(elite_rewards, "material")
 				and _has_kind(boss_rewards, "money") and _has_kind(boss_rewards, "material"),
 			"Elite and boss rolls must support both money and monster-material bags."
+		)
+		_expect(
+			_material_quantity(normal_rewards) == 1
+				and _material_quantity(elite_rewards) == 2
+				and _material_quantity(boss_rewards) == 3,
+			"Material bags must scale from normal to elite to boss rewards."
 		)
 		for reward_variant in elite_rewards + boss_rewards:
 			var reward := reward_variant as Dictionary
@@ -130,6 +136,17 @@ func _has_kind(rewards: Array, kind: String) -> bool:
 		func(reward: Dictionary) -> bool:
 			return String(reward.get("kind", "")) == kind
 	)
+
+
+func _material_quantity(rewards: Array) -> int:
+	for reward_variant in rewards:
+		var reward := reward_variant as Dictionary
+		if String(reward.get("kind", "")) != "material":
+			continue
+		var payload := reward.get("reward", {}) as Dictionary
+		if not payload.is_empty():
+			return int(payload.values()[0])
+	return 0
 
 
 func _expect(condition: bool, message: String) -> void:

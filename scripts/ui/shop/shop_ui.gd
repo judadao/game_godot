@@ -122,11 +122,11 @@ func set_shop_context(shop_id: StringName) -> void:
 			)
 		&"equipment_blueprint_shop":
 			_apply_shop_identity(
-				"EQUIPMENT BLUEPRINTS",
+				"BASIC EQUIPMENT & BLUEPRINTS",
 				"ARCANE DRAFTSMAN",
 				"Professor Orin",
-				"A sound weapon starts with a precise plan.\nLet us test each design before you invest.",
-				"Each blueprint unlocks a permanent workshop recipe.",
+				"Starter equipment is ready for gold.\nStronger arms begin as material-bound designs.",
+				"Basic gear is direct purchase; advanced gear must be forged.",
 				PORTRAIT_SCIENTIST
 			)
 		&"material_store", &"material_yard":

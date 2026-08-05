@@ -665,8 +665,8 @@ service；修改 mappings或處理順序時須用實際 run驗證。
   `8→16` spawn batch、定時 Elite／Boss 與 Final Rush 的唯一 authority；普通怪死亡會
   立即排入補怪，普通怪 HP 倍率沿 timeline 由 `8.0→20.0`，只有 00:00 completion
   Guardian 可完成 Run。
-- 同一 director 擲骰並生成實體 reward bag：normal／elite／boss 都有各自 money chance；
-  只有 elite／boss 擁有 material chance。material payload 由死亡 enemy archetype 映射，
+- 同一 director 擲骰並生成實體 reward bag：normal／elite／boss 都有各自 money 與
+  material chance，material bag 數量為 1／2／3。material payload 由死亡 enemy archetype 映射，
   收集後只以 `reward_bag_collected` 將明確 resource dictionary 交給 `Game`。
 - `EnemyBase` 統一處理玩家實體接觸傷害：使用 `Player.take_hit()` 的完整防禦流程、
   每敵獨立冷卻；`ContactDamageArea` 監聽 Player Hurtbox，預警期間若已接觸命中，

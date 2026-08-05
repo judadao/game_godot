@@ -36,7 +36,6 @@ func _ready() -> void:
 	hud.set_player_class("Adventurer")
 	hud.set_currency(45)
 	hud.set_experience(27, 40)
-	hud.set_material_count(98)
 	hud.set_action_point_regen(0.8)
 	hud.set_objective("FINAL RUSH — SURVIVE", "THREAT 37 / 60")
 	hud.set_survival_timer(29.4, 180.0, true)

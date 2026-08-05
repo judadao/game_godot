@@ -451,7 +451,6 @@ func _check_projection_behavior() -> void:
 	hud.call("set_action_points", 3.7, 5.0)
 	hud.call("set_experience", 18, 48)
 	hud.call("set_experience", 19, 48)
-	hud.call("set_material_count", 98)
 	var hp_value := hud.get_node(
 		"BottomStage/PlayerVitals/VitalsMargin/VitalsRows/HPRow/HPBar/HPValue"
 	) as Label
@@ -497,8 +496,9 @@ func _check_projection_behavior() -> void:
 		"Vitals emphasis must settle back to a stable readable layout."
 	)
 	_expect(
-		(hud.get_node("TopRightMeta/MetaRow/MaterialValue") as Label).text == "98",
-		"Top-right economy strip must project upgrade material."
+		not hud.has_node("TopRightMeta/MetaRow/MaterialLabel")
+			and not hud.has_node("TopRightMeta/MetaRow/MaterialValue"),
+		"Top-right economy strip must show gold without the ambiguous SHARD counter."
 	)
 
 	viewport.queue_free()

@@ -13,8 +13,10 @@ func _init() -> void:
 
 func _run() -> void:
 	_test_offer_purchase_is_gated_atomic_and_persistent()
+	_test_basic_equipment_purchase_and_advanced_purchase_rejection()
 	_test_equipment_and_sword_soul_crafting()
 	_test_single_sales_table_slot_resolves_once()
+	_test_equipment_quality_scales_sale_value()
 	_test_inventory_legacy_migration_and_round_trip()
 	quit(0 if _failures == 0 else 1)
 
@@ -58,6 +60,23 @@ func _test_offer_purchase_is_gated_atomic_and_persistent() -> void:
 	_expect(restored.owns_tool(&"forging_hammer"), "Tool ownership must round-trip.")
 
 
+func _test_basic_equipment_purchase_and_advanced_purchase_rejection() -> void:
+	var inventory = InventoryManagerScript.new()
+	inventory.set_resource_amount(&"gold", 1000)
+	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
+	service.set_progression_levels(3, 3)
+	var direct_result := service.purchase_offer(&"equipment_direct_iron_sword")
+	_expect(bool(direct_result.get("ok", false)), "Basic equipment must be purchasable with gold.")
+	_expect(
+		inventory.get_equipment_count(&"iron_sword") == 1,
+		"A direct equipment offer must grant the equipment, not a blueprint."
+	)
+	_expect(
+		not inventory.purchase_equipment(&"focus_amulet"),
+		"Advanced equipment must reject every direct-purchase path."
+	)
+
+
 func _test_equipment_and_sword_soul_crafting() -> void:
 	var inventory = InventoryManagerScript.new()
 	for resource_id in inventory.get_resource_ids():
@@ -66,7 +85,7 @@ func _test_equipment_and_sword_soul_crafting() -> void:
 	service.set_progression_levels(3, 1)
 
 	_expect(
-		bool(service.purchase_offer(&"equipment_blueprint_iron_sword").get("ok", false)),
+		bool(service.purchase_offer(&"equipment_blueprint_hunter_bow").get("ok", false)),
 		"Equipment blueprint purchase must succeed."
 	)
 	_expect(
@@ -75,32 +94,44 @@ func _test_equipment_and_sword_soul_crafting() -> void:
 	)
 	var recipes: Array = service.get_available_recipes()
 	_expect(
-		_has_entry(recipes, &"forge_iron_sword"),
+		_has_entry(recipes, &"forge_hunter_bow"),
 		"Owned blueprint, tool, and blacksmith level must expose the recipe."
 	)
 	var insufficient = InventoryManagerScript.new()
 	insufficient.set_resource_amount(&"gold", 1000)
 	insufficient.set_resource_amount(&"autumn_wood", 0)
 	insufficient.set_resource_amount(&"stone", 0)
-	insufficient.grant_blueprint(&"iron_sword_blueprint")
+	insufficient.grant_blueprint(&"hunter_bow_blueprint")
 	insufficient.grant_tool(&"forging_hammer")
 	var insufficient_service = ForgeServiceScript.new(ForgeCatalogScript.new(), insufficient)
 	insufficient_service.set_progression_levels(3, 1)
 	var insufficient_snapshot: Dictionary = insufficient.to_dict()
 	_expect(
-		not bool(insufficient_service.craft(&"forge_iron_sword").get("ok", false)),
+		not bool(insufficient_service.craft(&"forge_hunter_bow").get("ok", false)),
 		"An unaffordable recipe must be rejected."
 	)
 	_expect(
 		insufficient.to_dict() == insufficient_snapshot,
 		"Failed crafting must preserve resources and equipment exactly."
 	)
-	var before_count: int = inventory.get_equipment_count(&"iron_sword")
-	var crafted: Dictionary = service.craft(&"forge_iron_sword", 2)
+	var before_count: int = inventory.get_equipment_count(&"hunter_bow")
+	var gold_before_craft: int = inventory.get_resource_amount(&"gold")
+	var recipe := ForgeCatalogScript.new().get_recipe(&"forge_hunter_bow")
+	var crafted: Dictionary = service.craft(&"forge_hunter_bow", 2)
 	_expect(bool(crafted.get("ok", false)), "Affordable equipment crafting must succeed.")
 	_expect(
-		inventory.get_equipment_count(&"iron_sword") == before_count + 2,
+		inventory.get_equipment_count(&"hunter_bow") == before_count + 2,
 		"Equipment crafting must add the exact requested count."
+	)
+	_expect(
+		inventory.get_resource_amount(&"gold")
+			== gold_before_craft - int(recipe.get("processing_fee", 0)) * 2,
+		"Crafting must charge the recipe processing fee for every forged item."
+	)
+	_expect(
+		String(crafted.get("quality", "")) == "common"
+			and String(crafted.get("material_tier", "")) == "normal",
+		"Craft results must expose their equipment quality and material tier."
 	)
 
 	_expect(
@@ -122,14 +153,15 @@ func _test_single_sales_table_slot_resolves_once() -> void:
 	inventory.set_resource_amount(&"gold", 0)
 	inventory.add_equipment_count(&"iron_sword", 2)
 	var service = ForgeServiceScript.new(ForgeCatalogScript.new(), inventory)
-	var listed: Dictionary = service.list_for_sale(&"iron_sword", 1, 45)
+	var expected_sale_price := int(inventory.get_equipment(&"iron_sword").get("base_sale_value", 0))
+	var listed: Dictionary = service.list_for_sale(&"iron_sword", 1)
 	_expect(bool(listed.get("ok", false)), "One crafted item must be listable.")
 	_expect(
 		inventory.get_equipment_count(&"iron_sword") == 1,
 		"Listing must escrow the exact equipment quantity."
 	)
 	_expect(
-		not bool(service.list_for_sale(&"iron_sword", 1, 45).get("ok", false)),
+		not bool(service.list_for_sale(&"iron_sword", 1).get("ok", false)),
 		"A second listing must be rejected while the one sales slot is occupied."
 	)
 	var restored_inventory = InventoryManagerScript.new()
@@ -144,9 +176,9 @@ func _test_single_sales_table_slot_resolves_once() -> void:
 	var resolved: Dictionary = restored_service.resolve_sale()
 	_expect(bool(resolved.get("ok", false)), "The occupied sale slot must resolve.")
 	_expect(
-		int(resolved.get("gold", 0)) == 45
-			and restored_inventory.get_resource_amount(&"gold") == 45,
-		"Resolving a sale must grant the exact escrow value."
+		int(resolved.get("gold", 0)) == expected_sale_price
+			and restored_inventory.get_resource_amount(&"gold") == expected_sale_price,
+		"Resolving a sale must grant the equipment catalog's quality-based value."
 	)
 	var resolved_snapshot: Dictionary = restored_inventory.to_dict()
 	_expect(
@@ -156,6 +188,24 @@ func _test_single_sales_table_slot_resolves_once() -> void:
 	_expect(
 		restored_inventory.to_dict() == resolved_snapshot,
 		"Duplicate sale resolution must preserve inventory and gold."
+	)
+
+
+func _test_equipment_quality_scales_sale_value() -> void:
+	var inventory = InventoryManagerScript.new()
+	var common := inventory.get_equipment(&"hunter_bow")
+	var rare := inventory.get_equipment(&"apprentice_staff")
+	var exceptional := inventory.get_equipment(&"focus_amulet")
+	_expect(
+		String(common.get("quality", "")) == "common"
+			and String(rare.get("quality", "")) == "rare"
+			and String(exceptional.get("quality", "")) == "exceptional",
+		"Equipment must expose the common, rare, and exceptional quality ladder."
+	)
+	_expect(
+		int(common.get("base_sale_value", 0)) < int(rare.get("base_sale_value", 0))
+			and int(rare.get("base_sale_value", 0)) < int(exceptional.get("base_sale_value", 0)),
+		"Higher-quality equipment must have a higher catalog sale value."
 	)
 
 

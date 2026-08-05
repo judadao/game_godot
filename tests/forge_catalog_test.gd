@@ -24,8 +24,28 @@ func _test_catalog_loads_valid_cross_referenced_content() -> void:
 		"Forge catalog must expose stable offer IDs."
 	)
 	_expect(
-		not catalog.get_recipe(&"forge_iron_sword").is_empty(),
+		not catalog.get_recipe(&"forge_hunter_bow").is_empty(),
 		"Forge catalog must expose stable recipe IDs."
+	)
+	var direct_offer := catalog.get_offer(&"equipment_direct_iron_sword")
+	_expect(
+		String(direct_offer.get("product_kind", "")) == "equipment",
+		"Basic equipment must have a direct gold-purchase offer."
+	)
+	for recipe in catalog.get_all_recipes():
+		_expect(
+			["common", "rare", "exceptional"].has(String(recipe.get("quality", "")))
+				and ["normal", "elite", "boss"].has(String(recipe.get("material_tier", "")))
+				and int(recipe.get("processing_fee", 0)) > 0,
+			"Every forge recipe must declare quality, source-material tier, and processing fee."
+		)
+	var common_recipe := catalog.get_recipe(&"forge_hunter_bow")
+	var rare_recipe := catalog.get_recipe(&"forge_apprentice_staff")
+	var exceptional_recipe := catalog.get_recipe(&"forge_focus_amulet")
+	_expect(
+		int(common_recipe.get("processing_fee", 0)) < int(rare_recipe.get("processing_fee", 0))
+			and int(rare_recipe.get("processing_fee", 0)) < int(exceptional_recipe.get("processing_fee", 0)),
+		"Processing fees must rise with material strength and equipment quality."
 	)
 	for offer in catalog.get_all_offers():
 		_expect(
@@ -69,12 +89,11 @@ func _test_shop_offers_are_partitioned_and_flame_gated() -> void:
 				and String(offer.get("target_kind", "")) == "sword_soul",
 			"Sword Soul Shop must contain only sword-soul blueprints."
 		)
-	for offer in equipment_offers:
-		_expect(
-			String(offer.get("product_kind", "")) == "blueprint"
-				and String(offer.get("target_kind", "")) == "equipment",
-			"Equipment merchant must contain only equipment blueprints."
-		)
+	_expect(
+		_has_entry(equipment_offers, &"equipment_direct_iron_sword")
+			and _has_entry(equipment_offers, &"equipment_blueprint_hunter_bow"),
+		"Equipment merchant must sell basic equipment directly and advanced designs separately."
+	)
 
 
 func _test_recipes_are_blacksmith_gated() -> void:
@@ -82,8 +101,8 @@ func _test_recipes_are_blacksmith_gated() -> void:
 	var level_one: Array = catalog.get_recipes_for_blacksmith_level(1)
 	var level_three: Array = catalog.get_recipes_for_blacksmith_level(3)
 	_expect(
-		_has_entry(level_one, &"forge_iron_sword"),
-		"Blacksmith level one must expose the basic iron sword recipe."
+		_has_entry(level_one, &"forge_hunter_bow"),
+		"Blacksmith level one must expose a common material recipe."
 	)
 	_expect(
 		not _has_entry(level_one, &"forge_merchant_seal"),

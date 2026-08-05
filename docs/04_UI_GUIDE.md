@@ -1162,7 +1162,8 @@ AutumnHUD
     └── NavigationHints
 ```
 
-目前目標固定在左上，金錢與 magic shard 位於右上，Boss health 使用上方中央的暫時空間。
+目前目標固定在左上，右上只顯示金錢與選單提示；素材數量留在背包與鍛造相關 UI，
+不在戰鬥 HUD 顯示意義不明的 SHARD 縮寫。Boss health 使用上方中央的暫時空間。
 底部從 viewport 的 66% 開始，依序放玩家狀態、目前／門檻／距離下一級的 XP、
 即時小數 AP、目前四張牌及右側
 activity feed，最下方保留 survival countdown／Space Dash／navigation rail。舊
@@ -1171,7 +1172,7 @@ activity feed，最下方保留 survival countdown／Space Dash／navigation rai
 最後 30 秒切換紅橙色 `FINAL RUSH`，00:00 顯示 `FINAL BOSS`。不可恢復常駐 combo/recipe 或
 status progress panel。skill toast 最多三筆、約 1.5 秒淡出；相同技能重複觸發
 刷新既有 toast。viewport 寬度低於 1200px 時，Boss panel／bar 會縮為 312／280px，
-確保 1152×720 的中央 Boss 資訊不與右上 GOLD／SHARD／SETTINGS 面板重疊。
+確保 1152×720 的中央 Boss 資訊不與右上 GOLD／SETTINGS 面板重疊。
 
 ### Autumn structured cards
 

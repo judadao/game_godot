@@ -9,8 +9,10 @@ const VALID_SHOPS: Array[StringName] = [
 	&"sword_soul_shop",
 	&"equipment_blueprint_shop",
 ]
-const VALID_PRODUCT_KINDS: Array[StringName] = [&"resource", &"tool", &"blueprint"]
+const VALID_PRODUCT_KINDS: Array[StringName] = [&"resource", &"tool", &"blueprint", &"equipment"]
 const VALID_RESULT_KINDS: Array[StringName] = [&"equipment", &"sword_soul"]
+const VALID_QUALITIES: Array[StringName] = [&"common", &"rare", &"exceptional"]
+const VALID_MATERIAL_TIERS: Array[StringName] = [&"normal", &"elite", &"boss"]
 
 var _loaded := false
 var _offers: Array[Dictionary] = []
@@ -157,6 +159,10 @@ func _validate_offer(
 		if not ["autumn_wood", "stone", "magic_shard", "autumn_core"].has(product_id):
 			push_error("Forge material offer references an invalid resource: %s" % product_id)
 			return false
+	elif product_kind == &"equipment":
+		if not equipment_ids.has(product_id):
+			push_error("Direct offer references unknown equipment: %s" % product_id)
+			return false
 	elif product_kind == &"blueprint":
 		var target_kind := StringName(offer.get("target_kind", ""))
 		var target_id := String(offer.get("target_id", ""))
@@ -198,6 +204,13 @@ func _validate_recipe(
 		return false
 	if not _is_positive_integer(recipe.get("required_blacksmith_level")):
 		push_error("Forge recipe requires a positive blacksmith level: %s" % recipe_id)
+		return false
+	if (
+		not VALID_QUALITIES.has(StringName(recipe.get("quality", "")))
+		or not VALID_MATERIAL_TIERS.has(StringName(recipe.get("material_tier", "")))
+		or not _is_positive_integer(recipe.get("processing_fee"))
+	):
+		push_error("Forge recipe needs valid quality, material tier, and processing fee: %s" % recipe_id)
 		return false
 	var cost: Variant = recipe.get("cost", {})
 	if not cost is Dictionary or (cost as Dictionary).is_empty():

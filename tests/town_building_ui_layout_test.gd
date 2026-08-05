@@ -451,7 +451,7 @@ func _check_alternate_states(
 			await process_frame
 			_expect(
 				(ui.find_child("TitleText", true, false) as Label).text
-					== "EQUIPMENT BLUEPRINTS",
+					== "BASIC EQUIPMENT & BLUEPRINTS",
 				"ShopUI equipment blueprint state must retain its title at %s."
 				% viewport_size
 			)

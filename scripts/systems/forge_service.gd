@@ -39,6 +39,8 @@ func get_shop_offers(shop_id: StringName) -> Array[Dictionary]:
 			offer["owned"] = bool(_inventory.call("owns_tool", product_id))
 		elif product_kind == &"blueprint":
 			offer["owned"] = bool(_inventory.call("owns_blueprint", product_id))
+		elif product_kind == &"equipment":
+			offer["owned"] = int(_inventory.call("get_equipment_count", product_id))
 		else:
 			offer["owned"] = int(_inventory.call("get_resource_amount", product_id))
 		result.append(offer)
@@ -80,6 +82,14 @@ func purchase_offer(offer_id: StringName, quantity: int = 1) -> Dictionary:
 			granted = bool(_inventory.call("grant_tool", product_id))
 		&"blueprint":
 			granted = bool(_inventory.call("grant_blueprint", product_id))
+		&"equipment":
+			var equipment := _inventory.call("get_equipment", product_id) as Dictionary
+			if bool(equipment.get("direct_purchase", false)):
+				granted = bool(_inventory.call(
+					"add_equipment_count",
+					product_id,
+					int(offer.get("quantity", 1))
+				))
 	if not granted:
 		_inventory.call("add_resource", &"gold", total_price)
 		return _result(false, &"grant_failed")
@@ -131,6 +141,7 @@ func craft(recipe_id: StringName, quantity: int = 1) -> Dictionary:
 	if not _owns_required_tools(recipe):
 		return _result(false, &"tool_required")
 	var total_cost := _multiply_cost(recipe.get("cost", {}) as Dictionary, quantity)
+	total_cost["gold"] = int(recipe.get("processing_fee", 0)) * quantity
 	if not bool(_inventory.call("spend_resources", total_cost)):
 		return _result(false, &"insufficient_resources")
 	var result_kind := StringName(recipe.get("result_kind", ""))
@@ -143,6 +154,9 @@ func craft(recipe_id: StringName, quantity: int = 1) -> Dictionary:
 			"result_kind": "equipment",
 			"result_id": String(result_id),
 			"quantity": quantity,
+			"quality": String(recipe.get("quality", "common")),
+			"material_tier": String(recipe.get("material_tier", "normal")),
+			"processing_fee": int(recipe.get("processing_fee", 0)) * quantity,
 		})
 	if result_kind == &"sword_soul":
 		return _result(true, &"intent_ready", {
@@ -150,14 +164,20 @@ func craft(recipe_id: StringName, quantity: int = 1) -> Dictionary:
 			"result_kind": "sword_soul",
 			"result_id": String(result_id),
 			"quantity": quantity,
+			"quality": String(recipe.get("quality", "common")),
+			"material_tier": String(recipe.get("material_tier", "normal")),
+			"processing_fee": int(recipe.get("processing_fee", 0)) * quantity,
 		})
 	_refund(total_cost)
 	return _result(false, &"invalid_result")
 
 
-func list_for_sale(item_id: StringName, quantity: int, unit_price: int) -> Dictionary:
+func list_for_sale(item_id: StringName, quantity: int, _legacy_unit_price: int = 0) -> Dictionary:
 	if not is_configured():
 		return _result(false, &"not_configured")
+	var unit_price := int(_inventory.call("get_equipment_sale_value", item_id))
+	if unit_price <= 0:
+		return _result(false, &"listing_rejected")
 	if not bool(_inventory.call("list_equipment_for_sale", item_id, quantity, unit_price)):
 		return _result(false, &"listing_rejected")
 	return _result(true, &"listed", {

@@ -24,7 +24,6 @@ const COMBO_POPUP_MAX_FONT_SIZE := 26
 @onready var level_label: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/LevelLabel
 @onready var class_label: Label = $BottomStage/PlayerVitals/VitalsMargin/VitalsRows/IdentityRow/Identity/ClassLabel
 @onready var currency_value: Label = $TopRightMeta/MetaRow/CurrencyValue
-@onready var material_value: Label = $TopRightMeta/MetaRow/MaterialValue
 @onready var area_name: Label = $TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows/AreaName
 @onready var quest_text: Label = $TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows/ObjectiveText
 @onready var quest_progress: Label = $TopLeftStack/ObjectivePanel/ObjectiveMargin/ObjectiveRows/ObjectiveProgress
@@ -166,10 +165,6 @@ func set_experience(current: int, required: int) -> void:
 	_projected_experience = safe_current
 	_projected_experience_required = safe_required
 	_has_experience_projection = true
-
-
-func set_material_count(amount: int) -> void:
-	material_value.text = _format_number(maxi(0, amount))
 
 
 func set_cards(cards: Array, energy: float) -> void:
