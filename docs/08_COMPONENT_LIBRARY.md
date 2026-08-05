@@ -1228,7 +1228,9 @@ safe-margin centered window、圖示化 header/resource/status/action pattern，
 獨立 script/API 與 service semantics。穩定 controls 在 Scene author；
 PlayerBlacksmithUI 只在 authored `RecipeList` 動態建立 recipe row，並在 authored
 `SaleCandidateList` 動態建立品質販售 row。不得抽成一個以 mode Dictionary重建
-所有 layout 的通用 screen。
+所有 layout 的通用 screen。Forge method、pricing strategy、RumorBoard 與
+ShopDetailPanel 的 BlueprintSchoolPanel 均為 editor-authored controls；runtime 只更新
+狀態、文字、選項與 focus，不建立第二套彈窗或動態幾何。
 
 ### 21.8 PauseMenu dev map selector
 

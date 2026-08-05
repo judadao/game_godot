@@ -8,6 +8,7 @@ signal mode_changed(mode: String)
 signal item_selected(index: int, item_data: Dictionary, mode: String)
 signal quantity_changed(quantity: int)
 signal confirmed(item_data: Dictionary, quantity: int, mode: String)
+signal blueprint_school_change_requested(blueprint_id: StringName, school_id: StringName)
 signal canceled
 
 const ROW_CONTAINER_PATH := "CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows"
@@ -40,6 +41,9 @@ const PORTRAIT_GROCER := preload("res://assets/town/npc/characters/grocer_cutout
 @onready var details_header: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/SectionLabel
 @onready var item_name: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/ItemName
 @onready var item_description: RichTextLabel = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/ItemDescription
+@onready var blueprint_school_panel: PanelContainer = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/BlueprintSchoolPanel
+@onready var blueprint_school_selector: OptionButton = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/BlueprintSchoolPanel/BlueprintSchoolLayout/BlueprintSchoolActions/BlueprintSchoolSelector
+@onready var blueprint_rework_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/BlueprintSchoolPanel/BlueprintSchoolLayout/BlueprintSchoolActions/BlueprintReworkButton
 @onready var quantity_label: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow/QuantityLabel
 @onready var minus_button: Button = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow/MinusButton
 @onready var quantity_value: Label = $CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/DetailsPanel/DetailsLayout/QuantityRow/QuantityValue
@@ -66,6 +70,7 @@ var _row_normal_style: StyleBox
 var _row_selected_style: StyleBox
 var _mode_normal_style: StyleBox
 var _mode_selected_style: StyleBox
+var _blueprint_school_ids: Array[StringName] = []
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -78,6 +83,8 @@ func _ready() -> void:
 	minus_button.pressed.connect(func() -> void: set_quantity(quantity - 1))
 	plus_button.pressed.connect(func() -> void: set_quantity(quantity + 1))
 	confirm_button.pressed.connect(_confirm_selection)
+	blueprint_school_selector.item_selected.connect(_on_blueprint_school_selected)
+	blueprint_rework_button.pressed.connect(_request_blueprint_rework)
 	cancel_button.pressed.connect(_cancel)
 	_bootstrap_placeholder_items()
 	set_mode(mode)
@@ -255,6 +262,15 @@ func _configure_focus_navigation() -> void:
 		NodePath() if _is_blueprint_shop() else buy_button.get_path_to(sell_button)
 	)
 	sell_button.focus_neighbor_left = sell_button.get_path_to(buy_button)
+	blueprint_school_selector.focus_neighbor_right = blueprint_school_selector.get_path_to(
+		blueprint_rework_button
+	)
+	blueprint_rework_button.focus_neighbor_left = blueprint_rework_button.get_path_to(
+		blueprint_school_selector
+	)
+	blueprint_rework_button.focus_neighbor_bottom = blueprint_rework_button.get_path_to(
+		confirm_button
+	)
 	if _row_buttons.is_empty():
 		return
 	buy_button.focus_neighbor_bottom = buy_button.get_path_to(_row_buttons[0])
@@ -366,6 +382,7 @@ func _refresh_details() -> void:
 		minus_button.disabled = true
 		plus_button.disabled = true
 		confirm_button.disabled = true
+		blueprint_school_panel.visible = false
 		set_quantity(1)
 		return
 
@@ -398,6 +415,7 @@ func _refresh_details() -> void:
 			available,
 		]
 	set_quantity(quantity)
+	_refresh_blueprint_school_panel(item)
 
 func _refresh_total() -> void:
 	var price := 0
@@ -408,6 +426,66 @@ func _refresh_total() -> void:
 func _confirm_selection() -> void:
 	if selected_index >= 0 and selected_index < items.size() and not confirm_button.disabled:
 		confirmed.emit(items[selected_index], quantity, mode)
+
+
+func _refresh_blueprint_school_panel(item: Dictionary) -> void:
+	var awakened := bool(item.get("blueprint_awakened", false))
+	var owned := int(item.get("owned_count", 0)) > 0
+	blueprint_school_panel.visible = _is_blueprint_shop() and owned and awakened
+	if not blueprint_school_panel.visible:
+		return
+	blueprint_school_selector.clear()
+	_blueprint_school_ids.clear()
+	var current_school := StringName(item.get("blueprint_school", "balanced"))
+	var current_index := 0
+	for school_variant in item.get("blueprint_schools", []) as Array:
+		var school := school_variant as Dictionary
+		var school_id := StringName(school.get("id", ""))
+		if school_id.is_empty():
+			continue
+		_blueprint_school_ids.append(school_id)
+		blueprint_school_selector.add_item("%s %s" % [
+			String(school.get("icon", "◆")), String(school.get("name", school_id)),
+		])
+		blueprint_school_selector.set_item_tooltip(
+			blueprint_school_selector.item_count - 1,
+			String(school.get("description", ""))
+		)
+		if school_id == current_school:
+			current_index = _blueprint_school_ids.size() - 1
+	if not _blueprint_school_ids.is_empty():
+		blueprint_school_selector.select(current_index)
+	var cost := item.get("blueprint_rework_cost", {}) as Dictionary
+	blueprint_rework_button.text = "Rework  ·  %dG + %d Shard" % [
+		int(cost.get("gold", 0)), int(cost.get("magic_shard", 0)),
+	]
+	blueprint_rework_button.disabled = _blueprint_school_ids.is_empty()
+	_on_blueprint_school_selected(current_index)
+
+
+func _on_blueprint_school_selected(index: int) -> void:
+	if selected_index < 0 or selected_index >= items.size():
+		return
+	var item := items[selected_index]
+	var current := StringName(item.get("blueprint_school", "balanced"))
+	blueprint_rework_button.disabled = (
+		index < 0 or index >= _blueprint_school_ids.size()
+		or _blueprint_school_ids[index] == current
+	)
+
+
+func _request_blueprint_rework() -> void:
+	if (
+		selected_index < 0
+		or selected_index >= items.size()
+		or blueprint_school_selector.selected < 0
+		or blueprint_school_selector.selected >= _blueprint_school_ids.size()
+	):
+		return
+	blueprint_school_change_requested.emit(
+		StringName(items[selected_index].get("product_id", "")),
+		_blueprint_school_ids[blueprint_school_selector.selected]
+	)
 
 func set_transaction_feedback(message: String, successful: bool) -> void:
 	var prefix := "Success" if successful else "Unable"

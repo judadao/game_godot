@@ -457,7 +457,8 @@ UI 對上層提供 setter/configure API與 typed signals：
 - `DialogueUI`：speaker/text/choices 與左上角色圖集動畫頭像；
   `present_story_line()` 接收已驗證 line/speaker projection，emit choice/advanced/canceled。
 - `ShopUI`：圖示化 catalog projection 與結構化商品列；emit
-  mode/quantity/confirmed。
+  mode/quantity/confirmed。圖紙商選到已持有且 Lv.5 覺醒的圖紙時，另顯示 authored
+  流派改造區，將 `blueprint_school_change_requested` 交由 Game／ForgeService 驗證。
 - `InventoryUI`：以單一古老日記呈現四個章節：背包（素材、關鍵道具、裝備）、
   個人狀態與三個裝備欄位、依 `CardInstance` identity 投影的現有劍魂，以及招式／
   敵人／劍魂／裝備圖鑑。招式清單由 `Game` 投影 `skills.json` 的 13 系列、39 招，
@@ -470,7 +471,9 @@ UI 對上層提供 setter/configure API與 typed signals：
 - `MaterialYardUI`：Level 0 basic stock、依 workshop level 解鎖的高階鍛造材料／永久工具，
   以及 Level 3 material bundle yield projection。
 - `PlayerBlacksmithUI`：圖紙鍛造、每張圖紙 Lv.0–5 熟練度／Lv.5 覺醒、blacksmith
-  recipe tier／加工費、Sword Soul 升級，以及依品質列出素材／裝備的販售桌。
+  recipe tier／加工費、Sword Soul 升級，以及依品質列出素材／裝備的販售桌。鍛造
+  以穩鍛／精煉／急鍛／名匠鍛造選擇成本、成功率與品質風險；販售以快速／公道／
+  精品定價，並投影「流言菲語」指定商品、具名顧客與高價倍率。
 - `TownHallUI`：village stage、總建築等級，以及五棟建築的選擇、效果、折扣後成本與升級操作；成功後以 signal 交回 `Game` 立即存檔與刷新 projection。
 - `PauseMenu`：emit save/load/settings/exit-combat/quit 等 intent；Game 只在 active
   combat Run 啟用退出戰鬥，接收 intent 後以失敗結算保留已得資源並回 Town。
@@ -491,9 +494,10 @@ Dev mode 使用 `dev_meta_progress.json` 與 `dev_quick_save*`，不覆寫正式
 仍負責最終同步與 world visual projection。UI 不應新增 domain 規則，直接 service mutation
 仍是 Known Risk；舊的通用 Town progression screen 已退役。
 
-InventoryManager schema 4 以品質堆疊保存素材與裝備，並保存圖紙 craft count、
-熟練等級與 awakening；ForgeService 是品質機率、Market stock gate 與單格 sale
-escrow 的唯一規則 owner。RunState 另保留戰鬥素材袋的品質，回城結算後才寫入
+InventoryManager schema 5 以品質堆疊保存素材與裝備，並保存圖紙 craft count、
+熟練等級、awakening／school 與含定價、流言顧客 metadata 的單格 sale escrow；
+ForgeService 是工法、素材特性、品質／失敗結果、圖紙流派改造、Market stock gate
+與流言成交的唯一規則 owner。RunState 另保留戰鬥素材袋的品質，回城結算後才寫入
 InventoryManager；UI／Game 不自行重算品質。
 
 ## 6. Signal 與跨系統資料流

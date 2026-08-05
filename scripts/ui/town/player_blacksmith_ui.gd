@@ -6,12 +6,20 @@ signal closed
 signal toggled(is_open: bool)
 signal canceled
 signal craft_requested(recipe_id: StringName)
+signal craft_with_method_requested(recipe_id: StringName, method_id: StringName)
 signal list_for_sale_requested(
 	item_kind: StringName,
 	item_id: StringName,
 	quality: StringName
 )
+signal list_for_sale_with_strategy_requested(
+	item_kind: StringName,
+	item_id: StringName,
+	quality: StringName,
+	price_strategy: StringName
+)
 signal resolve_sale_requested
+signal cancel_sale_requested
 signal upgrade_sword_soul_requested(card_id: StringName)
 signal workshop_upgraded
 
@@ -73,6 +81,10 @@ const SLOT_LABELS := {
 @onready var recipe_status_label: Label = %RecipeStatusLabel
 @onready var recipe_description: RichTextLabel = %RecipeDescription
 @onready var recipe_cost_label: Label = %RecipeCostLabel
+@onready var steady_method_button: Button = %SteadyMethodButton
+@onready var refine_method_button: Button = %RefineMethodButton
+@onready var rush_method_button: Button = %RushMethodButton
+@onready var masterwork_method_button: Button = %MasterworkMethodButton
 @onready var craft_button: Button = %CraftButton
 @onready var equip_button: Button = %EquipButton
 @onready var strengthen_button: Button = %StrengthenButton
@@ -88,8 +100,13 @@ const SLOT_LABELS := {
 @onready var sale_count_label: Label = %SaleCountLabel
 @onready var sale_status_label: Label = %SaleStatusLabel
 @onready var customer_status_label: Label = %CustomerStatusLabel
+@onready var rumor_label: Label = %RumorLabel
+@onready var quick_price_button: Button = %QuickPriceButton
+@onready var fair_price_button: Button = %FairPriceButton
+@onready var luxury_price_button: Button = %LuxuryPriceButton
 @onready var list_for_sale_button: Button = %ListForSaleButton
 @onready var resolve_sale_button: Button = %ResolveSaleButton
+@onready var cancel_listing_button: Button = %CancelListingButton
 @onready var gold_feedback: Label = %GoldFeedback
 
 var _town: RefCounted
@@ -107,6 +124,8 @@ var _sale_state: Dictionary = {}
 var _sale_candidates: Array[Dictionary] = []
 var _sale_candidate_buttons: Array[Button] = []
 var _selected_sale_candidate_key := ""
+var _selected_forge_method: StringName = &"steady"
+var _selected_price_strategy: StringName = &"fair"
 var _icon_cache: Dictionary = {}
 var _resource_value_labels: Dictionary
 var _row_normal_style: StyleBox
@@ -304,6 +323,7 @@ func craft_selected_recipe() -> void:
 	if _selected_recipe_id.is_empty():
 		return
 	craft_requested.emit(_selected_recipe_id)
+	craft_with_method_requested.emit(_selected_recipe_id, _selected_forge_method)
 	_set_feedback("Crafting request sent to the forge.", true)
 
 
@@ -380,10 +400,20 @@ func request_list_for_sale() -> void:
 		StringName(candidate.get("item_id", "")),
 		StringName(candidate.get("quality", "common"))
 	)
+	list_for_sale_with_strategy_requested.emit(
+		StringName(candidate.get("item_kind", "")),
+		StringName(candidate.get("item_id", "")),
+		StringName(candidate.get("quality", "common")),
+		_selected_price_strategy
+	)
 
 
 func request_resolve_sale() -> void:
 	resolve_sale_requested.emit()
+
+
+func request_cancel_sale() -> void:
+	cancel_sale_requested.emit()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -399,11 +429,19 @@ func _connect_controls() -> void:
 	upgrade_service_button.pressed.connect(select_blacksmith_service.bind(&"workshop_upgrade"))
 	sales_service_button.pressed.connect(select_blacksmith_service.bind(&"sales_table"))
 	craft_button.pressed.connect(craft_selected_recipe)
+	steady_method_button.pressed.connect(_select_forge_method.bind(&"steady"))
+	refine_method_button.pressed.connect(_select_forge_method.bind(&"refine"))
+	rush_method_button.pressed.connect(_select_forge_method.bind(&"rush"))
+	masterwork_method_button.pressed.connect(_select_forge_method.bind(&"masterwork"))
 	equip_button.pressed.connect(equip_selected_equipment)
 	strengthen_button.pressed.connect(strengthen_selected_equipment)
 	upgrade_button.pressed.connect(upgrade_service_building)
 	list_for_sale_button.pressed.connect(request_list_for_sale)
 	resolve_sale_button.pressed.connect(request_resolve_sale)
+	cancel_listing_button.pressed.connect(request_cancel_sale)
+	quick_price_button.pressed.connect(_select_price_strategy.bind(&"quick"))
+	fair_price_button.pressed.connect(_select_price_strategy.bind(&"fair"))
+	luxury_price_button.pressed.connect(_select_price_strategy.bind(&"luxury"))
 
 
 func _apply_service() -> void:
@@ -563,20 +601,49 @@ func _refresh_recipe_detail() -> void:
 	var proficiency_level := int(recipe.get("proficiency_level", 0))
 	var awakened := bool(recipe.get("blueprint_awakened", false))
 	var chances := recipe.get("quality_chances", {}) as Dictionary
+	var craft_preview: Dictionary = {}
+	if _forge_service != null and _forge_service.has_method("get_craft_preview"):
+		craft_preview = _forge_service.call(
+			"get_craft_preview", _selected_recipe_id, _selected_forge_method
+		) as Dictionary
+	if not bool(craft_preview.get("unlocked", true)):
+		_selected_forge_method = &"steady"
+		craft_preview = _forge_service.call(
+			"get_craft_preview", _selected_recipe_id, _selected_forge_method
+		) as Dictionary
+	if not craft_preview.is_empty():
+		chances = craft_preview.get("quality_chances", chances) as Dictionary
+	var method := craft_preview.get("method", {}) as Dictionary
+	var material_trait := craft_preview.get("material_trait_profile", {}) as Dictionary
+	var school_profile := craft_preview.get("blueprint_school_profile", {}) as Dictionary
 	recipe_description.text = (
 		"[color=#f0c967][b]%s品質鍛造[/b][/color]\n%s\n\n"
 		+ "[color=#9fdde5]圖紙熟練度 Lv.%d / 5[/color]  ·  %s\n"
-		+ "稀有 %.0f%%  ·  罕見 %.0f%%  ·  傳奇 %.0f%%"
+		+ "%s %s  ·  %s\n"
+		+ "成功 %.0f%%  ·  稀有 %.0f%%  ·  罕見 %.0f%%  ·  傳奇 %.0f%%"
 	) % [
 		quality_label,
 		description,
 		proficiency_level,
 		"圖紙已覺醒" if awakened else "Lv.5 時主角會改良圖紙",
+		String(method.get("icon", "◆")),
+		String(method.get("name", "穩鍛")),
+		"%s / %s" % [
+			String(school_profile.get("name", "未覺醒流派")),
+			String(material_trait.get("name", "一般素材")),
+		],
+		float(craft_preview.get("success_chance", 1.0)) * 100.0,
 		float(chances.get("rare", 0.0)) * 100.0,
 		float(chances.get("exceptional", 0.0)) * 100.0,
 		float(chances.get("legendary", 0.0)) * 100.0,
 	]
-	var processing_fee := int(recipe.get("processing_fee", 0))
+	var processing_fee := int(craft_preview.get(
+		"processing_fee", recipe.get("processing_fee", 0)
+	))
+	if not craft_preview.is_empty():
+		cost = craft_preview.get("cost", cost) as Dictionary
+		cost = cost.duplicate(true)
+		cost.erase("gold")
 	var sale_value := int(recipe.get("sale_value", 0))
 	recipe_cost_label.text = "MATERIALS  ·  %s\nPROCESSING FEE  ·  GOLD %d%s" % [
 		_format_cost(cost),
@@ -585,6 +652,7 @@ func _refresh_recipe_detail() -> void:
 	]
 	craft_button.disabled = not unlocked
 	craft_button.text = "Forge"
+	_refresh_forge_method_buttons(recipe)
 	var is_equipment := not is_sword_soul
 	equip_button.visible = is_equipment and owned
 	equip_button.disabled = not owned or equipped
@@ -681,6 +749,20 @@ func _refresh_sales_table() -> void:
 	sale_item_name.text = item_name if not item_name.is_empty() else "Select crafted equipment"
 	var quality_label := String(selected_candidate.get("quality_label", ""))
 	var unit_price := int(selected_candidate.get("unit_price", 0))
+	var sale_preview: Dictionary = {}
+	if (
+		not selected_candidate.is_empty()
+		and _forge_service != null
+		and _forge_service.has_method("get_sale_preview")
+	):
+		sale_preview = _forge_service.call(
+			"get_sale_preview",
+			StringName(selected_candidate.get("item_kind", "")),
+			StringName(selected_candidate.get("item_id", "")),
+			StringName(selected_candidate.get("quality", "common")),
+			_selected_price_strategy
+		) as Dictionary
+		unit_price = int(sale_preview.get("unit_price", unit_price))
 	sale_count_label.text = "SALE INVENTORY  ·  %d AVAILABLE%s" % [
 		count,
 		"\n%s  ·  %d GOLD EACH" % [quality_label, unit_price]
@@ -696,10 +778,29 @@ func _refresh_sales_table() -> void:
 		"Customer is ready to purchase." if status == "customer_ready"
 		else "Waiting for a customer..."
 	))
+	var rumor := sale_preview.get("rumor", {}) as Dictionary
+	if rumor.is_empty() and not String(state.get("rumor_id", "")).is_empty():
+		rumor = {
+			"title": state.get("rumor_title", "流言菲語"),
+			"customer_name": state.get("customer_name", "特別顧客"),
+			"multiplier": state.get("rumor_multiplier", 1.0),
+		}
+	rumor_label.text = (
+		"✦ %s\n%s 將以 %.0f%% 價格來訪" % [
+			String(rumor.get("title", "流言菲語")),
+			String(rumor.get("customer_name", "特別顧客")),
+			float(rumor.get("multiplier", 1.0)) * 100.0,
+		]
+		if not rumor.is_empty()
+		else "◇ 流言菲語：這件商品目前不符合特別顧客的需求。"
+	)
+	_refresh_price_strategy_buttons()
 	list_for_sale_button.disabled = (
 		status != "empty" or selected_candidate.is_empty() or count <= 0
 	)
 	resolve_sale_button.disabled = status != "customer_ready"
+	cancel_listing_button.disabled = status == "empty"
+	cancel_listing_button.visible = status != "empty"
 	gold_feedback.visible = not gold_feedback.text.strip_edges().is_empty()
 
 
@@ -730,6 +831,49 @@ func _select_sale_candidate(key: String) -> void:
 		return
 	_selected_sale_candidate_key = key
 	_refresh_sales_table()
+
+
+func _select_forge_method(method_id: StringName) -> void:
+	_selected_forge_method = method_id
+	_has_action_feedback = false
+	_refresh_recipe_detail()
+
+
+func _select_price_strategy(strategy_id: StringName) -> void:
+	_selected_price_strategy = strategy_id
+	_refresh_sales_table()
+
+
+func _refresh_forge_method_buttons(recipe: Dictionary) -> void:
+	var buttons := {
+		&"steady": steady_method_button,
+		&"refine": refine_method_button,
+		&"rush": rush_method_button,
+		&"masterwork": masterwork_method_button,
+	}
+	for method_id in buttons:
+		var button := buttons[method_id] as Button
+		button.button_pressed = method_id == _selected_forge_method
+		button.add_theme_stylebox_override(
+			"normal",
+			_service_selected_style if method_id == _selected_forge_method else _service_normal_style
+		)
+	masterwork_method_button.disabled = not bool(recipe.get("blueprint_awakened", false))
+
+
+func _refresh_price_strategy_buttons() -> void:
+	var buttons := {
+		&"quick": quick_price_button,
+		&"fair": fair_price_button,
+		&"luxury": luxury_price_button,
+	}
+	for strategy_id in buttons:
+		var button := buttons[strategy_id] as Button
+		button.button_pressed = strategy_id == _selected_price_strategy
+		button.add_theme_stylebox_override(
+			"normal",
+			_service_selected_style if strategy_id == _selected_price_strategy else _service_normal_style
+		)
 
 
 func _sale_candidate_key(candidate: Dictionary) -> String:
@@ -908,7 +1052,33 @@ func _configure_focus_navigation() -> void:
 		button.focus_neighbor_bottom = button.get_path_to(
 			craft_button if index == _recipe_buttons.size() - 1 else _recipe_buttons[index + 1]
 		)
-		button.focus_neighbor_right = button.get_path_to(craft_button)
+		button.focus_neighbor_right = button.get_path_to(steady_method_button)
+	var method_buttons: Array[Button] = [
+		steady_method_button, refine_method_button, rush_method_button, masterwork_method_button,
+	]
+	for index in method_buttons.size():
+		var method_button := method_buttons[index]
+		method_button.focus_neighbor_left = method_button.get_path_to(
+			method_buttons[maxi(0, index - 1)]
+		)
+		method_button.focus_neighbor_right = method_button.get_path_to(
+			method_buttons[mini(method_buttons.size() - 1, index + 1)]
+		)
+		method_button.focus_neighbor_bottom = method_button.get_path_to(craft_button)
+	var price_buttons: Array[Button] = [
+		quick_price_button, fair_price_button, luxury_price_button,
+	]
+	for index in price_buttons.size():
+		var price_button := price_buttons[index]
+		price_button.focus_neighbor_left = price_button.get_path_to(
+			price_buttons[maxi(0, index - 1)]
+		)
+		price_button.focus_neighbor_right = price_button.get_path_to(
+			price_buttons[mini(price_buttons.size() - 1, index + 1)]
+		)
+		price_button.focus_neighbor_bottom = price_button.get_path_to(list_for_sale_button)
+	resolve_sale_button.focus_neighbor_right = resolve_sale_button.get_path_to(cancel_listing_button)
+	cancel_listing_button.focus_neighbor_left = cancel_listing_button.get_path_to(resolve_sale_button)
 	forge_service_button.focus_neighbor_right = forge_service_button.get_path_to(
 		_recipe_buttons[0] if not _recipe_buttons.is_empty() else craft_button
 	)
@@ -916,7 +1086,7 @@ func _configure_focus_navigation() -> void:
 		upgrade_button
 	)
 	sales_service_button.focus_neighbor_right = sales_service_button.get_path_to(
-		list_for_sale_button
+		fair_price_button
 	)
 
 

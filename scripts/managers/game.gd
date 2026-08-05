@@ -5501,18 +5501,23 @@ func _open_town_service_ui(service_id: StringName) -> void:
 		town_ui.call("set_sale_state", _player_sale_projection())
 		_connect_with_source_if_present(
 			town_ui,
-			&"craft_requested",
+			&"craft_with_method_requested",
 			&"_on_blacksmith_craft_requested"
 		)
 		_connect_with_source_if_present(
 			town_ui,
-			&"list_for_sale_requested",
+			&"list_for_sale_with_strategy_requested",
 			&"_on_blacksmith_list_for_sale_requested"
 		)
 		_connect_with_source_if_present(
 			town_ui,
 			&"resolve_sale_requested",
 			&"_on_blacksmith_resolve_sale_requested"
+		)
+		_connect_with_source_if_present(
+			town_ui,
+			&"cancel_sale_requested",
+			&"_on_blacksmith_cancel_sale_requested"
 		)
 		_connect_with_source_if_present(
 			town_ui,
@@ -5605,6 +5610,22 @@ func _forge_quality_stack_summary(counts: Dictionary) -> String:
 	return "、".join(parts) if not parts.is_empty() else "無"
 
 
+func _forge_outcome_summary(counts: Dictionary) -> String:
+	var labels := {
+		"success": "成品",
+		"flawed": "瑕疵品",
+		"prototype": "試作品",
+		"scrap": "回收廢料",
+		"accidental_masterpiece": "意外神作",
+	}
+	var parts: Array[String] = []
+	for outcome_id in ["success", "flawed", "prototype", "scrap", "accidental_masterpiece"]:
+		var count := int(counts.get(outcome_id, 0))
+		if count > 0:
+			parts.append("%s ×%d" % [labels[outcome_id], count])
+	return "、".join(parts) if not parts.is_empty() else "火候未形成成品"
+
+
 func _forge_blueprint_icon(blueprint_id: StringName) -> String:
 	for offer_variant in forge_catalog.call("get_all_offers") as Array:
 		var offer := offer_variant as Dictionary
@@ -5662,17 +5683,31 @@ func _player_sale_projection() -> Dictionary:
 		if item_kind == &"equipment"
 		else _forge_material_name(item_id)
 	)
+	var customer_state := StringName(slot.get("customer_state", "ready"))
+	var sale_status := "customer_declined" if customer_state == &"declined" else "customer_ready"
 	return {
 		"item_kind": String(item_kind),
 		"item_id": String(item_id),
 		"item_name": "%s · %s" % [item_name, _forge_quality_label(quality)],
 		"quality": String(quality),
 		"crafted_count": int(slot.get("quantity", 0)),
-		"status": "customer_ready",
-		"table_label": "%s 已陳列於販售桌。" % item_name,
-		"customer_label": "顧客願以 %d 金幣購買。" % (
-			int(slot.get("quantity", 0)) * int(slot.get("unit_price", 0))
+		"status": sale_status,
+		"table_label": "%s 已以「%s」陳列於販售桌。" % [
+			item_name,
+			String(slot.get("price_strategy", "fair")).capitalize(),
+		],
+		"customer_label": (
+			"顧客拒絕本次精品標價；請撤下商品並重新定價。"
+			if customer_state == &"declined" else "%s 願以 %d 金幣購買。" % [
+				String(slot.get("customer_name", "Town Customer")),
+				int(slot.get("quantity", 0)) * int(slot.get("unit_price", 0))
+			]
 		),
+		"rumor_id": slot.get("rumor_id", ""),
+		"rumor_title": slot.get("rumor_title", ""),
+		"customer_name": slot.get("customer_name", "Town Customer"),
+		"rumor_multiplier": slot.get("rumor_multiplier", 1.0),
+		"price_strategy": slot.get("price_strategy", "fair"),
 		"candidates": candidates,
 		"equipment_sales_unlocked": int(town_manager.call(
 			"get_building_level", &"market"
@@ -5713,51 +5748,76 @@ func _on_material_offer_requested(
 
 func _on_blacksmith_craft_requested(
 	recipe_id: StringName,
-	ui_control: Control
+	method_or_ui: Variant = &"steady",
+	ui_control: Control = null
 ) -> void:
-	var result := forge_service.call("craft", recipe_id) as Dictionary
+	var method_id: StringName = &"steady"
+	if method_or_ui is Control:
+		ui_control = method_or_ui as Control
+	else:
+		method_id = StringName(method_or_ui)
+	var result := forge_service.call("craft", recipe_id, 1, method_id) as Dictionary
 	var success := bool(result.get("ok", false))
-	if success and String(result.get("intent", "")) == "grant_sword_soul":
-		for _index in maxi(1, int(result.get("quantity", 1))):
+	if (
+		success
+		and int(result.get("quantity", 0)) > 0
+		and String(result.get("intent", "")) == "grant_sword_soul"
+	):
+		for _index in maxi(0, int(result.get("quantity", 0))):
 			meta_state.add_card_instance(String(result.get("result_id", "")), 1)
 		var card_id := String(result.get("result_id", ""))
 		if not meta_state.unlocked_cards.has(card_id):
 			meta_state.unlocked_cards.append(card_id)
+	var outcome_counts := result.get("outcome_counts", {}) as Dictionary
+	var outcome_text := _forge_outcome_summary(outcome_counts)
 	result["message"] = (
 		(
 			"主角完成了圖紙改良：圖紙已覺醒，今後可鍛造出傳奇品質。"
 			if bool(result.get("blueprint_awakened_now", false))
-			else "鍛造完成，圖紙熟練度已提升。"
+			else (
+				"鍛造完成：%s。圖紙熟練度已提升。" % outcome_text
+				if bool(result.get("proficiency_advanced", int(result.get("quantity", 0)) > 0))
+				else "鍛造未形成成品：%s。圖紙熟練度未提升。" % outcome_text
+			)
 		)
 		if success else _forge_result_message(StringName(result.get("code", "")))
 	)
 	_persist_forge_progress()
-	ui_control.call("set_recipes", _forge_recipe_projection())
-	ui_control.call("set_sale_state", _player_sale_projection())
-	ui_control.call("show_action_result", result)
+	if is_instance_valid(ui_control):
+		ui_control.call("set_recipes", _forge_recipe_projection())
+		ui_control.call("set_sale_state", _player_sale_projection())
+		ui_control.call("show_action_result", result)
 
 
 func _on_blacksmith_list_for_sale_requested(
 	item_kind: StringName,
 	item_id: StringName,
 	quality: StringName,
-	ui_control: Control
+	strategy_or_ui: Variant = &"fair",
+	ui_control: Control = null
 ) -> void:
+	var price_strategy: StringName = &"fair"
+	if strategy_or_ui is Control:
+		ui_control = strategy_or_ui as Control
+	else:
+		price_strategy = StringName(strategy_or_ui)
 	var result := forge_service.call(
 		"list_for_sale",
 		item_kind,
 		item_id,
 		quality,
-		1
+		1,
+		price_strategy
 	) as Dictionary
 	var success := bool(result.get("ok", false))
 	result["message"] = (
-		"商品已放上販售桌，顧客已經抵達。"
+		"商品已放上販售桌；符合流言時，特別顧客會以高價來訪。"
 		if success else _forge_result_message(StringName(result.get("code", "")))
 	)
 	_persist_forge_progress()
-	ui_control.call("set_sale_state", _player_sale_projection())
-	ui_control.call("show_action_result", result)
+	if is_instance_valid(ui_control):
+		ui_control.call("set_sale_state", _player_sale_projection())
+		ui_control.call("show_action_result", result)
 
 
 func _on_blacksmith_resolve_sale_requested(ui_control: Control) -> void:
@@ -5771,6 +5831,18 @@ func _on_blacksmith_resolve_sale_requested(ui_control: Control) -> void:
 	result["sale_state"] = _player_sale_projection()
 	ui_control.call("show_sale_result", result)
 	ui_control.call("set_sale_state", result["sale_state"])
+
+
+func _on_blacksmith_cancel_sale_requested(ui_control: Control) -> void:
+	var result := forge_service.call("cancel_sale") as Dictionary
+	var success := bool(result.get("ok", false))
+	result["message"] = (
+		"商品已撤下，可重新選擇定價。"
+		if success else _forge_result_message(StringName(result.get("code", "")))
+	)
+	_persist_forge_progress()
+	ui_control.call("show_sale_result", result)
+	ui_control.call("set_sale_state", _player_sale_projection())
 
 
 func _on_blacksmith_upgrade_sword_soul_requested(
@@ -5969,6 +6041,11 @@ func _on_shop_requested(merchant: Node, shop_id: StringName, interactor: Node) -
 		ui_control.connect("mode_changed", _on_shop_mode_changed.bind(ui_control, shop_id))
 	if ui_control.has_signal("confirmed"):
 		ui_control.connect("confirmed", _on_shop_transaction_confirmed.bind(ui_control, shop_id))
+	if ui_control.has_signal("blueprint_school_change_requested"):
+		ui_control.connect(
+			"blueprint_school_change_requested",
+			_on_blueprint_school_change_requested.bind(ui_control, shop_id)
+		)
 	_refresh_shop_projection(ui_control, shop_id, "buy")
 
 
@@ -6404,6 +6481,12 @@ func _forge_shop_items(shop_id: StringName) -> Array[Dictionary]:
 		var owned_count := int(owned_variant) if owned_variant is int else int(bool(owned_variant))
 		var product_kind := String(offer.get("product_kind", ""))
 		var icon_path := String(offer.get("icon_path", ""))
+		var blueprint_id := StringName(offer.get("product_id", ""))
+		var proficiency: Dictionary = {}
+		if product_kind == "blueprint":
+			proficiency = inventory_manager.call(
+				"get_blueprint_proficiency", blueprint_id
+			) as Dictionary
 		result.append({
 			"id": String(offer.get("id", "")),
 			"name": String(offer.get("name", "Blueprint")),
@@ -6421,6 +6504,12 @@ func _forge_shop_items(shop_id: StringName) -> Array[Dictionary]:
 			"target_kind": String(offer.get("target_kind", "")),
 			"target_id": String(offer.get("target_id", "")),
 			"required_flame_tier": int(offer.get("required_flame_tier", 0)),
+			"blueprint_awakened": bool(proficiency.get("awakened", false)),
+			"blueprint_school": String(proficiency.get("school", "balanced")),
+			"blueprint_schools": forge_service.call("get_blueprint_schools") as Array,
+			"blueprint_rework_cost": forge_service.call(
+				"get_blueprint_rework_cost", blueprint_id
+			) as Dictionary,
 			"texture": load(icon_path) as Texture2D if not icon_path.is_empty() else null,
 		})
 	return result
@@ -6541,6 +6630,29 @@ func _purchase_forge_shop_offer(
 	ui_control.call("set_transaction_feedback", message, success)
 
 
+func _on_blueprint_school_change_requested(
+	blueprint_id: StringName,
+	school_id: StringName,
+	ui_control: Control,
+	shop_id: StringName
+) -> void:
+	if not _is_forge_shop(shop_id):
+		return
+	var result := forge_service.call(
+		"rework_blueprint_school", blueprint_id, school_id
+	) as Dictionary
+	var success := bool(result.get("ok", false))
+	var school_name := String(school_id).replace("_", " ").capitalize()
+	var message := (
+		"覺醒圖紙已改造為 %s；熟練度完整保留。" % school_name
+		if success else _forge_result_message(StringName(result.get("code", "")))
+	)
+	wallet_gold = int(inventory_manager.call("get_resource_amount", &"gold"))
+	_persist_forge_progress()
+	_refresh_shop_projection(ui_control, shop_id, "buy")
+	ui_control.call("set_transaction_feedback", message, success)
+
+
 func _forge_result_message(code: StringName) -> String:
 	match code:
 		&"insufficient_gold":
@@ -6559,6 +6671,20 @@ func _forge_result_message(code: StringName) -> String:
 			return "販售桌目前已占用，或此物品無法上架。"
 		&"equipment_sales_locked":
 			return "先擴建市場，才會有願意購買裝備的顧客。"
+		&"forge_method_locked":
+			return "名匠鍛造只對 Lv.5 覺醒圖紙開放。"
+		&"unknown_forge_method":
+			return "找不到所選的鍛造工法。"
+		&"customer_declined":
+			return "一般顧客拒絕精品標價；請撤下商品後改用其他定價。"
+		&"customer_declined_locked":
+			return "本次報價已被拒絕；請先撤下商品再重新定價。"
+		&"blueprint_not_awakened":
+			return "圖紙熟練度達 Lv.5 覺醒後才能改換流派。"
+		&"blueprint_school_unchanged":
+			return "這張圖紙已經是所選流派。"
+		&"unknown_blueprint_school", &"blueprint_rework_failed":
+			return "圖紙流派改造無法完成。"
 		&"no_active_listing":
 			return "請先把已鍛造的裝備放上販售桌。"
 		&"sword_soul_not_owned":

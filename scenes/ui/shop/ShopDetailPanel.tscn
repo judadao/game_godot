@@ -122,6 +122,51 @@ Stock: 5"
 fit_content = false
 scroll_active = true
 
+[node name="BlueprintSchoolPanel" type="PanelContainer" parent="DetailsLayout"]
+visible = false
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_preview")
+
+[node name="BlueprintSchoolLayout" type="VBoxContainer" parent="DetailsLayout/BlueprintSchoolPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BlueprintSchoolGuide" type="Label" parent="DetailsLayout/BlueprintSchoolPanel/BlueprintSchoolLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 12
+text = "✦ AWAKENED BLUEPRINT  ·  Choose another school, then confirm rework"
+text_overrun_behavior = 3
+
+[node name="BlueprintSchoolActions" type="HBoxContainer" parent="DetailsLayout/BlueprintSchoolPanel/BlueprintSchoolLayout"]
+layout_mode = 2
+theme_override_constants/separation = 7
+
+[node name="BlueprintSchoolSelector" type="OptionButton" parent="DetailsLayout/BlueprintSchoolPanel/BlueprintSchoolLayout/BlueprintSchoolActions"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "選擇圖紙覺醒流派；改造不會清除熟練度"
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/focus = SubResource("StyleBoxFlat_focus")
+
+[node name="BlueprintReworkButton" type="Button" parent="DetailsLayout/BlueprintSchoolPanel/BlueprintSchoolLayout/BlueprintSchoolActions"]
+custom_minimum_size = Vector2(130, 40)
+layout_mode = 2
+tooltip_text = "支付金幣與魔力碎片改為所選流派；熟練度完整保留"
+icon = ExtResource("1_coin")
+icon_max_width = 20
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/focus = SubResource("StyleBoxFlat_focus")
+text = "Rework"
+
 [node name="QuantityRow" type="HBoxContainer" parent="DetailsLayout"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2

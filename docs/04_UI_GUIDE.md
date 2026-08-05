@@ -681,8 +681,14 @@ HUDLayer
   持有量、Material Yard level、數量與購買。
 - Player Blacksmith：左側鍛造研究員肖像；Forge 依圖紙鍛造 equipment／Sword Soul，
   Workshop Upgrade 解鎖鍛造上限；recipe detail 顯示該圖紙熟練度、品質機率與
-  Lv.5 覺醒狀態。Sales Table 以可捲動 rows 顯示素材／裝備、品質、持有量與單價，
-  並保留顧客與 `+GOLD` 回饋；Market Lv.1 前不投影裝備買家。
+  Lv.5 覺醒狀態。四個 authored 工法按鈕依序顯示 icon／名稱／tooltip，選擇後必須
+  在按下 Forge 前更新成本、成功率、品質與素材特性預覽。Sales Table 以可捲動 rows
+  顯示素材／裝備、品質與持有量，並以快速／公道／精品三個 icon-text 按鈕選定價；
+  右欄流言卡必須先說明符合需求的具名顧客與倍率，再允許上架及成交；精品標價被拒後
+  必須停用重複成交並顯示「撤下／重新定價」動作。Market Lv.1
+  前不投影裝備買家。
+- Blueprint Shop：一般購買流程維持 buy-only；只有選到已持有且已覺醒的圖紙才顯示
+  流派選擇與 Rework action，費用、流派說明與「熟練度保留」必須可直接讀到。
 - Town Hall：左側村長肖像，中欄保留 Overview／Town Development；右欄以五個 authored
   project button 切換 Town Hall、Blacksmith、Material Yard、Market、Memory Library，
   顯示下一級實際效果與折扣後成本。

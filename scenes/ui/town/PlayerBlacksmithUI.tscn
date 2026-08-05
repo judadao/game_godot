@@ -725,6 +725,82 @@ theme_override_font_sizes/font_size = 12
 text = "FORGE COST  ·  Gold 45  ·  Wood 5"
 text_overrun_behavior = 3
 
+[node name="ForgeMethodGuide" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.82, 0.88, 1)
+theme_override_font_sizes/font_size = 12
+text = "2  CHOOSE METHOD  ·  Cost and outcome preview update before forging"
+text_overrun_behavior = 3
+
+[node name="ForgeMethodRow" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="SteadyMethodButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeMethodRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "穩鍛：穩定火候，成本與風險均衡"
+icon = ExtResource("3_forge")
+icon_max_width = 18
+expand_icon = true
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "◆ 穩鍛"
+
+[node name="RefineMethodButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeMethodRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "精煉：增加素材用量，換取品質與成功率"
+icon = ExtResource("8_shard")
+icon_max_width = 18
+expand_icon = true
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "◇ 精煉"
+
+[node name="RushMethodButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeMethodRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "急鍛：費用較低，但廢料風險提高"
+icon = ExtResource("4_upgrade")
+icon_max_width = 18
+expand_icon = true
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "▶ 急鍛"
+
+[node name="MasterworkMethodButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeMethodRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "名匠鍛造：覺醒圖紙限定，追求傳奇神作"
+icon = ExtResource("5_sales")
+icon_max_width = 18
+expand_icon = true
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+theme_override_styles/disabled = SubResource("DisabledStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "✦ 名匠"
+
 [node name="ForgeActions" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
 layout_mode = 2
 theme_override_constants/separation = 7
@@ -929,7 +1005,7 @@ text = "Sale Stock"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.58, 0.64, 0.65, 1)
 theme_override_font_sizes/font_size = 13
-text = "Sell materials first; market expansion brings equipment buyers and stronger blueprints."
+text = "1 選商品  →  2 選定價  →  3 查看流言顧客  →  4 上架成交"
 autowrap_mode = 2
 
 [node name="SaleCandidateScroll" type="ScrollContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory"]
@@ -957,6 +1033,53 @@ theme_override_styles/normal = SubResource("InsetStyle")
 theme_override_styles/hover = SubResource("HoverStyle")
 theme_override_styles/pressed = SubResource("HoverStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
+
+[node name="PriceStrategyLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.82, 0.88, 1)
+theme_override_font_sizes/font_size = 12
+text = "2  PRICING  ·  Choose how quickly you want to sell"
+text_overrun_behavior = 3
+
+[node name="PriceStrategyRow" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="QuickPriceButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory/PriceStrategyRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "快速成交：售價 80%，普通顧客一定購買"
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+text = "▶ 快售"
+
+[node name="FairPriceButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory/PriceStrategyRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "公道定價：按市場行情穩定成交"
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+text = "◆ 公道"
+
+[node name="LuxuryPriceButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory/PriceStrategyRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "精品標價：售價 135%，最好配合流言顧客"
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/pressed = SubResource("PrimaryStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+text = "✦ 精品"
 
 [node name="SaleCountFrame" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesInventoryPanel/SalesInventory"]
 custom_minimum_size = Vector2(0, 96)
@@ -1009,6 +1132,19 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.97, 0.82, 0.49, 1)
 theme_override_font_sizes/font_size = 20
 text = "Workshop Sales Table"
+
+[node name="RumorBoard" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter"]
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+theme_override_styles/panel = SubResource("InsetStyle")
+
+[node name="RumorLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter/RumorBoard"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.72, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "◇ 流言菲語：選擇商品後會顯示可能來訪的高價顧客。"
+autowrap_mode = 2
 
 [node name="TableSurface" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter"]
 custom_minimum_size = Vector2(0, 196)
@@ -1085,10 +1221,15 @@ text = "+120 GOLD"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="ResolveSaleButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter"]
+[node name="SaleActionRow" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ResolveSaleButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter/SaleActionRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
+size_flags_horizontal = 3
 texture_filter = 1
 tooltip_text = "Complete the waiting customer sale"
 icon = ExtResource("5_sales")
@@ -1102,3 +1243,19 @@ theme_override_styles/pressed = SubResource("HoverStyle")
 theme_override_styles/disabled = SubResource("DisabledStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
 text = "Complete Sale"
+
+[node name="CancelListingButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/SalesWorkspace/SalesCounterPanel/SalesCounter/SaleActionRow"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "撤下未成交商品，再重新選擇價格"
+theme_override_colors/font_color = Color(0.82, 0.86, 0.88, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("SecondaryStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/pressed = SubResource("HoverStyle")
+theme_override_styles/disabled = SubResource("DisabledStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "↩ 撤下／重新定價"

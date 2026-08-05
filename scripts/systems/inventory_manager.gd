@@ -1,10 +1,17 @@
 extends RefCounted
 
 const DEFAULT_DATA_PATH := "res://data/equipment.json"
-const SAVE_SCHEMA_VERSION := 4
+const SAVE_SCHEMA_VERSION := 5
 const VALID_SLOTS: Array[StringName] = [&"weapon", &"armor", &"accessory"]
 const VALID_QUALITIES: Array[StringName] = [&"common", &"rare", &"exceptional", &"legendary"]
 const VALID_MATERIAL_TIERS: Array[StringName] = [&"normal", &"elite", &"boss"]
+const VALID_BLUEPRINT_SCHOOLS: Array[StringName] = [
+	&"balanced",
+	&"keen_edge",
+	&"efficient_form",
+	&"merchant_signature",
+	&"elemental_resonance",
+]
 const QUALITY_MULTIPLIERS := {
 	&"common": 1.0,
 	&"rare": 1.25,
@@ -306,7 +313,7 @@ func get_blueprint_proficiency(blueprint_id: StringName) -> Dictionary:
 	var key := String(blueprint_id)
 	var state := _blueprint_proficiency.get(key, {}) as Dictionary
 	if state.is_empty():
-		return {"craft_count": 0, "level": 0, "awakened": false}
+		return {"craft_count": 0, "level": 0, "awakened": false, "school": "balanced"}
 	return state.duplicate(true)
 
 
@@ -316,6 +323,7 @@ func record_blueprint_craft(blueprint_id: StringName, quantity: int = 1) -> Dict
 		return {}
 	var state := get_blueprint_proficiency(blueprint_id)
 	var previous_awakened := bool(state.get("awakened", false))
+	var school := StringName(state.get("school", "balanced"))
 	var craft_count := int(state.get("craft_count", 0)) + quantity
 	var level := mini(5, craft_count)
 	state = {
@@ -323,13 +331,28 @@ func record_blueprint_craft(blueprint_id: StringName, quantity: int = 1) -> Dict
 		"level": level,
 		"awakened": level >= 5,
 		"awakened_now": level >= 5 and not previous_awakened,
+		"school": String(school),
 	}
 	_blueprint_proficiency[key] = {
 		"craft_count": craft_count,
 		"level": level,
 		"awakened": level >= 5,
+		"school": String(school),
 	}
 	return state
+
+
+func set_blueprint_school(blueprint_id: StringName, school: StringName) -> bool:
+	var key := String(blueprint_id)
+	if not VALID_BLUEPRINT_SCHOOLS.has(school) or not _owned_blueprints.has(key):
+		return false
+	var state := get_blueprint_proficiency(blueprint_id)
+	if not bool(state.get("awakened", false)):
+		return false
+	state.erase("awakened_now")
+	state["school"] = String(school)
+	_blueprint_proficiency[key] = state
+	return true
 
 
 func owns_blueprint(blueprint_id: StringName) -> bool:
@@ -521,7 +544,8 @@ func list_equipment_for_sale(
 	item_id: StringName,
 	quantity: int,
 	unit_price: int,
-	quality: StringName = StringName()
+	quality: StringName = StringName(),
+	metadata: Dictionary = {}
 ) -> bool:
 	if not _sale_slot.is_empty() or quantity <= 0 or unit_price <= 0:
 		return false
@@ -537,6 +561,7 @@ func list_equipment_for_sale(
 		"quantity": quantity,
 		"unit_price": unit_price,
 	}
+	_apply_sale_metadata(metadata)
 	return true
 
 
@@ -544,7 +569,8 @@ func list_resource_for_sale(
 	resource_id: StringName,
 	quantity: int,
 	unit_price: int,
-	quality: StringName = &"common"
+	quality: StringName = &"common",
+	metadata: Dictionary = {}
 ) -> bool:
 	if (
 		not _sale_slot.is_empty()
@@ -564,6 +590,7 @@ func list_resource_for_sale(
 		"quantity": quantity,
 		"unit_price": unit_price,
 	}
+	_apply_sale_metadata(metadata)
 	return true
 
 
@@ -579,6 +606,13 @@ func resolve_sale() -> Dictionary:
 	result["gold"] = gold
 	_sale_slot.clear()
 	return result
+
+
+func mark_sale_declined() -> bool:
+	if _sale_slot.is_empty():
+		return false
+	_sale_slot["customer_state"] = "declined"
+	return true
 
 
 func cancel_sale() -> bool:
@@ -700,6 +734,7 @@ func apply_dict(data: Dictionary) -> void:
 				"quantity": quantity,
 				"unit_price": unit_price,
 			}
+			_apply_sale_metadata(saved_sale_slot as Dictionary)
 
 
 func _load_data(data_path: String) -> void:
@@ -878,11 +913,32 @@ func _restore_blueprint_proficiency(saved_variant: Variant) -> void:
 		var saved_state := (saved_variant as Dictionary).get(blueprint_id, {}) as Dictionary
 		var craft_count := maxi(0, int(saved_state.get("craft_count", 0)))
 		var level := clampi(int(saved_state.get("level", mini(5, craft_count))), 0, 5)
+		var school := StringName(saved_state.get("school", "balanced"))
+		if not VALID_BLUEPRINT_SCHOOLS.has(school):
+			school = &"balanced"
 		_blueprint_proficiency[blueprint_id] = {
 			"craft_count": craft_count,
 			"level": level,
 			"awakened": level >= 5 and bool(saved_state.get("awakened", true)),
+			"school": String(school),
 		}
+
+
+func _apply_sale_metadata(metadata: Dictionary) -> void:
+	for key in [
+		"base_unit_price",
+		"price_strategy",
+		"price_multiplier",
+		"sale_chance",
+		"rumor_id",
+		"rumor_title",
+		"customer_id",
+		"customer_name",
+		"customer_state",
+		"rumor_multiplier",
+	]:
+		if metadata.has(key):
+			_sale_slot[key] = metadata[key]
 
 
 func _sorted_string_keys(source: Dictionary) -> Array[String]:

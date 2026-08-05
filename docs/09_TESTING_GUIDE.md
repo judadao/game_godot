@@ -446,6 +446,7 @@ Dedicated Town building UI 與 Shop redesign 的最低驗證矩陣：
 | `town_building_ui_lifecycle_test.gd` | open/close/ui_cancel signals、focus release/restore、重開不重複 controls |
 | `shop_system_test.gd` / `ui_keyboard_test.gd` | 交易 ownership、方向 focus、quantity controls 與 player input lock |
 | `forge_catalog_test.gd` / `forge_service_test.gd` | flame／Market stock gate、品質素材／裝備、每圖紙熟練度 Lv.5 覺醒、傳奇機率、購買／鍛造與 sale escrow migration |
+| `forge_depth_system_test.gd` | 四種工法、素材特性、失敗結果、覺醒圖紙流派改造／round-trip、三種定價、流言顧客高價成交，以及 authored 幾何 UI controls |
 | `forge_game_integration_test.gd` | Market 擴建、圖紙＋工具購買後鍛造 equipment／Sword Soul、升級、品質上桌販售、gold 與 meta save |
 | `chapter_one_story_catalog_test.gd` | 第一章廣場 21 句正史、speaker／portrait path／emotion schema 與 completion flag |
 | `chapter_one_dialogue_progression_test.gd` | 回顧逐句 speaker／情緒切換、單句 one-shot 停末幀，且完成不寫 flag／checkpoint |
