@@ -19,6 +19,7 @@ var _ordered_skills: Array[Dictionary] = []
 var _retired_skill_ids: Array[String] = []
 var _legacy_vfx_by_skill: Dictionary = {}
 var _tier_labels: Dictionary = {}
+var _series_gameplay: Dictionary = {}
 var _active_ids: Array[String] = []
 var _element_taxonomy: RefCounted = ELEMENT_TAXONOMY_SCRIPT.new()
 var _combo_finisher_catalog: RefCounted = COMBO_FINISHER_CATALOG_SCRIPT.new()
@@ -52,6 +53,8 @@ func load_catalog(path: String) -> bool:
 	if not _parse_retired_ids(catalog.get("retired_skill_ids", null)):
 		return false
 	if not _parse_legacy_vfx_map(catalog.get("legacy_vfx_map", null)):
+		return false
+	if not _parse_series_gameplay(catalog.get("series_gameplay", null)):
 		return false
 	var series_value: Variant = catalog.get("series", null)
 	if not series_value is Array or (series_value as Array).is_empty():
@@ -187,6 +190,7 @@ func _clear_catalog() -> void:
 	_retired_skill_ids.clear()
 	_legacy_vfx_by_skill.clear()
 	_tier_labels.clear()
+	_series_gameplay.clear()
 	_active_ids.clear()
 
 
@@ -241,12 +245,33 @@ func _parse_legacy_vfx_map(value: Variant) -> bool:
 	return true
 
 
+func _parse_series_gameplay(value: Variant) -> bool:
+	if not value is Dictionary or (value as Dictionary).is_empty():
+		push_error("Skill series gameplay map must be a non-empty dictionary.")
+		return false
+	for series_id_variant in (value as Dictionary).keys():
+		var series_id := String(series_id_variant)
+		var gameplay := ((value as Dictionary)[series_id_variant] as Dictionary).duplicate(true)
+		var tiers := gameplay.get("tiers", []) as Array
+		if String(gameplay.get("family", "")).is_empty() or String(gameplay.get("summary", "")).is_empty() or tiers.size() != 3:
+			push_error("Series gameplay requires family, summary, and three tiers: %s" % series_id)
+			return false
+		_series_gameplay[series_id] = gameplay
+	return true
+
+
 func _validate_and_store_series(series_entry: Dictionary) -> bool:
 	var series_id := String(series_entry.get("id", "")).strip_edges()
 	var series_name := String(series_entry.get("name", "")).strip_edges()
 	if series_id.is_empty() or series_name.is_empty() or _series_by_id.has(series_id):
 		push_error("Skill series requires a unique id and name: %s" % series_id)
 		return false
+	if not _series_gameplay.has(series_id):
+		push_error("Skill series has no gameplay contract: %s" % series_id)
+		return false
+	var gameplay := _series_gameplay[series_id] as Dictionary
+	series_entry["gameplay_family"] = String(gameplay.get("family", ""))
+	series_entry["gameplay_summary"] = String(gameplay.get("summary", ""))
 	if not _validate_non_empty_strings(series_entry.get("identity_elements", null), 1):
 		push_error("Skill series identity_elements are invalid: %s" % series_id)
 		return false
@@ -277,6 +302,13 @@ func _validate_and_store_series(series_entry: Dictionary) -> bool:
 		skill["series_id"] = series_id
 		skill["series_name"] = series_name
 		skill["series_vfx_id"] = series_id
+		skill["gameplay_family"] = String(gameplay.get("family", ""))
+		var tier_gameplay := ((gameplay.get("tiers", []) as Array)[tier_index] as Dictionary).duplicate(true)
+		if skill.has("gameplay_effect"):
+			tier_gameplay.merge(skill.get("gameplay_effect", {}) as Dictionary, true)
+		tier_gameplay["tier_rank"] = tier_index + 1
+		skill["gameplay_effect"] = tier_gameplay
+		skill["gameplay_summary"] = String(gameplay.get("summary", ""))
 		skill["series_identity_elements"] = (series_entry.get("identity_elements", []) as Array).duplicate()
 		skill["combat_elements"] = (series_entry.get("combat_elements", []) as Array).duplicate()
 		_skills_by_id[String(skill["id"])] = skill

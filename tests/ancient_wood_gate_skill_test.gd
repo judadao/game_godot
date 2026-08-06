@@ -42,7 +42,7 @@ func _run() -> void:
 	for skill_id in expected:
 		var entry := _find_entry(projection, skill_id)
 		_expect(not entry.is_empty(), "%s must appear in the technique codex." % skill_id)
-		_expect(String(entry.get("description", "")) == String(catalog.get_skill(skill_id).get("description", "")), "%s codex must project the full gameplay explanation." % skill_id)
+		_expect(String(entry.get("description", "")).contains(String(catalog.get_skill(skill_id).get("description", ""))), "%s codex must retain the full tier explanation after its gameplay rule." % skill_id)
 	var meta := game.get("meta_state") as MetaState
 	var runtime_catalog := game.get("skill_recipe_manager") as SkillRecipeManager
 	if not meta.learned_skill_ids.has("ancient_roots_pursuit"):

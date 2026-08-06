@@ -438,7 +438,12 @@ Combo／Healing 劍魂身分，並以目前編成招式的 `combo_routes` 比對
 符合招式，同招在一條 Combo Chain 內只觸發一次。`combo_finishers.json` 僅保留既有
 效果數值與 VFX 相容資料，不再決定正式招式是否成立。
 
-古木系列是第一個具備獨立玩法 contract 的系列：基礎／進階／大師使用 2／4／6
+13 個招式系列均由 `skills.json.series_gameplay` 定義唯一玩法 family、玩家決策摘要與
+三階可執行參數。`SkillRecipeManager` 將系列 contract 投影到每招，`Game` 再把參數
+合併進真實 Finisher 結算；圖鑑必須先說明玩家如何走位／選擇時機，再描述招式演出。
+自動招式只改變攻擊物件、目標、軌跡與效果，禁止修改玩家座標。
+
+古木系列使用 2／4／6
 個古木劍氣門。`skills.json.gameplay_effect` 決定實際 relay 次數、距離、尺寸與傷害增幅；
 `skill_series_vfx.json` 的 `sword_aura_gate_network` 僅負責入口、出口、根脈接力與中央
 太古神木的排列演出。玩家位置不被自動攻擊改寫。

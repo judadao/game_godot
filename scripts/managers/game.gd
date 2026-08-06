@@ -2860,6 +2860,7 @@ func _record_combo_formula(card: Dictionary) -> Dictionary:
 		queued_recipe["recipe_id"] = skill_id
 		queued_recipe["legacy_vfx_id"] = String(skill.get("legacy_vfx_id", ""))
 		queued_recipe["series_id"] = String(skill.get("series_id", ""))
+		queued_recipe["gameplay_family"] = String(skill.get("gameplay_family", ""))
 		queued_recipe["tier"] = String(skill.get("tier", ""))
 		queued_recipe["tier_rank"] = int(skill.get("tier_rank", 1))
 		queued_recipe["gameplay_effect"] = (skill.get("gameplay_effect", {}) as Dictionary).duplicate(true)
@@ -3103,6 +3104,31 @@ func _build_formula_finisher(
 		0,
 		int(gift_effects.get("finisher_echoes", 0))
 	)
+	var series_family := String(recipe.get("gameplay_family", ""))
+	var series_effect := recipe.get("gameplay_effect", {}) as Dictionary
+	if not series_family.is_empty():
+		effect["series_gameplay_family"] = series_family
+		var series_projectiles := maxi(0, int(series_effect.get("projectiles", 0)))
+		if series_projectiles > 0:
+			effect["projectile_count"] = maxi(series_projectiles, int(effect.get("projectile_count", 1)))
+			effect["direction_count"] = int(effect["projectile_count"])
+			effect["target_count"] = maxi(int(effect.get("target_count", 1)), series_projectiles)
+		var series_damage_multiplier := maxf(1.0, float(series_effect.get("damage_multiplier", 1.0)))
+		if series_damage_multiplier > 1.0 and int(effect.get("amount", 0)) > 0:
+			effect["amount"] = roundi(float(effect["amount"]) * series_damage_multiplier)
+		for numeric_key in ["burn_damage", "burn_duration", "poison_damage", "poison_duration", "combo_stun", "pull_strength", "knockback_multiplier", "lifesteal_ratio", "heal_on_hit_ratio"]:
+			if series_effect.has(numeric_key):
+				effect[numeric_key] = maxf(float(effect.get(numeric_key, 0.0)), float(series_effect[numeric_key]))
+		for flag_key in ["final_burst", "chain_lightning", "death_spread", "piercing"]:
+			if bool(series_effect.get(flag_key, false)):
+				effect[flag_key] = true
+		if bool(series_effect.get("returning", false)):
+			effect["returning_projectiles"] = true
+		effect["finisher_guard"] = maxi(int(effect.get("finisher_guard", 0)), int(series_effect.get("guard", 0)))
+		effect["finisher_heal"] = maxi(int(effect.get("finisher_heal", 0)), int(series_effect.get("heal", 0)))
+		effect["finisher_echoes"] = maxi(int(effect.get("finisher_echoes", 0)), int(series_effect.get("echoes", 0)))
+		if series_effect.has("range_multiplier"):
+			finisher["auto_attack_range"] = float(finisher.get("auto_attack_range", COMBO_FINISHER_RANGE)) * float(series_effect["range_multiplier"])
 	if String(recipe.get("series_id", "")) == "ancient_wood":
 		var wood_effect := recipe.get("gameplay_effect", {}) as Dictionary
 		var relay_count := maxi(1, int(wood_effect.get("relay_count", 1)))
@@ -5261,7 +5287,7 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 			"tier_label": tier_label,
 			"tier_rank": tier_rank,
 			"kind_label": "%s系列 · %s招式" % [series_name, tier_label],
-			"description": String(skill.get("description", "")),
+			"description": "玩法：%s\n\n%s" % [String(skill.get("gameplay_summary", "")), String(skill.get("description", ""))],
 			"recipe_summary": _inventory_skill_recipe_summary(combo_recipe),
 			"icon_path": (
 				String(skill.get("icon_path", ""))

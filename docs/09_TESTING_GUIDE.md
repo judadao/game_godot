@@ -135,6 +135,10 @@ z-order、layout 與 generated Scene parity。圖片迭代過程不為主觀畫�
 Finisher 結算；測試必須確認古木不是只有 VFX 排列，而會增加真實攻擊距離、尺寸、
 方向與傷害，且不移動玩家。
 
+`all_skill_series_gameplay_test.gd` 鎖定全部 13 系列的唯一 gameplay family、三階
+執行參數、圖鑑「玩法」說明與 master-tier 真實戰鬥投影；並確認任何自動招式結算
+都不會移動玩家。
+
 單一測試仍可直接執行：
 
 ```bash
