@@ -50,7 +50,7 @@ func _run() -> void:
 
 	if game.has_method("_inventory_compendium_projection"):
 		var compendium := game.call("_inventory_compendium_projection") as Array
-		var sections := {"techniques": 0, "enemies": 0, "sword_souls": 0, "equipment": 0, "story_review": 0}
+		var sections := {"techniques": 0, "enemies": 0, "sword_souls": 0, "equipment": 0, "blessings": 0, "story_review": 0}
 		var seen_ids: Dictionary = {}
 		var sword_soul_ids: Dictionary = {}
 		for entry_variant in compendium:
@@ -69,6 +69,7 @@ func _run() -> void:
 			_expect(not icon_path.is_empty() and load(icon_path) is Texture2D, "Every compendium row needs a loadable icon: %s." % entry_id)
 		_expect(int(sections["enemies"]) == 7, "Enemy codex must project the seven authoritative autumn archetypes.")
 		_expect(int(sections["equipment"]) == 10, "Equipment codex must project the ten authoritative equipment definitions.")
+		_expect(int(sections["blessings"]) == 18, "Blessing codex must project all eight base and ten evolved definitions.")
 		var card_database := game.get("card_database") as CardDatabase
 		var all_cards := card_database.get_all_cards()
 		_expect(

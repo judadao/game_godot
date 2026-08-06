@@ -653,7 +653,9 @@ UI不得直接改以上private dictionaries。
 - `Game.wallet_gold/player_inventory/_merchant_catalogs`
 
 InventoryUI 以 projection 合併 `player_inventory` consumables、InventoryManager
-resources/equipment、玩家狀態、`MetaState.selected_card_instances` 與四類 compendium；
+resources/equipment、玩家狀態、`MetaState.selected_card_instances` 與招式／敵人／劍魂／
+裝備／神賜／劇情回顧 compendium。神賜 projection 由 `DivineGiftManager.get_catalog_gifts()`
+與 `get_fusion_catalog()` 提供完整 8 base＋10 evolved 定義，當前 Run ownership 只作狀態標記；
 只有 `equip_requested` 會回到 Game，再經 InventoryManager domain API mutation；
 MaterialYardUI、PlayerBlacksmithUI 與 TownHallUI 操作
 InventoryManager/TownManager。任何 transaction 仍要追蹤所有同步點。
@@ -1020,7 +1022,7 @@ backup。修改其中一條pipeline時不可假定另一條自動同步。
 |---|---|
 | CardHandUI | Game從CardDatabase + RunState產生card copies |
 | HUD | Player、RunState、wallet與objective setters |
-| InventoryUI | Game `_inventory_projection()`、`_inventory_status_projection()`、`_inventory_equipment_projection()`、`_inventory_sword_soul_projection()`、`_inventory_compendium_projection()` |
+| InventoryUI | Game `_inventory_projection()`、`_inventory_status_projection()`、`_inventory_equipment_projection()`、`_inventory_sword_soul_projection()`、`_inventory_compendium_projection()`；神賜 catalog 另讀 `DivineGiftManager.get_catalog_gifts()`／`get_fusion_catalog()` |
 | ShopUI | Game catalog/owned count projection |
 | MaterialYardUI | TownManager workshop + InventoryManager resources |
 | PlayerBlacksmithUI | TownManager blacksmith/memory library + InventoryManager equipment/resources |

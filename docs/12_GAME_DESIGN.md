@@ -487,6 +487,11 @@ mechanics，因此所有不同神賜欄位直接相加、倍率直接相乘，
 並使用元素組合專屬名稱與 accent color。融合材料 ascended 後不再進獎勵池，
 同一融合不能反覆發生；一般 EXP 頁永遠不提供融合。
 
+圖鑑的神賜分類是完整參考資料，不等同當前 Run inventory：固定呈現 8 個 base 與第一批
+10 個 authored evolved 型態。Base 條目列出逐級成長、普通攻擊狀態及全部合法融合路線；
+evolved 條目列出材料、裝備觸媒、專屬背景自動攻擊及繼承狀態。是否持有、目前等級與是否已
+消耗昇華只作附加狀態，未取得項目仍可查閱，讓玩家能在出征與成長選擇前理解路線。
+
 每項 evolved gift 另有依兩項材料名稱與特徵組成的專屬背景自動攻擊。若同時存在超過
 三種合法融合型態，每次菁英／Boss 頁只隨機顯示三種供玩家選擇，再以既有升級補至五選。
 8 項 base Blessing 各自提供 fusion stem、具體攻擊物件與 glow color；融合不再疊加聖環、節點、
@@ -696,7 +701,8 @@ gold 直接購買。其他裝備只能先取得圖紙，再以普通怪／Elite�
 
 玩家可在古老日記式 InventoryUI 的背包裝備分類檢視持有物並直接送出裝備意圖；
 狀態章節同時呈現 weapon／armor／accessory 的目前結果。該 UI 不建立第二套裝備狀態，
-仍由 InventoryManager 驗證 ownership 與 slot，Game 重算屬性並同步 Meta save。
+仍由 InventoryManager 驗證 ownership 與 slot，Game 重算屬性並同步 Meta save。圖鑑另有
+獨立神賜分類，顯示全部 base／evolved catalog；該分類只讀，不修改 Run-local 神賜狀態。
 
 ```text
 gold = 25 × current_level

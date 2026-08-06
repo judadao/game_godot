@@ -660,6 +660,9 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
   lists、status/equipment slots、detail panels、equip action
 - filter contract：Bag 與 Codex 的 `Filter` 都是常駐 `GridContainer` Button 集合，
   以 `metadata/filter_id` 保存 stable category；Inventory subtree 不得出現 `OptionButton`
+- Codex filter IDs：`techniques`、`enemies`、`sword_souls`、`equipment`、`blessings`、
+  `story_review`；`blessings` 顯示完整 8 個 base＋10 個 evolved catalog，Run ownership
+  只影響右頁狀態文案
 - public projection API：`set_items()`、`set_player_status()`、
   `set_equipment_entries()`、`set_sword_souls()`、`set_codex_entries()`
 - technique ordering：`set_codex_entries()` 對 39 招使用 projection 的
@@ -678,7 +681,8 @@ Godot `_make_custom_tooltip(for_text)` 可由 source control 回傳此 scene。
 - empty/selection/focus：每頁 deterministic initial focus；同一時間恰好一個 page visible
 - safe area：底部保留 32px page-curl inset；Codex Info 的 Panel 內嵌 vertical
   ScrollContainer、26px unpainted footer 與 scroll-content BottomInset
-- visual boundary：招式使用 `InventoryCodexPreview`；敵人／劍魂／裝備使用 static icon；
+- visual boundary：招式使用 `InventoryCodexPreview`；敵人／劍魂／裝備／神賜使用 static icon；
+  神賜 icon 必須直接採用正式 base attack object 或 evolved subject asset；
   劇情回顧不偽造技能 VFX，而顯示播放動作與文字摘要
 
 ## 13. HealthBar

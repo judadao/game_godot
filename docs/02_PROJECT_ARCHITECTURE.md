@@ -462,7 +462,10 @@ UI 對上層提供 setter/configure API與 typed signals：
   流派改造區，將 `blueprint_school_change_requested` 交由 Game／ForgeService 驗證。
 - `InventoryUI`：以單一古老日記呈現四個章節：背包（素材、關鍵道具、裝備）、
   個人狀態與三個裝備欄位、依 `CardInstance` identity 投影的現有劍魂，以及招式／
-  敵人／劍魂／裝備圖鑑。招式清單由 `Game` 投影 `skills.json` 的 13 系列、39 招，
+  敵人／劍魂／裝備／神賜／劇情回顧圖鑑。神賜分類由 `DivineGiftManager` 投影完整
+  catalog，不受當前 Run 持有狀態限制；8 個基礎項使用 `blessing:<gift_id>`，10 個昇華項
+  使用 `blessing_evolved:<recipe_id>`，並重用正式普通攻擊／背景攻擊主體素材作靜態預覽。
+  招式清單由 `Game` 投影 `skills.json` 的 13 系列、39 招，
   每系列固定基本／進階／大師三階；舊普攻、手牌、被動 trigger 與 Finisher 名稱不再
   混成第二份招式權威。每招暫以 `legacy_vfx_map` 重用既有 production named VFX，
   但動畫 profile 不反向決定招式名稱或分類；敵人章節

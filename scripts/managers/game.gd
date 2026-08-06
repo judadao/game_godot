@@ -4736,6 +4736,7 @@ func _inventory_compendium_projection() -> Array[Dictionary]:
 	result.append_array(_inventory_enemy_codex_projection())
 	result.append_array(_inventory_sword_soul_codex_projection())
 	result.append_array(_inventory_equipment_codex_projection())
+	result.append_array(_inventory_blessing_codex_projection())
 	result.append_array(story_director.get_review_entries())
 	return result
 
@@ -4864,6 +4865,177 @@ func _inventory_equipment_codex_projection() -> Array[Dictionary]:
 		})
 	result.sort_custom(func(left: Dictionary, right: Dictionary) -> bool: return "%s:%s" % [left.get("kind_label", ""), left.get("name", "")] < "%s:%s" % [right.get("kind_label", ""), right.get("name", "")])
 	return result
+
+
+func _inventory_blessing_codex_projection() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var base_catalog := divine_gift_manager.call("get_catalog_gifts") as Array
+	var fusion_catalog := divine_gift_manager.call("get_fusion_catalog") as Array
+	var inventory := divine_gift_manager.call("get_inventory") as Array
+	var ascended_ids := divine_gift_manager.call("get_ascended_base_ids") as Array
+	var owned_base_by_id: Dictionary = {}
+	for owned_variant in inventory:
+		var owned := owned_variant as Dictionary
+		if String(owned.get("kind", "base")) == "base":
+			owned_base_by_id[String(owned.get("id", ""))] = owned
+
+	for gift_variant in base_catalog:
+		var gift := gift_variant as Dictionary
+		var gift_id := String(gift.get("id", ""))
+		var owned := owned_base_by_id.get(gift_id, {}) as Dictionary
+		var routes := PackedStringArray()
+		for fusion_variant in fusion_catalog:
+			var fusion := fusion_variant as Dictionary
+			var left_id := String(fusion.get("left", ""))
+			var right_id := String(fusion.get("right", ""))
+			if gift_id != left_id and gift_id != right_id:
+				continue
+			var partner_name := String(
+				fusion.get("right_name" if gift_id == left_id else "left_name", "另一神賜")
+			)
+			var route := "「%s」→ %s" % [partner_name, String(fusion.get("name", "神賜昇華"))]
+			var equipment_name := String(fusion.get("required_equipment_name", "")).strip_edges()
+			if not equipment_name.is_empty():
+				route += "（需裝備%s）" % equipment_name
+			routes.append(route)
+		var level_lines := PackedStringArray()
+		var effects_by_level := gift.get("effects_by_level", []) as Array
+		for level_index in effects_by_level.size():
+			level_lines.append("Lv.%d　%s" % [
+				level_index + 1,
+				_blessing_effect_dictionary_summary(effects_by_level[level_index] as Dictionary),
+			])
+		var status_text := _blessing_status_name(
+			gift.get("basic_attack_statuses", []) as Array
+		)
+		var ownership := "未持有"
+		if not owned.is_empty():
+			ownership = "本 Run 持有 Lv.%d / 3" % int(owned.get("level", 1))
+		elif ascended_ids.has(gift_id):
+			ownership = "本 Run 已用於昇華"
+		result.append({
+			"section": "blessings",
+			"id": "blessing:%s" % gift_id,
+			"catalog_kind": "blessing_base",
+			"name": String(gift.get("name", gift_id)),
+			"kind_label": "基本神賜 · %s" % _element_display_name(String(gift.get("element", "normal"))),
+			"description": String(gift.get("description", "尚無說明。")),
+			"effect_summary": "普通攻擊質變：%s\n滿級能力：%s" % [
+				status_text,
+				_blessing_effect_dictionary_summary(
+					effects_by_level.back() as Dictionary if not effects_by_level.is_empty() else {}
+				),
+			],
+			"trigger_summary": "指定融合路線\n%s" % "\n".join(routes),
+			"meta_summary": "%s · 三級上限" % ownership,
+			"growth_summary": "普通攻擊：%s\n等級成長\n%s" % [
+				status_text,
+				"\n".join(level_lines),
+			],
+			"icon_path": String(gift.get("attack_vfx_asset_path", "")),
+		})
+
+	for fusion_variant in fusion_catalog:
+		var fusion := fusion_variant as Dictionary
+		var left_id := String(fusion.get("left", ""))
+		var right_id := String(fusion.get("right", ""))
+		var owned_evolved := _owned_evolved_blessing(inventory, left_id, right_id)
+		var background_attack := fusion.get("background_attack", {}) as Dictionary
+		var element_labels := PackedStringArray()
+		for element_variant in fusion.get("elements", []) as Array:
+			element_labels.append(_element_display_name(String(element_variant)))
+		var equipment_name := String(fusion.get("required_equipment_name", "")).strip_edges()
+		var requirement := "無裝備門檻" if equipment_name.is_empty() else "另需裝備：%s" % equipment_name
+		var ownership := (
+			"本 Run 持有 Lv.%d / 3" % int(owned_evolved.get("level", 1))
+			if not owned_evolved.is_empty()
+			else "尚未於本 Run 完成"
+		)
+		result.append({
+			"section": "blessings",
+			"id": "blessing_evolved:%s" % String(fusion.get("id", "")),
+			"catalog_kind": "blessing_evolved",
+			"name": String(fusion.get("name", "神賜昇華")),
+			"kind_label": "進化神賜 · %s" % "＋".join(element_labels),
+			"description": "融合「%s」與「%s」，保留雙方普通攻擊狀態，並取得專屬背景自動攻擊。" % [
+				String(fusion.get("left_name", left_id)),
+				String(fusion.get("right_name", right_id)),
+			],
+			"effect_summary": "專屬背景自動攻擊：%s\n普通攻擊質變：%s" % [
+				String(background_attack.get("name", fusion.get("attack_suffix", "專屬攻擊"))),
+				_blessing_status_name(fusion.get("basic_attack_statuses", []) as Array),
+			],
+			"trigger_summary": "融合配方：%s Lv.3 ＋ %s Lv.3\n%s" % [
+				String(fusion.get("left_name", left_id)),
+				String(fusion.get("right_name", right_id)),
+				requirement,
+			],
+			"meta_summary": "%s · %s 秒自動施放 · 三級上限" % [
+				ownership,
+				"%.1f" % float(background_attack.get("interval", 0.0)),
+			],
+			"growth_summary": "背景自動攻擊：%s\n普通攻擊：%s\nLv.1　啟動雙源主體\nLv.2　提高繼承效果與攻擊壓力\nLv.3　完成超越並擴大毀滅規模" % [
+				String(background_attack.get("name", fusion.get("attack_suffix", "專屬攻擊"))),
+				_blessing_status_name(fusion.get("basic_attack_statuses", []) as Array),
+			],
+			"icon_path": String(fusion.get("subject_asset_path", "")),
+		})
+	return result
+
+
+func _owned_evolved_blessing(inventory: Array, left_id: String, right_id: String) -> Dictionary:
+	for owned_variant in inventory:
+		var owned := owned_variant as Dictionary
+		var components := owned.get("components", []) as Array
+		if (
+			String(owned.get("kind", "")) == "evolved"
+			and components.size() == 2
+			and components.has(left_id)
+			and components.has(right_id)
+		):
+			return owned
+	return {}
+
+
+func _blessing_status_name(statuses: Array) -> String:
+	var names := PackedStringArray()
+	for status_variant in statuses:
+		var status := status_variant as Dictionary
+		var status_name := String(status.get("name", "元素附著")).strip_edges()
+		if not status_name.is_empty() and not names.has(status_name):
+			names.append(status_name)
+	return "＋".join(names) if not names.is_empty() else "繼承神賜元素狀態"
+
+
+func _blessing_effect_dictionary_summary(effects: Dictionary) -> String:
+	var parts := PackedStringArray()
+	var labels := {
+		"combo_stack_bonus": "連段疊層",
+		"combo_effect_multiplier": "連段效果",
+		"combo_ap_refund": "連段 AP 返還",
+		"combo_element_bonus": "連段元素加值",
+		"combo_speed_bonus": "連段速度",
+		"combo_stack_cap_bonus": "連段上限",
+		"finisher_damage_multiplier": "終結技傷害",
+		"finisher_heal": "終結技回復",
+		"finisher_element_damage": "終結技元素傷害",
+		"finisher_size_multiplier": "終結技範圍",
+		"finisher_history_bonus": "額外公式段數",
+	}
+	for key_variant in labels:
+		var key := String(key_variant)
+		if not effects.has(key):
+			continue
+		var value: Variant = effects[key]
+		var formatted := "%+d" % int(value)
+		if key.ends_with("_multiplier"):
+			formatted = "%+d%%" % roundi((float(value) - 1.0) * 100.0)
+		elif key == "combo_speed_bonus":
+			formatted = "%+d%%" % roundi(float(value) * 100.0)
+		elif key == "combo_ap_refund":
+			formatted = "+%.2f" % float(value)
+		parts.append("%s %s" % [String(labels[key]), formatted])
+	return " · ".join(parts) if not parts.is_empty() else "強化普通攻擊、招式與背景攻擊"
 
 
 func _journal_equipment_icon(item: Dictionary) -> String:

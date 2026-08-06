@@ -571,9 +571,13 @@ HUDLayer
   左頁使用雙欄劍魂格填滿書脊前的可用空間，右頁只呈現 Game projection 提供的
   `bonus_type_label` 與短中文 `ability_summary`，UI 不自行推算攻擊／防禦／治療／
   元素／機動／AP 類型
-- 圖鑑依招式／敵人／劍魂／裝備／劇情回顧篩選；劍魂章列出 `cards.json` 全部 38 個正式劍魂，
+- 圖鑑依招式／敵人／劍魂／裝備／神賜／劇情回顧篩選；劍魂章列出 `cards.json` 全部 38 個正式劍魂，
   不得只列四個鍛造圖紙，並分別標示解鎖、持有、等級與取得狀態；敵人是 catalog
   reference，不是假造 discovery
+- 神賜章固定列出 8 個基礎與 10 個昇華神賜，不因當前 Run 是否取得而隱藏；基礎項顯示
+  普通攻擊狀態、逐級成長與所有指定融合路線，昇華項顯示兩項材料、裝備觸媒、專屬背景
+  自動攻擊與繼承的普通攻擊狀態。右頁優先顯示攻擊質變，再顯示長成長說明；預覽重用正式
+  `attack_vfx_asset_path`／`subject_asset_path` 的清楚單一主體，不重新繪製抽象幾何
 - 所有章節內容保留 32px painted page-curl safe inset；圖鑑長內容在固定 detail viewport
   內捲動，viewport 下方另保留 26px 無繪製 footer 與內容 BottomInset，不讓最後一行
   落入書頁捲邊或顯示半行

@@ -771,6 +771,19 @@ text = "裝備"
 tooltip_text = "Equipment"
 metadata/filter_id = "equipment"
 
+[node name="Blessings" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_colors/font_color = Color(0.95, 0.84, 0.62, 1)
+theme_override_styles/normal = SubResource("tab")
+theme_override_styles/hover = SubResource("tab_hover")
+theme_override_styles/pressed = SubResource("tab_pressed")
+text = "神賜"
+tooltip_text = "Blessings"
+metadata/filter_id = "blessings"
+
 [node name="StoryReview" type="Button" parent="Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Filter"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2

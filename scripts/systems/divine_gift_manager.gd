@@ -20,6 +20,7 @@ const FUSION_RECIPES: Array[Dictionary] = [
 ]
 
 var _catalog: Dictionary = {}
+var _catalog_order: Array[String] = []
 var _inventory: Dictionary = {}
 var _acquisition_order: Array[String] = []
 var _next_evolution_id := 1
@@ -32,6 +33,7 @@ var _equipped_item_ids: Dictionary = {}
 
 func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
 	_catalog.clear()
+	_catalog_order.clear()
 	if not FileAccess.file_exists(path):
 		return false
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -46,6 +48,7 @@ func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
 	for gift_variant in gifts_variant:
 		if not gift_variant is Dictionary:
 			_catalog.clear()
+			_catalog_order.clear()
 			return false
 		var gift := (gift_variant as Dictionary).duplicate(true)
 		var gift_id := String(gift.get("id", "")).strip_edges()
@@ -74,9 +77,11 @@ func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
 			or (levels_variant as Array).size() != MAX_LEVEL
 		):
 			_catalog.clear()
+			_catalog_order.clear()
 			return false
 		gift["element"] = element
 		_catalog[gift_id] = gift
+		_catalog_order.append(gift_id)
 	return not _catalog.is_empty()
 
 
@@ -100,6 +105,41 @@ func set_equipped_item_ids(item_ids: Array) -> void:
 
 func get_fusion_recipes() -> Array[Dictionary]:
 	return FUSION_RECIPES.duplicate(true)
+
+
+func get_catalog_gifts() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for gift_id in _catalog_order:
+		if not _catalog.has(gift_id):
+			continue
+		var gift := (_catalog[gift_id] as Dictionary).duplicate(true)
+		gift["basic_attack_statuses"] = _basic_attack_statuses([
+			String(gift.get("element", "normal")),
+		])
+		result.append(gift)
+	return result
+
+
+func get_fusion_catalog() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for recipe_variant in FUSION_RECIPES:
+		var recipe := recipe_variant.duplicate(true)
+		var left := _catalog.get(String(recipe.get("left", "")), {}) as Dictionary
+		var right := _catalog.get(String(recipe.get("right", "")), {}) as Dictionary
+		if left.is_empty() or right.is_empty():
+			continue
+		var identity := _evolved_identity(left, right)
+		var elements := _canonical_gift_elements(left, right)
+		recipe["left_name"] = String(left.get("name", recipe.get("left", "")))
+		recipe["right_name"] = String(right.get("name", recipe.get("right", "")))
+		recipe["elements"] = elements
+		recipe["basic_attack_statuses"] = _basic_attack_statuses(elements)
+		recipe["accent_color"] = String(identity.get("accent_color", "#f05cff"))
+		recipe["background_attack"] = (
+			identity.get("background_attack", {}) as Dictionary
+		).duplicate(true)
+		result.append(recipe)
+	return result
 
 
 func has_gift(gift_id: String) -> bool:

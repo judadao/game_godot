@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 185 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 186 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -55,6 +55,10 @@ Inventory／Codex focused coverage：
   劍魂組合的 detail 順序，且系列語彙、特效狀態、效果與數值、逐張劍魂效果與演出流程
   保持隱藏；同時驗證 temporary VFX preview ownership，
   以及退役 concept controls 永遠隱藏、相容入口固定回到 live view。
+- `inventory_blessing_codex_test.gd`：驗證 8 個 base＋10 個 evolved 神賜的 namespaced stable ID、
+  完整文案、融合材料／觸媒、普通攻擊狀態、專屬背景攻擊與正式素材可載入；並在六種標準
+  解析度直接切換 `blessings`，檢查 base／evolved 左頁選擇與右頁 icon、攻擊摘要和捲動邊界。
+  設定 `INVENTORY_BLESSING_CODEX_CAPTURE_DIR` 可輸出兩種頁面的 graphical review captures。
 - `inventory_codex_layout_test.gd`：六解析度 panel/list/active visual/explanation geometry，
   並投影全部 39 招、逐一實例化其唯一暫用動畫，驗證 `190px` 橫向 live frame 的水平完整 travel、
   垂直完整主體、地面錨點與最小可讀占比；world travel 超過 `220px` 時只在 Codex
@@ -63,7 +67,7 @@ Inventory／Codex focused coverage：
   再搭配 capture path/size 產生 Vulkan 的 live VFX 視覺比較基準；舊的
   `INVENTORY_CODEX_CAPTURE_VIEW` 不得使 concept art 回到玩家畫面。
   實際 Game projection 可用 `INVENTORY_CODEX_PROJECTION_CAPTURE_PATH` 擷取，
-  並以 `INVENTORY_CODEX_PROJECTION_SECTION=techniques|enemies|sword_souls|equipment`
+  並以 `INVENTORY_CODEX_PROJECTION_SECTION=techniques|enemies|sword_souls|equipment|blessings`
   指定圖鑑章節；不得只驗證手寫 UI fixture。
 
 ## 3. 測試分層
