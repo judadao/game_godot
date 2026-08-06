@@ -62,25 +62,14 @@ func _run() -> void:
 	var attack_preview := (load(
 		"res://scenes/combat/vfx/EvolvedBackgroundAttack.tscn"
 	) as PackedScene).instantiate()
-	var energy_widths := attack_preview.call("get_energy_line_widths") as PackedFloat32Array
-	var cadence_profile := attack_preview.call("get_cadence_profile") as Dictionary
-	var supported_motifs := attack_preview.call("get_supported_blessing_motifs") as Array
+	attack_preview.call("play", fusion_profile, [Vector2(220.0, 0.0)] as Array[Vector2])
 	_expect(
-		energy_widths.size() == 3
-			and energy_widths[0] >= 24.0
-			and energy_widths[1] >= 9.0
-			and energy_widths[2] >= 4.0,
-		"Fusion geometry must render as a thick glow, saturated energy body, and bright core instead of thin lines."
-	)
-	_expect(
-		int(cadence_profile.get("beats", 0)) == 3
-			and float(cadence_profile.get("duration", 0.0)) >= 0.9
-			and bool(cadence_profile.get("sacred_halo", false)),
-		"Fusion geometry must stage a readable three-beat sacred halo cadence."
-	)
-	_expect(
-		supported_motifs.size() == 8,
-		"The eight Blessings must have eight explicitly authored geometry motifs."
+		not bool(attack_preview.call("uses_abstract_geometry"))
+			and float(attack_preview.call("get_attack_duration")) >= 1.25
+			and int(attack_preview.call("get_subject_instance_count")) == 1
+			and ResourceLoader.exists(String(attack_preview.call("get_subject_asset_path")))
+			and not String(attack_preview.call("get_subject_motion")).is_empty(),
+		"Fusion presentation must use one slow readable concrete subject without abstract geometry."
 	)
 	attack_preview.free()
 	_expect(
@@ -94,9 +83,10 @@ func _run() -> void:
 		not fusion_profile.is_empty()
 			and not String(fusion_profile.get("name", "")).is_empty()
 			and float(fusion_profile.get("interval", 0.0)) > 0.0
-			and (fusion_profile.get("geometry_modules", []) as Array).size() == 2
+			and ResourceLoader.exists(String(fusion_profile.get("subject_asset_path", "")))
+			and not String(fusion_profile.get("subject_motion", "")).is_empty()
 			and (fusion_profile.get("glow_colors", []) as Array).size() == 2,
-		"Every evolved Blessing choice must preview its dedicated two-source geometric background auto-attack."
+		"Every evolved Blessing choice must preview its dedicated concrete background auto-attack."
 	)
 	growth_ui.call("select_choice", String(fusion_choice.get("choice_id", "")))
 	growth_ui.call("confirm_selected_choice")
@@ -133,8 +123,19 @@ func _run() -> void:
 			and float(catastrophic_profile.get("rhythm_speed", 0.0)) >= 2.2
 			and int(catastrophic_profile.get("target_count", 0)) > int(base_runtime_profile.get("target_count", 0))
 			and float(catastrophic_profile.get("interval", 99.0)) < float(base_runtime_profile.get("interval", 0.0)),
-		"A new fusion must begin as one small object, then Combo and supporting Blessings must make it larger, more numerous, and faster."
+		"A new fusion must begin with low logical pressure, then Combo and supporting Blessings must raise size, targets, cadence, and damage pressure."
 	)
+	var catastrophic_preview := (load(
+		"res://scenes/combat/vfx/EvolvedBackgroundAttack.tscn"
+	) as PackedScene).instantiate()
+	catastrophic_preview.call("play", catastrophic_profile, [Vector2(220.0, 0.0)] as Array[Vector2])
+	_expect(
+		int(catastrophic_preview.call("get_subject_instance_count")) == 2
+			and float(catastrophic_preview.call("get_attack_duration")) >= 1.25
+			and not bool(catastrophic_preview.call("uses_abstract_geometry")),
+		"High-power fusion attacks must cap presentation at two slow concrete subjects."
+	)
+	catastrophic_preview.free()
 	var inherited_base := game.call(
 		"_build_background_attack_card", evolved.get("background_attack", {}) as Dictionary
 	) as Dictionary

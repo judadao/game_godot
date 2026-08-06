@@ -7,10 +7,10 @@
 [ext_resource type="Texture2D" path="res://assets/town/npc/characters/traveler_animation_atlas.png" id="5_traveler"]
 [ext_resource type="Texture2D" path="res://assets/town/npc/characters/witch_animation_atlas.png" id="6_witch"]
 [ext_resource type="Texture2D" path="res://assets/town/npc/characters/innkeeper_animation_atlas.png" id="7_innkeeper"]
-[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_shop_background.png" id="8_shop_bg"]
-[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_shop_midground.png" id="9_shop_mid"]
-[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_shop_foreground.png" id="10_shop_fore"]
-[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_shop_decor_atlas.png" id="11_shop_decor"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_background.png" id="8_shop_bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_midground.png" id="9_shop_mid"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_foreground.png" id="10_shop_fore"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_decor_atlas.png" id="11_shop_decor"]
 
 [sub_resource type="AtlasTexture" id="TravelerFrame"]
 atlas = ExtResource("5_traveler")
@@ -108,7 +108,17 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[sub_resource type="StyleBoxEmpty" id="InvisibleFocus"]
+[sub_resource type="StyleBoxFlat" id="HotspotFocus"]
+bg_color = Color(1, 0.78, 0.3, 0.10)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 0.82, 0.36, 0.98)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
 
 [node name="PlayerMarketUI" type="Control"]
 unique_name_in_owner = true
@@ -128,7 +138,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.005, 0.008, 0.01, 0.96)
+color = Color(0.055, 0.032, 0.018, 0.96)
 
 [node name="SafeMargin" type="Control" parent="."]
 layout_mode = 1
@@ -268,13 +278,13 @@ z_index = 4
 layout_mode = 1
 anchor_top = 0.1
 anchor_bottom = 0.76
-offset_left = 24.0
+offset_left = 6.0
 offset_right = 304.0
 color = Color(0.29, 0.19, 0.095, 0)
 
 [node name="ShelfInteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/WallShelf"]
 unique_name_in_owner = true
-theme_override_styles/focus = SubResource("InvisibleFocus")
+theme_override_styles/focus = SubResource("HotspotFocus")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -327,7 +337,7 @@ mouse_filter = 2
 
 [node name="DoorInteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ShopDoor"]
 unique_name_in_owner = true
-theme_override_styles/focus = SubResource("InvisibleFocus")
+theme_override_styles/focus = SubResource("HotspotFocus")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -340,9 +350,9 @@ flat = true
 [node name="Counter" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
 z_index = 4
 layout_mode = 1
-anchor_left = 0.31
+anchor_left = 0.69
 anchor_top = 0.58
-anchor_right = 0.84
+anchor_right = 0.985
 anchor_bottom = 0.92
 color = Color(0.38, 0.23, 0.09, 0)
 
@@ -358,9 +368,9 @@ color = Color(0.69, 0.45, 0.17, 0)
 [node name="Product1" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 24.0
+offset_left = 6.0
 offset_top = -42.0
-offset_right = 154.0
+offset_right = 92.0
 offset_bottom = -8.0
 theme_override_colors/font_color = Color(1, 0.83, 0.45, 1)
 text = "▣ 待補貨"
@@ -368,20 +378,20 @@ horizontal_alignment = 1
 mouse_filter = 2
 [node name="Product1InteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
 unique_name_in_owner = true
-theme_override_styles/focus = SubResource("InvisibleFocus")
+theme_override_styles/focus = SubResource("HotspotFocus")
 layout_mode = 0
-offset_left = 24.0
+offset_left = 6.0
 offset_top = -42.0
-offset_right = 154.0
+offset_right = 92.0
 offset_bottom = -8.0
 tooltip_text = "補貨或替換這個櫃台商品"
 flat = true
 [node name="Product2" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 164.0
+offset_left = 100.0
 offset_top = -42.0
-offset_right = 294.0
+offset_right = 186.0
 offset_bottom = -8.0
 theme_override_colors/font_color = Color(0.63, 0.86, 1, 1)
 text = "◆ 待補貨"
@@ -389,20 +399,20 @@ horizontal_alignment = 1
 mouse_filter = 2
 [node name="Product2InteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
 unique_name_in_owner = true
-theme_override_styles/focus = SubResource("InvisibleFocus")
+theme_override_styles/focus = SubResource("HotspotFocus")
 layout_mode = 0
-offset_left = 164.0
+offset_left = 100.0
 offset_top = -42.0
-offset_right = 294.0
+offset_right = 186.0
 offset_bottom = -8.0
 tooltip_text = "補貨或替換這個櫃台商品"
 flat = true
 [node name="Product3" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 304.0
+offset_left = 194.0
 offset_top = -42.0
-offset_right = 434.0
+offset_right = 280.0
 offset_bottom = -8.0
 theme_override_colors/font_color = Color(0.83, 0.66, 1, 1)
 text = "✦ 待補貨"
@@ -410,11 +420,11 @@ horizontal_alignment = 1
 mouse_filter = 2
 [node name="Product3InteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
 unique_name_in_owner = true
-theme_override_styles/focus = SubResource("InvisibleFocus")
+theme_override_styles/focus = SubResource("HotspotFocus")
 layout_mode = 0
-offset_left = 304.0
+offset_left = 194.0
 offset_top = -42.0
-offset_right = 434.0
+offset_right = 280.0
 offset_bottom = -8.0
 tooltip_text = "補貨或替換這個櫃台商品"
 flat = true
@@ -437,7 +447,7 @@ mouse_filter = 2
 
 [node name="BellInteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Counter"]
 unique_name_in_owner = true
-theme_override_styles/focus = SubResource("InvisibleFocus")
+theme_override_styles/focus = SubResource("HotspotFocus")
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0
@@ -496,7 +506,7 @@ horizontal_alignment = 1
 [node name="CustomerInteractButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
 unique_name_in_owner = true
 z_index = 5
-theme_override_styles/focus = SubResource("InvisibleFocus")
+theme_override_styles/focus = SubResource("HotspotFocus")
 layout_mode = 1
 anchor_left = 0.72
 anchor_top = 0.25
@@ -545,12 +555,12 @@ color = Color(0.48, 0.24, 0.31, 1)
 
 [node name="CounterCustomerNPC" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
 unique_name_in_owner = true
-z_index = 3
+z_index = 0
 layout_mode = 1
-anchor_left = 0.53
-anchor_top = 0.20
-anchor_right = 0.61
-anchor_bottom = 0.74
+anchor_left = 0.77
+anchor_top = 0.30
+anchor_right = 0.89
+anchor_bottom = 0.82
 texture = SubResource("TravelerFrame")
 texture_filter = 1
 mouse_filter = 2
@@ -561,10 +571,10 @@ stretch_mode = 5
 unique_name_in_owner = true
 z_index = 3
 layout_mode = 1
-anchor_left = 0.72
-anchor_top = 0.25
-anchor_right = 0.77
-anchor_bottom = 0.74
+anchor_left = 0.82
+anchor_top = 0.42
+anchor_right = 0.94
+anchor_bottom = 0.86
 texture = SubResource("WitchFrame")
 texture_filter = 1
 mouse_filter = 2
@@ -574,12 +584,11 @@ stretch_mode = 5
 [node name="QueueCustomerNPC" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
 unique_name_in_owner = true
 z_index = 3
-visible = false
 layout_mode = 1
-anchor_left = 0.86
-anchor_top = 0.25
-anchor_right = 0.93
-anchor_bottom = 0.78
+anchor_left = 0.94
+anchor_top = 0.42
+anchor_right = 1.06
+anchor_bottom = 0.86
 texture = SubResource("InnkeeperFrame")
 texture_filter = 1
 mouse_filter = 2
@@ -720,13 +729,34 @@ text = "選擇貨架、櫃台商品或門鈴進行互動"
 horizontal_alignment = 1
 mouse_filter = 2
 
-[node name="ContextBar" type="HBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout"]
+[node name="ContextDock" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
 unique_name_in_owner = true
 visible = false
+z_index = 20
+layout_mode = 1
+anchor_left = 0.015
+anchor_top = 0.055
+anchor_right = 0.37
+anchor_bottom = 0.94
+theme_override_styles/panel = SubResource("WindowStyle")
+
+[node name="DockMargin" type="MarginContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="DockLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ContextBar" type="HBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 
-[node name="ContextTitle" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/ContextBar"]
+[node name="ContextTitle" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/ContextBar"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -735,50 +765,47 @@ theme_override_font_sizes/font_size = 16
 text = "物件互動"
 vertical_alignment = 1
 
-[node name="ContextCloseButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/ContextBar"]
+[node name="ContextCloseButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/ContextBar"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(126, 36)
 layout_mode = 2
 theme_override_styles/normal = SubResource("ButtonStyle")
 text = "收起互動"
 
-[node name="Content" type="HBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout"]
+[node name="Content" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout"]
 unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(0, 260)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="InventoryPanel" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content"]
+[node name="InventoryPanel" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(294, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("PanelStyle")
 
-[node name="InventoryLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel"]
+[node name="InventoryLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Heading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout"]
+[node name="Heading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.97, 0.8, 0.46, 1)
 theme_override_font_sizes/font_size = 19
 text = "1  選擇要販售的商品"
 
-[node name="CandidateScroll" type="ScrollContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout"]
+[node name="CandidateScroll" type="ScrollContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout"]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="MarketCandidateList" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout/CandidateScroll"]
+[node name="MarketCandidateList" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout/CandidateScroll"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
-[node name="MarketCandidateTemplate" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout/CandidateScroll/MarketCandidateList"]
+[node name="MarketCandidateTemplate" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout/CandidateScroll/MarketCandidateList"]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(0, 58)
@@ -788,7 +815,7 @@ alignment = 0
 theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 
-[node name="MarketCandidateEmpty" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout/CandidateScroll/MarketCandidateList"]
+[node name="MarketCandidateEmpty" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout/CandidateScroll/MarketCandidateList"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 92)
 layout_mode = 2
@@ -799,16 +826,16 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="PriceHeading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout"]
+[node name="PriceHeading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.82, 0.82, 1)
 text = "2  定價策略"
 
-[node name="PriceRow" type="HBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout"]
+[node name="PriceRow" type="HBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout"]
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="MarketQuickButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout/PriceRow"]
+[node name="MarketQuickButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout/PriceRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
@@ -817,7 +844,7 @@ theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 text = "快速"
 
-[node name="MarketFairButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout/PriceRow"]
+[node name="MarketFairButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout/PriceRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
@@ -826,7 +853,7 @@ theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 text = "公道"
 
-[node name="MarketLuxuryButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout/PriceRow"]
+[node name="MarketLuxuryButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout/PriceRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
@@ -835,37 +862,36 @@ theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 text = "精品"
 
-[node name="MarketListButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/InventoryPanel/InventoryLayout"]
+[node name="MarketListButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_override_styles/normal = SubResource("SelectedStyle")
 text = "上架到選定貨架"
 
-[node name="ShelvesPanel" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content"]
+[node name="ShelvesPanel" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(390, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("PanelStyle")
 
-[node name="ShelvesLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel"]
+[node name="ShelvesLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel"]
 layout_mode = 2
 theme_override_constants/separation = 9
 
-[node name="Heading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout"]
+[node name="Heading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.97, 0.8, 0.46, 1)
 theme_override_font_sizes/font_size = 19
 text = "3  管理展示貨架"
 
-[node name="ShelfGrid" type="GridContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout"]
+[node name="ShelfGrid" type="GridContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout"]
 layout_mode = 2
 columns = 2
 theme_override_constants/h_separation = 7
 theme_override_constants/v_separation = 7
 
-[node name="MarketShelf1Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+[node name="MarketShelf1Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
@@ -873,7 +899,7 @@ size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 text = "貨架 1\n空貨架"
-[node name="MarketShelf2Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+[node name="MarketShelf2Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
@@ -881,7 +907,7 @@ size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 text = "貨架 2\n空貨架"
-[node name="MarketShelf3Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+[node name="MarketShelf3Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
@@ -889,7 +915,7 @@ size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 text = "貨架 3\n空貨架"
-[node name="MarketShelf4Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+[node name="MarketShelf4Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
@@ -897,7 +923,7 @@ size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 text = "貨架 4\n空貨架"
-[node name="MarketShelf5Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+[node name="MarketShelf5Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
@@ -905,7 +931,7 @@ size_flags_horizontal = 3
 theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 text = "貨架 5\n空貨架"
-[node name="MarketShelf6Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
+[node name="MarketShelf6Button" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout/ShelfGrid"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
@@ -914,7 +940,7 @@ theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 text = "貨架 6\n空貨架"
 
-[node name="MarketFixtureButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout"]
+[node name="MarketFixtureButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
@@ -922,53 +948,52 @@ theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 text = "目前櫃台：木製交易台 · 2 格"
 
-[node name="ShelfDetail" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout"]
+[node name="ShelfDetail" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("ButtonStyle")
 
-[node name="DetailLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail"]
+[node name="DetailLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail"]
 layout_mode = 2
 theme_override_constants/separation = 7
 
-[node name="MarketItemName" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail/DetailLayout"]
+[node name="MarketItemName" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail/DetailLayout"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.86, 0.56, 1)
 theme_override_font_sizes/font_size = 18
 text = "選擇左側商品"
 
-[node name="MarketItemStatus" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail/DetailLayout"]
+[node name="MarketItemStatus" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail/DetailLayout"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "這個貨架目前空著，可用左側商品補貨。"
 autowrap_mode = 2
 
-[node name="MarketCustomerStatus" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail/DetailLayout"]
+[node name="MarketCustomerStatus" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout/ShelfDetail/DetailLayout"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.62, 0.82, 0.82, 1)
 text = "上架後會顯示來訪顧客與成交狀態。"
 autowrap_mode = 2
 
-[node name="RumorPanel" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content"]
+[node name="RumorPanel" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(238, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("PanelStyle")
 
-[node name="RumorLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/RumorPanel"]
+[node name="RumorLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/RumorPanel"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Heading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/RumorPanel/RumorLayout"]
+[node name="Heading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/RumorPanel/RumorLayout"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.93, 0.7, 0.96, 1)
 theme_override_font_sizes/font_size = 19
 text = "流言菲語"
 
-[node name="MarketRumorLabel" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/RumorPanel/RumorLayout"]
+[node name="MarketRumorLabel" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/RumorPanel/RumorLayout"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
@@ -977,7 +1002,7 @@ theme_override_font_sizes/font_size = 14
 text = "◇ 選擇符合流言的商品，能吸引願意高價收購的特別顧客。"
 autowrap_mode = 2
 
-[node name="MarketFeedbackLabel" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Content/RumorPanel/RumorLayout"]
+[node name="MarketFeedbackLabel" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/RumorPanel/RumorLayout"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2

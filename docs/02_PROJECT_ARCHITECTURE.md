@@ -471,14 +471,16 @@ UI 對上層提供 setter/configure API與 typed signals：
   重算玩家屬性並同步 Meta save，不擁有 inventory 或戰鬥規則。
 - `MaterialYardUI`：Level 0 basic stock、依 workshop level 解鎖的高階鍛造材料／永久工具，
   以及 Level 3 material bundle yield projection。
-- `PlayerBlacksmithUI`：初始只呈現可互動的幾何熔爐、工作台與商店入口；玩家選取物件後才展開圖紙鍛造、每張圖紙 Lv.0–5 熟練度／Lv.5 覺醒、blacksmith
+- `PlayerBlacksmithUI`：初始以舊工業鐵匠鋪前中後景呈現可互動的熔爐、工作台與商店入口；三個圖像 hotspot 具可見鍵盤焦點，玩家選取物件後才展開圖紙鍛造、每張圖紙 Lv.0–5 熟練度／Lv.5 覺醒、blacksmith
   recipe tier／加工費與 Sword Soul 升級。鍛造
   以穩鍛／精煉／急鍛／名匠鍛造選擇成本、成功率與品質風險；販售以親民／公道／
   精品定價，並投影「流言菲語」指定商品、具名顧客與高價倍率。`PlayerMarketUI`
-  是獨立 authored 店內 scene，由鐵匠鋪幾何入口進入、返回時回到工坊場景；
+  是獨立 authored 店內 scene，由鐵匠鋪圖像入口進入、返回時回到工坊場景；
   1040×640 authored frame 以 1280×720 為 1× 基準，依 viewport 在 `0.78–2.0×` 內等比置中，
-  並以緊湊店內狀態列呈現主角、既有 Town NPC 顧客、櫃台與實際陳列商品，
-  初始只顯示店內物件；點選商品、貨架或招客鈴後才顯示該物件所需的局部管理面板。玩家只對空貨架補貨並選擇
+  並以溫暖木造雜貨／花店前中後景呈現主角、既有 Town NPC 顧客、櫃台與實際陳列商品。
+  兩位大型顧客沿門口、展示桌、花架與櫃台路線停留，離店後輪替既有 NPC；初始只顯示店內物件；
+  點選商品、貨架或招客鈴後只在 `InteriorCanvas` 左側覆蓋 `ContextDock`，不得改變 `StoreInterior` 尺寸。
+  玩家只對空貨架補貨並選擇
   親民／公道／精品價格；顧客由系統週期性自行判斷與結帳。Market 建築等級只解鎖
   可購買的家具階級，實際安裝的木製／雪松／鍛鐵／大市集櫃台才提供 2／3／4／6 格。
   高價接受度由 Market 建築效果及已裝備商旅印章加成，UI 不擁有成交亂數或存檔。
@@ -1137,17 +1139,19 @@ Chain 使用依總 Combo 收緊的獨立接續視窗，不受卡片效果到期�
 每項 evolved gift 同時保存一個依兩項材料名稱與特徵組成的 `background_attack` profile。
 8 個 base Blessing 各自定義唯一的 `fusion_stem`、`fusion_motif`、`accent_color` 與普攻狀態；第一批只開放
 10 個 authored fusion recipe，其中部分還要求已裝備指定觸媒。融合 profile
-固定保留兩個 `geometry_modules` 與兩個 `glow_colors`，特殊元素組合再選用 chain／nova／gale
-的移動方式。`Game` 為每個 profile 維持獨立 timer，以 0 AP、不中斷 Basic
+固定保留兩個來源狀態與發光色，但 runtime 不繪製抽象聖環、節點或幾何線；特殊元素組合改由
+fire-blade growth、shadow recall、poison bloom、lightning blink、feather fan、frost rise、tide boomerang、sunfall
+及 10 種 evolved subject motion 表達。`Game` 為每個 profile 維持獨立 timer，以 0 AP、不中斷 Basic
 Attack cooldown 的方式呼叫 `CardEffectRunner`；建卡時先經
 `_apply_combo_infusions_to_card()`，因此目前劍魂與全部持有神賜的傷害、元素、狀態與投射數會同時繼承到
 普通攻擊、傷害招式與背景攻擊。背景攻擊 runtime profile 再依 Combo、神賜數與總等級提高
 `size_scale`、`instance_count`、`rhythm_speed`、target count 與 damage scale，從單一具體主體成長為多重陣列；
-視覺主體同屏最多四個，避免角色、敵人與 contact point 被遮住，傷害與 target 成長不受此視覺上限影響。
+視覺主體同屏最多兩個，單次動作至少 1.25 秒，避免角色、敵人與 contact point 被遮住，傷害與 target 成長不受此視覺上限影響。
 每個 base Blessing 另以 `attack_vfx_asset_path` 指向具體小型攻擊物件；
 `BlessingAttackOverlay` 將持有神賜投影到普通攻擊路徑，Lv.1 從單一小物件開始，等級、
-Combo 與 stack 逐步增加數量、尺寸、分流與殘影。三槽高成長時同屏具體物件總數最多十二個、
-單體寬度最多 96px，並降低基本劍氣白核與殘影曝光，確保方向、持劍者與命中目標仍可辨識。10 個融合 recipe 的
+Combo 與 stack 逐步增加數量、尺寸、分流與殘影。三槽高成長時同屏具體物件總數最多六個、
+單體寬度為 84–176px；持有 Blessing 時具體主體直接取代通用劍氣幾何，讓普通攻擊在軌跡、出現方向、
+成長、變色與消失方式上產生可見質變。10 個融合 recipe 的
 `subject_asset_path`／`subject_motion` 是背景攻擊主體權威，不得退回一張通用幾何素材。
 
 Run 同時最多持有三項神賜。未滿三項時獎勵可出現新神賜或既有神賜升級；滿三項時
@@ -1213,7 +1217,7 @@ Autumn 的唯一 combat presentation root 是
 
 ```text
 AutumnHUD
-├── MapTitleOverlay（換圖時中央短暫顯示地圖名）
+├── MapTitleOverlay（換圖時中央短暫顯示地圖名；透明底，只保留上下亮線）
 ├── TopLeftStack（compatibility path，runtime hidden）
 ├── TopCenterStack
 │   ├── BossHealth

@@ -633,7 +633,7 @@ func _show_workshop_interior() -> void:
 	workshop_context_bar.visible = false
 	service_rail.visible = false
 	workspace_holder.visible = false
-	forge_object_button.grab_focus()
+	forge_object_button.grab_focus.call_deferred()
 
 
 func _show_workshop_context(service_id: StringName) -> void:
@@ -1342,6 +1342,14 @@ func _building_level() -> int:
 
 
 func _configure_focus_navigation() -> void:
+	forge_object_button.focus_neighbor_right = forge_object_button.get_path_to(upgrade_object_button)
+	forge_object_button.focus_next = forge_object_button.get_path_to(upgrade_object_button)
+	upgrade_object_button.focus_neighbor_left = upgrade_object_button.get_path_to(forge_object_button)
+	upgrade_object_button.focus_neighbor_right = upgrade_object_button.get_path_to(market_object_button)
+	upgrade_object_button.focus_previous = upgrade_object_button.get_path_to(forge_object_button)
+	upgrade_object_button.focus_next = upgrade_object_button.get_path_to(market_object_button)
+	market_object_button.focus_neighbor_left = market_object_button.get_path_to(upgrade_object_button)
+	market_object_button.focus_previous = market_object_button.get_path_to(upgrade_object_button)
 	forge_service_button.focus_neighbor_bottom = forge_service_button.get_path_to(
 		upgrade_service_button
 	)

@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 160 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 185 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -717,9 +717,9 @@ instance.queue_free()
 | Memory Library | capacity 10/14/18/24/30；learned 與 active loadout 分離 |
 | Growth queue | wave new-card 可直接 skip；EXP 每級必開新／升級神賜且不得融合；神賜全滿才 fallback；菁英／Boss 只列既有神賜升級／融合；FIFO 不漏頁 |
 | Stale growth page | `stale_divine_growth_choice_test.gd` 直接按實際 ConfirmButton，確認前頁升級使後頁快照失效時會依目前 inventory 重建候選或 fallback，不會重複顯示同一張無效頁而卡死 |
-| Fusion | 只由菁英／Boss loot page 提供第一批 10 個 authored recipe；非配方組合必須拒絕，5 個儀式配方另驗 equipped catalyst；合法配對超過三種時隨機抽三種且 queue 優先保留三個 fusion；10 個背景攻擊各有唯一具體主體 asset／motion，來源 motif／三拍聖環只作次層；初始 `size_scale < 1`／單一 instance，Combo、支援神賜與等級使主體尺寸、數量、節奏、target 與 damage 一路放大但可見主體封頂四個；8 個 base asset 也隨普通攻擊的 Lv／Combo／stack 增加物件與殘影，三槽同屏封頂十二個且保留角色／目標／contact point；0 AP、不動 Basic cooldown，並讓普通攻擊、傷害招式與背景攻擊共用全部神賜狀態 |
-| Blessing subject VFX | `blessing_subject_vfx_test.gd` 驗 8 個 base／10 個 evolved 唯一 asset、真 alpha、10 種 motion，以及 Lv／Combo／stack 會增加普通攻擊物件 |
-| Player Market art | `player_market_art_layers_test.gd` 驗 background／midground／foreground、六個 atlas 裝潢與所有物件 hotspot；1040×640 authored frame 以 1280×720 為 1× 基準在 `0.78–2.0×` 等比置中；`blessing_market_visual_capture_test.gd` 以圖形 renderer 輸出 1280×720、1920×1080、2560×1440 商店全圖、戰鬥／普攻全圖與各自固定 3×2 六切片 |
+| Fusion | 只由菁英／Boss loot page 提供第一批 10 個 authored recipe；非配方組合必須拒絕，5 個儀式配方另驗 equipped catalyst；合法配對超過三種時隨機抽三種且 queue 優先保留三個 fusion；10 個背景攻擊各有唯一具體主體 asset／motion，不得繪製抽象幾何；單次至少 1.25 秒且可見主體封頂兩個；8 個 base asset 也隨普通攻擊的 Lv／Combo／stack 增加物件與殘影，三槽同屏封頂六個並直接取代通用 Basic Attack 幾何；0 AP、不動 Basic cooldown，並讓普通攻擊、傷害招式與背景攻擊共用全部神賜狀態 |
+| Blessing subject VFX | `blessing_subject_vfx_test.gd` 驗 8 個 base／10 個 evolved 唯一 asset、真 alpha、8 種 base motion、10 種 evolved motion、無抽象 geometry、時長下限，以及 Lv／Combo／stack 會增加普通攻擊物件 |
+| Player Market experience/art | `player_market_experience_test.gd` 驗鐵匠三熱區鍵盤 focus、商店 Product1 初始焦點、側邊 `ContextDock` 不壓縮店景與兩條顧客路線；`player_market_art_layers_test.gd` 驗 cozy background／midground／foreground、六個 atlas 裝潢與所有物件 hotspot；1040×640 authored frame 以 1280×720 為 1× 基準在 `0.78–2.0×` 等比置中；`blessing_market_visual_capture_test.gd` 以圖形 renderer 輸出 1280×720、1920×1080、2560×1440 商店全圖、店面／鍛造／戰鬥／普攻／地名全圖與固定 3×2 六切片 |
 | Deck/hand | 傳送門前第 1 格固定 Healing、後 3 格為 unique 公式劍魂；四格後方的單一 workspace 以「劍魂替換／依招式配置」互斥切換，招式清單不得插在卡槽上方或與劍魂清單同時常駐；招式模式必須有 13 個 catalog-ordered 系列標題，每區固定基礎／進階／大師三欄且合計 39 招；招式選擇自動填入 `required_skills` 聯集，相容名稱保持正常色、缺卡或超過三格者保留並反灰；手動候選排除重複並預覽終結技；圖示、類型色與金色幾何動畫可辨；hover／keyboard focus 即時預覽效果，向下越界自動捲動；面板於高解析度等比放大；QWER 使用後保留原 slot |
 | Card readability/feedback | 繁中長技能名固定兩行、超出省略且 tooltip 保留完整名稱，不撐寬四卡框；七解析度不重疊；compatibility `BackRow` hidden 且不保留高度，code-native 7:8 金色幾何框與條件式透明裝飾層由 CardStage 頂緣到底緣雙軸填滿四等分 slot、主插畫占主要視覺；hover 不橫向放大；combat halo hidden，外框亮帶持續沿可調拱弧／側柱充能、主圖背後 60 根粗且保有留白的 360° sacred-geometry 日芒以雙頻波形大幅伸縮、維持圓形整體輪廓且四卡相位錯開；日芒使用不歸零的連續時間值，外框跨界亮帶同時繪製尾端與起點，循環接縫不得抖動；兩者使用全域時間軸，出招重投影不得歸零；右側長公式固定欄寬 ellipsis；只有成功施放的相符 card id 播放約 0.42 秒最上層儀式弧光、12 根短放射刻線、三圓章閃光與主圖 punch，無矩形遮罩且不重置底層循環；重複呼叫重啟、未知 ID 無作用、0.5 秒內回穩；透明裝飾素材另檢查 1173×1341、alpha 與共享對位 |
 | Combat input hierarchy | 隱藏舊 `ActionStrip`；`SPACE 衝刺` 位於 FooterRail；手牌頂緣貼齊 CardStage；二十張公式劍魂的 catalog 基礎 AP 統一為 2，裝備只可把 Combo 投影降至最低 1；卡面共用 Noto Serif TC 優先的襯線 stack，短招式名保持大字、長名稱最低 12px 且獨占暖墨底部卷軸，插畫在分類框上緣前結束；Q/W/E/R 位於左上 32–36px 圓章且至少 18px；右上顯示種類 icon；AP cost 位於右下 34–38px 圓章且只顯示至少 20px 的數字；中文分類使用四邊舊金框暖墨 tab 且至少 60% 卡寬，Combo 卡在同一 tab 顯示自己的 `目前層數/有效上限`，不另加 stack seal；不得新增表格線、全卡不透明色塊或霓虹外框 |
@@ -732,7 +732,7 @@ instance.queue_free()
 | Pause | gameplay/AP/card/status/skill/wave/projectile timer 全停；UI 可操作；token 成對釋放 |
 | Dev mode | project default-on、headless test isolation、全資源／裝備／劍魂／招式 projection、正式 map entry 存在；ESC selector 在六尺寸內可操作；Town→Crystal→Town 直切會建立／捨棄測試 Run 且不結算 |
 | HUD authority | Autumn 只有一個 HUD root；hand 在 `CardStage`；Town HUD identity 不變 |
-| HUD projection | 左側 MISSIONS/objective runtime hidden；換圖只以中央 `MapTitleOverlay` 短暫顯示地圖名；boss/toast 上中、bottom stage 完整；toast max 3/1.5 秒/duplicate refresh |
+| HUD projection | 左側 MISSIONS/objective runtime hidden；換圖只以中央透明 `MapTitleOverlay` 短暫顯示地圖名，背景 alpha 為 0 且只保留上下亮線；boss/toast 上中、bottom stage 完整；toast max 3/1.5 秒/duplicate refresh |
 | Combo popup | 個別劍魂 Combo 每次遞增時左側顯示「中文劍魂名 ×N」；1 次為 18px、隨次數平方根成長且上限 26px；位置永遠在左側 30% 與 66% gameplay boundary 上方，0.95 秒內小幅 punch、上浮、淡出並可安全重啟；達上限後重複施放不得再假裝遞增 |
 
 六解析度 geometry test 要逐一 assert：

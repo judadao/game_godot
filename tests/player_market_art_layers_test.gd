@@ -2,9 +2,9 @@ extends SceneTree
 
 const MARKET_SCENE := preload("res://scenes/ui/town/PlayerMarketUI.tscn")
 const LAYER_PATHS := {
-	"ShopBackground": "res://assets/ui/town/player_market/generated/blacksmith_shop_background.png",
-	"ShopMidground": "res://assets/ui/town/player_market/generated/blacksmith_shop_midground.png",
-	"ShopForeground": "res://assets/ui/town/player_market/generated/blacksmith_shop_foreground.png",
+	"ShopBackground": "res://assets/ui/town/player_market/generated/cozy_market_background.png",
+	"ShopMidground": "res://assets/ui/town/player_market/generated/cozy_market_midground.png",
+	"ShopForeground": "res://assets/ui/town/player_market/generated/cozy_market_foreground.png",
 }
 const DECOR_NODES := [
 	"DecorBell",
@@ -47,6 +47,12 @@ func _run() -> void:
 	for node_name in DECOR_NODES:
 		var decor := market.find_child(node_name, true, false) as TextureRect
 		_expect(decor != null and decor.texture is AtlasTexture, "Shop decoration must be a swappable atlas cutout: %s." % node_name)
+	var context_dock := market.find_child("ContextDock", true, false) as Control
+	var interior_canvas := market.find_child("InteriorCanvas", true, false) as Control
+	_expect(
+		context_dock != null and context_dock.get_parent() == interior_canvas,
+		"Player Market management controls must live in a side dock over the full shop view."
+	)
 	for button_name in [
 		"ShelfInteractButton",
 		"Product1InteractButton",
@@ -59,7 +65,7 @@ func _run() -> void:
 	market.queue_free()
 	await process_frame
 	if _failures == 0:
-		print("PASS: Player Market uses layered blacksmith-shop art without blocking interactions")
+		print("PASS: Player Market uses layered cozy-shop art without blocking interactions")
 	quit(_failures)
 
 

@@ -58,6 +58,7 @@ func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
 		var attack_vfx_asset_path := String(
 			gift.get("attack_vfx_asset_path", "")
 		).strip_edges()
+		var attack_motion := String(gift.get("attack_motion", "")).strip_edges()
 		var levels_variant: Variant = gift.get("effects_by_level", [])
 		if (
 			gift_id.is_empty()
@@ -68,6 +69,7 @@ func load_catalog(path: String = DEFAULT_CATALOG_PATH) -> bool:
 			or not Color.html_is_valid(accent_color)
 			or attack_vfx_asset_path.is_empty()
 			or not ResourceLoader.exists(attack_vfx_asset_path)
+			or attack_motion.is_empty()
 			or not levels_variant is Array
 			or (levels_variant as Array).size() != MAX_LEVEL
 		):
@@ -151,6 +153,7 @@ func add_or_upgrade(gift_id: String) -> bool:
 		"fusion_motif": String(definition.get("fusion_motif", "pulse_ring")),
 		"accent_color": String(definition.get("accent_color", "#f05cff")),
 		"attack_vfx_asset_path": String(definition.get("attack_vfx_asset_path", "")),
+		"attack_motion": String(definition.get("attack_motion", "")),
 		"finisher_mutations": (
 			definition.get("finisher_mutations", {}) as Dictionary
 		).duplicate(true),
@@ -606,9 +609,11 @@ func get_basic_attack_visual_profiles() -> Array[Dictionary]:
 		var gift := _inventory[gift_id] as Dictionary
 		var kind := String(gift.get("kind", ""))
 		var asset_path := String(gift.get("attack_vfx_asset_path", ""))
+		var motion := String(gift.get("attack_motion", ""))
 		if kind == "evolved":
 			var background_attack := gift.get("background_attack", {}) as Dictionary
 			asset_path = String(background_attack.get("subject_asset_path", ""))
+			motion = String(background_attack.get("subject_motion", "composite_orbit"))
 		elif kind != "base":
 			continue
 		if asset_path.is_empty():
@@ -618,6 +623,7 @@ func get_basic_attack_visual_profiles() -> Array[Dictionary]:
 			"name": String(gift.get("name", gift_id)),
 			"element": String(gift.get("element", "normal")),
 			"asset_path": asset_path,
+			"motion": motion,
 			"accent_color": String(gift.get("accent_color", "#ffffff")),
 			"level": clampi(int(gift.get("level", 1)), 1, MAX_LEVEL),
 			"evolved": kind == "evolved",

@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=28 format=3]
 
 [ext_resource type="Script" uid="uid://bl4jfw2re34g3" path="res://scripts/ui/town/player_blacksmith_ui.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/ui/town/TownNPCPortrait.tscn" id="2_portrait"]
@@ -14,6 +14,9 @@
 [ext_resource type="Texture2D" path="res://assets/ui/fantasy_icons_16x16/png/Separately/Icon1_1.png" id="11_close"]
 [ext_resource type="Theme" path="res://scenes/ui/town/TownServiceFrameTheme.tres" id="12_frame_theme"]
 [ext_resource type="PackedScene" path="res://scenes/ui/town/PlayerMarketUI.tscn" id="14_market_ui"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_shop_background.png" id="15_workshop_bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_shop_midground.png" id="16_workshop_mid"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_shop_foreground.png" id="17_workshop_fore"]
 
 [sub_resource type="StyleBoxFlat" id="WindowStyle"]
 content_margin_left = 2.0
@@ -105,6 +108,18 @@ corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="WorkshopHotspot"]
+bg_color = Color(0.04, 0.03, 0.02, 0.16)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.78, 0.56, 0.24, 0.46)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxFlat" id="ServiceSelected"]
 content_margin_left = 8.0
@@ -503,6 +518,32 @@ theme_override_styles/panel = SubResource("PanelStyle")
 [node name="WorkshopCanvas" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior"]
 layout_mode = 2
 
+[node name="WorkshopArtBackground" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+z_index = 0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("15_workshop_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="WorkshopArtMidground" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+z_index = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("16_workshop_mid")
+expand_mode = 1
+stretch_mode = 0
+
 [node name="BackWall" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
 layout_mode = 1
 anchors_preset = 15
@@ -510,7 +551,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.095, 0.075, 0.06, 1)
+color = Color(0.095, 0.075, 0.06, 0)
 mouse_filter = 2
 
 [node name="Floor" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
@@ -518,16 +559,17 @@ layout_mode = 1
 anchor_top = 0.64
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.19, 0.125, 0.075, 1)
+color = Color(0.19, 0.125, 0.075, 0)
 mouse_filter = 2
 
 [node name="ForgeObject" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+z_index = 9
 layout_mode = 1
 anchor_left = 0.035
 anchor_top = 0.1
 anchor_right = 0.35
 anchor_bottom = 0.88
-theme_override_styles/panel = SubResource("ServiceNormal")
+theme_override_styles/panel = SubResource("WorkshopHotspot")
 
 [node name="Geometry" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject"]
 layout_mode = 2
@@ -537,7 +579,7 @@ layout_mode = 1
 anchor_left = 0.4
 anchor_right = 0.6
 anchor_bottom = 0.28
-color = Color(0.22, 0.2, 0.18, 1)
+color = Color(0.22, 0.2, 0.18, 0)
 mouse_filter = 2
 
 [node name="Body" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
@@ -546,7 +588,7 @@ anchor_left = 0.18
 anchor_top = 0.2
 anchor_right = 0.82
 anchor_bottom = 0.76
-color = Color(0.31, 0.27, 0.23, 1)
+color = Color(0.31, 0.27, 0.23, 0)
 mouse_filter = 2
 
 [node name="Hearth" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
@@ -555,10 +597,11 @@ anchor_left = 0.31
 anchor_top = 0.43
 anchor_right = 0.69
 anchor_bottom = 0.65
-color = Color(0.94, 0.34, 0.08, 1)
+color = Color(0.94, 0.34, 0.08, 0)
 mouse_filter = 2
 
 [node name="Name" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
+z_index = 11
 layout_mode = 1
 anchor_top = 0.75
 anchor_right = 1.0
@@ -572,7 +615,7 @@ mouse_filter = 2
 
 [node name="ForgeObjectButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
 unique_name_in_owner = true
-show_behind_parent = true
+z_index = 10
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -580,17 +623,19 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 tooltip_text = "使用熔爐鍛造已取得的圖紙"
+focus_mode = 2
 theme_override_styles/hover = SubResource("HoverStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
 flat = true
 
 [node name="UpgradeObject" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+z_index = 9
 layout_mode = 1
 anchor_left = 0.37
 anchor_top = 0.2
 anchor_right = 0.68
 anchor_bottom = 0.88
-theme_override_styles/panel = SubResource("ServiceNormal")
+theme_override_styles/panel = SubResource("WorkshopHotspot")
 
 [node name="Geometry" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject"]
 layout_mode = 2
@@ -601,7 +646,7 @@ anchor_left = 0.12
 anchor_top = 0.28
 anchor_right = 0.88
 anchor_bottom = 0.43
-color = Color(0.55, 0.34, 0.13, 1)
+color = Color(0.55, 0.34, 0.13, 0)
 mouse_filter = 2
 
 [node name="BenchBase" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
@@ -610,7 +655,7 @@ anchor_left = 0.22
 anchor_top = 0.43
 anchor_right = 0.78
 anchor_bottom = 0.72
-color = Color(0.34, 0.2, 0.09, 1)
+color = Color(0.34, 0.2, 0.09, 0)
 mouse_filter = 2
 
 [node name="Blueprint" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
@@ -619,10 +664,11 @@ anchor_left = 0.32
 anchor_top = 0.12
 anchor_right = 0.68
 anchor_bottom = 0.3
-color = Color(0.2, 0.55, 0.68, 1)
+color = Color(0.2, 0.55, 0.68, 0)
 mouse_filter = 2
 
 [node name="Name" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
+z_index = 11
 layout_mode = 1
 anchor_top = 0.74
 anchor_right = 1.0
@@ -636,7 +682,7 @@ mouse_filter = 2
 
 [node name="UpgradeObjectButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
 unique_name_in_owner = true
-show_behind_parent = true
+z_index = 10
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -644,17 +690,19 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 tooltip_text = "檢查並改善私人鍛造工坊"
+focus_mode = 2
 theme_override_styles/hover = SubResource("HoverStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
 flat = true
 
 [node name="MarketObject" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+z_index = 9
 layout_mode = 1
 anchor_left = 0.71
 anchor_top = 0.08
 anchor_right = 0.965
 anchor_bottom = 0.88
-theme_override_styles/panel = SubResource("ServiceNormal")
+theme_override_styles/panel = SubResource("WorkshopHotspot")
 
 [node name="Geometry" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject"]
 layout_mode = 2
@@ -665,7 +713,7 @@ anchor_left = 0.22
 anchor_top = 0.1
 anchor_right = 0.78
 anchor_bottom = 0.76
-color = Color(0.08, 0.18, 0.2, 1)
+color = Color(0.08, 0.18, 0.2, 0)
 mouse_filter = 2
 
 [node name="DoorInset" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject/Geometry"]
@@ -674,10 +722,11 @@ anchor_left = 0.31
 anchor_top = 0.19
 anchor_right = 0.69
 anchor_bottom = 0.66
-color = Color(0.16, 0.32, 0.34, 1)
+color = Color(0.16, 0.32, 0.34, 0)
 mouse_filter = 2
 
 [node name="Name" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject/Geometry"]
+z_index = 11
 layout_mode = 1
 anchor_top = 0.76
 anchor_right = 1.0
@@ -691,7 +740,7 @@ mouse_filter = 2
 
 [node name="MarketObjectButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject/Geometry"]
 unique_name_in_owner = true
-show_behind_parent = true
+z_index = 10
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -699,9 +748,23 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 tooltip_text = "走進玩家經營的商店"
+focus_mode = 2
 theme_override_styles/hover = SubResource("HoverStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
 flat = true
+
+[node name="WorkshopArtForeground" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+z_index = 8
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("17_workshop_fore")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="WorkshopInteractionHint" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
 layout_mode = 1

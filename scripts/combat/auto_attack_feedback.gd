@@ -87,6 +87,10 @@ var _elemental_aura: Node2D
 var _combo_tier := 0
 var _suppress_attack_geometry := false
 var _travel_tween: Tween
+var _blessing_attack_override_active := false
+var _active_anticipation_duration := ANTICIPATION_DURATION
+var _active_travel_duration := TRAVEL_DURATION
+var _active_impact_duration := IMPACT_DURATION
 
 
 func play(
@@ -116,7 +120,15 @@ func play(
 	_spread_degrees = clampf(float(visual_profile.get("spread_degrees", 0.0)), 0.0, 360.0)
 	_did_hit = damage > 0
 	_combo_tier = clampi(combo_count / 3, 0, 3)
-	_suppress_attack_geometry = bool(visual_profile.get("finisher", false))
+	var blessing_profiles := visual_profile.get("blessing_attack_profiles", []) as Array
+	_blessing_attack_override_active = (
+		not blessing_profiles.is_empty()
+		and not bool(visual_profile.get("finisher", false))
+	)
+	_suppress_attack_geometry = (
+		bool(visual_profile.get("finisher", false))
+		or _blessing_attack_override_active
+	)
 	_visual_elements = _normalize_elements(visual_profile.get("elements", []) as Array)
 	_visual_colors = _colors_for_elements(_visual_elements)
 	# Sword energy keeps a white core. Elements remain independent silhouette layers.
@@ -135,7 +147,7 @@ func play(
 	premium_crescent_layer.call("set_progress", _travel_progress, _impact_progress)
 	blessing_attack_overlay.call(
 		"configure",
-		visual_profile.get("blessing_attack_profiles", []) as Array,
+		blessing_profiles,
 		_target_offset,
 		_stack_count,
 		_attack_size_multiplier,
@@ -161,25 +173,37 @@ func play(
 	queue_redraw()
 
 	var speed_scale := maxf(0.80, projectile_speed_multiplier)
+	_active_anticipation_duration = ANTICIPATION_DURATION
+	_active_travel_duration = TRAVEL_DURATION
+	_active_impact_duration = IMPACT_DURATION
+	if _blessing_attack_override_active:
+		var has_evolved_subject := false
+		for profile_variant in blessing_profiles:
+			if profile_variant is Dictionary and bool((profile_variant as Dictionary).get("evolved", false)):
+				has_evolved_subject = true
+				break
+		_active_anticipation_duration = 0.072
+		_active_travel_duration = (0.42 if has_evolved_subject else 0.34) / minf(speed_scale, 1.35)
+		_active_impact_duration = 0.28
 	_travel_tween = create_tween()
 	_travel_tween.tween_method(
 		_set_travel_progress,
 		0.0,
 		LAUNCH_PROGRESS,
-		ANTICIPATION_DURATION / speed_scale
+		_active_anticipation_duration
 	)
 	_travel_tween.tween_method(
 		_set_travel_progress,
 		LAUNCH_PROGRESS,
 		1.0,
-		TRAVEL_DURATION / speed_scale
+		_active_travel_duration
 	)
 	_travel_tween.tween_callback(_show_impact)
 	_travel_tween.tween_method(
 		_set_impact_progress,
 		0.0,
 		1.0,
-		IMPACT_DURATION
+		_active_impact_duration
 	)
 	_travel_tween.tween_callback(_finish)
 
@@ -266,15 +290,19 @@ func get_modular_part_names() -> Array[StringName]:
 
 
 func get_travel_duration() -> float:
-	return ANTICIPATION_DURATION + TRAVEL_DURATION
+	return _active_anticipation_duration + _active_travel_duration
 
 
 func get_impact_duration() -> float:
-	return IMPACT_DURATION
+	return _active_impact_duration
 
 
 func get_motion_profile() -> StringName:
-	return &"slash_shockwave"
+	return &"blessing_subject_override" if _blessing_attack_override_active else &"slash_shockwave"
+
+
+func is_blessing_attack_override_active() -> bool:
+	return _blessing_attack_override_active
 
 
 func get_animation_quality_profile() -> StringName:
@@ -1813,10 +1841,10 @@ func _show_impact() -> void:
 	if not _did_hit:
 		return
 	var label_tween := create_tween().set_parallel(true)
-	label_tween.tween_property(damage_label, "position:y", damage_label.position.y - 24.0, IMPACT_DURATION)
-	label_tween.tween_property(combo_label, "position:y", combo_label.position.y - 18.0, IMPACT_DURATION)
-	label_tween.tween_property(damage_label, "modulate:a", 0.0, IMPACT_DURATION).set_delay(0.12)
-	label_tween.tween_property(combo_label, "modulate:a", 0.0, IMPACT_DURATION).set_delay(0.12)
+	label_tween.tween_property(damage_label, "position:y", damage_label.position.y - 24.0, _active_impact_duration)
+	label_tween.tween_property(combo_label, "position:y", combo_label.position.y - 18.0, _active_impact_duration)
+	label_tween.tween_property(damage_label, "modulate:a", 0.0, _active_impact_duration).set_delay(0.12)
+	label_tween.tween_property(combo_label, "modulate:a", 0.0, _active_impact_duration).set_delay(0.12)
 
 
 func _finish() -> void:

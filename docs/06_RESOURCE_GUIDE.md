@@ -277,8 +277,9 @@ UI setter/configure API
 
 神賜具體物件位於 `assets/generated/vfx/blessings/base/` 與 `evolved/`；素材必須是真透明的單一
 火刃／影匕／毒種／雷苦無／風羽／冰刃／潮鏢／日輪刃或進化主體，使用 MaterialYard 相容的
-大型色塊、粗輪廓與有限色階。Player Market 的 background／midground／foreground／六格裝潢 atlas
-位於 `assets/ui/town/player_market/generated/`，同樣不得烘焙 checkerboard、密集微紋理或寫實高光。
+大型色塊、粗輪廓與有限色階。Player Market 的 `cozy_market_background`／`midground`／`foreground`
+及六格裝潢 atlas 位於 `assets/ui/town/player_market/generated/`，採暖木、花卉與農產的大色塊像素筆觸，
+不得烘焙 checkerboard、密集微紋理或寫實高光；舊 `blacksmith_shop_*` 工業圖層保留給鍛造工坊物件選擇。
 
 既有共用內容數量與 cross-reference 由 `tests/content_validation_test.gd` 驗證；Town interaction
 schema、ID、selector、sequence 與 deterministic query 另由
@@ -861,8 +862,9 @@ canonical value 不翻譯。Manager 同時最多保存三項 inventory entry：�
 必須有唯一 `subject_asset_path` 與 `subject_motion`，runtime 不得以黑底 additive 方框
 或同一張通用圖替代。
 
-`assets/ui/town/player_market/generated/` 保存鐵匠販售店的 background、midground、
-foreground 與 3×2 decor atlas。中／前景與 atlas 必須保留真 alpha；場景以 AtlasTexture
+`assets/ui/town/player_market/generated/` 保存鐵匠販售店的 `cozy_market_background`、
+`cozy_market_midground`、`cozy_market_foreground` 與 3×2 `cozy_market_decor_atlas`。
+中／前景與 atlas 必須保留真 alpha；場景以 AtlasTexture
 切出六件裝潢，禁止將功能文字烘進圖片。
 滿三項時只能回傳既有未滿級 entry。融合只接受 `FUSION_RECIPES` 的第一批 10 個進階型態；
 有 `required_equipment_id` 的配方必須由 Game 同步目前 weapon／armor／accessory 後才可顯示與結算。融合原子移除兩項材料

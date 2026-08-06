@@ -5,6 +5,8 @@ const MAP_SCENE := preload("res://scenes/maps/autumn_battle/AutumnBattleMapV2.ts
 const BACKGROUND_ATTACK_SCENE := preload("res://scenes/combat/vfx/EvolvedBackgroundAttack.tscn")
 const AUTO_ATTACK_SCENE := preload("res://scenes/combat/AutoAttackFeedback.tscn")
 const MARKET_SCENE := preload("res://scenes/ui/town/PlayerMarketUI.tscn")
+const BLACKSMITH_SCENE := preload("res://scenes/ui/town/PlayerBlacksmithUI.tscn")
+const AUTUMN_HUD_SCENE := preload("res://scenes/ui/autumn/AutumnHUD.tscn")
 const ENEMY_SCENE := preload("res://scenes/monsters/AutumnEnemy.tscn")
 const MANAGER_SCRIPT := preload("res://scripts/systems/divine_gift_manager.gd")
 const BATTLE_SIZE := Vector2i(1920, 1080)
@@ -30,6 +32,8 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(output_dir)
 	await _capture_battle(output_dir)
 	await _capture_basic_attack(output_dir)
+	await _capture_map_title(output_dir)
+	await _capture_blacksmith(output_dir)
 	for viewport_size in MARKET_SIZES:
 		await _capture_market(output_dir, viewport_size)
 	if _failures == 0:
@@ -208,9 +212,32 @@ func _capture_market(output_dir: String, viewport_size: Vector2i) -> void:
 	viewport.add_child(background)
 	var market := MARKET_SCENE.instantiate()
 	viewport.add_child(market)
+	market.set_sale_state({
+		"capacity": 3,
+		"shelves": [
+			{"shelf_index": 0, "status": "empty"},
+			{"shelf_index": 1, "status": "customer_ready", "item_name": "琥珀果醬", "customer_name": "旅人"},
+			{"shelf_index": 2, "status": "empty"},
+		],
+		"candidates": [{
+			"item_kind": "resource",
+			"item_id": "autumn_wood",
+			"item_name": "秋木花籃",
+			"quality": "common",
+			"quality_label": "普通",
+			"count": 8,
+			"unit_price": 12,
+		}],
+	})
 	market.open()
 	await process_frame
 	await process_frame
+	market.debug_advance_visitors(4.0)
+	if viewport_size == Vector2i(1920, 1080):
+		var floor_image: Image = viewport.get_texture().get_image()
+		floor_image.save_png(output_dir.path_join("player_market_floor_1920x1080.png"))
+		_save_slices(floor_image, output_dir, "player_market_floor")
+	(market.find_child("Product1InteractButton", true, false) as Button).pressed.emit()
 	await process_frame
 	var image: Image = viewport.get_texture().get_image()
 	var base_name := "player_market_%dx%d" % [viewport_size.x, viewport_size.y]
@@ -236,7 +263,62 @@ func _base_profile(gift_id: String, element: String, level: int) -> Dictionary:
 			"lightning": "#a986ff",
 		}.get(element, "#ffffff"),
 		"asset_path": "res://assets/generated/vfx/blessings/base/%s.png" % gift_id,
+		"motion": {
+			"resonant_grace": "fire_blade_growth",
+			"celestial_momentum": "feather_fan",
+			"prismatic_oath": "lightning_blink",
+		}.get(gift_id, "direct_growth"),
 	}
+
+
+func _capture_blacksmith(output_dir: String) -> void:
+	var viewport := SubViewport.new()
+	viewport.size = BATTLE_SIZE
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	root.add_child(viewport)
+	var blacksmith := BLACKSMITH_SCENE.instantiate()
+	viewport.add_child(blacksmith)
+	blacksmith.open()
+	await process_frame
+	await process_frame
+	await process_frame
+	var image: Image = viewport.get_texture().get_image()
+	if image == null or image.is_empty():
+		_failures += 1
+		push_error("Graphical renderer did not produce the repurposed Blacksmith review frame.")
+	else:
+		image.save_png(output_dir.path_join("player_blacksmith_full_1920x1080.png"))
+		_save_slices(image, output_dir, "player_blacksmith")
+	viewport.queue_free()
+	await process_frame
+
+
+func _capture_map_title(output_dir: String) -> void:
+	var viewport := SubViewport.new()
+	viewport.size = BATTLE_SIZE
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	root.add_child(viewport)
+	var map := MAP_SCENE.instantiate()
+	viewport.add_child(map)
+	for camera_node in map.find_children("*", "Camera2D", true, false):
+		(camera_node as Camera2D).enabled = false
+	var camera := Camera2D.new()
+	camera.position = Vector2(930.0, 360.0)
+	camera.zoom = Vector2.ONE * 1.5
+	camera.enabled = true
+	map.add_child(camera)
+	var hud := AUTUMN_HUD_SCENE.instantiate()
+	viewport.add_child(hud)
+	hud.call("set_area_name", "Autumn Forest")
+	await create_timer(0.35).timeout
+	var image: Image = viewport.get_texture().get_image()
+	if image == null or image.is_empty():
+		_failures += 1
+		push_error("Graphical renderer did not produce the map-title review frame.")
+	else:
+		image.save_png(output_dir.path_join("map_title_lines_1920x1080.png"))
+	viewport.queue_free()
+	await process_frame
 
 
 func _save_slices(image: Image, output_dir: String, prefix: String) -> void:

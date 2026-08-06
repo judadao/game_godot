@@ -11,6 +11,7 @@
       "fusion_motif": "pulse_ring",
       "accent_color": "#ff6438",
       "attack_vfx_asset_path": "res://assets/generated/vfx/blessings/base/resonant_grace.png",
+      "attack_motion": "fire_blade_growth",
       "finisher_mutations": {"burn_damage": 4, "burn_duration": 4.0, "final_burst": true},
       "effects_by_level": [
         {"combo_stack_bonus": 1, "finisher_damage_multiplier": 1.10},
@@ -29,6 +30,7 @@
       "fusion_motif": "echo_arc",
       "accent_color": "#9b69d9",
       "attack_vfx_asset_path": "res://assets/generated/vfx/blessings/base/echoing_will.png",
+      "attack_motion": "shadow_recall",
       "finisher_mutations": {"finisher_echoes": 1, "echo_decay": 0.7},
       "effects_by_level": [
         {"combo_effect_multiplier": 1.08, "finisher_damage_multiplier": 1.08},
@@ -47,6 +49,7 @@
       "fusion_motif": "venom_orb",
       "accent_color": "#85dc3f",
       "attack_vfx_asset_path": "res://assets/generated/vfx/blessings/base/boundless_font.png",
+      "attack_motion": "venom_seed_bloom",
       "finisher_mutations": {"poison_damage": 3, "poison_duration": 5.0, "death_spread": true},
       "effects_by_level": [
         {"combo_ap_refund": 0.10, "finisher_heal": 2},
@@ -65,6 +68,7 @@
       "fusion_motif": "bolt_chain",
       "accent_color": "#a986ff",
       "attack_vfx_asset_path": "res://assets/generated/vfx/blessings/base/prismatic_oath.png",
+      "attack_motion": "lightning_blink",
       "finisher_mutations": {"combo_stun": 0.6, "chain_lightning": true},
       "effects_by_level": [
         {"combo_element_bonus": 1, "finisher_element_damage": 2},
@@ -83,6 +87,7 @@
       "fusion_motif": "gale_spiral",
       "accent_color": "#76efcf",
       "attack_vfx_asset_path": "res://assets/generated/vfx/blessings/base/celestial_momentum.png",
+      "attack_motion": "feather_fan",
       "finisher_mutations": {"piercing": true, "speed_multiplier": 1.5},
       "effects_by_level": [
         {"combo_speed_bonus": 0.04, "finisher_size_multiplier": 1.10},
@@ -101,6 +106,7 @@
       "fusion_motif": "crystal_shard",
       "accent_color": "#8eeaff",
       "attack_vfx_asset_path": "res://assets/generated/vfx/blessings/base/eternal_memory.png",
+      "attack_motion": "frost_rise",
       "finisher_mutations": {"frost_ratio": 0.65, "frost_duration": 4.5, "shatter": true},
       "effects_by_level": [
         {"combo_stack_cap_bonus": 2, "finisher_history_bonus": 0},
@@ -119,6 +125,7 @@
       "fusion_motif": "tidal_wave",
       "accent_color": "#36b8ff",
       "attack_vfx_asset_path": "res://assets/generated/vfx/blessings/base/tidal_covenant.png",
+      "attack_motion": "tide_boomerang",
       "finisher_mutations": {"projectile_count_bonus": 2, "sweep_width_multiplier": 1.25},
       "effects_by_level": [
         {"combo_stack_bonus": 1, "finisher_size_multiplier": 1.08},
@@ -137,6 +144,7 @@
       "fusion_motif": "radiant_cross",
       "accent_color": "#ffe991",
       "attack_vfx_asset_path": "res://assets/generated/vfx/blessings/base/radiant_mercy.png",
+      "attack_motion": "sunfall",
       "finisher_mutations": {"heal_on_hit_ratio": 0.05, "final_burst": true},
       "effects_by_level": [
         {"finisher_heal": 2, "combo_effect_multiplier": 1.05},

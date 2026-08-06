@@ -98,6 +98,15 @@ func _run() -> void:
 				and (autumn_hud.get_node("MapTitleOverlay") as Control).visible,
 			"Entering a combat map must show its name in a temporary centered overlay."
 		)
+		var map_title_panel := autumn_hud.get_node("MapTitleOverlay/MapTitlePanel") as PanelContainer
+		var map_title_style := map_title_panel.get_theme_stylebox("panel") as StyleBoxFlat
+		_expect(
+			map_title_style != null
+				and map_title_style.bg_color.a <= 0.05
+				and autumn_hud.has_node("MapTitleOverlay/MapTitlePanel/MapTitleMargin/MapTitleRows/TopRule")
+				and autumn_hud.has_node("MapTitleOverlay/MapTitlePanel/MapTitleMargin/MapTitleRows/BottomRule"),
+			"The centered map title must use transparent space with only an upper and lower rule."
+		)
 		_expect(
 			not autumn_hud.has_node("BottomStage/CardStage/ActionStrip/CooldownStrip"),
 			"AutumnHUD must use AP instead of a card cooldown strip."

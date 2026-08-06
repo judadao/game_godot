@@ -435,7 +435,7 @@ func _check_alternate_states(
 					and _visible_text(ui).contains("主角")
 					and _visible_text(ui).contains("顧客")
 					and _visible_text(ui).contains("待補貨"),
-				"PlayerBlacksmithUI must enter the readable geometric shop interior at %s."
+				"PlayerBlacksmithUI must enter the readable warm shop interior at %s."
 				% viewport_size
 			)
 			var ledger := ui.find_child("MarketResourceSummary", true, false) as Label
@@ -449,7 +449,8 @@ func _check_alternate_states(
 			)
 			var market_window := ui.find_child("PlayerMarketWindow", true, false) as Control
 			var store_interior := ui.find_child("StoreInterior", true, false) as Control
-			var market_content := market_window.find_child("Content", true, false) as HBoxContainer
+			var market_content := market_window.find_child("Content", true, false) as Control
+			var context_dock := market_window.find_child("ContextDock", true, false) as Control
 			var inventory_panel := market_window.find_child("InventoryPanel", true, false) as Control
 			var shelves_panel := market_window.find_child("ShelvesPanel", true, false) as Control
 			var rumor_panel := market_window.find_child("RumorPanel", true, false) as Control
@@ -479,18 +480,21 @@ func _check_alternate_states(
 					and not inventory_panel.visible
 					and not shelves_panel.visible
 					and not rumor_panel.visible,
-				"Player market must open on the geometric shop floor with management panels folded away at %s."
+				"Player market must open on the warm shop floor with the side dock folded away at %s."
 				% viewport_size
 			)
+			var interior_height_before_context := store_interior.size.y
 			(ui.find_child("Product1InteractButton", true, false) as Button).pressed.emit()
 			await process_frame
 			_expect(
 				market_content.is_visible_in_tree()
+					and context_dock.is_visible_in_tree()
 					and inventory_panel.is_visible_in_tree()
-					and shelves_panel.is_visible_in_tree()
+					and not shelves_panel.visible
 					and not rumor_panel.visible
-					and _canvas_rect(inventory_panel).end.x <= _canvas_rect(shelves_panel).position.x,
-				"Selecting a counter object must reveal only its non-overlapping stock interaction at %s."
+					and is_equal_approx(store_interior.size.y, interior_height_before_context)
+					and _canvas_rect(context_dock).end.x <= _canvas_rect(store_interior).end.x,
+				"Selecting a counter object must reveal only its side-dock stock interaction without compressing the shop at %s."
 				% viewport_size
 			)
 		"TownHallUI":

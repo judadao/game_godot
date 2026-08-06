@@ -237,7 +237,8 @@ func _test_player_blacksmith() -> void:
 		"PlayerBlacksmithUI must expose quality material and equipment sales."
 	)
 	var market_ui := ui.find_child("PlayerMarketUI", true, false) as Control
-	var market_content := ui.find_child("Content", true, false) as HBoxContainer
+	var market_content := ui.find_child("Content", true, false) as Control
+	var context_dock := ui.find_child("ContextDock", true, false) as Control
 	_expect(
 		market_content != null
 			and not market_content.visible
@@ -248,8 +249,9 @@ func _test_player_blacksmith() -> void:
 	await process_frame
 	_expect(
 		market_content.visible
+			and context_dock.visible
 			and (ui.find_child("InventoryPanel", true, false) as Control).visible
-			and (ui.find_child("ShelvesPanel", true, false) as Control).visible
+			and not (ui.find_child("ShelvesPanel", true, false) as Control).visible
 			and not (ui.find_child("RumorPanel", true, false) as Control).visible
 			and _visible_text(ui).contains("魔力碎片")
 			and _visible_text(ui).contains("稀有")
@@ -269,7 +271,7 @@ func _test_player_blacksmith() -> void:
 			and _visible_text(ui).contains("主角")
 			and _visible_text(ui).contains("顧客")
 			and _visible_text(ui).contains("待補貨"),
-		"Entering the market must show a real geometric shop interior with owner, customer, counter goods, and management controls."
+		"Entering the market must show a warm authored shop interior with owner, browsing customers, counter goods, and contextual management controls."
 	)
 	if candidate_button != null:
 		candidate_button.pressed.emit()

@@ -48,6 +48,7 @@ func _run() -> void:
 	_expect(motions.size() == 10, "All ten advanced Blessings need distinct motion identities.")
 
 	var base_paths: Dictionary = {}
+	var base_motions: Dictionary = {}
 	var base_profiles: Array[Dictionary] = []
 	for gift_id in BASE_IDS:
 		manager.reset_run()
@@ -57,7 +58,9 @@ func _run() -> void:
 		if profiles.is_empty():
 			continue
 		var asset_path := String(profiles[0].get("asset_path", ""))
+		var motion := String(profiles[0].get("motion", ""))
 		base_paths[asset_path] = true
+		base_motions[motion] = true
 		base_profiles.append((profiles[0] as Dictionary).duplicate(true))
 		_expect(ResourceLoader.exists(asset_path), "Base attack object must load: %s." % asset_path)
 		var texture := load(asset_path) as Texture2D
@@ -67,6 +70,7 @@ func _run() -> void:
 			"Concrete Blessing objects must use true alpha instead of black boxes: %s." % asset_path
 		)
 	_expect(base_paths.size() == 8, "Eight base Blessings must use eight readable object assets.")
+	_expect(base_motions.size() == 8 and not base_motions.has(""), "Eight base Blessings need eight distinct Basic Attack trajectories.")
 
 	manager.reset_run()
 	for gift_id in ["resonant_grace", "prismatic_oath"]:
@@ -99,8 +103,10 @@ func _run() -> void:
 	}, targets)
 	_expect(
 		background.get_subject_motion() == &"warhorse_charge"
-			and background.get_subject_instance_count() == 4,
-		"Advanced Blessing background attacks must animate a readable capped array of their concrete subject."
+			and background.get_subject_instance_count() == 2
+			and not bool(background.call("uses_abstract_geometry"))
+			and float(background.call("get_attack_duration")) >= 1.25,
+		"Advanced Blessing attacks must show a slow readable subject pair without abstract geometry."
 	)
 	background.queue_free()
 
@@ -121,8 +127,11 @@ func _run() -> void:
 		{"stack_count": 8, "blessing_attack_profiles": [base_profiles[0], base_profiles[1]]}
 	)
 	_expect(
-		feedback.get_blessing_overlay_object_count() >= 8,
-		"Levels, Combo, and stacks must multiply the concrete Blessing objects on Basic Attack."
+		feedback.get_blessing_overlay_object_count() >= 2
+			and feedback.get_blessing_overlay_object_count() <= 4
+			and bool(feedback.call("is_blessing_attack_override_active"))
+			and feedback.get_travel_duration() >= 0.28,
+		"Blessings must replace the generic Basic Attack with fewer, larger, slower concrete subjects."
 	)
 	feedback.queue_free()
 	await process_frame
