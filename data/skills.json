@@ -177,16 +177,17 @@
       "name": "古木",
       "identity_elements": ["根系", "年輪", "遠古神木"],
       "combat_elements": ["normal", "light"],
-      "series_positioning": "以根系控制、年輪護生，最後召出覆蓋戰場的遠古神木。",
+      "series_positioning": "把古木作為劍氣入口與出口；玩家以走位部署傳送節點，讓同一道劍氣從不同方位重新射出並逐次增幅。",
       "skills": [
         {
           "id": "ancient_roots_pursuit",
           "name": "根脈初生",
           "tier": "basic",
           "tier_rank": 1,
-          "positioning": "控制技能",
-          "description": "粗大古木根系從地底鑽出並沿地追蹤敵人，命中後纏住目標使其無法移動。",
-          "animation_beats": ["地面沿追蹤方向隆起", "細根鬚探出定位", "主根貼地高速延伸", "根系繞目標纏緊鎖定"],
+          "positioning": "雙木劍氣傳送",
+          "gameplay_effect": {"gate_count": 2, "relay_count": 1, "damage_multiplier": 1.15, "range_multiplier": 1.15, "size_multiplier": 1.08},
+          "description": "兩座古木分別成為入口與出口。下一道劍氣進入近身古木後，沿發光根脈傳遞，從敵人側面的出口刷新距離並重新射出；玩家走位會改變下一組古木的角度。",
+          "animation_beats": ["兩座古木在玩家與敵側錯位成形", "劍氣沒入入口年輪", "發光根脈沿地面傳遞", "出口年輪亮起並重新射出劍氣"],
           "icon_path": ""
         },
         {
@@ -194,9 +195,10 @@
           "name": "年輪森衛",
           "tier": "advanced",
           "tier_rank": 2,
-          "positioning": "防禦與恢復",
-          "description": "樹木年輪般的紋路在角色身旁擴張並形成木質護盾；受擊時長出新枝並緩慢恢復生命。",
-          "animation_beats": ["年輪紋路自角色向外擴張", "樹皮沿年輪封合成盾", "受擊處長出枝芽", "綠色生命光沿年輪循環流動"],
+          "positioning": "四木傳送網路",
+          "gameplay_effect": {"gate_count": 4, "relay_count": 3, "damage_multiplier": 1.35, "range_multiplier": 1.35, "size_multiplier": 1.22},
+          "description": "四座古木組成傳送網路。劍氣由玩家附近的入口進入，從朝向敵群最佳的出口重射並可連續穿越；每穿越一座古木都刷新距離、提高尺寸與傷害增幅。",
+          "animation_beats": ["四座古木依次釘入不同方位", "入口年輪吸收月牙劍氣", "根脈依出口順序逐段點亮", "增幅劍氣從敵群側後方連續重射"],
           "icon_path": ""
         },
         {
@@ -205,8 +207,9 @@
           "tier": "master",
           "tier_rank": 3,
           "positioning": "古木系列終極技",
-          "description": "遠古神木從戰場中央升起，根系震開敵人、枝冠覆蓋畫面，接著樹枝、藤蔓與木刺同時攻擊範圍內敵人。",
-          "animation_beats": ["戰場中央地面裂開", "巨大古木高速生長升起", "枝冠向全畫面展開", "根刺、藤蔓與枝條同時全面爆發"],
+          "gameplay_effect": {"gate_count": 6, "relay_count": 5, "damage_multiplier": 1.65, "range_multiplier": 1.55, "size_multiplier": 1.48},
+          "description": "六座古木依六段 Combo 的位置成陣，大型劍氣依序穿越並從不同方向切過敵群，每次傳送都持續增幅；最後根脈匯入中央太古神木，從正面射出巨型劍氣收尾。",
+          "animation_beats": ["六座古木沿歷史方位錯落成陣", "大型劍氣沒入第一座年輪", "根脈依序亮起並從不同出口重射", "所有木節點向中央太古神木匯流", "巨型劍氣從神木正面貫穿戰場"],
           "icon_path": ""
         }
       ]

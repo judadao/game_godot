@@ -2862,6 +2862,7 @@ func _record_combo_formula(card: Dictionary) -> Dictionary:
 		queued_recipe["series_id"] = String(skill.get("series_id", ""))
 		queued_recipe["tier"] = String(skill.get("tier", ""))
 		queued_recipe["tier_rank"] = int(skill.get("tier_rank", 1))
+		queued_recipe["gameplay_effect"] = (skill.get("gameplay_effect", {}) as Dictionary).duplicate(true)
 		queued_recipe["formula_cards"] = history.slice(history.size() - route_length).duplicate(true)
 		finisher_queue.append(queued_recipe)
 		triggered_ids.append(skill_id)
@@ -3102,6 +3103,29 @@ func _build_formula_finisher(
 		0,
 		int(gift_effects.get("finisher_echoes", 0))
 	)
+	if String(recipe.get("series_id", "")) == "ancient_wood":
+		var wood_effect := recipe.get("gameplay_effect", {}) as Dictionary
+		var relay_count := maxi(1, int(wood_effect.get("relay_count", 1)))
+		var base_amount := int((base_attack.get("effect", {}) as Dictionary).get("amount", COMBO_FINISHER_DAMAGE))
+		effect["amount"] = maxi(
+			int(effect.get("amount", 0)),
+			roundi(float(base_amount + COMBO_FINISHER_DAMAGE) * float(wood_effect.get("damage_multiplier", 1.0)))
+		)
+		effect["projectile_count"] = relay_count
+		effect["direction_count"] = relay_count
+		effect["target_count"] = maxi(relay_count, int(effect.get("target_count", 1)))
+		effect["piercing"] = true
+		effect["sword_aura_gate_chain"] = true
+		effect["gate_count"] = maxi(2, int(wood_effect.get("gate_count", 2)))
+		finisher["auto_attack_range"] = maxf(
+			COMBO_FINISHER_RANGE,
+			float(finisher.get("auto_attack_range", COMBO_FINISHER_RANGE))
+			* float(wood_effect.get("range_multiplier", 1.0))
+		)
+		finisher["attack_size_multiplier"] = (
+			float(finisher.get("attack_size_multiplier", 1.0))
+			* float(wood_effect.get("size_multiplier", 1.0))
+		)
 	var mutations := divine_gift_manager.call(
 		"get_finisher_mutations"
 	) as Dictionary

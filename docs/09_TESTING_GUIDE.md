@@ -131,6 +131,10 @@ z-order、layout 與 generated Scene parity。圖片迭代過程不為主觀畫�
 次成功 Combo、混合路線須提供不同順序，且同一歷史尾段必須聯集觸發所有已編成的
 符合招式並對單招去重。
 
+`ancient_wood_gate_skill_test.gd` 鎖定古木的 2／4／6 劍氣門、圖鑑玩法說明與實際
+Finisher 結算；測試必須確認古木不是只有 VFX 排列，而會增加真實攻擊距離、尺寸、
+方向與傷害，且不移動玩家。
+
 單一測試仍可直接執行：
 
 ```bash

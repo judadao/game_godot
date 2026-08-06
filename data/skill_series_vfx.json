@@ -64,19 +64,20 @@
     {
       "id": "ancient_wood",
       "name": "古木",
-      "object_name": "遠古根脈",
+      "object_name": "古木劍氣門",
       "asset_path": "res://assets/generated/vfx/skill_series/ancient_wood.png",
-      "motion_family": "ground_root_crawl",
-      "source": [18, -10],
-      "target": [292, -8],
-      "curve": 22,
-      "spread_degrees": 34,
+      "motion_family": "wood_gate_relay",
+      "gameplay_family": "sword_aura_gate_network",
+      "source": [24, -18],
+      "target": [304, -18],
+      "curve": -42,
+      "spread_degrees": 76,
       "object_size": 124,
       "rotate_to_path": true,
       "tiers": [
-        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
-        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
-        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+        {"tier": "basic", "object_count": 2, "node_count": 2, "path_count": 1, "direction_count": 1, "relay_multiplier": 1.15},
+        {"tier": "advanced", "object_count": 4, "node_count": 4, "path_count": 2, "direction_count": 2, "relay_multiplier": 1.35},
+        {"tier": "master", "object_count": 6, "node_count": 6, "path_count": 3, "direction_count": 3, "relay_multiplier": 1.65}
       ],
       "legacy_recipe_ids": []
     },

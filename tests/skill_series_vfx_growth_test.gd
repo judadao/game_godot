@@ -53,8 +53,11 @@ func _run() -> void:
 		var basic := tiers[0] as Dictionary
 		var advanced := tiers[1] as Dictionary
 		var master := tiers[2] as Dictionary
-		_expect(int(basic.get("object_count", 0)) == 1 and int(basic.get("path_count", 0)) == 1, "%s basic tier must be one object on one path." % series_id)
-		_expect(int(advanced.get("object_count", 0)) > 1 and int(advanced.get("path_count", 0)) == 1 and int(advanced.get("direction_count", 0)) == 1, "%s advanced tier must become one populated path and direction." % series_id)
+		if series_id == "ancient_wood":
+			_expect(int(basic.get("node_count", 0)) == 2 and int(advanced.get("node_count", 0)) == 4 and int(master.get("node_count", 0)) == 6, "Ancient Wood must grow a 2/4/6-node sword-aura gate network.")
+		else:
+			_expect(int(basic.get("object_count", 0)) == 1 and int(basic.get("path_count", 0)) == 1, "%s basic tier must be one object on one path." % series_id)
+			_expect(int(advanced.get("object_count", 0)) > 1 and int(advanced.get("path_count", 0)) == 1 and int(advanced.get("direction_count", 0)) == 1, "%s advanced tier must become one populated path and direction." % series_id)
 		_expect(int(master.get("object_count", 0)) > int(advanced.get("object_count", 0)), "%s master tier must add more copies of the same object." % series_id)
 		_expect(int(master.get("path_count", 0)) >= 3 and int(master.get("direction_count", 0)) >= 3, "%s master tier must split into multiple paths and directions." % series_id)
 	_expect(actual_ids == EXPECTED_SERIES_IDS, "Skill-series VFX profiles must preserve official series order.")

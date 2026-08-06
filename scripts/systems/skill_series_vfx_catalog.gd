@@ -110,6 +110,7 @@ func _validate_profile(profile: Dictionary) -> bool:
 		push_error("Skill-series VFX needs exactly three formation tiers: %s" % series_id)
 		return false
 	var previous_count := 0
+	var gate_network := String(profile.get("gameplay_family", "")) == "sword_aura_gate_network"
 	for tier_index in TIER_IDS.size():
 		var tier_variant: Variant = (tiers_value as Array)[tier_index]
 		if not tier_variant is Dictionary:
@@ -126,6 +127,12 @@ func _validate_profile(profile: Dictionary) -> bool:
 		):
 			push_error("Skill-series VFX tier growth is invalid: %s[%d]" % [series_id, tier_index])
 			return false
+		if gate_network:
+			var expected_nodes: int = [2, 4, 6][tier_index]
+			if int(tier.get("node_count", 0)) != expected_nodes or object_count != expected_nodes:
+				push_error("Sword-aura gate tiers must use 2/4/6 nodes: %s[%d]" % [series_id, tier_index])
+				return false
+			continue
 		if tier_index == 0 and (object_count != 1 or path_count != 1 or direction_count != 1):
 			push_error("Basic skill-series VFX must be one object on one path: %s" % series_id)
 			return false

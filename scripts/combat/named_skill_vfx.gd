@@ -357,6 +357,9 @@ func get_series_debug_state() -> Dictionary:
 		"path_count": int(_series_tier_profile.get("path_count", 0)),
 		"direction_count": int(_series_tier_profile.get("direction_count", 0)),
 		"motion_family": String(_series_profile.get("motion_family", "")),
+		"gameplay_family": String(_series_profile.get("gameplay_family", "")),
+		"node_count": int(_series_tier_profile.get("node_count", _series_sprites.size())),
+		"relay_multiplier": float(_series_tier_profile.get("relay_multiplier", 1.0)),
 		"growth_rule": "one_object_to_single_lane_to_multi_lane",
 	}
 
@@ -534,6 +537,9 @@ func _layout_series_objects(
 ) -> void:
 	if _series_sprites.is_empty():
 		return
+	if String(_series_profile.get("motion_family", "")) == "wood_gate_relay":
+		_layout_wood_gate_relay(anticipation_ratio, impact_ratio, impact_end)
+		return
 	var source := _series_vector("source")
 	var target := _series_vector("target")
 	var base_displacement := target - source
@@ -590,6 +596,52 @@ func _layout_series_objects(
 		var alpha := anticipation
 		if execution > 0.0:
 			alpha = clampf((execution - stagger) * 7.0, 0.0, 1.0)
+		if decay > 0.0:
+			alpha *= 1.0 - decay
+		_set_alpha(sprite, alpha)
+
+
+func _layout_wood_gate_relay(
+	anticipation_ratio: float,
+	impact_ratio: float,
+	impact_end: float
+) -> void:
+	var source := _series_vector("source")
+	var target := _series_vector("target")
+	var center := source.lerp(target, 0.5)
+	var anticipation := _range_progress(_progress, 0.0, anticipation_ratio)
+	var execution := _range_progress(_progress, anticipation_ratio, impact_ratio)
+	var decay := _range_progress(_progress, impact_end, 1.0)
+	var count := _series_sprites.size()
+	for index in count:
+		var sprite := _series_sprites[index]
+		var ratio := float(index) / maxf(1.0, float(count - 1))
+		var side := -1.0 if index % 2 == 0 else 1.0
+		var rank := float(index / 2)
+		var horizontal := lerpf(source.x, target.x, ratio)
+		var vertical := -24.0 - rank * 24.0 + side * (18.0 + rank * 5.0)
+		if count == 2:
+			horizontal = source.x if index == 0 else target.x
+			vertical = -12.0 if index == 0 else -42.0
+		elif count >= 6 and index == count - 1:
+			horizontal = target.x
+			vertical = -88.0
+		var settle := 1.0 - pow(1.0 - anticipation, 3.0)
+		var spawn_offset := Vector2(0.0, 38.0 + float(index % 3) * 10.0)
+		sprite.position = (center + Vector2(horizontal - center.x, vertical)).lerp(
+			center + Vector2(horizontal - center.x, vertical) - spawn_offset,
+			1.0 - settle
+		)
+		var relay_start := ratio * 0.55
+		var relay := clampf((execution - relay_start) / 0.22, 0.0, 1.0)
+		var pulse := sin(relay * PI) if relay > 0.0 and relay < 1.0 else 0.0
+		var base_scale := float(sprite.get_meta("base_scale", 1.0))
+		var endpoint_scale := 1.12 if index in [0, count - 1] else 0.92
+		if count >= 6 and index == count - 1:
+			endpoint_scale = 1.42
+		sprite.scale = Vector2.ONE * base_scale * endpoint_scale * (0.72 + anticipation * 0.28 + pulse * 0.24)
+		sprite.rotation = side * 0.04
+		var alpha := anticipation * (0.62 + relay * 0.38)
 		if decay > 0.0:
 			alpha *= 1.0 - decay
 		_set_alpha(sprite, alpha)
