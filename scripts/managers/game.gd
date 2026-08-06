@@ -43,6 +43,9 @@ const COMBO_FINISHER_CATALOG_SCRIPT := preload(
 const NAMED_SKILL_VFX_CATALOG_SCRIPT := preload(
 	"res://scripts/systems/named_skill_vfx_catalog.gd"
 )
+const SKILL_SERIES_VFX_CATALOG_SCRIPT := preload(
+	"res://scripts/systems/skill_series_vfx_catalog.gd"
+)
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
 const BASE_AP_REGEN := 0.95
 const CARD_TEMPO_DURATION := 6.0
@@ -209,6 +212,7 @@ var growth_choice_queue := GrowthChoiceQueue.new()
 var divine_gift_manager: RefCounted = DIVINE_GIFT_MANAGER_SCRIPT.new()
 var combo_finisher_catalog: RefCounted = COMBO_FINISHER_CATALOG_SCRIPT.new()
 var named_skill_vfx_catalog: RefCounted = NAMED_SKILL_VFX_CATALOG_SCRIPT.new()
+var skill_series_vfx_catalog: RefCounted = SKILL_SERIES_VFX_CATALOG_SCRIPT.new()
 var element_taxonomy: RefCounted = ELEMENT_TAXONOMY_SCRIPT.new()
 var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
 var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
@@ -234,6 +238,7 @@ var _resolving_auto_attack_effect := false
 var _auto_attack_hit_stop_generation := 0
 var _named_skill_hit_stop_generation := 0
 var _named_skill_vfx_catalog_loaded := false
+var _skill_series_vfx_catalog_loaded := false
 var _tracked_survival_boss: Node
 var wallet_gold: int = 250
 var player_inventory: Dictionary = {
@@ -2630,12 +2635,13 @@ func _resolve_skill_triggers(triggered: Array[Dictionary]) -> void:
 			hud.call("show_skill_toast", skill_id, skill_name)
 		if skill_cast_presentation != null:
 			skill_cast_presentation.play_cast(skill_name, &"neutral", 0.8)
-		var progression := _named_skill_vfx_progression(skill)
+		var vfx_profile := _resolve_combat_vfx_profile(skill)
 		_spawn_named_skill_vfx(
-			skill_id,
+			String(vfx_profile.get("named_vfx_id", "")),
 			1.0,
-			int(progression.get("evolution_level", 1)),
-			int(progression.get("buff_stacks", 0))
+			int(vfx_profile.get("evolution_level", 1)),
+			int(vfx_profile.get("buff_stacks", 0)),
+			vfx_profile.get("blessing_overlays", []) as Array
 		)
 
 
@@ -3766,6 +3772,9 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 			and bool(named_skill_vfx_catalog.call("has_profile", card_id))
 		else ""
 	)
+	var series_vfx_id := _resolve_skill_series_vfx_id(card, named_vfx_id)
+	if not series_vfx_id.is_empty():
+		named_vfx_id = "series:%s" % series_vfx_id
 	var elements: Array[String] = []
 	var visual_profile := card.get("combo_visual_profile", {}) as Dictionary
 	for element_variant in visual_profile.get("elements", []) as Array:
@@ -3814,6 +3823,7 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 		),
 		"ultimate": is_elemental_skill and named_vfx_id.is_empty(),
 		"named_vfx_id": named_vfx_id,
+		"series_vfx_id": series_vfx_id,
 		"special_vfx_id": special_vfx_id,
 		"ground_trail_profile": ground_trail_profile,
 		"radius": maxf(96.0, float(effect.get("radius", 180.0))),
@@ -3834,8 +3844,17 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 
 
 func _named_skill_vfx_progression(card: Dictionary) -> Dictionary:
+	var configured_skill := _configured_skill_for_legacy_recipe(
+		String(card.get("id", ""))
+	)
 	var evolution_level := clampi(
-		int(card.get("card_level", card.get("level", 1))),
+		int(card.get(
+			"tier_rank",
+			configured_skill.get(
+				"tier_rank",
+				card.get("card_level", card.get("level", 1))
+			)
+		)),
 		1,
 		3
 	)
@@ -4115,6 +4134,70 @@ func _ensure_named_skill_vfx_catalog() -> bool:
 	return _named_skill_vfx_catalog_loaded
 
 
+func _ensure_skill_series_vfx_catalog() -> bool:
+	if _skill_series_vfx_catalog_loaded:
+		return true
+	_skill_series_vfx_catalog_loaded = bool(skill_series_vfx_catalog.call("load_catalog"))
+	return _skill_series_vfx_catalog_loaded
+
+
+func _resolve_skill_series_vfx_id(card: Dictionary, legacy_profile_id: String = "") -> String:
+	if not _ensure_skill_series_vfx_catalog():
+		return ""
+	for field in ["series_vfx_id", "skill_series_id", "series_id"]:
+		var direct_id := String(card.get(field, "")).strip_edges()
+		if bool(skill_series_vfx_catalog.call("has_profile", direct_id)):
+			return direct_id
+	# A legacy Finisher ID can collide with a current formal skill ID. When the
+	# caller already identified an old named profile, the configured formal
+	# skill must disambiguate that recipe before the stable-ID lookup below.
+	if not legacy_profile_id.is_empty():
+		var configured_skill := _configured_skill_for_legacy_recipe(legacy_profile_id)
+		if not configured_skill.is_empty():
+			return String(configured_skill.get(
+				"series_vfx_id",
+				configured_skill.get("series_id", "")
+			))
+	var card_id := String(card.get("id", ""))
+	var skill := skill_recipe_manager.get_skill(card_id)
+	if not skill.is_empty():
+		return String(skill.get("series_vfx_id", skill.get("series_id", "")))
+	var display_name := String(card.get("name", ""))
+	if not display_name.is_empty():
+		for skill_variant in skill_recipe_manager.get_all_skills():
+			var named_skill := skill_variant as Dictionary
+			if String(named_skill.get("name", "")) == display_name:
+				return String(named_skill.get("series_vfx_id", named_skill.get("series_id", "")))
+	var recipe_id := legacy_profile_id if not legacy_profile_id.is_empty() else card_id
+	var configured_skill := _configured_skill_for_legacy_recipe(recipe_id)
+	if not configured_skill.is_empty():
+		return String(configured_skill.get(
+			"series_vfx_id",
+			configured_skill.get("series_id", "")
+		))
+	return String(skill_series_vfx_catalog.call("get_series_for_legacy_recipe", recipe_id))
+
+
+func _configured_skill_for_legacy_recipe(recipe_id: String) -> Dictionary:
+	if recipe_id.is_empty():
+		return {}
+	var matches: Array[Dictionary] = []
+	for skill_id in skill_recipe_manager.get_active_ids():
+		var skill := skill_recipe_manager.get_skill(skill_id)
+		if String(skill.get("legacy_vfx_id", "")) == recipe_id:
+			matches.append(skill)
+	if matches.is_empty():
+		return {}
+	# A formula can only present one series. If a compatibility save contains
+	# multiple formal skills for the same legacy recipe, the most recently
+	# configured entry wins deterministically.
+	return matches[-1].duplicate(true)
+
+
+func _series_id_from_vfx_profile(profile_id: String) -> String:
+	return profile_id.trim_prefix("series:") if profile_id.begins_with("series:") else ""
+
+
 func _spawn_named_skill_vfx(
 	profile_id: String,
 	intensity: float = 1.0,
@@ -4122,13 +4205,24 @@ func _spawn_named_skill_vfx(
 	buff_stacks: int = 0,
 	blessing_overlays: Array = []
 ) -> void:
+	var series_id := _series_id_from_vfx_profile(profile_id)
+	var has_series_profile := (
+		not series_id.is_empty()
+		and _ensure_skill_series_vfx_catalog()
+		and bool(skill_series_vfx_catalog.call("has_profile", series_id))
+	)
 	if (
 		profile_id.is_empty()
 		or current_map == null
 		or not player is Node2D
 		or named_skill_vfx_scene == null
-		or not _ensure_named_skill_vfx_catalog()
-		or not bool(named_skill_vfx_catalog.call("has_profile", profile_id))
+		or (
+			not has_series_profile
+			and (
+				not _ensure_named_skill_vfx_catalog()
+				or not bool(named_skill_vfx_catalog.call("has_profile", profile_id))
+			)
+		)
 	):
 		return
 	var effect := named_skill_vfx_scene.instantiate() as Node2D
@@ -4145,15 +4239,25 @@ func _spawn_named_skill_vfx(
 		direction = 1
 	if effect.has_signal("impact"):
 		effect.connect("impact", _on_named_skill_vfx_impact)
-	effect.call_deferred(
-		"play",
-		profile_id,
-		direction,
-		intensity,
-		false,
-		clampi(evolution_level, 1, 3),
-		maxi(0, buff_stacks)
-	)
+	if has_series_profile:
+		effect.call_deferred(
+			"play_series",
+			series_id,
+			clampi(evolution_level, 1, 3),
+			direction,
+			false,
+			intensity
+		)
+	else:
+		effect.call_deferred(
+			"play",
+			profile_id,
+			direction,
+			intensity,
+			false,
+			clampi(evolution_level, 1, 3),
+			maxi(0, buff_stacks)
+		)
 
 
 func _on_named_skill_vfx_impact(
@@ -5107,6 +5211,8 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 		var legacy_vfx_id := String(skill.get("legacy_vfx_id", ""))
 		var combo_recipe := combo_finisher_catalog.call("get_recipe", legacy_vfx_id) as Dictionary
 		var series_id := String(skill.get("series_id", ""))
+		var series_vfx_id := String(skill.get("series_vfx_id", series_id))
+		var series_profile_id := "series:%s" % series_vfx_id
 		projection.append({
 			"id": String(skill.get("id", "")),
 			"name": String(skill.get("name", "未知招式")),
@@ -5127,9 +5233,10 @@ func _inventory_codex_projection() -> Array[Dictionary]:
 				else JOURNAL_ICON_ROOT + "Icon41_1_2.png"
 			),
 			"preview_kind": "finisher",
-			"named_vfx_id": legacy_vfx_id,
-			"combat_vfx_id": legacy_vfx_id,
-			"legacy_vfx": true,
+			"series_vfx_id": series_vfx_id,
+			"named_vfx_id": series_profile_id,
+			"combat_vfx_id": series_profile_id,
+			"legacy_vfx": false,
 			"element": String(elements[0]) if not elements.is_empty() else "normal",
 			"elements": elements,
 			"intensity": [2, 3, 5][tier_rank - 1],

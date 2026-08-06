@@ -235,8 +235,8 @@ func _run() -> void:
 	}
 	var resolved := game.call("_resolve_combat_vfx_profile", finisher) as Dictionary
 	_expect(
-		String(resolved.get("named_vfx_id", "")) == "thousand_blade_kill",
-		"Combat mapping must preserve the exact Finisher identity."
+		String(resolved.get("named_vfx_id", "")) == "series:feather",
+		"Combat mapping must replace the old Finisher animation with its Feather-series object."
 	)
 	var storm_resolved := game.call("_resolve_combat_vfx_profile", {
 		"id": "storm_charge",

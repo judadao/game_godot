@@ -67,7 +67,8 @@ func _run() -> void:
 			_expect(String(skill.get("tier", "")) == ["basic", "advanced", "master"][tier_index], "%s must use the canonical tier ID." % skill_id)
 			_expect(not String(skill.get("positioning", "")).is_empty(), "%s needs a gameplay positioning statement." % skill_id)
 			_expect((skill.get("animation_beats", []) as Array).size() >= 3, "%s needs an authored continuous animation sequence." % skill_id)
-			_expect(not String(skill.get("legacy_vfx_id", "")).is_empty(), "%s needs one temporary existing-animation mapping." % skill_id)
+			_expect(not String(skill.get("legacy_vfx_id", "")).is_empty(), "%s needs one legacy recipe compatibility ID." % skill_id)
+			_expect(String(skill.get("series_vfx_id", "")) == String(series_entry.get("id", "")), "%s must reuse its own series main-object profile." % skill_id)
 
 	_expect(actual_series_names == EXPECTED_SERIES_NAMES, "Series names and order must match the approved design.")
 	_expect(actual_skill_names == EXPECTED_SKILL_NAMES, "All 39 approved skill names must be authoritative.")

@@ -257,13 +257,14 @@ UI setter/configure API
 如果getter回傳catalog內部reference，consumer可能污染所有後續讀取。Current
 `CardDatabase.get_card()`與`get_all_cards()`已回傳deep copies。
 
-## 3. 現有十三個 Runtime／Gameplay JSON Catalog
+## 3. 現有十四個 Runtime／Gameplay JSON Catalog
 
 | JSON | Loader | Root field | Current validated content |
 |---|---|---|---|
 | `cards.json` | `CardDatabase` | `cards` | 24 cards |
 | `evolutions.json` | `EvolutionManager` | `fusion_recipes` | 6 recipes |
-| `skills.json` | `SkillRecipeManager` | `series` | 13 個系列 × basic／advanced／master，共 39 招；另含 retired IDs 與暫用 `legacy_vfx_map` |
+| `skills.json` | `SkillRecipeManager` | `series` | 13 個系列 × basic／advanced／master，共 39 招；每招投影自己的 `series_vfx_id`，另含只供舊配方相容的 `legacy_vfx_map` |
+| `skill_series_vfx.json` | `SkillSeriesVFXCatalog` | `profiles` | 13 個系列各一張透明主物體素材與路徑參數；basic 1 物體／1 路徑、advanced 多物體／1 路徑、master 更多物體／至少 3 路徑與 3 方向 |
 | `equipment.json` | `inventory_manager.gd` | `resource_order`, `starting_resources`, `equipment` | 5 resources, 10 equipment |
 | `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 5 buildings；memory library 4 levels、其餘 3 levels；3 stages；每級含 cost／description／effects／visual flag |
 | `divine_gifts.json` | `DivineGiftManager` | `gifts` | 8 個三級 Run-local 神賜；每項含唯一 motif、發光色、`attack_vfx_asset_path` 具體普攻物件與普攻／傷害招式狀態 |

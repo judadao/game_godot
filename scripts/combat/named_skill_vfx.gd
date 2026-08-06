@@ -5,6 +5,7 @@ signal impact(profile_id: String, shake_strength: float, hit_stop: float)
 signal finished(profile_id: String)
 
 const CATALOG_SCRIPT := preload("res://scripts/systems/named_skill_vfx_catalog.gd")
+const SERIES_CATALOG_SCRIPT := preload("res://scripts/systems/skill_series_vfx_catalog.gd")
 const FINISHER_GEOMETRY_CORE_SCRIPT := preload("res://scripts/combat/finisher_geometry_core.gd")
 const PART_NODE_NAMES := [&"Charge", &"Attack", &"Trail", &"Impact", &"Debris"]
 const STAGE_ANTICIPATION := &"anticipation"
@@ -29,6 +30,7 @@ const CLOSING_STAGE_ORDER := [
 @export var auto_free := true
 
 var _catalog: RefCounted = CATALOG_SCRIPT.new()
+var _series_catalog: RefCounted = SERIES_CATALOG_SCRIPT.new()
 var _profile: Dictionary = {}
 var _profile_id := ""
 var _sprites: Array[Sprite2D] = []
@@ -50,6 +52,10 @@ var _tail_progress := 0.0
 var _finisher_geometry_core: Node2D
 var _finisher_spatial_mode := &"player_centered"
 var _finisher_travel_distance := 0.0
+var _series_mode := false
+var _series_profile: Dictionary = {}
+var _series_tier_profile: Dictionary = {}
+var _series_sprites: Array[Sprite2D] = []
 
 
 func _ready() -> void:
@@ -70,6 +76,8 @@ func play(
 	evolution_level: int = 1,
 	buff_stacks: int = 0
 ) -> void:
+	_series_mode = false
+	_clear_series_sprites()
 	if _catalog.call("get_all_profiles").is_empty():
 		if not bool(_catalog.call("load_catalog")):
 			return
@@ -136,6 +144,70 @@ func play(
 	_apply_progress(0.0)
 
 
+func play_series(
+	series_id: String,
+	tier_rank: int = 1,
+	direction: int = 1,
+	preview: bool = false,
+	intensity: float = 1.0
+) -> void:
+	if _series_catalog.call("get_all_profiles").is_empty():
+		if not bool(_series_catalog.call("load_catalog")):
+			return
+	var profile := _series_catalog.call("get_profile", series_id) as Dictionary
+	if profile.is_empty():
+		push_error("Unknown skill-series VFX profile: %s" % series_id)
+		return
+	var resolved_tier := clampi(tier_rank, 1, 3)
+	var tier_profile := _series_catalog.call(
+		"get_tier_profile", series_id, resolved_tier
+	) as Dictionary
+	if tier_profile.is_empty():
+		push_error("Skill-series VFX tier is missing: %s[%d]" % [series_id, resolved_tier])
+		return
+	_active = false
+	set_process(false)
+	_reset_parts()
+	_clear_finisher_geometry_core()
+	_clear_series_sprites()
+	_series_mode = true
+	_series_profile = profile
+	_series_tier_profile = tier_profile
+	_profile = {
+		"id": "series:%s" % series_id,
+		"kind": "series_object",
+		"duration": [0.82, 1.02, 1.22][resolved_tier - 1],
+		"anticipation_time": 0.12,
+		"impact_time": [0.56, 0.68, 0.78][resolved_tier - 1],
+		"shake_strength": [5.0, 8.0, 12.0][resolved_tier - 1],
+		"hit_stop": [0.025, 0.045, 0.07][resolved_tier - 1],
+	}
+	_profile_id = "series:%s" % series_id
+	_direction = -1 if direction < 0 else 1
+	_preview = preview
+	_evolution_level = resolved_tier
+	_buff_stacks = 0
+	_buff_stack_tier = 0
+	_animation_archetype = StringName(String(profile.get("motion_family", "series_lane")))
+	_duration = float(_profile["duration"])
+	_active_scale = (
+		0.72 if preview
+		else clampf(intensity, 0.8, 1.45)
+	)
+	scale = Vector2(float(_direction) * _active_scale, _active_scale)
+	if not _build_series_sprites():
+		_series_mode = false
+		return
+	_elapsed = 0.0
+	_progress = 0.0
+	_tail_progress = 0.0
+	_impact_emitted = false
+	_active = true
+	visible = true
+	set_process(true)
+	_apply_progress(0.0)
+
+
 func is_active() -> bool:
 	return _active
 
@@ -149,6 +221,8 @@ func get_part_count() -> int:
 
 
 func get_active_layer_count() -> int:
+	if _series_mode:
+		return _series_sprites.size()
 	if _is_finisher_profile():
 		return _finisher_core_layer_count()
 	return _sprites.size() + _accent_sprites.size()
@@ -167,16 +241,31 @@ func get_light_identity() -> Dictionary:
 
 
 func get_base_visual_layer_count() -> int:
+	if _series_mode:
+		return _series_sprites.size()
 	if _finisher_geometry_core != null and is_instance_valid(_finisher_geometry_core):
 		return int(_finisher_geometry_core.call("get_base_visual_layer_count"))
 	return (_profile.get("layer_stack", []) as Array).size()
 
 
 func get_total_visual_layer_count() -> int:
+	if _series_mode:
+		return _series_sprites.size()
 	return get_active_layer_count()
 
 
 func get_finisher_debug_state() -> Dictionary:
+	if _series_mode:
+		var source := _series_vector("source")
+		var target := _series_vector("target")
+		return {
+			"presentation_mode": "series_object_formation",
+			"spatial_mode": "directional_forward",
+			"directional_travel_distance": absf(target.x - source.x),
+			"series_object": true,
+			"series_id": String(_series_profile.get("id", "")),
+			"tier_rank": _evolution_level,
+		}
 	if _finisher_geometry_core == null or not is_instance_valid(_finisher_geometry_core):
 		return {}
 	var state := (_finisher_geometry_core.call("get_debug_state") as Dictionary).duplicate(true)
@@ -208,6 +297,13 @@ func get_animation_archetype() -> StringName:
 
 
 func get_evolution_signature() -> String:
+	if _series_mode:
+		return "%s:L%d:%dx%d" % [
+			_animation_archetype,
+			_evolution_level,
+			int(_series_tier_profile.get("object_count", 0)),
+			int(_series_tier_profile.get("path_count", 0)),
+		]
 	var layers := _profile.get("evolution_layers", []) as Array
 	var unlocked: Array[String] = []
 	for layer_index in mini(_evolution_level, layers.size()):
@@ -246,6 +342,23 @@ func get_tail_hold_ratio() -> float:
 
 func get_impact_start_progress_ratio() -> float:
 	return float(_profile.get("impact_time", 0.6)) / maxf(0.1, _duration)
+
+
+func get_series_debug_state() -> Dictionary:
+	if not _series_mode:
+		return {}
+	return {
+		"series_id": String(_series_profile.get("id", "")),
+		"profile_id": _profile_id,
+		"object_name": String(_series_profile.get("object_name", "")),
+		"asset_path": String(_series_profile.get("asset_path", "")),
+		"tier_rank": _evolution_level,
+		"object_count": _series_sprites.size(),
+		"path_count": int(_series_tier_profile.get("path_count", 0)),
+		"direction_count": int(_series_tier_profile.get("direction_count", 0)),
+		"motion_family": String(_series_profile.get("motion_family", "")),
+		"growth_rule": "one_object_to_single_lane_to_multi_lane",
+	}
 
 
 func get_cohesive_decay_start_progress_ratio() -> float:
@@ -379,6 +492,130 @@ func _resolve_stack_tier(stack_count: int) -> int:
 	return tier
 
 
+func _build_series_sprites() -> bool:
+	var asset_path := String(_series_profile.get("asset_path", ""))
+	var texture := load(asset_path) as Texture2D
+	if texture == null:
+		push_error("Skill-series VFX main object failed to load: %s" % asset_path)
+		return false
+	var object_count := maxi(1, int(_series_tier_profile.get("object_count", 1)))
+	var desired_size := maxf(48.0, float(_series_profile.get("object_size", 96.0)))
+	var texture_size := texture.get_size()
+	var object_scale := desired_size / maxf(1.0, maxf(texture_size.x, texture_size.y))
+	for object_index in object_count:
+		var sprite := Sprite2D.new()
+		sprite.name = "SeriesObject%02d" % (object_index + 1)
+		sprite.texture = texture
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		sprite.z_index = object_index % 3
+		sprite.scale = Vector2.ONE * object_scale
+		sprite.set_meta("base_scale", object_scale)
+		add_child(sprite)
+		_series_sprites.append(sprite)
+		_set_alpha(sprite, 0.0)
+	return true
+
+
+func _clear_series_sprites() -> void:
+	for sprite in _series_sprites:
+		if not is_instance_valid(sprite):
+			continue
+		remove_child(sprite)
+		sprite.free()
+	_series_sprites.clear()
+	_series_profile.clear()
+	_series_tier_profile.clear()
+
+
+func _layout_series_objects(
+	anticipation_ratio: float,
+	impact_ratio: float,
+	impact_end: float
+) -> void:
+	if _series_sprites.is_empty():
+		return
+	var source := _series_vector("source")
+	var target := _series_vector("target")
+	var base_displacement := target - source
+	var path_count := maxi(1, int(_series_tier_profile.get("path_count", 1)))
+	var direction_count := maxi(1, int(_series_tier_profile.get("direction_count", 1)))
+	var spread_radians := deg_to_rad(float(_series_profile.get("spread_degrees", 40.0)))
+	var curve_amount := float(_series_profile.get("curve", 0.0))
+	var rotate_to_path := bool(_series_profile.get("rotate_to_path", true))
+	var asset_forward := deg_to_rad(float(_series_profile.get("asset_forward_degrees", 0.0)))
+	var spin_turns := float(_series_profile.get("spin_turns", 0.0))
+	var anticipation := _range_progress(_progress, 0.0, anticipation_ratio)
+	var execution := _range_progress(_progress, anticipation_ratio, impact_ratio)
+	var decay := _range_progress(_progress, impact_end, 1.0)
+	var object_count := _series_sprites.size()
+	for object_index in object_count:
+		var sprite := _series_sprites[object_index]
+		var path_index := object_index % path_count
+		var direction_index := path_index % direction_count
+		var direction_ratio := (
+			0.5 if direction_count == 1
+			else float(direction_index) / float(direction_count - 1)
+		)
+		var angle := lerpf(
+			-spread_radians * 0.5,
+			spread_radians * 0.5,
+			direction_ratio
+		)
+		var displacement := base_displacement.rotated(angle)
+		var lane_normal := displacement.normalized().orthogonal()
+		var lane_offset := lane_normal * (float(path_index) - float(path_count - 1) * 0.5) * 10.0
+		var path_source := source + lane_offset
+		var path_target := source + displacement + lane_offset
+		var curve_sign := -1.0 if path_index % 2 == 1 else 1.0
+		var control := path_source.lerp(path_target, 0.5) + lane_normal * curve_amount * curve_sign
+		var stagger := (
+			0.0 if object_count == 1
+			else float(object_index / path_count) / maxf(1.0, float(ceili(float(object_count) / float(path_count)) - 1)) * 0.32
+		)
+		var travel := clampf((execution - stagger) / maxf(0.05, 1.0 - stagger), 0.0, 1.0)
+		var eased_travel := 1.0 - pow(1.0 - travel, 3.0)
+		var point := _quadratic_bezier(path_source, control, path_target, eased_travel)
+		var tangent := _quadratic_bezier_tangent(path_source, control, path_target, eased_travel)
+		sprite.position = point
+		var base_scale := float(sprite.get_meta("base_scale", 1.0))
+		var spawn_scale := lerpf(0.42, 1.0, anticipation)
+		var travel_pulse := 1.0 + sin((travel + float(object_index) * 0.17) * PI) * 0.08
+		sprite.scale = Vector2.ONE * base_scale * spawn_scale * travel_pulse
+		if rotate_to_path and not tangent.is_zero_approx():
+			sprite.rotation = tangent.angle() - asset_forward
+		else:
+			sprite.rotation = 0.0
+		if absf(spin_turns) > 0.001:
+			sprite.rotation += travel * TAU * spin_turns
+		var alpha := anticipation
+		if execution > 0.0:
+			alpha = clampf((execution - stagger) * 7.0, 0.0, 1.0)
+		if decay > 0.0:
+			alpha *= 1.0 - decay
+		_set_alpha(sprite, alpha)
+
+
+func _quadratic_bezier(start: Vector2, control: Vector2, finish: Vector2, weight: float) -> Vector2:
+	var inverse := 1.0 - weight
+	return start * inverse * inverse + control * 2.0 * inverse * weight + finish * weight * weight
+
+
+func _quadratic_bezier_tangent(
+	start: Vector2,
+	control: Vector2,
+	finish: Vector2,
+	weight: float
+) -> Vector2:
+	return (control - start) * 2.0 * (1.0 - weight) + (finish - control) * 2.0 * weight
+
+
+func _series_vector(field: String) -> Vector2:
+	var values := _series_profile.get(field, []) as Array
+	if values.size() != 2:
+		return Vector2.ZERO
+	return Vector2(float(values[0]), float(values[1]))
+
+
 func _apply_progress(value: float) -> void:
 	_tail_progress = 0.0
 	_progress = clampf(value, 0.0, 1.0)
@@ -400,6 +637,9 @@ func _apply_progress(value: float) -> void:
 			float(_profile.get("shake_strength", 0.0)),
 			float(_profile.get("hit_stop", 0.0))
 		)
+	if _series_mode:
+		_layout_series_objects(anticipation_ratio, impact_ratio, impact_end)
+		return
 	if not _is_finisher_profile():
 		_layout_parts(anticipation_ratio, impact_ratio, impact_end)
 	if _finisher_geometry_core != null and is_instance_valid(_finisher_geometry_core):
@@ -933,6 +1173,12 @@ func _reset_parts() -> void:
 	for sprite in _accent_sprites:
 		sprite.position = Vector2.ZERO
 		sprite.scale = Vector2.ONE
+		sprite.rotation = 0.0
+		_set_alpha(sprite, 0.0)
+	for sprite in _series_sprites:
+		if not is_instance_valid(sprite):
+			continue
+		sprite.position = Vector2.ZERO
 		sprite.rotation = 0.0
 		_set_alpha(sprite, 0.0)
 	if _finisher_geometry_core != null and is_instance_valid(_finisher_geometry_core):

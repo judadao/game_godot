@@ -60,8 +60,8 @@ func _run() -> void:
 			% [header_foreground, header_background]
 	)
 	_expect(ui.call("get_selected_codex_id") == "flowing_fire_night", "Codex selection must use the new stable skill ID.")
-	_expect(preview.call("get_preview_kind") == "finisher", "New skills must use the temporary named-animation preview path.")
-	_expect(preview.call("get_active_named_vfx_id") == "inferno_cremation", "流火照夜 must temporarily reuse its mapped existing animation.")
+	_expect(preview.call("get_preview_kind") == "finisher", "New skills must use the dedicated series-object preview path.")
+	_expect(preview.call("get_active_named_vfx_id") == "series:fire", "流火照夜 must reuse the Fire-series main object.")
 	_expect(not bool(preview.call("is_effect_top_level")), "Codex preview effects must stay clipped inside the preview panel.")
 
 	var meta := ui.get_node_or_null(
@@ -214,7 +214,9 @@ func _make_codex_entries(catalog: RefCounted) -> Array[Dictionary]:
 			"elements": (skill.get("combat_elements", []) as Array).duplicate(),
 			"element": String((skill.get("combat_elements", ["normal"]) as Array)[0]),
 			"preview_kind": "finisher",
-			"named_vfx_id": String(skill.get("legacy_vfx_id", "")),
-			"legacy_vfx": true,
+			"series_vfx_id": series_id,
+			"named_vfx_id": "series:%s" % series_id,
+			"legacy_vfx": false,
+			"level": int(skill.get("tier_rank", 1)),
 		})
 	return result

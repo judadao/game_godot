@@ -49,18 +49,18 @@ Inventory／Codex focused coverage：
 - `inventory_codex_projection_test.gd`：`skills.json` 的 13 系列、39 招唯一 projection；
   驗證 catalog `skill_series_rank` 與 basic／advanced／master `tier_rank` 順序、各階 13 招、
   中文名稱／引言／只含名稱與順序的三張劍魂組合、招式頁不投影效果數值、退役被動與舊名稱
-  不再出現，以及每招暫用的精確 named VFX profile 確實存在。
+  不再出現，以及每招都導向其系列唯一、可載入的透明主物體 profile。
 - `inventory_codex_ui_test.gd`：以反轉輸入驗證 UI 仍重建 13 個不可選系列標題與每組
   基本／進階／大師三列；另驗證 39 招 selection、系列／階級／元素文字、斜體引言→
   劍魂組合的 detail 順序，且系列語彙、特效狀態、效果與數值、逐張劍魂效果與演出流程
-  保持隱藏；同時驗證 temporary VFX preview ownership，
+  保持隱藏；同時驗證系列主物體 VFX preview ownership，
   以及退役 concept controls 永遠隱藏、相容入口固定回到 live view。
 - `inventory_blessing_codex_test.gd`：驗證 8 個 base＋10 個 evolved 神賜的 namespaced stable ID、
   完整文案、融合材料／觸媒、普通攻擊狀態、專屬背景攻擊與正式素材可載入；並在六種標準
   解析度直接切換 `blessings`，檢查 base／evolved 左頁選擇與右頁 icon、攻擊摘要和捲動邊界。
   設定 `INVENTORY_BLESSING_CODEX_CAPTURE_DIR` 可輸出兩種頁面的 graphical review captures。
 - `inventory_codex_layout_test.gd`：六解析度 panel/list/active visual/explanation geometry，
-  並投影全部 39 招、逐一實例化其唯一暫用動畫，驗證 `190px` 橫向 live frame 的水平完整 travel、
+  並投影全部 39 招、逐一實例化其系列主物體動畫，驗證 `190px` 橫向 live frame 的水平完整 travel、
   垂直完整主體、地面錨點與最小可讀占比；world travel 超過 `220px` 時只在 Codex
   壓縮，測試另鎖定實戰距離不得跟著縮短。
   可用 `INVENTORY_CODEX_CAPTURE_ENTRY` 指定任一新 skill ID，
@@ -69,6 +69,15 @@ Inventory／Codex focused coverage：
   實際 Game projection 可用 `INVENTORY_CODEX_PROJECTION_CAPTURE_PATH` 擷取，
   並以 `INVENTORY_CODEX_PROJECTION_SECTION=techniques|enemies|sword_souls|equipment|blessings`
   指定圖鑑章節；不得只驗證手寫 UI fixture。
+- `skill_series_vfx_growth_test.gd`：驗證 13 個系列各有一張透明主物體、正式順序、
+  basic 1 個、advanced 單一路徑群、master 多數量且至少三方向三路徑，並確認三階重用
+  同一張素材。`skill_series_vfx_visual_capture_test.gd` 可用
+  `SKILL_SERIES_VFX_CAPTURE_PATH` 在已配置的 offscreen 圖形 renderer 輸出 13×3 contact sheet；
+  dummy headless 環境只執行 geometry／behavior contracts，不要求 PNG capture。
+- `skill_series_vfx_combat_routing_test.gd`：逐一驗證 39 招的實戰 profile 與其舊 Finisher
+  recipe bridge 都由目前配置的正式招式消歧義、導向自己系列，`tier_rank` 正確成為
+  1／2／3 階 formation；並以守一共脈實際走 trigger→spawn，確認
+  戰鬥生成王室盾牌的中階單路徑群，而不是把招式 ID 當成舊動畫 ID 後靜默失敗。
 
 ## 3. 測試分層
 

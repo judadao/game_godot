@@ -84,9 +84,9 @@ func _run() -> void:
 			}
 		) as Dictionary
 		_expect(
-			String(thousand_blade.get("named_vfx_id", "")) == "thousand_blade_kill"
+			String(thousand_blade.get("named_vfx_id", "")) == "series:feather"
 				and not bool(thousand_blade.get("ultimate", false)),
-			"Named Finishers must route to their exact modular VFX instead of a generic elemental ultimate."
+			"Named Finishers must route to their reusable series object instead of a generic elemental ultimate."
 		)
 
 		var run_state: RunState = game.get("run_state") as RunState

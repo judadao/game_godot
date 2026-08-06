@@ -19,7 +19,7 @@ func _run() -> void:
 	_expect(String(basic.get("series_id", "")) == "sword_rain" and String(basic.get("tier", "")) == "basic", "戰律希聲 must be the Sword Rain basic skill.")
 	_expect(String(advanced.get("tier", "")) == "advanced", "萬劍垂天 must be the Sword Rain advanced skill.")
 	_expect(String(master.get("tier", "")) == "master", "驟雨繁音 must be the Sword Rain master skill.")
-	_expect(catalog.get_legacy_vfx_id("myriad_blades_descend") == "horizon_stream", "萬劍垂天 must temporarily reuse the old Horizon animation.")
+	_expect(catalog.get_legacy_vfx_id("myriad_blades_descend") == "horizon_stream", "萬劍垂天 must preserve its Horizon recipe compatibility ID.")
 
 	_expect(catalog.configure_loadout(["silent_war_cadence"], ["silent_war_cadence"], 10), "Known new skill IDs may round-trip through the compatibility loadout boundary.")
 	_expect(not catalog.configure_loadout(["iron_momentum"], ["iron_momentum"], 10), "Retired passive skills must be rejected.")

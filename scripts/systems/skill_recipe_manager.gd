@@ -61,7 +61,7 @@ func load_catalog(path: String) -> bool:
 			_clear_catalog()
 			return false
 	if _legacy_vfx_by_skill.size() != _ordered_skills.size():
-		push_error("Every new skill must map to exactly one temporary legacy VFX profile.")
+		push_error("Every new skill must preserve exactly one legacy recipe compatibility ID.")
 		_clear_catalog()
 		return false
 	return not _ordered_series.is_empty() and not _ordered_skills.is_empty()
@@ -252,6 +252,7 @@ func _validate_and_store_series(series_entry: Dictionary) -> bool:
 			return false
 		skill["series_id"] = series_id
 		skill["series_name"] = series_name
+		skill["series_vfx_id"] = series_id
 		skill["series_identity_elements"] = (series_entry.get("identity_elements", []) as Array).duplicate()
 		skill["combat_elements"] = (series_entry.get("combat_elements", []) as Array).duplicate()
 		_skills_by_id[String(skill["id"])] = skill
@@ -288,7 +289,7 @@ func _validate_skill(skill: Dictionary, series_id: String, tier_index: int) -> b
 		push_error("Skill animation beats must contain at least three steps: %s" % skill_id)
 		return false
 	if not _legacy_vfx_by_skill.has(skill_id):
-		push_error("Skill has no temporary legacy VFX mapping: %s" % skill_id)
+		push_error("Skill has no legacy recipe compatibility mapping: %s" % skill_id)
 		return false
 	skill["legacy_vfx_id"] = String(_legacy_vfx_by_skill[skill_id])
 	var icon_path := String(skill.get("icon_path", "")).strip_edges()

@@ -102,8 +102,8 @@ func _check_size(viewport_size: Vector2i) -> void:
 	)
 	if selected_entry_id == "flowing_fire_night" and _capture_view == &"live":
 		_expect(
-			preview.call("get_active_named_vfx_id") == "inferno_cremation",
-			"流火照夜 must keep its temporary production animation at %s." % viewport_size
+			preview.call("get_active_named_vfx_id") == "series:fire",
+			"流火照夜 must keep its shared Fire-series object at %s." % viewport_size
 		)
 		_expect(
 			int(preview.call("get_effect_node_count")) == 1
@@ -214,6 +214,7 @@ func _make_codex_entries(catalog: RefCounted) -> Array[Dictionary]:
 	for skill_variant in catalog.call("get_all_skills") as Array:
 		var skill := skill_variant as Dictionary
 		var elements := (skill.get("combat_elements", []) as Array).duplicate()
+		var series_id := String(skill.get("series_id", ""))
 		result.append({
 			"id": String(skill.get("id", "")),
 			"name": String(skill.get("name", "")),
@@ -227,8 +228,9 @@ func _make_codex_entries(catalog: RefCounted) -> Array[Dictionary]:
 			"elements": elements,
 			"element": String(elements[0]) if not elements.is_empty() else "normal",
 			"preview_kind": "finisher",
-			"named_vfx_id": String(skill.get("legacy_vfx_id", "")),
-			"legacy_vfx": true,
+			"series_vfx_id": series_id,
+			"named_vfx_id": "series:%s" % series_id,
+			"legacy_vfx": false,
 			"level": int(skill.get("tier_rank", 1)),
 		})
 	return result

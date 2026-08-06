@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "growth_rule": "one_object_to_single_lane_to_multi_lane",
+  "profiles": [
+    {
+      "id": "sword_rain",
+      "name": "劍雨",
+      "object_name": "神聖飛劍",
+      "asset_path": "res://assets/generated/vfx/skill_series/sword_rain.png",
+      "motion_family": "descending_rain",
+      "source": [-34, -190],
+      "target": [118, 54],
+      "curve": -18,
+      "spread_degrees": 54,
+      "object_size": 116,
+      "rotate_to_path": true,
+      "asset_forward_degrees": 45,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["silent_battle_rhythm", "horizon_stream", "sudden_rain_cadence"]
+    },
+    {
+      "id": "moon_wheel",
+      "name": "月輪",
+      "object_name": "銀月環刃",
+      "asset_path": "res://assets/generated/vfx/skill_series/moon_wheel.png",
+      "motion_family": "orbiting_arc",
+      "source": [24, -82],
+      "target": [276, -42],
+      "curve": -104,
+      "spread_degrees": 48,
+      "object_size": 104,
+      "rotate_to_path": true,
+      "spin_turns": 1.25,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["falling_moon_arc", "gale_moon_arc"]
+    },
+    {
+      "id": "feather",
+      "name": "羽毛",
+      "object_name": "神聖羽毛",
+      "asset_path": "res://assets/generated/vfx/skill_series/feather.png",
+      "motion_family": "sacred_feather_fan",
+      "source": [18, -76],
+      "target": [310, -52],
+      "curve": -58,
+      "spread_degrees": 44,
+      "object_size": 98,
+      "rotate_to_path": true,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["thousand_blade_kill", "silent_feather_cadence", "skyward_returning_feathers"]
+    },
+    {
+      "id": "ancient_wood",
+      "name": "古木",
+      "object_name": "遠古根脈",
+      "asset_path": "res://assets/generated/vfx/skill_series/ancient_wood.png",
+      "motion_family": "ground_root_crawl",
+      "source": [18, -10],
+      "target": [292, -8],
+      "curve": 22,
+      "spread_degrees": 34,
+      "object_size": 124,
+      "rotate_to_path": true,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": []
+    },
+    {
+      "id": "giant_stone",
+      "name": "巨石",
+      "object_name": "山岳巨石",
+      "asset_path": "res://assets/generated/vfx/skill_series/giant_stone.png",
+      "motion_family": "converging_stone",
+      "source": [6, -138],
+      "target": [226, -14],
+      "curve": -12,
+      "spread_degrees": 62,
+      "object_size": 108,
+      "rotate_to_path": false,
+      "spin_turns": 0.18,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["still_mountain", "stone_ring_guard", "tempered_bones"]
+    },
+    {
+      "id": "great_shield",
+      "name": "巨盾",
+      "object_name": "王室盾牌",
+      "asset_path": "res://assets/generated/vfx/skill_series/great_shield.png",
+      "motion_family": "royal_shield_advance",
+      "source": [18, -78],
+      "target": [258, -70],
+      "curve": 0,
+      "spread_degrees": 30,
+      "object_size": 112,
+      "rotate_to_path": false,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["guarding_reflection", "guarding_shared_pulse", "returning_counterguard"]
+    },
+    {
+      "id": "fire",
+      "name": "火焰",
+      "object_name": "流火",
+      "asset_path": "res://assets/generated/vfx/skill_series/fire.png",
+      "motion_family": "flowing_fire_path",
+      "source": [22, -42],
+      "target": [292, -28],
+      "curve": -34,
+      "spread_degrees": 42,
+      "object_size": 92,
+      "rotate_to_path": false,
+      "spin_turns": 0.08,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["inferno_cremation", "frost_orchid_flame", "frozen_burial"]
+    },
+    {
+      "id": "lightning",
+      "name": "雷電",
+      "object_name": "九霄雷矢",
+      "asset_path": "res://assets/generated/vfx/skill_series/lightning.png",
+      "motion_family": "forking_thunder",
+      "source": [-18, -174],
+      "target": [236, -4],
+      "curve": 8,
+      "spread_degrees": 56,
+      "object_size": 106,
+      "rotate_to_path": true,
+      "asset_forward_degrees": 45,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["breathing_thunder_echo", "heavenly_wheel_sever", "thunder_prison_pierce"]
+    },
+    {
+      "id": "water_flow",
+      "name": "水流",
+      "object_name": "滄海浪峰",
+      "asset_path": "res://assets/generated/vfx/skill_series/water_flow.png",
+      "motion_family": "returning_tide",
+      "source": [10, -42],
+      "target": [286, -38],
+      "curve": -48,
+      "spread_degrees": 38,
+      "object_size": 120,
+      "rotate_to_path": false,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["gale_reservoir", "inexhaustible_reservoir"]
+    },
+    {
+      "id": "plant_attack",
+      "name": "植物攻擊",
+      "object_name": "荊蘭",
+      "asset_path": "res://assets/generated/vfx/skill_series/plant_attack.png",
+      "motion_family": "thorn_bloom_path",
+      "source": [28, -18],
+      "target": [278, -22],
+      "curve": 28,
+      "spread_degrees": 50,
+      "object_size": 98,
+      "rotate_to_path": false,
+      "spin_turns": 0.2,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["orchid_corrosion"]
+    },
+    {
+      "id": "dragon_breath",
+      "name": "龍息",
+      "object_name": "奧術龍首",
+      "asset_path": "res://assets/generated/vfx/skill_series/dragon_breath.png",
+      "motion_family": "arcane_dragon_lane",
+      "source": [18, -82],
+      "target": [294, -64],
+      "curve": -32,
+      "spread_degrees": 46,
+      "object_size": 126,
+      "rotate_to_path": true,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["enduring_arcane_breath", "balanced_elements"]
+    },
+    {
+      "id": "dawn_vitality",
+      "name": "朝陽生息",
+      "object_name": "載陽花",
+      "asset_path": "res://assets/generated/vfx/skill_series/dawn_vitality.png",
+      "motion_family": "sunflower_benediction",
+      "source": [18, -54],
+      "target": [252, -52],
+      "curve": -76,
+      "spread_degrees": 72,
+      "object_size": 96,
+      "rotate_to_path": false,
+      "spin_turns": 0.45,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["sunbearing_dawn", "sunlit_spring_court", "evergreen_court"]
+    },
+    {
+      "id": "shared_branch_vitality",
+      "name": "同枝共生",
+      "object_name": "共生靈枝",
+      "asset_path": "res://assets/generated/vfx/skill_series/shared_branch_vitality.png",
+      "motion_family": "living_branch_link",
+      "source": [18, -58],
+      "target": [276, -52],
+      "curve": 58,
+      "spread_degrees": 52,
+      "object_size": 112,
+      "rotate_to_path": true,
+      "tiers": [
+        {"tier": "basic", "object_count": 1, "path_count": 1, "direction_count": 1},
+        {"tier": "advanced", "object_count": 5, "path_count": 1, "direction_count": 1},
+        {"tier": "master", "object_count": 12, "path_count": 3, "direction_count": 3}
+      ],
+      "legacy_recipe_ids": ["returning_spring_spirits", "shared_bloodline", "returning_shared_pulse"]
+    }
+  ]
+}

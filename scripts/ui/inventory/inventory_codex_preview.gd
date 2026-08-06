@@ -377,15 +377,25 @@ func _spawn_named_skill(profile_id: String) -> void:
 	add_child(_effect)
 	_effect.z_index = 6
 	_effect.position = _preview_ground_target_position()
-	_effect.call(
-		"play",
-		profile_id,
-		1,
-		1.0,
-		true,
-		clampi(int(_entry.get("level", 1)), 1, 3),
-		maxi(0, int(_entry.get("combo_stack", 0)))
-	)
+	if profile_id.begins_with("series:"):
+		_effect.call(
+			"play_series",
+			profile_id.trim_prefix("series:"),
+			clampi(int(_entry.get("level", 1)), 1, 3),
+			1,
+			true,
+			1.0
+		)
+	else:
+		_effect.call(
+			"play",
+			profile_id,
+			1,
+			1.0,
+			true,
+			clampi(int(_entry.get("level", 1)), 1, 3),
+			maxi(0, int(_entry.get("combo_stack", 0)))
+		)
 	_fit_named_skill_to_preview()
 	_effect_preview_size = size
 	_replay_remaining = 1.5

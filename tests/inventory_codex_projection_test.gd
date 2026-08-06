@@ -22,7 +22,8 @@ func _run() -> void:
 	var entries_by_id: Dictionary = {}
 	var tier_counts := {"basic": 0, "advanced": 0, "master": 0}
 	var series_counts: Dictionary = {}
-	var vfx_catalog := game.get("named_skill_vfx_catalog") as RefCounted
+	var vfx_catalog := game.get("skill_series_vfx_catalog") as RefCounted
+	_expect(bool(vfx_catalog.call("load_catalog")), "Technique codex needs the production series-object VFX catalog.")
 	var projection_index := 0
 	for entry_variant in projection:
 		var entry := entry_variant as Dictionary
@@ -52,10 +53,11 @@ func _run() -> void:
 			not entry.has("trigger_summary") and not entry.has("identity_elements"),
 			"%s must not project removed animation or series-vocabulary description sections." % entry_id
 		)
-		_expect(bool(entry.get("legacy_vfx", false)), "%s must explicitly label its preview as temporary legacy VFX." % entry_id)
-		var legacy_vfx_id := String(entry.get("named_vfx_id", ""))
-		_expect(not legacy_vfx_id.is_empty(), "%s needs a temporary existing VFX mapping." % entry_id)
-		_expect(bool(vfx_catalog.call("has_profile", legacy_vfx_id)), "%s maps to a missing legacy VFX profile: %s." % [entry_id, legacy_vfx_id])
+		_expect(not bool(entry.get("legacy_vfx", true)), "%s must use the series-object VFX contract." % entry_id)
+		var series_vfx_id := String(entry.get("series_vfx_id", ""))
+		var named_vfx_id := String(entry.get("named_vfx_id", ""))
+		_expect(bool(vfx_catalog.call("has_profile", series_vfx_id)), "%s maps to a missing series-object VFX profile: %s." % [entry_id, series_vfx_id])
+		_expect(named_vfx_id == "series:%s" % series_vfx_id, "%s must route preview and combat through its shared series object." % entry_id)
 		projection_index += 1
 
 	_expect(series_counts.size() == 13, "Technique codex must expose all 13 skill series.")
@@ -82,7 +84,7 @@ func _run() -> void:
 	root.add_child(preview)
 	preview.show_entry(entries_by_id["flowing_fire_night"] as Dictionary)
 	await process_frame
-	_expect(preview.get_active_named_vfx_id() == "inferno_cremation", "流火照夜 must temporarily reuse its existing production animation.")
+	_expect(preview.get_active_named_vfx_id() == "series:fire", "流火照夜 must preview the reusable Fire-series object.")
 	preview.queue_free()
 
 	var recipes := (game.get("combo_finisher_catalog") as RefCounted).call("get_all_recipes") as Array
@@ -92,7 +94,7 @@ func _run() -> void:
 	game.queue_free()
 	await process_frame
 	if _failures == 0:
-		print("PASS: 39 skill-series codex entries with temporary legacy VFX")
+		print("PASS: 39 skill-series codex entries with shared series-object VFX")
 	quit(1 if _failures > 0 else 0)
 
 
