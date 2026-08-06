@@ -440,7 +440,9 @@ Combo／Healing 劍魂身分，並以目前編成招式的 `combo_routes` 比對
 
 13 個招式系列均由 `skills.json.series_gameplay` 定義唯一玩法 family、玩家決策摘要與
 三階可執行參數。`SkillRecipeManager` 將系列 contract 投影到每招，`Game` 再把參數
-合併進真實 Finisher 結算；圖鑑必須先說明玩家如何走位／選擇時機，再描述招式演出。
+合併進真實 Finisher 結算；`CardEffectRunner` 實際執行標記處決、去返攻擊、移動防守／
+停步齊射、劍氣門增幅、巨石彈跳、正面反擊、火線引爆、換敵連鎖、潮汐拉回、宿主收割、
+光域風險與兩種雙起點夾擊。圖鑑必須先說明玩家如何走位／選擇時機，再描述招式演出。
 自動招式只改變攻擊物件、目標、軌跡與效果，禁止修改玩家座標。
 
 古木系列使用 2／4／6
@@ -456,6 +458,7 @@ Combo／Healing 劍魂身分，並以目前編成招式的 `combo_routes` 比對
 | Elemental combat VFX | `scenes/combat/vfx/*.tscn` | 火／冰攻擊纏繞與範圍大招的純 presentation；不擁有傷害判定 |
 | `ElementalGroundTrail` | `scenes/combat/vfx/ElementalGroundTrail.tscn`、`data/elemental_ground_trail_profiles.json` | 沿元素大招路徑拼裝 Core／Edge／Accent／Debris atlas 部件與連續 ribbon；火、冰、毒使用不同 topology，不擁有傷害判定 |
 | `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json`、`data/skill_series_vfx.json` | 舊 profile 仍供退役 trigger／相容 caller 使用；現役 39 招改由 `play_series()` 重用各系列唯一主物體。基本階顯示 1 個，中階將同物體排成 1 條路徑，高階增加數量並分成至少 3 條、3 方向；播放器只處理 presentation，不擁有名稱、配方或傷害判定 |
+| `CombatVFXFoundation` | `scripts/combat/combat_vfx_foundation.gd` | 現役系列招式的共用暗／亮 scrolling 斬擊層、flash、flare、shockwave、sparks，以及火系 dissolve／火舌／煙／火星／爆心；只接受 `NamedSkillVFX` 的進度與系列 palette，不擁有命中判定 |
 | `StormChargeVFX` | `scenes/combat/vfx/StormChargeVFX.tscn` | 風暴充能專用的原地五節拍 presentation；固定導電主幹由左右地流依序接入雙腳、持劍手與劍身，接觸時只從劍身下游長出有粗細層級的右向分支，高潮後沿同一路徑回縮；不擁有傷害或 buff 規則 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |

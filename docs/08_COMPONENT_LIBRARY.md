@@ -1607,6 +1607,17 @@ the HUD never reads gameplay state directly.
 - Rule: callers configure reusable APIs; they do not duplicate particles or infer
   gameplay damage from visual geometry
 
+### CombatVFXFoundation
+
+- Script: `res://scripts/combat/combat_vfx_foundation.gd`
+- Owner: runtime `NamedSkillVFX` instance
+- Status: Current — Used by all 13 current skill series
+- Contract: two independently scrolling slash passes plus flash, flare, shockwave and
+  sparks at the shared impact beat; Fire also enables dissolve, flame, smoke, ember and
+  explosion layers
+- Boundary: receives only series/tier/timeline presentation data and never decides hits,
+  damage, Combo state or player movement
+
 ### PremiumCrescentLayer
 
 - Scene owner: `res://scenes/combat/AutoAttackFeedback.tscn`

@@ -139,6 +139,13 @@ Finisher 結算；測試必須確認古木不是只有 VFX 排列，而會增加
 執行參數、圖鑑「玩法」說明與 master-tier 真實戰鬥投影；並確認任何自動招式結算
 都不會移動玩家。
 
+`skill_series_runtime_behavior_test.gd` 直接驗證 13 系列造成的戰鬥結果，而非只檢查
+catalog 欄位：命中次數、儲存狀態、目標篩選、格擋、擊退／拉回速度、宿主死亡擴散、
+治療、雙起點追加攻擊以及玩家座標不被改寫。
+
+`combat_vfx_foundation_test.gd` 鎖定所有現役系列具有暗／亮兩層斬擊、flash、flare、
+shockwave 與 sparks；火系另須有火舌、dissolve shader、煙、火星與獨立爆心火／煙層。
+
 單一測試仍可直接執行：
 
 ```bash

@@ -540,9 +540,11 @@ func _ready() -> void:
 - `IceUltimateVFX.tscn`：擴張冰環、結冰地表、裂紋、冰晶與冷霧。
 - `ElementalGroundTrail.tscn`：依路徑採樣並以四個 atlas slots 拼裝火痕、凍裂或
   毒灘；底層兩條 Line2D 只負責連續性，不擁有命中或持續傷害。
+- `NamedSkillVFX.tscn`：現役系列主物體與數量／路徑編排；runtime child
+  `CombatVFXFoundation` 疊加 scrolling 斬擊、四層命中與火系六層材質流程。
 - `SkillCastPresentation.tscn`：常駐 Game 的 CanvasLayer，不攔截輸入。
 
-前四者由建立端掛到當前 map 或 feedback，播放後停止或釋放；不得放入 map 作為
+上述 world VFX 由建立端掛到當前 map 或 feedback，播放後停止或釋放；不得放入 map 作為
 固定傷害節點。實際命中半徑仍由 card effect 與 `CardEffectRunner` 決定。
 
 ### 7.1 Player contract

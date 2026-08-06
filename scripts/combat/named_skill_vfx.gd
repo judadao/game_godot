@@ -7,6 +7,7 @@ signal finished(profile_id: String)
 const CATALOG_SCRIPT := preload("res://scripts/systems/named_skill_vfx_catalog.gd")
 const SERIES_CATALOG_SCRIPT := preload("res://scripts/systems/skill_series_vfx_catalog.gd")
 const FINISHER_GEOMETRY_CORE_SCRIPT := preload("res://scripts/combat/finisher_geometry_core.gd")
+const COMBAT_VFX_FOUNDATION_SCRIPT := preload("res://scripts/combat/combat_vfx_foundation.gd")
 const PART_NODE_NAMES := [&"Charge", &"Attack", &"Trail", &"Impact", &"Debris"]
 const STAGE_ANTICIPATION := &"anticipation"
 const STAGE_EXECUTION := &"execution"
@@ -56,6 +57,7 @@ var _series_mode := false
 var _series_profile: Dictionary = {}
 var _series_tier_profile: Dictionary = {}
 var _series_sprites: Array[Sprite2D] = []
+var _vfx_foundation: Node2D
 
 
 func _ready() -> void:
@@ -78,6 +80,7 @@ func play(
 ) -> void:
 	_series_mode = false
 	_clear_series_sprites()
+	_clear_vfx_foundation()
 	if _catalog.call("get_all_profiles").is_empty():
 		if not bool(_catalog.call("load_catalog")):
 			return
@@ -198,6 +201,8 @@ func play_series(
 	if not _build_series_sprites():
 		_series_mode = false
 		return
+	_ensure_vfx_foundation()
+	_vfx_foundation.call("configure", series_id, resolved_tier)
 	_elapsed = 0.0
 	_progress = 0.0
 	_tail_progress = 0.0
@@ -222,7 +227,11 @@ func get_part_count() -> int:
 
 func get_active_layer_count() -> int:
 	if _series_mode:
-		return _series_sprites.size()
+		return _series_sprites.size() + (
+			int(_vfx_foundation.call("get_active_layer_count"))
+			if _vfx_foundation != null and is_instance_valid(_vfx_foundation)
+			else 0
+		)
 	if _is_finisher_profile():
 		return _finisher_core_layer_count()
 	return _sprites.size() + _accent_sprites.size()
@@ -347,6 +356,9 @@ func get_impact_start_progress_ratio() -> float:
 func get_series_debug_state() -> Dictionary:
 	if not _series_mode:
 		return {}
+	var foundation_layers: Array = []
+	if _vfx_foundation != null and is_instance_valid(_vfx_foundation):
+		foundation_layers = _vfx_foundation.call("get_layer_ids") as Array
 	return {
 		"series_id": String(_series_profile.get("id", "")),
 		"profile_id": _profile_id,
@@ -361,7 +373,14 @@ func get_series_debug_state() -> Dictionary:
 		"node_count": int(_series_tier_profile.get("node_count", _series_sprites.size())),
 		"relay_multiplier": float(_series_tier_profile.get("relay_multiplier", 1.0)),
 		"growth_rule": "one_object_to_single_lane_to_multi_lane",
+		"foundation_layers": foundation_layers,
 	}
+
+
+func get_vfx_foundation_debug_state() -> Dictionary:
+	if _vfx_foundation == null or not is_instance_valid(_vfx_foundation):
+		return {}
+	return (_vfx_foundation.call("get_debug_state") as Dictionary).duplicate(true)
 
 
 func get_cohesive_decay_start_progress_ratio() -> float:
@@ -691,6 +710,15 @@ func _apply_progress(value: float) -> void:
 		)
 	if _series_mode:
 		_layout_series_objects(anticipation_ratio, impact_ratio, impact_end)
+		if _vfx_foundation != null and is_instance_valid(_vfx_foundation):
+			_vfx_foundation.call(
+				"set_progress",
+				_progress,
+				_series_vector("source"),
+				_series_vector("target"),
+				impact_ratio,
+				impact_end
+			)
 		return
 	if not _is_finisher_profile():
 		_layout_parts(anticipation_ratio, impact_ratio, impact_end)
@@ -1205,6 +1233,23 @@ func _clear_finisher_geometry_core() -> void:
 	_finisher_geometry_core = null
 
 
+func _ensure_vfx_foundation() -> void:
+	if _vfx_foundation != null and is_instance_valid(_vfx_foundation):
+		return
+	_vfx_foundation = COMBAT_VFX_FOUNDATION_SCRIPT.new() as Node2D
+	_vfx_foundation.name = "CombatVFXFoundation"
+	add_child(_vfx_foundation)
+
+
+func _clear_vfx_foundation() -> void:
+	if _vfx_foundation == null or not is_instance_valid(_vfx_foundation):
+		_vfx_foundation = null
+		return
+	remove_child(_vfx_foundation)
+	_vfx_foundation.free()
+	_vfx_foundation = null
+
+
 func _finisher_core_layer_count() -> int:
 	if _finisher_geometry_core == null or not is_instance_valid(_finisher_geometry_core):
 		return 0
@@ -1235,6 +1280,8 @@ func _reset_parts() -> void:
 		_set_alpha(sprite, 0.0)
 	if _finisher_geometry_core != null and is_instance_valid(_finisher_geometry_core):
 		_finisher_geometry_core.call("reset")
+	if _vfx_foundation != null and is_instance_valid(_vfx_foundation):
+		_vfx_foundation.call("reset")
 	visible = false
 
 

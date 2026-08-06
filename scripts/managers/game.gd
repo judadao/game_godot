@@ -3108,6 +3108,11 @@ func _build_formula_finisher(
 	var series_effect := recipe.get("gameplay_effect", {}) as Dictionary
 	if not series_family.is_empty():
 		effect["series_gameplay_family"] = series_family
+		effect["tier_rank"] = clampi(
+			int(series_effect.get("tier_rank", recipe.get("tier_rank", 1))),
+			1,
+			3
+		)
 		var series_projectiles := maxi(0, int(series_effect.get("projectiles", 0)))
 		if series_projectiles > 0:
 			effect["projectile_count"] = maxi(series_projectiles, int(effect.get("projectile_count", 1)))

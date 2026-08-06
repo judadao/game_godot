@@ -68,6 +68,7 @@ func _run() -> void:
 		var finisher := game.call("_build_formula_finisher", base_attack, recipe) as Dictionary
 		var effect := finisher.get("effect", {}) as Dictionary
 		_expect(String(effect.get("series_gameplay_family", "")) == String(series.get("gameplay_family", "")), "%s master must reach real combat resolution." % series.get("id", ""))
+		_expect(int(effect.get("tier_rank", 0)) == 3, "%s must deliver its tier to runtime behavior, not only its catalog." % series.get("id", ""))
 	_expect(player.global_position == player_position, "Automatic series resolution must never move the player.")
 	game.queue_free()
 	await process_frame

@@ -84,7 +84,17 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 				)
 			)
 			var resolved_projectile_count := mini(projectile_count, selected.size())
-			if directional_sweep:
+			var series_family := String(effect.get("series_gameplay_family", ""))
+			if not series_family.is_empty():
+				_resolve_series_damage(
+					series_family,
+					caster,
+					selected,
+					effect,
+					result,
+					hit_presentation
+				)
+			elif directional_sweep:
 				_damage_targets(
 					caster,
 					selected,
@@ -245,6 +255,295 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 
 	effect_resolved.emit(String(card.get("id", "")), result)
 	return result
+
+
+func _resolve_series_damage(
+	family: String,
+	caster: Node,
+	targets: Array,
+	effect: Dictionary,
+	result: Dictionary,
+	hit_presentation: Dictionary
+) -> void:
+	var amount := maxi(0, int(effect.get("amount", 0)))
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	var knockback := 80.0 * maxf(0.0, float(effect.get("knockback_multiplier", 1.0)))
+	match family:
+		"marked_execution":
+			_resolve_marked_execution(caster, targets, amount, tier_rank, result, hit_presentation)
+		"returning_orbit":
+			_damage_targets(caster, targets, amount, result, 2, knockback, hit_presentation)
+			_pull_targets(caster, targets, float(effect.get("pull_strength", 0.0)))
+			result["series_rule"] = "outbound_return"
+			result["return_passes"] = 1
+		"moving_guard_still_barrage":
+			_resolve_feather_stance(caster, targets, effect, amount, result, hit_presentation)
+		"sword_aura_gate_network":
+			_resolve_gate_network(caster, targets, effect, amount, result, hit_presentation)
+		"ricochet_boulders":
+			_resolve_ricochet(caster, targets, effect, amount, result, hit_presentation)
+		"forward_guard_counter":
+			_resolve_guard_counter(caster, targets, effect, amount, result, hit_presentation)
+		"route_burn_detonation":
+			_damage_targets(caster, targets, amount, result, 1, knockback, hit_presentation)
+			if targets.size() >= 2:
+				_damage_targets(caster, targets, maxi(1, roundi(amount * (0.35 + tier_rank * 0.10))), result, 1, 40.0, hit_presentation)
+				result["detonated_targets"] = targets.size()
+			result["series_rule"] = "burn_route_detonation"
+		"target_switch_chain":
+			_resolve_target_switch_chain(caster, targets, effect, amount, result, hit_presentation)
+		"outbound_returning_tide":
+			_damage_targets(caster, targets, amount, result, 2, knockback, hit_presentation)
+			_pull_targets(caster, targets, maxf(24.0, float(effect.get("pull_strength", 0.0))))
+			result["series_rule"] = "returning_tide_pull"
+			result["return_passes"] = 1
+		"host_growth_harvest":
+			_resolve_host_harvest(caster, targets, effect, amount, result, hit_presentation)
+		"crossfire_lane":
+			_resolve_saved_origin_attack(caster, targets, amount, result, hit_presentation, &"dragon_breath_origin", 1, "dragon_crossfire")
+		"risk_heal_judgment":
+			_resolve_dawn_judgment(caster, targets, effect, amount, result, hit_presentation)
+		"dual_origin_crossfire":
+			_resolve_saved_origin_attack(caster, targets, amount, result, hit_presentation, &"shared_branch_origin", maxi(1, int(effect.get("finisher_echoes", effect.get("echoes", 1)))), "echo_crossfire")
+		_:
+			_damage_projectile_volley(caster, targets, amount, result, maxi(1, int(effect.get("projectile_count", 1))), hit_presentation, knockback)
+			result["series_rule"] = "fallback_volley"
+
+
+func _resolve_marked_execution(
+	caster: Node,
+	targets: Array,
+	amount: int,
+	tier_rank: int,
+	result: Dictionary,
+	hit_presentation: Dictionary
+) -> void:
+	if targets.is_empty():
+		return
+	var target := targets[0] as Node
+	var distance := _distance_between(caster, target)
+	var marks := int(target.get_meta(&"sword_rain_marks", 0))
+	if distance <= 150.0 or marks <= 0:
+		marks = mini(3 + tier_rank * 2, marks + tier_rank + 1)
+		target.set_meta(&"sword_rain_marks", marks)
+		_damage_targets(caster, [target], amount, result, 1, 60.0, hit_presentation)
+		result["series_rule"] = "mark_storage"
+		result["stored_marks"] = marks
+		return
+	var execution_damage := amount + roundi(float(amount) * float(marks) * 0.42)
+	_damage_targets(caster, [target], execution_damage, result, 1, 95.0, hit_presentation)
+	target.remove_meta(&"sword_rain_marks")
+	result["series_rule"] = "mark_execution"
+	result["executed_marks"] = marks
+
+
+func _resolve_feather_stance(
+	caster: Node,
+	targets: Array,
+	effect: Dictionary,
+	amount: int,
+	result: Dictionary,
+	hit_presentation: Dictionary
+) -> void:
+	var speed := _node_velocity(caster).length()
+	if speed > 18.0:
+		var guard := maxi(1, int(effect.get("finisher_guard", effect.get("guard", 4))))
+		if caster.has_method("add_block"):
+			caster.call("add_block", guard)
+		result["affected"] = int(result.get("affected", 0)) + 1
+		result["guard_gained"] = guard
+		result["series_rule"] = "moving_feather_guard"
+		return
+	_damage_projectile_volley(caster, targets, amount, result, maxi(targets.size(), int(effect.get("projectile_count", 1))), hit_presentation, 55.0)
+	result["series_rule"] = "still_feather_barrage"
+
+
+func _resolve_gate_network(
+	caster: Node,
+	targets: Array,
+	effect: Dictionary,
+	amount: int,
+	result: Dictionary,
+	hit_presentation: Dictionary
+) -> void:
+	var relay_count := mini(targets.size(), maxi(1, int(effect.get("relay_count", effect.get("projectile_count", 1)))))
+	for relay_index in relay_count:
+		var relay_damage := maxi(1, roundi(float(amount) * (1.0 + float(relay_index) * 0.22)))
+		_damage_targets(caster, [targets[relay_index]], relay_damage, result, 1, 65.0, hit_presentation)
+	result["series_rule"] = "gate_relay_amplification"
+	result["relay_hits"] = relay_count
+
+
+func _resolve_ricochet(
+	caster: Node,
+	targets: Array,
+	effect: Dictionary,
+	amount: int,
+	result: Dictionary,
+	hit_presentation: Dictionary
+) -> void:
+	if targets.is_empty():
+		return
+	var bounce_count := maxi(1, int(effect.get("projectile_count", 1)))
+	var impact := 80.0 * maxf(1.0, float(effect.get("knockback_multiplier", 1.0)))
+	if amount <= 0:
+		result["series_rule"] = "stone_guard"
+		result["ricochet_count"] = 0
+		return
+	for bounce_index in bounce_count:
+		var target: Variant = targets[bounce_index % targets.size()]
+		var bounce_damage := maxi(1, roundi(float(amount) * maxf(0.55, 1.0 - 0.08 * bounce_index)))
+		_damage_targets(caster, [target], bounce_damage, result, 1, impact, hit_presentation)
+	result["series_rule"] = "boulder_ricochet"
+	result["ricochet_count"] = bounce_count
+
+
+func _resolve_guard_counter(
+	caster: Node,
+	targets: Array,
+	effect: Dictionary,
+	amount: int,
+	result: Dictionary,
+	hit_presentation: Dictionary
+) -> void:
+	var guard := maxi(1, int(effect.get("finisher_guard", effect.get("guard", 4))))
+	if caster.has_method("add_block"):
+		caster.call("add_block", guard)
+	var facing := _facing_direction(caster)
+	var forward_targets: Array = []
+	if caster is Node2D:
+		for target in targets:
+			if target is Node2D and (((target as Node2D).global_position.x - (caster as Node2D).global_position.x) * facing) >= 0.0:
+				forward_targets.append(target)
+	_damage_targets(caster, forward_targets, amount + roundi(guard * 0.35), result, 1, 105.0, hit_presentation)
+	result["guard_gained"] = guard
+	result["series_rule"] = "forward_guard_counter"
+
+
+func _resolve_target_switch_chain(
+	caster: Node,
+	targets: Array,
+	effect: Dictionary,
+	amount: int,
+	result: Dictionary,
+	hit_presentation: Dictionary
+) -> void:
+	if targets.is_empty():
+		return
+	var primary := targets[0] as Node
+	var last_target_id := int(caster.get_meta(&"lightning_last_target_id", 0))
+	var switched := last_target_id != 0 and last_target_id != primary.get_instance_id()
+	_damage_targets(caster, [primary], amount, result, 1, 45.0, hit_presentation)
+	var chain_targets := 0
+	if switched:
+		for index in range(1, mini(targets.size(), 1 + maxi(1, int(effect.get("tier_rank", 1))))):
+			_damage_targets(caster, [targets[index]], maxi(1, roundi(amount * 0.70)), result, 1, 35.0, hit_presentation)
+			chain_targets += 1
+	elif last_target_id == primary.get_instance_id():
+		_damage_targets(caster, [primary], maxi(1, roundi(amount * 0.45)), result, 1, 35.0, hit_presentation)
+		result["repeated_target_charge"] = true
+	caster.set_meta(&"lightning_last_target_id", primary.get_instance_id())
+	result["chain_targets"] = chain_targets
+	result["series_rule"] = "switch_chain" if switched else "repeat_charge"
+
+
+func _resolve_host_harvest(
+	caster: Node,
+	targets: Array,
+	effect: Dictionary,
+	amount: int,
+	result: Dictionary,
+	hit_presentation: Dictionary
+) -> void:
+	if targets.is_empty():
+		return
+	var host := targets[0] as Node
+	host.set_meta(&"plant_series_host", true)
+	var host_damage := amount
+	if bool(effect.get("death_spread", false)):
+		host_damage = maxi(amount, roundi(amount * 1.4))
+	_damage_targets(caster, [host], host_damage, result, 1, 35.0, hit_presentation)
+	var linked := targets.slice(1)
+	if not linked.is_empty():
+		_damage_targets(caster, linked, maxi(1, roundi(amount * 0.55)), result, 1, 25.0, hit_presentation)
+	var spread_count := 0
+	if bool(effect.get("death_spread", false)) and _node_health(host) <= 0:
+		_damage_targets(caster, linked, maxi(1, roundi(amount * 0.8)), result, 1, 45.0, hit_presentation)
+		spread_count = linked.size()
+	result["harvest_spread_targets"] = spread_count
+	result["series_rule"] = "host_growth_harvest"
+
+
+func _resolve_saved_origin_attack(
+	caster: Node,
+	targets: Array,
+	amount: int,
+	result: Dictionary,
+	hit_presentation: Dictionary,
+	meta_key: StringName,
+	extra_origin_hits: int,
+	rule_name: String
+) -> void:
+	var current_position := (caster as Node2D).global_position if caster is Node2D else Vector2.ZERO
+	var has_origin := caster.has_meta(meta_key)
+	var origin: Vector2 = caster.get_meta(meta_key, current_position) as Vector2
+	if not has_origin:
+		caster.set_meta(meta_key, current_position)
+	_damage_targets(caster, targets, amount, result, 1, 55.0, hit_presentation)
+	var origin_count := 1
+	if has_origin and origin.distance_to(current_position) >= 48.0:
+		_damage_targets(caster, targets, maxi(1, roundi(amount * 0.75)), result, extra_origin_hits, 40.0, hit_presentation)
+		origin_count += extra_origin_hits
+		caster.set_meta(meta_key, current_position)
+	result["attack_origins"] = origin_count
+	result["series_rule"] = rule_name
+
+
+func _resolve_dawn_judgment(
+	caster: Node,
+	targets: Array,
+	effect: Dictionary,
+	amount: int,
+	result: Dictionary,
+	hit_presentation: Dictionary
+) -> void:
+	var current_position := (caster as Node2D).global_position if caster is Node2D else Vector2.ZERO
+	var light_origin: Vector2 = caster.get_meta(&"dawn_light_origin", current_position) as Vector2
+	if not caster.has_meta(&"dawn_light_origin"):
+		caster.set_meta(&"dawn_light_origin", current_position)
+	var far_from_light := light_origin.distance_to(current_position) >= 140.0
+	if far_from_light:
+		_damage_targets(caster, targets, maxi(1, roundi(amount * 1.8)), result, 1, 75.0, hit_presentation)
+		result["series_rule"] = "distant_judgment"
+		return
+	_damage_targets(caster, targets, amount, result, 1, 45.0, hit_presentation)
+	var heal := maxi(1, int(effect.get("finisher_heal", effect.get("heal", 6))))
+	if caster.has_method("restore_health"):
+		result["dawn_healed"] = int(caster.call("restore_health", heal))
+	result["series_rule"] = "near_light_heal"
+
+
+func _distance_between(first: Node, second: Node) -> float:
+	if first is Node2D and second is Node2D:
+		return (first as Node2D).global_position.distance_to((second as Node2D).global_position)
+	return INF
+
+
+func _node_velocity(node: Node) -> Vector2:
+	if node is CharacterBody2D:
+		return (node as CharacterBody2D).velocity
+	var velocity_variant: Variant = node.get("velocity")
+	return velocity_variant as Vector2 if velocity_variant is Vector2 else Vector2.ZERO
+
+
+func _facing_direction(node: Node) -> float:
+	var facing_variant: Variant = node.get("facing_direction")
+	return -1.0 if facing_variant != null and int(facing_variant) < 0 else 1.0
+
+
+func _node_health(node: Node) -> int:
+	var health_variant: Variant = node.get("health")
+	return int(health_variant) if health_variant != null else 1
 
 
 func _is_damage_effect(effect: Dictionary) -> bool:
