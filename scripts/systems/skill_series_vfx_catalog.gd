@@ -111,6 +111,10 @@ func _validate_profile(profile: Dictionary) -> bool:
 		return false
 	var previous_count := 0
 	var gate_network := String(profile.get("gameplay_family", "")) == "sword_aura_gate_network"
+	var launches_object := bool(profile.get("launches_object", false))
+	if launches_object and float(profile.get("minimum_render_size", 0.0)) < 112.0:
+		push_error("Launched skill-series objects must remain readable: %s" % series_id)
+		return false
 	for tier_index in TIER_IDS.size():
 		var tier_variant: Variant = (tiers_value as Array)[tier_index]
 		if not tier_variant is Dictionary:
@@ -133,13 +137,18 @@ func _validate_profile(profile: Dictionary) -> bool:
 				push_error("Sword-aura gate tiers must use 2/4/6 nodes: %s[%d]" % [series_id, tier_index])
 				return false
 			continue
-		if tier_index == 0 and (object_count != 1 or path_count != 1 or direction_count != 1):
-			push_error("Basic skill-series VFX must be one object on one path: %s" % series_id)
+		if launches_object:
+			var minimum_paths := 5 if tier_index == 2 else 3
+			if object_count < 3 or path_count < minimum_paths or direction_count < minimum_paths:
+				push_error("Launched skill-series VFX must start at three paths and grow to five: %s[%d]" % [series_id, tier_index])
+				return false
+		elif tier_index == 0 and (object_count != 1 or path_count != 1 or direction_count != 1):
+			push_error("Non-projectile basic skill-series VFX must use its authored single formation: %s" % series_id)
 			return false
-		if tier_index == 1 and (path_count != 1 or direction_count != 1):
-			push_error("Advanced skill-series VFX must remain one populated path and direction: %s" % series_id)
+		elif tier_index == 1 and (path_count != 1 or direction_count != 1):
+			push_error("Non-projectile advanced skill-series VFX must preserve its authored formation: %s" % series_id)
 			return false
-		if tier_index == 2 and (path_count < 3 or direction_count < 3):
+		elif tier_index == 2 and (path_count < 3 or direction_count < 3):
 			push_error("Master skill-series VFX must use multiple paths and directions: %s" % series_id)
 			return false
 		previous_count = object_count

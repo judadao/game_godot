@@ -27,6 +27,14 @@ const CLOSING_STAGE_ORDER := [
 	CLOSING_STAGE_COHESIVE_DECAY,
 	CLOSING_STAGE_TAIL_HOLD,
 ]
+const SWORD_RAIN_SPEED_PHASES := ["hover", "recoil", "snap", "contact_hold", "afterbeat"]
+const SWORD_RAIN_PRESENTATION_PHASES := ["orbit_reveal", "target_lock", "release", "impact_afterbeat"]
+const SWORD_RAIN_CADENCE_PAUSE_COUNT := 2
+const SWORD_RAIN_MAXIMUM_SPEED_RATIO := 5.2
+const SWORD_RAIN_FLIGHT_SPAN := 0.18
+const SWORD_RAIN_LOCK_LANE_SPACING := 60.0
+const SWORD_RAIN_LOCK_ROW_SPACING := 34.0
+const SWORD_RAIN_ORBIT_RADIUS := 142.0
 
 @export var auto_free := true
 
@@ -57,7 +65,14 @@ var _series_mode := false
 var _series_profile: Dictionary = {}
 var _series_tier_profile: Dictionary = {}
 var _series_sprites: Array[Sprite2D] = []
+var _series_trails: Array[Line2D] = []
+var _sword_rain_impact_nodes: Array[Node2D] = []
 var _vfx_foundation: Node2D
+var _sword_rain_cadence_phase := ""
+var _sword_rain_active_trail_count := 0
+var _sword_rain_active_impact_count := 0
+var _sword_rain_inserted_blade_count := 0
+var _series_render_size := 0.0
 
 
 func _ready() -> void:
@@ -176,12 +191,23 @@ func play_series(
 	_series_mode = true
 	_series_profile = profile
 	_series_tier_profile = tier_profile
+	var motion_family := String(profile.get("motion_family", "series_lane"))
+	var duration: float = float([0.82, 1.02, 1.22][resolved_tier - 1])
+	var anticipation_time := 0.12
+	var impact_time: float = float([0.56, 0.68, 0.78][resolved_tier - 1])
+	if motion_family == "descending_rain":
+		var reveal_duration := float(profile.get("orbit_reveal_duration", 0.72))
+		var lock_duration := float(profile.get("target_lock_duration", 0.8))
+		var release_duration := float(profile.get("release_duration", 0.72))
+		duration = reveal_duration + lock_duration + release_duration + 0.22
+		anticipation_time = reveal_duration + lock_duration
+		impact_time = anticipation_time + release_duration * 0.82
 	_profile = {
 		"id": "series:%s" % series_id,
 		"kind": "series_object",
-		"duration": [0.82, 1.02, 1.22][resolved_tier - 1],
-		"anticipation_time": 0.12,
-		"impact_time": [0.56, 0.68, 0.78][resolved_tier - 1],
+		"duration": duration,
+		"anticipation_time": anticipation_time,
+		"impact_time": impact_time,
 		"shake_strength": [5.0, 8.0, 12.0][resolved_tier - 1],
 		"hit_stop": [0.025, 0.045, 0.07][resolved_tier - 1],
 	}
@@ -191,7 +217,7 @@ func play_series(
 	_evolution_level = resolved_tier
 	_buff_stacks = 0
 	_buff_stack_tier = 0
-	_animation_archetype = StringName(String(profile.get("motion_family", "series_lane")))
+	_animation_archetype = StringName(motion_family)
 	_duration = float(_profile["duration"])
 	_active_scale = (
 		0.72 if preview
@@ -227,7 +253,7 @@ func get_part_count() -> int:
 
 func get_active_layer_count() -> int:
 	if _series_mode:
-		return _series_sprites.size() + (
+		return _series_sprites.size() + _series_trails.size() + _sword_rain_impact_nodes.size() + (
 			int(_vfx_foundation.call("get_active_layer_count"))
 			if _vfx_foundation != null and is_instance_valid(_vfx_foundation)
 			else 0
@@ -259,7 +285,7 @@ func get_base_visual_layer_count() -> int:
 
 func get_total_visual_layer_count() -> int:
 	if _series_mode:
-		return _series_sprites.size()
+		return _series_sprites.size() + _series_trails.size() + _sword_rain_impact_nodes.size()
 	return get_active_layer_count()
 
 
@@ -372,8 +398,48 @@ func get_series_debug_state() -> Dictionary:
 		"gameplay_family": String(_series_profile.get("gameplay_family", "")),
 		"node_count": int(_series_tier_profile.get("node_count", _series_sprites.size())),
 		"relay_multiplier": float(_series_tier_profile.get("relay_multiplier", 1.0)),
-		"growth_rule": "one_object_to_single_lane_to_multi_lane",
+		"launches_object": bool(_series_profile.get("launches_object", false)),
+		"minimum_render_size": _series_render_size,
+		"growth_rule": String(_series_profile.get("growth_rule", "launched_objects_start_at_three_paths_then_gain_density")),
 		"foundation_layers": foundation_layers,
+	}
+
+
+func get_sword_rain_cadence_state() -> Dictionary:
+	if not _series_mode or String(_series_profile.get("id", "")) != "sword_rain":
+		return {}
+	var reveal_duration := float(_series_profile.get("orbit_reveal_duration", 0.72))
+	var lock_duration := float(_series_profile.get("target_lock_duration", 0.8))
+	var release_duration := float(_series_profile.get("release_duration", 0.72))
+	var visible_blade_count := 0
+	for sprite in _series_sprites:
+		if sprite.visible and sprite.modulate.a > 0.01:
+			visible_blade_count += 1
+	return {
+		"beat_schedule": _sword_rain_beat_schedule(_series_sprites.size()),
+		"trail_count": _series_trails.size(),
+		"impact_vfx_count": _sword_rain_impact_nodes.size(),
+		"cadence_pause_count": SWORD_RAIN_CADENCE_PAUSE_COUNT,
+		"speed_phases": SWORD_RAIN_SPEED_PHASES.duplicate(),
+		"presentation_phases": SWORD_RAIN_PRESENTATION_PHASES.duplicate(),
+		"cadence_phase": _sword_rain_cadence_phase,
+		"active_trail_count": _sword_rain_active_trail_count,
+		"active_impact_vfx_count": _sword_rain_active_impact_count,
+		"inserted_blade_count": _sword_rain_inserted_blade_count,
+		"visible_blade_count": visible_blade_count,
+		"maximum_speed_ratio": SWORD_RAIN_MAXIMUM_SPEED_RATIO,
+		"target_lock_duration": lock_duration,
+		"appearance_stagger": _sword_rain_appearance_stagger(),
+		"minimum_render_size": _series_render_size,
+		"lock_lane_spacing": SWORD_RAIN_LOCK_LANE_SPACING,
+		"lock_row_spacing": SWORD_RAIN_LOCK_ROW_SPACING,
+		"orbit_radius": SWORD_RAIN_ORBIT_RADIUS,
+		"orbit_end_ratio": reveal_duration / _duration,
+		"lock_end_ratio": (reveal_duration + lock_duration) / _duration,
+		"release_end_ratio": (reveal_duration + lock_duration + release_duration) / _duration,
+		"first_contact_ratio": (
+			reveal_duration + lock_duration + release_duration * SWORD_RAIN_FLIGHT_SPAN * 0.72
+		) / _duration,
 	}
 
 
@@ -521,7 +587,11 @@ func _build_series_sprites() -> bool:
 		push_error("Skill-series VFX main object failed to load: %s" % asset_path)
 		return false
 	var object_count := maxi(1, int(_series_tier_profile.get("object_count", 1)))
-	var desired_size := maxf(48.0, float(_series_profile.get("object_size", 96.0)))
+	var desired_size := maxf(
+		maxf(48.0, float(_series_profile.get("object_size", 96.0))),
+		float(_series_profile.get("minimum_render_size", 0.0))
+	)
+	_series_render_size = desired_size
 	var texture_size := texture.get_size()
 	var object_scale := desired_size / maxf(1.0, maxf(texture_size.x, texture_size.y))
 	for object_index in object_count:
@@ -535,18 +605,83 @@ func _build_series_sprites() -> bool:
 		add_child(sprite)
 		_series_sprites.append(sprite)
 		_set_alpha(sprite, 0.0)
+		if String(_series_profile.get("motion_family", "")) == "descending_rain":
+			var streak := Line2D.new()
+			streak.name = "SwordRainStreak%02d" % (object_index + 1)
+			streak.width = 8.0 + float(_evolution_level) * 1.5
+			streak.default_color = Color(0.5, 0.82, 1.0, 0.0)
+			streak.begin_cap_mode = Line2D.LINE_CAP_ROUND
+			streak.end_cap_mode = Line2D.LINE_CAP_ROUND
+			streak.joint_mode = Line2D.LINE_JOINT_ROUND
+			streak.antialiased = true
+			streak.use_parent_material = true
+			streak.z_index = sprite.z_index - 1
+			add_child(streak)
+			_series_trails.append(streak)
+			var blade_impact := _build_sword_rain_impact(object_index)
+			add_child(blade_impact)
+			_sword_rain_impact_nodes.append(blade_impact)
 	return true
 
 
 func _clear_series_sprites() -> void:
+	for impact_node in _sword_rain_impact_nodes:
+		if not is_instance_valid(impact_node):
+			continue
+		remove_child(impact_node)
+		impact_node.free()
+	_sword_rain_impact_nodes.clear()
+	for trail in _series_trails:
+		if not is_instance_valid(trail):
+			continue
+		remove_child(trail)
+		trail.free()
+	_series_trails.clear()
 	for sprite in _series_sprites:
 		if not is_instance_valid(sprite):
 			continue
 		remove_child(sprite)
 		sprite.free()
 	_series_sprites.clear()
+	_sword_rain_cadence_phase = ""
+	_sword_rain_active_trail_count = 0
+	_sword_rain_active_impact_count = 0
+	_sword_rain_inserted_blade_count = 0
+	_series_render_size = 0.0
 	_series_profile.clear()
 	_series_tier_profile.clear()
+
+
+func _build_sword_rain_impact(object_index: int) -> Node2D:
+	var impact_node := Node2D.new()
+	impact_node.name = "SwordRainImpact%02d" % (object_index + 1)
+	impact_node.z_index = 6 + object_index % 3
+	impact_node.use_parent_material = true
+	var star := Polygon2D.new()
+	star.name = "InsertionStar"
+	var star_points := PackedVector2Array()
+	for point_index in 16:
+		var angle := -PI * 0.5 + TAU * float(point_index) / 16.0
+		var radius := 34.0 if point_index % 2 == 0 else 7.0
+		star_points.append(Vector2(cos(angle), sin(angle)) * radius)
+	star.polygon = star_points
+	star.color = Color(0.78, 0.94, 1.0, 0.96)
+	star.use_parent_material = true
+	impact_node.add_child(star)
+	var ring := Line2D.new()
+	ring.name = "InsertionRing"
+	ring.width = 4.0
+	ring.default_color = Color(0.34, 0.72, 1.0, 0.88)
+	ring.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	ring.end_cap_mode = Line2D.LINE_CAP_ROUND
+	ring.antialiased = true
+	ring.use_parent_material = true
+	for point_index in 25:
+		var angle := TAU * float(point_index) / 24.0
+		ring.add_point(Vector2(cos(angle), sin(angle)) * 22.0)
+	impact_node.add_child(ring)
+	impact_node.visible = false
+	return impact_node
 
 
 func _layout_series_objects(
@@ -556,7 +691,11 @@ func _layout_series_objects(
 ) -> void:
 	if _series_sprites.is_empty():
 		return
-	if String(_series_profile.get("motion_family", "")) == "wood_gate_relay":
+	var motion_family := String(_series_profile.get("motion_family", ""))
+	if motion_family == "descending_rain":
+		_layout_sword_rain_cadence()
+		return
+	if motion_family == "wood_gate_relay":
 		_layout_wood_gate_relay(anticipation_ratio, impact_ratio, impact_end)
 		return
 	var source := _series_vector("source")
@@ -618,6 +757,225 @@ func _layout_series_objects(
 		if decay > 0.0:
 			alpha *= 1.0 - decay
 		_set_alpha(sprite, alpha)
+
+
+func _layout_sword_rain_cadence() -> void:
+	var reveal_duration := float(_series_profile.get("orbit_reveal_duration", 0.72))
+	var lock_duration := float(_series_profile.get("target_lock_duration", 0.8))
+	var release_duration := float(_series_profile.get("release_duration", 0.72))
+	var elapsed := _progress * _duration
+	var orbit_end := reveal_duration
+	var lock_end := orbit_end + lock_duration
+	var afterbeat_start := lock_end + release_duration * 0.86
+	if elapsed < orbit_end:
+		_sword_rain_cadence_phase = "orbit_reveal"
+	elif elapsed < lock_end:
+		_sword_rain_cadence_phase = "target_lock"
+	elif elapsed < afterbeat_start:
+		_sword_rain_cadence_phase = "release"
+	else:
+		_sword_rain_cadence_phase = "impact_afterbeat"
+	_sword_rain_active_trail_count = 0
+	_sword_rain_active_impact_count = 0
+	_sword_rain_inserted_blade_count = 0
+	for impact_node in _sword_rain_impact_nodes:
+		impact_node.visible = false
+	var orbit_progress := clampf(elapsed / maxf(0.01, reveal_duration), 0.0, 1.0)
+	var release_progress := maxf(0.0, (elapsed - lock_end) / maxf(0.01, release_duration))
+	var decay_progress := clampf(
+		(elapsed - lock_end - release_duration) / maxf(0.01, _duration - lock_end - release_duration),
+		0.0,
+		1.0
+	)
+	var target := _series_vector("target")
+	var orbit_center := Vector2(0.0, -78.0)
+	var path_count := maxi(3, int(_series_tier_profile.get("path_count", 3)))
+	var beat_schedule := _sword_rain_beat_schedule(_series_sprites.size())
+	var appearance_stagger := _sword_rain_appearance_stagger()
+	for object_index in _series_sprites.size():
+		var sprite := _series_sprites[object_index]
+		var lane_index := object_index % path_count
+		var lane_ratio := (
+			0.0
+			if path_count <= 1
+			else float(lane_index) / float(path_count - 1) * 2.0 - 1.0
+		)
+		var row_index := object_index / path_count
+		var base_scale := float(sprite.get_meta("base_scale", 1.0))
+		var vertical_rotation := PI * 0.5 - deg_to_rad(
+			float(_series_profile.get("asset_forward_degrees", 0.0))
+		)
+		var lock_anchor := target + Vector2(
+			lane_ratio * (SWORD_RAIN_LOCK_LANE_SPACING + float(row_index) * 7.0),
+			-170.0 - float(row_index) * SWORD_RAIN_LOCK_ROW_SPACING
+		)
+		_reset_sword_rain_trail(object_index)
+		if elapsed < orbit_end:
+			var appearance_start := float(object_index) * appearance_stagger
+			var appearance := clampf((elapsed - appearance_start) / 0.20, 0.0, 1.0)
+			var local_reveal := clampf(
+				(elapsed - appearance_start) / maxf(0.01, reveal_duration - appearance_start),
+				0.0,
+				1.0
+			)
+			var orbit_angle := (
+				-PI * 0.82
+				+ TAU * float(object_index) / float(_series_sprites.size())
+				+ orbit_progress * (0.92 + float(_evolution_level) * 0.08)
+			)
+			var orbit_radius := Vector2(
+				SWORD_RAIN_ORBIT_RADIUS + float(object_index % 3) * 16.0,
+				76.0 + float(object_index % 2) * 14.0
+			)
+			var orbit_point := orbit_center + Vector2(
+				cos(orbit_angle) * orbit_radius.x,
+				sin(orbit_angle) * orbit_radius.y
+			)
+			var settle := smoothstep(0.52, 1.0, local_reveal)
+			sprite.position = orbit_point.lerp(lock_anchor, settle)
+			sprite.rotation = lerp_angle(orbit_angle + PI * 0.5, vertical_rotation, settle)
+			var reveal_pulse := 1.0 + sin(local_reveal * PI) * 0.10
+			sprite.scale = Vector2.ONE * base_scale * lerpf(0.62, 1.0, appearance) * reveal_pulse
+			_set_alpha(sprite, appearance)
+			continue
+		if elapsed < lock_end:
+			var lock_progress := (elapsed - orbit_end) / maxf(0.01, lock_duration)
+			var lock_breathe := sin(lock_progress * TAU * 2.0 + float(object_index) * 0.62)
+			sprite.position = lock_anchor + Vector2(lock_breathe * 2.2, 0.0)
+			sprite.rotation = vertical_rotation
+			sprite.scale = Vector2.ONE * base_scale * (1.04 + lock_breathe * 0.045)
+			_set_alpha(sprite, 0.92 + lock_breathe * 0.08)
+			continue
+		var beat := beat_schedule[object_index]
+		var local_strike := (release_progress - beat) / SWORD_RAIN_FLIGHT_SPAN
+		var lane_target := target + Vector2(lane_ratio * 24.0, 0.0)
+		var curve_side := -1.0 if object_index % 2 == 0 else 1.0
+		var control := lock_anchor.lerp(lane_target, 0.55) + Vector2(
+			curve_side * (14.0 + absf(lane_ratio) * 12.0),
+			0.0
+		)
+		if local_strike < 0.0:
+			sprite.position = lock_anchor
+			sprite.rotation = vertical_rotation
+			sprite.scale = Vector2.ONE * base_scale
+			_set_alpha(sprite, 1.0 - decay_progress)
+			continue
+		if local_strike < 0.12:
+			var recoil := smoothstep(0.0, 0.12, local_strike)
+			sprite.position = lock_anchor + Vector2(0.0, -14.0 * recoil)
+			sprite.rotation = vertical_rotation
+			sprite.scale = Vector2.ONE * base_scale * lerpf(1.0, 1.09, recoil)
+			_set_alpha(sprite, 1.0)
+			continue
+		var travel := clampf((local_strike - 0.12) / 0.60, 0.0, 1.0)
+		var snapped_travel := 1.0 - pow(1.0 - travel, 2.75)
+		var point := _quadratic_bezier(lock_anchor, control, lane_target, snapped_travel)
+		var tangent := _quadratic_bezier_tangent(lock_anchor, control, lane_target, snapped_travel)
+		sprite.position = point
+		if not tangent.is_zero_approx():
+			sprite.rotation = tangent.angle() - deg_to_rad(
+				float(_series_profile.get("asset_forward_degrees", 0.0))
+			)
+		var strike_scale := 1.0 + sin(travel * PI) * 0.13
+		sprite.scale = Vector2.ONE * base_scale * strike_scale
+		if local_strike >= 0.72 and local_strike < 0.90:
+			var contact := (local_strike - 0.72) / 0.18
+			sprite.position = lane_target + Vector2(sin(contact * TAU) * 2.5, 0.0)
+			sprite.scale = Vector2.ONE * base_scale * lerpf(1.22, 0.96, contact)
+		if local_strike >= 0.90:
+			var afterbeat := clampf((local_strike - 0.90) / 0.55, 0.0, 1.0)
+			sprite.position = lane_target + Vector2(0.0, afterbeat * 3.0)
+			sprite.scale = Vector2.ONE * base_scale * lerpf(1.0, 0.72, afterbeat)
+			_set_alpha(sprite, 1.0 - afterbeat)
+		else:
+			_set_alpha(sprite, 1.0)
+		if local_strike <= 1.45:
+			_update_sword_rain_trail(
+				object_index,
+				lock_anchor,
+				control,
+				lane_target,
+				snapped_travel,
+				clampf(1.45 - local_strike, 0.0, 1.0)
+			)
+			_sword_rain_active_trail_count += 1
+		if local_strike >= 0.68 and local_strike <= 1.45:
+			_update_sword_rain_impact(object_index, lane_target, local_strike)
+			_sword_rain_active_impact_count += 1
+		if local_strike >= 0.72 and local_strike <= 1.45:
+			_sword_rain_inserted_blade_count += 1
+
+
+func _sword_rain_beat_schedule(object_count: int) -> Array[float]:
+	var schedule: Array[float] = []
+	match object_count:
+		3:
+			schedule.assign([0.0, 0.16, 0.52])
+		7:
+			schedule.assign([0.0, 0.08, 0.16, 0.44, 0.52, 0.74, 0.80])
+		15:
+			schedule.assign([
+				0.0, 0.05, 0.10, 0.15,
+				0.31, 0.36, 0.41, 0.46,
+				0.62, 0.66, 0.70,
+				0.78, 0.82, 0.86, 0.90,
+			])
+		_:
+			for object_index in object_count:
+				schedule.append(float(object_index) / maxf(1.0, float(object_count - 1)) * 0.88)
+	return schedule
+
+
+func _sword_rain_appearance_stagger() -> float:
+	if _series_sprites.size() <= 1:
+		return 0.0
+	return minf(0.11, 0.48 / float(_series_sprites.size() - 1))
+
+
+func _reset_sword_rain_trail(object_index: int) -> void:
+	if object_index < 0 or object_index >= _series_trails.size():
+		return
+	var trail := _series_trails[object_index]
+	trail.clear_points()
+	trail.visible = false
+
+
+func _update_sword_rain_trail(
+	object_index: int,
+	path_start: Vector2,
+	path_control: Vector2,
+	path_target: Vector2,
+	travel: float,
+	alpha: float
+) -> void:
+	if object_index < 0 or object_index >= _series_trails.size() or travel <= 0.0:
+		return
+	var trail := _series_trails[object_index]
+	var trail_start := maxf(0.0, travel - 0.34)
+	for sample_index in 10:
+		var sample_ratio := float(sample_index) / 9.0
+		var sample_travel := lerpf(trail_start, travel, sample_ratio)
+		trail.add_point(_quadratic_bezier(path_start, path_control, path_target, sample_travel))
+	trail.default_color = Color(0.5, 0.82, 1.0, 1.0)
+	trail.modulate = Color(1.0, 1.0, 1.0, alpha)
+	trail.visible = alpha > 0.01
+
+
+func _update_sword_rain_impact(
+	object_index: int,
+	impact_position: Vector2,
+	local_strike: float
+) -> void:
+	if object_index < 0 or object_index >= _sword_rain_impact_nodes.size():
+		return
+	var impact_node := _sword_rain_impact_nodes[object_index]
+	var impact_progress := clampf((local_strike - 0.68) / 0.77, 0.0, 1.0)
+	var bloom := sin(impact_progress * PI)
+	impact_node.position = impact_position
+	impact_node.rotation = (-0.12 if object_index % 2 == 0 else 0.12) + impact_progress * 0.22
+	impact_node.scale = Vector2.ONE * lerpf(0.28, 1.42, smoothstep(0.0, 0.58, impact_progress))
+	impact_node.modulate = Color(1.0, 1.0, 1.0, bloom)
+	impact_node.visible = bloom > 0.01
 
 
 func _layout_wood_gate_relay(

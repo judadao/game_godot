@@ -69,9 +69,12 @@ Inventory／Codex focused coverage：
   實際 Game projection 可用 `INVENTORY_CODEX_PROJECTION_CAPTURE_PATH` 擷取，
   並以 `INVENTORY_CODEX_PROJECTION_SECTION=techniques|enemies|sword_souls|equipment|blessings`
   指定圖鑑章節；不得只驗證手寫 UI fixture。
-- `skill_series_vfx_growth_test.gd`：驗證 13 個系列各有一張透明主物體、正式順序、
-  basic 1 個、advanced 單一路徑群、master 多數量且至少三方向三路徑，並確認三階重用
-  同一張素材。`skill_series_vfx_visual_capture_test.gd` 可用
+- `skill_series_vfx_growth_test.gd`：驗證 13 個系列各有一張透明主物體、正式順序，且所有
+  發射型系列由 basic 至少 3 個／3 路、advanced 更高密度，成長到 master 至少 5 路，
+  主物體最小可讀尺寸為 112px；非發射型古木仍維持 2／4／6 門陣節點。另由
+  `sword_rain_cadence_vfx_test.gd` 鎖定劍雨逐把環繞浮現、目標頭頂垂直鎖定 0.8 秒、
+  分組停頓／加速墜落、逐劍曲線殘光，以及在插入點觸發衝擊後消失。
+  `skill_series_vfx_visual_capture_test.gd` 可用
   `SKILL_SERIES_VFX_CAPTURE_PATH` 在已配置的 offscreen 圖形 renderer 輸出 13×3 contact sheet；
   dummy headless 環境只執行 geometry／behavior contracts，不要求 PNG capture。
 - `skill_series_vfx_combat_routing_test.gd`：逐一驗證 39 招的實戰 profile 與其舊 Finisher

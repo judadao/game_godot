@@ -30,7 +30,8 @@ func _run() -> void:
 	var slash_layers := slash_state.get("foundation_layers", []) as Array
 	for layer_id in REQUIRED_LAYERS:
 		_expect(slash_layers.has(layer_id), "Series combat VFX must include %s from the tutorial foundation." % layer_id)
-	effect.call("debug_set_progress", 0.70)
+	var impact_ratio := float(effect.call("get_impact_start_progress_ratio"))
+	effect.call("debug_set_progress", impact_ratio)
 	var impact_state := effect.call("get_vfx_foundation_debug_state") as Dictionary
 	_expect(float(impact_state.get("impact_energy", 0.0)) > 0.0, "Impact layers must peak near the actual hit beat.")
 	effect.call("play_series", "fire", 3, 1, true)

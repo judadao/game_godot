@@ -457,7 +457,7 @@ Combo／Healing 劍魂身分，並以目前編成招式的 `combo_routes` 比對
 | `SkillCastPresentation` | `scripts/combat/skill_cast_presentation.gd` | 以 unscaled Tween 顯示放大招式名稱並管理短暫施法慢動作 |
 | Elemental combat VFX | `scenes/combat/vfx/*.tscn` | 火／冰攻擊纏繞與範圍大招的純 presentation；不擁有傷害判定 |
 | `ElementalGroundTrail` | `scenes/combat/vfx/ElementalGroundTrail.tscn`、`data/elemental_ground_trail_profiles.json` | 沿元素大招路徑拼裝 Core／Edge／Accent／Debris atlas 部件與連續 ribbon；火、冰、毒使用不同 topology，不擁有傷害判定 |
-| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json`、`data/skill_series_vfx.json` | 舊 profile 仍供退役 trigger／相容 caller 使用；現役 39 招改由 `play_series()` 重用各系列唯一主物體。基本階顯示 1 個，中階將同物體排成 1 條路徑，高階增加數量並分成至少 3 條、3 方向；播放器只處理 presentation，不擁有名稱、配方或傷害判定 |
+| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json`、`data/skill_series_vfx.json` | 舊 profile 仍供退役 trigger／相容 caller 使用；現役 39 招改由 `play_series()` 重用各系列唯一主物體。發射型系列由 basic 的 3 物體／3 路，成長為 advanced 7 物體／3 路與 master 15 物體／5 路；劍雨另擁有逐把環繞、0.8 秒垂直鎖定、分組墜落、獨立曲線殘光與逐劍插入衝擊。播放器只處理 presentation，不擁有名稱、配方或傷害判定 |
 | `CombatVFXFoundation` | `scripts/combat/combat_vfx_foundation.gd` | 現役系列招式的共用暗／亮 scrolling 斬擊層、flash、flare、shockwave、sparks，以及火系 dissolve／火舌／煙／火星／爆心；只接受 `NamedSkillVFX` 的進度與系列 palette，不擁有命中判定 |
 | `StormChargeVFX` | `scenes/combat/vfx/StormChargeVFX.tscn` | 風暴充能專用的原地五節拍 presentation；固定導電主幹由左右地流依序接入雙腳、持劍手與劍身，接觸時只從劍身下游長出有粗細層級的右向分支，高潮後沿同一路徑回縮；不擁有傷害或 buff 規則 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
@@ -489,7 +489,8 @@ UI 對上層提供 setter/configure API與 typed signals：
   招式清單由 `Game` 投影 `skills.json` 的 13 系列、39 招，
   每系列固定基本／進階／大師三階；舊普攻、手牌、被動 trigger 與 Finisher 名稱不再
   混成第二份招式權威。每系列從 `skill_series_vfx.json` 取得一個可重複拼裝的主物體；
-  同系列三階只以數量、單一路徑與多方向路徑成長，不另換無關動畫。`legacy_vfx_map`
+  同系列三階只以主物體數量、路徑密度與方向成長，不另換無關動畫；發射型 basic
+  不得少於 3 個主物體與 3 路。`legacy_vfx_map`
   只保留配方與舊 caller 導向系列的相容用途；敵人章節
   是 `EnemyArchetype.autumn_catalog()` 的靜態參考，不宣稱 discovery 進度。UI 只透過
   `equip_requested` emit 裝備意圖，由 `Game` 驗證後呼叫 `InventoryManager.equip()`、
@@ -1215,8 +1216,10 @@ auto attack 缺失或無效時 fallback 到已解鎖的有效 attack，active sk
 - 新招式的傷害、AP、解鎖、施放與升級規則尚未核准，composition root 不得從名稱
   猜測。舊 count／sequence trigger engine 已退役；`record_card()` 僅為既有 caller
   保留並回傳空結果。
-- `skill_series_vfx.json` 是現役招式 presentation 權威：每系列只有一個透明主物體，
-  basic 為單體、advanced 為同物體單一路徑群、master 為更多物體的多方向多路徑群。
+- `skill_series_vfx.json` 是現役招式 presentation 權威：每系列只有一個透明主物體。
+  發射型系列以 basic 3 物體／3 路、advanced 7 物體／3 路、master 15 物體／5 路成長；
+  非發射型門陣／場域保留獨立節點規則。劍雨 profile 另外定義環繞浮現、0.8 秒垂直鎖定、
+  分組 release 節拍、每把劍的曲線殘光與插入點衝擊。
   `legacy_vfx_map` 只保留配方與 caller 相容，不再選擇現役招式外觀；
   實戰舊 Finisher recipe ID 必須先由目前配置的正式招式消歧義，才能取得該招自己的
   `series_vfx_id` 與 `tier_rank`；同一舊 recipe 的相容存檔若留下多個正式招式，固定由
