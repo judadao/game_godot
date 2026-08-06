@@ -96,8 +96,8 @@ func _run() -> void:
 			"Center/MainPanel/Margin/Layout/Pages/CodexPage/Browser/Entries"
 		) as ItemList
 		var expected_opening_rows := [
-			"◆  劍雨系列", "基礎 · 戰律希聲", "進階 · 萬劍垂天", "大師 · 驟雨繁音",
-			"◆  月輪系列", "基礎 · 月輪垂光", "進階 · 扶搖月輪", "大師 · 月蝕重輪",
+			"◆  劍雨系列", "基礎 · 初雨劍聲", "進階 · 千鋒驟雨", "大師 · 萬劍天瀑",
+			"◆  月輪系列", "基礎 · 新月流刃", "進階 · 雙月迴輪", "大師 · 蝕月天環",
 		]
 		_expect(runtime_rows.item_count == 52, "The production journal must show 13 series headers and 39 skills.")
 		for row_index in mini(expected_opening_rows.size(), runtime_rows.item_count):

@@ -71,6 +71,15 @@ func _test_healing_and_defense_runtime(catalog: ComboFinisherCatalog) -> void:
 	var database := game.get("card_database") as CardDatabase
 	var run := game.get("run_state") as RunState
 	var meta := game.get("meta_state") as MetaState
+	var skill_catalog := game.get("skill_recipe_manager") as SkillRecipeManager
+	for skill_id in ["dawnlight_sunbearer", "still_mountain_unmoved"]:
+		if not meta.learned_skill_ids.has(skill_id):
+			meta.learned_skill_ids.append(skill_id)
+	skill_catalog.configure_loadout(
+		meta.learned_skill_ids,
+		["dawnlight_sunbearer", "still_mountain_unmoved"],
+		99
+	)
 	var player := game.get("player") as Node2D
 	var current_map := game.get("current_map") as Node
 	for card_id in ["healing_light", "guard", "renewal", "verdant_renewal"]:
@@ -94,9 +103,9 @@ func _test_healing_and_defense_runtime(catalog: ComboFinisherCatalog) -> void:
 		game.call("_record_combo_formula", database.get_card("healing_light"))
 	var healing_queue := run.temporary_buffs.get("finisher_queue", []) as Array
 	_expect(
-		healing_queue.size() == 1
-			and String((healing_queue[0] as Dictionary).get("name", "")) == "朝光載陽",
-		"Healing Light three times must queue 朝光載陽."
+			healing_queue.size() == 1
+			and String((healing_queue[0] as Dictionary).get("name", "")) == "曙光回生",
+		"Healing Light three times must queue 曙光回生."
 	)
 	var healing_recipe := catalog.match_sequence([
 		"healing_light", "healing_light", "healing_light",
@@ -133,9 +142,9 @@ func _test_healing_and_defense_runtime(catalog: ComboFinisherCatalog) -> void:
 		game.call("_record_combo_formula", database.get_card("guard"))
 	var guard_queue := run.temporary_buffs.get("finisher_queue", []) as Array
 	_expect(
-		guard_queue.size() == 1
-			and String((guard_queue[0] as Dictionary).get("name", "")) == "靜岳無移",
-		"Iron Will three times must queue 靜岳無移."
+			guard_queue.size() == 1
+			and String((guard_queue[0] as Dictionary).get("name", "")) == "磐石鎮勢",
+		"Iron Will three times must queue 磐石鎮勢."
 	)
 	var guard_recipe := catalog.match_sequence(["guard", "guard", "guard"])
 	_expect(

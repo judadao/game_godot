@@ -1144,8 +1144,24 @@ func _recipe_requirements_available(recipe: Dictionary) -> bool:
 
 
 func _finisher_recipe_for_skill(skill_id: String) -> Dictionary:
+	var formal_skill := _skill_catalog.get_skill(skill_id)
 	var profile_id := _skill_catalog.get_legacy_vfx_id(skill_id)
-	return _finisher_catalog.get_recipe(profile_id) if not profile_id.is_empty() else {}
+	var recipe := _finisher_catalog.get_recipe(profile_id) if not profile_id.is_empty() else {}
+	if formal_skill.is_empty() or recipe.is_empty():
+		return {}
+	var routes := formal_skill.get("combo_routes", []) as Array
+	if routes.is_empty() or not routes[0] is Array:
+		return {}
+	var required: Array[String] = []
+	for card_id_variant in routes[0] as Array:
+		var card_id := String(card_id_variant)
+		if not required.has(card_id):
+			required.append(card_id)
+	recipe["required_skills"] = required
+	recipe["sequence"] = (routes[0] as Array).duplicate()
+	recipe["combo_routes"] = routes.duplicate(true)
+	recipe["formal_skill_id"] = skill_id
+	return recipe
 
 
 func _required_souls_for_skill_recipes(recipe_ids: Array) -> Array[String]:

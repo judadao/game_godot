@@ -105,7 +105,7 @@ const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
 const AUTO_ATTACK_HIT_HALF_WIDTH := 53.0
 const COMBO_FINISHER_DAMAGE := 28
 const COMBO_FINISHER_RANGE := 420.0
-const COMBO_FORMULA_LENGTH := 3
+const COMBO_FORMULA_LENGTH := 6
 const AUTO_ATTACK_RETRY_INTERVAL := 0.15
 const COMBO_EVOLUTIONS := [
 	{
@@ -2791,6 +2791,7 @@ func _show_combo_stack_limit_feedback(card: Dictionary) -> void:
 func _record_combo_formula(card: Dictionary) -> Dictionary:
 	if (
 		card.is_empty()
+		or not meta_state.unlocked_cards.has(String(card.get("id", "")))
 		or not combo_finisher_catalog.call(
 			"is_skill_eligible",
 			String(card.get("id", ""))
@@ -2830,33 +2831,42 @@ func _record_combo_formula(card: Dictionary) -> Dictionary:
 		history.pop_front()
 	run_state.temporary_buffs["combo_formula_history"] = history
 	var queued_recipe: Dictionary = {}
-	if history.size() == COMBO_FORMULA_LENGTH:
-		var sequence: Array[String] = []
-		for formula_card_variant in history:
-			sequence.append(String(
-				(formula_card_variant as Dictionary).get("id", "")
-			))
-		var recipe := combo_finisher_catalog.call(
-			"match_sequence",
-			sequence
+	var sequence: Array[String] = []
+	for formula_card_variant in history:
+		sequence.append(String((formula_card_variant as Dictionary).get("id", "")))
+	var matched_skills := skill_recipe_manager.match_active_combo_routes(sequence)
+	var triggered_variant: Variant = run_state.temporary_buffs.get(
+		"combo_triggered_skill_ids",
+		[]
+	)
+	var triggered_ids: Array = triggered_variant if triggered_variant is Array else []
+	var queue_variant: Variant = run_state.temporary_buffs.get("finisher_queue", [])
+	var finisher_queue: Array = queue_variant if queue_variant is Array else []
+	for skill_variant in matched_skills:
+		var skill := skill_variant as Dictionary
+		var skill_id := String(skill.get("id", ""))
+		if skill_id.is_empty() or triggered_ids.has(skill_id):
+			continue
+		var legacy_recipe := combo_finisher_catalog.call(
+			"get_recipe",
+			String(skill.get("legacy_vfx_id", ""))
 		) as Dictionary
-		if not recipe.is_empty() and _is_finisher_recipe_learned(recipe):
-			var queue_variant: Variant = run_state.temporary_buffs.get(
-				"finisher_queue",
-				[]
-			)
-			var finisher_queue: Array = (
-				queue_variant if queue_variant is Array else []
-			)
-			queued_recipe = recipe.duplicate(true)
-			queued_recipe["recipe_id"] = String(recipe.get("id", ""))
-			queued_recipe["formula_cards"] = history.duplicate(true)
-			finisher_queue.append(queued_recipe)
-			run_state.temporary_buffs["finisher_queue"] = finisher_queue
-			history.clear()
-		else:
-			history.pop_front()
-		run_state.temporary_buffs["combo_formula_history"] = history
+		if legacy_recipe.is_empty():
+			continue
+		var route_length := 3 if String(skill.get("tier", "")) == "basic" else (4 if String(skill.get("tier", "")) == "advanced" else 6)
+		queued_recipe = legacy_recipe.duplicate(true)
+		queued_recipe["id"] = skill_id
+		queued_recipe["name"] = String(skill.get("name", skill_id))
+		queued_recipe["recipe_id"] = skill_id
+		queued_recipe["legacy_vfx_id"] = String(skill.get("legacy_vfx_id", ""))
+		queued_recipe["series_id"] = String(skill.get("series_id", ""))
+		queued_recipe["tier"] = String(skill.get("tier", ""))
+		queued_recipe["tier_rank"] = int(skill.get("tier_rank", 1))
+		queued_recipe["formula_cards"] = history.slice(history.size() - route_length).duplicate(true)
+		finisher_queue.append(queued_recipe)
+		triggered_ids.append(skill_id)
+	run_state.temporary_buffs["finisher_queue"] = finisher_queue
+	run_state.temporary_buffs["combo_triggered_skill_ids"] = triggered_ids
 	var pending_queue := run_state.temporary_buffs.get(
 		"finisher_queue",
 		[]
@@ -3302,6 +3312,8 @@ func _tick_combo_effects(delta: float) -> bool:
 			run_state.temporary_buffs["combo_chain_count"] = 0
 			run_state.temporary_buffs["combo_chain_skills"] = {}
 			run_state.temporary_buffs["combo_chain_order"] = []
+			run_state.temporary_buffs["combo_formula_history"] = []
+			run_state.temporary_buffs["combo_triggered_skill_ids"] = []
 			_refresh_card_hand()
 	var effects_variant: Variant = run_state.temporary_buffs.get("infusion_effects", [])
 	if not effects_variant is Array:

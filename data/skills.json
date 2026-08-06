@@ -64,7 +64,7 @@
       "skills": [
         {
           "id": "silent_war_cadence",
-          "name": "戰律希聲",
+          "name": "初雨劍聲",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "基礎持續攻擊",
@@ -74,7 +74,7 @@
         },
         {
           "id": "myriad_blades_descend",
-          "name": "萬劍垂天",
+          "name": "千鋒驟雨",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "大範圍爆發攻擊",
@@ -84,7 +84,7 @@
         },
         {
           "id": "sudden_rain_polyphony",
-          "name": "驟雨繁音",
+          "name": "萬劍天瀑",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "劍雨系列終極技",
@@ -103,7 +103,7 @@
       "skills": [
         {
           "id": "moonwheel_downlight",
-          "name": "月輪垂光",
+          "name": "新月流刃",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "直線／定點攻擊",
@@ -113,7 +113,7 @@
         },
         {
           "id": "soaring_moonwheel",
-          "name": "扶搖月輪",
+          "name": "雙月迴輪",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "追蹤與迴旋攻擊",
@@ -123,7 +123,7 @@
         },
         {
           "id": "eclipse_double_wheel",
-          "name": "月蝕重輪",
+          "name": "蝕月天環",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "月輪系列終極技",
@@ -142,7 +142,7 @@
       "skills": [
         {
           "id": "thousand_feather_resonance",
-          "name": "千羽相應",
+          "name": "聖羽初翔",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "基礎召喚與範圍攻擊",
@@ -152,7 +152,7 @@
         },
         {
           "id": "silent_flourishing_feathers",
-          "name": "希聲繁羽",
+          "name": "千羽巡天",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "防禦反擊",
@@ -162,7 +162,7 @@
         },
         {
           "id": "celestial_feather_myriad",
-          "name": "天羽萬象",
+          "name": "萬翼神臨",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "羽毛系列終極技",
@@ -181,7 +181,7 @@
       "skills": [
         {
           "id": "ancient_roots_pursuit",
-          "name": "古根纏行",
+          "name": "根脈初生",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "控制技能",
@@ -191,7 +191,7 @@
         },
         {
           "id": "growth_ring_guard",
-          "name": "年輪護生",
+          "name": "年輪森衛",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "防禦與恢復",
@@ -201,7 +201,7 @@
         },
         {
           "id": "eternal_forest_manifest",
-          "name": "萬古森羅",
+          "name": "太古神木",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "古木系列終極技",
@@ -220,7 +220,7 @@
       "skills": [
         {
           "id": "still_mountain_unmoved",
-          "name": "靜岳無移",
+          "name": "磐石鎮勢",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "霸體與減傷",
@@ -230,7 +230,7 @@
         },
         {
           "id": "stone_ring_unity",
-          "name": "石環守一",
+          "name": "群岩成陣",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "環繞防禦",
@@ -240,7 +240,7 @@
         },
         {
           "id": "converging_mountains",
-          "name": "群岳歸一",
+          "name": "萬岳天崩",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "巨石系列終極技",
@@ -259,7 +259,7 @@
       "skills": [
         {
           "id": "unity_reflection",
-          "name": "守一返照",
+          "name": "王盾格守",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "格擋反擊",
@@ -269,7 +269,7 @@
         },
         {
           "id": "shared_pulse_guard",
-          "name": "守一共脈",
+          "name": "王城盾陣",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "團隊防禦",
@@ -279,7 +279,7 @@
         },
         {
           "id": "unbreakable_heaven_gate",
-          "name": "天門不破",
+          "name": "天門永鎮",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "巨盾系列終極技",
@@ -298,7 +298,7 @@
       "skills": [
         {
           "id": "flowing_fire_night",
-          "name": "流火照夜",
+          "name": "星火流刃",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "基礎火焰攻擊",
@@ -308,7 +308,7 @@
         },
         {
           "id": "frost_orchid_wildfire",
-          "name": "霜蘭流火",
+          "name": "烈焰焚陣",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "冰火複合攻擊",
@@ -318,7 +318,7 @@
         },
         {
           "id": "celestial_wildfire",
-          "name": "天火燎原",
+          "name": "天火滅界",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "火焰系列終極技",
@@ -337,7 +337,7 @@
       "skills": [
         {
           "id": "endless_thunder_tone",
-          "name": "綿息雷音",
+          "name": "引雷一閃",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "持續雷擊",
@@ -347,7 +347,7 @@
         },
         {
           "id": "wildfire_thunder_tone",
-          "name": "流火雷音",
+          "name": "奔雷連鎖",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "火雷複合攻擊",
@@ -357,7 +357,7 @@
         },
         {
           "id": "nine_heavens_thunder_cadence",
-          "name": "九霄震律",
+          "name": "九霄神霆",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "雷電系列終極技",
@@ -376,7 +376,7 @@
       "skills": [
         {
           "id": "soaring_spring_surge",
-          "name": "扶搖泉湧",
+          "name": "流泉迴斬",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "擊飛與範圍攻擊",
@@ -386,7 +386,7 @@
         },
         {
           "id": "inexhaustible_spirit_spring",
-          "name": "靈泉不窮",
+          "name": "滄浪連潮",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "持續恢復與攻擊",
@@ -396,7 +396,7 @@
         },
         {
           "id": "sea_returning_tide",
-          "name": "滄海回瀾",
+          "name": "四海歸瀾",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "水流系列終極技",
@@ -415,7 +415,7 @@
       "skills": [
         {
           "id": "orchid_corrosion",
-          "name": "蘭芷成蝕",
+          "name": "荊芽穿刺",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "毒性持續傷害",
@@ -425,7 +425,7 @@
         },
         {
           "id": "thorn_court_pierce",
-          "name": "荊庭穿心",
+          "name": "毒華蔓庭",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "爆發與穿刺",
@@ -435,7 +435,7 @@
         },
         {
           "id": "myriad_blossoms_devour",
-          "name": "萬華噬野",
+          "name": "萬華噬界",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "植物攻擊終極技",
@@ -454,7 +454,7 @@
       "skills": [
         {
           "id": "arcane_breath",
-          "name": "奧術吐息",
+          "name": "龍息初鳴",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "基礎龍息攻擊",
@@ -464,7 +464,7 @@
         },
         {
           "id": "dragon_vein_echo",
-          "name": "龍脈迴響",
+          "name": "龍脈奔騰",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "連續追擊",
@@ -474,7 +474,7 @@
         },
         {
           "id": "myriad_dragon_descent",
-          "name": "萬象龍臨",
+          "name": "萬龍天臨",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "龍息系列終極技",
@@ -493,7 +493,7 @@
       "skills": [
         {
           "id": "dawnlight_sunbearer",
-          "name": "朝光載陽",
+          "name": "曙光回生",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "單次群體恢復",
@@ -503,7 +503,7 @@
         },
         {
           "id": "spring_court_sunbearer",
-          "name": "春庭載陽",
+          "name": "朝陽聖域",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "範圍持續治療",
@@ -513,7 +513,7 @@
         },
         {
           "id": "evergreen_court",
-          "name": "青庭長春",
+          "name": "大日長明",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "朝陽治療終極技",
@@ -532,7 +532,7 @@
       "skills": [
         {
           "id": "spring_spirit_return",
-          "name": "春靈來復",
+          "name": "同枝癒脈",
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "快速急救",
@@ -542,7 +542,7 @@
         },
         {
           "id": "shared_branch_pulse",
-          "name": "同枝共脈",
+          "name": "共生靈庭",
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "治療連結",
@@ -552,7 +552,7 @@
         },
         {
           "id": "shared_pulse_rebirth",
-          "name": "同脈來復",
+          "name": "萬靈歸生",
           "tier": "master",
           "tier_rank": 3,
           "positioning": "復甦終極技",

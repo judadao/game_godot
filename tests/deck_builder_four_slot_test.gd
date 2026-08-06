@@ -81,7 +81,7 @@ func _run() -> void:
 			and (sword_rain_tiers.get_child(1) as Button).text.contains("進階")
 			and (sword_rain_tiers.get_child(2) as Button).text.contains("大師")
 			and flowing_fire_choice != null
-			and flowing_fire_choice.text.contains("流火照夜"),
+			and flowing_fire_choice.text.contains("星火流刃"),
 		"Expedition selection must group 39 official skills into 13 series with tier order."
 	)
 	var sword_rain_basic := sword_rain_tiers.get_child(0) as Button

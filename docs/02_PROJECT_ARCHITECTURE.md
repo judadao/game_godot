@@ -432,6 +432,12 @@ Scene authoring細節見 `docs/03_SCENE_STRUCTURE.md`。
 
 ### 5.2 Combat
 
+正式招式的 Combo authority 位於 `SkillRecipeManager`。Combo Chain 只記錄成功施放的
+Combo／Healing 劍魂身分，並以目前編成招式的 `combo_routes` 比對歷史尾段：基礎、
+進階、大師分別固定為 3、4、6 段。每招可接受正向與反向路線；同一序列會回傳所有
+符合招式，同招在一條 Combo Chain 內只觸發一次。`combo_finishers.json` 僅保留既有
+效果數值與 VFX 相容資料，不再決定正式招式是否成立。
+
 | Class | Source | Contract |
 |---|---|---|
 | `CardEffectRunner` | `scripts/combat/card_effect_runner.gd` | `cast()` 修改 caster/targets，emit `effect_resolved`；大招致死前先以 `prepare_hit_presentation()` 傳遞元素與真實 impact delay |

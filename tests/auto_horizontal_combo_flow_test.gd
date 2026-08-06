@@ -128,7 +128,16 @@ func _run() -> void:
 	off_axis_target.global_position = player.global_position + Vector2(100.0, 100.0)
 
 	var database := game.get("card_database") as CardDatabase
-	for card_id in ["flame_imbue", "echo_volley", "storm_charge"]:
+	var meta := game.get("meta_state") as MetaState
+	for skill_id in ["wildfire_thunder_tone", "thousand_feather_resonance"]:
+		if not meta.learned_skill_ids.has(skill_id):
+			meta.learned_skill_ids.append(skill_id)
+	(game.get("skill_recipe_manager") as SkillRecipeManager).configure_loadout(
+		meta.learned_skill_ids,
+		["wildfire_thunder_tone", "thousand_feather_resonance"],
+		99
+	)
+	for card_id in ["flame_imbue", "echo_volley", "storm_charge", "flame_imbue"]:
 		game.call("_record_combo_formula", database.get_card(card_id))
 	_expect(
 		bool(run.temporary_buffs.get("finisher_pending", false)),

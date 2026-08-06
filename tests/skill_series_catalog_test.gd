@@ -5,19 +5,19 @@ const EXPECTED_SERIES_NAMES := [
 	"雷電", "水流", "植物攻擊", "龍息", "朝陽生息", "同枝共生",
 ]
 const EXPECTED_SKILL_NAMES := [
-	"戰律希聲", "萬劍垂天", "驟雨繁音",
-	"月輪垂光", "扶搖月輪", "月蝕重輪",
-	"千羽相應", "希聲繁羽", "天羽萬象",
-	"古根纏行", "年輪護生", "萬古森羅",
-	"靜岳無移", "石環守一", "群岳歸一",
-	"守一返照", "守一共脈", "天門不破",
-	"流火照夜", "霜蘭流火", "天火燎原",
-	"綿息雷音", "流火雷音", "九霄震律",
-	"扶搖泉湧", "靈泉不窮", "滄海回瀾",
-	"蘭芷成蝕", "荊庭穿心", "萬華噬野",
-	"奧術吐息", "龍脈迴響", "萬象龍臨",
-	"朝光載陽", "春庭載陽", "青庭長春",
-	"春靈來復", "同枝共脈", "同脈來復",
+	"初雨劍聲", "千鋒驟雨", "萬劍天瀑",
+	"新月流刃", "雙月迴輪", "蝕月天環",
+	"聖羽初翔", "千羽巡天", "萬翼神臨",
+	"根脈初生", "年輪森衛", "太古神木",
+	"磐石鎮勢", "群岩成陣", "萬岳天崩",
+	"王盾格守", "王城盾陣", "天門永鎮",
+	"星火流刃", "烈焰焚陣", "天火滅界",
+	"引雷一閃", "奔雷連鎖", "九霄神霆",
+	"流泉迴斬", "滄浪連潮", "四海歸瀾",
+	"荊芽穿刺", "毒華蔓庭", "萬華噬界",
+	"龍息初鳴", "龍脈奔騰", "萬龍天臨",
+	"曙光回生", "朝陽聖域", "大日長明",
+	"同枝癒脈", "共生靈庭", "萬靈歸生",
 ]
 const RETIRED_SKILL_IDS := [
 	"iron_momentum", "ember_reprise", "battle_tempo", "grand_strategy",
@@ -69,6 +69,9 @@ func _run() -> void:
 			_expect((skill.get("animation_beats", []) as Array).size() >= 3, "%s needs an authored continuous animation sequence." % skill_id)
 			_expect(not String(skill.get("legacy_vfx_id", "")).is_empty(), "%s needs one legacy recipe compatibility ID." % skill_id)
 			_expect(String(skill.get("series_vfx_id", "")) == String(series_entry.get("id", "")), "%s must reuse its own series main-object profile." % skill_id)
+			var expected_route_length: int = [3, 4, 6][tier_index]
+			for route_variant in skill.get("combo_routes", []) as Array:
+				_expect((route_variant as Array).size() == expected_route_length, "%s must use its tier's Combo route length." % skill_id)
 
 	_expect(actual_series_names == EXPECTED_SERIES_NAMES, "Series names and order must match the approved design.")
 	_expect(actual_skill_names == EXPECTED_SKILL_NAMES, "All 39 approved skill names must be authoritative.")

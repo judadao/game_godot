@@ -9,6 +9,8 @@ const CATALOG_KIND := "skill_series"
 const TIER_ORDER := ["basic", "advanced", "master"]
 const DEFAULT_MEMORY_CAPACITIES: Array[int] = [10, 14, 18, 24, 30]
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
+const COMBO_FINISHER_CATALOG_SCRIPT := preload("res://scripts/systems/combo_finisher_catalog.gd")
+const TIER_COMBO_LENGTHS := {"basic": 3, "advanced": 4, "master": 6}
 
 var _series_by_id: Dictionary = {}
 var _ordered_series: Array[Dictionary] = []
@@ -19,10 +21,14 @@ var _legacy_vfx_by_skill: Dictionary = {}
 var _tier_labels: Dictionary = {}
 var _active_ids: Array[String] = []
 var _element_taxonomy: RefCounted = ELEMENT_TAXONOMY_SCRIPT.new()
+var _combo_finisher_catalog: RefCounted = COMBO_FINISHER_CATALOG_SCRIPT.new()
 
 
 func load_catalog(path: String) -> bool:
 	_clear_catalog()
+	if not bool(_combo_finisher_catalog.call("load_catalog")):
+		push_error("Legacy Combo effect catalog must load before formal skill routes.")
+		return false
 	if not FileAccess.file_exists(path):
 		push_error("Skill series catalog not found: %s" % path)
 		return false
@@ -115,15 +121,33 @@ func configure_loadout(learned_ids: Array, active_ids: Array, _memory_capacity: 
 	var normalized_active: Array[String] = []
 	for value in active_ids:
 		var skill_id := String(value)
-		if not learned_lookup.has(skill_id) or normalized_active.has(skill_id):
+		if not learned_lookup.has(skill_id):
 			return false
-		normalized_active.append(skill_id)
+		if not normalized_active.has(skill_id):
+			normalized_active.append(skill_id)
 	_active_ids = normalized_active
 	return true
 
 
 func get_active_ids() -> Array[String]:
 	return _active_ids.duplicate()
+
+
+func match_active_combo_routes(sequence: Array) -> Array[Dictionary]:
+	var normalized: Array[String] = []
+	for value in sequence:
+		normalized.append(String(value))
+	var matches: Array[Dictionary] = []
+	for skill_id in _active_ids:
+		var skill := _skills_by_id.get(skill_id, {}) as Dictionary
+		for route_variant in skill.get("combo_routes", []) as Array:
+			if not route_variant is Array:
+				continue
+			var route := route_variant as Array
+			if route.size() <= normalized.size() and route == normalized.slice(normalized.size() - route.size()):
+				matches.append(skill.duplicate(true))
+				break
+	return matches
 
 
 func get_recipe(skill_id: String) -> Dictionary:
@@ -292,11 +316,40 @@ func _validate_skill(skill: Dictionary, series_id: String, tier_index: int) -> b
 		push_error("Skill has no legacy recipe compatibility mapping: %s" % skill_id)
 		return false
 	skill["legacy_vfx_id"] = String(_legacy_vfx_by_skill[skill_id])
+	var legacy_recipe := _combo_finisher_catalog.call(
+		"get_recipe",
+		String(skill["legacy_vfx_id"])
+	) as Dictionary
+	if legacy_recipe.is_empty():
+		push_error("Skill Combo compatibility recipe is missing: %s" % skill_id)
+		return false
+	var route_seed := legacy_recipe.get("sequence", []) as Array
+	var route_length := int(TIER_COMBO_LENGTHS.get(String(skill["tier"]), 0))
+	skill["combo_routes"] = _build_combo_routes(route_seed, route_length)
+	if (skill["combo_routes"] as Array).is_empty():
+		push_error("Skill Combo routes could not be built: %s" % skill_id)
+		return false
 	var icon_path := String(skill.get("icon_path", "")).strip_edges()
 	if not icon_path.is_empty() and not ResourceLoader.exists(icon_path):
 		push_error("Skill icon does not exist: %s -> %s" % [skill_id, icon_path])
 		return false
 	return true
+
+
+func _build_combo_routes(seed: Array, route_length: int) -> Array[Array]:
+	if seed.is_empty() or route_length <= 0:
+		return []
+	var routes: Array[Array] = []
+	var reversed_seed := seed.duplicate()
+	reversed_seed.reverse()
+	for source_variant in [seed, reversed_seed]:
+		var source := source_variant as Array
+		var route: Array[String] = []
+		for index in route_length:
+			route.append(String(source[index % source.size()]))
+		if not routes.has(route):
+			routes.append(route)
+	return routes
 
 
 func _validate_non_empty_strings(value: Variant, minimum_size: int) -> bool:

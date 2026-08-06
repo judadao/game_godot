@@ -127,6 +127,10 @@ z-order、layout 與 generated Scene parity。圖片迭代過程不為主觀畫�
 
 ### 5.1 Focused tests
 
+`combo_skill_route_union_test.gd` 鎖定正式 Combo 契約：三階必須分別使用 3／4／6
+次成功 Combo、混合路線須提供不同順序，且同一歷史尾段必須聯集觸發所有已編成的
+符合招式並對單招去重。
+
 單一測試仍可直接執行：
 
 ```bash

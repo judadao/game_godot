@@ -69,8 +69,8 @@ func _run() -> void:
 	for retired_name in ["天際流光", "天光回羽", "鋼鐵意志"]:
 		_expect(not projection.any(func(entry: Dictionary) -> bool: return String(entry.get("name", "")) == retired_name), "Retired skill name must not appear in the codex: %s." % retired_name)
 
-	_expect(String((entries_by_id.get("myriad_blades_descend", {}) as Dictionary).get("name", "")) == "萬劍垂天", "萬劍垂天 must replace 天際流光.")
-	_expect(String((entries_by_id.get("celestial_feather_myriad", {}) as Dictionary).get("name", "")) == "天羽萬象", "天羽萬象 must replace 天光回羽.")
+	_expect(String((entries_by_id.get("myriad_blades_descend", {}) as Dictionary).get("name", "")) == "千鋒驟雨", "千鋒驟雨 must be the Sword Rain advanced name.")
+	_expect(String((entries_by_id.get("celestial_feather_myriad", {}) as Dictionary).get("name", "")) == "萬翼神臨", "萬翼神臨 must be the Feather master name.")
 	_expect(String((entries_by_id.get("thousand_feather_resonance", {}) as Dictionary).get("kind_label", "")).contains("羽毛系列"), "千羽相應 must be classified under the Feather series.")
 	var flowing_fire := entries_by_id.get("flowing_fire_night", {}) as Dictionary
 	_expect(

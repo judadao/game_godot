@@ -124,12 +124,18 @@ func _run() -> void:
 		game.call("_begin_autumn_run", [
 			"healing_light", "flame_imbue", "echo_volley", "storm_charge",
 		])
+		var meta := game.get("meta_state") as MetaState
+		if not meta.learned_skill_ids.has("wildfire_thunder_tone"):
+			meta.learned_skill_ids.append("wildfire_thunder_tone")
+		(game.get("skill_recipe_manager") as SkillRecipeManager).configure_loadout(
+			meta.learned_skill_ids, ["wildfire_thunder_tone"], 99
+		)
 		(game.get("divine_gift_manager") as RefCounted).call(
 			"add_or_upgrade",
 			"resonant_grace"
 		)
 		var run := game.get("run_state") as RunState
-		for card_id in ["flame_imbue", "echo_volley", "storm_charge"]:
+		for card_id in ["flame_imbue", "echo_volley", "storm_charge", "flame_imbue"]:
 			game.call("_record_combo_formula", database.get_card(card_id))
 		_expect(
 			bool(run.temporary_buffs.get("finisher_pending", false)),
@@ -141,7 +147,7 @@ func _run() -> void:
 		) as Dictionary
 		var effect := finisher.get("effect", {}) as Dictionary
 		_expect(
-			String(finisher.get("name", "")).ends_with("流火雷音")
+			String(finisher.get("name", "")).ends_with("奔雷連鎖")
 				and int(effect.get("amount", 0)) > int(
 					(database.get_card("ember_bolt").get("effect", {}) as Dictionary).get(
 						"amount",

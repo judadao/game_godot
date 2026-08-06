@@ -38,6 +38,12 @@ func _run() -> void:
 	])
 	var database := game.get("card_database") as CardDatabase
 	var run := game.get("run_state") as RunState
+	var meta := game.get("meta_state") as MetaState
+	var skills := game.get("skill_recipe_manager") as SkillRecipeManager
+	for skill_id in ["thousand_feather_resonance", "nine_heavens_thunder_cadence"]:
+		if not meta.learned_skill_ids.has(skill_id):
+			meta.learned_skill_ids.append(skill_id)
+	skills.configure_loadout(meta.learned_skill_ids, ["thousand_feather_resonance", "nine_heavens_thunder_cadence"], 99)
 
 	game.call("_record_combo_formula", database.get_card("healing_light"))
 	var healing_history := run.temporary_buffs.get("combo_formula_history", []) as Array
@@ -53,10 +59,10 @@ func _run() -> void:
 	_expect(
 		queue.size() == 1
 			and String((queue[0] as Dictionary).get("recipe_id", ""))
-				== "thousand_blade_kill",
+				== "thousand_feather_resonance",
 		"Echo Volley three times must match the learned Thousand Blade Kill recipe."
 	)
-	for _repeat in 3:
+	for _repeat in 6:
 		game.call("_record_combo_formula", database.get_card("storm_charge"))
 	_expect(
 		(run.temporary_buffs.get("finisher_queue", []) as Array).size() == 2,
@@ -70,7 +76,7 @@ func _run() -> void:
 		database.get_card("ember_bolt")
 	) as Dictionary
 	_expect(
-		String(finisher.get("name", "")) == "絕對零度的千羽相應",
+		String(finisher.get("name", "")) == "絕對零度的聖羽初翔",
 		"The ice Gift must transform 千羽相應 while preserving the stable recipe identity."
 	)
 	var finisher_effect := finisher.get("effect", {}) as Dictionary

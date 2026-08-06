@@ -35,8 +35,8 @@ func _run() -> void:
 	_expect(ui.call("get_visible_codex_count") == 39, "Codex must list all 39 current skills.")
 	_expect(codex_rows.item_count == 52, "Codex must group 39 skills under 13 visible series headers.")
 	var expected_opening_rows := [
-		"◆  劍雨系列", "基礎 · 戰律希聲", "進階 · 萬劍垂天", "大師 · 驟雨繁音",
-		"◆  月輪系列", "基礎 · 月輪垂光", "進階 · 扶搖月輪", "大師 · 月蝕重輪",
+		"◆  劍雨系列", "基礎 · 初雨劍聲", "進階 · 千鋒驟雨", "大師 · 萬劍天瀑",
+		"◆  月輪系列", "基礎 · 新月流刃", "進階 · 雙月迴輪", "大師 · 蝕月天環",
 	]
 	for row_index in expected_opening_rows.size():
 		_expect(
