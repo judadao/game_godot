@@ -152,6 +152,19 @@ catalog 欄位。持續 controller 再由 `moon_wheel_bounce_controller_test.gd`
 `healing_zone_controller_test.gd` 與 `body_overdrive_controller_test.gd` 驗證時序、命中上限、
 安全位移、治療脈衝與 Buff 到期狀態。
 
+`residual_lightning_material_vfx_test.gd` 鎖定雷電系列 renderer 不得含任何 target-to-target
+`Line2D` 路線；每個標記至少有兩段局部表面電弧，active focus 必須快速換到下一個物體，
+位置 provider 必須讓殘雷跟隨移動中的敵人，且實際天雷仍由 gameplay `final_strike` event
+擁有。相同測試亦驗證 A→B chain bolt 使用
+不超過 0.28 秒的 conductive-head 放電，至少具有 glow／色彩體／白熱芯；天雷必須是
+preflash、天空主雷、分支、接地閃光、spark 與殘電等至少六層的 top-down composition。
+Advanced 20 targets 必須配置至少 12 個 world-space spark emitters，避免 0.02 秒 hop 截斷
+0.22 秒粒子；sky-strike spark 在 contact 前不得 emitting，且只能觸發一次。Router test
+需分開 emit chain／final，確認 chain 不會提前建立 `lightning_impact`，並以 36px／960px
+兩種 hop 驗證 bolt 兩端都精準接到 gameplay endpoint。NamedSkill 整合測試另以負 X、
+非一倍縮放、不同 Hurtbox offset 與超過十名亂序目標，鎖定顯示目標沿用 gameplay 的
+敵人節點距離最近優先，且 local／world 座標轉換不會讓 Hurtbox 標記漂移。
+
 `moon_wheel_material_vfx_test.gd` 另外鎖定月輪 renderer 不含任何 `Line2D` 軌跡／反彈
 導引線，五層材質節奏為顯形、加速、牆面接觸、反彈再釋放與殘光消散；同一時間必須
 存在相反 X 方向與多組 Y 位移，避免所有環刃退化成同步雨刷。每枚月輪另需各有一組

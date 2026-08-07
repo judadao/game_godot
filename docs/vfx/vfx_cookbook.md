@@ -21,6 +21,27 @@ Every primitive has a runnable scene under `scenes/vfx/demos/`.
   [2D electric arc](https://godotshaders.com/shader/2d-lightning-electric-arc-plasma/),
   [transparent lightning](https://godotshaders.com/shader/transparent-lightning/),
   [Godot goodies](https://github.com/nezvers/Godot_goodies).
+
+Lightning has two distinct topologies and they must not be conflated. A chain hop is a short-lived
+conductive event between two real gameplay endpoints: a narrow moving head reveals the displaced
+path, then glow, colored body and white-hot core coincide for one discharge before disappearing.
+It is not a persistent trail. A residual mark does not draw the route at all; several short arcs
+crawl around each marked body's local silhouette while a single focus and bounded spark burst jump
+rapidly between marks. The delayed sky strike is authored separately as `pre-ionization → top-down
+main bolt → secondary branch → white contact exposure → sparks → ground-crawling residue → fade`.
+Its actual spawn remains owned by the controller's `final_strike` signal. The reusable lightning
+shader combines transparent additive core/glow distance with quantized current noise; procedural
+path regeneration supplies silhouette change, while particles supply detached sparks. This keeps
+shader noise, Line2D geometry, and GPUParticles2D in separate visual roles. Moving residual marks
+receive presentation-only target positions every frame. Their 0.22-second sparks use a bounded,
+world-space emitter pool sized from `duration / (target_count × hop_count)`, so a fast focus jump
+cannot restart or drag the previous burst. Chain events spawn only `lightning_bolt`; only the delayed
+`final_strike` event spawns `lightning_impact`, whose sparks remain disabled until ground contact.
+Bolt length is derived from the complete gameplay endpoint distance without clamping; only lateral
+noise and thickness are bounded. Residual targets retain the gameplay controller's nearest-first node
+ordering; only after selection are Hurtbox centers converted through the presentation root's inverse
+transform, so target caps stay synchronized while mirrored and non-unit skill scales cannot move the
+visible current away from the target.
 - Water: small noise displacement, independent moving wave bands and a limited deep/body/foam
   palette produce water. Screen refraction is optional and should be reserved for larger water
   bodies; splashes remain particle-driven. Sources: [CanvasItem water](https://godotshaders.com/shader/water-shader-by-hexagonnico/),

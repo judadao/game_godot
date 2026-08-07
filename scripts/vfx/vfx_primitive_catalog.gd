@@ -23,7 +23,7 @@ const PROFILES := {
 	&"lightning_bolt": {
 		"element": &"lightning", "motion": &"bolt", "one_shot": true,
 		"primary": Color("f5fbff"), "secondary": Color("73d8ff"), "accent": Color("765cff"),
-		"lifetime": 0.34, "amount": 34, "bounds": Vector2(320.0, 144.0),
+		"lifetime": 0.24, "amount": 38, "bounds": Vector2(320.0, 144.0),
 		"layers": [&"Glow", &"MainBolt", &"BranchBolts", &"Sparks", &"ImpactFlash"],
 	},
 	&"electric_arc": {
@@ -35,7 +35,7 @@ const PROFILES := {
 	&"lightning_impact": {
 		"element": &"lightning", "motion": &"impact", "one_shot": true,
 		"primary": Color("ffffff"), "secondary": Color("79dcff"), "accent": Color("6d54ff"),
-		"lifetime": 0.56, "amount": 48, "bounds": Vector2(224.0, 224.0),
+		"lifetime": 0.62, "amount": 58, "bounds": Vector2(224.0, 280.0),
 		"layers": [&"Glow", &"MainBolt", &"BranchBolts", &"Sparks", &"ImpactFlash"],
 	},
 	&"water_stream": {

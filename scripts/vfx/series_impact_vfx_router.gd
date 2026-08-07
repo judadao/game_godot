@@ -128,7 +128,6 @@ func _on_healing_pulse(amount: int, world_position: Vector2, visual_parent: Node
 
 func _on_lightning_chain(from_position: Vector2, _target: Node, target_position: Vector2, visual_parent: Node, overlays: Array) -> void:
 	_spawn_primitive(&"lightning_bolt", "lightning", visual_parent, from_position, target_position, overlays, 0.74)
-	_spawn_primitive(&"lightning_impact", "lightning", visual_parent, target_position, Vector2.ZERO, overlays, 0.48)
 
 
 func _spawn_primitive(
@@ -166,7 +165,11 @@ func _spawn_primitive(
 	})
 	if effect_id in [&"lightning_bolt", &"wind_slash"] and origin != target:
 		var authored_length := 320.0 if effect_id == &"lightning_bolt" else 292.0
-		primitive.set("effect_scale", clampf(origin.distance_to(target) / authored_length, 0.25, 2.2))
+		var distance_scale := origin.distance_to(target) / authored_length
+		primitive.set(
+			"effect_scale",
+			distance_scale if effect_id == &"lightning_bolt" else clampf(distance_scale, 0.25, 2.2)
+		)
 		var midpoint := (origin + target) * 0.5
 		primitive.call("play", midpoint, target)
 	else:

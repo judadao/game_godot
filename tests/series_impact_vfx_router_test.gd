@@ -46,10 +46,32 @@ func _run() -> void:
 	root.add_child(lightning_fixture)
 	_expect(bool(router.call("bind_controller", "lightning", lightning_fixture, lightning_root, [])), "Lightning controllers must bind chain and final-strike events.")
 	lightning_fixture.chain_hit.emit(Vector2(10.0, 12.0), null, Vector2(150.0, 44.0))
-	lightning_fixture.final_strike.emit(null, Vector2(150.0, 44.0))
 	await process_frame
 	_expect(_has_primitive(lightning_root, "lightning_bolt"), "A chain hop must render a procedural bolt between its real endpoints.")
+	_expect(not _has_primitive(lightning_root, "lightning_impact"), "A chain hop must not prematurely spawn the delayed top-down sky strike.")
+	lightning_fixture.final_strike.emit(null, Vector2(150.0, 44.0))
+	await process_frame
 	_expect(_has_primitive(lightning_root, "lightning_impact"), "Residual lightning must end with the shared heavy impact primitive.")
+	var endpoint_cases := [
+		[Vector2(30.0, 220.0), Vector2(66.0, 220.0)],
+		[Vector2(-260.0, 280.0), Vector2(700.0, 280.0)],
+	]
+	for endpoint_case in endpoint_cases:
+		var case_origin := endpoint_case[0] as Vector2
+		var case_target := endpoint_case[1] as Vector2
+		lightning_fixture.chain_hit.emit(case_origin, null, case_target)
+		await process_frame
+		var routed_bolt := _last_primitive(lightning_root, "lightning_bolt")
+		_expect(routed_bolt != null, "Every Residual Lightning hop must create a bolt primitive.")
+		if routed_bolt != null:
+			routed_bolt.call("_process", float(routed_bolt.get("effect_lifetime")) * 0.30)
+			var main_bolt := routed_bolt.get_node_or_null("MainBolt") as Line2D
+			_expect(main_bolt != null and main_bolt.points.size() >= 2, "A routed bolt must expose its generated conductive path.")
+			if main_bolt != null and main_bolt.points.size() >= 2:
+				var rendered_start := main_bolt.to_global(main_bolt.points[0])
+				var rendered_end := main_bolt.to_global(main_bolt.points[-1])
+				_expect(rendered_start.distance_to(case_origin) < 0.5, "Lightning must begin at its real source even for very short or long hops.")
+				_expect(rendered_end.distance_to(case_target) < 0.5, "Lightning must terminate exactly on its real target without clamp overshoot or undershoot.")
 
 	var water_root := Node2D.new()
 	root.add_child(water_root)
@@ -80,7 +102,7 @@ func _run() -> void:
 	_expect(burst != null and burst.has_meta("skill_series_id") and String(burst.get_meta("skill_series_id")) == "black_hole", "Spawned primitives must retain series identity for Blessing mutation and diagnostics.")
 
 	var state := router.call("get_debug_state") as Dictionary
-	_expect(int(state.get("spawn_count", 0)) == 7, "Router diagnostics must count every gameplay-triggered primitive.")
+	_expect(int(state.get("spawn_count", 0)) == 8, "Router diagnostics must count every gameplay-triggered primitive without a duplicate chain sky strike.")
 	_expect((state.get("effect_counts", {}) as Dictionary).has("fire_burst"), "Router diagnostics must expose concrete primitive usage.")
 	_finish()
 
@@ -94,6 +116,14 @@ func _find_primitive(parent: Node, effect_id: String) -> Node:
 
 func _has_primitive(parent: Node, effect_id: String) -> bool:
 	return _find_primitive(parent, effect_id) != null
+
+
+func _last_primitive(parent: Node, effect_id: String) -> Node:
+	for child_index in range(parent.get_child_count() - 1, -1, -1):
+		var child := parent.get_child(child_index)
+		if String(child.get("effect_id")) == effect_id:
+			return child
+	return null
 
 
 func _primitive_position(parent: Node, effect_id: String) -> Vector2:

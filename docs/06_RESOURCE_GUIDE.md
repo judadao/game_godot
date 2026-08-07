@@ -119,6 +119,11 @@ Generated combat presentation：
   alpha、dissolve 與 motion 原語，不包含招式 ID；技術來源、Godot 4.7 語法筆記與效能
   guardrails 記錄於 `docs/vfx/`。`scenes/vfx/primitives/` 的 18 個 scene 共用這些資源，
   每個 particle layer 上限 160 且必須宣告 bounded visibility rect。
+- `lightning_energy.gdshader` 是透明 additive 雷電材質，只負責橫截面 core／glow 與
+  量化高速電流噪聲；程序化 A→B／天降路徑由 `LightningVFXPrimitive2D` 產生，局部殘雷
+  由 `ResidualLightningMaterialVFX2D` 產生。三者不共用一條長 trail，也不保存敵人或
+  傷害 authority。`ChargeSparks` 使用依 hop interval 配置的 bounded world-space
+  `GPUParticles2D` pool；strike sparks 預先配置但直到 main bolt 接地才開始 one-shot。
 - `NamedSkillVFXCatalog` 將 32 個 Finisher recipe、32 個逐招 visual identity、32 張
   semantic material plates、32 組十二格手繪物件序列、五個 legacy Finisher atlas 基底與四個 trigger profile 合併為
   runtime profiles。Trigger 才拼裝 Charge／Attack／Trail／Impact／Debris；Finisher

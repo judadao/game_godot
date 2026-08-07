@@ -1,12 +1,18 @@
 [gd_scene load_steps=3 format=3]
-[ext_resource type="Script" path="res://scripts/vfx/layered_series_material_vfx_2d.gd" id="1"]
-[sub_resource type="CanvasItemMaterial" id="1_add"]
+
+[ext_resource type="Script" path="res://scripts/vfx/residual_lightning_material_vfx_2d.gd" id="1_script"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
 blend_mode = 1
-[node name="ResidualLightningMaterialVFX2D" type="Node2D"]
-material = SubResource("1_add")
-script = ExtResource("1")
-visual_family = "lightning"
-[node name="EnergyContour" type="Line2D" parent="."]
-[node name="MotionTrail" type="Line2D" parent="."]
-[node name="AccentLine" type="Line2D" parent="."]
-[node name="Motes" type="GPUParticles2D" parent="."]
+light_mode = 1
+
+[node name="ResidualLightningMaterialVFX2D" type="Node2D" groups=["ReusableVFX", "SkillSeriesMaterialVFX"]]
+material = SubResource("CanvasItemMaterial_add")
+script = ExtResource("1_script")
+
+[node name="ChargeSparks" type="GPUParticles2D" parent="."]
+z_index = 4
+emitting = false
+one_shot = true
+visibility_rect = Rect2(-700, -360, 1400, 620)
+use_parent_material = true

@@ -356,7 +356,19 @@ func _configure_extended_series_renderer(series_id: String, tier_rank: int, reci
 		"fire":
 			_fire_pillar_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters, _runtime_target_local_positions(20))
 		"lightning":
-			_residual_lightning_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters, _runtime_target_local_positions(int(parameters.get("target_limit", 10))))
+			var lightning_target_limit := int(parameters.get("target_limit", 10))
+			_residual_lightning_material_vfx.call(
+				"configure",
+				_series_sprites,
+				tier_rank,
+				palette,
+				parameters,
+				_runtime_target_local_positions(lightning_target_limit)
+			)
+			_residual_lightning_material_vfx.call(
+				"set_target_position_provider",
+				Callable(self, "_runtime_target_local_positions").bind(lightning_target_limit)
+			)
 		"water_flow":
 			_tidal_push_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters, _runtime_target_local_positions(12))
 		"dragon_breath":
@@ -395,11 +407,12 @@ func _extended_renderers() -> Array[Node2D]:
 
 func _runtime_target_local_positions(limit: int) -> Array[Vector2]:
 	var result: Array[Vector2] = []
-	for target_ref in _runtime_initial_target_refs:
-		var target := target_ref.get_ref() as Node2D
-		if target == null or not is_instance_valid(target):
-			continue
-		result.append(ATTACK_GEOMETRY.target_center(target) - global_position)
+	var targets := _get_live_runtime_targets()
+	targets.sort_custom(func(a: Node2D, b: Node2D) -> bool:
+		return a.global_position.distance_squared_to(global_position) < b.global_position.distance_squared_to(global_position)
+	)
+	for target in targets:
+		result.append(to_local(ATTACK_GEOMETRY.target_center(target)))
 		if result.size() >= limit:
 			break
 	return result
@@ -1386,6 +1399,8 @@ func _get_live_runtime_targets() -> Array[Node2D]:
 		var initial_target := target_ref.get_ref() as Node2D
 		if _is_runtime_target_valid(initial_target) and not targets.has(initial_target):
 			targets.append(initial_target)
+	if not _runtime_target_provider.is_valid():
+		return targets
 	var provided: Variant = _runtime_target_provider.call()
 	if not provided is Array:
 		return targets
