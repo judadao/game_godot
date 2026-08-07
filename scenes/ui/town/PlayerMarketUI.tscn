@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=40 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/town/player_market_ui.gd" id="1_script"]
 [ext_resource type="Theme" path="res://scenes/ui/town/TownServiceFrameTheme.tres" id="2_theme"]
@@ -11,6 +11,9 @@
 [ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_midground.png" id="9_shop_mid"]
 [ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_foreground.png" id="10_shop_fore"]
 [ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_decor_atlas.png" id="11_shop_decor"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/market_fixture_atlas.png" id="12_fixture_atlas"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_ambient_atlas.png" id="13_ambient_atlas"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_menu_icons.png" id="14_menu_icons"]
 
 [sub_resource type="AtlasTexture" id="TravelerFrame"]
 atlas = ExtResource("5_traveler")
@@ -47,6 +50,62 @@ region = Rect2(512, 512, 512, 512)
 [sub_resource type="AtlasTexture" id="DecorShield"]
 atlas = ExtResource("11_shop_decor")
 region = Rect2(1024, 512, 512, 512)
+
+[sub_resource type="AtlasTexture" id="FixtureBasic"]
+atlas = ExtResource("12_fixture_atlas")
+region = Rect2(0, 0, 627, 627)
+
+[sub_resource type="AtlasTexture" id="AmbientHerbs"]
+atlas = ExtResource("13_ambient_atlas")
+region = Rect2(0, 0, 627, 627)
+
+[sub_resource type="AtlasTexture" id="AmbientLamp"]
+atlas = ExtResource("13_ambient_atlas")
+region = Rect2(627, 0, 627, 627)
+
+[sub_resource type="AtlasTexture" id="AmbientBanner"]
+atlas = ExtResource("13_ambient_atlas")
+region = Rect2(627, 627, 627, 627)
+
+[sub_resource type="AtlasTexture" id="MarketHeaderIcon"]
+atlas = ExtResource("14_menu_icons")
+region = Rect2(627, 0, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="MarketBackIcon"]
+atlas = ExtResource("14_menu_icons")
+region = Rect2(940.5, 0, 313.5, 313.5)
+
+[sub_resource type="Animation" id="MarketAmbientReset"]
+length = 0.0
+
+[sub_resource type="Animation" id="MarketAmbient"]
+resource_name = "ambient"
+length = 6.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AmbientHerbs:rotation")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {"times": PackedFloat32Array(0, 1.6, 3.2, 4.8, 6.4), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [-0.018, 0.018, -0.012, 0.014, -0.018]}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AmbientLamp:modulate")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {"times": PackedFloat32Array(0, 1.3, 2.7, 4.2, 6.4), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(1, 0.9, 0.7, 0.68), Color(1, 0.78, 0.48, 0.9), Color(1, 0.9, 0.7, 0.7), Color(1, 0.82, 0.54, 0.86), Color(1, 0.9, 0.7, 0.68)]}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("AmbientBanner:rotation")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {"times": PackedFloat32Array(0, 2.1, 4.2, 6.4), "transitions": PackedFloat32Array(1, 1, 1, 1), "update": 0, "values": [0.012, -0.015, 0.016, 0.012]}
+
+[sub_resource type="AnimationLibrary" id="MarketAnimationLibrary"]
+_data = {&"RESET": SubResource("MarketAmbientReset"), &"ambient": SubResource("MarketAmbient")}
 
 [sub_resource type="StyleBoxFlat" id="WindowStyle"]
 bg_color = Color(0.045, 0.048, 0.05, 0.99)
@@ -175,7 +234,7 @@ theme_override_constants/separation = 12
 [node name="HeaderIcon" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Header"]
 custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
-texture = ExtResource("3_market")
+texture = SubResource("MarketHeaderIcon")
 texture_filter = 1
 expand_mode = 3
 stretch_mode = 5
@@ -200,7 +259,7 @@ text = "管理商品、貨架、價格策略與流言顧客"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(168, 44)
 layout_mode = 2
-icon = ExtResource("4_back")
+icon = SubResource("MarketBackIcon")
 icon_max_width = 20
 expand_icon = true
 theme_override_styles/normal = SubResource("ButtonStyle")
@@ -346,6 +405,20 @@ grow_horizontal = 2
 grow_vertical = 2
 tooltip_text = "離開店面並返回鐵匠鋪"
 flat = true
+
+[node name="MarketFixtureVisual" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+unique_name_in_owner = true
+z_index = 3
+layout_mode = 1
+anchor_left = 0.66
+anchor_top = 0.43
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = SubResource("FixtureBasic")
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Counter" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
 z_index = 4
@@ -680,6 +753,54 @@ texture = ExtResource("10_shop_fore")
 expand_mode = 1
 stretch_mode = 0
 
+[node name="AmbientHerbs" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+z_index = 9
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = -0.03
+anchor_right = 0.14
+anchor_bottom = 0.34
+pivot_offset = Vector2(70, 4)
+rotation = -0.018
+mouse_filter = 2
+texture = SubResource("AmbientHerbs")
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AmbientLamp" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+z_index = 9
+modulate = Color(1, 0.9, 0.7, 0.68)
+layout_mode = 1
+anchor_left = 0.43
+anchor_top = -0.04
+anchor_right = 0.57
+anchor_bottom = 0.36
+mouse_filter = 2
+texture = SubResource("AmbientLamp")
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AmbientBanner" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+z_index = 9
+layout_mode = 1
+anchor_left = 0.84
+anchor_top = -0.03
+anchor_right = 0.98
+anchor_bottom = 0.34
+pivot_offset = Vector2(70, 4)
+rotation = 0.012
+mouse_filter = 2
+texture = SubResource("AmbientBanner")
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MarketAmbientAnimation" type="AnimationPlayer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+libraries = {&"": SubResource("MarketAnimationLibrary")}
+autoplay = "ambient"
+
 [node name="HangingLamp" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
 visible = false
 layout_mode = 1
@@ -947,6 +1068,14 @@ layout_mode = 2
 theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
 text = "目前櫃台：木製交易台 · 2 格"
+
+[node name="MarketFixtureBenefit" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.78, 0.56, 1)
+theme_override_font_sizes/font_size = 12
+text = "設備效益：木製交易台提供 2 格商品陳列空間"
+autowrap_mode = 2
 
 [node name="ShelfDetail" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout"]
 layout_mode = 2

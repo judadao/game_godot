@@ -60,6 +60,7 @@ func _configure_region_slot(
 	var variant_ids := _catalog.get_slot_variant_ids(chapter_id, slot_id)
 	var glow := portal.get_node_or_null("ActiveGlow") as CanvasItem
 	var seal := portal.get_node_or_null("Seal") as CanvasItem
+	var portal_visual := portal.get_node_or_null("PortalVisual")
 	portal.set_meta("expedition_variant_options", [])
 	if variant_ids.is_empty():
 		portal.set_meta("expedition_variant_id", &"")
@@ -70,6 +71,8 @@ func _configure_region_slot(
 			glow.visible = false
 		if seal != null:
 			seal.visible = true
+		if portal_visual != null and portal_visual.has_method("set_sealed"):
+			portal_visual.call("set_sealed", true)
 		return
 	var options: Array[Dictionary] = []
 	var ready_key_count := 0
@@ -106,6 +109,8 @@ func _configure_region_slot(
 		glow.visible = true
 	if seal != null:
 		seal.visible = false
+	if portal_visual != null and portal_visual.has_method("set_sealed"):
+		portal_visual.call("set_sealed", false)
 
 
 func _configure_boss_gate(
@@ -122,6 +127,7 @@ func _configure_boss_gate(
 		boss_label.text = "中央 Boss 封印\n尚未感應到強敵"
 		$BossPortal/ReadyGlow.visible = false
 		$BossPortal/Seal.visible = true
+		$BossPortal/PortalVisual.set_sealed(true)
 	else:
 		var options: Array[Dictionary] = []
 		for variant_id in ready_variants:
@@ -149,6 +155,7 @@ func _configure_boss_gate(
 		)
 		$BossPortal/ReadyGlow.visible = true
 		$BossPortal/Seal.visible = false
+		$BossPortal/PortalVisual.set_sealed(false)
 
 
 func _build_variant_option(

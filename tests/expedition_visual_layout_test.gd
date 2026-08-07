@@ -27,6 +27,14 @@ func _check_hub_layout(viewport_size: Vector2i) -> void:
 	root.add_child(viewport)
 	var hub := HUB_SCENE.instantiate()
 	viewport.add_child(hub)
+	if _capture_requested() and viewport_size == Vector2i(1600, 900):
+		await process_frame
+		await process_frame
+		var sealed_image := viewport.get_texture().get_image()
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(CAPTURE_DIRECTORY))
+		_expect(sealed_image.save_png(ProjectSettings.globalize_path(
+			CAPTURE_DIRECTORY.path_join("portal_hub_sealed_1600x900.png")
+		)) == OK, "Sealed portal sanctuary capture must save.")
 	hub.call(
 		"configure_progression",
 		{"chapter_id": "chapter_04"},
@@ -46,10 +54,13 @@ func _check_hub_layout(viewport_size: Vector2i) -> void:
 		_expect(safe_rect.encloses(label.get_global_rect()), "%s must remain inside %s." % [label_path, viewport_size])
 	if _capture_requested():
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(CAPTURE_DIRECTORY))
-		await RenderingServer.frame_post_draw
-		_expect(viewport.get_texture().get_image().save_png(
+		await process_frame
+		var hub_image := viewport.get_texture().get_image()
+		_expect(hub_image.save_png(
 			ProjectSettings.globalize_path(CAPTURE_DIRECTORY.path_join("portal_hub_%dx%d.png" % [viewport_size.x, viewport_size.y]))
 		) == OK, "Portal sanctuary capture must save.")
+		if viewport_size == Vector2i(1600, 900):
+			_save_hub_slices(hub_image)
 	viewport.queue_free()
 	await process_frame
 
@@ -75,7 +86,7 @@ func _check_six_route_zones() -> void:
 		for zone_index in 6:
 			camera.position.x = lerpf(640.0, 9920.0, float(zone_index) / 5.0)
 			await process_frame
-			await RenderingServer.frame_post_draw
+			await process_frame
 			_expect(viewport.get_texture().get_image().save_png(
 				ProjectSettings.globalize_path(CAPTURE_DIRECTORY.path_join("hell_route_zone_%d.png" % (zone_index + 1)))
 			) == OK, "Six-zone route capture must save.")
@@ -113,7 +124,7 @@ func _check_crystal_modular_terrain() -> void:
 		for zone_index in 6:
 			camera.position.x = lerpf(640.0, 9920.0, float(zone_index) / 5.0)
 			await process_frame
-			await RenderingServer.frame_post_draw
+			await process_frame
 			_expect(viewport.get_texture().get_image().save_png(
 				ProjectSettings.globalize_path(CAPTURE_DIRECTORY.path_join("crystal_route_zone_%d.png" % (zone_index + 1)))
 			) == OK, "Crystal six-zone capture must save.")
@@ -130,3 +141,21 @@ func _expect(condition: bool, message: String) -> void:
 
 func _capture_requested() -> bool:
 	return "--capture" in OS.get_cmdline_user_args()
+
+
+func _save_hub_slices(image: Image) -> void:
+	var output_dir := ProjectSettings.globalize_path(CAPTURE_DIRECTORY)
+	var slice_size := Vector2i(image.get_width() / 3, image.get_height() / 2)
+	for row in 2:
+		for column in 3:
+			var index := row * 3 + column + 1
+			var slice := image.get_region(Rect2i(
+				column * slice_size.x,
+				row * slice_size.y,
+				slice_size.x,
+				slice_size.y
+			))
+			_expect(
+				slice.save_png(output_dir.path_join("portal_hub_slice_%d.png" % index)) == OK,
+				"Portal sanctuary review slice %d must save." % index
+			)

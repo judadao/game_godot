@@ -683,8 +683,10 @@ HUDLayer
 
 - Material Yard：左側店長肖像，中欄 Materials／Forge Tools offers，右欄商品、
   持有量、Material Yard level、數量與購買。
-- Player Blacksmith：進場先以舊工業鐵匠鋪圖層顯示熔爐、工作台與商店門，不能把服務功能直接列成選單；
+- Player Blacksmith：進場先以暖木、石牆與柔和爐火的中世紀工坊前中後景顯示熔爐、工作台與商店門，不能把服務功能直接列成選單；
   三個圖像 hotspot 必須能用方向鍵／Tab 切換，並保留可見焦點框；
+  hotspot 主體使用 `blacksmith_interactive_objects.png` atlas 的鐵砧、工作桌與拱門，焦點只能以細亮框提示，
+  不得以實心遮罩蓋住物件。鐵鎚沿可讀的抬起／落下／回彈路徑循環，命中時才顯示火花與爐火增亮；
   點選熔爐後才依圖紙鍛造 equipment／Sword Soul，
   Workshop Upgrade 解鎖鍛造上限；recipe detail 顯示該圖紙熟練度、品質機率與
   Lv.5 覺醒狀態。四個 authored 工法按鈕依序顯示 icon／名稱／tooltip，選擇後必須
@@ -702,6 +704,8 @@ HUDLayer
   下一位客人。親民價成交率最高但單件收入最低，精品價反之；流言顧客、Market 裝潢
   及商旅印章可提高高價接受度。Market 建築 Lv.0／1／2／3 只決定可購買的櫃台階級，
   購買並安裝家具後才依序取得 2／3／4／6 個實際貨架，低等建築不得購買高階櫃台。
+  店內櫃台必須依目前 `basic_counter`／`cedar_display`／`iron_display`／`grand_counter`
+  切換同一家具 atlas 的 2／3／4／6 格外觀，並以文字直接說明真實容量效益；不得另建僅供 UI 顯示的假交易加成。
   Market Lv.1 前不投影裝備買家。返回鐵匠鋪時必須保留先前圖紙、工法與素材品質選擇。
   店內視覺使用暖木牆、日光窗、花架、農產展示桌與結帳櫃台，以及可替換的
   鈴鐺、鑰匙工具、布旗、麵包果籃、果醬陶器與花店招牌裝潢。三層圖片皆為

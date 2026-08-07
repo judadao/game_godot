@@ -37,6 +37,8 @@ signal market_fixture_purchase_requested(fixture_id: StringName)
 @onready var rumor_label: Label = %MarketRumorLabel
 @onready var feedback_label: Label = %MarketFeedbackLabel
 @onready var fixture_button: Button = %MarketFixtureButton
+@onready var fixture_visual: TextureRect = %MarketFixtureVisual
+@onready var fixture_benefit: Label = %MarketFixtureBenefit
 @onready var product_labels: Array[Label] = [%Product1, %Product2, %Product3]
 @onready var customer_speech: Label = %MarketCustomerSpeech
 @onready var context_bar: HBoxContainer = %ContextBar
@@ -357,8 +359,26 @@ func _refresh_fixture() -> void:
 	var fixture_state := _sale_overview.get("fixture_state", {}) as Dictionary
 	var active := fixture_state.get("active", {}) as Dictionary
 	var next_fixture := fixture_state.get("next", {}) as Dictionary
+	var active_id := String(active.get("id", "basic_counter"))
+	var active_name := String(active.get("name", "木製交易台"))
+	var active_capacity := int(active.get("capacity", 2))
+	var fixture_regions := {
+		"basic_counter": Rect2(0, 0, 627, 627),
+		"cedar_display": Rect2(627, 0, 627, 627),
+		"iron_display": Rect2(0, 627, 627, 627),
+		"grand_counter": Rect2(627, 627, 627, 627),
+	}
+	if fixture_visual.texture is AtlasTexture:
+		(fixture_visual.texture as AtlasTexture).region = fixture_regions.get(
+			active_id,
+			fixture_regions["basic_counter"]
+		)
+	fixture_benefit.text = "設備效益：%s提供 %d 格商品陳列空間，升級後可同時接待更多交易。" % [
+		active_name,
+		active_capacity,
+	]
 	if next_fixture.is_empty():
-		fixture_button.text = "目前櫃台：%s · 已達最高階" % String(active.get("name", "木製交易台"))
+		fixture_button.text = "目前櫃台：%s · 已達最高階" % active_name
 		fixture_button.disabled = true
 		return
 	var required_level := int(next_fixture.get("required_market_level", 0))

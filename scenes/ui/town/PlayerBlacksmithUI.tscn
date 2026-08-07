@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3]
+[gd_scene load_steps=52 format=3]
 
 [ext_resource type="Script" uid="uid://bl4jfw2re34g3" path="res://scripts/ui/town/player_blacksmith_ui.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/ui/town/TownNPCPortrait.tscn" id="2_portrait"]
@@ -17,6 +17,140 @@
 [ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_shop_background.png" id="15_workshop_bg"]
 [ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_shop_midground.png" id="16_workshop_mid"]
 [ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_shop_foreground.png" id="17_workshop_fore"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_interactive_objects.png" id="18_workshop_objects"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_menu_icons.png" id="19_blacksmith_icons"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_ambient_atlas.png" id="20_ambient"]
+
+[sub_resource type="AtlasTexture" id="WorkshopAnvil"]
+atlas = ExtResource("18_workshop_objects")
+region = Rect2(0, 0, 512, 512)
+
+[sub_resource type="AtlasTexture" id="WorkshopBench"]
+atlas = ExtResource("18_workshop_objects")
+region = Rect2(512, 0, 512, 512)
+
+[sub_resource type="AtlasTexture" id="WorkshopDoor"]
+atlas = ExtResource("18_workshop_objects")
+region = Rect2(1024, 0, 512, 512)
+
+[sub_resource type="AtlasTexture" id="WorkshopHammer"]
+atlas = ExtResource("18_workshop_objects")
+region = Rect2(0, 512, 512, 512)
+
+[sub_resource type="AtlasTexture" id="WorkshopImpact"]
+atlas = ExtResource("18_workshop_objects")
+region = Rect2(512, 512, 512, 512)
+
+[sub_resource type="AtlasTexture" id="WorkshopBlueprint"]
+atlas = ExtResource("18_workshop_objects")
+region = Rect2(1024, 512, 512, 512)
+
+[sub_resource type="AtlasTexture" id="IconForge"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(0, 0, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconUpgrade"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(313.5, 0, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconMarket"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(627, 0, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconBack"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(940.5, 0, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconSteady"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(0, 313.5, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconRefine"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(313.5, 313.5, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconRush"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(627, 313.5, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconMasterwork"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(940.5, 313.5, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconCommon"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(0, 627, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconRare"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(313.5, 627, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconExceptional"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(627, 627, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconLegendary"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(940.5, 627, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconCraft"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(0, 940.5, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconEquip"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(313.5, 940.5, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconStrengthen"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(627, 940.5, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="IconFixture"]
+atlas = ExtResource("19_blacksmith_icons")
+region = Rect2(940.5, 940.5, 313.5, 313.5)
+
+[sub_resource type="AtlasTexture" id="AmbientEmbers"]
+atlas = ExtResource("20_ambient")
+region = Rect2(0, 627, 627, 627)
+
+[sub_resource type="Animation" id="WorkshopAmbientReset"]
+length = 0.0
+
+[sub_resource type="Animation" id="WorkshopAmbient"]
+resource_name = "ambient"
+length = 4.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ForgeObject/Geometry/ForgeHammerVisual:rotation")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {"times": PackedFloat32Array(0, 1.6, 1.82, 1.94, 2.14, 4.8), "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1), "update": 0, "values": [0.18, 0.18, -0.62, 0.3, 0.18, 0.18]}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ForgeObject/Geometry/ForgeHammerVisual:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {"times": PackedFloat32Array(0, 1.6, 1.82, 1.94, 2.14, 4.8), "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1), "update": 0, "values": [Vector2(115, 28), Vector2(115, 28), Vector2(76, 8), Vector2(88, 82), Vector2(115, 28), Vector2(115, 28)]}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ForgeObject/Geometry/ForgeImpactVisual:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {"times": PackedFloat32Array(0, 1.88, 1.94, 2.15, 4.8), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(1, 0.7, 0.2, 0), Color(1, 0.72, 0.24, 0), Color(1, 0.92, 0.52, 1), Color(1, 0.54, 0.12, 0), Color(1, 0.7, 0.2, 0)]}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ForgeEmbers:modulate")
+tracks/3/interp = 2
+tracks/3/loop_wrap = true
+tracks/3/keys = {"times": PackedFloat32Array(0, 1.2, 1.94, 3.2, 4.8), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(1, 0.55, 0.2, 0.42), Color(1, 0.68, 0.25, 0.64), Color(1, 0.9, 0.48, 0.9), Color(1, 0.5, 0.16, 0.36), Color(1, 0.55, 0.2, 0.42)]}
+
+[sub_resource type="AnimationLibrary" id="WorkshopAnimationLibrary"]
+_data = {&"RESET": SubResource("WorkshopAmbientReset"), &"ambient": SubResource("WorkshopAmbient")}
 
 [sub_resource type="StyleBoxFlat" id="WindowStyle"]
 content_margin_left = 2.0
@@ -120,6 +254,18 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="WorkshopFocus"]
+bg_color = Color(0.12, 0.3, 0.34, 0.08)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.48, 0.9, 1, 0.96)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
 
 [sub_resource type="StyleBoxFlat" id="ServiceSelected"]
 content_margin_left = 8.0
@@ -321,7 +467,7 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 texture_filter = 1
-texture = ExtResource("3_forge")
+texture = SubResource("IconForge")
 expand_mode = 3
 stretch_mode = 5
 
@@ -360,7 +506,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(104, 42)
 layout_mode = 2
 tooltip_text = "Close Player Blacksmith"
-icon = ExtResource("11_close")
+icon = SubResource("IconBack")
 icon_max_width = 20
 expand_icon = true
 theme_type_variation = &"TownServiceCloseButton"
@@ -498,6 +644,9 @@ vertical_alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(164, 40)
 layout_mode = 2
+icon = SubResource("IconBack")
+icon_max_width = 20
+expand_icon = true
 theme_override_styles/normal = SubResource("ServiceNormal")
 theme_override_styles/hover = SubResource("HoverStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
@@ -574,6 +723,50 @@ theme_override_styles/panel = SubResource("WorkshopHotspot")
 [node name="Geometry" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject"]
 layout_mode = 2
 
+[node name="ForgeObjectVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
+z_index = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("WorkshopAnvil")
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ForgeHammerVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
+z_index = 5
+layout_mode = 0
+offset_left = 82.0
+offset_top = 4.0
+offset_right = 214.0
+offset_bottom = 136.0
+pivot_offset = Vector2(18, 112)
+rotation = 0.18
+position = Vector2(115, 28)
+mouse_filter = 2
+texture = SubResource("WorkshopHammer")
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ForgeImpactVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
+z_index = 6
+modulate = Color(1, 0.7, 0.2, 0)
+layout_mode = 1
+anchor_left = 0.18
+anchor_top = 0.42
+anchor_right = 0.84
+anchor_bottom = 0.9
+mouse_filter = 2
+texture = SubResource("WorkshopImpact")
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Chimney" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/ForgeObject/Geometry"]
 layout_mode = 1
 anchor_left = 0.4
@@ -625,7 +818,7 @@ grow_vertical = 2
 tooltip_text = "使用熔爐鍛造已取得的圖紙"
 focus_mode = 2
 theme_override_styles/hover = SubResource("HoverStyle")
-theme_override_styles/focus = SubResource("FocusStyle")
+theme_override_styles/focus = SubResource("WorkshopFocus")
 flat = true
 
 [node name="UpgradeObject" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
@@ -639,6 +832,33 @@ theme_override_styles/panel = SubResource("WorkshopHotspot")
 
 [node name="Geometry" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject"]
 layout_mode = 2
+
+[node name="UpgradeObjectVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
+z_index = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("WorkshopBench")
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueprintVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
+z_index = 4
+layout_mode = 1
+anchor_left = 0.31
+anchor_top = 0.04
+anchor_right = 0.69
+anchor_bottom = 0.42
+mouse_filter = 2
+texture = SubResource("WorkshopBlueprint")
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
 
 [node name="BenchTop" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/UpgradeObject/Geometry"]
 layout_mode = 1
@@ -692,7 +912,7 @@ grow_vertical = 2
 tooltip_text = "檢查並改善私人鍛造工坊"
 focus_mode = 2
 theme_override_styles/hover = SubResource("HoverStyle")
-theme_override_styles/focus = SubResource("FocusStyle")
+theme_override_styles/focus = SubResource("WorkshopFocus")
 flat = true
 
 [node name="MarketObject" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
@@ -706,6 +926,20 @@ theme_override_styles/panel = SubResource("WorkshopHotspot")
 
 [node name="Geometry" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject"]
 layout_mode = 2
+
+[node name="MarketObjectVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject/Geometry"]
+z_index = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("WorkshopDoor")
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Door" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas/MarketObject/Geometry"]
 layout_mode = 1
@@ -750,7 +984,7 @@ grow_vertical = 2
 tooltip_text = "走進玩家經營的商店"
 focus_mode = 2
 theme_override_styles/hover = SubResource("HoverStyle")
-theme_override_styles/focus = SubResource("FocusStyle")
+theme_override_styles/focus = SubResource("WorkshopFocus")
 flat = true
 
 [node name="WorkshopArtForeground" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
@@ -765,6 +999,24 @@ mouse_filter = 2
 texture = ExtResource("17_workshop_fore")
 expand_mode = 1
 stretch_mode = 0
+
+[node name="ForgeEmbers" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+z_index = 12
+modulate = Color(1, 0.55, 0.2, 0.42)
+layout_mode = 1
+anchor_left = 0.01
+anchor_top = 0.37
+anchor_right = 0.37
+anchor_bottom = 0.98
+mouse_filter = 2
+texture = SubResource("AmbientEmbers")
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="WorkshopAmbientAnimation" type="AnimationPlayer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+libraries = {&"": SubResource("WorkshopAnimationLibrary")}
+autoplay = "ambient"
 
 [node name="WorkshopInteractionHint" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
 layout_mode = 1
@@ -825,7 +1077,7 @@ custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 texture_filter = 1
 tooltip_text = "Forge from acquired blueprints"
-icon = ExtResource("3_forge")
+icon = SubResource("IconForge")
 icon_max_width = 34
 expand_icon = true
 theme_override_colors/font_color = Color(1, 0.86, 0.54, 1)
@@ -843,7 +1095,7 @@ custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 texture_filter = 1
 tooltip_text = "Upgrade the private workshop"
-icon = ExtResource("4_upgrade")
+icon = SubResource("IconUpgrade")
 icon_max_width = 34
 expand_icon = true
 theme_override_colors/font_color = Color(0.75, 0.86, 0.92, 1)
@@ -861,7 +1113,7 @@ custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 texture_filter = 1
 tooltip_text = "Enter the player-run shop interior"
-icon = ExtResource("5_sales")
+icon = SubResource("IconMarket")
 icon_max_width = 34
 expand_icon = true
 theme_override_colors/font_color = Color(0.91, 0.75, 0.48, 1)
@@ -1058,7 +1310,7 @@ custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "穩鍛：穩定火候，成本與風險均衡"
-icon = ExtResource("3_forge")
+icon = SubResource("IconSteady")
 icon_max_width = 18
 expand_icon = true
 theme_override_font_sizes/font_size = 12
@@ -1074,7 +1326,7 @@ custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "精煉：增加素材用量，換取品質與成功率"
-icon = ExtResource("8_shard")
+icon = SubResource("IconRefine")
 icon_max_width = 18
 expand_icon = true
 theme_override_font_sizes/font_size = 12
@@ -1090,7 +1342,7 @@ custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "急鍛：費用較低，但廢料風險提高"
-icon = ExtResource("4_upgrade")
+icon = SubResource("IconRush")
 icon_max_width = 18
 expand_icon = true
 theme_override_font_sizes/font_size = 12
@@ -1106,7 +1358,7 @@ custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "名匠鍛造：覺醒圖紙限定，追求傳奇神作"
-icon = ExtResource("5_sales")
+icon = SubResource("IconMasterwork")
 icon_max_width = 18
 expand_icon = true
 theme_override_font_sizes/font_size = 12
@@ -1133,6 +1385,9 @@ theme_override_constants/separation = 5
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
+icon = SubResource("IconCommon")
+icon_max_width = 18
+expand_icon = true
 size_flags_horizontal = 3
 tooltip_text = "普通素材：無額外鍛造加成"
 theme_override_font_sizes/font_size = 12
@@ -1145,6 +1400,9 @@ text = "◇ 普通"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
+icon = SubResource("IconRare")
+icon_max_width = 18
+expand_icon = true
 size_flags_horizontal = 3
 tooltip_text = "稀有素材：提高成功率與高品質機率"
 theme_override_font_sizes/font_size = 12
@@ -1157,6 +1415,9 @@ text = "◆ 稀有"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
+icon = SubResource("IconExceptional")
+icon_max_width = 18
+expand_icon = true
 size_flags_horizontal = 3
 tooltip_text = "罕見素材：大幅提高成功率與成品品質"
 theme_override_font_sizes/font_size = 12
@@ -1169,6 +1430,9 @@ text = "✦ 罕見"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
+icon = SubResource("IconLegendary")
+icon_max_width = 18
+expand_icon = true
 size_flags_horizontal = 3
 tooltip_text = "傳奇素材：最高品質加成；覺醒圖紙另提高神作機率"
 theme_override_font_sizes/font_size = 12
@@ -1188,7 +1452,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 texture_filter = 1
 tooltip_text = "Forge the selected blueprint"
-icon = ExtResource("3_forge")
+icon = SubResource("IconCraft")
 icon_max_width = 22
 expand_icon = true
 theme_override_colors/font_color = Color(1, 0.91, 0.68, 1)
@@ -1208,7 +1472,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 texture_filter = 1
 tooltip_text = "Equip crafted equipment"
-icon = ExtResource("3_forge")
+icon = SubResource("IconEquip")
 icon_max_width = 20
 expand_icon = true
 theme_override_colors/font_color = Color(0.75, 0.90, 0.95, 1)
@@ -1227,7 +1491,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 texture_filter = 1
 tooltip_text = "Strengthen crafted equipment"
-icon = ExtResource("8_shard")
+icon = SubResource("IconStrengthen")
 icon_max_width = 20
 expand_icon = true
 theme_override_colors/font_color = Color(0.91, 0.79, 0.97, 1)
@@ -1343,7 +1607,7 @@ custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 texture_filter = 1
 tooltip_text = "Upgrade the player blacksmith workshop"
-icon = ExtResource("4_upgrade")
+icon = SubResource("IconUpgrade")
 icon_max_width = 26
 expand_icon = true
 theme_override_colors/font_color = Color(1, 0.90, 0.66, 1)
