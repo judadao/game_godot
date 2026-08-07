@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 186 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 196 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -759,7 +759,7 @@ instance.queue_free()
 | Card readability/feedback | 繁中長技能名固定兩行、超出省略且 tooltip 保留完整名稱，不撐寬四卡框；七解析度不重疊；compatibility `BackRow` hidden 且不保留高度，code-native 7:8 金色幾何框與條件式透明裝飾層由 CardStage 頂緣到底緣雙軸填滿四等分 slot、主插畫占主要視覺；hover 不橫向放大；combat halo hidden，外框亮帶持續沿可調拱弧／側柱充能、主圖背後 60 根粗且保有留白的 360° sacred-geometry 日芒以雙頻波形大幅伸縮、維持圓形整體輪廓且四卡相位錯開；日芒使用不歸零的連續時間值，外框跨界亮帶同時繪製尾端與起點，循環接縫不得抖動；兩者使用全域時間軸，出招重投影不得歸零；右側長公式固定欄寬 ellipsis；只有成功施放的相符 card id 播放約 0.42 秒最上層儀式弧光、12 根短放射刻線、三圓章閃光與主圖 punch，無矩形遮罩且不重置底層循環；重複呼叫重啟、未知 ID 無作用、0.5 秒內回穩；透明裝飾素材另檢查 1173×1341、alpha 與共享對位 |
 | Combat input hierarchy | 隱藏舊 `ActionStrip`；`SPACE 衝刺` 位於 FooterRail；手牌頂緣貼齊 CardStage；二十張公式劍魂的 catalog 基礎 AP 統一為 2，裝備只可把 Combo 投影降至最低 1；卡面共用 Noto Serif TC 優先的襯線 stack，短招式名保持大字、長名稱最低 12px 且獨占暖墨底部卷軸，插畫在分類框上緣前結束；Q/W/E/R 位於左上 32–36px 圓章且至少 18px；右上顯示種類 icon；AP cost 位於右下 34–38px 圓章且只顯示至少 20px 的數字；中文分類使用四邊舊金框暖墨 tab 且至少 60% 卡寬，Combo 卡在同一 tab 顯示自己的 `目前層數/有效上限`，不另加 stack seal；不得新增表格線、全卡不透明色塊或霓虹外框 |
 | Attack geometry | 戰前獨立 Basic Attack、Run lock、0 AP、不進牌堆；方向劍氣以 53px 半高、Combo／stack 1–3 倍 size clamp 與 1.00／1.10／1.22／1.36 spectacle scale 建立前向膠囊掃掠形狀，依 hurtbox 中心／半徑相交並讓沿途每個唯一敵人受傷一次；每方向 VFX 只追到最遠合法目標；圓形攻擊以 radius 與 hurtbox 相交，Dash 以移動線段膠囊相交；形狀外、角色背後不受傷；無目標不消耗 cooldown 或公式 |
-| Combo formula | catalog 合法 Combo／Healing 都可記錄；32 個精確已學會 AAA/ABC 配方；順序錯誤不觸發；純治療／防禦支援為零基礎傷害；多招 FIFO 排隊；下一發自動水平攻擊逐一施放；formula stacks 不消耗；各卡效果維持獨立 1.5 秒，單一效果到期只撤銷自己的 modifier；Combo Chain 依總 Combo 動態收緊：1–3 層為 2.0 秒，第 4 層為 1.3 秒，之後每層減少 0.1 秒，第 10 層只剩 0.7 秒且最低 0.6 秒；專注護符最後加上 0.5 秒；每個劍魂基礎與硬上限皆為 10，效果數、增傷 chain、卡面與提示必須共用同一有效上限 |
+| Combo formula | catalog 合法 Combo／Healing 都可記錄；32 個精確已學會 AAA/ABC 配方；順序錯誤不觸發；純治療／防禦支援為零基礎傷害；多招 FIFO 排隊；下一發自動水平攻擊逐一施放；formula stacks 不消耗；各卡效果維持獨立 1.5 秒，單一效果到期只撤銷自己的 modifier；Combo Chain 依總 Combo 動態收緊：1–3 層為 2.0 秒，第 4 層為 1.5 秒，之後每層減少 0.1 秒，第 10 層為 0.9 秒且最低 0.6 秒；AP 回復與 Combo 倒數共用 real-time delta，hit stop／戰術慢動作不得使 AP 相對變慢；`skill_loadout_execution_test.gd` 必須逐一配置全部 39 招，以真實 5 AP、2 AP 卡與倒數完成 3／4／6 段路線；專注護符最後加上 0.5 秒；每個劍魂基礎與硬上限皆為 10，效果數、增傷 chain、卡面與提示必須共用同一有效上限 |
 | Divine Gifts | catalog 固定 8 項，分別對應火燒、暗吸血、毒、雷暈、風擊退、冰緩、水濺射、光回復，且各有唯一繁中名稱、fusion stem／motif／色彩；每個 EXP level 必選新／升級；三選池有 authored 搭檔時至少保留一條融合路線並投影搭檔、結果、持有／裝備／選後 ready 狀態；菁英／Boss 必選既有升級／合法融合；最多 3 slot；全 inventory 的前綴、mechanics 與攻擊狀態依序累加；選擇頁與 HUD 不得露出英文名稱／說明 |
 | Reward bags | normal／elite／boss 各自有可測 money roll；只有 elite／boss 有 material roll；素材 ID 由 monster archetype 決定；實體 bag 收集只 emit／結算一次 |
 | Growth card readability | upgrade/new/fusion choice 顯示 icon、類型色、AP/level；神賜使用 88px 符印、中文效果分類、2–3 條 next effect/mechanics；每張 base 候選在效果上方另有常駐融合狀態帶，明寫可搭配的已持有神賜名稱／缺少觸媒，或明示目前沒有搭檔；獨立 selected badge 與摘要；八種解析度不裁切，2862×1715 的五張混合頁可捲到最後一張且確認鈕固定可見 |

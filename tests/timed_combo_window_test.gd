@@ -35,16 +35,17 @@ func _run() -> void:
 	)
 	_expect(
 		is_equal_approx(float(game.call("_combo_chain_duration_for_count", 3)), 2.0)
-			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 4)), 1.3)
-			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 5)), 1.2)
-			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 10)), 0.7)
-			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 11)), 0.6)
-			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 12)), 0.6)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 4)), 1.5)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 5)), 1.4)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 10)), 0.9)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 11)), 0.8)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 12)), 0.7)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 13)), 0.6)
 			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 1, 0.5)), 2.5)
-			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 4, 0.5)), 1.8)
-			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 10, 0.5)), 1.2)
-			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 11, 0.5)), 1.1),
-		"Combo Chain must tighten from 1.3 seconds after stack three and keep a 0.6-second floor."
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 4, 0.5)), 2.0)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 10, 0.5)), 1.4)
+			and is_equal_approx(float(game.call("_combo_chain_duration_for_count", 11, 0.5)), 1.3),
+		"Combo Chain must tighten from 1.5 seconds after stack three and keep a 0.6-second floor."
 	)
 	game.call("_tick_combo_effects", 1.49)
 	_expect(
@@ -72,9 +73,9 @@ func _run() -> void:
 			and int(run.temporary_buffs.get("combo_chain_count", 0)) == 4
 			and is_equal_approx(
 				float(run.temporary_buffs.get("combo_chain_remaining", 0.0)),
-				1.3
+				1.5
 			),
-		"The fourth successful Combo must use the post-increment total and reset to 1.3 seconds."
+		"The fourth successful Combo must use the post-increment total and reset to 1.5 seconds."
 	)
 	run.temporary_buffs["active_infusions"] = []
 	run.temporary_buffs["combo_levels"] = {}

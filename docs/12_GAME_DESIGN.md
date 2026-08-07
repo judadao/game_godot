@@ -1214,10 +1214,14 @@ may still apply `combo_cost_reduction` to Combo cards, with a minimum final cost
 `1 AP`; Healing cards keep their catalog cost.
 
 The Combo Chain uses a separate pressure curve based on total active Combo stacks. Counts
-one through three receive a 2.0-second continuation window; count four starts at 1.3
-seconds, then each additional count removes 0.1 seconds down to a 0.6-second floor.
+one through three receive a 2.0-second continuation window; count four starts at 1.5
+seconds, then each additional count removes 0.1 seconds down to a 0.6-second floor. This
+keeps a six-input master route executable with the baseline 5 AP and 2 AP Sword Souls.
 Legacy `combo_duration_bonus` is added after that curve. Focus Amulet therefore adds 0.5
 seconds to the current chain window and extends the independent card effect to 2.0 seconds.
+AP regeneration uses the same real-time delta as this continuation window. Hit stop and
+tactical slowdown may change presentation speed, but must not make a six-input master route
+lose AP progress relative to its Combo countdown.
 
 ### Card tempo and AP flow
 

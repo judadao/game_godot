@@ -63,7 +63,7 @@ const MAX_COMBO_LEVEL := 3
 const BASE_COMBO_STACK_CAP := 10
 const MAX_COMBO_STACK_CAP := 10
 const COMBO_CHAIN_OPENING_DURATION := 2.0
-const COMBO_CHAIN_PRESSURE_DURATION := 1.3
+const COMBO_CHAIN_PRESSURE_DURATION := 1.5
 const COMBO_CHAIN_DURATION_STEP := 0.1
 const COMBO_CHAIN_MIN_DURATION := 0.6
 const DEFAULT_COMBO_DURATION := 1.5
@@ -375,7 +375,7 @@ func _process(delta: float) -> void:
 	regen_rate += _get_card_tempo_regen_bonus()
 	if hud != null and hud.has_method("set_action_point_regen"):
 		hud.call("set_action_point_regen", regen_rate)
-	var regenerated := deck_manager.regenerate_energy(delta, regen_rate)
+	var regenerated := deck_manager.regenerate_energy(real_delta, regen_rate)
 	if regenerated > 0.0:
 		run_state.energy = deck_manager.energy
 		card_hand_ui.call("set_action_points", deck_manager.energy, deck_manager.max_energy)
