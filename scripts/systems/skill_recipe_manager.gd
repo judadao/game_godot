@@ -256,6 +256,22 @@ func _parse_series_gameplay(value: Variant) -> bool:
 		if String(gameplay.get("family", "")).is_empty() or String(gameplay.get("summary", "")).is_empty() or tiers.size() != 3:
 			push_error("Series gameplay requires family, summary, and three tiers: %s" % series_id)
 			return false
+		if series_id == "feather":
+			var previous_duration := 0.0
+			for tier_index in tiers.size():
+				var tier := tiers[tier_index] as Dictionary
+				var duration := float(tier.get("halo_duration", 0.0))
+				if (
+					int(tier.get("feathers", 0)) != [3, 7, 15][tier_index]
+					or duration <= previous_duration
+					or float(tier.get("halo_radius", 0.0)) <= 0.0
+					or float(tier.get("tick_interval", 0.0)) <= 0.0
+					or float(tier.get("damage_per_tick_multiplier", 0.0)) <= 0.0
+					or float(tier.get("knockback", 0.0)) <= 0.0
+				):
+					push_error("Feather gameplay tiers need 3/7/15 longer contact fields: %d" % tier_index)
+					return false
+				previous_duration = duration
 		_series_gameplay[series_id] = gameplay
 	return true
 

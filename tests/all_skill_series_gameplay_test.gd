@@ -3,7 +3,7 @@ extends SceneTree
 const EXPECTED_FAMILIES := {
 	"sword_rain": "marked_execution",
 	"moon_wheel": "returning_orbit",
-	"feather": "moving_guard_still_barrage",
+	"feather": "orbiting_feather_contact_field",
 	"ancient_wood": "sword_aura_gate_network",
 	"giant_stone": "ricochet_boulders",
 	"great_shield": "forward_guard_counter",
@@ -69,6 +69,24 @@ func _run() -> void:
 		var effect := finisher.get("effect", {}) as Dictionary
 		_expect(String(effect.get("series_gameplay_family", "")) == String(series.get("gameplay_family", "")), "%s master must reach real combat resolution." % series.get("id", ""))
 		_expect(int(effect.get("tier_rank", 0)) == 3, "%s must deliver its tier to runtime behavior, not only its catalog." % series.get("id", ""))
+	_expect(game.has_method("_activate_feather_halo_contact_field"), "Game must install the Feather contact field from combat resolution.")
+	if game.has_method("_activate_feather_halo_contact_field"):
+		var feather_profile := {
+			"duration": 4.8, "radius": 176.0, "tick_interval": 0.18,
+			"damage_per_tick": 2, "knockback": 105.0, "feather_count": 3,
+		}
+		game.call("_activate_feather_halo_contact_field", feather_profile)
+		var controller := player.get_node_or_null("ActiveFeatherHaloDamageController")
+		_expect(controller != null, "Feather combat resolution must create one player-owned contact field.")
+		var controller_id := controller.get_instance_id() if controller != null else 0
+		feather_profile["duration"] = 6.4
+		feather_profile["feather_count"] = 7
+		game.call("_activate_feather_halo_contact_field", feather_profile)
+		controller = player.get_node_or_null("ActiveFeatherHaloDamageController")
+		_expect(
+			controller != null and controller.get_instance_id() == controller_id,
+			"Fast Feather recasts must refresh the same controller instead of stacking fields."
+		)
 	_expect(player.global_position == player_position, "Automatic series resolution must never move the player.")
 	game.queue_free()
 	await process_frame

@@ -10,7 +10,7 @@
   "series_gameplay": {
     "sword_rain": {"family": "marked_execution", "summary": "玩家靠近目標時替其累積懸劍，拉開距離後讓懸劍集中落下處刑。", "tiers": [{"tier_rank": 1, "projectiles": 3, "damage_multiplier": 1.10}, {"tier_rank": 2, "projectiles": 5, "damage_multiplier": 1.28}, {"tier_rank": 3, "projectiles": 8, "damage_multiplier": 1.55, "final_burst": true}]},
     "moon_wheel": {"family": "returning_orbit", "summary": "玩家用移動方向決定月輪切入角度；月輪穿過敵群後折返，再次切過同一路線。", "tiers": [{"tier_rank": 1, "projectiles": 1, "returning": true}, {"tier_rank": 2, "projectiles": 2, "returning": true}, {"tier_rank": 3, "projectiles": 4, "returning": true, "pull_strength": 45.0}]},
-    "feather": {"family": "moving_guard_still_barrage", "summary": "玩家移動時羽毛留在身邊防守，短暫停步時才分批鎖定並射向敵人。", "tiers": [{"tier_rank": 1, "projectiles": 3, "guard": 4}, {"tier_rank": 2, "projectiles": 6, "guard": 7}, {"tier_rank": 3, "projectiles": 10, "guard": 12}]},
+    "feather": {"family": "orbiting_feather_contact_field", "summary": "羽毛持續繞著玩家切擊接觸光輪的敵人並向外擊退；羽毛越多維持越久，消失前再次施放可逐根補充。", "tiers": [{"tier_rank": 1, "feathers": 3, "halo_duration": 4.8, "halo_radius": 176.0, "tick_interval": 0.18, "damage_per_tick_multiplier": 0.08, "knockback": 105.0}, {"tier_rank": 2, "feathers": 7, "halo_duration": 6.4, "halo_radius": 204.0, "tick_interval": 0.18, "damage_per_tick_multiplier": 0.10, "knockback": 125.0}, {"tier_rank": 3, "feathers": 15, "halo_duration": 8.8, "halo_radius": 236.0, "tick_interval": 0.18, "damage_per_tick_multiplier": 0.12, "knockback": 145.0}]},
     "ancient_wood": {"family": "sword_aura_gate_network", "summary": "玩家以走位部署古木入口與出口，讓劍氣刷新距離、從敵人側面重新射出並逐次增幅。", "tiers": [{"tier_rank": 1, "gate_count": 2, "relay_count": 1, "damage_multiplier": 1.15, "range_multiplier": 1.15, "size_multiplier": 1.08}, {"tier_rank": 2, "gate_count": 4, "relay_count": 3, "damage_multiplier": 1.35, "range_multiplier": 1.35, "size_multiplier": 1.22}, {"tier_rank": 3, "gate_count": 6, "relay_count": 5, "damage_multiplier": 1.65, "range_multiplier": 1.55, "size_multiplier": 1.48}]},
     "giant_stone": {"family": "ricochet_boulders", "summary": "玩家改變攻擊角度擊出巨石，利用敵人與牆面反彈，讓岩石互撞形成爆發。", "tiers": [{"tier_rank": 1, "projectiles": 1, "knockback_multiplier": 1.3}, {"tier_rank": 2, "projectiles": 3, "knockback_multiplier": 1.7}, {"tier_rank": 3, "projectiles": 6, "knockback_multiplier": 2.2, "final_burst": true}]},
     "great_shield": {"family": "forward_guard_counter", "summary": "玩家以面向維持正面安全區，迎向攻擊累積盾勢，再把盾勢化為向前反擊。", "tiers": [{"tier_rank": 1, "guard": 8, "knockback_multiplier": 1.2}, {"tier_rank": 2, "guard": 15, "knockback_multiplier": 1.6}, {"tier_rank": 3, "guard": 24, "knockback_multiplier": 2.1, "piercing": true}]},
@@ -151,9 +151,9 @@
     {
       "id": "feather",
       "name": "羽毛",
-      "identity_elements": ["獨立羽毛", "盤旋聚合", "光羽齊射"],
+      "identity_elements": ["獨立羽毛", "盤旋光輪", "接觸羽界"],
       "combat_elements": ["wind", "light"],
-      "series_positioning": "每根羽毛保持獨立生命週期，以浮現、聚集、飛出的核心語法逐級放大。",
+      "series_positioning": "每根羽毛保持獨立生命週期，以逐根補入、環身接觸切擊、依序消散的核心語法逐級延長羽界。",
       "skills": [
         {
           "id": "thousand_feather_resonance",
@@ -161,8 +161,8 @@
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "基礎召喚與範圍攻擊",
-          "description": "羽毛從角色周圍逐根浮現，以不同時間、角度、大小、飄向與透明度顯形；之後沿順逆時針弧線聚到背後成陣，收縮蓄力後依波浪節奏逐根飛出。",
-          "animation_beats": ["微弱光點在不同位置錯時浮現", "每根羽毛由羽根向羽尖獨立顯形並飄動", "羽群沿順逆時針弧線加速聚集", "羽毛排列成扇形羽翼或圓形羽陣", "羽陣向後收縮後由前至外圈波浪齊射"],
+          "description": "三根聖羽逐根進入角色周圍的光輪，羽根始終朝內旋轉；敵人碰到羽刃便持續受創並被向外推。羽毛在時限末段依序消散，及時再次施放可補回光輪。",
+          "animation_beats": ["三枚光點逐根長成聖羽", "羽根向內扣入角色周圍光輪", "羽刃沿雙層光軌持續旋轉", "接觸敵人時迸出切擊亮點並向外推", "時限末段逐根碎光消散"],
           "icon_path": ""
         },
         {
@@ -171,8 +171,8 @@
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "防禦反擊",
-          "description": "潔白羽毛無聲環繞角色；受擊時部分羽毛展開擋下傷害並化為光羽反射，全部耗盡後釋放環形羽刃衝擊。",
-          "animation_beats": ["潔白羽毛安靜逐根浮現", "羽毛繞身低速旋轉", "受擊方向的羽毛瞬間展開格擋", "格擋羽毛化為光羽反射", "全數耗盡時爆發環形羽刃"],
+          "description": "七根潔白羽刃擴張成更長久的巡天光輪，連續切擊接近角色的敵人並維持外推。重複施放會補回已消散的羽毛，讓防線不斷輪轉。",
+          "animation_beats": ["七根潔白羽刃逐根補入", "內外光軌交錯形成清楚輪廓", "羽刃繞身持續切擊接觸者", "每次接觸留下短促羽屑與光痕", "羽毛依序淡出而非同時消失"],
           "icon_path": ""
         },
         {
@@ -181,8 +181,8 @@
           "tier": "master",
           "tier_rank": 3,
           "positioning": "羽毛系列終極技",
-          "description": "大量金白光點長成不同尺寸羽毛，聚成持續流動的多層巨翼；細羽追擊、大型羽刃橫掃後，殘羽聚為巨型天羽垂直墜落。此招取代舊有天光回羽。",
-          "animation_beats": ["全場金白光點長成遠近不同的天羽", "萬羽聚合成持續流動的多層巨翼", "第一輪細羽高速追擊", "第二輪大型羽刃水平橫掃", "第三輪殘羽聚成巨型天羽垂直墜落"],
+          "description": "十五根金白天羽形成廣闊而持久的多層光輪，任何碰觸羽界的敵人都承受連續切擊與強力外推。羽數帶來更長維持時間，快速續招可令萬翼常駐。",
+          "animation_beats": ["十五枚金白天羽由內至外逐根顯形", "羽根朝向角色扣成多層輪列", "天羽沿明亮雙軌持續旋轉切擊", "接觸面連續爆出金白羽屑與壓力波", "外圈至內圈逐根消散或被續招補回"],
           "icon_path": ""
         }
       ]

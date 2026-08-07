@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/named_skill_vfx.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/vfx/SkillVFXComposer2D.tscn" id="2_composer"]
 [ext_resource type="PackedScene" path="res://scenes/vfx/skills/SwordRainMaterialVFX2D.tscn" id="3_sword_rain"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/FeatherHaloMaterialVFX2D.tscn" id="4_feather_halo"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
 blend_mode = 1
@@ -16,6 +17,8 @@ script = ExtResource("1_script")
 [node name="SkillVFXComposer2D" parent="." instance=ExtResource("2_composer")]
 
 [node name="SwordRainMaterialVFX2D" parent="." instance=ExtResource("3_sword_rain")]
+
+[node name="FeatherHaloMaterialVFX2D" parent="." instance=ExtResource("4_feather_halo")]
 
 [node name="Charge" type="Sprite2D" parent="."]
 modulate = Color(1, 1, 1, 0)

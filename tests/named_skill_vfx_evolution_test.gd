@@ -87,7 +87,7 @@ func _run() -> void:
 	_expect(
 		int(effect.call("get_active_layer_count")) == 5
 			and effect.find_children("EvolutionAccent*", "Sprite2D", false, false).is_empty()
-			and effect.get_child_count() == 7,
+			and effect.get_child_count() == 8,
 		"Cross-profile replay must clear prior evolution accents instead of accumulating children."
 	)
 	if not bool(effect.call("is_active")):

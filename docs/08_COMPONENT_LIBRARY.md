@@ -1646,6 +1646,31 @@ the HUD never reads gameplay state directly.
   may update visual Hurtbox centers and retarget after node removal, but hit, damage, Combo, tier
   ownership, and Blessing gameplay remain outside this component
 
+### FeatherHaloMaterialVFX2D
+
+- Scene: `res://scenes/vfx/skills/FeatherHaloMaterialVFX2D.tscn`
+- Script: `res://scripts/vfx/feather_halo_material_vfx_2d.gd`
+- Shaders: `feather_halo_energy.gdshader`, `feather_halo_trail.gdshader`
+- Owner: static child of `NamedSkillVFX`; active only for `feather`, while the live effect instance
+  is the player's unique `ActiveFeatherHaloVFX`
+- Contract: point every feather root inward, stagger entry into a rotating 3/7/15-feather halo,
+  expose catalog-driven lifetime/fade/stagger/speed/radii, layer an energy aura and two arc trails
+  per feather plus a two-layer readable light wheel, replenish the existing halo on repeated casts,
+  and dissolve individual feathers sequentially across the final duration window
+- Boundary: replaces generic Projectile/Trail/Afterimage/Ring/Impact presentation only; gameplay
+  remains the sole owner of contact checks, periodic damage, knockback and Combo
+
+### FeatherHaloDamageController
+
+- Scene: `res://scenes/combat/FeatherHaloDamageController.tscn`
+- Script: `res://scripts/combat/feather_halo_damage_controller.gd`
+- Owner: player's unique runtime child while a Feather halo has been activated
+- Contract: query current enemies every 0.18 seconds, use Hurtbox-aware radial contact, repeatedly
+  damage and push only enemies touching the halo, and refresh the same controller on a fast recast;
+  3/7/15 feathers use progressively longer 4.8/6.4/8.8-second fields
+- Boundary: no homing, projectile travel or visual nodes; emits contact positions so the separate
+  material renderer can show impact feedback
+
 ### LayeredVFXPrimitive2D
 
 - Scene roots: `res://scenes/vfx/primitives/<element>/<primitive>.tscn`

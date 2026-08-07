@@ -110,8 +110,11 @@ func _validate_profile(profile: Dictionary) -> bool:
 		push_error("Skill-series VFX needs exactly three formation tiers: %s" % series_id)
 		return false
 	var previous_count := 0
+	var previous_feather_duration := 0.0
 	var gate_network := String(profile.get("gameplay_family", "")) == "sword_aura_gate_network"
 	var launches_object := bool(profile.get("launches_object", false))
+	if series_id == "feather" and not _validate_feather_halo(profile):
+		return false
 	if launches_object and float(profile.get("minimum_render_size", 0.0)) < 112.0:
 		push_error("Launched skill-series objects must remain readable: %s" % series_id)
 		return false
@@ -123,6 +126,12 @@ func _validate_profile(profile: Dictionary) -> bool:
 		var object_count := int(tier.get("object_count", 0))
 		var path_count := int(tier.get("path_count", 0))
 		var direction_count := int(tier.get("direction_count", 0))
+		if series_id == "feather":
+			var halo_duration := float(tier.get("halo_duration_seconds", 0.0))
+			if halo_duration <= previous_feather_duration:
+				push_error("Feather halo duration must grow with its tier: %d" % tier_index)
+				return false
+			previous_feather_duration = halo_duration
 		if (
 			String(tier.get("tier", "")) != TIER_IDS[tier_index]
 			or object_count <= previous_count
@@ -152,6 +161,32 @@ func _validate_profile(profile: Dictionary) -> bool:
 			push_error("Master skill-series VFX must use multiple paths and directions: %s" % series_id)
 			return false
 		previous_count = object_count
+	return true
+
+
+func _validate_feather_halo(profile: Dictionary) -> bool:
+	var lifetime := float(profile.get("halo_lifetime_seconds", 0.0))
+	var fade := float(profile.get("halo_fade_seconds", 0.0))
+	var dissolve := float(profile.get("halo_feather_dissolve_seconds", 0.0))
+	var stagger := float(profile.get("halo_summon_stagger_seconds", 0.0))
+	var speed := float(profile.get("halo_orbit_speed", 0.0))
+	var basic := float(profile.get("halo_basic_radius", 0.0))
+	var advanced := float(profile.get("halo_advanced_radius", 0.0))
+	var master := float(profile.get("halo_master_radius", 0.0))
+	if (
+		lifetime <= 0.0
+		or fade <= 0.0
+		or fade > lifetime
+		or dissolve <= 0.0
+		or dissolve > fade
+		or stagger <= 0.0
+		or speed <= 0.0
+		or basic < 48.0
+		or advanced <= basic
+		or master <= advanced
+	):
+		push_error("Feather halo parameters must define valid timing and increasing radii.")
+		return false
 	return true
 
 

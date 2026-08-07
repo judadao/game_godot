@@ -58,7 +58,7 @@
       "object_name": "神聖羽毛",
       "asset_path": "res://assets/generated/vfx/skill_series/feather.png",
       "motion_family": "sacred_feather_fan",
-      "gameplay_family": "moving_guard_still_barrage",
+      "gameplay_family": "orbiting_feather_contact_field",
       "launches_object": true,
       "minimum_render_size": 144,
       "source": [18, -76],
@@ -67,10 +67,19 @@
       "spread_degrees": 44,
       "object_size": 98,
       "rotate_to_path": true,
+      "halo_lifetime_seconds": 4.8,
+      "halo_fade_seconds": 1.45,
+      "halo_feather_dissolve_seconds": 0.7,
+      "halo_summon_stagger_seconds": 0.075,
+      "halo_orbit_speed": 0.82,
+      "halo_readability_scale": 1.22,
+      "halo_basic_radius": 104.0,
+      "halo_advanced_radius": 132.0,
+      "halo_master_radius": 158.0,
       "tiers": [
-        {"tier": "basic", "object_count": 3, "path_count": 3, "direction_count": 3},
-        {"tier": "advanced", "object_count": 7, "path_count": 3, "direction_count": 3},
-        {"tier": "master", "object_count": 15, "path_count": 5, "direction_count": 5}
+        {"tier": "basic", "object_count": 3, "path_count": 3, "direction_count": 3, "halo_duration_seconds": 4.8},
+        {"tier": "advanced", "object_count": 7, "path_count": 3, "direction_count": 3, "halo_duration_seconds": 6.4},
+        {"tier": "master", "object_count": 15, "path_count": 5, "direction_count": 5, "halo_duration_seconds": 8.8}
       ],
       "legacy_recipe_ids": ["thousand_blade_kill", "silent_feather_cadence", "skyward_returning_feathers"]
     },

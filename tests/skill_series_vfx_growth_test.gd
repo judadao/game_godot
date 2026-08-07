@@ -53,6 +53,29 @@ func _run() -> void:
 		var basic := tiers[0] as Dictionary
 		var advanced := tiers[1] as Dictionary
 		var master := tiers[2] as Dictionary
+		if series_id == "feather":
+			_expect(
+				is_equal_approx(float(profile.get("halo_lifetime_seconds", 0.0)), 4.8)
+					and float(profile.get("halo_fade_seconds", 0.0)) > 0.0
+					and float(profile.get("halo_summon_stagger_seconds", 0.0)) > 0.0
+					and float(profile.get("halo_orbit_speed", 0.0)) > 0.0
+					and float(profile.get("halo_feather_dissolve_seconds", 0.0)) > 0.0,
+				"Feather must expose persistent halo lifetime, fade, stagger, and orbit timing."
+			)
+			_expect(
+				float(profile.get("halo_basic_radius", 0.0))
+					< float(profile.get("halo_advanced_radius", 0.0))
+					and float(profile.get("halo_advanced_radius", 0.0))
+					< float(profile.get("halo_master_radius", 0.0)),
+				"Feather halo radii must grow through basic, advanced, and master tiers."
+			)
+			_expect(
+				float(basic.get("halo_duration_seconds", 0.0))
+					< float(advanced.get("halo_duration_seconds", 0.0))
+					and float(advanced.get("halo_duration_seconds", 0.0))
+					< float(master.get("halo_duration_seconds", 0.0)),
+				"More Feather objects must keep the contact halo active longer."
+			)
 		if series_id == "ancient_wood":
 			_expect(int(basic.get("node_count", 0)) == 2 and int(advanced.get("node_count", 0)) == 4 and int(master.get("node_count", 0)) == 6, "Ancient Wood must grow a 2/4/6-node sword-aura gate network.")
 		else:

@@ -543,6 +543,8 @@ func _ready() -> void:
 - `NamedSkillVFX.tscn`：現役系列主物體與數量／路徑編排；靜態 child
   `SkillVFXComposer2D` 依 recipe 拼裝至少五個 Core／軌跡／命中 role；靜態 child
   `SwordRainMaterialVFX2D` 只在劍雨系列啟用，逐把同步劍形能量、三層拖尾與插入命中。
+  靜態 child `FeatherHaloMaterialVFX2D` 只在羽毛系列啟用，逐根朝向玩家進入旋轉光輪、
+  在生命末段消散，並讓再次施放補回既有光輪而不重疊建立短效果。
   舊 runtime
   `CombatVFXFoundation` 僅在 recipe 無法配置時建立作相容回退。
 - `SkillCastPresentation.tscn`：常駐 Game 的 CanvasLayer，不攔截輸入。
@@ -566,6 +568,15 @@ overlays 與 normalized progress。五個 `*_vfx_demo.tscn` 使用正式 Compose
 WhiteCore trail，以及 CompressionWedge／ContactFlash／DirectionalShards／GroundScar／
 SwordAfterglow／Sparks。所有節點只接受 `NamedSkillVFX` 已決定的 pose 與 normalized phase；
 runtime target provider 只用來更新 visual Hurtbox 落點，不得回寫戰鬥 target 或傷害。
+
+`FeatherHaloMaterialVFX2D.tscn` 是羽毛的 persistent material child。每個 Core 各自持有
+FeatherAura 與 OuterArc／BrightArc，並共用消散粒子池；Game 只允許玩家存在一個
+`ActiveFeatherHaloVFX`。此節點跟隨玩家並接受 refill；接觸傷害與擊退仍由 gameplay
+authority 結算，VFX 不得從可見羽毛數量反推效果。
+
+羽毛玩法另以 runtime child `ActiveFeatherHaloDamageController` 掛在玩家：它只依
+`AttackGeometry.radial_contains()` 對接觸羽界的 Hurtbox 作週期傷害與外向擊退，不追蹤、
+不發射羽毛。再次施放重新配置同一 controller；畫面仍只由 `ActiveFeatherHaloVFX` 負責。
 
 ### 7.1 Player contract
 

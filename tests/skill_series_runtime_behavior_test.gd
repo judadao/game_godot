@@ -56,7 +56,7 @@ func _initialize() -> void:
 func _run() -> void:
 	_test_marked_execution()
 	_test_returning_orbit()
-	_test_moving_guard_and_still_barrage()
+	_test_orbiting_feather_contact_field()
 	_test_gate_network_and_ricochet()
 	_test_forward_guard_counter()
 	_test_fire_and_lightning_rules()
@@ -93,19 +93,27 @@ func _test_returning_orbit() -> void:
 	_free_fixture(fixture)
 
 
-func _test_moving_guard_and_still_barrage() -> void:
+func _test_orbiting_feather_contact_field() -> void:
 	var fixture := _fixture([Vector2(90, 0), Vector2(130, 0)])
 	var caster := fixture.caster as TestCaster
 	caster.velocity = Vector2(120, 0)
-	_cast(fixture.runner, caster, fixture.targets, "moving_guard_still_barrage", {
-		"tier_rank": 2, "guard": 7, "projectile_count": 6,
+	var result := _cast(fixture.runner, caster, fixture.targets, "orbiting_feather_contact_field", {
+		"tier_rank": 2, "feathers": 7, "halo_duration": 6.4,
+		"halo_radius": 204.0, "tick_interval": 0.18,
+		"damage_per_tick_multiplier": 0.10, "knockback": 125.0,
 	})
-	_expect(caster.block >= 7 and (fixture.targets[0] as TestTarget).damage_taken == 0, "Feather must defend instead of firing while the player moves.")
-	caster.velocity = Vector2.ZERO
-	_cast(fixture.runner, caster, fixture.targets, "moving_guard_still_barrage", {
-		"tier_rank": 2, "guard": 7, "projectile_count": 6,
-	})
-	_expect((fixture.targets[0] as TestTarget).damage_taken > 0 and (fixture.targets[1] as TestTarget).damage_taken > 0, "Feather must release its barrage when the player stops.")
+	var halo := result.get("feather_halo_attack", {}) as Dictionary
+	_expect(
+		String(result.get("series_rule", "")) == "orbiting_feather_contact_field"
+			and int(halo.get("feather_count", 0)) == 7
+			and float(halo.get("duration", 0.0)) >= 6.4,
+		"Feather must create one long-lived orbit contact field regardless of player movement."
+	)
+	_expect(
+		(fixture.targets[0] as TestTarget).damage_taken == 0
+			and (fixture.targets[1] as TestTarget).damage_taken == 0,
+		"Feather cast resolution must not fake a homing projectile volley."
+	)
 	_free_fixture(fixture)
 
 

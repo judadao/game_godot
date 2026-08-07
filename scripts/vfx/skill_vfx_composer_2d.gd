@@ -45,6 +45,10 @@ func configure(recipe: Dictionary, tier_rank: int, blessing_overlays: Array = []
 		_suppressed_generic_roles.assign([
 			"rain", "projectile", "trail", "ring", "impact",
 		])
+	elif _specialized_renderer == "persistent_feather_halo":
+		_suppressed_generic_roles.assign([
+			"projectile", "trail", "afterimage", "ring", "impact",
+		])
 	_resolve_mutations(blessing_overlays)
 	_build_role_layers()
 	_build_impact_primitive()

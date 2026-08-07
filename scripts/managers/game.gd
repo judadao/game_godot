@@ -170,6 +170,9 @@ const COMBO_EVOLUTIONS := [
 @export var named_skill_vfx_scene: PackedScene = preload(
 	"res://scenes/combat/vfx/NamedSkillVFX.tscn"
 )
+@export var feather_halo_damage_controller_scene: PackedScene = preload(
+	"res://scenes/combat/FeatherHaloDamageController.tscn"
+)
 @export var storm_charge_vfx_scene: PackedScene = preload(
 	"res://scenes/combat/vfx/StormChargeVFX.tscn"
 )
@@ -3121,7 +3124,12 @@ func _build_formula_finisher(
 		var series_damage_multiplier := maxf(1.0, float(series_effect.get("damage_multiplier", 1.0)))
 		if series_damage_multiplier > 1.0 and int(effect.get("amount", 0)) > 0:
 			effect["amount"] = roundi(float(effect["amount"]) * series_damage_multiplier)
-		for numeric_key in ["burn_damage", "burn_duration", "poison_damage", "poison_duration", "combo_stun", "pull_strength", "knockback_multiplier", "lifesteal_ratio", "heal_on_hit_ratio"]:
+		for numeric_key in [
+			"burn_damage", "burn_duration", "poison_damage", "poison_duration",
+			"combo_stun", "pull_strength", "knockback", "knockback_multiplier",
+			"lifesteal_ratio", "heal_on_hit_ratio", "feathers", "halo_duration",
+			"halo_radius", "tick_interval", "damage_per_tick_multiplier",
+		]:
 			if series_effect.has(numeric_key):
 				effect[numeric_key] = maxf(float(effect.get(numeric_key, 0.0)), float(series_effect[numeric_key]))
 		for flag_key in ["final_burst", "chain_lightning", "death_spread", "piercing"]:
@@ -4295,10 +4303,39 @@ func _spawn_named_skill_vfx(
 		)
 	):
 		return
+	if has_series_profile and series_id == "feather":
+		var existing_halo := player.get_node_or_null("ActiveFeatherHaloVFX") as Node2D
+		if (
+			existing_halo != null
+			and is_instance_valid(existing_halo)
+			and existing_halo.has_method("refill_feather_halo")
+		):
+			existing_halo.set_meta(
+				"finisher_blessing_overlays",
+				blessing_overlays.duplicate(true)
+			)
+			var refilled := bool(existing_halo.call(
+				"refill_feather_halo",
+				clampi(evolution_level, 1, 3),
+				intensity
+			))
+			if not refilled:
+				existing_halo.call_deferred(
+					"refill_feather_halo",
+					clampi(evolution_level, 1, 3),
+					intensity
+				)
+			return
 	var effect := named_skill_vfx_scene.instantiate() as Node2D
 	if effect == null:
 		return
-	current_map.add_child(effect)
+	if has_series_profile and series_id == "feather":
+		effect.name = "ActiveFeatherHaloVFX"
+		player.add_child(effect)
+		effect.position = Vector2(0.0, -54.0)
+	else:
+		current_map.add_child(effect)
+		effect.global_position = (player as Node2D).global_position
 	if effect.has_method("configure_runtime_targeting"):
 		effect.call(
 			"configure_runtime_targeting",
@@ -4309,7 +4346,6 @@ func _spawn_named_skill_vfx(
 		"finisher_blessing_overlays",
 		blessing_overlays.duplicate(true)
 	)
-	effect.global_position = (player as Node2D).global_position
 	var direction := int(player.get("facing_direction"))
 	if direction == 0:
 		direction = 1
@@ -4364,9 +4400,47 @@ func _on_named_skill_vfx_impact(
 		Engine.time_scale = restore_scale
 
 
+func _activate_feather_halo_contact_field(profile: Dictionary) -> void:
+	if player == null or feather_halo_damage_controller_scene == null:
+		return
+	var controller := player.get_node_or_null(
+		"ActiveFeatherHaloDamageController"
+	)
+	if controller == null:
+		controller = feather_halo_damage_controller_scene.instantiate()
+		if controller == null:
+			return
+		controller.name = "ActiveFeatherHaloDamageController"
+		player.add_child(controller)
+		if controller.has_signal("contact_hit"):
+			controller.connect("contact_hit", _on_feather_halo_contact_hit)
+	if controller.has_method("configure"):
+		controller.call(
+			"configure",
+			player as Node2D,
+			Callable(self, "_get_combat_targets"),
+			profile.duplicate(true)
+		)
+
+
+func _on_feather_halo_contact_hit(
+	_target: Node,
+	world_position: Vector2,
+	_damage: int
+) -> void:
+	if player == null:
+		return
+	var halo := player.get_node_or_null("ActiveFeatherHaloVFX")
+	if halo != null and halo.has_method("play_feather_contact_impact"):
+		halo.call("play_feather_contact_impact", world_position)
+
+
 func _on_card_effect_resolved(_card_id: String, result: Dictionary) -> void:
 	if _resolving_auto_attack_effect:
 		return
+	var feather_profile := result.get("feather_halo_attack", {}) as Dictionary
+	if not feather_profile.is_empty():
+		_activate_feather_halo_contact_field(feather_profile)
 	var total := int(result.get("total", 0))
 	if total > 0 and current_map != null and player is Node2D:
 		var number := Label.new()

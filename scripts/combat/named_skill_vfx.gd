@@ -72,6 +72,7 @@ var _series_sprites: Array[Sprite2D] = []
 var _vfx_foundation: Node2D
 var _skill_vfx_composer: Node2D
 var _sword_rain_material_vfx: Node2D
+var _feather_halo_material_vfx: Node2D
 var _sword_rain_cadence_phase := ""
 var _sword_rain_active_trail_count := 0
 var _sword_rain_active_impact_count := 0
@@ -89,6 +90,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_skill_vfx_composer = get_node_or_null("SkillVFXComposer2D") as Node2D
 	_sword_rain_material_vfx = get_node_or_null("SwordRainMaterialVFX2D") as Node2D
+	_feather_halo_material_vfx = get_node_or_null("FeatherHaloMaterialVFX2D") as Node2D
 	for node_name in PART_NODE_NAMES:
 		var sprite := get_node_or_null(NodePath(String(node_name))) as Sprite2D
 		if sprite != null:
@@ -268,6 +270,19 @@ func play_series(
 		)
 	elif _sword_rain_material_vfx != null:
 		_sword_rain_material_vfx.call("clear")
+	if series_id == "feather" and recipe_configured and _feather_halo_material_vfx != null:
+		var feather_composer_state := _skill_vfx_composer.call("get_debug_state") as Dictionary
+		var feather_parameters := _series_profile.duplicate(true)
+		feather_parameters.merge(_series_tier_profile, true)
+		_feather_halo_material_vfx.call(
+			"configure",
+			_series_sprites,
+			resolved_tier,
+			feather_composer_state.get("resolved_palette", []) as Array,
+			feather_parameters
+		)
+	elif _feather_halo_material_vfx != null:
+		_feather_halo_material_vfx.call("clear")
 	if recipe_configured:
 		_clear_vfx_foundation()
 	else:
@@ -310,6 +325,14 @@ func get_active_layer_count() -> int:
 				String(_series_profile.get("id", "")) == "sword_rain"
 				and _sword_rain_material_vfx != null
 				and is_instance_valid(_sword_rain_material_vfx)
+			)
+			else 0
+		) + (
+			int(_feather_halo_material_vfx.call("get_active_layer_count"))
+			if (
+				String(_series_profile.get("id", "")) == "feather"
+				and _feather_halo_material_vfx != null
+				and is_instance_valid(_feather_halo_material_vfx)
 			)
 			else 0
 		)
@@ -471,6 +494,16 @@ func get_series_debug_state() -> Dictionary:
 			int(recipe_state.get("real_visual_layer_count", 0))
 			+ specialized_layer_count
 		)
+	var feather_state := get_feather_halo_vfx_state()
+	if not feather_state.is_empty():
+		var feather_layer_count := int(
+			_feather_halo_material_vfx.call("get_active_layer_count")
+		)
+		state["specialized_real_visual_layer_count"] = feather_layer_count
+		state["real_visual_layer_count"] = (
+			int(recipe_state.get("real_visual_layer_count", 0))
+			+ feather_layer_count
+		)
 	return state
 
 
@@ -488,6 +521,51 @@ func get_sword_rain_material_vfx_state() -> Dictionary:
 	):
 		return {}
 	return (_sword_rain_material_vfx.call("get_debug_state") as Dictionary).duplicate(true)
+
+
+func get_feather_halo_vfx_state() -> Dictionary:
+	if (
+		String(_series_profile.get("id", "")) != "feather"
+		or _feather_halo_material_vfx == null
+		or not is_instance_valid(_feather_halo_material_vfx)
+	):
+		return {}
+	return (_feather_halo_material_vfx.call("get_debug_state") as Dictionary).duplicate(true)
+
+
+func debug_advance_feather_halo(delta: float) -> void:
+	if get_feather_halo_vfx_state().is_empty():
+		return
+	_feather_halo_material_vfx.call("advance", maxf(0.0, delta))
+
+
+func refill_feather_halo(
+	tier_rank: int = 1,
+	intensity: float = 1.0
+) -> bool:
+	if not _series_mode or String(_series_profile.get("id", "")) != "feather":
+		return false
+	var resolved_tier := clampi(tier_rank, 1, 3)
+	if resolved_tier != _evolution_level:
+		play_series("feather", resolved_tier, _direction, false, intensity)
+		return true
+	if _feather_halo_material_vfx == null or not is_instance_valid(_feather_halo_material_vfx):
+		return false
+	_feather_halo_material_vfx.call("refill")
+	_active = true
+	visible = true
+	set_process(true)
+	return true
+
+
+func play_feather_contact_impact(world_position: Vector2) -> void:
+	if (
+		String(_series_profile.get("id", "")) != "feather"
+		or _feather_halo_material_vfx == null
+		or not is_instance_valid(_feather_halo_material_vfx)
+	):
+		return
+	_feather_halo_material_vfx.call("play_contact_impact", world_position)
 
 
 func configure_runtime_targeting(provider: Callable, initial_targets: Array = []) -> void:
@@ -595,6 +673,16 @@ func _process(delta: float) -> void:
 	if not _active:
 		return
 	var real_delta := delta / maxf(Engine.time_scale, 0.05)
+	if (
+		_series_mode
+		and String(_series_profile.get("id", "")) == "feather"
+		and _feather_halo_material_vfx != null
+		and is_instance_valid(_feather_halo_material_vfx)
+	):
+		_feather_halo_material_vfx.call("advance", real_delta)
+		if bool(_feather_halo_material_vfx.call("is_empty")):
+			_finish()
+		return
 	var tail_duration := _tail_hold_duration()
 	_elapsed = minf(_duration + tail_duration, _elapsed + real_delta)
 	if _elapsed <= _duration:
@@ -724,6 +812,8 @@ func _build_series_sprites() -> bool:
 func _clear_series_sprites() -> void:
 	if _sword_rain_material_vfx != null and is_instance_valid(_sword_rain_material_vfx):
 		_sword_rain_material_vfx.call("clear")
+	if _feather_halo_material_vfx != null and is_instance_valid(_feather_halo_material_vfx):
+		_feather_halo_material_vfx.call("clear")
 	for sprite in _series_sprites:
 		if not is_instance_valid(sprite):
 			continue
@@ -753,6 +843,8 @@ func _layout_series_objects(
 	var motion_family := String(_series_profile.get("motion_family", ""))
 	if motion_family == "descending_rain":
 		_layout_sword_rain_cadence()
+		return
+	if motion_family == "sacred_feather_fan":
 		return
 	if motion_family == "wood_gate_relay":
 		_layout_wood_gate_relay(anticipation_ratio, impact_ratio, impact_end)
@@ -1829,6 +1921,8 @@ func _reset_parts() -> void:
 		_skill_vfx_composer.visible = false
 	if _sword_rain_material_vfx != null and is_instance_valid(_sword_rain_material_vfx):
 		_sword_rain_material_vfx.call("reset")
+	if _feather_halo_material_vfx != null and is_instance_valid(_feather_halo_material_vfx):
+		_feather_halo_material_vfx.call("reset")
 	visible = false
 
 

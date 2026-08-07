@@ -172,6 +172,10 @@ func _run() -> void:
 		instance.get("storm_charge_vfx_scene") is PackedScene,
 		"Game must preload the dedicated stationary Storm Charge presentation scene."
 	)
+	_expect(
+		instance.get("feather_halo_damage_controller_scene") is PackedScene,
+		"Game must preload the Feather orbit-contact gameplay controller."
+	)
 	instance.free()
 	game.free()
 	Engine.time_scale = 1.0

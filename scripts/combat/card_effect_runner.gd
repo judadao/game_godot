@@ -114,7 +114,8 @@ func cast(card: Dictionary, caster: Node, targets: Array) -> Dictionary:
 					hit_presentation,
 					80.0 * knockback_multiplier
 				)
-			_apply_infused_statuses(selected, effect)
+			if series_family != "orbiting_feather_contact_field":
+				_apply_infused_statuses(selected, effect)
 			_apply_finisher_mutations(
 				caster,
 				selected,
@@ -276,7 +277,7 @@ func _resolve_series_damage(
 			_pull_targets(caster, targets, float(effect.get("pull_strength", 0.0)))
 			result["series_rule"] = "outbound_return"
 			result["return_passes"] = 1
-		"moving_guard_still_barrage":
+		"orbiting_feather_contact_field":
 			_resolve_feather_stance(caster, targets, effect, amount, result, hit_presentation)
 		"sword_aura_gate_network":
 			_resolve_gate_network(caster, targets, effect, amount, result, hit_presentation)
@@ -339,23 +340,30 @@ func _resolve_marked_execution(
 
 func _resolve_feather_stance(
 	caster: Node,
-	targets: Array,
+	_targets: Array,
 	effect: Dictionary,
 	amount: int,
 	result: Dictionary,
-	hit_presentation: Dictionary
+	_hit_presentation: Dictionary
 ) -> void:
-	var speed := _node_velocity(caster).length()
-	if speed > 18.0:
-		var guard := maxi(1, int(effect.get("finisher_guard", effect.get("guard", 4))))
-		if caster.has_method("add_block"):
-			caster.call("add_block", guard)
-		result["affected"] = int(result.get("affected", 0)) + 1
-		result["guard_gained"] = guard
-		result["series_rule"] = "moving_feather_guard"
-		return
-	_damage_projectile_volley(caster, targets, amount, result, maxi(targets.size(), int(effect.get("projectile_count", 1))), hit_presentation, 55.0)
-	result["series_rule"] = "still_feather_barrage"
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	var feather_count := maxi(1, int(effect.get("feathers", [3, 7, 15][tier_rank - 1])))
+	var damage_multiplier := maxf(0.01, float(effect.get("damage_per_tick_multiplier", 0.08)))
+	result["feather_halo_attack"] = {
+		"duration": maxf(0.5, float(effect.get("halo_duration", [4.8, 6.4, 8.8][tier_rank - 1]))),
+		"radius": maxf(48.0, float(effect.get("halo_radius", [176.0, 204.0, 236.0][tier_rank - 1]))),
+		"tick_interval": maxf(0.08, float(effect.get("tick_interval", 0.18))),
+		"damage_per_tick": maxi(1, roundi(float(maxi(1, amount)) * damage_multiplier)),
+		"knockback": (
+			maxf(0.0, float(effect.get("knockback", [105.0, 125.0, 145.0][tier_rank - 1])))
+			* maxf(0.0, float(effect.get("knockback_multiplier", 1.0)))
+		),
+		"feather_count": feather_count,
+		"tier_rank": tier_rank,
+		"center_offset": Vector2(0.0, -54.0),
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "orbiting_feather_contact_field"
 
 
 func _resolve_gate_network(

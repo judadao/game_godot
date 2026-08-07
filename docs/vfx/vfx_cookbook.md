@@ -79,6 +79,16 @@ arbitrary scatter. Runtime playback takes a live enemy provider, aims at Hurtbox
 retargets a surviving nearby enemy when a locked target leaves the tree. Generic `Projectile` is
 also suppressed so no unrelated blue connector survives beside the authored blade trails.
 
+Feather is the second series-specific renderer. `FeatherHaloMaterialVFX2D` suppresses generic
+`Projectile`, `Trail`, `Afterimage`, `Ring`, and `Impact` drawing while preserving the authored
+sacred-feather silhouette. Each root faces the player as the cores enter a player-owned halo one
+at a time, rotate with two independent arc trails and an energy aura, then dissolve during a
+configurable tail window. Recasting Feather refills that halo instead of stacking another
+short-lived effect. Lifetime, fade, summon stagger, orbit speed and all three tier radii remain
+catalog data; an authored two-layer full ring and thicker per-feather trails keep the contact area
+readable. The separate gameplay controller periodically damages and pushes Hurtboxes that touch
+the ring; feathers never home or fly at targets. This component owns presentation only.
+
 Blessing mutations are a stack of data, not separate redraws. Every supported element can alter
 palette, visible copy count, path curvature/forks, trail primitive, impact primitive and ground
 residue. Production casts default to currently owned Blessings when a skill has no explicit

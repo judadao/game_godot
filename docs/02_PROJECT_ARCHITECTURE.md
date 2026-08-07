@@ -440,8 +440,8 @@ Combo／Healing 劍魂身分，並以目前編成招式的 `combo_routes` 比對
 
 13 個招式系列均由 `skills.json.series_gameplay` 定義唯一玩法 family、玩家決策摘要與
 三階可執行參數。`SkillRecipeManager` 將系列 contract 投影到每招，`Game` 再把參數
-合併進真實 Finisher 結算；`CardEffectRunner` 實際執行標記處決、去返攻擊、移動防守／
-停步齊射、劍氣門增幅、巨石彈跳、正面反擊、火線引爆、換敵連鎖、潮汐拉回、宿主收割、
+合併進真實 Finisher 結算；`CardEffectRunner` 實際執行標記處決、去返攻擊、環身羽界、
+劍氣門增幅、巨石彈跳、正面反擊、火線引爆、換敵連鎖、潮汐拉回、宿主收割、
 光域風險與兩種雙起點夾擊。圖鑑必須先說明玩家如何走位／選擇時機，再描述招式演出。
 自動招式只改變攻擊物件、目標、軌跡與效果，禁止修改玩家座標。
 
@@ -459,8 +459,10 @@ Combo／Healing 劍魂身分，並以目前編成招式的 `combo_routes` 比對
 | Reusable VFX primitives | `scenes/vfx/primitives/`、`scripts/vfx/`、`shaders/vfx/` | 火／雷／水／毒／冰／風各三個五層原語；`LayeredVFXPrimitive2D` 只管理 visual lifecycle 與參數，`ParticleBurst2D`、`LightningGenerator2D`、`TrailHistory2D` 提供共用粒子／A→B 雷電／歷史軌跡，禁止反向持有 gameplay 規則 |
 | Skill VFX Grammar | `SkillVFXRecipeCatalog`、`SkillVFXComposer2D`、`BlessingVFXMutationCatalog`、`skill_vfx_stack.gdshader` | 13 系列各一份 Core＋至少四個額外 role 的 recipe；保留現有透明主物體作 Core，統一 timeline 拼裝其餘 14 種軌跡／爆點 role。Blessing 只投影 palette、數量、路徑、尾跡、爆點與殘留，不擁有傷害規則 |
 | Sword Rain material renderer | `SwordRainMaterialVFX2D`、`sword_rain_energy.gdshader`、`sword_rain_trail.gdshader` | 劍雨專用 presentation：逐把劍保留具體本體，以劍形能量回聲、三層獨立拖尾與逐把插入命中堆疊取代通用 Rain／Projectile 折線與 Ring；讀取 Game 提供的存活敵人清單，把視覺落點追到 Hurtbox 中心並在節點消失時轉鎖鄰敵，但不改 gameplay target、命中或傷害 |
+| Feather halo material renderer | `FeatherHaloMaterialVFX2D`、`feather_halo_energy.gdshader`、`feather_halo_trail.gdshader` | 羽毛專用 persistent presentation：Game 將唯一 active halo 掛在玩家下方，羽根朝內逐根進環並繞行，生命末段以材質與粒子消散；同系列再施放只補滿並依序重現羽毛。壽命、fade、stagger、轉速與三級半徑由 series catalog 提供，不擁有格擋、彈幕、命中或傷害規則 |
+| Feather halo contact field | `FeatherHaloDamageController` | 玩家唯一的羽界 gameplay controller；依動態敵人清單與 Hurtbox 半徑，每 0.18 秒只傷害接觸環身範圍的敵人並從玩家位置施加外向擊退。再次施放刷新同一節點，3／7／15 羽分別延長 duration；不控制任何 Sprite、shader 或軌跡 |
 | `ElementalGroundTrail` | `scenes/combat/vfx/ElementalGroundTrail.tscn`、`data/elemental_ground_trail_profiles.json` | 沿元素大招路徑拼裝 Core／Edge／Accent／Debris atlas 部件與連續 ribbon；火、冰、毒使用不同 topology，不擁有傷害判定 |
-| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json`、`data/skill_series_vfx.json` | 舊 profile 仍供退役 trigger／相容 caller 使用；現役 39 招由 `play_series()` 保留各系列唯一主物體作 Core，再把同一時間軸交給 `SkillVFXComposer2D`。一般發射型系列由 basic 的 3 物體／3 路成長為 advanced 7 物體／3 路與 master 15 物體／5 路；劍雨例外為 10／15／20 把、每波五把。播放器只處理 presentation，不擁有名稱、配方或傷害判定 |
+| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json`、`data/skill_series_vfx.json` | 舊 profile 仍供退役 trigger／相容 caller 使用；現役 39 招由 `play_series()` 保留各系列唯一主物體作 Core，再把同一時間軸交給 `SkillVFXComposer2D`。一般發射型系列由 basic 的 3 物體／3 路成長為 advanced 7 物體／3 路與 master 15 物體／5 路；劍雨例外為 10／15／20 把、每波五把，羽毛例外為玩家持有並可補充的 persistent halo。播放器只處理 presentation，不擁有名稱、配方或傷害判定 |
 | `CombatVFXFoundation` | `scripts/combat/combat_vfx_foundation.gd` | 遷移期間保留的相容回退；只有 recipe 缺失／配置失敗時才建立，正式系列畫面由 Skill VFX Grammar 渲染，不得讓 Foundation 與 Composer 同時處理或出圖 |
 | `StormChargeVFX` | `scenes/combat/vfx/StormChargeVFX.tscn` | 風暴充能專用的原地五節拍 presentation；固定導電主幹由左右地流依序接入雙腳、持劍手與劍身，接觸時只從劍身下游長出有粗細層級的右向分支，高潮後沿同一路徑回縮；不擁有傷害或 buff 規則 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |

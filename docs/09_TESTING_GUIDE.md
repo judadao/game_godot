@@ -331,6 +331,10 @@ Combat VFX 修改至少執行
 命名動畫 library 另執行 `named_skill_vfx_test.gd` 與 `named_skill_vfx_evolution_test.gd`，
 保護五個 atlas Finisher 基底、四個退役 trigger profile、五個可拼裝 parts、正式 element、
 archetype、beat pattern、三級 evolution、stack progression 與收尾時序。
+羽毛 persistent VFX 另執行 `feather_halo_vfx_test.gd`，驗證 3／7／15 羽分級、羽根朝內、
+逐根入環、旋轉角度、能量材質、每羽雙層軌跡、生命末段消散，以及再次施放只 refill
+既有光輪並恢復完整可見數量。`feather_halo_damage_controller_test.gd` 另驗證接觸半徑內
+持續傷害／外向擊退、半徑外不受傷、無追蹤飛行，以及快速續招刷新同一較長 duration。
 `storm_charge_vfx_test.gd` 另驗證專用 scene 的五個依序節拍、至少十條固定語意導電
 路徑、10/4/1.4px 主幹與 6/3/1px 次分支三層光階、原地 anchor、水平位移零、
 劍身相連的右向 contact、單一高潮與同路徑單調回縮，以及 level 1–3 只增加有界

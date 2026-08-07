@@ -269,7 +269,7 @@ UI setter/configure API
 | `cards.json` | `CardDatabase` | `cards` | 24 cards |
 | `evolutions.json` | `EvolutionManager` | `fusion_recipes` | 6 recipes |
 | `skills.json` | `SkillRecipeManager` | `series` | 13 個系列 × basic／advanced／master，共 39 招；每招投影自己的 `series_vfx_id`，另含只供舊配方相容的 `legacy_vfx_map` |
-| `skill_series_vfx.json` | `SkillSeriesVFXCatalog` | `profiles` | 13 個系列各一張透明主物體素材與路徑參數；發射型系列固定以 basic 3 物體／3 路、advanced 7 物體／3 路、master 15 物體／5 路成長，並宣告至少 112px 的主物體可讀尺寸；非發射型系列使用自己的節點規則 |
+| `skill_series_vfx.json` | `SkillSeriesVFXCatalog` | `profiles` | 13 個系列各一張透明主物體素材與路徑參數；發射型系列固定以 basic 3 物體／3 路、advanced 7 物體／3 路、master 15 物體／5 路成長，並宣告至少 112px 的主物體可讀尺寸；羽毛另宣告 3／7／15 羽的 4.8／6.4／8.8 秒 persistent halo、逐羽 dissolve、stagger、轉速、可讀倍率與三級半徑，非發射型系列使用自己的節點規則 |
 | `equipment.json` | `inventory_manager.gd` | `resource_order`, `starting_resources`, `equipment` | 5 resources, 10 equipment |
 | `town_upgrades.json` | `town_manager.gd` | `buildings`, `village_stages` | 5 buildings；memory library 4 levels、其餘 3 levels；3 stages；每級含 cost／description／effects／visual flag |
 | `divine_gifts.json` | `DivineGiftManager` | `gifts` | 8 個三級 Run-local 神賜；每項含唯一 motif、發光色、`attack_vfx_asset_path` 具體普攻物件與普攻／傷害招式狀態 |
