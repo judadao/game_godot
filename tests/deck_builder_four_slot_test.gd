@@ -116,6 +116,38 @@ func _run() -> void:
 		last_named_skill.has_focus() and named_skill_scroll.scroll_vertical > 0,
 		"Keyboard focus must scroll the 39-skill selector to keep the focused name visible."
 	)
+	var lightning_choice := named_skill_list.get_node_or_null(
+		"Series_lightning/TierChoices/Skill_wildfire_thunder_tone"
+	) as Button
+	_expect(
+		lightning_choice != null and not lightning_choice.disabled,
+		"奔雷連鎖 must be selectable when all three required Sword Souls are discovered."
+	)
+	if lightning_choice != null and not lightning_choice.disabled:
+		named_skill_scroll.ensure_control_visible(lightning_choice)
+		await process_frame
+		lightning_choice.grab_focus()
+		lightning_choice.pressed.emit()
+		await process_frame
+		await process_frame
+		var replacement_lightning_choice := named_skill_list.get_node_or_null(
+			"Series_lightning/TierChoices/Skill_wildfire_thunder_tone"
+		) as Button
+		_expect(
+			(builder.call("get_selected_skill_recipe_ids") as Array).has("wildfire_thunder_tone")
+				and replacement_lightning_choice != null
+				and replacement_lightning_choice.button_pressed,
+			"Pressing the visible Lightning recipe must actually select it after the list rebuilds."
+		)
+		_expect(
+			replacement_lightning_choice != null
+				and replacement_lightning_choice.has_focus()
+				and named_skill_scroll.scroll_vertical > 0,
+			"Selecting Lightning must preserve focus and scroll context on the replacement button."
+		)
+	builder.call("configure", localized_cards, [
+		"healing_light", "renewal", "verdant_renewal", "storm_charge",
+	])
 	_expect(
 		builder.has_node("Shade/LoadoutPanel/Margin/Column/TypeLegend"),
 		"Portal loadout must explain Healing and Combo colors before selection."

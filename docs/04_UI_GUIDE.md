@@ -1319,6 +1319,9 @@ selection workspace，由同列的「劍魂替換／依招式配置」切換鈕�
 上限 1.75 倍，避免高解析度畫面退化成難讀的小視窗。
 候選列的 mouse hover 與 keyboard focus 都必須立即更新下方效果預覽；鍵盤上下移動到
 ScrollContainer 可視範圍外時，清單必須自動捲動讓焦點項完整可見。
+招式選擇會重建 39 招清單；重建後必須以 stable skill ID 把焦點轉移到新的同招式按鈕並
+保留原捲動區段。任何延遲 `ensure_control_visible()` 呼叫前都必須確認目標仍在 SceneTree、
+且仍是該 ScrollContainer 的後代，不得把已排入釋放的舊按鈕傳給 engine。
 另有 Basic Attack selector；它不是四格手牌之一，
 UI 必須明示所選 attack 會在 Run 開始後鎖定、免費、自動水平攻擊。
 

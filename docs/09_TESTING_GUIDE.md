@@ -136,7 +136,8 @@ z-order、layout 與 generated Scene parity。圖片迭代過程不為主觀畫�
 
 `combo_skill_route_union_test.gd` 鎖定正式 Combo 契約：三階必須分別使用 3／4／6
 次成功 Combo、混合路線須提供不同順序，且同一歷史尾段必須聯集觸發所有已編成的
-符合招式並對單招去重。
+符合招式並對單招去重；雷電基本招式另固定驗證 `風暴充能 ×3`，避免相容映射把它
+誤接成其他劍魂的混合路線。
 
 `thorn_bloom_series_test.gd` 鎖定荊棘的 3／6／10 破土、依序開花與棘刺齊射；VFX 使用
 既有開花序列作獨立 bloom layer，gameplay controller 在開花前不得提前造成傷害。
@@ -797,7 +798,7 @@ instance.queue_free()
 | Fusion | 只由菁英／Boss loot page 提供第一批 10 個 authored recipe；非配方組合必須拒絕，5 個儀式配方另驗 equipped catalyst；合法配對超過三種時隨機抽三種且 queue 優先保留三個 fusion；10 個背景攻擊各有唯一具體主體 asset／motion，不得繪製抽象幾何；單次至少 1.25 秒且可見主體封頂兩個；8 個 base asset 也隨普通攻擊的 Lv／Combo／stack 增加物件與殘影，三槽同屏封頂六個並疊在既有月牙劍氣上；0 AP、不動 Basic cooldown，並讓普通攻擊、傷害招式與背景攻擊共用全部神賜狀態 |
 | Blessing subject VFX | `blessing_subject_vfx_test.gd` 驗 8 個 base／10 個 evolved 唯一 asset、真 alpha、8 種 base motion、10 種 evolved motion、無抽象 geometry、時長下限，以及 Lv／Combo／stack 會增加普通攻擊物件；持有 Blessing 時不得 suppress `PremiumCrescentLayer`，快速月牙須在 0.22 秒內完成並與 Blessing 主體共同命中 |
 | Player Market experience/art | `player_market_experience_test.gd` 驗鐵匠三熱區鍵盤 focus、商店 Product1 初始焦點、側邊 `ContextDock` 不壓縮店景與兩條顧客路線；`player_market_art_layers_test.gd` 驗 cozy background／midground／foreground、六個 atlas 裝潢與所有物件 hotspot；1040×640 authored frame 以 1280×720 為 1× 基準在 `0.78–2.0×` 等比置中；`blessing_market_visual_capture_test.gd` 以圖形 renderer 輸出 1280×720、1920×1080、2560×1440 商店全圖、店面／鍛造／戰鬥／普攻／地名全圖與固定 3×2 六切片 |
-| Deck/hand | 傳送門前第 1 格固定 Healing、後 3 格為 unique 公式劍魂；四格後方的單一 workspace 以「劍魂替換／依招式配置」互斥切換，招式清單不得插在卡槽上方或與劍魂清單同時常駐；招式模式必須有 13 個 catalog-ordered 系列標題，每區固定基礎／進階／大師三欄且合計 39 招；招式選擇自動填入 `required_skills` 聯集，相容名稱保持正常色、缺卡或超過三格者保留並反灰；手動候選排除重複並預覽終結技；圖示、類型色與金色幾何動畫可辨；hover／keyboard focus 即時預覽效果，向下越界自動捲動；面板於高解析度等比放大；QWER 使用後保留原 slot |
+| Deck/hand | 傳送門前第 1 格固定 Healing、後 3 格為 unique 公式劍魂；四格後方的單一 workspace 以「劍魂替換／依招式配置」互斥切換，招式清單不得插在卡槽上方或與劍魂清單同時常駐；招式模式必須有 13 個 catalog-ordered 系列標題，每區固定基礎／進階／大師三欄且合計 39 招；招式選擇自動填入 `required_skills` 聯集，相容名稱保持正常色、缺卡或超過三格者保留並反灰；實際按下清單後即使動態列表重建，仍須以 stable skill ID 保留選中狀態、焦點與捲動區段，且不得對已脫離 ScrollContainer 的舊 Control 呼叫 `ensure_control_visible()`；手動候選排除重複並預覽終結技；圖示、類型色與金色幾何動畫可辨；hover／keyboard focus 即時預覽效果，向下越界自動捲動；面板於高解析度等比放大；QWER 使用後保留原 slot |
 | Card readability/feedback | 繁中長技能名固定兩行、超出省略且 tooltip 保留完整名稱，不撐寬四卡框；七解析度不重疊；compatibility `BackRow` hidden 且不保留高度，code-native 7:8 金色幾何框與條件式透明裝飾層由 CardStage 頂緣到底緣雙軸填滿四等分 slot、主插畫占主要視覺；hover 不橫向放大；combat halo hidden，外框亮帶持續沿可調拱弧／側柱充能、主圖背後 60 根粗且保有留白的 360° sacred-geometry 日芒以雙頻波形大幅伸縮、維持圓形整體輪廓且四卡相位錯開；日芒使用不歸零的連續時間值，外框跨界亮帶同時繪製尾端與起點，循環接縫不得抖動；兩者使用全域時間軸，出招重投影不得歸零；右側長公式固定欄寬 ellipsis；只有成功施放的相符 card id 播放約 0.42 秒最上層儀式弧光、12 根短放射刻線、三圓章閃光與主圖 punch，無矩形遮罩且不重置底層循環；重複呼叫重啟、未知 ID 無作用、0.5 秒內回穩；透明裝飾素材另檢查 1173×1341、alpha 與共享對位 |
 | Combat input hierarchy | 隱藏舊 `ActionStrip`；`SPACE 衝刺` 位於 FooterRail；手牌頂緣貼齊 CardStage；二十張公式劍魂的 catalog 基礎 AP 統一為 2，裝備只可把 Combo 投影降至最低 1；卡面共用 Noto Serif TC 優先的襯線 stack，短招式名保持大字、長名稱最低 12px 且獨占暖墨底部卷軸，插畫在分類框上緣前結束；Q/W/E/R 位於左上 32–36px 圓章且至少 18px；右上顯示種類 icon；AP cost 位於右下 34–38px 圓章且只顯示至少 20px 的數字；中文分類使用四邊舊金框暖墨 tab 且至少 60% 卡寬，Combo 卡在同一 tab 顯示自己的 `目前層數/有效上限`，不另加 stack seal；不得新增表格線、全卡不透明色塊或霓虹外框 |
 | Attack geometry | 戰前獨立 Basic Attack、Run lock、0 AP、不進牌堆；方向劍氣以 53px 半高、Combo／stack 1–3 倍 size clamp 與 1.00／1.10／1.22／1.36 spectacle scale 建立前向膠囊掃掠形狀，依 hurtbox 中心／半徑相交並讓沿途每個唯一敵人受傷一次；每方向 VFX 只追到最遠合法目標；圓形攻擊以 radius 與 hurtbox 相交，Dash 以移動線段膠囊相交；形狀外、角色背後不受傷；無目標不消耗 cooldown 或公式 |

@@ -43,6 +43,7 @@ var _sword_soul_selector: VBoxContainer
 var _skill_recipe_selector: VBoxContainer
 var _recipe_choice_list: VBoxContainer
 var _recipe_choice_buttons: Array[Button] = []
+var _recipe_choice_by_skill_id: Dictionary = {}
 var _recipe_scroll: ScrollContainer
 var _sword_soul_mode_button: Button
 var _skill_recipe_mode_button: Button
@@ -793,6 +794,7 @@ func _rebuild_skill_recipe_choices() -> void:
 		_recipe_choice_list.remove_child(child)
 		child.queue_free()
 	_recipe_choice_buttons.clear()
+	_recipe_choice_by_skill_id.clear()
 	for series in _skill_catalog.get_all_series():
 		var series_id := String(series.get("id", ""))
 		var series_name := String(series.get("name", series_id))
@@ -852,6 +854,7 @@ func _rebuild_skill_recipe_choices() -> void:
 			)
 			tier_choices.add_child(choice)
 			_recipe_choice_buttons.append(choice)
+			_recipe_choice_by_skill_id[skill_id] = choice
 	_wire_skill_recipe_focus_navigation()
 
 
@@ -905,12 +908,33 @@ func _apply_skill_recipe_button_style(
 
 
 func _on_skill_recipe_pressed(skill_id: String) -> void:
-	choose_skill_recipe(skill_id)
+	var previous_scroll := _recipe_scroll.scroll_vertical if _recipe_scroll != null else 0
+	if choose_skill_recipe(skill_id):
+		call_deferred(
+			"_restore_skill_recipe_selection_context",
+			skill_id,
+			previous_scroll
+		)
 
 
 func _focus_skill_recipe_choice(choice: Control) -> void:
 	if _recipe_scroll != null:
-		_recipe_scroll.call_deferred("ensure_control_visible", choice)
+		call_deferred(
+			"_ensure_control_visible_if_descendant",
+			_recipe_scroll,
+			choice
+		)
+
+
+func _restore_skill_recipe_selection_context(skill_id: String, previous_scroll: int) -> void:
+	if _recipe_scroll == null or not is_instance_valid(_recipe_scroll):
+		return
+	var replacement := _recipe_choice_by_skill_id.get(skill_id) as Button
+	if replacement == null or not is_instance_valid(replacement):
+		return
+	_recipe_scroll.scroll_vertical = previous_scroll
+	replacement.grab_focus()
+	_ensure_control_visible_if_descendant(_recipe_scroll, replacement)
 
 
 func _wire_skill_recipe_focus_navigation() -> void:
@@ -991,7 +1015,28 @@ func _on_choice_pressed(card_id: String) -> void:
 func _preview_choice(card_id: String, choice: Control) -> void:
 	_update_detail(_find_catalog_card(card_id))
 	if _choice_scroll != null:
-		_choice_scroll.call_deferred("ensure_control_visible", choice)
+		call_deferred(
+			"_ensure_control_visible_if_descendant",
+			_choice_scroll,
+			choice
+		)
+
+
+func _ensure_control_visible_if_descendant(
+	scroll: ScrollContainer,
+	control: Control
+) -> void:
+	if (
+		scroll == null
+		or control == null
+		or not is_instance_valid(scroll)
+		or not is_instance_valid(control)
+		or not scroll.is_inside_tree()
+		or not control.is_inside_tree()
+		or not scroll.is_ancestor_of(control)
+	):
+		return
+	scroll.ensure_control_visible(control)
 
 
 func _restore_active_detail() -> void:

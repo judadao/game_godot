@@ -24,6 +24,14 @@ func _run() -> void:
 			advanced_routes[0] != advanced_routes[1],
 			"Accepted route alternatives must not be duplicate orders."
 		)
+	var lightning_basic := catalog.get_skill("endless_thunder_tone")
+	var lightning_basic_routes := lightning_basic.get("combo_routes", []) as Array
+	_expect(
+		lightning_basic_routes.has([
+			"storm_charge", "storm_charge", "storm_charge",
+		]),
+		"The basic Lightning skill must trigger from Storm Charge three times."
+	)
 
 	var all_ids: Array[String] = []
 	for skill_variant in catalog.get_all_skills():

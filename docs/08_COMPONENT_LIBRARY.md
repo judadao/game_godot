@@ -1575,7 +1575,11 @@ the HUD never reads gameplay state directly.
   panel scales from 1.0 to 1.75 across the required viewports
 - Interaction: candidate hover or keyboard focus previews the exact Sword Soul
   effect immediately；focus navigation owns explicit two-column neighbors and
-  calls `ScrollContainer.ensure_control_visible()` when moving off-screen. The
+  calls `ScrollContainer.ensure_control_visible()` when moving off-screen. Deferred
+  visibility requests must first verify that the target remains a live descendant
+  of that scroll container. Recipe selection rebuilds the dynamic list, then
+  restores the previous scroll region and transfers focus to the replacement
+  button resolved by stable skill ID. The
   named-skill selector lists the same 39 official skills as the Codex, resolves
   `legacy_vfx_id`, and unions each selected recipe's `required_skills` into
   slots 2–4；compatible recipes remain normal/interactive, while missing or
