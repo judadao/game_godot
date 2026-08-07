@@ -14,7 +14,7 @@
       "orbit_reveal_duration": 0.72,
       "target_lock_duration": 0.8,
       "release_duration": 0.72,
-      "growth_rule": "three_path_orbit_lock_to_five_path_climax",
+      "growth_rule": "ten_blade_orbit_lock_into_grouped_five_blade_volleys",
       "source": [-34, -190],
       "target": [118, 54],
       "curve": -18,
@@ -23,9 +23,9 @@
       "rotate_to_path": true,
       "asset_forward_degrees": 45,
       "tiers": [
-        {"tier": "basic", "object_count": 3, "path_count": 3, "direction_count": 3},
-        {"tier": "advanced", "object_count": 7, "path_count": 3, "direction_count": 3},
-        {"tier": "master", "object_count": 15, "path_count": 5, "direction_count": 5}
+        {"tier": "basic", "object_count": 10, "path_count": 5, "direction_count": 5},
+        {"tier": "advanced", "object_count": 15, "path_count": 5, "direction_count": 5},
+        {"tier": "master", "object_count": 20, "path_count": 5, "direction_count": 5}
       ],
       "legacy_recipe_ids": ["silent_battle_rhythm", "horizon_stream", "sudden_rain_cadence"]
     },

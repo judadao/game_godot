@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 198 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 200 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -72,8 +72,11 @@ Inventory／Codex focused coverage：
 - `skill_series_vfx_growth_test.gd`：驗證 13 個系列各有一張透明主物體、正式順序，且所有
   發射型系列由 basic 至少 3 個／3 路、advanced 更高密度，成長到 master 至少 5 路，
   主物體最小可讀尺寸為 112px；非發射型古木仍維持 2／4／6 門陣節點。另由
-  `sword_rain_cadence_vfx_test.gd` 鎖定劍雨逐把環繞浮現、目標頭頂垂直鎖定 0.8 秒、
-  分組停頓／加速墜落、逐劍曲線殘光，以及在插入點觸發衝擊後消失。
+  `sword_rain_cadence_vfx_test.gd` 鎖定劍雨 10／15／20 數量、逐把分離環繞浮現、目標
+  頭頂垂直鎖定 0.8 秒、五劍分組停頓／加速墜落、逐劍曲線殘光、命中震屏／hit-stop，
+  以及在插入點觸發衝擊後消失；`sword_rain_material_vfx_test.gd` 驗證三層拖尾、六層
+  命中堆疊與通用藍線抑制，`sword_rain_runtime_targeting_test.gd` 驗證 Hurtbox 中心與
+  原目標離場後轉鎖存活敵人。
   `skill_series_vfx_visual_capture_test.gd` 可用
   `SKILL_SERIES_VFX_CAPTURE_PATH` 在已配置的 offscreen 圖形 renderer 輸出 13×3 contact sheet；
   dummy headless 環境只執行 geometry／behavior contracts，不要求 PNG capture。

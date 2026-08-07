@@ -88,6 +88,9 @@ func load_catalog() -> bool:
 			"source": (series_profile.get("source", [0, 0]) as Array).duplicate(),
 			"target": (series_profile.get("target", [260, 0]) as Array).duplicate(),
 			"curve": float(series_profile.get("curve", 0.0)),
+			"specialized_renderer": (
+				"sword_rain_material_cadence" if series_id == "sword_rain" else ""
+			),
 		}
 	return true
 

@@ -66,6 +66,19 @@ never deleted. `skill_vfx_stack.gdshader` is the Core's single combined material
 bounded UV distortion, noise, glow and dissolve. Independent geometry/particle children supply
 the other roles. This avoids trying to attach several CanvasItem materials to one sprite.
 
+Sword Rain is the first series-specific renderer over this grammar. The generic Composer still
+owns its recipe and Blessing projection, but suppresses generic `Rain`, `Trail`, `Ring`, and
+`Impact` drawing because connecting blade positions into one polyline produced meaningless
+geometry. `SwordRainMaterialVFX2D` instead keeps every authored sword texture readable and gives
+each blade an animated energy-edge material, a three-layer trail (outer energy, colored body,
+white cutting core), and its own insertion stack (directional contact flash, shards, ground scar,
+sword afterglow, pooled sparks). Its timeline is explicitly staged as staggered summon, orbit
+gather, lock charge, snap release, insertion hold, and afterglow decay. Sword Rain uniquely starts
+at ten blades; its 10/15/20 growth is grouped into two/three/four five-blade volleys rather than
+arbitrary scatter. Runtime playback takes a live enemy provider, aims at Hurtbox centers, and
+retargets a surviving nearby enemy when a locked target leaves the tree. Generic `Projectile` is
+also suppressed so no unrelated blue connector survives beside the authored blade trails.
+
 Blessing mutations are a stack of data, not separate redraws. Every supported element can alter
 palette, visible copy count, path curvature/forks, trail primitive, impact primitive and ground
 residue. Production casts default to currently owned Blessings when a skill has no explicit

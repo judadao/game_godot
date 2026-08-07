@@ -14,10 +14,10 @@ func _run() -> void:
 	var advanced := catalog.get_tier_profile("sword_rain", 2)
 	var master := catalog.get_tier_profile("sword_rain", 3)
 	_expect(
-		int(basic.get("object_count", 0)) >= 3
-			and int(basic.get("path_count", 0)) >= 3
-			and int(basic.get("direction_count", 0)) >= 3,
-		"Basic Sword Rain must already attack on at least three paths."
+		int(basic.get("object_count", 0)) >= 10
+			and int(basic.get("path_count", 0)) >= 5
+			and int(basic.get("direction_count", 0)) >= 5,
+		"Basic Sword Rain must already summon ten readable blades over five lanes."
 	)
 	_expect(
 		int(advanced.get("object_count", 0)) > int(basic.get("object_count", 0))
@@ -36,7 +36,7 @@ func _run() -> void:
 	await process_frame
 	effect.call("play_series", "sword_rain", 1, 1, true)
 	var basic_state := effect.call("get_series_debug_state") as Dictionary
-	_expect(int(basic_state.get("object_count", 0)) >= 3, "Basic playback must render all three Sword Rain lanes.")
+	_expect(int(basic_state.get("object_count", 0)) >= 10, "Basic playback must render all ten Sword Rain blades.")
 	_expect(effect.has_method("get_sword_rain_cadence_state"), "Sword Rain must expose its authored rhythm diagnostics.")
 	if not effect.has_method("get_sword_rain_cadence_state"):
 		effect.queue_free()
@@ -63,6 +63,7 @@ func _run() -> void:
 	_expect(float(initial.get("minimum_render_size", 0.0)) >= 105.0 and float(initial.get("minimum_render_size", 0.0)) <= 120.0, "Sword Rain blades must be about 70 percent of the previous oversized presentation.")
 	_expect(float(initial.get("lock_lane_spacing", 0.0)) >= 55.0 and float(initial.get("lock_row_spacing", 0.0)) >= 30.0, "Sword Rain target-lock blades must not overlap into one unreadable cluster.")
 	_expect(float(initial.get("orbit_radius", 0.0)) >= 140.0, "Sword Rain reveal must use a wide readable orbit around the caster.")
+	_expect(float(initial.get("contact_lane_spacing", 0.0)) >= 30.0, "Sword Rain contacts must remain separated across the target instead of stacking into one sprite.")
 	_expect(int(initial.get("impact_vfx_count", 0)) == beat_schedule.size(), "Every Sword Rain blade needs a target-insertion impact VFX.")
 
 	var orbit_end := float(initial.get("orbit_end_ratio", 0.0))
@@ -80,6 +81,8 @@ func _run() -> void:
 	var climax := effect.call("get_sword_rain_cadence_state") as Dictionary
 	_expect(int(climax.get("active_trail_count", 0)) >= 3, "Sword Rain climax must show multiple simultaneous moving trails.")
 	_expect(float(climax.get("maximum_speed_ratio", 0.0)) >= 4.0, "Sword Rain snap must be materially faster than its hover phase.")
+	_expect(float(effect.call("get_impact_strength")) >= 9.0, "Sword Rain contact needs a forceful camera impulse.")
+	_expect(float(effect.call("get_hit_stop_duration")) >= 0.045, "Sword Rain contact needs readable hit-stop weight.")
 	effect.call("debug_set_progress", float(initial.get("first_contact_ratio", 0.0)))
 	var contact := effect.call("get_sword_rain_cadence_state") as Dictionary
 	_expect(int(contact.get("inserted_blade_count", 0)) >= 1, "Sword Rain must visibly insert a blade into the target.")

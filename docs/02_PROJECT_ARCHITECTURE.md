@@ -458,8 +458,9 @@ Combo／Healing 劍魂身分，並以目前編成招式的 `combo_routes` 比對
 | Elemental combat VFX | `scenes/combat/vfx/*.tscn` | 火／冰攻擊纏繞與範圍大招的純 presentation；不擁有傷害判定 |
 | Reusable VFX primitives | `scenes/vfx/primitives/`、`scripts/vfx/`、`shaders/vfx/` | 火／雷／水／毒／冰／風各三個五層原語；`LayeredVFXPrimitive2D` 只管理 visual lifecycle 與參數，`ParticleBurst2D`、`LightningGenerator2D`、`TrailHistory2D` 提供共用粒子／A→B 雷電／歷史軌跡，禁止反向持有 gameplay 規則 |
 | Skill VFX Grammar | `SkillVFXRecipeCatalog`、`SkillVFXComposer2D`、`BlessingVFXMutationCatalog`、`skill_vfx_stack.gdshader` | 13 系列各一份 Core＋至少四個額外 role 的 recipe；保留現有透明主物體作 Core，統一 timeline 拼裝其餘 14 種軌跡／爆點 role。Blessing 只投影 palette、數量、路徑、尾跡、爆點與殘留，不擁有傷害規則 |
+| Sword Rain material renderer | `SwordRainMaterialVFX2D`、`sword_rain_energy.gdshader`、`sword_rain_trail.gdshader` | 劍雨專用 presentation：逐把劍保留具體本體，以劍形能量回聲、三層獨立拖尾與逐把插入命中堆疊取代通用 Rain／Projectile 折線與 Ring；讀取 Game 提供的存活敵人清單，把視覺落點追到 Hurtbox 中心並在節點消失時轉鎖鄰敵，但不改 gameplay target、命中或傷害 |
 | `ElementalGroundTrail` | `scenes/combat/vfx/ElementalGroundTrail.tscn`、`data/elemental_ground_trail_profiles.json` | 沿元素大招路徑拼裝 Core／Edge／Accent／Debris atlas 部件與連續 ribbon；火、冰、毒使用不同 topology，不擁有傷害判定 |
-| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json`、`data/skill_series_vfx.json` | 舊 profile 仍供退役 trigger／相容 caller 使用；現役 39 招由 `play_series()` 保留各系列唯一主物體作 Core，再把同一時間軸交給 `SkillVFXComposer2D`。發射型系列由 basic 的 3 物體／3 路，成長為 advanced 7 物體／3 路與 master 15 物體／5 路。播放器只處理 presentation，不擁有名稱、配方或傷害判定 |
+| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json`、`data/skill_series_vfx.json` | 舊 profile 仍供退役 trigger／相容 caller 使用；現役 39 招由 `play_series()` 保留各系列唯一主物體作 Core，再把同一時間軸交給 `SkillVFXComposer2D`。一般發射型系列由 basic 的 3 物體／3 路成長為 advanced 7 物體／3 路與 master 15 物體／5 路；劍雨例外為 10／15／20 把、每波五把。播放器只處理 presentation，不擁有名稱、配方或傷害判定 |
 | `CombatVFXFoundation` | `scripts/combat/combat_vfx_foundation.gd` | 遷移期間保留的相容回退；只有 recipe 缺失／配置失敗時才建立，正式系列畫面由 Skill VFX Grammar 渲染，不得讓 Foundation 與 Composer 同時處理或出圖 |
 | `StormChargeVFX` | `scenes/combat/vfx/StormChargeVFX.tscn` | 風暴充能專用的原地五節拍 presentation；固定導電主幹由左右地流依序接入雙腳、持劍手與劍身，接觸時只從劍身下游長出有粗細層級的右向分支，高潮後沿同一路徑回縮；不擁有傷害或 buff 規則 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
@@ -1223,9 +1224,15 @@ auto attack 缺失或無效時 fallback 到已解鎖的有效 attack，active sk
   猜測。舊 count／sequence trigger engine 已退役；`record_card()` 僅為既有 caller
   保留並回傳空結果。
 - `skill_series_vfx.json` 是現役招式 presentation 權威：每系列只有一個透明主物體。
-  發射型系列以 basic 3 物體／3 路、advanced 7 物體／3 路、master 15 物體／5 路成長；
+  一般發射型系列以 basic 3 物體／3 路、advanced 7 物體／3 路、master 15 物體／5 路成長；
   非發射型門陣／場域保留獨立節點規則。劍雨 profile 另外定義環繞浮現、0.8 秒垂直鎖定、
-  分組 release 節拍、每把劍的曲線殘光與插入點衝擊。
+  分組 release 節拍、每把劍的曲線殘光與插入點衝擊；basic／advanced／master 固定為
+  10／15／20 把，即二／三／四輪五劍，輪次之間保留頓點。
+  `SwordRainMaterialVFX2D` 接管劍雨的 Rain／Projectile／Trail／Ring／Impact role，逐把同步 Core pose，
+  由能量邊緣 shader、外能量／色彩本體／白刃芯三層拖尾、方向性命中閃光、碎片、短地面
+  斬痕、殘劍及 pooled sparks 組成。Game 只提供 live enemy provider；播放器以 Hurtbox
+  中心作視覺落點，原鎖定節點消失時就近轉鎖，完全無敵人才使用 authored ground fallback。
+  通用 Composer 不得同時畫出折線、藍色 connector 或圓環。
   `legacy_vfx_map` 只保留配方與 caller 相容，不再選擇現役招式外觀；
   實戰舊 Finisher recipe ID 必須先由目前配置的正式招式消歧義，才能取得該招自己的
   `series_vfx_id` 與 `tier_rank`；同一舊 recipe 的相容存檔若留下多個正式招式，固定由

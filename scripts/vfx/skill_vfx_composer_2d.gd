@@ -20,6 +20,8 @@ var _palette: Array[Color] = []
 var _visual_count_bonus := 0
 var _trajectory_variation := 0.0
 var _impact_primitive := ""
+var _specialized_renderer := ""
+var _suppressed_generic_roles: Array[String] = []
 var _role_layers: Dictionary = {}
 var _impact_effect: Node2D
 var _impact_started := false
@@ -38,6 +40,11 @@ func configure(recipe: Dictionary, tier_rank: int, blessing_overlays: Array = []
 		return false
 	_recipe = recipe.duplicate(true)
 	_tier = clampi(tier_rank, 1, 3)
+	_specialized_renderer = String(_recipe.get("specialized_renderer", ""))
+	if _specialized_renderer == "sword_rain_material_cadence":
+		_suppressed_generic_roles.assign([
+			"rain", "projectile", "trail", "ring", "impact",
+		])
 	_resolve_mutations(blessing_overlays)
 	_build_role_layers()
 	_build_impact_primitive()
@@ -95,6 +102,8 @@ func clear() -> void:
 	_visual_count_bonus = 0
 	_trajectory_variation = 0.0
 	_impact_primitive = ""
+	_specialized_renderer = ""
+	_suppressed_generic_roles.clear()
 
 
 func get_debug_state() -> Dictionary:
@@ -110,6 +119,8 @@ func get_debug_state() -> Dictionary:
 		"resolved_palette": _palette.duplicate(),
 		"uses_existing_core_asset": not String(_recipe.get("asset_path", "")).is_empty(),
 		"legacy_fallback_retained": true,
+		"specialized_renderer": _specialized_renderer,
+		"suppressed_generic_roles": _suppressed_generic_roles.duplicate(),
 	}
 
 
@@ -155,7 +166,7 @@ func _resolve_mutations(blessing_overlays: Array) -> void:
 func _build_role_layers() -> void:
 	for role_variant in _recipe.get("grammar", []) as Array:
 		var role := String(role_variant)
-		if role in ["core", "impact"]:
+		if role in ["core", "impact"] or _suppressed_generic_roles.has(role):
 			continue
 		var layer: CanvasItem
 		if role in ["burst", "distortion"]:
@@ -177,6 +188,9 @@ func _build_role_layers() -> void:
 
 
 func _build_impact_primitive() -> void:
+	if _suppressed_generic_roles.has("impact"):
+		_impact_primitive = "sword_rain_contact_stack"
+		return
 	var packed := PRIMITIVE_SCENES.get(_impact_primitive) as PackedScene
 	if packed == null:
 		packed = PRIMITIVE_SCENES["wind_burst"] as PackedScene

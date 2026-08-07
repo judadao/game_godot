@@ -541,7 +541,9 @@ func _ready() -> void:
 - `ElementalGroundTrail.tscn`：依路徑採樣並以四個 atlas slots 拼裝火痕、凍裂或
   毒灘；底層兩條 Line2D 只負責連續性，不擁有命中或持續傷害。
 - `NamedSkillVFX.tscn`：現役系列主物體與數量／路徑編排；靜態 child
-  `SkillVFXComposer2D` 依 recipe 拼裝至少五個 Core／軌跡／命中 role。舊 runtime
+  `SkillVFXComposer2D` 依 recipe 拼裝至少五個 Core／軌跡／命中 role；靜態 child
+  `SwordRainMaterialVFX2D` 只在劍雨系列啟用，逐把同步劍形能量、三層拖尾與插入命中。
+  舊 runtime
   `CombatVFXFoundation` 僅在 recipe 無法配置時建立作相容回退。
 - `SkillCastPresentation.tscn`：常駐 Game 的 CanvasLayer，不攔截輸入。
 
@@ -558,6 +560,12 @@ particle amount、noise 與 glow。`scenes/vfx/demos/` 為逐一可執行的檢�
 `SkillVFXComposer2D.tscn` 是 gameplay 可用的招式組裝器，只接收 recipe、tier、Blessing
 overlays 與 normalized progress。五個 `*_vfx_demo.tscn` 使用正式 Composer 與現有 Core
 素材，分別檢查斬擊、火球、落雷、範圍爆發與月輪，且不得加入逐格動畫。
+
+`SwordRainMaterialVFX2D.tscn` 是劍雨的專用材質與節奏 child。它不連接不同劍的位置，
+也不畫通用圓環；每把劍各自持有 SummonEcho、LockSheath、OuterEnergy／ColoredBody／
+WhiteCore trail，以及 CompressionWedge／ContactFlash／DirectionalShards／GroundScar／
+SwordAfterglow／Sparks。所有節點只接受 `NamedSkillVFX` 已決定的 pose 與 normalized phase；
+runtime target provider 只用來更新 visual Hurtbox 落點，不得回寫戰鬥 target 或傷害。
 
 ### 7.1 Player contract
 

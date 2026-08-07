@@ -4299,6 +4299,12 @@ func _spawn_named_skill_vfx(
 	if effect == null:
 		return
 	current_map.add_child(effect)
+	if effect.has_method("configure_runtime_targeting"):
+		effect.call(
+			"configure_runtime_targeting",
+			Callable(self, "_get_combat_targets"),
+			_get_combat_targets()
+		)
 	effect.set_meta(
 		"finisher_blessing_overlays",
 		blessing_overlays.duplicate(true)

@@ -1632,6 +1632,20 @@ the HUD never reads gameplay state directly.
   one combined Core shader is used instead of stacking unsupported CanvasItem materials
 - Review: five pure-VFX scenes under `scenes/vfx/demos/` exercise the production component
 
+### SwordRainMaterialVFX2D
+
+- Scene: `res://scenes/vfx/skills/SwordRainMaterialVFX2D.tscn`
+- Script: `res://scripts/vfx/sword_rain_material_vfx_2d.gd`
+- Shaders: `sword_rain_energy.gdshader`, `sword_rain_trail.gdshader`
+- Owner: static child of `NamedSkillVFX`; active only for `sword_rain`
+- Contract: preserve the sword Core silhouette; synchronize staggered summon, separated concentric
+  orbit groups, 0.8-second lock charge, grouped snap release, insertion hold, and decay; give every
+  blade two sword-shaped aura layers, three independent material trails, and one six-role impact
+  stack; the 10/15/20 formations release as two/three/four five-blade volleys
+- Boundary: replaces generic Rain/Projectile/Trail/Ring/Impact presentation only; live target input
+  may update visual Hurtbox centers and retarget after node removal, but hit, damage, Combo, tier
+  ownership, and Blessing gameplay remain outside this component
+
 ### LayeredVFXPrimitive2D
 
 - Scene roots: `res://scenes/vfx/primitives/<element>/<primitive>.tscn`
