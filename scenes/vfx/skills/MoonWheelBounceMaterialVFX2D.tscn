@@ -1,15 +1,18 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/vfx/moon_wheel_bounce_material_vfx_2d.gd" id="1"]
-[sub_resource type="CanvasItemMaterial" id="1_add"]
-blend_mode = 1
+[ext_resource type="Script" path="res://scripts/vfx/moon_wheel_bounce_material_vfx_2d.gd" id="1_script"]
 
-[node name="MoonWheelBounceMaterialVFX2D" type="Node2D"]
-material = SubResource("1_add")
-script = ExtResource("1")
-[node name="OuterTrail" type="Line2D" parent="."]
-width = 20.0
-[node name="InnerTrail" type="Line2D" parent="."]
-width = 6.0
-[node name="ReboundFlash" type="Line2D" parent="."]
-width = 9.0
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+light_mode = 1
+
+[node name="MoonWheelBounceMaterialVFX2D" type="Node2D" groups=["ReusableVFX", "SkillSeriesMaterialVFX"]]
+material = SubResource("CanvasItemMaterial_add")
+script = ExtResource("1_script")
+
+[node name="ContactMotes" type="GPUParticles2D" parent="."]
+z_index = 4
+emitting = false
+one_shot = true
+visibility_rect = Rect2(-640, -260, 1280, 400)
+use_parent_material = true

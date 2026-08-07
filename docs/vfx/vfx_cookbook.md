@@ -132,6 +132,22 @@ Standalone composition scenes are `slash_vfx_demo`, `fireball_vfx_demo`,
 `lightning_strike_vfx_demo`, `area_burst_vfx_demo`, and `moon_wheel_vfx_demo`. They contain no
 `AnimatedSprite2D` and exercise the production composer with existing Core art.
 
+Moon Wheel is an exception to the usual history-trail recipe. Its readable body is the concrete
+silver crescent, so the travel path must never be drawn as a permanent `Line2D`. The specialized
+renderer uses bounded, piecewise-linear pinball reflection: alternating wheels launch from opposing
+sides, reflect independently from the upper/lower and left/right bounds, and retain only two short
+material afterimages measured at fixed 22/44px world distances, so faster tiers do not stretch the
+echoes into duplicate projectiles. Every wheel owns a close shader aura plus a broader radial bloom; both light
+layers follow that exact wheel rather than sharing a stationary scene glow. A boundary contact
+briefly compresses the wheel and brightens both carried lights, then emits a white-hot diamond,
+directional moon chips, and a per-wheel pooled particle burst before the wheel accelerates away.
+Particle bursts trigger only when that wheel crosses a horizontal rebound segment, so vertical
+flashes can add motion without continuously restarting the residue. Gameplay contacts use a
+staggered rebound volley instead of resolving every wheel on one frame; overdue contacts remain in
+a bounded backlog and release across later frames. The authored
+cadence is `materialize → accelerate → wall contact → rebound release → residual dissolve`; visible
+guide arcs, rebound rails, and full-path ribbons are forbidden.
+
 Repository study informed the structure but no third-party art was copied. The useful patterns
 were GDQuest's multi-node timeline/cleanup, the simple multi-effect decomposition in
 `godot-visual-effects`, and VFEZ's single generated shader approach to effect stacking. The

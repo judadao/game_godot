@@ -152,6 +152,14 @@ catalog 欄位。持續 controller 再由 `moon_wheel_bounce_controller_test.gd`
 `healing_zone_controller_test.gd` 與 `body_overdrive_controller_test.gd` 驗證時序、命中上限、
 安全位移、治療脈衝與 Buff 到期狀態。
 
+`moon_wheel_material_vfx_test.gd` 另外鎖定月輪 renderer 不含任何 `Line2D` 軌跡／反彈
+導引線，五層材質節奏為顯形、加速、牆面接觸、反彈再釋放與殘光消散；同一時間必須
+存在相反 X 方向與多組 Y 位移，避免所有環刃退化成同步雨刷。每枚月輪另需各有一組
+跟隨本體的近身 shader aura 與外層 bloom，不得共用固定光源。Controller test 同時驗證
+22／44px 固定世界距離殘影、每輪獨立的 bounded emitter、水平反彈一次性粒子觸發，
+以及一趟內的命中以短間隔分開。大 delta 的 overdue contact 必須留在 backlog 跨幀排空，
+不得在同一幀一次結算整排月輪；後段才進入範圍的目標仍由剩餘 contact slot 動態取得。
+
 `combat_vfx_foundation_test.gd` 鎖定所有現役系列具有暗／亮兩層斬擊、flash、flare、
 shockwave 與 sparks；火系另須有火舌、dissolve shader、煙、火星與獨立爆心火／煙層。
 
