@@ -1,4 +1,4 @@
-[gd_scene load_steps=52 format=3]
+[gd_scene load_steps=66 format=3]
 
 [ext_resource type="Script" uid="uid://bl4jfw2re34g3" path="res://scripts/ui/town/player_blacksmith_ui.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/ui/town/TownNPCPortrait.tscn" id="2_portrait"]
@@ -20,6 +20,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_interactive_objects.png" id="18_workshop_objects"]
 [ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_menu_icons.png" id="19_blacksmith_icons"]
 [ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_ambient_atlas.png" id="20_ambient"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/forge_workspace_objects.png" id="21_forge_workspace"]
 
 [sub_resource type="AtlasTexture" id="WorkshopAnvil"]
 atlas = ExtResource("18_workshop_objects")
@@ -113,6 +114,38 @@ region = Rect2(940.5, 940.5, 313.5, 313.5)
 atlas = ExtResource("20_ambient")
 region = Rect2(0, 627, 627, 627)
 
+[sub_resource type="AtlasTexture" id="ForgeWorkspaceBlueprint"]
+atlas = ExtResource("21_forge_workspace")
+region = Rect2(0, 0, 384, 512)
+
+[sub_resource type="AtlasTexture" id="ForgeWorkspaceMethod"]
+atlas = ExtResource("21_forge_workspace")
+region = Rect2(384, 0, 384, 512)
+
+[sub_resource type="AtlasTexture" id="ForgeWorkspaceMaterial"]
+atlas = ExtResource("21_forge_workspace")
+region = Rect2(768, 0, 384, 512)
+
+[sub_resource type="AtlasTexture" id="ForgeWorkspaceResult"]
+atlas = ExtResource("21_forge_workspace")
+region = Rect2(1152, 0, 384, 512)
+
+[sub_resource type="AtlasTexture" id="ForgeWorkspaceAnvil"]
+atlas = ExtResource("21_forge_workspace")
+region = Rect2(0, 512, 384, 512)
+
+[sub_resource type="AtlasTexture" id="ForgeWorkspaceHammer"]
+atlas = ExtResource("21_forge_workspace")
+region = Rect2(384, 512, 384, 512)
+
+[sub_resource type="AtlasTexture" id="ForgeWorkspaceImpact"]
+atlas = ExtResource("21_forge_workspace")
+region = Rect2(768, 512, 384, 512)
+
+[sub_resource type="AtlasTexture" id="ForgeWorkspaceHearth"]
+atlas = ExtResource("21_forge_workspace")
+region = Rect2(1152, 512, 384, 512)
+
 [sub_resource type="Animation" id="WorkshopAmbientReset"]
 length = 0.0
 
@@ -151,6 +184,45 @@ tracks/3/keys = {"times": PackedFloat32Array(0, 1.2, 1.94, 3.2, 4.8), "transitio
 
 [sub_resource type="AnimationLibrary" id="WorkshopAnimationLibrary"]
 _data = {&"RESET": SubResource("WorkshopAmbientReset"), &"ambient": SubResource("WorkshopAmbient")}
+
+[sub_resource type="Animation" id="ForgeWorkspaceReset"]
+length = 0.0
+
+[sub_resource type="Animation" id="ForgeWorkspaceIdle"]
+resource_name = "idle"
+length = 4.2
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeWorkspaceHammerVisual:rotation")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {"times": PackedFloat32Array(0, 2.45, 2.7, 2.84, 3.08, 4.2), "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1), "update": 0, "values": [0.24, 0.24, -0.45, 0.5, 0.24, 0.24]}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeWorkspaceHammerVisual:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {"times": PackedFloat32Array(0, 2.45, 2.7, 2.84, 3.08, 4.2), "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1), "update": 0, "values": [Vector2(62, -4), Vector2(62, -4), Vector2(48, -14), Vector2(34, 42), Vector2(62, -4), Vector2(62, -4)]}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeWorkspaceImpactVisual:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {"times": PackedFloat32Array(0, 2.8, 2.86, 3.12, 4.2), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(1, 0.65, 0.18, 0), Color(1, 0.65, 0.18, 0), Color(1, 0.92, 0.48, 1), Color(1, 0.45, 0.08, 0), Color(1, 0.65, 0.18, 0)]}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeWorkspaceHearthVisual:modulate")
+tracks/3/interp = 2
+tracks/3/loop_wrap = true
+tracks/3/keys = {"times": PackedFloat32Array(0, 1.3, 2.86, 3.6, 4.2), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(1, 0.74, 0.48, 0.44), Color(1, 0.84, 0.56, 0.56), Color(1, 0.92, 0.66, 0.72), Color(1, 0.76, 0.44, 0.48), Color(1, 0.74, 0.48, 0.44)]}
+
+[sub_resource type="AnimationLibrary" id="ForgeWorkspaceAnimationLibrary"]
+_data = {&"RESET": SubResource("ForgeWorkspaceReset"), &"idle": SubResource("ForgeWorkspaceIdle")}
 
 [sub_resource type="StyleBoxFlat" id="WindowStyle"]
 content_margin_left = 2.0
@@ -206,6 +278,38 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.27, 0.34, 0.37, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="ForgeStageStyle"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.055, 0.045, 0.035, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.48, 0.34, 0.18, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ForgeHotspotStyle"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.09, 0.075, 0.055, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.56, 0.41, 0.22, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
@@ -668,6 +772,7 @@ theme_override_styles/panel = SubResource("PanelStyle")
 layout_mode = 2
 
 [node name="WorkshopArtBackground" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+visible = false
 z_index = 0
 layout_mode = 1
 anchors_preset = 15
@@ -681,6 +786,7 @@ expand_mode = 1
 stretch_mode = 6
 
 [node name="WorkshopArtMidground" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+visible = false
 z_index = 1
 layout_mode = 1
 anchors_preset = 15
@@ -700,7 +806,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.095, 0.075, 0.06, 0)
+color = Color(0.055, 0.045, 0.038, 1)
 mouse_filter = 2
 
 [node name="Floor" type="ColorRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
@@ -708,15 +814,15 @@ layout_mode = 1
 anchor_top = 0.64
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.19, 0.125, 0.075, 0)
+color = Color(0.10, 0.075, 0.052, 1)
 mouse_filter = 2
 
 [node name="ForgeObject" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
 z_index = 9
 layout_mode = 1
-anchor_left = 0.035
-anchor_top = 0.1
-anchor_right = 0.35
+anchor_left = 0.06
+anchor_top = 0.12
+anchor_right = 0.32
 anchor_bottom = 0.88
 theme_override_styles/panel = SubResource("WorkshopHotspot")
 
@@ -801,7 +907,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 theme_override_colors/font_color = Color(1, 0.78, 0.35, 1)
 theme_override_font_sizes/font_size = 18
-text = "ARCANE FORGE\n熔爐"
+text = "鍛造"
 horizontal_alignment = 1
 vertical_alignment = 1
 mouse_filter = 2
@@ -825,8 +931,8 @@ flat = true
 z_index = 9
 layout_mode = 1
 anchor_left = 0.37
-anchor_top = 0.2
-anchor_right = 0.68
+anchor_top = 0.12
+anchor_right = 0.63
 anchor_bottom = 0.88
 theme_override_styles/panel = SubResource("WorkshopHotspot")
 
@@ -895,7 +1001,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 theme_override_colors/font_color = Color(0.63, 0.88, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "WORKBENCH\n工作台"
+text = "升級工坊"
 horizontal_alignment = 1
 vertical_alignment = 1
 mouse_filter = 2
@@ -918,9 +1024,9 @@ flat = true
 [node name="MarketObject" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
 z_index = 9
 layout_mode = 1
-anchor_left = 0.71
-anchor_top = 0.08
-anchor_right = 0.965
+anchor_left = 0.68
+anchor_top = 0.12
+anchor_right = 0.94
 anchor_bottom = 0.88
 theme_override_styles/panel = SubResource("WorkshopHotspot")
 
@@ -967,7 +1073,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 theme_override_colors/font_color = Color(0.64, 0.9, 0.88, 1)
 theme_override_font_sizes/font_size = 18
-text = "MARKET DOOR\n商店入口"
+text = "商店"
 horizontal_alignment = 1
 vertical_alignment = 1
 mouse_filter = 2
@@ -988,6 +1094,7 @@ theme_override_styles/focus = SubResource("WorkshopFocus")
 flat = true
 
 [node name="WorkshopArtForeground" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+visible = false
 z_index = 8
 layout_mode = 1
 anchors_preset = 15
@@ -1001,6 +1108,7 @@ expand_mode = 1
 stretch_mode = 0
 
 [node name="ForgeEmbers" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+visible = false
 z_index = 12
 modulate = Color(1, 0.55, 0.2, 0.42)
 layout_mode = 1
@@ -1019,6 +1127,7 @@ libraries = {&"": SubResource("WorkshopAnimationLibrary")}
 autoplay = "ambient"
 
 [node name="WorkshopInteractionHint" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkshopInterior/WorkshopCanvas"]
+visible = false
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -1162,13 +1271,13 @@ theme_override_constants/separation = 7
 layout_mode = 2
 theme_override_colors/font_color = Color(0.97, 0.82, 0.49, 1)
 theme_override_font_sizes/font_size = 19
-text = "Blueprint Recipes"
+text = "① 圖紙架"
 
 [node name="RecipeLegend" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipePanel/RecipeLayout"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53, 0.60, 0.62, 1)
 theme_override_font_sizes/font_size = 11
-text = "EQUIPMENT  ·  SWORD SOUL  ·  QUALITY TIER"
+text = "挑選要打造的裝備或劍魂圖紙"
 
 [node name="RecipeScroll" type="ScrollContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipePanel/RecipeLayout"]
 unique_name_in_owner = true
@@ -1209,7 +1318,7 @@ visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.59, 0.58, 0.54, 1)
-text = "No blueprints acquired.\nVisit a blueprint merchant first."
+text = "尚未取得圖紙。\n先到圖紙商人處挑選設計。"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -1223,18 +1332,18 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="RecipeHeader" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
-custom_minimum_size = Vector2(0, 82)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="RecipePreviewFrame" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/RecipeHeader"]
-custom_minimum_size = Vector2(82, 82)
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 theme_override_styles/panel = SubResource("InsetStyle")
 
 [node name="RecipePreview" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/RecipeHeader/RecipePreviewFrame"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(62, 62)
+custom_minimum_size = Vector2(42, 42)
 layout_mode = 2
 texture_filter = 1
 texture = ExtResource("3_forge")
@@ -1267,20 +1376,243 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "READY TO FORGE"
 
-[node name="RecipeDescriptionFrame" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("InsetStyle")
-
-[node name="RecipeDescription" type="RichTextLabel" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/RecipeDescriptionFrame"]
+[node name="ForgeInteractionStage" type="PanelContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 112)
+custom_minimum_size = Vector2(0, 166)
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_colors/default_color = Color(0.77, 0.79, 0.77, 1)
-theme_override_font_sizes/normal_font_size = 14
+theme_override_styles/panel = SubResource("ForgeStageStyle")
+
+[node name="StageLayout" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="ForgeNextHint" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.75, 0.42, 1)
+theme_override_font_sizes/font_size = 11
+text = "下一步：點工具架選擇鍛法"
+horizontal_alignment = 1
+
+[node name="ObjectRow" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 4
+
+[node name="BlueprintSlot" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow"]
+custom_minimum_size = Vector2(112, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 1
+
+[node name="ForgeWorkspaceBlueprintVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/BlueprintSlot"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+texture_filter = 1
+texture = SubResource("ForgeWorkspaceBlueprint")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BlueprintRackButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/BlueprintSlot"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 29)
+layout_mode = 2
+tooltip_text = "圖紙架：回到左側挑選要打造的裝備圖紙"
+focus_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("ForgeHotspotStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/pressed = SubResource("HoverStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "選圖紙"
+
+[node name="MethodSlot" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow"]
+custom_minimum_size = Vector2(112, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 1
+
+[node name="ForgeWorkspaceMethodVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/MethodSlot"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+texture_filter = 1
+texture = SubResource("ForgeWorkspaceMethod")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MethodToolsButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/MethodSlot"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 29)
+layout_mode = 2
+tooltip_text = "工具架：選擇穩鍛、精煉、急鍛或名匠鍛造"
+focus_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("ForgeHotspotStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/pressed = SubResource("HoverStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "選鍛法"
+
+[node name="MaterialSlot" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow"]
+custom_minimum_size = Vector2(112, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 1
+
+[node name="ForgeWorkspaceMaterialVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/MaterialSlot"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+texture_filter = 1
+texture = SubResource("ForgeWorkspaceMaterial")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MaterialChestButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/MaterialSlot"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 29)
+layout_mode = 2
+tooltip_text = "素材箱：選擇本次消耗的素材品質"
+focus_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("ForgeHotspotStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/pressed = SubResource("HoverStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "放素材"
+
+[node name="AnvilSlot" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow"]
+custom_minimum_size = Vector2(132, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 1
+
+[node name="AnvilVisualLayer" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot"]
+custom_minimum_size = Vector2(0, 104)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="ForgeWorkspaceHearthVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = -18.0
+offset_top = 15.0
+offset_right = 62.0
+offset_bottom = 105.0
+mouse_filter = 2
+texture_filter = 1
+texture = SubResource("ForgeWorkspaceHearth")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(1, 0.74, 0.48, 0.44)
+
+[node name="ForgeWorkspaceAnvilVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 4.0
+offset_top = 8.0
+offset_right = 126.0
+offset_bottom = 118.0
+mouse_filter = 2
+texture_filter = 1
+texture = SubResource("ForgeWorkspaceAnvil")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ForgeWorkspaceHammerVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 62.0
+offset_top = -4.0
+offset_right = 132.0
+offset_bottom = 78.0
+mouse_filter = 2
+texture_filter = 1
+texture = SubResource("ForgeWorkspaceHammer")
+expand_mode = 1
+stretch_mode = 5
+pivot_offset = Vector2(15, 66)
+rotation = 0.24
+
+[node name="ForgeWorkspaceImpactVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 43.0
+offset_top = 42.0
+offset_right = 103.0
+offset_bottom = 102.0
+mouse_filter = 2
+texture_filter = 1
+texture = SubResource("ForgeWorkspaceImpact")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(1, 0.65, 0.18, 0)
+
+[node name="ForgeWorkspaceActionButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 29)
+layout_mode = 2
+tooltip_text = "鐵砧：確認目前圖紙、鍛法與素材後開始鍛造"
+focus_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.56, 1)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("PrimaryStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/pressed = SubResource("HoverStyle")
+theme_override_styles/disabled = SubResource("DisabledStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "敲擊鍛造"
+
+[node name="ResultSlot" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow"]
+custom_minimum_size = Vector2(112, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 1
+
+[node name="ForgeWorkspaceResultVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/ResultSlot"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+texture_filter = 1
+texture = SubResource("ForgeWorkspaceResult")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="FinishedRackButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/ResultSlot"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 29)
+layout_mode = 2
+tooltip_text = "成品架：裝備或強化已完成的物品"
+focus_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("ForgeHotspotStyle")
+theme_override_styles/hover = SubResource("HoverStyle")
+theme_override_styles/pressed = SubResource("HoverStyle")
+theme_override_styles/focus = SubResource("FocusStyle")
+text = "取成品"
+
+[node name="ForgeWorkspaceAnimation" type="AnimationPlayer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage"]
+unique_name_in_owner = true
+libraries = {&"": SubResource("ForgeWorkspaceAnimationLibrary")}
+autoplay = "idle"
+
+[node name="RecipeDescription" type="RichTextLabel" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/default_color = Color(0.72, 0.75, 0.73, 1)
+theme_override_font_sizes/normal_font_size = 11
 bbcode_enabled = true
-text = "[color=#f0c967][b]Blueprint[/b][/color]\nForge this design into a permanent item."
+text = "[color=#f0c967][b]圖紙[/b][/color]　選定物件後即可開始鍛造。"
 fit_content = false
 scroll_active = true
 
@@ -1294,6 +1626,7 @@ text = "FORGE COST  ·  Gold 45  ·  Wood 5"
 text_overrun_behavior = 3
 
 [node name="ForgeMethodGuide" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.62, 0.82, 0.88, 1)
 theme_override_font_sizes/font_size = 12
@@ -1301,6 +1634,8 @@ text = "2  CHOOSE METHOD  ·  Cost and outcome preview update before forging"
 text_overrun_behavior = 3
 
 [node name="ForgeMethodRow" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 5
 
@@ -1370,6 +1705,7 @@ theme_override_styles/focus = SubResource("FocusStyle")
 text = "✦ 名匠"
 
 [node name="MaterialQualityGuide" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.62, 0.82, 0.88, 1)
 theme_override_font_sizes/font_size = 12
@@ -1378,6 +1714,7 @@ text_overrun_behavior = 3
 
 [node name="MaterialQualityRow" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 5
 
@@ -1442,11 +1779,14 @@ theme_override_styles/disabled = SubResource("DisabledStyle")
 text = "✺ 傳奇"
 
 [node name="ForgeActions" type="HBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 7
 
 [node name="CraftButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeActions"]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(112, 42)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -1463,7 +1803,7 @@ theme_override_styles/hover = SubResource("HoverStyle")
 theme_override_styles/pressed = SubResource("HoverStyle")
 theme_override_styles/disabled = SubResource("DisabledStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
-text = "Forge"
+text = "開始鍛造"
 
 [node name="EquipButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeActions"]
 unique_name_in_owner = true
@@ -1482,7 +1822,7 @@ theme_override_styles/hover = SubResource("HoverStyle")
 theme_override_styles/pressed = SubResource("HoverStyle")
 theme_override_styles/disabled = SubResource("DisabledStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
-text = "Equip"
+text = "裝備成品"
 
 [node name="StrengthenButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeActions"]
 unique_name_in_owner = true
@@ -1501,7 +1841,7 @@ theme_override_styles/hover = SubResource("HoverStyle")
 theme_override_styles/pressed = SubResource("HoverStyle")
 theme_override_styles/disabled = SubResource("DisabledStyle")
 theme_override_styles/focus = SubResource("FocusStyle")
-text = "Strengthen"
+text = "強化成品"
 
 [node name="ActionFeedback" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout"]
 unique_name_in_owner = true

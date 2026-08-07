@@ -335,9 +335,9 @@ func _test_player_blacksmith() -> void:
 		func(recipe_id: StringName) -> void: craft_requests.append(recipe_id)
 	)
 	_expect(
-		_visible_text(ui).contains("圖紙已覺醒")
-			and _visible_text(ui).contains("傳奇 3%"),
-		"Forge detail must show blueprint proficiency awakening and legendary odds."
+		String((ui.find_child("RecipeDescription", true, false) as RichTextLabel).text).contains("圖紙已覺醒")
+			and String((ui.find_child("RecipeDescription", true, false) as RichTextLabel).text).contains("傳奇 3%"),
+		"Forge must retain blueprint proficiency and legendary odds without cluttering the next-action view."
 	)
 	ui.call("craft_selected_recipe")
 	_expect(
@@ -347,9 +347,9 @@ func _test_player_blacksmith() -> void:
 	(ui.find_child("WorkshopBackButton", true, false) as Button).pressed.emit()
 	await process_frame
 	_expect(
-		_visible_text(ui).contains("ARCANE FORGE")
-			and _visible_text(ui).contains("WORKBENCH")
-			and _visible_text(ui).contains("MARKET DOOR"),
+		_visible_text(ui).contains("鍛造")
+			and _visible_text(ui).contains("升級工坊")
+			and _visible_text(ui).contains("商店"),
 		"PlayerBlacksmithUI must keep Forge, workshop upgrade, and sales discoverable as physical objects."
 	)
 	await _free_ui(ui)

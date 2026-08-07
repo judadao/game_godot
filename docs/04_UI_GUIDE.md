@@ -687,6 +687,7 @@ HUDLayer
   三個圖像 hotspot 必須能用方向鍵／Tab 切換，並保留可見焦點框；
   hotspot 主體使用 `blacksmith_interactive_objects.png` atlas 的鐵砧、工作桌與拱門，焦點只能以細亮框提示，
   不得以實心遮罩蓋住物件。鐵鎚沿可讀的抬起／落下／回彈路徑循環，命中時才顯示火花與爐火增亮；
+  正式鍛造使用 `forge_workspace_objects.png` 的圖紙架、工具架、素材箱、鐵砧／槌子與成品架。畫面不能同時攤開完整流程：選圖紙後只高亮工具架；碰觸工具架才顯示鍛法；選完收合並高亮素材箱；碰觸素材箱才顯示品質；選完收合並高亮鐵砧；成品操作只在碰觸成品架時顯示。詳細機率保留於 tooltip／次要說明，不與單一「下一步」提示搶視線；
   點選熔爐後才依圖紙鍛造 equipment／Sword Soul，
   Workshop Upgrade 解鎖鍛造上限；recipe detail 顯示該圖紙熟練度、品質機率與
   Lv.5 覺醒狀態。四個 authored 工法按鈕依序顯示 icon／名稱／tooltip，選擇後必須

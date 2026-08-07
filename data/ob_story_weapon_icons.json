@@ -1,0 +1,16 @@
+{
+  "atlas_path":"res://assets/ui/story/generated/ob_story_weapon_icons.png",
+  "cell_size":[384,512],
+  "columns":4,
+  "rows":2,
+  "entries":[
+    {"id":"watcher_holy_shield","display_name":"守望者聖盾","source_name":"守望者聖盾","source_document":"concept/story/game_story/05_戰鬥設計/裝備傳說與來歷.md","atlas_region":[0,0,384,512]},
+    {"id":"broken_wing_halberd","display_name":"斷翼戰戟","source_name":"斷翼聖鎧","source_document":"concept/story/game_story/05_戰鬥設計/裝備傳說與來歷.md","atlas_region":[384,0,384,512]},
+    {"id":"seraph_core_spear","display_name":"熾天核槍","source_name":"熾天核心","source_document":"concept/story/game_story/05_戰鬥設計/裝備傳說與來歷.md","atlas_region":[768,0,384,512]},
+    {"id":"moonless_bell","display_name":"無月法鈴","source_name":"無月法鈴","source_document":"concept/story/game_story/05_戰鬥設計/裝備傳說與來歷.md","atlas_region":[1152,0,384,512]},
+    {"id":"phase_wrench","display_name":"相位扳手","source_name":"相位扳手","source_document":"concept/story/game_story/05_戰鬥設計/裝備傳說與來歷.md","atlas_region":[0,512,384,512]},
+    {"id":"zero_observation_lens","display_name":"零號觀測鏡","source_name":"零號觀測鏡","source_document":"concept/story/game_story/05_戰鬥設計/裝備傳說與來歷.md","atlas_region":[384,512,384,512]},
+    {"id":"myriad_soul_empty_sword","display_name":"萬魂空劍","source_name":"萬魂空劍","source_document":"concept/story/game_story/05_戰鬥設計/裝備傳說與來歷.md","atlas_region":[768,512,384,512]},
+    {"id":"uncrowned_ember_blade","display_name":"無冕火刃","source_name":"無冕火種","source_document":"concept/story/game_story/05_戰鬥設計/裝備傳說與來歷.md","atlas_region":[1152,512,384,512]}
+  ]
+}

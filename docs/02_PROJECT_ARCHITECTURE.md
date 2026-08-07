@@ -530,6 +530,8 @@ UI 對上層提供 setter/configure API與 typed signals：
   `PlayerMarketUI/StoreInterior/InteriorCanvas` 使用可獨立替換的 background、midground、
   foreground 三層及六格裝潢 atlas；互動 hotspot 保持透明且不被美術層攔截，貨架、
   櫃台商品、顧客、招客鈴與出入口仍由原按鈕／signal contract 擁有。
+- `TownNPCStoryAnimator` 是劇情 presentation 專用播放器，讀取 `data/town_npc_story_animations.json`；五名核心角色各持有獨立 4×6 表情 atlas 與 4×6 全身動作 atlas。它不接管 `TownNPCLife`、碰撞或對話 authority，劇情導演只以角色 ID 與 state ID 呼叫 `play_expression()`／`play_action()`。
+- `AutumnSmokeOniBoss` 使用頭、顎、軀幹、煙霧骨盆、六組關節手臂與蒼焰拆件組成 puppet；`play_boss_animation()` 提供 idle、六臂斬擊、交叉處決、顱火召喚、相位移動、受創與死亡七種 deterministic pose animation，戰鬥邏輯可在不依賴 Tween 時序的情況下查詢 snapshot。
 - `TownHallUI`：village stage、總建築等級，以及五棟建築的選擇、效果、折扣後成本與升級操作；成功後以 signal 交回 `Game` 立即存檔與刷新 projection。
 - `PauseMenu`：emit save/load/settings/exit-combat/quit 等 intent；Game 只在 active
   combat Run 啟用退出戰鬥，接收 intent 後以失敗結算保留已得資源並回 Town。

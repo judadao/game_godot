@@ -42,6 +42,31 @@ func _check_ui(scene: PackedScene, prefix: String, window_name: String, viewport
 	viewport.add_child(background)
 	var ui := scene.instantiate() as Control
 	viewport.add_child(ui)
+	if prefix == "blacksmith":
+		ui.call("set_recipes", [{
+			"id": "hunter_bow",
+			"name": "獵人的長弓",
+			"kind": "weapon",
+			"quality_label": "普通",
+			"description": "以韌性木材與穩定弓臂打造的狩獵長弓。",
+			"unlocked": true,
+			"visible": true,
+			"cost": {"autumn_wood": 8, "stone": 2},
+		}, {
+			"id": "iron_sword",
+			"name": "旅人的鐵劍",
+			"kind": "weapon",
+			"quality_label": "普通",
+			"unlocked": true,
+			"visible": true,
+		}, {
+			"id": "ember_charm",
+			"name": "餘燼護符",
+			"kind": "accessory",
+			"quality_label": "稀有",
+			"unlocked": true,
+			"visible": true,
+		}])
 	ui.call("open")
 	await process_frame
 	await process_frame
@@ -84,6 +109,46 @@ func _check_ui(scene: PackedScene, prefix: String, window_name: String, viewport
 					)
 					if management_image != null:
 						_save_slices(management_image, management_name)
+	if prefix == "blacksmith":
+		ui.call("select_blacksmith_service", &"forge")
+		await process_frame
+		await process_frame
+		var forge_stage := ui.find_child("ForgeInteractionStage", true, false) as Control
+		_expect(
+			forge_stage != null
+				and forge_stage.is_visible_in_tree()
+				and Rect2(Vector2.ZERO, Vector2(viewport_size)).encloses(
+					_transformed_bounds(forge_stage)
+				),
+			"Object-led forge stage must stay inside %s." % viewport_size
+		)
+		for hotspot_name in [
+			"BlueprintRackButton",
+			"MethodToolsButton",
+			"MaterialChestButton",
+			"ForgeWorkspaceActionButton",
+			"FinishedRackButton",
+		]:
+			var hotspot := ui.find_child(hotspot_name, true, false) as Control
+			_expect(
+				hotspot != null
+					and hotspot.is_visible_in_tree()
+					and _transformed_bounds(window).encloses(_transformed_bounds(hotspot)),
+				"Forge hotspot %s must remain visible inside the window at %s."
+				% [hotspot_name, viewport_size]
+			)
+		if not _capture_directory.is_empty():
+			var forge_image := viewport.get_texture().get_image()
+			var forge_name := "blacksmith_forge_%dx%d" % [viewport_size.x, viewport_size.y]
+			_expect(
+				forge_image != null
+					and forge_image.save_png(
+						_capture_directory.path_join("%s.png" % forge_name)
+					) == OK,
+				"Forge interaction capture must save at %s." % viewport_size
+			)
+			if forge_image != null and viewport_size == Vector2i(1920, 1080):
+				_save_slices(forge_image, forge_name)
 	viewport.queue_free()
 	await process_frame
 

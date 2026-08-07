@@ -33,7 +33,7 @@ const UI_LAYOUTS := [
 		"identity": "ServiceRail",
 		"title": "TitleLabel",
 		"close": "CloseButton",
-		"terms": ["FORGE", "WORKBENCH", "MARKET DOOR"],
+		"terms": ["鍛造", "升級工坊", "商店"],
 		"minimum_icons": 1,
 		"minimum_icon_paths": 1,
 	},
