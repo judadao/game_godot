@@ -2,6 +2,8 @@ class_name LightningVFXPrimitive2D
 extends LayeredVFXPrimitive2D
 
 const REFRESH_INTERVAL := 0.026
+const SKY_STRIKE_MIN_HEIGHT := 620.0
+const SKY_STRIKE_SCREEN_MARGIN := 72.0
 
 var _lightning_progress := 0.0
 var _refresh_generation := -1
@@ -11,6 +13,7 @@ var _ground_path := PackedVector2Array()
 var _spark_triggered := false
 var _spark_trigger_count := 0
 var _spark_trigger_progress := -1.0
+var _sky_strike_vertical_span := 0.0
 
 
 func play(origin: Variant = null, target: Variant = null) -> void:
@@ -33,6 +36,11 @@ func get_quality_state() -> Dictionary:
 	state["persistent_route_line"] = false
 	state["spark_trigger_count"] = _spark_trigger_count
 	state["spark_trigger_progress"] = _spark_trigger_progress
+	if effect_id == &"lightning_impact":
+		state["sky_origin_mode"] = "viewport_top"
+		state["strike_direction"] = "top_to_bottom"
+		state["descending_reveal"] = true
+		state["sky_strike_vertical_span"] = _sky_strike_vertical_span
 	return state
 
 
@@ -120,18 +128,20 @@ func _update_conductive_bolt(progress: float) -> void:
 
 
 func _update_sky_strike(progress: float) -> void:
-	var strike := smoothstep(0.12, 0.18, progress) * (1.0 - smoothstep(0.46, 0.68, progress))
-	var branch := smoothstep(0.17, 0.24, progress) * (1.0 - smoothstep(0.52, 0.76, progress))
-	var residue := smoothstep(0.24, 0.34, progress) * (1.0 - smoothstep(0.74, 1.0, progress))
-	_set_line_points("Glow", _main_path)
-	_set_line_points("MainBolt", _main_path)
-	_set_line_points("BranchBolts", _branch_path)
+	var descent_head := smoothstep(0.07, 0.21, progress)
+	var branch_head := smoothstep(0.12, 0.23, progress)
+	var strike := smoothstep(0.07, 0.12, progress) * (1.0 - smoothstep(0.48, 0.70, progress))
+	var branch := smoothstep(0.12, 0.20, progress) * (1.0 - smoothstep(0.54, 0.78, progress))
+	var residue := smoothstep(0.20, 0.30, progress) * (1.0 - smoothstep(0.74, 1.0, progress))
+	_set_line_points("Glow", _path_window(_main_path, 0.0, descent_head))
+	_set_line_points("MainBolt", _path_window(_main_path, 0.0, descent_head))
+	_set_line_points("BranchBolts", _path_window(_branch_path, 0.0, branch_head))
 	_set_line_points("ImpactFlash", _ground_path)
 	_set_line_alpha("Glow", strike * 0.62)
 	_set_line_alpha("MainBolt", strike)
 	_set_line_alpha("BranchBolts", branch * 0.88)
 	_set_line_alpha("ImpactFlash", residue * 0.72)
-	if progress >= 0.18:
+	if progress >= 0.20:
 		_trigger_sparks_once(progress)
 
 
@@ -151,9 +161,16 @@ func _trigger_sparks_once(progress: float) -> void:
 func _regenerate_paths() -> void:
 	var seed := int(effect_id.hash()) + _refresh_generation * 104729
 	if effect_id == &"lightning_impact":
-		var top := Vector2(-8.0, -390.0)
-		_main_path = _displaced_path(top, Vector2.ZERO, 18, 38.0 * noise_amount, seed)
-		_branch_path = _displaced_path(Vector2(-54.0, -315.0), Vector2(5.0, -18.0), 13, 24.0 * noise_amount, seed + 79)
+		var top := _sky_strike_origin(seed)
+		_sky_strike_vertical_span = absf(top.y)
+		_main_path = _displaced_path(top, Vector2.ZERO, 24, 46.0 * noise_amount, seed)
+		_branch_path = _displaced_path(
+			top.lerp(Vector2.ZERO, 0.18) + Vector2(-86.0, 0.0),
+			Vector2(5.0, -18.0),
+			18,
+			30.0 * noise_amount,
+			seed + 79
+		)
 		_ground_path = _displaced_path(Vector2(-112.0, 5.0), Vector2(118.0, 8.0), 14, 15.0 * noise_amount, seed + 193)
 	else:
 		var safe_direction := direction.normalized() if not direction.is_zero_approx() else Vector2.RIGHT
@@ -170,6 +187,24 @@ func _regenerate_paths() -> void:
 			seed + 67
 		)
 		_ground_path = PackedVector2Array()
+
+
+func _sky_strike_origin(seed: int) -> Vector2:
+	var origin := Vector2(0.0, -SKY_STRIKE_MIN_HEIGHT)
+	var viewport := get_viewport()
+	if viewport != null:
+		var visible_rect := viewport.get_visible_rect()
+		var canvas_transform := viewport.get_canvas_transform()
+		if visible_rect.size.y > 0.0 and absf(canvas_transform.determinant()) > 0.0001:
+			var target_screen := canvas_transform * global_position
+			var sky_screen := Vector2(
+				target_screen.x,
+				visible_rect.position.y - SKY_STRIKE_SCREEN_MARGIN
+			)
+			origin = to_local(canvas_transform.affine_inverse() * sky_screen)
+	origin.y = minf(origin.y, -SKY_STRIKE_MIN_HEIGHT)
+	origin.x += _signed_hash(seed + 17) * 18.0
+	return origin
 
 
 func _displaced_path(
@@ -217,7 +252,7 @@ func _draw_chain_contact_layers(progress: float) -> void:
 
 func _draw_sky_strike_layers(progress: float) -> void:
 	var anticipation := smoothstep(0.0, 0.07, progress) * (1.0 - smoothstep(0.16, 0.25, progress))
-	var contact := smoothstep(0.14, 0.20, progress) * (1.0 - smoothstep(0.48, 0.70, progress))
+	var contact := smoothstep(0.18, 0.22, progress) * (1.0 - smoothstep(0.48, 0.70, progress))
 	var residue := smoothstep(0.24, 0.34, progress) * (1.0 - smoothstep(0.78, 1.0, progress))
 	if anticipation > 0.0:
 		for fragment in 4:
@@ -249,11 +284,16 @@ func _draw_radial_electricity(
 
 
 func _set_line_widths(glow_width: float, core_width: float, branch_width: float, residue_width: float) -> void:
+	var width_scale := (
+		clampf(sqrt(maxf(effect_scale, 0.01)), 0.72, 1.35)
+		if effect_id == &"lightning_impact"
+		else 1.0
+	)
 	var widths := {
-		"Glow": glow_width,
-		"MainBolt": core_width,
-		"BranchBolts": branch_width,
-		"ImpactFlash": residue_width,
+		"Glow": glow_width * width_scale,
+		"MainBolt": core_width * width_scale,
+		"BranchBolts": branch_width * width_scale,
+		"ImpactFlash": residue_width * width_scale,
 	}
 	for node_name in widths:
 		var line := get_node_or_null(NodePath(node_name)) as Line2D
@@ -266,7 +306,7 @@ func _set_line_points(node_name: String, points: PackedVector2Array) -> void:
 	if line == null:
 		return
 	line.points = points
-	line.scale = Vector2.ONE * effect_scale if effect_id == &"lightning_impact" else Vector2.ONE
+	line.scale = Vector2.ONE
 
 
 func _set_line_alpha(node_name: String, alpha: float) -> void:

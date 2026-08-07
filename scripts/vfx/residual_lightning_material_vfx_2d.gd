@@ -3,6 +3,8 @@ extends Node2D
 
 const SURFACE_ARCS_PER_TARGET := 2
 const CURRENT_HOPS_PER_TARGET := 5.0
+const SURFACE_ARC_RADIUS_SCALE := 1.45
+const RESIDUAL_OPACITY_SCALE := 0.68
 
 @onready var charge_sparks: GPUParticles2D = $ChargeSparks
 
@@ -106,6 +108,8 @@ func get_debug_state() -> Dictionary:
 		"blessing_mutable": true,
 		"target_marker_count": _target_positions.size(),
 		"surface_arc_count": _target_positions.size() * SURFACE_ARCS_PER_TARGET + (1 if not _target_positions.is_empty() else 0),
+		"surface_arc_radius_scale": SURFACE_ARC_RADIUS_SCALE,
+		"residual_opacity_scale": RESIDUAL_OPACITY_SCALE,
 		"active_target_index": _active_target_index,
 		"target_positions": _target_positions.duplicate(),
 		"spark_emitter_pool_size": _spark_emitter_pool.size(),
@@ -139,7 +143,7 @@ func _draw_target_charge(
 	var flicker_step := floori(_progress * 96.0)
 	var pulse := 0.70 + 0.30 * sin(_progress * TAU * 21.0 + float(target_index) * 1.73)
 	var strength := 1.0 if is_active else (0.52 if is_afterglow else 0.24)
-	strength *= pulse
+	strength *= pulse * RESIDUAL_OPACITY_SCALE
 	var arc_count := SURFACE_ARCS_PER_TARGET + (1 if is_active else 0)
 	for arc_index in arc_count:
 		var points := _surface_arc_points(center, target_index, arc_index, flicker_step)
@@ -148,7 +152,7 @@ func _draw_target_charge(
 		draw_polyline(points, Color(_palette[0], 0.94 * strength), 1.35, false)
 		if is_active:
 			_draw_surface_branch(points, target_index, arc_index, flicker_step, strength)
-	var corona_radius := 25.0 + float(_tier_rank) * 3.0
+	var corona_radius := (25.0 + float(_tier_rank) * 3.0) * SURFACE_ARC_RADIUS_SCALE
 	for fragment_index in 3:
 		var phase := _progress * 8.0 + float(target_index) * 0.63 + float(fragment_index) * 2.0
 		var start_angle := fposmod(phase, TAU)
@@ -177,8 +181,12 @@ func _surface_arc_points(
 	var seed := target_index * 131 + arc_index * 43 + flicker_step * 17
 	var start_angle := fposmod(float(seed) * 0.173, TAU)
 	var sweep := 0.82 + float((seed >> 2) % 5) * 0.11
-	var radius_x := 20.0 + float((target_index + arc_index) % 4) * 4.0
-	var radius_y := 34.0 + float((target_index * 2 + arc_index) % 4) * 5.0
+	var radius_x := (
+		20.0 + float((target_index + arc_index) % 4) * 4.0
+	) * SURFACE_ARC_RADIUS_SCALE
+	var radius_y := (
+		34.0 + float((target_index * 2 + arc_index) % 4) * 5.0
+	) * SURFACE_ARC_RADIUS_SCALE
 	for point_index in 7:
 		var ratio := float(point_index) / 6.0
 		var angle := start_angle + sweep * ratio
@@ -202,7 +210,9 @@ func _draw_surface_branch(
 	var anchor := points[anchor_index]
 	var tangent := (points[anchor_index + 1] - points[anchor_index - 1]).normalized()
 	var side := -1.0 if posmod(target_index + arc_index + flicker_step, 2) == 0 else 1.0
-	var branch_end := anchor + tangent.orthogonal() * side * (13.0 + float(arc_index) * 4.0)
+	var branch_end := anchor + tangent.orthogonal() * side * (
+		(13.0 + float(arc_index) * 4.0) * SURFACE_ARC_RADIUS_SCALE
+	)
 	var branch := PackedVector2Array([
 		anchor,
 		anchor.lerp(branch_end, 0.48) + tangent * 4.0,
@@ -300,7 +310,7 @@ func _make_spark_texture() -> Texture2D:
 	var gradient := Gradient.new()
 	gradient.offsets = PackedFloat32Array([0.0, 0.28, 1.0])
 	gradient.colors = PackedColorArray([
-		Color(_palette[0], 1.0), Color(_palette[1], 0.88), Color(_palette[2], 0.0),
+		Color(_palette[0], 0.82), Color(_palette[1], 0.62), Color(_palette[2], 0.0),
 	])
 	var texture := GradientTexture2D.new()
 	texture.width = 8
@@ -315,7 +325,7 @@ func _make_spark_ramp() -> GradientTexture1D:
 	var gradient := Gradient.new()
 	gradient.offsets = PackedFloat32Array([0.0, 0.42, 1.0])
 	gradient.colors = PackedColorArray([
-		Color(_palette[0], 1.0), Color(_palette[1], 0.78), Color(_palette[2], 0.0),
+		Color(_palette[0], 0.78), Color(_palette[1], 0.56), Color(_palette[2], 0.0),
 	])
 	var ramp := GradientTexture1D.new()
 	ramp.gradient = gradient

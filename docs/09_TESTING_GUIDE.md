@@ -156,9 +156,10 @@ catalog 欄位。持續 controller 再由 `moon_wheel_bounce_controller_test.gd`
 `residual_lightning_material_vfx_test.gd` 鎖定雷電系列 renderer 不得含任何 target-to-target
 `Line2D` 路線；每個標記至少有兩段局部表面電弧，active focus 必須快速換到下一個物體，
 位置 provider 必須讓殘雷跟隨移動中的敵人，且實際天雷仍由 gameplay `final_strike` event
-擁有。相同測試亦驗證 A→B chain bolt 使用
+擁有。殘雷輪廓半徑至少放大 1.35 倍且 opacity 不得高於 0.75；相同測試亦驗證 A→B chain bolt 使用
 不超過 0.28 秒的 conductive-head 放電，至少具有 glow／色彩體／白熱芯；天雷必須是
-preflash、天空主雷、分支、接地閃光、spark 與殘電等至少六層的 top-down composition。
+preflash、天空主雷、分支、接地閃光、spark 與殘電等至少六層的 top-down composition，
+並從 viewport 上緣外以至少 560px 垂直跨度逐段向下揭露。
 Advanced 20 targets 必須配置至少 12 個 world-space spark emitters，避免 0.02 秒 hop 截斷
 0.22 秒粒子；sky-strike spark 在 contact 前不得 emitting，且只能觸發一次。Router test
 需分開 emit chain／final，確認 chain 不會提前建立 `lightning_impact`，並以 36px／960px
