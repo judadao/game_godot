@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/vfx/skill_vfx_demo_host.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/SkillVFXComposer2D.tscn" id="2_composer"]
+
+[node name="SlashVFXDemo" type="Node2D" groups=["VFXDemo"]]
+script = ExtResource("1_script")
+recipe_id = "water_flow"
+tier_rank = 1
+blessing_element = "wind"
+
+[node name="CoreRoot" type="Node2D" parent="."]
+
+[node name="SkillVFXComposer2D" parent="." instance=ExtResource("2_composer")]

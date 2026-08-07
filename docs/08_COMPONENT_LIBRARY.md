@@ -1611,12 +1611,40 @@ the HUD never reads gameplay state directly.
 
 - Script: `res://scripts/combat/combat_vfx_foundation.gd`
 - Owner: runtime `NamedSkillVFX` instance
-- Status: Current — Used by all 13 current skill series
+- Status: Compatibility — instantiated only when current recipe configuration fails
 - Contract: two independently scrolling slash passes plus flash, flare, shockwave and
   sparks at the shared impact beat; Fire also enables dissolve, flame, smoke, ember and
   explosion layers
 - Boundary: receives only series/tier/timeline presentation data and never decides hits,
   damage, Combo state or player movement
+
+### SkillVFXComposer2D
+
+- Scene: `res://scenes/vfx/SkillVFXComposer2D.tscn`
+- Scripts: `skill_vfx_composer_2d.gd`, `skill_vfx_recipe_catalog.gd`,
+  `blessing_vfx_mutation_catalog.gd`
+- Owner: static child of `NamedSkillVFX`
+- Status: Current — production renderer for all 13 series / 39 skills
+- Contract: composes the 15-role Skill VFX Grammar, preserves the current series texture as
+  Core, exposes deterministic `set_progress()`, and resolves stacked Blessings into palette,
+  count, trajectory, trail, impact and residue changes
+- Boundary: visual geometry never decides gameplay target, hit, damage, status or player motion;
+  one combined Core shader is used instead of stacking unsupported CanvasItem materials
+- Review: five pure-VFX scenes under `scenes/vfx/demos/` exercise the production component
+
+### LayeredVFXPrimitive2D
+
+- Scene roots: `res://scenes/vfx/primitives/<element>/<primitive>.tscn`
+- Script: `res://scripts/vfx/layered_vfx_primitive_2d.gd`
+- Support primitives: `ParticleBurst2D`, `LightningGenerator2D`, `TrailHistory2D`
+- Status: Current — Reusable presentation library used by Skill VFX impact composition
+- Contract: 火／雷／水／毒／冰／風各三個原語，每個至少五個語意 layer；公開 color、
+  intensity、lifetime、scale、speed、direction、particle amount、noise、glow、
+  `play()`、`stop()`、visual bounds 與 particle budget
+- Boundary: 不接 target、damage、status、Combo 或 card data；正式招式只負責排列、時序
+  與參數化，不複製 shader／粒子實作
+- Review: 每個 primitive 對應 `scenes/vfx/demos/*_demo.tscn`，全庫總覽使用
+  `VFXLibraryDemo.tscn`
 
 ### PremiumCrescentLayer
 

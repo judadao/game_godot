@@ -114,6 +114,11 @@ Generated combat presentation：
   組成完整導電物件：主幹使用 10/4/1.4px 外暈／能量體／白芯，次分支使用 6/3/1px，
   每條都能追溯至地面、肢體或劍身，不是隨機 scribble 或離體 projectile；atlas 只保留
   次要地痕／粒子來源，全程水平位移為零。
+- `shaders/vfx/` 保存可重用的 pixel fire、fire distortion、electric arc、water body、
+  dissolve／corrosion 與 custom particle motion。Shader 只實作 noise、UV、gradient、
+  alpha、dissolve 與 motion 原語，不包含招式 ID；技術來源、Godot 4.7 語法筆記與效能
+  guardrails 記錄於 `docs/vfx/`。`scenes/vfx/primitives/` 的 18 個 scene 共用這些資源，
+  每個 particle layer 上限 160 且必須宣告 bounded visibility rect。
 - `NamedSkillVFXCatalog` 將 32 個 Finisher recipe、32 個逐招 visual identity、32 張
   semantic material plates、32 組十二格手繪物件序列、五個 legacy Finisher atlas 基底與四個 trigger profile 合併為
   runtime profiles。Trigger 才拼裝 Charge／Attack／Trail／Impact／Debris；Finisher
@@ -425,6 +430,13 @@ evolved Gift 一層，不再重複投影已離開 inventory 的兩個 base Gifts
 2.5D 深度只以 CanvasItem `z_index`、前後景 scale／parallax、材質遮擋、rim light 與
 back light 表現；禁止以真 3D 或 SubViewport 取代這個資料契約。
 這些資料與節點只擁有 presentation，不修改 gameplay damage/status authority。
+
+現役 series 不再把主物體 texture 當完整動畫。`SkillVFXRecipeCatalog` 將
+`skill_series_vfx.json` 的同一張透明素材投影為 Core，再為每系列宣告至少五個 VFX Grammar
+role；`SkillVFXComposer2D` 統一驅動 role timeline。`BlessingVFXMutationCatalog` 的八元素
+profile 僅改 palette、copy count、trajectory variation、trail／impact／ground primitive。
+Core 使用單一 `skill_vfx_stack.gdshader` 合成 tint、noise、bounded distortion、glow 與
+dissolve，禁止為每個 Skill × Blessing 組合重畫或新增一份逐格 atlas。
 
 ## 4. Card Data 與 CardDatabase
 

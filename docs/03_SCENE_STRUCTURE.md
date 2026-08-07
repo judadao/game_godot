@@ -540,12 +540,24 @@ func _ready() -> void:
 - `IceUltimateVFX.tscn`：擴張冰環、結冰地表、裂紋、冰晶與冷霧。
 - `ElementalGroundTrail.tscn`：依路徑採樣並以四個 atlas slots 拼裝火痕、凍裂或
   毒灘；底層兩條 Line2D 只負責連續性，不擁有命中或持續傷害。
-- `NamedSkillVFX.tscn`：現役系列主物體與數量／路徑編排；runtime child
-  `CombatVFXFoundation` 疊加 scrolling 斬擊、四層命中與火系六層材質流程。
+- `NamedSkillVFX.tscn`：現役系列主物體與數量／路徑編排；靜態 child
+  `SkillVFXComposer2D` 依 recipe 拼裝至少五個 Core／軌跡／命中 role。舊 runtime
+  `CombatVFXFoundation` 僅在 recipe 無法配置時建立作相容回退。
 - `SkillCastPresentation.tscn`：常駐 Game 的 CanvasLayer，不攔截輸入。
 
 上述 world VFX 由建立端掛到當前 map 或 feedback，播放後停止或釋放；不得放入 map 作為
 固定傷害節點。實際命中半徑仍由 card effect 與 `CardEffectRunner` 決定。
+
+`scenes/vfx/primitives/` 是不依賴 gameplay 的原語庫。火、雷、水、毒、冰與風各有
+三個可組裝 scene；每個 scene 維持至少五個具名 visual layers，並由
+`LayeredVFXPrimitive2D` 暴露 palette、intensity、lifetime、scale、speed、direction、
+particle amount、noise 與 glow。`scenes/vfx/demos/` 為逐一可執行的檢視場景，另有
+`VFXLibraryDemo.tscn`、持續／一次性粒子測試與 custom particle shader demo；demo
+不得被 gameplay scene preload。
+
+`SkillVFXComposer2D.tscn` 是 gameplay 可用的招式組裝器，只接收 recipe、tier、Blessing
+overlays 與 normalized progress。五個 `*_vfx_demo.tscn` 使用正式 Composer 與現有 Core
+素材，分別檢查斬擊、火球、落雷、範圍爆發與月輪，且不得加入逐格動畫。
 
 ### 7.1 Player contract
 

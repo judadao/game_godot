@@ -8,6 +8,7 @@ const CATALOG_SCRIPT := preload("res://scripts/systems/named_skill_vfx_catalog.g
 const SERIES_CATALOG_SCRIPT := preload("res://scripts/systems/skill_series_vfx_catalog.gd")
 const FINISHER_GEOMETRY_CORE_SCRIPT := preload("res://scripts/combat/finisher_geometry_core.gd")
 const COMBAT_VFX_FOUNDATION_SCRIPT := preload("res://scripts/combat/combat_vfx_foundation.gd")
+const SKILL_VFX_RECIPE_CATALOG_SCRIPT := preload("res://scripts/vfx/skill_vfx_recipe_catalog.gd")
 const PART_NODE_NAMES := [&"Charge", &"Attack", &"Trail", &"Impact", &"Debris"]
 const STAGE_ANTICIPATION := &"anticipation"
 const STAGE_EXECUTION := &"execution"
@@ -40,6 +41,7 @@ const SWORD_RAIN_ORBIT_RADIUS := 142.0
 
 var _catalog: RefCounted = CATALOG_SCRIPT.new()
 var _series_catalog: RefCounted = SERIES_CATALOG_SCRIPT.new()
+var _skill_vfx_recipe_catalog: RefCounted = SKILL_VFX_RECIPE_CATALOG_SCRIPT.new()
 var _profile: Dictionary = {}
 var _profile_id := ""
 var _sprites: Array[Sprite2D] = []
@@ -68,6 +70,7 @@ var _series_sprites: Array[Sprite2D] = []
 var _series_trails: Array[Line2D] = []
 var _sword_rain_impact_nodes: Array[Node2D] = []
 var _vfx_foundation: Node2D
+var _skill_vfx_composer: Node2D
 var _sword_rain_cadence_phase := ""
 var _sword_rain_active_trail_count := 0
 var _sword_rain_active_impact_count := 0
@@ -77,6 +80,7 @@ var _series_render_size := 0.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_skill_vfx_composer = get_node_or_null("SkillVFXComposer2D") as Node2D
 	for node_name in PART_NODE_NAMES:
 		var sprite := get_node_or_null(NodePath(String(node_name))) as Sprite2D
 		if sprite != null:
@@ -96,6 +100,7 @@ func play(
 	_series_mode = false
 	_clear_series_sprites()
 	_clear_vfx_foundation()
+	_clear_skill_vfx_composer()
 	if _catalog.call("get_all_profiles").is_empty():
 		if not bool(_catalog.call("load_catalog")):
 			return
@@ -227,8 +232,27 @@ func play_series(
 	if not _build_series_sprites():
 		_series_mode = false
 		return
-	_ensure_vfx_foundation()
-	_vfx_foundation.call("configure", series_id, resolved_tier)
+	var recipe := _skill_vfx_recipe_catalog.call("get_recipe", series_id) as Dictionary
+	var recipe_configured := false
+	if _skill_vfx_composer != null and not recipe.is_empty():
+		var blessing_overlays: Array = []
+		if has_meta("finisher_blessing_overlays"):
+			var overlay_value: Variant = get_meta("finisher_blessing_overlays")
+			if overlay_value is Array:
+				blessing_overlays = (overlay_value as Array).duplicate(true)
+		recipe_configured = bool(_skill_vfx_composer.call(
+			"configure", recipe, resolved_tier, blessing_overlays
+		))
+		if recipe_configured:
+			_skill_vfx_composer.call("configure_core_sprites", _series_sprites)
+	if recipe_configured:
+		_clear_vfx_foundation()
+	else:
+		# The previous renderer stays available only as a runtime-safe fallback
+		# if a recipe is missing or cannot be configured.
+		_ensure_vfx_foundation()
+		_vfx_foundation.call("configure", series_id, resolved_tier)
+		_vfx_foundation.visible = true
 	_elapsed = 0.0
 	_progress = 0.0
 	_tail_progress = 0.0
@@ -254,8 +278,8 @@ func get_part_count() -> int:
 func get_active_layer_count() -> int:
 	if _series_mode:
 		return _series_sprites.size() + _series_trails.size() + _sword_rain_impact_nodes.size() + (
-			int(_vfx_foundation.call("get_active_layer_count"))
-			if _vfx_foundation != null and is_instance_valid(_vfx_foundation)
+			maxi(0, int(_skill_vfx_composer.call("get_active_layer_count")) - 1)
+			if _skill_vfx_composer != null and is_instance_valid(_skill_vfx_composer)
 			else 0
 		)
 	if _is_finisher_profile():
@@ -285,7 +309,7 @@ func get_base_visual_layer_count() -> int:
 
 func get_total_visual_layer_count() -> int:
 	if _series_mode:
-		return _series_sprites.size() + _series_trails.size() + _sword_rain_impact_nodes.size()
+		return get_active_layer_count()
 	return get_active_layer_count()
 
 
@@ -385,7 +409,7 @@ func get_series_debug_state() -> Dictionary:
 	var foundation_layers: Array = []
 	if _vfx_foundation != null and is_instance_valid(_vfx_foundation):
 		foundation_layers = _vfx_foundation.call("get_layer_ids") as Array
-	return {
+	var state := {
 		"series_id": String(_series_profile.get("id", "")),
 		"profile_id": _profile_id,
 		"object_name": String(_series_profile.get("object_name", "")),
@@ -403,6 +427,16 @@ func get_series_debug_state() -> Dictionary:
 		"growth_rule": String(_series_profile.get("growth_rule", "launched_objects_start_at_three_paths_then_gain_density")),
 		"foundation_layers": foundation_layers,
 	}
+	var recipe_state := get_skill_vfx_recipe_debug_state()
+	for key in recipe_state:
+		state[key] = recipe_state[key]
+	return state
+
+
+func get_skill_vfx_recipe_debug_state() -> Dictionary:
+	if _skill_vfx_composer == null or not is_instance_valid(_skill_vfx_composer):
+		return {}
+	return (_skill_vfx_composer.call("get_debug_state") as Dictionary).duplicate(true)
 
 
 func get_sword_rain_cadence_state() -> Dictionary:
@@ -1068,6 +1102,18 @@ func _apply_progress(value: float) -> void:
 		)
 	if _series_mode:
 		_layout_series_objects(anticipation_ratio, impact_ratio, impact_end)
+		if _skill_vfx_composer != null and is_instance_valid(_skill_vfx_composer):
+			var core_positions: Array[Vector2] = []
+			for sprite in _series_sprites:
+				core_positions.append(sprite.position)
+			_skill_vfx_composer.call(
+				"set_progress",
+				_progress,
+				_series_vector("source"),
+				_series_vector("target"),
+				core_positions,
+				impact_ratio
+			)
 		if _vfx_foundation != null and is_instance_valid(_vfx_foundation):
 			_vfx_foundation.call(
 				"set_progress",
@@ -1608,6 +1654,12 @@ func _clear_vfx_foundation() -> void:
 	_vfx_foundation = null
 
 
+func _clear_skill_vfx_composer() -> void:
+	if _skill_vfx_composer == null or not is_instance_valid(_skill_vfx_composer):
+		return
+	_skill_vfx_composer.call("clear")
+
+
 func _finisher_core_layer_count() -> int:
 	if _finisher_geometry_core == null or not is_instance_valid(_finisher_geometry_core):
 		return 0
@@ -1640,6 +1692,8 @@ func _reset_parts() -> void:
 		_finisher_geometry_core.call("reset")
 	if _vfx_foundation != null and is_instance_valid(_vfx_foundation):
 		_vfx_foundation.call("reset")
+	if _skill_vfx_composer != null and is_instance_valid(_skill_vfx_composer):
+		_skill_vfx_composer.visible = false
 	visible = false
 
 

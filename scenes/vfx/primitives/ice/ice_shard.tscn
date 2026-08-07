@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vfx/layered_vfx_primitive_2d.gd" id="1_script"]
+
+[node name="IceShard" type="Node2D" groups=["ReusableVFXPrimitive"]]
+script = ExtResource("1_script")
+effect_id = &"ice_shard"
+
+[node name="Mist" type="Line2D" parent="."]
+points = PackedVector2Array(-8, 0, 8, 0)
+width = 4.0
+
+[node name="CrystalCore" type="Line2D" parent="."]
+points = PackedVector2Array(-8, 0, 8, 0)
+width = 4.0
+
+[node name="Shards" type="GPUParticles2D" parent="."]
+emitting = false
+
+[node name="Glint" type="Line2D" parent="."]
+points = PackedVector2Array(-8, 0, 8, 0)
+width = 4.0
+
+[node name="ImpactFlash" type="Line2D" parent="."]
+points = PackedVector2Array(-8, 0, 8, 0)
+width = 4.0

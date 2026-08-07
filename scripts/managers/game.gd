@@ -3878,6 +3878,11 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 				ground_trail_profile = "ice_path"
 			"poison":
 				ground_trail_profile = "poison_pool"
+	var blessing_overlays := (
+		visual_profile.get("blessing_overlays", []) as Array
+	).duplicate(true)
+	if blessing_overlays.is_empty() and not series_vfx_id.is_empty():
+		blessing_overlays = _build_finisher_blessing_overlays(4)
 	return {
 		"element": primary_element,
 		"elements": elements,
@@ -3904,9 +3909,7 @@ func _resolve_combat_vfx_profile(card: Dictionary) -> Dictionary:
 		"importance": 1.45 if is_elemental_skill or is_finisher else 0.85,
 		"evolution_level": int(progression.get("evolution_level", 1)),
 		"buff_stacks": int(progression.get("buff_stacks", 0)),
-		"blessing_overlays": (
-			visual_profile.get("blessing_overlays", []) as Array
-		).duplicate(true),
+		"blessing_overlays": blessing_overlays,
 	}
 
 

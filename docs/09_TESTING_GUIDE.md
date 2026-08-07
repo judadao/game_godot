@@ -31,7 +31,7 @@
 `*_test.gd` 命名並以退出碼表示成功或失敗。專案尚未配置 GUT 或 CI；新增這些
 能力前不得在交付報告中宣稱已具備。
 
-目前工作區可發現 196 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
+目前工作區可發現 198 個測試腳本，涵蓋卡牌、戰鬥、地圖導航、存檔遷移、城鎮流程、秋季森林
 流程、HUD 與多解析度排版。`tools/run_godot_tests.sh` 是 Linux 開發環境的
 repository-owned runner，負責發現全部 `tests/*_test.gd`、隔離 user data、
 掃描 Godot error markers，並可執行 editor／main smoke。
@@ -334,6 +334,13 @@ archetype、beat pattern、三級 evolution、stack progression 與收尾時序�
 粒子／結構細節。舊卡牌 combat VFX integration 仍需確認 `storm_charge` 的專用
 `special_vfx_id`／preview kind；新的 39 招圖鑑不把該舊卡或四個 trigger profile
 重新列為現役技能。
+
+共用 VFX 原語、`shaders/vfx/` 或 `scenes/vfx/` 修改另執行
+`vfx_primitive_library_test.gd`。測試必須覆蓋 18 個原語 scene、逐一 demo、每個效果至少
+四個實際存在的具名 layer、完整公開參數、particle budget／visibility bounds、
+`ParticleBurst2D` one-shot restart、`LightningGenerator2D` 精確端點與 subdivision，並
+載入所有 Godot 4 shader。Headless contract 不取代人工開啟 `VFXLibraryDemo.tscn` 與逐一
+demo 的視覺審查；代理不得因此自行開啟顯示視窗。
 Graphical 5-beat contact sheet 是必要視覺證據；只有結構 PASS、但仍呈現細線菱形／鋸齒
 或泛用 projectile 時，不得接受。
 `finisher_named_vfx_catalog_test.gd` 再由 `combo_finishers.json` 動態驗證全部 32 招：

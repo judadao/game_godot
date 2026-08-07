@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vfx/layered_vfx_primitive_2d.gd" id="1_script"]
+
+[node name="LightningImpact" type="Node2D" groups=["ReusableVFXPrimitive"]]
+script = ExtResource("1_script")
+effect_id = &"lightning_impact"
+
+[node name="Glow" type="Line2D" parent="."]
+points = PackedVector2Array(-8, 0, 8, 0)
+width = 4.0
+
+[node name="MainBolt" type="Line2D" parent="."]
+points = PackedVector2Array(-8, 0, 8, 0)
+width = 4.0
+
+[node name="BranchBolts" type="Line2D" parent="."]
+points = PackedVector2Array(-8, 0, 8, 0)
+width = 4.0
+
+[node name="Sparks" type="GPUParticles2D" parent="."]
+emitting = false
+
+[node name="ImpactFlash" type="Line2D" parent="."]
+points = PackedVector2Array(-8, 0, 8, 0)
+width = 4.0

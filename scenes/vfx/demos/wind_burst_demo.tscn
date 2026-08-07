@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/vfx/vfx_demo_host.gd" id="1_host"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/wind/wind_burst.tscn" id="2_effect"]
+
+[node name="WindBurstDemo" type="Node2D"]
+script = ExtResource("1_host")
+title = "Wind Burst"
+
+[node name="Backdrop" type="Polygon2D" parent="."]
+z_index = -10
+polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+color = Color(0.018, 0.024, 0.04, 1)
+
+[node name="Ground" type="Line2D" parent="."]
+points = PackedVector2Array(180, 430, 1100, 430)
+width = 3.0
+default_color = Color(0.22, 0.28, 0.36, 0.75)
+
+[node name="Effect" parent="." instance=ExtResource("2_effect")]
+position = Vector2(640, 360)
+
+[node name="Title" type="Label" parent="."]
+offset_left = 36.0
+offset_top = 28.0
+offset_right = 500.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(0.88, 0.93, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Wind Burst"

@@ -456,9 +456,11 @@ Combo／Healing 劍魂身分，並以目前編成招式的 `combo_routes` 比對
 | `AutoAttackFeedback` | `scripts/combat/auto_attack_feedback.gd`、`scripts/combat/premium_crescent_layer.gd` | 以 deterministic 月牙 sheet 加上分層 additive atlas 投影普攻蓄勢、流動劍氣、命中、實際傷害與 Combo power；不處理傷害規則 |
 | `SkillCastPresentation` | `scripts/combat/skill_cast_presentation.gd` | 以 unscaled Tween 顯示放大招式名稱並管理短暫施法慢動作 |
 | Elemental combat VFX | `scenes/combat/vfx/*.tscn` | 火／冰攻擊纏繞與範圍大招的純 presentation；不擁有傷害判定 |
+| Reusable VFX primitives | `scenes/vfx/primitives/`、`scripts/vfx/`、`shaders/vfx/` | 火／雷／水／毒／冰／風各三個五層原語；`LayeredVFXPrimitive2D` 只管理 visual lifecycle 與參數，`ParticleBurst2D`、`LightningGenerator2D`、`TrailHistory2D` 提供共用粒子／A→B 雷電／歷史軌跡，禁止反向持有 gameplay 規則 |
+| Skill VFX Grammar | `SkillVFXRecipeCatalog`、`SkillVFXComposer2D`、`BlessingVFXMutationCatalog`、`skill_vfx_stack.gdshader` | 13 系列各一份 Core＋至少四個額外 role 的 recipe；保留現有透明主物體作 Core，統一 timeline 拼裝其餘 14 種軌跡／爆點 role。Blessing 只投影 palette、數量、路徑、尾跡、爆點與殘留，不擁有傷害規則 |
 | `ElementalGroundTrail` | `scenes/combat/vfx/ElementalGroundTrail.tscn`、`data/elemental_ground_trail_profiles.json` | 沿元素大招路徑拼裝 Core／Edge／Accent／Debris atlas 部件與連續 ribbon；火、冰、毒使用不同 topology，不擁有傷害判定 |
-| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json`、`data/skill_series_vfx.json` | 舊 profile 仍供退役 trigger／相容 caller 使用；現役 39 招改由 `play_series()` 重用各系列唯一主物體。發射型系列由 basic 的 3 物體／3 路，成長為 advanced 7 物體／3 路與 master 15 物體／5 路；劍雨另擁有逐把環繞、0.8 秒垂直鎖定、分組墜落、獨立曲線殘光與逐劍插入衝擊。播放器只處理 presentation，不擁有名稱、配方或傷害判定 |
-| `CombatVFXFoundation` | `scripts/combat/combat_vfx_foundation.gd` | 現役系列招式的共用暗／亮 scrolling 斬擊層、flash、flare、shockwave、sparks，以及火系 dissolve／火舌／煙／火星／爆心；只接受 `NamedSkillVFX` 的進度與系列 palette，不擁有命中判定 |
+| `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json`、`data/skill_series_vfx.json` | 舊 profile 仍供退役 trigger／相容 caller 使用；現役 39 招由 `play_series()` 保留各系列唯一主物體作 Core，再把同一時間軸交給 `SkillVFXComposer2D`。發射型系列由 basic 的 3 物體／3 路，成長為 advanced 7 物體／3 路與 master 15 物體／5 路。播放器只處理 presentation，不擁有名稱、配方或傷害判定 |
+| `CombatVFXFoundation` | `scripts/combat/combat_vfx_foundation.gd` | 遷移期間保留的相容回退；只有 recipe 缺失／配置失敗時才建立，正式系列畫面由 Skill VFX Grammar 渲染，不得讓 Foundation 與 Composer 同時處理或出圖 |
 | `StormChargeVFX` | `scenes/combat/vfx/StormChargeVFX.tscn` | 風暴充能專用的原地五節拍 presentation；固定導電主幹由左右地流依序接入雙腳、持劍手與劍身，接觸時只從劍身下游長出有粗細層級的右向分支，高潮後沿同一路徑回縮；不擁有傷害或 buff 規則 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |

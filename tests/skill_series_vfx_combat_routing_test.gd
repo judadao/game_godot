@@ -94,6 +94,17 @@ func _run() -> void:
 			int(effect.call("get_evolution_level")) == 2,
 			"守一共脈 trigger must play its advanced single-lane tier."
 		)
+	var gifts := game.get("divine_gift_manager") as RefCounted
+	_expect(bool(gifts.call("add_or_upgrade", "resonant_grace")), "Blessing routing fixture needs one owned Fire Gift.")
+	var blessed_profile := game.call(
+		"_resolve_combat_vfx_profile", skill_catalog.get_skill("shared_pulse_guard")
+	) as Dictionary
+	var blessed_overlays := blessed_profile.get("blessing_overlays", []) as Array
+	_expect(
+		blessed_overlays.size() == 1
+			and String((blessed_overlays[0] as Dictionary).get("element", "")) == "fire",
+		"Every current series cast must project owned Blessings into its VFX mutation stack."
+	)
 	game.queue_free()
 	await process_frame
 	if _failures == 0:

@@ -1,0 +1,47 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Shader" path="res://shaders/vfx/custom_particle_motion.gdshader" id="1_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_particles"]
+shader = ExtResource("1_shader")
+shader_parameter/initial_speed = 130.0
+shader_parameter/spiral_strength = 2.1
+shader_parameter/gravity = Vector3(0, 45, 0)
+shader_parameter/start_color = Color(0.86, 1, 1, 1)
+shader_parameter/end_color = Color(0.18, 0.42, 1, 0)
+
+[sub_resource type="Gradient" id="Gradient_draw"]
+offsets = PackedFloat32Array(0, 0.3, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.35, 0.8, 1, 0.9, 0.1, 0.25, 0.8, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_draw"]
+gradient = SubResource("Gradient_draw")
+width = 4
+height = 14
+fill_from = Vector2(0.5, 0)
+fill_to = Vector2(0.5, 1)
+
+[node name="CustomParticleShaderDemo" type="Node2D"]
+
+[node name="Backdrop" type="Polygon2D" parent="."]
+z_index = -10
+polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+color = Color(0.018, 0.024, 0.04, 1)
+
+[node name="CustomParticles" type="GPUParticles2D" parent="."]
+position = Vector2(640, 360)
+amount = 64
+texture = SubResource("GradientTexture_draw")
+lifetime = 1.15
+preprocess = 1.15
+randomness = 0.25
+visibility_rect = Rect2(-360, -300, 720, 600)
+process_material = SubResource("ShaderMaterial_particles")
+
+[node name="Title" type="Label" parent="."]
+offset_left = 36.0
+offset_top = 28.0
+offset_right = 640.0
+offset_bottom = 68.0
+theme_override_font_sizes/font_size = 24
+text = "Custom Particle Shader — Position / Velocity / Color / Scale"

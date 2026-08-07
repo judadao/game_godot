@@ -1,0 +1,290 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/fire/fire_loop.tscn" id="1_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/fire/fire_burst.tscn" id="2_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/fire/fire_trail.tscn" id="3_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/lightning/lightning_bolt.tscn" id="4_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/lightning/electric_arc.tscn" id="5_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/lightning/lightning_impact.tscn" id="6_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/water/water_stream.tscn" id="7_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/water/water_splash.tscn" id="8_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/water/wave_arc.tscn" id="9_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/poison/poison_cloud.tscn" id="10_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/poison/poison_bubble.tscn" id="11_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/poison/poison_splash.tscn" id="12_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/ice/ice_mist.tscn" id="13_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/ice/ice_shard.tscn" id="14_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/ice/ice_shatter.tscn" id="15_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/wind/wind_stream.tscn" id="16_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/wind/wind_slash.tscn" id="17_fx"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/primitives/wind/wind_burst.tscn" id="18_fx"]
+
+[node name="VFXLibraryDemo" type="Node2D"]
+
+[node name="Backdrop" type="Polygon2D" parent="."]
+z_index = -20
+polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+color = Color(0.012, 0.018, 0.032, 1)
+
+[node name="Title" type="Label" parent="."]
+offset_left = 32.0
+offset_top = 20.0
+offset_right = 900.0
+offset_bottom = 58.0
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "REUSABLE ELEMENT VFX PRIMITIVES"
+
+[node name="Effects" type="Node2D" parent="."]
+
+[node name="FireLoop" parent="Effects" instance=ExtResource("1_fx")]
+position = Vector2(112, 180)
+effect_scale = 0.45
+
+[node name="FireLoopLabel" type="Label" parent="."]
+offset_left = 30.0
+offset_top = 244.0
+offset_right = 212.0
+offset_bottom = 268.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "fire_loop"
+horizontal_alignment = 1
+
+[node name="FireBurst" parent="Effects" instance=ExtResource("2_fx")]
+position = Vector2(322, 180)
+effect_scale = 0.45
+
+[node name="FireBurstLabel" type="Label" parent="."]
+offset_left = 240.0
+offset_top = 244.0
+offset_right = 422.0
+offset_bottom = 268.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "fire_burst"
+horizontal_alignment = 1
+
+[node name="FireTrail" parent="Effects" instance=ExtResource("3_fx")]
+position = Vector2(532, 180)
+effect_scale = 0.45
+
+[node name="FireTrailLabel" type="Label" parent="."]
+offset_left = 450.0
+offset_top = 244.0
+offset_right = 632.0
+offset_bottom = 268.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "fire_trail"
+horizontal_alignment = 1
+
+[node name="LightningBolt" parent="Effects" instance=ExtResource("4_fx")]
+position = Vector2(742, 180)
+effect_scale = 0.45
+
+[node name="LightningBoltLabel" type="Label" parent="."]
+offset_left = 660.0
+offset_top = 244.0
+offset_right = 842.0
+offset_bottom = 268.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "lightning_bolt"
+horizontal_alignment = 1
+
+[node name="ElectricArc" parent="Effects" instance=ExtResource("5_fx")]
+position = Vector2(952, 180)
+effect_scale = 0.45
+
+[node name="ElectricArcLabel" type="Label" parent="."]
+offset_left = 870.0
+offset_top = 244.0
+offset_right = 1052.0
+offset_bottom = 268.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "electric_arc"
+horizontal_alignment = 1
+
+[node name="LightningImpact" parent="Effects" instance=ExtResource("6_fx")]
+position = Vector2(1162, 180)
+effect_scale = 0.45
+
+[node name="LightningImpactLabel" type="Label" parent="."]
+offset_left = 1080.0
+offset_top = 244.0
+offset_right = 1262.0
+offset_bottom = 268.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "lightning_impact"
+horizontal_alignment = 1
+
+[node name="WaterStream" parent="Effects" instance=ExtResource("7_fx")]
+position = Vector2(112, 390)
+effect_scale = 0.45
+
+[node name="WaterStreamLabel" type="Label" parent="."]
+offset_left = 30.0
+offset_top = 454.0
+offset_right = 212.0
+offset_bottom = 478.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "water_stream"
+horizontal_alignment = 1
+
+[node name="WaterSplash" parent="Effects" instance=ExtResource("8_fx")]
+position = Vector2(322, 390)
+effect_scale = 0.45
+
+[node name="WaterSplashLabel" type="Label" parent="."]
+offset_left = 240.0
+offset_top = 454.0
+offset_right = 422.0
+offset_bottom = 478.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "water_splash"
+horizontal_alignment = 1
+
+[node name="WaveArc" parent="Effects" instance=ExtResource("9_fx")]
+position = Vector2(532, 390)
+effect_scale = 0.45
+
+[node name="WaveArcLabel" type="Label" parent="."]
+offset_left = 450.0
+offset_top = 454.0
+offset_right = 632.0
+offset_bottom = 478.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "wave_arc"
+horizontal_alignment = 1
+
+[node name="PoisonCloud" parent="Effects" instance=ExtResource("10_fx")]
+position = Vector2(742, 390)
+effect_scale = 0.45
+
+[node name="PoisonCloudLabel" type="Label" parent="."]
+offset_left = 660.0
+offset_top = 454.0
+offset_right = 842.0
+offset_bottom = 478.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "poison_cloud"
+horizontal_alignment = 1
+
+[node name="PoisonBubble" parent="Effects" instance=ExtResource("11_fx")]
+position = Vector2(952, 390)
+effect_scale = 0.45
+
+[node name="PoisonBubbleLabel" type="Label" parent="."]
+offset_left = 870.0
+offset_top = 454.0
+offset_right = 1052.0
+offset_bottom = 478.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "poison_bubble"
+horizontal_alignment = 1
+
+[node name="PoisonSplash" parent="Effects" instance=ExtResource("12_fx")]
+position = Vector2(1162, 390)
+effect_scale = 0.45
+
+[node name="PoisonSplashLabel" type="Label" parent="."]
+offset_left = 1080.0
+offset_top = 454.0
+offset_right = 1262.0
+offset_bottom = 478.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "poison_splash"
+horizontal_alignment = 1
+
+[node name="IceMist" parent="Effects" instance=ExtResource("13_fx")]
+position = Vector2(112, 600)
+effect_scale = 0.45
+
+[node name="IceMistLabel" type="Label" parent="."]
+offset_left = 30.0
+offset_top = 664.0
+offset_right = 212.0
+offset_bottom = 688.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "ice_mist"
+horizontal_alignment = 1
+
+[node name="IceShard" parent="Effects" instance=ExtResource("14_fx")]
+position = Vector2(322, 600)
+effect_scale = 0.45
+
+[node name="IceShardLabel" type="Label" parent="."]
+offset_left = 240.0
+offset_top = 664.0
+offset_right = 422.0
+offset_bottom = 688.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "ice_shard"
+horizontal_alignment = 1
+
+[node name="IceShatter" parent="Effects" instance=ExtResource("15_fx")]
+position = Vector2(532, 600)
+effect_scale = 0.45
+
+[node name="IceShatterLabel" type="Label" parent="."]
+offset_left = 450.0
+offset_top = 664.0
+offset_right = 632.0
+offset_bottom = 688.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "ice_shatter"
+horizontal_alignment = 1
+
+[node name="WindStream" parent="Effects" instance=ExtResource("16_fx")]
+position = Vector2(742, 600)
+effect_scale = 0.45
+
+[node name="WindStreamLabel" type="Label" parent="."]
+offset_left = 660.0
+offset_top = 664.0
+offset_right = 842.0
+offset_bottom = 688.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "wind_stream"
+horizontal_alignment = 1
+
+[node name="WindSlash" parent="Effects" instance=ExtResource("17_fx")]
+position = Vector2(952, 600)
+effect_scale = 0.45
+
+[node name="WindSlashLabel" type="Label" parent="."]
+offset_left = 870.0
+offset_top = 664.0
+offset_right = 1052.0
+offset_bottom = 688.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "wind_slash"
+horizontal_alignment = 1
+
+[node name="WindBurst" parent="Effects" instance=ExtResource("18_fx")]
+position = Vector2(1162, 600)
+effect_scale = 0.45
+
+[node name="WindBurstLabel" type="Label" parent="."]
+offset_left = 1080.0
+offset_top = 664.0
+offset_right = 1262.0
+offset_bottom = 688.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 1)
+theme_override_font_sizes/font_size = 13
+text = "wind_burst"
+horizontal_alignment = 1

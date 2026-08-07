@@ -552,13 +552,18 @@ upgrade 與未發現神賜。滿三格後獎勵池
 `iron_momentum`、`ember_reprise`、`battle_tempo`、`grand_strategy` 已退役，不能再由
 存檔、圖鑑或 runtime 當成可學技能。
 
-本階段的動畫成長採系列主物體規則：13 系列各自只有一個可重複拼裝的具體主體，例如
+本階段的動畫成長採 Skill VFX Grammar：13 系列各自只有一個可重複拼裝的具體 Core，例如
 羽毛是神聖羽毛、巨盾是王室盾牌、水流是海浪、火焰是流火。凡是會把主物體發射出去的
 系列，基本階即以 3 個主體填滿 3 路，進階以 7 個主體增加同路連段，大師以 15 個主體
 擴成至少 5 路與 5 方向；門陣、場域等非發射型系列保留自己的節點規則。劍雨另採
 「逐把環繞浮現 → 目標頭頂垂直鎖定 0.8 秒 → 分組加速墜落」編舞，每把劍具有獨立
 曲線殘光，並在插入目標的位置觸發衝擊特效後消失。
-39 招的圖鑑與實戰共用這個系列 presentation，不再以無關的舊 named VFX 換皮。
+Core 之外由 Trail、Arc、Beam、Bolt、Ring、Burst、Impact、Projectile、Orbit、Rain、
+Aura、Ground Zone、Afterimage、Distortion 等 role 組成系列 recipe。39 招的圖鑑與實戰
+共用同一個 procedural presentation，不再以無關的舊 named VFX 或獨立 GIF 換皮。
+Blessing 疊加會改變 Core 配色／形狀擾動、可見數量、軌跡、尾跡、爆點與地面殘留；不只
+換色，也不新增另一套傷害判定。舊系列演出保留作 migration fallback，但正常播放不可與
+Composer 重複渲染。
 `legacy_vfx_map` 僅保留三劍魂配方與舊 caller 導向系列的相容資料，不能反向覆寫技能
 名稱、分類、描述或主體外觀。傷害、AP、解鎖與施放規則仍不得從名稱外推。
 

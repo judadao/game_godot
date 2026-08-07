@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vfx/particle_burst_2d.gd" id="1_script"]
+
+[node name="ParticleBurst2D" type="GPUParticles2D" groups=["ReusableVFXPrimitive"]]
+emitting = false
+script = ExtResource("1_script")

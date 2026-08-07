@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vfx/skill_vfx_composer_2d.gd" id="1_script"]
+
+[node name="SkillVFXComposer2D" type="Node2D" groups=["SkillVFXComposer", "ReusableVFX"]]
+script = ExtResource("1_script")
