@@ -272,40 +272,30 @@ func _resolve_series_damage(
 	match family:
 		"marked_execution":
 			_resolve_marked_execution(caster, targets, amount, tier_rank, result, hit_presentation)
-		"returning_orbit":
-			_damage_targets(caster, targets, amount, result, 2, knockback, hit_presentation)
-			_pull_targets(caster, targets, float(effect.get("pull_strength", 0.0)))
-			result["series_rule"] = "outbound_return"
-			result["return_passes"] = 1
+		"bouncing_moon_wheel_field":
+			_resolve_moon_wheel_bounce(effect, amount, result)
 		"orbiting_feather_contact_field":
 			_resolve_feather_stance(caster, targets, effect, amount, result, hit_presentation)
-		"sword_aura_gate_network":
-			_resolve_gate_network(caster, targets, effect, amount, result, hit_presentation)
-		"ricochet_boulders":
-			_resolve_ricochet(caster, targets, effect, amount, result, hit_presentation)
-		"forward_guard_counter":
-			_resolve_guard_counter(caster, targets, effect, amount, result, hit_presentation)
-		"route_burn_detonation":
-			_damage_targets(caster, targets, amount, result, 1, knockback, hit_presentation)
-			if targets.size() >= 2:
-				_damage_targets(caster, targets, maxi(1, roundi(amount * (0.35 + tier_rank * 0.10))), result, 1, 40.0, hit_presentation)
-				result["detonated_targets"] = targets.size()
-			result["series_rule"] = "burn_route_detonation"
-		"target_switch_chain":
-			_resolve_target_switch_chain(caster, targets, effect, amount, result, hit_presentation)
-		"outbound_returning_tide":
-			_damage_targets(caster, targets, amount, result, 2, knockback, hit_presentation)
-			_pull_targets(caster, targets, maxf(24.0, float(effect.get("pull_strength", 0.0))))
-			result["series_rule"] = "returning_tide_pull"
-			result["return_passes"] = 1
-		"host_growth_harvest":
-			_resolve_host_harvest(caster, targets, effect, amount, result, hit_presentation)
-		"crossfire_lane":
-			_resolve_saved_origin_attack(caster, targets, amount, result, hit_presentation, &"dragon_breath_origin", 1, "dragon_crossfire")
-		"risk_heal_judgment":
-			_resolve_dawn_judgment(caster, targets, effect, amount, result, hit_presentation)
-		"dual_origin_crossfire":
-			_resolve_saved_origin_attack(caster, targets, amount, result, hit_presentation, &"shared_branch_origin", maxi(1, int(effect.get("finisher_echoes", effect.get("echoes", 1)))), "echo_crossfire")
+		"blooming_thorn_barrage":
+			_resolve_thorn_bloom_field(caster, targets, effect, amount, result)
+		"persistent_stone_drone_squad":
+			_resolve_dr_stone_squad(caster, effect, amount, result)
+		"singularity_pull_detonation":
+			_resolve_black_hole_field(caster, targets, effect, amount, result)
+		"staggered_fire_pillars":
+			_resolve_fire_pillar_field(effect, amount, result)
+		"residual_chain_sky_strike":
+			_resolve_residual_lightning(effect, amount, result)
+		"damaging_tidal_push":
+			_resolve_tidal_push(effect, amount, result)
+		"arcane_swamp_entanglement":
+			_resolve_arcane_swamp_field(caster, targets, effect, amount, result)
+		"dragon_breath_sweep":
+			_resolve_dragon_breath_sweep(effect, amount, result)
+		"player_healing_zone":
+			_resolve_healing_zone(effect, amount, result)
+		"body_overdrive_afterimage":
+			_resolve_body_overdrive(effect, result)
 		_:
 			_damage_projectile_volley(caster, targets, amount, result, maxi(1, int(effect.get("projectile_count", 1))), hit_presentation, knockback)
 			result["series_rule"] = "fallback_volley"
@@ -366,192 +356,222 @@ func _resolve_feather_stance(
 	result["series_rule"] = "orbiting_feather_contact_field"
 
 
-func _resolve_gate_network(
+func _resolve_moon_wheel_bounce(effect: Dictionary, amount: int, result: Dictionary) -> void:
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	result["moon_wheel_bounce"] = {
+		"wheel_count": maxi(5, int(effect.get("wheel_count", [5, 8, 12][tier_rank - 1]))),
+		"round_trip_count": maxi(1, int(effect.get("round_trip_count", [1, 2, 3][tier_rank - 1]))),
+		"duration": maxf(0.4, float(effect.get("bounce_duration", [1.4, 2.2, 3.1][tier_rank - 1]))),
+		"range": maxf(120.0, float(effect.get("attack_range", [420.0, 470.0, 540.0][tier_rank - 1]))),
+		"damage_per_contact": maxi(1, roundi(float(maxi(1, amount)) * float(effect.get("damage_per_contact_multiplier", [0.28, 0.24, 0.22][tier_rank - 1])))),
+		"tier_rank": tier_rank,
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "bouncing_moon_wheel_field"
+
+
+func _resolve_thorn_bloom_field(
 	caster: Node,
 	targets: Array,
 	effect: Dictionary,
 	amount: int,
-	result: Dictionary,
-	hit_presentation: Dictionary
+	result: Dictionary
 ) -> void:
-	var relay_count := mini(targets.size(), maxi(1, int(effect.get("relay_count", effect.get("projectile_count", 1)))))
-	for relay_index in relay_count:
-		var relay_damage := maxi(1, roundi(float(amount) * (1.0 + float(relay_index) * 0.22)))
-		_damage_targets(caster, [targets[relay_index]], relay_damage, result, 1, 65.0, hit_presentation)
-	result["series_rule"] = "gate_relay_amplification"
-	result["relay_hits"] = relay_count
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	var thorn_count := maxi(1, int(effect.get("thorn_count", [3, 6, 10][tier_rank - 1])))
+	var damage_multiplier := maxf(0.01, float(effect.get("damage_per_spike_multiplier", [0.28, 0.40, 0.54][tier_rank - 1])))
+	result["thorn_bloom_field"] = {
+		"center": _resolve_field_center(caster, targets, 360.0),
+		"duration": maxf(0.2, float(effect.get("field_duration", [2.4, 3.0, 3.8][tier_rank - 1]))),
+		"radius": maxf(48.0, float(effect.get("field_radius", [180.0, 240.0, 310.0][tier_rank - 1]))),
+		"emerge_duration": maxf(0.05, float(effect.get("emerge_duration", [0.45, 0.42, 0.38][tier_rank - 1]))),
+		"bloom_delay": maxf(0.05, float(effect.get("bloom_delay", [0.70, 0.64, 0.58][tier_rank - 1]))),
+		"volley_interval": maxf(0.08, float(effect.get("volley_interval", [0.42, 0.34, 0.26][tier_rank - 1]))),
+		"thorn_count": thorn_count,
+		"spikes_per_volley": maxi(1, int(effect.get("spikes_per_volley", thorn_count))),
+		"damage_per_spike": maxi(1, roundi(float(maxi(1, amount)) * damage_multiplier)),
+		"knockback": maxf(0.0, float(effect.get("knockback", 35.0))),
+		"tier_rank": tier_rank,
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "blooming_thorn_barrage"
 
 
-func _resolve_ricochet(
+func _resolve_black_hole_field(
 	caster: Node,
 	targets: Array,
 	effect: Dictionary,
 	amount: int,
-	result: Dictionary,
-	hit_presentation: Dictionary
+	result: Dictionary
 ) -> void:
-	if targets.is_empty():
-		return
-	var bounce_count := maxi(1, int(effect.get("projectile_count", 1)))
-	var impact := 80.0 * maxf(1.0, float(effect.get("knockback_multiplier", 1.0)))
-	if amount <= 0:
-		result["series_rule"] = "stone_guard"
-		result["ricochet_count"] = 0
-		return
-	for bounce_index in bounce_count:
-		var target: Variant = targets[bounce_index % targets.size()]
-		var bounce_damage := maxi(1, roundi(float(amount) * maxf(0.55, 1.0 - 0.08 * bounce_index)))
-		_damage_targets(caster, [target], bounce_damage, result, 1, impact, hit_presentation)
-	result["series_rule"] = "boulder_ricochet"
-	result["ricochet_count"] = bounce_count
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	var tick_multiplier := maxf(0.01, float(effect.get("damage_per_tick_multiplier", [0.07, 0.09, 0.12][tier_rank - 1])))
+	var burst_multiplier := maxf(1.0, float(effect.get("burst_damage_multiplier", [1.8, 2.5, 3.4][tier_rank - 1])))
+	result["black_hole_field"] = {
+		"center": _resolve_field_center(caster, targets, 360.0),
+		"duration": maxf(0.2, float(effect.get("field_duration", [2.4, 3.0, 3.6][tier_rank - 1]))),
+		"radius": maxf(48.0, float(effect.get("field_radius", [180.0, 240.0, 320.0][tier_rank - 1]))),
+		"tick_interval": maxf(0.08, float(effect.get("tick_interval", [0.24, 0.22, 0.20][tier_rank - 1]))),
+		"damage_per_tick": maxi(1, roundi(float(maxi(1, amount)) * tick_multiplier)),
+		"burst_damage": maxi(1, roundi(float(maxi(1, amount)) * burst_multiplier)),
+		"pull_strength": maxf(0.0, float(effect.get("pull_strength", [90.0, 125.0, 165.0][tier_rank - 1]))),
+		"burst_knockback": maxf(0.0, float(effect.get("burst_knockback", 80.0))),
+		"tier_rank": tier_rank,
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "singularity_pull_detonation"
 
 
-func _resolve_guard_counter(
+func _resolve_dr_stone_squad(
+	_caster: Node,
+	effect: Dictionary,
+	amount: int,
+	result: Dictionary
+) -> void:
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	var damage_multiplier := maxf(0.01, float(effect.get("damage_per_shot_multiplier", [0.30, 0.40, 0.52][tier_rank - 1])))
+	result["dr_stone_squad"] = {
+		"drone_count": maxi(3, int(effect.get("drone_count", [3, 6, 10][tier_rank - 1]))),
+		"duration": maxf(0.5, float(effect.get("drone_duration", [5.0, 7.0, 9.0][tier_rank - 1]))),
+		"attack_interval": maxf(0.08, float(effect.get("attack_interval", [0.65, 0.50, 0.38][tier_rank - 1]))),
+		"attack_range": maxf(96.0, float(effect.get("attack_range", [300.0, 360.0, 430.0][tier_rank - 1]))),
+		"damage_per_shot": maxi(1, roundi(float(maxi(1, amount)) * damage_multiplier)),
+		"tier_rank": tier_rank,
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "persistent_stone_drone_squad"
+
+
+func _resolve_arcane_swamp_field(
 	caster: Node,
 	targets: Array,
 	effect: Dictionary,
 	amount: int,
-	result: Dictionary,
-	hit_presentation: Dictionary
+	result: Dictionary
 ) -> void:
-	var guard := maxi(1, int(effect.get("finisher_guard", effect.get("guard", 4))))
-	if caster.has_method("add_block"):
-		caster.call("add_block", guard)
-	var facing := _facing_direction(caster)
-	var forward_targets: Array = []
-	if caster is Node2D:
-		for target in targets:
-			if target is Node2D and (((target as Node2D).global_position.x - (caster as Node2D).global_position.x) * facing) >= 0.0:
-				forward_targets.append(target)
-	_damage_targets(caster, forward_targets, amount + roundi(guard * 0.35), result, 1, 105.0, hit_presentation)
-	result["guard_gained"] = guard
-	result["series_rule"] = "forward_guard_counter"
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	var damage_multiplier := maxf(0.01, float(effect.get("damage_per_tick_multiplier", [0.10, 0.14, 0.20][tier_rank - 1])))
+	result["arcane_swamp_field"] = {
+		"center": _resolve_field_center(caster, targets, 380.0),
+		"duration": maxf(0.2, float(effect.get("field_duration", [3.0, 3.8, 4.8][tier_rank - 1]))),
+		"radius": maxf(48.0, float(effect.get("field_radius", [260.0, 320.0, 390.0][tier_rank - 1]))),
+		"tick_interval": maxf(0.08, float(effect.get("tick_interval", [0.32, 0.28, 0.24][tier_rank - 1]))),
+		"damage_per_tick": maxi(1, roundi(float(maxi(1, amount)) * damage_multiplier)),
+		"target_limit": maxi(10, int(effect.get("target_limit", [10, 14, 20][tier_rank - 1]))),
+		"tier_rank": tier_rank,
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "arcane_swamp_entanglement"
 
 
-func _resolve_target_switch_chain(
-	caster: Node,
-	targets: Array,
-	effect: Dictionary,
-	amount: int,
-	result: Dictionary,
-	hit_presentation: Dictionary
-) -> void:
-	if targets.is_empty():
-		return
-	var primary := targets[0] as Node
-	var last_target_id := int(caster.get_meta(&"lightning_last_target_id", 0))
-	var switched := last_target_id != 0 and last_target_id != primary.get_instance_id()
-	_damage_targets(caster, [primary], amount, result, 1, 45.0, hit_presentation)
-	var chain_targets := 0
-	if switched:
-		for index in range(1, mini(targets.size(), 1 + maxi(1, int(effect.get("tier_rank", 1))))):
-			_damage_targets(caster, [targets[index]], maxi(1, roundi(amount * 0.70)), result, 1, 35.0, hit_presentation)
-			chain_targets += 1
-	elif last_target_id == primary.get_instance_id():
-		_damage_targets(caster, [primary], maxi(1, roundi(amount * 0.45)), result, 1, 35.0, hit_presentation)
-		result["repeated_target_charge"] = true
-	caster.set_meta(&"lightning_last_target_id", primary.get_instance_id())
-	result["chain_targets"] = chain_targets
-	result["series_rule"] = "switch_chain" if switched else "repeat_charge"
+func _resolve_fire_pillar_field(effect: Dictionary, amount: int, result: Dictionary) -> void:
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	result["fire_pillar_field"] = {
+		"pillar_count": maxi(5, int(effect.get("pillar_count", [5, 10, 20][tier_rank - 1]))),
+		"field_radius": maxf(120.0, float(effect.get("field_radius", [320.0, 390.0, 480.0][tier_rank - 1]))),
+		"eruption_interval": maxf(0.08, float(effect.get("eruption_interval", [0.22, 0.18, 0.13][tier_rank - 1]))),
+		"damage_per_pillar": maxi(1, roundi(float(maxi(1, amount)) * float(effect.get("damage_per_pillar_multiplier", [0.72, 0.86, 1.05][tier_rank - 1])))),
+		"tier_rank": tier_rank,
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "staggered_fire_pillars"
 
 
-func _resolve_host_harvest(
-	caster: Node,
-	targets: Array,
-	effect: Dictionary,
-	amount: int,
-	result: Dictionary,
-	hit_presentation: Dictionary
-) -> void:
-	if targets.is_empty():
-		return
-	var host := targets[0] as Node
-	host.set_meta(&"plant_series_host", true)
-	var host_damage := amount
-	if bool(effect.get("death_spread", false)):
-		host_damage = maxi(amount, roundi(amount * 1.4))
-	_damage_targets(caster, [host], host_damage, result, 1, 35.0, hit_presentation)
-	var linked := targets.slice(1)
-	if not linked.is_empty():
-		_damage_targets(caster, linked, maxi(1, roundi(amount * 0.55)), result, 1, 25.0, hit_presentation)
-	var spread_count := 0
-	if bool(effect.get("death_spread", false)) and _node_health(host) <= 0:
-		_damage_targets(caster, linked, maxi(1, roundi(amount * 0.8)), result, 1, 45.0, hit_presentation)
-		spread_count = linked.size()
-	result["harvest_spread_targets"] = spread_count
-	result["series_rule"] = "host_growth_harvest"
+func _resolve_residual_lightning(effect: Dictionary, amount: int, result: Dictionary) -> void:
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	result["residual_lightning"] = {
+		"marked_target_limit": maxi(1, int(effect.get("marked_target_limit", [10, 20, 30][tier_rank - 1]))),
+		"residual_duration": maxf(0.2, float(effect.get("residual_duration", [1.6, 2.0, 2.4][tier_rank - 1]))),
+		"chain_interval": maxf(0.06, float(effect.get("chain_interval", [0.18, 0.14, 0.10][tier_rank - 1]))),
+		"residual_damage": maxi(1, roundi(float(maxi(1, amount)) * float(effect.get("residual_damage_multiplier", [0.16, 0.23, 0.32][tier_rank - 1])))),
+		"final_strike_damage": maxi(1, roundi(float(maxi(1, amount)) * float(effect.get("final_strike_multiplier", [1.6, 2.2, 3.0][tier_rank - 1])))),
+		"tier_rank": tier_rank,
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "residual_chain_sky_strike"
 
 
-func _resolve_saved_origin_attack(
-	caster: Node,
-	targets: Array,
-	amount: int,
-	result: Dictionary,
-	hit_presentation: Dictionary,
-	meta_key: StringName,
-	extra_origin_hits: int,
-	rule_name: String
-) -> void:
-	var current_position := (caster as Node2D).global_position if caster is Node2D else Vector2.ZERO
-	var has_origin := caster.has_meta(meta_key)
-	var origin: Vector2 = caster.get_meta(meta_key, current_position) as Vector2
-	if not has_origin:
-		caster.set_meta(meta_key, current_position)
-	_damage_targets(caster, targets, amount, result, 1, 55.0, hit_presentation)
-	var origin_count := 1
-	if has_origin and origin.distance_to(current_position) >= 48.0:
-		_damage_targets(caster, targets, maxi(1, roundi(amount * 0.75)), result, extra_origin_hits, 40.0, hit_presentation)
-		origin_count += extra_origin_hits
-		caster.set_meta(meta_key, current_position)
-	result["attack_origins"] = origin_count
-	result["series_rule"] = rule_name
+func _resolve_tidal_push(effect: Dictionary, amount: int, result: Dictionary) -> void:
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	result["tidal_push_field"] = {
+		"duration": maxf(0.2, float(effect.get("push_duration", [1.2, 1.8, 2.4][tier_rank - 1]))),
+		"radius": maxf(96.0, float(effect.get("field_radius", [250.0, 300.0, 340.0][tier_rank - 1]))),
+		"tick_interval": maxf(0.08, float(effect.get("tick_interval", 0.20))),
+		"push_distance": clampf(float(effect.get("push_distance", [55.0, 88.0, 120.0][tier_rank - 1])), 0.0, 140.0),
+		"damage_per_tick": maxi(1, roundi(float(maxi(1, amount)) * float(effect.get("damage_per_tick_multiplier", [0.16, 0.22, 0.30][tier_rank - 1])))),
+		"tier_rank": tier_rank,
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "damaging_tidal_push"
 
 
-func _resolve_dawn_judgment(
-	caster: Node,
-	targets: Array,
-	effect: Dictionary,
-	amount: int,
-	result: Dictionary,
-	hit_presentation: Dictionary
-) -> void:
-	var current_position := (caster as Node2D).global_position if caster is Node2D else Vector2.ZERO
-	var light_origin: Vector2 = caster.get_meta(&"dawn_light_origin", current_position) as Vector2
-	if not caster.has_meta(&"dawn_light_origin"):
-		caster.set_meta(&"dawn_light_origin", current_position)
-	var far_from_light := light_origin.distance_to(current_position) >= 140.0
-	if far_from_light:
-		_damage_targets(caster, targets, maxi(1, roundi(amount * 1.8)), result, 1, 75.0, hit_presentation)
-		result["series_rule"] = "distant_judgment"
-		return
-	_damage_targets(caster, targets, amount, result, 1, 45.0, hit_presentation)
-	var heal := maxi(1, int(effect.get("finisher_heal", effect.get("heal", 6))))
-	if caster.has_method("restore_health"):
-		result["dawn_healed"] = int(caster.call("restore_health", heal))
-	result["series_rule"] = "near_light_heal"
+func _resolve_dragon_breath_sweep(effect: Dictionary, amount: int, result: Dictionary) -> void:
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	result["dragon_breath_sweep"] = {
+		"side_sweep_count": clampi(int(effect.get("side_sweep_count", [1, 2, 2][tier_rank - 1])), 1, 2),
+		"side_sweep_duration": maxf(0.2, float(effect.get("side_sweep_duration", [0.85, 0.95, 1.05][tier_rank - 1]))),
+		"rain_emitter_count": maxi(0, int(effect.get("rain_emitter_count", [0, 0, 20][tier_rank - 1]))),
+		"rain_duration": maxf(0.0, float(effect.get("rain_duration", 1.5 if tier_rank == 3 else 0.0))),
+		"range": maxf(96.0, float(effect.get("attack_range", [390.0, 450.0, 540.0][tier_rank - 1]))),
+		"damage_per_sweep": maxi(1, roundi(float(maxi(1, amount)) * float(effect.get("sweep_damage_multiplier", [1.0, 0.88, 1.05][tier_rank - 1])))),
+		"damage_per_rain_hit": maxi(1, roundi(float(maxi(1, amount)) * float(effect.get("rain_damage_multiplier", 0.28)))),
+		"tier_rank": tier_rank,
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "dragon_breath_sweep"
+
+
+func _resolve_healing_zone(effect: Dictionary, amount: int, result: Dictionary) -> void:
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	result["healing_zone"] = {
+		"duration": maxf(0.5, float(effect.get("field_duration", [4.0, 6.0, 8.0][tier_rank - 1]))),
+		"radius": maxf(48.0, float(effect.get("field_radius", [150.0, 210.0, 280.0][tier_rank - 1]))),
+		"pulse_interval": maxf(0.1, float(effect.get("pulse_interval", [0.80, 0.72, 0.64][tier_rank - 1]))),
+		"heal_per_pulse": maxi(1, int(effect.get("heal_per_pulse", maxi(1, roundi(float(maxi(1, amount)) * [0.42, 0.55, 0.72][tier_rank - 1]))))),
+		"tier_rank": tier_rank,
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "player_healing_zone"
+
+
+func _resolve_body_overdrive(effect: Dictionary, result: Dictionary) -> void:
+	var tier_rank := clampi(int(effect.get("tier_rank", 1)), 1, 3)
+	result["body_overdrive"] = {
+		"duration": maxf(0.2, float(effect.get("buff_duration", [3.5, 5.0, 7.0][tier_rank - 1]))),
+		"move_speed_multiplier": maxf(1.0, float(effect.get("body_move_speed_multiplier", [1.35, 1.55, 1.80][tier_rank - 1]))),
+		"attack_speed_multiplier": maxf(1.0, float(effect.get("body_attack_speed_multiplier", [1.25, 1.45, 1.75][tier_rank - 1]))),
+		"afterimage_count": maxi(1, int(effect.get("afterimage_count", [3, 5, 8][tier_rank - 1]))),
+		"tier_rank": tier_rank,
+	}
+	result["affected"] = int(result.get("affected", 0)) + 1
+	result["series_rule"] = "body_overdrive_afterimage"
+
+
+func _resolve_field_center(caster: Node, targets: Array, placement_range: float) -> Vector2:
+	if not caster is Node2D:
+		return Vector2.ZERO
+	var caster_2d := caster as Node2D
+	var center := caster_2d.global_position
+	var nearest_distance := INF
+	for target_variant in targets:
+		if not target_variant is Node2D or not is_instance_valid(target_variant):
+			continue
+		var candidate := target_variant as Node2D
+		var candidate_center := ATTACK_GEOMETRY.target_center(candidate)
+		var distance := caster_2d.global_position.distance_squared_to(candidate_center)
+		if distance < nearest_distance:
+			nearest_distance = distance
+			center = candidate_center
+	var displacement := center - caster_2d.global_position
+	if displacement.length() > placement_range:
+		center = caster_2d.global_position + displacement.normalized() * placement_range
+	return center
 
 
 func _distance_between(first: Node, second: Node) -> float:
 	if first is Node2D and second is Node2D:
 		return (first as Node2D).global_position.distance_to((second as Node2D).global_position)
 	return INF
-
-
-func _node_velocity(node: Node) -> Vector2:
-	if node is CharacterBody2D:
-		return (node as CharacterBody2D).velocity
-	var velocity_variant: Variant = node.get("velocity")
-	return velocity_variant as Vector2 if velocity_variant is Vector2 else Vector2.ZERO
-
-
-func _facing_direction(node: Node) -> float:
-	var facing_variant: Variant = node.get("facing_direction")
-	return -1.0 if facing_variant != null and int(facing_variant) < 0 else 1.0
-
-
-func _node_health(node: Node) -> int:
-	var health_variant: Variant = node.get("health")
-	return int(health_variant) if health_variant != null else 1
 
 
 func _is_damage_effect(effect: Dictionary) -> bool:

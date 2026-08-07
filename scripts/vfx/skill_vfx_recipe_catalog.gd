@@ -8,21 +8,21 @@ const GRAMMAR_IDS := [
 	"distortion",
 ]
 const RECIPE_ORDER := [
-	"sword_rain", "moon_wheel", "feather", "ancient_wood", "giant_stone",
-	"great_shield", "fire", "lightning", "water_flow", "plant_attack",
+	"sword_rain", "moon_wheel", "feather", "thorn", "dr_stone",
+	"black_hole", "fire", "lightning", "water_flow", "arcane_swamp",
 	"dragon_breath", "dawn_vitality", "shared_branch_vitality",
 ]
 const RECIPE_GRAMMAR := {
 	"sword_rain": ["core", "rain", "projectile", "trail", "impact", "ring"],
 	"moon_wheel": ["core", "orbit", "projectile", "trail", "ring", "impact"],
 	"feather": ["core", "projectile", "trail", "afterimage", "ring", "impact"],
-	"ancient_wood": ["core", "aura", "beam", "ground_zone", "ring", "impact"],
-	"giant_stone": ["core", "projectile", "orbit", "trail", "burst", "impact", "ground_zone"],
-	"great_shield": ["core", "aura", "ring", "beam", "impact", "ground_zone"],
+	"thorn": ["core", "ground_zone", "aura", "projectile", "trail", "impact", "burst"],
+	"dr_stone": ["core", "orbit", "projectile", "trail", "burst", "impact", "afterimage"],
+	"black_hole": ["core", "distortion", "ring", "aura", "trail", "impact", "burst"],
 	"fire": ["core", "projectile", "trail", "distortion", "burst", "impact", "ground_zone"],
 	"lightning": ["core", "bolt", "beam", "trail", "ring", "impact", "burst"],
 	"water_flow": ["core", "arc", "trail", "projectile", "ring", "impact", "ground_zone"],
-	"plant_attack": ["core", "ground_zone", "rain", "projectile", "aura", "impact"],
+	"arcane_swamp": ["core", "ground_zone", "aura", "ring", "trail", "impact", "distortion"],
 	"dragon_breath": ["core", "beam", "trail", "distortion", "ring", "impact", "burst"],
 	"dawn_vitality": ["core", "aura", "ring", "rain", "impact", "ground_zone"],
 	"shared_branch_vitality": ["core", "beam", "aura", "afterimage", "ring", "impact", "ground_zone"],
@@ -31,13 +31,13 @@ const BASE_PALETTES := {
 	"sword_rain": ["ecfbff", "79cfff", "6f72ff"],
 	"moon_wheel": ["fffbe2", "a8c9ff", "7162d8"],
 	"feather": ["fffce8", "f6d982", "9a72e8"],
-	"ancient_wood": ["efffc9", "7fca70", "315f43"],
-	"giant_stone": ["fff0c5", "c3935f", "5e4b43"],
-	"great_shield": ["fff4c7", "d9aa52", "7755aa"],
+	"thorn": ["f5ffc2", "7fd05e", "6b285f"],
+	"dr_stone": ["fff0c5", "c3935f", "5e4b43"],
+	"black_hole": ["fff7ff", "9a6cff", "160b2d"],
 	"fire": ["fff0a0", "ff641d", "8c1811"],
 	"lightning": ["f7ffff", "6fdcff", "765cff"],
 	"water_flow": ["e9ffff", "49c8e8", "2267b2"],
-	"plant_attack": ["efffb0", "70cf55", "56306d"],
+	"arcane_swamp": ["d8ffad", "5c9c69", "34204f"],
 	"dragon_breath": ["fff1ff", "b36cff", "47237f"],
 	"dawn_vitality": ["fff7b8", "ffbe55", "d8673d"],
 	"shared_branch_vitality": ["f3ffd0", "8cd071", "3d765c"],
@@ -46,13 +46,13 @@ const DEFAULT_IMPACTS := {
 	"sword_rain": "lightning_impact",
 	"moon_wheel": "wind_burst",
 	"feather": "wind_burst",
-	"ancient_wood": "wind_burst",
-	"giant_stone": "wind_burst",
-	"great_shield": "lightning_impact",
+	"thorn": "poison_splash",
+	"dr_stone": "wind_burst",
+	"black_hole": "lightning_impact",
 	"fire": "fire_burst",
 	"lightning": "lightning_impact",
 	"water_flow": "water_splash",
-	"plant_attack": "poison_splash",
+	"arcane_swamp": "poison_splash",
 	"dragon_breath": "fire_burst",
 	"dawn_vitality": "wind_burst",
 	"shared_branch_vitality": "wind_burst",
@@ -81,6 +81,7 @@ func load_catalog() -> bool:
 		_recipes[series_id] = {
 			"id": series_id,
 			"asset_path": String(series_profile.get("asset_path", "")),
+			"procedural_core": bool(series_profile.get("procedural_core", false)),
 			"motion_family": String(series_profile.get("motion_family", "series_lane")),
 			"grammar": grammar,
 			"base_palette": (BASE_PALETTES.get(series_id, ["ffffff", "7fcfff", "6855ba"]) as Array).duplicate(),
@@ -88,13 +89,27 @@ func load_catalog() -> bool:
 			"source": (series_profile.get("source", [0, 0]) as Array).duplicate(),
 			"target": (series_profile.get("target", [260, 0]) as Array).duplicate(),
 			"curve": float(series_profile.get("curve", 0.0)),
-			"specialized_renderer": (
-				"sword_rain_material_cadence"
-				if series_id == "sword_rain"
-				else ("persistent_feather_halo" if series_id == "feather" else "")
-			),
+			"specialized_renderer": _specialized_renderer(series_id),
 		}
 	return true
+
+
+func _specialized_renderer(series_id: String) -> String:
+	match series_id:
+		"sword_rain": return "sword_rain_material_cadence"
+		"moon_wheel": return "bouncing_moon_wheel_field"
+		"feather": return "persistent_feather_halo"
+		"thorn": return "thorn_emerge_bloom_barrage"
+		"dr_stone": return "blessing_mutable_stone_drone_squad"
+		"black_hole": return "layered_black_hole"
+		"arcane_swamp": return "blessing_mutable_arcane_swamp"
+		"fire": return "staggered_fire_pillar_field"
+		"lightning": return "residual_chain_sky_strike"
+		"water_flow": return "layered_tidal_push"
+		"dragon_breath": return "layered_dragon_breath_sweep"
+		"dawn_vitality": return "player_following_healing_zone"
+		"shared_branch_vitality": return "body_overdrive_aura_afterimage"
+	return ""
 
 
 func get_recipe_ids() -> Array:

@@ -87,8 +87,8 @@ func _run() -> void:
 	_expect(effect != null, "Triggered current skill must spawn a series-object combat effect.")
 	if effect != null:
 		_expect(
-			String(effect.call("get_profile_id")) == "series:great_shield",
-			"守一共脈 trigger must spawn the Royal Shield series object."
+			String(effect.call("get_profile_id")) == "series:black_hole",
+			"The compatibility skill ID must spawn the Black Hole series VFX."
 		)
 		_expect(
 			int(effect.call("get_evolution_level")) == 2,

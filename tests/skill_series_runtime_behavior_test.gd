@@ -57,10 +57,10 @@ func _run() -> void:
 	_test_marked_execution()
 	_test_returning_orbit()
 	_test_orbiting_feather_contact_field()
-	_test_gate_network_and_ricochet()
-	_test_forward_guard_counter()
+	_test_thorn_field()
+	_test_singularity_pull_detonation()
 	_test_fire_and_lightning_rules()
-	_test_tide_and_plant_rules()
+	_test_tide_and_swamp_rules()
 	_test_crossfire_and_vitality_rules()
 	if _failures == 0:
 		print("PASS: all skill series execute distinct runtime combat rules")
@@ -88,8 +88,9 @@ func _test_marked_execution() -> void:
 func _test_returning_orbit() -> void:
 	var fixture := _fixture([Vector2(100, 0)])
 	var target := fixture.targets[0] as TestTarget
-	_cast(fixture.runner, fixture.caster, fixture.targets, "returning_orbit", {"tier_rank": 1})
-	_expect(target.hit_count == 2, "Moon Wheel must damage on both outbound and returning passes.")
+	var result := _cast(fixture.runner, fixture.caster, fixture.targets, "bouncing_moon_wheel_field", {"tier_rank": 1, "wheel_count": 5, "round_trip_count": 1})
+	var bounce := result.get("moon_wheel_bounce", {}) as Dictionary
+	_expect(target.hit_count == 0 and int(bounce.get("wheel_count", 0)) == 5 and int(bounce.get("round_trip_count", 0)) == 1, "Moon Wheel must defer five wheels and one round trip to its timed bounce controller.")
 	_free_fixture(fixture)
 
 
@@ -117,90 +118,83 @@ func _test_orbiting_feather_contact_field() -> void:
 	_free_fixture(fixture)
 
 
-func _test_gate_network_and_ricochet() -> void:
-	var gates := _fixture([Vector2(60, 0), Vector2(120, 0), Vector2(180, 0)])
-	_cast(gates.runner, gates.caster, gates.targets, "sword_aura_gate_network", {
-		"tier_rank": 2, "relay_count": 3,
+func _test_thorn_field() -> void:
+	var thorns := _fixture([Vector2(60, 0), Vector2(120, 0), Vector2(180, 0)])
+	var thorn_result := _cast(thorns.runner, thorns.caster, thorns.targets, "blooming_thorn_barrage", {
+		"tier_rank": 2, "thorn_count": 6, "field_radius": 240.0,
+		"field_duration": 3.0, "spikes_per_volley": 6,
+		"damage_per_spike_multiplier": 0.42,
 	})
-	_expect((gates.targets[2] as TestTarget).damage_taken > (gates.targets[0] as TestTarget).damage_taken, "Ancient Wood relays must amplify later gate hits.")
-	_free_fixture(gates)
-	var stones := _fixture([Vector2(70, 0), Vector2(130, 0), Vector2(190, 0)])
-	_cast(stones.runner, stones.caster, stones.targets, "ricochet_boulders", {
-		"tier_rank": 2, "projectile_count": 3, "knockback_multiplier": 1.7,
-	})
-	_expect((stones.targets[0] as TestTarget).damage_taken > 0 and (stones.targets[2] as TestTarget).damage_taken > 0, "Giant Stone must ricochet through multiple enemies.")
-	_expect((stones.targets[1] as TestTarget).last_knockback > 80.0, "Giant Stone ricochets must use their stronger impact.")
-	_free_fixture(stones)
+	var thorn_field := thorn_result.get("thorn_bloom_field", {}) as Dictionary
+	_expect(int(thorn_field.get("thorn_count", 0)) == 6 and int(thorn_field.get("spikes_per_volley", 0)) == 6, "Thorn cast must create the advanced blooming barrage field.")
+	_expect((thorns.targets[0] as TestTarget).damage_taken == 0, "Thorn cast must wait for its emerge and bloom phases before dealing damage.")
+	_free_fixture(thorns)
 
 
-func _test_forward_guard_counter() -> void:
+func _test_singularity_pull_detonation() -> void:
 	var fixture := _fixture([Vector2(90, 0), Vector2(-90, 0)])
-	var caster := fixture.caster as TestCaster
-	_cast(fixture.runner, caster, fixture.targets, "forward_guard_counter", {
-		"tier_rank": 2, "guard": 15,
+	var result := _cast(fixture.runner, fixture.caster, fixture.targets, "singularity_pull_detonation", {
+		"tier_rank": 2, "field_radius": 240.0, "field_duration": 3.0,
+		"tick_interval": 0.22, "damage_per_tick_multiplier": 0.09,
+		"burst_damage_multiplier": 2.5, "pull_strength": 125.0,
 	})
-	_expect(caster.block >= 15, "Great Shield must grant actual guard.")
-	_expect((fixture.targets[0] as TestTarget).damage_taken > 0 and (fixture.targets[1] as TestTarget).damage_taken == 0, "Great Shield counter must only strike in the player's facing direction.")
+	var field := result.get("black_hole_field", {}) as Dictionary
+	_expect(String(result.get("series_rule", "")) == "singularity_pull_detonation", "Black Hole must route to its persistent field controller.")
+	_expect(float(field.get("radius", 0.0)) == 240.0 and float(field.get("duration", 0.0)) == 3.0, "Black Hole advanced tier must project its authored range and duration.")
+	_expect((fixture.targets[0] as TestTarget).damage_taken == 0 and (fixture.targets[1] as TestTarget).damage_taken == 0, "Black Hole cast resolution must not fake its delayed field damage immediately.")
 	_free_fixture(fixture)
 
 
 func _test_fire_and_lightning_rules() -> void:
 	var fire := _fixture([Vector2(70, 0), Vector2(120, 0)])
-	var fire_result := _cast(fire.runner, fire.caster, fire.targets, "route_burn_detonation", {
-		"tier_rank": 3, "burn_damage": 8, "burn_duration": 5.0, "final_burst": true,
+	var fire_result := _cast(fire.runner, fire.caster, fire.targets, "staggered_fire_pillars", {
+		"tier_rank": 3, "pillar_count": 20, "eruption_interval": 0.13,
 	})
-	_expect((fire.targets[0] as TestTarget).statuses.has("burn") and int(fire_result.get("detonated_targets", 0)) == 2, "Fire must leave burn on its route and detonate the enclosed group.")
+	var fire_field := fire_result.get("fire_pillar_field", {}) as Dictionary
+	_expect(int(fire_field.get("pillar_count", 0)) == 20 and (fire.targets[0] as TestTarget).damage_taken == 0, "Fire must defer its twenty staggered eruptions to the field controller.")
 	_free_fixture(fire)
 	var lightning := _fixture([Vector2(60, 0), Vector2(110, 0), Vector2(160, 0)])
-	_cast(lightning.runner, lightning.caster, [lightning.targets[0]], "target_switch_chain", {"tier_rank": 2})
-	var untouched_before := (lightning.targets[2] as TestTarget).damage_taken
-	var lightning_result := _cast(lightning.runner, lightning.caster, [lightning.targets[1], lightning.targets[2]], "target_switch_chain", {"tier_rank": 2, "chain_lightning": true})
-	_expect((lightning.targets[2] as TestTarget).damage_taken > untouched_before and int(lightning_result.get("chain_targets", 0)) >= 1, "Lightning must chain when the player switches targets.")
+	var lightning_result := _cast(lightning.runner, lightning.caster, lightning.targets, "residual_chain_sky_strike", {"tier_rank": 3, "marked_target_limit": 30})
+	var residual := lightning_result.get("residual_lightning", {}) as Dictionary
+	_expect(int(residual.get("marked_target_limit", 0)) == 30 and int(residual.get("final_strike_damage", 0)) > int(residual.get("residual_damage", 0)), "Lightning must author thirty residual marks and a stronger delayed sky strike.")
 	_free_fixture(lightning)
 
 
-func _test_tide_and_plant_rules() -> void:
+func _test_tide_and_swamp_rules() -> void:
 	var tide := _fixture([Vector2(120, 0)])
 	var tide_target := tide.targets[0] as TestTarget
-	_cast(tide.runner, tide.caster, tide.targets, "outbound_returning_tide", {
-		"tier_rank": 2, "pull_strength": 60.0,
+	var tide_result := _cast(tide.runner, tide.caster, tide.targets, "damaging_tidal_push", {
+		"tier_rank": 3, "push_distance": 120.0, "push_duration": 2.4,
 	})
-	_expect(tide_target.hit_count == 2 and tide_target.velocity.x < 0.0, "Water Flow must hit outward, return, and pull enemies back toward the attack line.")
+	var tidal_field := tide_result.get("tidal_push_field", {}) as Dictionary
+	_expect(tide_target.hit_count == 0 and float(tidal_field.get("push_distance", 0.0)) == 120.0, "Water Flow must defer its damaging capped push to the field controller.")
 	_free_fixture(tide)
-	var plants := _fixture([Vector2(60, 0), Vector2(100, 0), Vector2(140, 0)])
-	var host := plants.targets[0] as TestTarget
-	host.health = 12
-	var plant_result := _cast(plants.runner, plants.caster, plants.targets, "host_growth_harvest", {
-		"tier_rank": 3, "poison_damage": 8, "poison_duration": 6.0, "death_spread": true,
+	var swamp := _fixture([Vector2(60, 0), Vector2(100, 0), Vector2(140, 0)])
+	var swamp_result := _cast(swamp.runner, swamp.caster, swamp.targets, "arcane_swamp_entanglement", {
+		"tier_rank": 1, "target_limit": 10, "field_radius": 260.0,
+		"field_duration": 3.0, "tick_interval": 0.32, "damage_per_tick_multiplier": 0.10,
 	})
-	_expect(host.has_meta("plant_series_host") and int(plant_result.get("harvest_spread_targets", 0)) == 2, "Plant must designate a host and spread its harvest when that host dies.")
-	_free_fixture(plants)
+	var swamp_field := swamp_result.get("arcane_swamp_field", {}) as Dictionary
+	_expect(int(swamp_field.get("target_limit", 0)) == 10 and float(swamp_field.get("duration", 0.0)) == 3.0, "Arcane Swamp must create its ten-target entanglement field.")
+	_expect((swamp.targets[0] as TestTarget).damage_taken == 0, "Arcane Swamp must defer damage to its persistent field controller.")
+	_free_fixture(swamp)
 
 
 func _test_crossfire_and_vitality_rules() -> void:
 	var dragon := _fixture([Vector2(100, 0), Vector2(160, 0)])
-	_cast(dragon.runner, dragon.caster, dragon.targets, "crossfire_lane", {"tier_rank": 2})
-	var first_damage := (dragon.targets[0] as TestTarget).damage_taken
-	(dragon.caster as TestCaster).position = Vector2(220, 0)
-	_cast(dragon.runner, dragon.caster, dragon.targets, "crossfire_lane", {"tier_rank": 2})
-	_expect((dragon.targets[0] as TestTarget).damage_taken - first_damage > 10, "Dragon Breath must add a second attack origin after the player changes position.")
+	var dragon_result := _cast(dragon.runner, dragon.caster, dragon.targets, "dragon_breath_sweep", {"tier_rank": 3, "side_sweep_count": 2, "rain_emitter_count": 20})
+	var breath := dragon_result.get("dragon_breath_sweep", {}) as Dictionary
+	_expect(int(breath.get("side_sweep_count", 0)) == 2 and int(breath.get("rain_emitter_count", 0)) == 20, "Master Dragon Breath must resolve two side sweeps followed by twenty downward emitters.")
 	_free_fixture(dragon)
 	var dawn := _fixture([Vector2(90, 0)])
-	var dawn_caster := dawn.caster as TestCaster
-	_cast(dawn.runner, dawn_caster, dawn.targets, "risk_heal_judgment", {"tier_rank": 2, "heal": 18})
-	var healed_near := dawn_caster.health
-	var damage_near := (dawn.targets[0] as TestTarget).damage_taken
-	dawn_caster.position = Vector2(300, 0)
-	_cast(dawn.runner, dawn_caster, dawn.targets, "risk_heal_judgment", {"tier_rank": 2, "heal": 18})
-	_expect(healed_near > 40 and (dawn.targets[0] as TestTarget).damage_taken - damage_near > damage_near, "Dawn must heal near its light and deal stronger judgment damage at range.")
+	var dawn_result := _cast(dawn.runner, dawn.caster, dawn.targets, "player_healing_zone", {"tier_rank": 3, "field_radius": 280.0, "field_duration": 8.0, "heal_per_pulse": 12})
+	var healing_zone := dawn_result.get("healing_zone", {}) as Dictionary
+	_expect(float(healing_zone.get("radius", 0.0)) == 280.0 and float(healing_zone.get("duration", 0.0)) == 8.0, "Master Dawn must create the largest and longest player-following healing zone.")
 	_free_fixture(dawn)
 	var shared := _fixture([Vector2(110, 0)])
-	_cast(shared.runner, shared.caster, shared.targets, "dual_origin_crossfire", {"tier_rank": 2, "echoes": 2})
-	var first_shared := (shared.targets[0] as TestTarget).damage_taken
-	var caster_position := (shared.caster as TestCaster).position
-	(shared.caster as TestCaster).position = Vector2(180, 0)
-	_cast(shared.runner, shared.caster, shared.targets, "dual_origin_crossfire", {"tier_rank": 2, "echoes": 2})
-	_expect((shared.targets[0] as TestTarget).damage_taken - first_shared >= 20 and (shared.caster as TestCaster).position == Vector2(180, 0), "Shared Branch must attack from its saved echo without moving the player.")
+	var shared_result := _cast(shared.runner, shared.caster, shared.targets, "body_overdrive_afterimage", {"tier_rank": 3, "buff_duration": 7.0, "body_move_speed_multiplier": 1.8, "body_attack_speed_multiplier": 1.75, "afterimage_count": 8})
+	var overdrive := shared_result.get("body_overdrive", {}) as Dictionary
+	_expect(float(overdrive.get("move_speed_multiplier", 0.0)) == 1.8 and float(overdrive.get("attack_speed_multiplier", 0.0)) == 1.75 and int(overdrive.get("afterimage_count", 0)) == 8, "Master Shared Branch must author its strongest body speed and afterimage state.")
 	_free_fixture(shared)
 
 

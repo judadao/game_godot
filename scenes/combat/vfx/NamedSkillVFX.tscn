@@ -1,9 +1,20 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/named_skill_vfx.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/vfx/SkillVFXComposer2D.tscn" id="2_composer"]
 [ext_resource type="PackedScene" path="res://scenes/vfx/skills/SwordRainMaterialVFX2D.tscn" id="3_sword_rain"]
 [ext_resource type="PackedScene" path="res://scenes/vfx/skills/FeatherHaloMaterialVFX2D.tscn" id="4_feather_halo"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/BlackHoleMaterialVFX2D.tscn" id="5_black_hole"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/ThornBloomMaterialVFX2D.tscn" id="6_thorn"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/ArcaneSwampMaterialVFX2D.tscn" id="7_swamp"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/DrStoneMaterialVFX2D.tscn" id="8_dr_stone"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/FirePillarMaterialVFX2D.tscn" id="9_fire"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/ResidualLightningMaterialVFX2D.tscn" id="10_lightning"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/TidalPushMaterialVFX2D.tscn" id="11_water"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/DragonBreathMaterialVFX2D.tscn" id="12_dragon"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/HealingZoneMaterialVFX2D.tscn" id="13_healing"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/BodyOverdriveMaterialVFX2D.tscn" id="14_overdrive"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/MoonWheelBounceMaterialVFX2D.tscn" id="15_moon"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
 blend_mode = 1
@@ -19,6 +30,28 @@ script = ExtResource("1_script")
 [node name="SwordRainMaterialVFX2D" parent="." instance=ExtResource("3_sword_rain")]
 
 [node name="FeatherHaloMaterialVFX2D" parent="." instance=ExtResource("4_feather_halo")]
+
+[node name="BlackHoleMaterialVFX2D" parent="." instance=ExtResource("5_black_hole")]
+
+[node name="ThornBloomMaterialVFX2D" parent="." instance=ExtResource("6_thorn")]
+
+[node name="ArcaneSwampMaterialVFX2D" parent="." instance=ExtResource("7_swamp")]
+
+[node name="DrStoneMaterialVFX2D" parent="." instance=ExtResource("8_dr_stone")]
+
+[node name="FirePillarMaterialVFX2D" parent="." instance=ExtResource("9_fire")]
+
+[node name="ResidualLightningMaterialVFX2D" parent="." instance=ExtResource("10_lightning")]
+
+[node name="TidalPushMaterialVFX2D" parent="." instance=ExtResource("11_water")]
+
+[node name="DragonBreathMaterialVFX2D" parent="." instance=ExtResource("12_dragon")]
+
+[node name="HealingZoneMaterialVFX2D" parent="." instance=ExtResource("13_healing")]
+
+[node name="BodyOverdriveMaterialVFX2D" parent="." instance=ExtResource("14_overdrive")]
+
+[node name="MoonWheelBounceMaterialVFX2D" parent="." instance=ExtResource("15_moon")]
 
 [node name="Charge" type="Sprite2D" parent="."]
 modulate = Color(1, 1, 1, 0)

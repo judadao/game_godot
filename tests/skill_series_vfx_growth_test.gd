@@ -2,8 +2,8 @@ extends SceneTree
 
 const PROFILE_PATH := "res://data/skill_series_vfx.json"
 const EXPECTED_SERIES_IDS := [
-	"sword_rain", "moon_wheel", "feather", "ancient_wood", "giant_stone",
-	"great_shield", "fire", "lightning", "water_flow", "plant_attack",
+	"sword_rain", "moon_wheel", "feather", "thorn", "dr_stone",
+	"black_hole", "fire", "lightning", "water_flow", "arcane_swamp",
 	"dragon_breath", "dawn_vitality", "shared_branch_vitality",
 ]
 
@@ -33,9 +33,10 @@ func _run() -> void:
 		var series_id := String(profile.get("id", ""))
 		actual_ids.append(series_id)
 		var asset_path := String(profile.get("asset_path", ""))
-		_expect(not asset_path.is_empty() and ResourceLoader.exists(asset_path, "Texture2D"), "%s needs one loadable main-object texture." % series_id)
-		var source_image := Image.load_from_file(ProjectSettings.globalize_path(asset_path))
-		_expect(not source_image.is_empty(), "%s main-object PNG must decode." % series_id)
+		var procedural_core := bool(profile.get("procedural_core", false))
+		_expect(procedural_core or (not asset_path.is_empty() and ResourceLoader.exists(asset_path, "Texture2D")), "%s needs a loadable texture or an explicit procedural Core." % series_id)
+		var source_image := Image.load_from_file(ProjectSettings.globalize_path(asset_path)) if not asset_path.is_empty() else Image.new()
+		_expect(procedural_core or not source_image.is_empty(), "%s main-object PNG must decode unless its Core is procedural." % series_id)
 		if not source_image.is_empty():
 			var corner_alpha := 0.0
 			for corner in [
@@ -76,15 +77,28 @@ func _run() -> void:
 					< float(master.get("halo_duration_seconds", 0.0)),
 				"More Feather objects must keep the contact halo active longer."
 			)
-		if series_id == "ancient_wood":
-			_expect(int(basic.get("node_count", 0)) == 2 and int(advanced.get("node_count", 0)) == 4 and int(master.get("node_count", 0)) == 6, "Ancient Wood must grow a 2/4/6-node sword-aura gate network.")
+		if series_id == "thorn":
+			_expect([int(basic.get("thorn_count", 0)), int(advanced.get("thorn_count", 0)), int(master.get("thorn_count", 0))] == [3, 6, 10], "Thorn must grow a 3/6/10 blooming barrage.")
+		elif series_id in ["black_hole", "arcane_swamp", "water_flow", "dawn_vitality"]:
+			_expect(float(basic.get("radius", 0.0)) < float(advanced.get("radius", 0.0)) and float(advanced.get("radius", 0.0)) < float(master.get("radius", 0.0)), "%s persistent field radius must grow every tier." % series_id)
+		elif series_id == "fire":
+			_expect([int(basic.get("pillar_count", 0)), int(advanced.get("pillar_count", 0)), int(master.get("pillar_count", 0))] == [5, 10, 20], "Fire pillars must grow 5/10/20.")
+		elif series_id == "lightning":
+			_expect([int(basic.get("target_limit", 0)), int(advanced.get("target_limit", 0)), int(master.get("target_limit", 0))] == [10, 20, 30], "Residual Lightning target caps must grow 10/20/30.")
+		elif series_id == "dragon_breath":
+			_expect(int(basic.get("side_sweep_count", 0)) == 1 and int(advanced.get("side_sweep_count", 0)) == 2 and int(master.get("rain_emitter_count", 0)) == 20, "Dragon Breath must grow from one sweep to two sweeps plus twenty upper emitters.")
+		elif series_id == "shared_branch_vitality":
+			_expect(float(basic.get("attack_speed_multiplier", 0.0)) < float(master.get("attack_speed_multiplier", 0.0)) and int(master.get("afterimage_count", 0)) == 8, "Shared Branch must grow attack speed and afterimage density.")
+		elif series_id == "moon_wheel":
+			_expect([int(basic.get("wheel_count", 0)), int(advanced.get("wheel_count", 0)), int(master.get("wheel_count", 0))] == [5, 8, 12] and [int(basic.get("round_trip_count", 0)), int(advanced.get("round_trip_count", 0)), int(master.get("round_trip_count", 0))] == [1, 2, 3], "Moon Wheel must grow 5/8/12 wheels and 1/2/3 round trips.")
 		else:
 			_expect(bool(profile.get("launches_object", false)), "%s must explicitly declare its launched-object presentation." % series_id)
 			_expect(float(profile.get("minimum_render_size", 0.0)) >= 112.0, "%s launched object must remain visually readable." % series_id)
 			_expect(int(basic.get("object_count", 0)) >= 3 and int(basic.get("path_count", 0)) >= 3 and int(basic.get("direction_count", 0)) >= 3, "%s basic launched-object tier must already fill at least three paths." % series_id)
 			_expect(int(advanced.get("object_count", 0)) > int(basic.get("object_count", 0)) and int(advanced.get("path_count", 0)) >= 3 and int(advanced.get("direction_count", 0)) >= 3, "%s advanced launched-object tier must densify its multi-path formation." % series_id)
 		_expect(int(master.get("object_count", 0)) > int(advanced.get("object_count", 0)), "%s master tier must add more copies of the same object." % series_id)
-		_expect(int(master.get("path_count", 0)) >= 3 and int(master.get("direction_count", 0)) >= 3, "%s master tier must preserve multiple paths and directions." % series_id)
+		if bool(profile.get("launches_object", false)):
+			_expect(int(master.get("path_count", 0)) >= 3 and int(master.get("direction_count", 0)) >= 3, "%s master launched-object tier must preserve multiple paths and directions." % series_id)
 	_expect(actual_ids == EXPECTED_SERIES_IDS, "Skill-series VFX profiles must preserve official series order.")
 
 	var packed := load("res://scenes/combat/vfx/NamedSkillVFX.tscn") as PackedScene
@@ -104,6 +118,14 @@ func _run() -> void:
 			_expect(int(advanced_state.get("path_count", 0)) >= 3 and int(advanced_state.get("object_count", 0)) > int(basic_state.get("object_count", 0)), "Advanced feather playback must densify its multi-lane formation.")
 			_expect(int(master_state.get("path_count", 0)) >= 3 and int(master_state.get("direction_count", 0)) >= 3, "Master feather playback must fan into multiple paths and directions.")
 			_expect(String(basic_state.get("asset_path", "")) == String(master_state.get("asset_path", "")), "All feather tiers must reuse one main-object texture.")
+			for specialized_id in ["fire", "lightning", "water_flow", "dragon_breath", "dawn_vitality", "shared_branch_vitality"]:
+				effect.call("play_series", specialized_id, 3, 1, true)
+				var specialized_state := effect.call("_extended_renderer_state") as Dictionary
+				_expect(String(specialized_state.get("visual_family", "")) == specialized_id, "%s must activate its dedicated material VFX renderer." % specialized_id)
+				_expect(int(specialized_state.get("layer_count", 0)) >= 5 and bool(specialized_state.get("blessing_mutable", false)), "%s must use layered, Blessing-mutable VFX rather than one geometric line." % specialized_id)
+			effect.call("play_series", "moon_wheel", 3, 1, true)
+			var moon_state := effect.call("get_moon_wheel_bounce_vfx_state") as Dictionary
+			_expect(int(moon_state.get("wheel_count", 0)) == 12 and int(moon_state.get("round_trip_count", 0)) == 3, "Master Moon Wheel VFX must show twelve separated wheels across three round trips.")
 		effect.queue_free()
 		await process_frame
 	_finish()

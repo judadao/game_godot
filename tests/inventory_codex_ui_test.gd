@@ -121,8 +121,8 @@ func _run() -> void:
 			and description_label != null
 			and description_label.text.begins_with("[i]「")
 			and description_label.text.ends_with("」[/i]")
-			and description_label.get_parsed_text().contains("流火先環繞角色")
-			and description_label.get_parsed_text().contains("持續燃燒區域")
+			and description_label.get_parsed_text().contains("五處地面依序浮現")
+			and description_label.get_parsed_text().contains("留下餘燼")
 			and notes_label != null
 			and notes_label.text.is_empty()
 			and not notes_label.visible,
@@ -138,13 +138,13 @@ func _run() -> void:
 	ui.call("select_codex_entry", "celestial_feather_myriad")
 	await process_frame
 	_expect(ui.call("get_selected_codex_id") == "celestial_feather_myriad", "The Master feather skill must be selectable.")
-	_expect(meta.text.contains("系列  羽毛") and meta.text.contains("階級 大師"), "天羽萬象 must be classified as the Feather Master skill; got: %s" % meta.text)
+	_expect(meta.text.contains("系列  羽毛") and meta.text.contains("階級 大師"), "萬翼神臨 must be classified as the Feather Master skill; got: %s" % meta.text)
 	_expect(
-		description_label.get_parsed_text().contains("細羽追擊")
-			and description_label.get_parsed_text().contains("巨型天羽垂直墜落")
+		description_label.get_parsed_text().contains("十五根金白天羽")
+			and description_label.get_parsed_text().contains("快速續招")
 			and notes_label.text.is_empty()
 			and not notes_label.visible,
-		"天羽萬象 must place its authored introduction in the leading italic quote without an animation subsection; got: %s"
+		"萬翼神臨 must place its authored introduction in the leading italic quote without an animation subsection; got: %s"
 			% description_label.get_parsed_text()
 	)
 

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/arcane_swamp_field_controller.gd" id="1_script"]
+
+[node name="ArcaneSwampFieldController" type="Node2D" groups=["CombatGameplayControllers"]]
+script = ExtResource("1_script")

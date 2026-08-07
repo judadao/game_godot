@@ -73,6 +73,17 @@ var _vfx_foundation: Node2D
 var _skill_vfx_composer: Node2D
 var _sword_rain_material_vfx: Node2D
 var _feather_halo_material_vfx: Node2D
+var _black_hole_material_vfx: Node2D
+var _thorn_bloom_material_vfx: Node2D
+var _arcane_swamp_material_vfx: Node2D
+var _dr_stone_material_vfx: Node2D
+var _fire_pillar_material_vfx: Node2D
+var _residual_lightning_material_vfx: Node2D
+var _tidal_push_material_vfx: Node2D
+var _dragon_breath_material_vfx: Node2D
+var _healing_zone_material_vfx: Node2D
+var _body_overdrive_material_vfx: Node2D
+var _moon_wheel_bounce_material_vfx: Node2D
 var _sword_rain_cadence_phase := ""
 var _sword_rain_active_trail_count := 0
 var _sword_rain_active_impact_count := 0
@@ -91,6 +102,17 @@ func _ready() -> void:
 	_skill_vfx_composer = get_node_or_null("SkillVFXComposer2D") as Node2D
 	_sword_rain_material_vfx = get_node_or_null("SwordRainMaterialVFX2D") as Node2D
 	_feather_halo_material_vfx = get_node_or_null("FeatherHaloMaterialVFX2D") as Node2D
+	_black_hole_material_vfx = get_node_or_null("BlackHoleMaterialVFX2D") as Node2D
+	_thorn_bloom_material_vfx = get_node_or_null("ThornBloomMaterialVFX2D") as Node2D
+	_arcane_swamp_material_vfx = get_node_or_null("ArcaneSwampMaterialVFX2D") as Node2D
+	_dr_stone_material_vfx = get_node_or_null("DrStoneMaterialVFX2D") as Node2D
+	_fire_pillar_material_vfx = get_node_or_null("FirePillarMaterialVFX2D") as Node2D
+	_residual_lightning_material_vfx = get_node_or_null("ResidualLightningMaterialVFX2D") as Node2D
+	_tidal_push_material_vfx = get_node_or_null("TidalPushMaterialVFX2D") as Node2D
+	_dragon_breath_material_vfx = get_node_or_null("DragonBreathMaterialVFX2D") as Node2D
+	_healing_zone_material_vfx = get_node_or_null("HealingZoneMaterialVFX2D") as Node2D
+	_body_overdrive_material_vfx = get_node_or_null("BodyOverdriveMaterialVFX2D") as Node2D
+	_moon_wheel_bounce_material_vfx = get_node_or_null("MoonWheelBounceMaterialVFX2D") as Node2D
 	for node_name in PART_NODE_NAMES:
 		var sprite := get_node_or_null(NodePath(String(node_name))) as Sprite2D
 		if sprite != null:
@@ -217,6 +239,10 @@ func play_series(
 		duration = reveal_duration + lock_duration + release_duration + 0.22
 		anticipation_time = reveal_duration + lock_duration
 		impact_time = anticipation_time + release_duration * SWORD_RAIN_FLIGHT_SPAN * 0.72
+	elif series_id in ["moon_wheel", "black_hole", "thorn", "arcane_swamp", "dr_stone", "fire", "lightning", "water_flow", "dragon_breath", "dawn_vitality", "shared_branch_vitality"]:
+		duration = maxf(0.2, float(tier_profile.get("duration_seconds", duration)))
+		anticipation_time = duration * 0.16
+		impact_time = duration * (0.88 if series_id == "black_hole" else 0.34)
 	var shake_strength: float = float([5.0, 8.0, 12.0][resolved_tier - 1])
 	var hit_stop: float = float([0.025, 0.045, 0.07][resolved_tier - 1])
 	if motion_family == "descending_rain":
@@ -283,6 +309,7 @@ func play_series(
 		)
 	elif _feather_halo_material_vfx != null:
 		_feather_halo_material_vfx.call("clear")
+	_configure_extended_series_renderer(series_id, resolved_tier, recipe_configured)
 	if recipe_configured:
 		_clear_vfx_foundation()
 	else:
@@ -303,6 +330,79 @@ func play_series(
 
 func is_active() -> bool:
 	return _active
+
+
+func _configure_extended_series_renderer(series_id: String, tier_rank: int, recipe_configured: bool) -> void:
+	for renderer in _extended_renderers():
+		if renderer != null and is_instance_valid(renderer) and not _renderer_matches_series(renderer, series_id):
+			renderer.call("clear")
+	if not recipe_configured:
+		return
+	var composer_state := _skill_vfx_composer.call("get_debug_state") as Dictionary
+	var palette := composer_state.get("resolved_palette", []) as Array
+	var parameters := _series_profile.duplicate(true)
+	parameters.merge(_series_tier_profile, true)
+	match series_id:
+		"moon_wheel":
+			_moon_wheel_bounce_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters)
+		"black_hole":
+			_black_hole_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters)
+		"thorn":
+			_thorn_bloom_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters)
+		"arcane_swamp":
+			_arcane_swamp_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters, _runtime_target_local_positions(int(parameters.get("target_limit", 10))))
+		"dr_stone":
+			_dr_stone_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters)
+		"fire":
+			_fire_pillar_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters, _runtime_target_local_positions(20))
+		"lightning":
+			_residual_lightning_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters, _runtime_target_local_positions(int(parameters.get("target_limit", 10))))
+		"water_flow":
+			_tidal_push_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters, _runtime_target_local_positions(12))
+		"dragon_breath":
+			_dragon_breath_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters, _runtime_target_local_positions(20))
+		"dawn_vitality":
+			_healing_zone_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters)
+		"shared_branch_vitality":
+			_body_overdrive_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters)
+
+
+func _renderer_matches_series(renderer: Node2D, series_id: String) -> bool:
+	return (
+		(renderer == _moon_wheel_bounce_material_vfx and series_id == "moon_wheel")
+		or (renderer == _black_hole_material_vfx and series_id == "black_hole")
+		or (renderer == _thorn_bloom_material_vfx and series_id == "thorn")
+		or (renderer == _arcane_swamp_material_vfx and series_id == "arcane_swamp")
+		or (renderer == _dr_stone_material_vfx and series_id == "dr_stone")
+		or (renderer == _fire_pillar_material_vfx and series_id == "fire")
+		or (renderer == _residual_lightning_material_vfx and series_id == "lightning")
+		or (renderer == _tidal_push_material_vfx and series_id == "water_flow")
+		or (renderer == _dragon_breath_material_vfx and series_id == "dragon_breath")
+		or (renderer == _healing_zone_material_vfx and series_id == "dawn_vitality")
+		or (renderer == _body_overdrive_material_vfx and series_id == "shared_branch_vitality")
+	)
+
+
+func _extended_renderers() -> Array[Node2D]:
+	return [
+		_moon_wheel_bounce_material_vfx, _black_hole_material_vfx, _thorn_bloom_material_vfx,
+		_arcane_swamp_material_vfx, _dr_stone_material_vfx,
+		_fire_pillar_material_vfx, _residual_lightning_material_vfx,
+		_tidal_push_material_vfx, _dragon_breath_material_vfx,
+		_healing_zone_material_vfx, _body_overdrive_material_vfx,
+	]
+
+
+func _runtime_target_local_positions(limit: int) -> Array[Vector2]:
+	var result: Array[Vector2] = []
+	for target_ref in _runtime_initial_target_refs:
+		var target := target_ref.get_ref() as Node2D
+		if target == null or not is_instance_valid(target):
+			continue
+		result.append(ATTACK_GEOMETRY.target_center(target) - global_position)
+		if result.size() >= limit:
+			break
+	return result
 
 
 func get_profile_id() -> String:
@@ -335,10 +435,30 @@ func get_active_layer_count() -> int:
 				and is_instance_valid(_feather_halo_material_vfx)
 			)
 			else 0
-		)
+		) + _extended_renderer_layer_count()
 	if _is_finisher_profile():
 		return _finisher_core_layer_count()
 	return _sprites.size() + _accent_sprites.size()
+
+
+func _extended_renderer_layer_count() -> int:
+	var series_id := String(_series_profile.get("id", ""))
+	var renderer: Node2D
+	match series_id:
+		"moon_wheel": renderer = _moon_wheel_bounce_material_vfx
+		"black_hole": renderer = _black_hole_material_vfx
+		"thorn": renderer = _thorn_bloom_material_vfx
+		"arcane_swamp": renderer = _arcane_swamp_material_vfx
+		"dr_stone": renderer = _dr_stone_material_vfx
+		"fire": renderer = _fire_pillar_material_vfx
+		"lightning": renderer = _residual_lightning_material_vfx
+		"water_flow": renderer = _tidal_push_material_vfx
+		"dragon_breath": renderer = _dragon_breath_material_vfx
+		"dawn_vitality": renderer = _healing_zone_material_vfx
+		"shared_branch_vitality": renderer = _body_overdrive_material_vfx
+	if renderer == null or not is_instance_valid(renderer):
+		return 0
+	return int(renderer.call("get_active_layer_count"))
 
 
 func get_geometry_identity() -> Dictionary:
@@ -504,6 +624,11 @@ func get_series_debug_state() -> Dictionary:
 			int(recipe_state.get("real_visual_layer_count", 0))
 			+ feather_layer_count
 		)
+	var extended_state := _extended_renderer_state()
+	if not extended_state.is_empty():
+		state["specialized_real_visual_layer_count"] = int(extended_state.get("real_visual_layer_count", 0))
+		state["real_visual_layer_count"] = int(recipe_state.get("real_visual_layer_count", 0)) + int(extended_state.get("real_visual_layer_count", 0))
+		state["procedural_core"] = bool(_series_profile.get("procedural_core", false))
 	return state
 
 
@@ -533,6 +658,72 @@ func get_feather_halo_vfx_state() -> Dictionary:
 	return (_feather_halo_material_vfx.call("get_debug_state") as Dictionary).duplicate(true)
 
 
+func get_black_hole_vfx_state() -> Dictionary:
+	return _renderer_debug_state("black_hole", _black_hole_material_vfx)
+
+
+func get_moon_wheel_bounce_vfx_state() -> Dictionary:
+	return _renderer_debug_state("moon_wheel", _moon_wheel_bounce_material_vfx)
+
+
+func get_thorn_bloom_vfx_state() -> Dictionary:
+	return _renderer_debug_state("thorn", _thorn_bloom_material_vfx)
+
+
+func get_arcane_swamp_vfx_state() -> Dictionary:
+	return _renderer_debug_state("arcane_swamp", _arcane_swamp_material_vfx)
+
+
+func get_dr_stone_vfx_state() -> Dictionary:
+	return _renderer_debug_state("dr_stone", _dr_stone_material_vfx)
+
+
+func get_fire_pillar_vfx_state() -> Dictionary:
+	return _renderer_debug_state("fire", _fire_pillar_material_vfx)
+
+
+func get_residual_lightning_vfx_state() -> Dictionary:
+	return _renderer_debug_state("lightning", _residual_lightning_material_vfx)
+
+
+func get_tidal_push_vfx_state() -> Dictionary:
+	return _renderer_debug_state("water_flow", _tidal_push_material_vfx)
+
+
+func get_dragon_breath_vfx_state() -> Dictionary:
+	return _renderer_debug_state("dragon_breath", _dragon_breath_material_vfx)
+
+
+func get_healing_zone_vfx_state() -> Dictionary:
+	return _renderer_debug_state("dawn_vitality", _healing_zone_material_vfx)
+
+
+func get_body_overdrive_vfx_state() -> Dictionary:
+	return _renderer_debug_state("shared_branch_vitality", _body_overdrive_material_vfx)
+
+
+func _renderer_debug_state(series_id: String, renderer: Node2D) -> Dictionary:
+	if String(_series_profile.get("id", "")) != series_id or renderer == null or not is_instance_valid(renderer):
+		return {}
+	return (renderer.call("get_debug_state") as Dictionary).duplicate(true)
+
+
+func _extended_renderer_state() -> Dictionary:
+	match String(_series_profile.get("id", "")):
+		"moon_wheel": return get_moon_wheel_bounce_vfx_state()
+		"black_hole": return get_black_hole_vfx_state()
+		"thorn": return get_thorn_bloom_vfx_state()
+		"arcane_swamp": return get_arcane_swamp_vfx_state()
+		"dr_stone": return get_dr_stone_vfx_state()
+		"fire": return get_fire_pillar_vfx_state()
+		"lightning": return get_residual_lightning_vfx_state()
+		"water_flow": return get_tidal_push_vfx_state()
+		"dragon_breath": return get_dragon_breath_vfx_state()
+		"dawn_vitality": return get_healing_zone_vfx_state()
+		"shared_branch_vitality": return get_body_overdrive_vfx_state()
+	return {}
+
+
 func debug_advance_feather_halo(delta: float) -> void:
 	if get_feather_halo_vfx_state().is_empty():
 		return
@@ -555,6 +746,25 @@ func refill_feather_halo(
 	_active = true
 	visible = true
 	set_process(true)
+	return true
+
+
+func refill_dr_stone(tier_rank: int = 1, intensity: float = 1.0) -> bool:
+	if not _series_mode or String(_series_profile.get("id", "")) != "dr_stone":
+		return false
+	var resolved_tier := clampi(tier_rank, 1, 3)
+	if resolved_tier != _evolution_level:
+		play_series("dr_stone", resolved_tier, _direction, false, intensity)
+		return true
+	if _dr_stone_material_vfx == null or not is_instance_valid(_dr_stone_material_vfx):
+		return false
+	_dr_stone_material_vfx.call("refill")
+	_elapsed = 0.0
+	_progress = 0.0
+	_active = true
+	visible = true
+	set_process(true)
+	_apply_progress(0.0)
 	return true
 
 
@@ -783,7 +993,11 @@ func _resolve_stack_tier(stack_count: int) -> int:
 
 func _build_series_sprites() -> bool:
 	var asset_path := String(_series_profile.get("asset_path", ""))
-	var texture := load(asset_path) as Texture2D
+	var texture := (
+		_make_procedural_series_texture()
+		if bool(_series_profile.get("procedural_core", false))
+		else load(asset_path) as Texture2D
+	)
 	if texture == null:
 		push_error("Skill-series VFX main object failed to load: %s" % asset_path)
 		return false
@@ -809,11 +1023,33 @@ func _build_series_sprites() -> bool:
 	return true
 
 
+func _make_procedural_series_texture() -> Texture2D:
+	var gradient := Gradient.new()
+	gradient.offsets = PackedFloat32Array([0.0, 0.42, 0.74, 1.0])
+	gradient.colors = PackedColorArray([
+		Color(1.0, 1.0, 1.0, 0.0),
+		Color(1.0, 1.0, 1.0, 0.35),
+		Color(1.0, 1.0, 1.0, 0.9),
+		Color(1.0, 1.0, 1.0, 0.0),
+	])
+	var texture := GradientTexture2D.new()
+	texture.width = 96
+	texture.height = 96
+	texture.fill = GradientTexture2D.FILL_RADIAL
+	texture.fill_from = Vector2(0.5, 0.5)
+	texture.fill_to = Vector2(1.0, 0.5)
+	texture.gradient = gradient
+	return texture
+
+
 func _clear_series_sprites() -> void:
 	if _sword_rain_material_vfx != null and is_instance_valid(_sword_rain_material_vfx):
 		_sword_rain_material_vfx.call("clear")
 	if _feather_halo_material_vfx != null and is_instance_valid(_feather_halo_material_vfx):
 		_feather_halo_material_vfx.call("clear")
+	for renderer in _extended_renderers():
+		if renderer != null and is_instance_valid(renderer):
+			renderer.call("clear")
 	for sprite in _series_sprites:
 		if not is_instance_valid(sprite):
 			continue
@@ -845,6 +1081,8 @@ func _layout_series_objects(
 		_layout_sword_rain_cadence()
 		return
 	if motion_family == "sacred_feather_fan":
+		return
+	if motion_family in ["bouncing_moon_wheel_field", "singularity_collapse", "thorn_emerge_bloom_barrage", "arcane_swamp_entanglement", "persistent_stone_drone_squad", "staggered_fire_pillars", "residual_chain_sky_strike", "damaging_tidal_push", "dragon_breath_sweep", "player_healing_zone", "body_overdrive_afterimage"]:
 		return
 	if motion_family == "wood_gate_relay":
 		_layout_wood_gate_relay(anticipation_ratio, impact_ratio, impact_end)
@@ -1327,6 +1565,9 @@ func _apply_progress(value: float) -> void:
 		)
 	if _series_mode:
 		_layout_series_objects(anticipation_ratio, impact_ratio, impact_end)
+		for renderer in _extended_renderers():
+			if renderer != null and is_instance_valid(renderer) and renderer.visible:
+				renderer.call("set_progress", _progress)
 		if _skill_vfx_composer != null and is_instance_valid(_skill_vfx_composer):
 			var core_positions: Array[Vector2] = []
 			for sprite in _series_sprites:

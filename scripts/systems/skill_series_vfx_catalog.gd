@@ -90,13 +90,14 @@ func get_tier_profile(series_id: String, tier_rank: int) -> Dictionary:
 func _validate_profile(profile: Dictionary) -> bool:
 	var series_id := String(profile.get("id", "")).strip_edges()
 	var asset_path := String(profile.get("asset_path", "")).strip_edges()
+	var procedural_core := bool(profile.get("procedural_core", false))
 	if series_id.is_empty() or _profiles.has(series_id):
 		push_error("Skill-series VFX needs a unique profile id: %s" % series_id)
 		return false
 	if String(profile.get("object_name", "")).strip_edges().is_empty():
 		push_error("Skill-series VFX needs a concrete main-object name: %s" % series_id)
 		return false
-	if asset_path.is_empty() or not ResourceLoader.exists(asset_path, "Texture2D"):
+	if not procedural_core and (asset_path.is_empty() or not ResourceLoader.exists(asset_path, "Texture2D")):
 		push_error("Skill-series VFX main object is missing: %s -> %s" % [series_id, asset_path])
 		return false
 	if String(profile.get("motion_family", "")).strip_edges().is_empty():
@@ -111,7 +112,11 @@ func _validate_profile(profile: Dictionary) -> bool:
 		return false
 	var previous_count := 0
 	var previous_feather_duration := 0.0
-	var gate_network := String(profile.get("gameplay_family", "")) == "sword_aura_gate_network"
+	var specialized_non_projectile := series_id in [
+		"moon_wheel", "thorn", "black_hole", "arcane_swamp", "fire", "lightning",
+		"water_flow", "dragon_breath", "dawn_vitality",
+		"shared_branch_vitality",
+	]
 	var launches_object := bool(profile.get("launches_object", false))
 	if series_id == "feather" and not _validate_feather_halo(profile):
 		return false
@@ -140,11 +145,14 @@ func _validate_profile(profile: Dictionary) -> bool:
 		):
 			push_error("Skill-series VFX tier growth is invalid: %s[%d]" % [series_id, tier_index])
 			return false
-		if gate_network:
-			var expected_nodes: int = [2, 4, 6][tier_index]
-			if int(tier.get("node_count", 0)) != expected_nodes or object_count != expected_nodes:
-				push_error("Sword-aura gate tiers must use 2/4/6 nodes: %s[%d]" % [series_id, tier_index])
+		if specialized_non_projectile:
+			if float(tier.get("duration_seconds", 0.0)) <= 0.0:
+				push_error("Specialized VFX tiers need a finite duration: %s[%d]" % [series_id, tier_index])
 				return false
+			if tier.has("radius") and float(tier.get("radius", 0.0)) <= 0.0:
+				push_error("Specialized VFX radius must be positive: %s[%d]" % [series_id, tier_index])
+				return false
+			previous_count = object_count
 			continue
 		if launches_object:
 			var minimum_paths := 5 if tier_index == 2 else 3

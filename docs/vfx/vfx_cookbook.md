@@ -53,6 +53,31 @@ Skills compose and arrange these primitives; they do not fork them. A fire skill
 trail during travel, a burst at contact and a loop for residue. The skill supplies timing and
 placement only. Gameplay systems remain the authority for hit detection and elemental effects.
 
+## Attack rhythm and visual-quality rule
+
+The reference tutorials were reviewed as timing and composition studies, not as effects to
+copy. Their useful common structure is that a readable silhouette appears before decoration,
+and contact is split into four visible beats instead of making every layer expand together:
+
+1. `contact_flash`: a short, high-value core establishes the exact hit point.
+2. `shape_expansion`: the main slash, ring, flame body, bolt or splash establishes direction and
+   element.
+3. `secondary_debris`: sparks, droplets, shards, embers or corrosion fragments inherit the
+   impact direction with controlled randomness.
+4. `residual_fade`: smoke, mist, ground scar, afterglow or dissolve closes the motion without a
+   hard GIF-like disappearance.
+
+`LayeredVFXPrimitive2D` offsets these layer phases and gives flash, body and residue different
+scale and alpha envelopes. More particles are not a substitute for these beats. Each skill is
+reviewed in this order: main-object silhouette, gameplay cadence, contact placement, material
+flow, then secondary decoration. Iteration must fix the earliest failing layer before increasing
+counts or glow.
+
+Sources studied: [stylized fire](https://youtu.be/R3xMwfrlTI8),
+[explosions](https://youtu.be/tjSxICUXMmM), [slash](https://youtu.be/Q3V5HIrO11Y),
+[hits and impacts](https://youtu.be/uDjR7F-aOsc), and
+[Godot 2D particles](https://docs.godotengine.org/en/stable/tutorials/2d/particle_systems_2d.html).
+
 ## Skill VFX Grammar
 
 Current skills are recipes over fifteen roles: `Core`, `Trail`, `Arc`, `Beam`, `Bolt`, `Ring`,
@@ -93,6 +118,15 @@ Blessing mutations are a stack of data, not separate redraws. Every supported el
 palette, visible copy count, path curvature/forks, trail primitive, impact primitive and ground
 residue. Production casts default to currently owned Blessings when a skill has no explicit
 overlay projection. This visual stack never changes damage or status authority.
+
+`SeriesImpactVFXRouter` reconnects those primitives to gameplay truth. It listens to controller
+signals such as pillar eruption, chain hop, residual sky strike, wave contact, thorn volley,
+swamp pulse, drone shot/crash, Black Hole detonation and healing pulse. Fire/Dragon use
+`fire_burst`; Lightning uses an A-to-B `lightning_bolt` plus `lightning_impact`; Water uses
+`water_splash`; Thorn/Swamp use `poison_splash`; Moon/Feather/DR. Stone/Dawn/Shared Branch use
+palette-authored wind slash/burst components. Blessing overlays mutate the spawned primitive's
+palette, noise, density and glow. Fixed normalized-timeline decorations must not impersonate a
+real hit.
 
 Standalone composition scenes are `slash_vfx_demo`, `fireball_vfx_demo`,
 `lightning_strike_vfx_demo`, `area_burst_vfx_demo`, and `moon_wheel_vfx_demo`. They contain no

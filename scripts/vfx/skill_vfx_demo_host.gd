@@ -69,7 +69,12 @@ func _configure_cycle() -> void:
 
 
 func _build_cores() -> void:
-	var texture := load(String(_recipe.get("asset_path", ""))) as Texture2D
+	var asset_path := String(_recipe.get("asset_path", ""))
+	var texture := (
+		load(asset_path) as Texture2D
+		if not asset_path.is_empty()
+		else _make_procedural_core_texture()
+	)
 	if texture == null:
 		return
 	var count := 3 if tier_rank == 1 else (5 if tier_rank == 2 else 7)
@@ -84,6 +89,23 @@ func _build_cores() -> void:
 		sprite.z_index = index % 3
 		core_root.add_child(sprite)
 		_cores.append(sprite)
+
+
+func _make_procedural_core_texture() -> Texture2D:
+	var gradient := Gradient.new()
+	gradient.offsets = PackedFloat32Array([0.0, 0.45, 0.78, 1.0])
+	gradient.colors = PackedColorArray([
+		Color(1.0, 1.0, 1.0, 0.0), Color(0.7, 0.95, 1.0, 0.35),
+		Color.WHITE, Color(1.0, 1.0, 1.0, 0.0),
+	])
+	var texture := GradientTexture2D.new()
+	texture.width = 96
+	texture.height = 96
+	texture.fill = GradientTexture2D.FILL_RADIAL
+	texture.fill_from = Vector2(0.5, 0.5)
+	texture.fill_to = Vector2(1.0, 0.5)
+	texture.gradient = gradient
+	return texture
 
 
 func _vector_from_recipe(key: String) -> Vector2:

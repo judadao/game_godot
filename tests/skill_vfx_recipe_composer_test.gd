@@ -1,8 +1,8 @@
 extends SceneTree
 
 const EXPECTED_SERIES := [
-	"sword_rain", "moon_wheel", "feather", "ancient_wood", "giant_stone",
-	"great_shield", "fire", "lightning", "water_flow", "plant_attack",
+	"sword_rain", "moon_wheel", "feather", "thorn", "dr_stone",
+	"black_hole", "fire", "lightning", "water_flow", "arcane_swamp",
 	"dragon_breath", "dawn_vitality", "shared_branch_vitality",
 ]
 const REQUIRED_GRAMMAR := [
@@ -44,8 +44,11 @@ func _run() -> void:
 		var grammar := recipe.get("grammar", []) as Array
 		_expect(grammar.size() >= 5, "%s must compose at least five grammar primitives." % series_id)
 		_expect(grammar.has("core") and grammar.has("impact"), "%s must retain a readable core and contact layer." % series_id)
-		_expect(not String(recipe.get("asset_path", "")).is_empty(), "%s must preserve its existing main-object asset as Core." % series_id)
-		_expect(ResourceLoader.exists(String(recipe.get("asset_path", "")), "Texture2D"), "%s Core asset must remain loadable." % series_id)
+		if bool(recipe.get("procedural_core", false)):
+			_expect(series_id in ["black_hole", "thorn", "arcane_swamp", "fire", "lightning", "water_flow", "dragon_breath", "dawn_vitality", "shared_branch_vitality"], "Only an explicitly authored procedural series may omit a bitmap Core.")
+		else:
+			_expect(not String(recipe.get("asset_path", "")).is_empty(), "%s must preserve its existing main-object asset as Core." % series_id)
+			_expect(ResourceLoader.exists(String(recipe.get("asset_path", "")), "Texture2D"), "%s Core asset must remain loadable." % series_id)
 
 	var composer := composer_scene.instantiate() as Node2D
 	root.add_child(composer)
@@ -53,7 +56,10 @@ func _run() -> void:
 	_expect(composer.has_method("configure"), "Skill VFX Composer must expose configure().")
 	_expect(composer.has_method("set_progress"), "Skill VFX Composer must expose deterministic timeline control.")
 	_expect(composer.has_method("get_debug_state"), "Skill VFX Composer must expose visual diagnostics.")
-	var fire_recipe := catalog.call("get_recipe", "fire") as Dictionary
+	var fire_recipe := catalog.call("get_recipe", "moon_wheel") as Dictionary
+	# Exercise the reusable grammar itself; production NamedSkillVFX replaces
+	# these generic layers with the series-specific renderer.
+	fire_recipe["specialized_renderer"] = ""
 	var overlays: Array = []
 	for element in BLESSING_ELEMENTS:
 		overlays.append({"id": "%s_test" % element, "element": element, "level": 2})

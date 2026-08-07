@@ -49,6 +49,8 @@ func configure(recipe: Dictionary, tier_rank: int, blessing_overlays: Array = []
 		_suppressed_generic_roles.assign([
 			"projectile", "trail", "afterimage", "ring", "impact",
 		])
+	elif not _specialized_renderer.is_empty():
+		_suppressed_generic_roles.assign((recipe.get("grammar", []) as Array).filter(func(role: Variant) -> bool: return String(role) != "core"))
 	_resolve_mutations(blessing_overlays)
 	_build_role_layers()
 	_build_impact_primitive()
@@ -121,7 +123,7 @@ func get_debug_state() -> Dictionary:
 		"trajectory_variation": _trajectory_variation,
 		"impact_primitive": _impact_primitive,
 		"resolved_palette": _palette.duplicate(),
-		"uses_existing_core_asset": not String(_recipe.get("asset_path", "")).is_empty(),
+		"uses_existing_core_asset": not String(_recipe.get("asset_path", "")).is_empty() or bool(_recipe.get("procedural_core", false)),
 		"legacy_fallback_retained": true,
 		"specialized_renderer": _specialized_renderer,
 		"suppressed_generic_roles": _suppressed_generic_roles.duplicate(),

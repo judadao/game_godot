@@ -5,7 +5,7 @@
 
 [node name="AreaBurstVFXDemo" type="Node2D" groups=["VFXDemo"]]
 script = ExtResource("1_script")
-recipe_id = "giant_stone"
+recipe_id = "dr_stone"
 tier_rank = 3
 blessing_element = "ice"
 

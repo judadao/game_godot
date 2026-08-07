@@ -8,6 +8,10 @@ const CIRCLE_SEGMENTS := 32
 const MAX_PARTICLES := 160
 const MIN_LIFETIME := 0.05
 const VFX_CATALOG := preload("res://scripts/vfx/vfx_primitive_catalog.gd")
+const CONTACT_RHYTHM_BEATS := [
+	"contact_flash", "shape_expansion", "secondary_debris", "residual_fade",
+]
+const ONE_SHOT_LAYER_PHASE_OFFSETS := [0.0, 0.02, 0.08, 0.16, 0.10]
 
 @export var effect_id: StringName = &"fire_loop"
 @export var primary_color := Color.WHITE
@@ -33,6 +37,23 @@ var _bounds := Vector2(192.0, 192.0)
 var _time := 0.0
 var _active := false
 var _rng := RandomNumberGenerator.new()
+
+
+func configure_runtime(parameters: Dictionary) -> void:
+	primary_color = parameters.get("primary_color", primary_color) as Color
+	secondary_color = parameters.get("secondary_color", secondary_color) as Color
+	intensity = clampf(float(parameters.get("intensity", intensity)), 0.1, 3.0)
+	effect_scale = clampf(float(parameters.get("effect_scale", effect_scale)), 0.1, 4.0)
+	effect_lifetime = clampf(float(parameters.get("effect_lifetime", effect_lifetime)), MIN_LIFETIME, 5.0)
+	noise_amount = clampf(float(parameters.get("noise_amount", noise_amount)), 0.0, 1.0)
+	glow_strength = clampf(float(parameters.get("glow_strength", glow_strength)), 0.0, 4.0)
+	particle_amount = clampi(int(parameters.get("particle_amount", particle_amount)), 1, MAX_PARTICLES)
+	if parameters.has("one_shot"):
+		one_shot = bool(parameters.get("one_shot"))
+	if parameters.has("auto_free"):
+		auto_free = bool(parameters.get("auto_free"))
+	if is_node_ready():
+		_configure_layers()
 
 
 func _ready() -> void:
@@ -103,6 +124,22 @@ func get_visual_bounds() -> Rect2:
 
 func get_motion_family() -> StringName:
 	return _motion
+
+
+func get_quality_state() -> Dictionary:
+	return {
+		"rhythm_beats": CONTACT_RHYTHM_BEATS.duplicate(),
+		"layer_phase_offsets": (
+			ONE_SHOT_LAYER_PHASE_OFFSETS.duplicate()
+			if one_shot
+			else [0.0, 0.07, 0.14, 0.21, 0.11]
+		),
+		"visual_layer_count": _layer_names.size(),
+		"directional_shape": _motion in [&"slash", &"trail", &"stream", &"bolt"],
+		"shape_family": _motion,
+		"material_layer_count": _shader_material_count(),
+		"particle_layer_count": _particle_layers.size(),
+	}
 
 
 func _process(delta: float) -> void:
@@ -226,11 +263,12 @@ func _configure_particle_layer(particles: GPUParticles2D) -> void:
 
 
 func _update_visuals(progress: float) -> void:
-	var points := _build_motion_points(progress)
 	var tangent := direction.normalized() if not direction.is_zero_approx() else Vector2.RIGHT
 	var normal := Vector2(-tangent.y, tangent.x)
 	for index in _line_layers.size():
 		var line := _line_layers[index]
+		var layer_progress := _line_phase_progress(line, index, progress)
+		var points := _build_motion_points(layer_progress)
 		var offset_strength := float(index) * 3.0 * (0.5 + noise_amount)
 		var offset_points := PackedVector2Array()
 		for point_index in points.size():
@@ -238,9 +276,9 @@ func _update_visuals(progress: float) -> void:
 			var offset := normal * offset_strength * envelope * sin(_time * (2.3 + index * 0.35) + point_index * 1.73 + index)
 			offset_points.append(points[point_index] + offset)
 		line.points = offset_points
-		var alpha := _layer_alpha(index, progress)
+		var alpha := _layer_alpha(line, index, layer_progress)
 		line.modulate = Color(1.0, 1.0, 1.0, alpha)
-		line.scale = Vector2.ONE * effect_scale
+		line.scale = Vector2.ONE * effect_scale * _layer_shape_scale(line, layer_progress)
 
 
 func _build_motion_points(progress: float) -> PackedVector2Array:
@@ -321,12 +359,48 @@ func _build_stream_points(progress: float) -> PackedVector2Array:
 	return points
 
 
-func _layer_alpha(index: int, progress: float) -> float:
+func _line_phase_progress(line: Line2D, index: int, progress: float) -> float:
+	if not one_shot:
+		return progress
+	var offset := float(ONE_SHOT_LAYER_PHASE_OFFSETS[mini(index, ONE_SHOT_LAYER_PHASE_OFFSETS.size() - 1)])
+	var name_key := String(line.name).to_lower()
+	if "flash" in name_key or "core" in name_key or "mainbolt" in name_key:
+		offset = 0.0
+	elif "smoke" in name_key or "mist" in name_key or "corrosion" in name_key or "trail" in name_key:
+		offset = 0.16
+	return clampf((progress - offset) / maxf(0.01, 1.0 - offset), 0.0, 1.0)
+
+
+func _layer_shape_scale(line: Line2D, progress: float) -> float:
+	if not one_shot:
+		return 1.0
+	var name_key := String(line.name).to_lower()
+	if "flash" in name_key or "core" in name_key or "mainbolt" in name_key:
+		return lerpf(0.44, 1.08, minf(1.0, progress * 4.8))
+	if "smoke" in name_key or "mist" in name_key or "corrosion" in name_key or "trail" in name_key:
+		return lerpf(0.82, 1.28, ease(progress, 0.45))
+	return lerpf(0.68, 1.18, ease(progress, 0.52))
+
+
+func _layer_alpha(line: Line2D, index: int, progress: float) -> float:
 	var base_alpha: float = float([0.58, 1.0, 0.82, 0.68][mini(index, 3)]) * intensity
 	if not one_shot:
 		return clampf(base_alpha * (0.88 + sin(_time * 3.0 + index) * 0.12), 0.0, 1.0)
-	var envelope := smoothstep(0.0, 0.12, progress) * (1.0 - smoothstep(0.68, 1.0, progress))
+	var name_key := String(line.name).to_lower()
+	var envelope := smoothstep(0.0, 0.08, progress) * (1.0 - smoothstep(0.70, 1.0, progress))
+	if "flash" in name_key or "core" in name_key or "mainbolt" in name_key:
+		envelope = smoothstep(0.0, 0.025, progress) * (1.0 - smoothstep(0.20, 0.48, progress))
+	elif "smoke" in name_key or "mist" in name_key or "corrosion" in name_key or "trail" in name_key:
+		envelope = smoothstep(0.0, 0.18, progress) * (1.0 - smoothstep(0.74, 1.0, progress))
 	return clampf(base_alpha * envelope, 0.0, 1.0)
+
+
+func _shader_material_count() -> int:
+	var count := 0
+	for line in _line_layers:
+		if line.material is ShaderMaterial:
+			count += 1
+	return count
 
 
 func _make_particle_texture() -> Texture2D:

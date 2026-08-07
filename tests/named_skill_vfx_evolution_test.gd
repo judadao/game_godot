@@ -29,6 +29,7 @@ func _run() -> void:
 	var effect := vfx_scene.instantiate()
 	root.add_child(effect)
 	await process_frame
+	var authored_child_count := effect.get_child_count()
 	_expect(
 		_method_argument_count(effect, &"play") >= 6,
 		"Named skill VFX play must accept evolution level and persistent buff stacks."
@@ -87,7 +88,7 @@ func _run() -> void:
 	_expect(
 		int(effect.call("get_active_layer_count")) == 5
 			and effect.find_children("EvolutionAccent*", "Sprite2D", false, false).is_empty()
-			and effect.get_child_count() == 8,
+			and effect.get_child_count() == authored_child_count,
 		"Cross-profile replay must clear prior evolution accents instead of accumulating children."
 	)
 	if not bool(effect.call("is_active")):

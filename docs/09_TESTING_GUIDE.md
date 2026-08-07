@@ -69,9 +69,10 @@ Inventory／Codex focused coverage：
   實際 Game projection 可用 `INVENTORY_CODEX_PROJECTION_CAPTURE_PATH` 擷取，
   並以 `INVENTORY_CODEX_PROJECTION_SECTION=techniques|enemies|sword_souls|equipment|blessings`
   指定圖鑑章節；不得只驗證手寫 UI fixture。
-- `skill_series_vfx_growth_test.gd`：驗證 13 個系列各有一張透明主物體、正式順序，且所有
-  發射型系列由 basic 至少 3 個／3 路、advanced 更高密度，成長到 master 至少 5 路，
-  主物體最小可讀尺寸為 112px；非發射型古木仍維持 2／4／6 門陣節點。另由
+- `skill_series_vfx_growth_test.gd`：驗證 13 個系列都有 bitmap 或明確宣告的 procedural
+  Core、正式順序與三級成長。另鎖定月輪 5／8／12 枚及 1／2／3 次往返、荊棘 3／6／10、
+  火柱 5／10／20、殘雷 10／20／30、朝陽／海浪範圍成長、龍息 1／2／2+20，以及同枝
+  攻速與八層殘影；專用 renderer 必須至少五層且可接受 Blessing mutation。另由
   `sword_rain_cadence_vfx_test.gd` 鎖定劍雨 10／15／20 數量、逐把分離環繞浮現、目標
   頭頂垂直鎖定 0.8 秒、五劍分組停頓／加速墜落、逐劍曲線殘光、命中震屏／hit-stop，
   以及在插入點觸發衝擊後消失；`sword_rain_material_vfx_test.gd` 驗證三層拖尾、六層
@@ -82,8 +83,8 @@ Inventory／Codex focused coverage：
   dummy headless 環境只執行 geometry／behavior contracts，不要求 PNG capture。
 - `skill_series_vfx_combat_routing_test.gd`：逐一驗證 39 招的實戰 profile 與其舊 Finisher
   recipe bridge 都由目前配置的正式招式消歧義、導向自己系列，`tier_rank` 正確成為
-  1／2／3 階 formation；並以守一共脈實際走 trigger→spawn，確認
-  戰鬥生成王室盾牌的中階單路徑群，而不是把招式 ID 當成舊動畫 ID 後靜默失敗。
+  1／2／3 階 formation；並以相容技能實際走 trigger→spawn，確認招式 ID 會先解析至目前
+  正式系列，而不是把招式 ID 當成舊動畫 ID 後靜默失敗。
 
 ## 3. 測試分層
 
@@ -137,17 +138,19 @@ z-order、layout 與 generated Scene parity。圖片迭代過程不為主觀畫�
 次成功 Combo、混合路線須提供不同順序，且同一歷史尾段必須聯集觸發所有已編成的
 符合招式並對單招去重。
 
-`ancient_wood_gate_skill_test.gd` 鎖定古木的 2／4／6 劍氣門、圖鑑玩法說明與實際
-Finisher 結算；測試必須確認古木不是只有 VFX 排列，而會增加真實攻擊距離、尺寸、
-方向與傷害，且不移動玩家。
+`thorn_bloom_series_test.gd` 鎖定荊棘的 3／6／10 破土、依序開花與棘刺齊射；VFX 使用
+既有開花序列作獨立 bloom layer，gameplay controller 在開花前不得提前造成傷害。
 
 `all_skill_series_gameplay_test.gd` 鎖定全部 13 系列的唯一 gameplay family、三階
 執行參數、圖鑑「玩法」說明與 master-tier 真實戰鬥投影；並確認任何自動招式結算
 都不會移動玩家。
 
-`skill_series_runtime_behavior_test.gd` 直接驗證 13 系列造成的戰鬥結果，而非只檢查
-catalog 欄位：命中次數、儲存狀態、目標篩選、格擋、擊退／拉回速度、宿主死亡擴散、
-治療、雙起點追加攻擊以及玩家座標不被改寫。
+`skill_series_runtime_behavior_test.gd` 直接驗證 13 系列的 runtime profile，而非只檢查
+catalog 欄位。持續 controller 再由 `moon_wheel_bounce_controller_test.gd`、
+`fire_pillar_field_controller_test.gd`、`residual_lightning_controller_test.gd`、
+`tidal_push_field_controller_test.gd`、`dragon_breath_sweep_controller_test.gd`、
+`healing_zone_controller_test.gd` 與 `body_overdrive_controller_test.gd` 驗證時序、命中上限、
+安全位移、治療脈衝與 Buff 到期狀態。
 
 `combat_vfx_foundation_test.gd` 鎖定所有現役系列具有暗／亮兩層斬擊、flash、flare、
 shockwave 與 sparks；火系另須有火舌、dissolve shader、煙、火星與獨立爆心火／煙層。
@@ -343,10 +346,14 @@ archetype、beat pattern、三級 evolution、stack progression 與收尾時序�
 重新列為現役技能。
 
 共用 VFX 原語、`shaders/vfx/` 或 `scenes/vfx/` 修改另執行
-`vfx_primitive_library_test.gd`。測試必須覆蓋 18 個原語 scene、逐一 demo、每個效果至少
+`vfx_primitive_library_test.gd`、`vfx_attack_rhythm_quality_test.gd` 與
+`series_impact_vfx_router_test.gd`。測試必須覆蓋 18 個原語 scene、逐一 demo、每個效果至少
 四個實際存在的具名 layer、完整公開參數、particle budget／visibility bounds、
 `ParticleBurst2D` one-shot restart、`LightningGenerator2D` 精確端點與 subdivision，並
-載入所有 Godot 4 shader。Headless contract 不取代人工開啟 `VFXLibraryDemo.tscn` 與逐一
+載入所有 Godot 4 shader。命中原語另須證明 flash／主形／碎屑／餘韻至少三組不同
+phase offset，且 controller 的真實 pillar／chain／strike／wave／detonation signal 會在正確
+world position 生成 Fire Burst、Lightning Bolt/Impact、Water/Poison Splash 或 Wind Burst。
+Headless contract 不取代人工開啟 `VFXLibraryDemo.tscn` 與逐一
 demo 的視覺審查；代理不得因此自行開啟顯示視窗。
 Graphical 5-beat contact sheet 是必要視覺證據；只有結構 PASS、但仍呈現細線菱形／鋸齒
 或泛用 projectile 時，不得接受。

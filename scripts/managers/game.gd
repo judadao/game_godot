@@ -46,6 +46,9 @@ const NAMED_SKILL_VFX_CATALOG_SCRIPT := preload(
 const SKILL_SERIES_VFX_CATALOG_SCRIPT := preload(
 	"res://scripts/systems/skill_series_vfx_catalog.gd"
 )
+const SERIES_IMPACT_VFX_ROUTER_SCRIPT := preload(
+	"res://scripts/vfx/series_impact_vfx_router.gd"
+)
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
 const BASE_AP_REGEN := 0.95
 const CARD_TEMPO_DURATION := 6.0
@@ -173,6 +176,39 @@ const COMBO_EVOLUTIONS := [
 @export var feather_halo_damage_controller_scene: PackedScene = preload(
 	"res://scenes/combat/FeatherHaloDamageController.tscn"
 )
+@export var black_hole_field_controller_scene: PackedScene = preload(
+	"res://scenes/combat/BlackHoleFieldController.tscn"
+)
+@export var thorn_bloom_field_controller_scene: PackedScene = preload(
+	"res://scenes/combat/ThornBloomFieldController.tscn"
+)
+@export var arcane_swamp_field_controller_scene: PackedScene = preload(
+	"res://scenes/combat/ArcaneSwampFieldController.tscn"
+)
+@export var dr_stone_drone_controller_scene: PackedScene = preload(
+	"res://scenes/combat/DrStoneDroneController.tscn"
+)
+@export var fire_pillar_field_controller_scene: PackedScene = preload(
+	"res://scenes/combat/FirePillarFieldController.tscn"
+)
+@export var residual_lightning_controller_scene: PackedScene = preload(
+	"res://scenes/combat/ResidualLightningController.tscn"
+)
+@export var tidal_push_field_controller_scene: PackedScene = preload(
+	"res://scenes/combat/TidalPushFieldController.tscn"
+)
+@export var dragon_breath_sweep_controller_scene: PackedScene = preload(
+	"res://scenes/combat/DragonBreathSweepController.tscn"
+)
+@export var healing_zone_controller_scene: PackedScene = preload(
+	"res://scenes/combat/HealingZoneController.tscn"
+)
+@export var body_overdrive_controller_scene: PackedScene = preload(
+	"res://scenes/combat/BodyOverdriveController.tscn"
+)
+@export var moon_wheel_bounce_controller_scene: PackedScene = preload(
+	"res://scenes/combat/MoonWheelBounceController.tscn"
+)
 @export var storm_charge_vfx_scene: PackedScene = preload(
 	"res://scenes/combat/vfx/StormChargeVFX.tscn"
 )
@@ -216,6 +252,7 @@ var divine_gift_manager: RefCounted = DIVINE_GIFT_MANAGER_SCRIPT.new()
 var combo_finisher_catalog: RefCounted = COMBO_FINISHER_CATALOG_SCRIPT.new()
 var named_skill_vfx_catalog: RefCounted = NAMED_SKILL_VFX_CATALOG_SCRIPT.new()
 var skill_series_vfx_catalog: RefCounted = SKILL_SERIES_VFX_CATALOG_SCRIPT.new()
+var series_impact_vfx_router: Node
 var element_taxonomy: RefCounted = ELEMENT_TAXONOMY_SCRIPT.new()
 var inventory_manager: RefCounted = INVENTORY_MANAGER_SCRIPT.new()
 var town_manager: RefCounted = TOWN_MANAGER_SCRIPT.new(inventory_manager)
@@ -252,6 +289,9 @@ var _merchant_catalogs: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	series_impact_vfx_router = SERIES_IMPACT_VFX_ROUTER_SCRIPT.new()
+	series_impact_vfx_router.name = "SeriesImpactVFXRouter"
+	add_child(series_impact_vfx_router)
 	map_root.process_mode = Node.PROCESS_MODE_PAUSABLE
 	hud_root.process_mode = Node.PROCESS_MODE_ALWAYS
 	ui_root.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -2217,9 +2257,21 @@ func _try_basic_attack() -> bool:
 		_consume_finisher_formula()
 	_auto_attack_remaining = maxf(
 		0.1,
-		float(card.get("auto_attack_interval", DEFAULT_AUTO_ATTACK_INTERVAL))
+		_effective_auto_attack_interval(
+			float(card.get("auto_attack_interval", DEFAULT_AUTO_ATTACK_INTERVAL))
+		)
 	)
 	return true
+
+
+func _effective_auto_attack_interval(base_interval: float) -> float:
+	var attack_speed_multiplier := 1.0
+	if player != null and player.has_method("get_temporary_attack_speed_multiplier"):
+		attack_speed_multiplier = maxf(
+			1.0,
+			float(player.call("get_temporary_attack_speed_multiplier"))
+		)
+	return maxf(0.1, base_interval / attack_speed_multiplier)
 
 
 func _apply_finisher_support_statuses(finisher: Dictionary, effect: Dictionary) -> void:
@@ -3129,6 +3181,20 @@ func _build_formula_finisher(
 			"combo_stun", "pull_strength", "knockback", "knockback_multiplier",
 			"lifesteal_ratio", "heal_on_hit_ratio", "feathers", "halo_duration",
 			"halo_radius", "tick_interval", "damage_per_tick_multiplier",
+			"field_radius", "field_duration", "burst_damage_multiplier",
+			"thorn_count", "emerge_duration", "bloom_delay", "volley_interval",
+			"spikes_per_volley", "damage_per_spike_multiplier", "target_limit",
+			"drone_count", "drone_duration", "attack_interval", "attack_range",
+			"damage_per_shot_multiplier", "pillar_count", "eruption_interval",
+			"damage_per_pillar_multiplier", "marked_target_limit",
+			"residual_duration", "chain_interval", "residual_damage_multiplier",
+			"final_strike_multiplier", "push_duration", "push_distance",
+			"side_sweep_count", "side_sweep_duration", "rain_emitter_count",
+			"rain_duration", "sweep_damage_multiplier", "rain_damage_multiplier",
+			"heal_per_pulse", "pulse_interval", "buff_duration",
+			"body_move_speed_multiplier", "body_attack_speed_multiplier",
+			"afterimage_count", "wheel_count", "round_trip_count",
+			"bounce_duration", "damage_per_contact_multiplier",
 		]:
 			if series_effect.has(numeric_key):
 				effect[numeric_key] = maxf(float(effect.get(numeric_key, 0.0)), float(series_effect[numeric_key]))
@@ -3142,29 +3208,6 @@ func _build_formula_finisher(
 		effect["finisher_echoes"] = maxi(int(effect.get("finisher_echoes", 0)), int(series_effect.get("echoes", 0)))
 		if series_effect.has("range_multiplier"):
 			finisher["auto_attack_range"] = float(finisher.get("auto_attack_range", COMBO_FINISHER_RANGE)) * float(series_effect["range_multiplier"])
-	if String(recipe.get("series_id", "")) == "ancient_wood":
-		var wood_effect := recipe.get("gameplay_effect", {}) as Dictionary
-		var relay_count := maxi(1, int(wood_effect.get("relay_count", 1)))
-		var base_amount := int((base_attack.get("effect", {}) as Dictionary).get("amount", COMBO_FINISHER_DAMAGE))
-		effect["amount"] = maxi(
-			int(effect.get("amount", 0)),
-			roundi(float(base_amount + COMBO_FINISHER_DAMAGE) * float(wood_effect.get("damage_multiplier", 1.0)))
-		)
-		effect["projectile_count"] = relay_count
-		effect["direction_count"] = relay_count
-		effect["target_count"] = maxi(relay_count, int(effect.get("target_count", 1)))
-		effect["piercing"] = true
-		effect["sword_aura_gate_chain"] = true
-		effect["gate_count"] = maxi(2, int(wood_effect.get("gate_count", 2)))
-		finisher["auto_attack_range"] = maxf(
-			COMBO_FINISHER_RANGE,
-			float(finisher.get("auto_attack_range", COMBO_FINISHER_RANGE))
-			* float(wood_effect.get("range_multiplier", 1.0))
-		)
-		finisher["attack_size_multiplier"] = (
-			float(finisher.get("attack_size_multiplier", 1.0))
-			* float(wood_effect.get("size_multiplier", 1.0))
-		)
 	var mutations := divine_gift_manager.call(
 		"get_finisher_mutations"
 	) as Dictionary
@@ -4326,6 +4369,12 @@ func _spawn_named_skill_vfx(
 					intensity
 				)
 			return
+	if has_series_profile and series_id == "dr_stone":
+		var existing_squad_vfx := player.get_node_or_null("ActiveDrStoneVFX") as Node2D
+		if existing_squad_vfx != null and is_instance_valid(existing_squad_vfx) and existing_squad_vfx.has_method("refill_dr_stone"):
+			existing_squad_vfx.set_meta("finisher_blessing_overlays", blessing_overlays.duplicate(true))
+			existing_squad_vfx.call("refill_dr_stone", clampi(evolution_level, 1, 3), intensity)
+			return
 	var effect := named_skill_vfx_scene.instantiate() as Node2D
 	if effect == null:
 		return
@@ -4333,9 +4382,25 @@ func _spawn_named_skill_vfx(
 		effect.name = "ActiveFeatherHaloVFX"
 		player.add_child(effect)
 		effect.position = Vector2(0.0, -54.0)
+	elif has_series_profile and series_id == "dr_stone":
+		effect.name = "ActiveDrStoneVFX"
+		player.add_child(effect)
+		effect.position = Vector2.ZERO
+	elif has_series_profile and series_id in ["dawn_vitality", "shared_branch_vitality"]:
+		effect.name = "ActiveHealingZoneVFX" if series_id == "dawn_vitality" else "ActiveBodyOverdriveVFX"
+		var previous := player.get_node_or_null(NodePath(String(effect.name)))
+		if previous != null:
+			previous.name = "Retiring%s%d" % [String(effect.name), Time.get_ticks_usec()]
+			previous.queue_free()
+		player.add_child(effect)
+		effect.position = Vector2.ZERO
 	else:
 		current_map.add_child(effect)
-		effect.global_position = (player as Node2D).global_position
+		effect.global_position = (
+			_resolve_persistent_field_center()
+			if has_series_profile and series_id in ["black_hole", "thorn", "arcane_swamp"]
+			else (player as Node2D).global_position
+		)
 	if effect.has_method("configure_runtime_targeting"):
 		effect.call(
 			"configure_runtime_targeting",
@@ -4370,6 +4435,29 @@ func _spawn_named_skill_vfx(
 			clampi(evolution_level, 1, 3),
 			maxi(0, buff_stacks)
 		)
+
+
+func _resolve_persistent_field_center() -> Vector2:
+	if not player is Node2D:
+		return Vector2.ZERO
+	var center := (player as Node2D).global_position
+	var nearest_distance := INF
+	for target_variant in _get_combat_targets():
+		if not target_variant is Node2D or not is_instance_valid(target_variant):
+			continue
+		var target := target_variant as Node2D
+		var target_center := target.global_position
+		var collision_shape := target.find_child("CollisionShape2D", true, false) as CollisionShape2D
+		if collision_shape != null:
+			target_center = collision_shape.global_position
+		var distance := (player as Node2D).global_position.distance_squared_to(target_center)
+		if distance < nearest_distance:
+			nearest_distance = distance
+			center = target_center
+	var displacement := center - (player as Node2D).global_position
+	if displacement.length() > 360.0:
+		center = (player as Node2D).global_position + displacement.normalized() * 360.0
+	return center
 
 
 func _on_named_skill_vfx_impact(
@@ -4433,14 +4521,167 @@ func _on_feather_halo_contact_hit(
 	var halo := player.get_node_or_null("ActiveFeatherHaloVFX")
 	if halo != null and halo.has_method("play_feather_contact_impact"):
 		halo.call("play_feather_contact_impact", world_position)
+	if current_map != null:
+		series_impact_vfx_router.call(
+			"spawn_contact",
+			"feather",
+			world_position,
+			current_map,
+			_build_finisher_blessing_overlays(4)
+		)
+
+
+func _activate_black_hole_field(profile: Dictionary) -> void:
+	_activate_world_field(black_hole_field_controller_scene, profile, "BlackHoleField", "black_hole")
+
+
+func _activate_thorn_bloom_field(profile: Dictionary) -> void:
+	_activate_world_field(thorn_bloom_field_controller_scene, profile, "ThornBloomField", "thorn")
+
+
+func _activate_arcane_swamp_field(profile: Dictionary) -> void:
+	_activate_world_field(arcane_swamp_field_controller_scene, profile, "ArcaneSwampField", "arcane_swamp")
+
+
+func _activate_world_field(
+	scene: PackedScene,
+	profile: Dictionary,
+	node_prefix: String,
+	series_id: String
+) -> void:
+	if current_map == null or scene == null:
+		return
+	var controller := scene.instantiate() as Node2D
+	if controller == null:
+		return
+	controller.name = "%s%d" % [node_prefix, Time.get_ticks_usec()]
+	current_map.add_child(controller)
+	_bind_series_controller_vfx(series_id, controller, profile)
+	if controller.has_signal("completed"):
+		controller.connect("completed", controller.queue_free, CONNECT_ONE_SHOT)
+	if not controller.call("configure", profile.get("center", _resolve_persistent_field_center()) as Vector2, Callable(self, "_get_combat_targets"), profile.duplicate(true)):
+		controller.queue_free()
+
+
+func _activate_dr_stone_squad(profile: Dictionary) -> void:
+	if player == null or dr_stone_drone_controller_scene == null:
+		return
+	var controller := player.get_node_or_null("ActiveDrStoneDroneController")
+	var created := false
+	if controller == null:
+		controller = dr_stone_drone_controller_scene.instantiate()
+		if controller == null:
+			return
+		controller.name = "ActiveDrStoneDroneController"
+		player.add_child(controller)
+		created = true
+	if created:
+		_bind_series_controller_vfx("dr_stone", controller, profile)
+	if controller.has_method("configure"):
+		controller.call("configure", player as Node2D, Callable(self, "_get_combat_targets"), profile.duplicate(true))
+
+
+func _activate_caster_target_controller(
+	scene: PackedScene,
+	profile: Dictionary,
+	node_prefix: String,
+	series_id: String
+) -> void:
+	if current_map == null or player == null or scene == null:
+		return
+	var controller := scene.instantiate()
+	if controller == null:
+		return
+	controller.name = "%s%d" % [node_prefix, Time.get_ticks_usec()]
+	current_map.add_child(controller)
+	_bind_series_controller_vfx(series_id, controller, profile)
+	if controller.has_signal("completed"):
+		controller.connect("completed", controller.queue_free, CONNECT_ONE_SHOT)
+	if not bool(controller.call("configure", player as Node2D, Callable(self, "_get_combat_targets"), profile.duplicate(true))):
+		controller.queue_free()
+
+
+func _activate_player_controller(
+	scene: PackedScene,
+	profile: Dictionary,
+	node_name: String,
+	series_id: String
+) -> void:
+	if player == null or scene == null:
+		return
+	var previous := player.get_node_or_null(node_name)
+	if previous != null:
+		previous.queue_free()
+	var controller := scene.instantiate()
+	if controller == null:
+		return
+	controller.name = node_name
+	player.add_child(controller)
+	_bind_series_controller_vfx(series_id, controller, profile)
+	if controller.has_signal("completed"):
+		controller.connect("completed", controller.queue_free, CONNECT_ONE_SHOT)
+	if not bool(controller.call("configure", player as Node2D, profile.duplicate(true))):
+		controller.queue_free()
+
+
+func _bind_series_controller_vfx(
+	series_id: String,
+	controller: Node,
+	profile: Dictionary
+) -> void:
+	if current_map == null or controller == null or series_impact_vfx_router == null:
+		return
+	var overlays := profile.get("blessing_overlays", []) as Array
+	if overlays.is_empty():
+		overlays = _build_finisher_blessing_overlays(4)
+	series_impact_vfx_router.call(
+		"bind_controller",
+		series_id,
+		controller,
+		current_map,
+		overlays
+	)
 
 
 func _on_card_effect_resolved(_card_id: String, result: Dictionary) -> void:
-	if _resolving_auto_attack_effect:
-		return
 	var feather_profile := result.get("feather_halo_attack", {}) as Dictionary
 	if not feather_profile.is_empty():
 		_activate_feather_halo_contact_field(feather_profile)
+	var black_hole_profile := result.get("black_hole_field", {}) as Dictionary
+	if not black_hole_profile.is_empty():
+		_activate_black_hole_field(black_hole_profile)
+	var thorn_profile := result.get("thorn_bloom_field", {}) as Dictionary
+	if not thorn_profile.is_empty():
+		_activate_thorn_bloom_field(thorn_profile)
+	var swamp_profile := result.get("arcane_swamp_field", {}) as Dictionary
+	if not swamp_profile.is_empty():
+		_activate_arcane_swamp_field(swamp_profile)
+	var drone_profile := result.get("dr_stone_squad", {}) as Dictionary
+	if not drone_profile.is_empty():
+		_activate_dr_stone_squad(drone_profile)
+	var moon_profile := result.get("moon_wheel_bounce", {}) as Dictionary
+	if not moon_profile.is_empty():
+		_activate_caster_target_controller(moon_wheel_bounce_controller_scene, moon_profile, "MoonWheelBounce", "moon_wheel")
+	var fire_profile := result.get("fire_pillar_field", {}) as Dictionary
+	if not fire_profile.is_empty():
+		_activate_caster_target_controller(fire_pillar_field_controller_scene, fire_profile, "FirePillarField", "fire")
+	var lightning_profile := result.get("residual_lightning", {}) as Dictionary
+	if not lightning_profile.is_empty():
+		_activate_caster_target_controller(residual_lightning_controller_scene, lightning_profile, "ResidualLightning", "lightning")
+	var tidal_profile := result.get("tidal_push_field", {}) as Dictionary
+	if not tidal_profile.is_empty():
+		_activate_caster_target_controller(tidal_push_field_controller_scene, tidal_profile, "TidalPushField", "water_flow")
+	var dragon_profile := result.get("dragon_breath_sweep", {}) as Dictionary
+	if not dragon_profile.is_empty():
+		_activate_caster_target_controller(dragon_breath_sweep_controller_scene, dragon_profile, "DragonBreathSweep", "dragon_breath")
+	var healing_profile := result.get("healing_zone", {}) as Dictionary
+	if not healing_profile.is_empty():
+		_activate_player_controller(healing_zone_controller_scene, healing_profile, "ActiveHealingZoneController", "dawn_vitality")
+	var overdrive_profile := result.get("body_overdrive", {}) as Dictionary
+	if not overdrive_profile.is_empty():
+		_activate_player_controller(body_overdrive_controller_scene, overdrive_profile, "ActiveBodyOverdriveController", "shared_branch_vitality")
+	if _resolving_auto_attack_effect:
+		return
 	var total := int(result.get("total", 0))
 	if total > 0 and current_map != null and player is Node2D:
 		var number := Label.new()

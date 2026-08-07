@@ -9,18 +9,18 @@
   },
   "series_gameplay": {
     "sword_rain": {"family": "marked_execution", "summary": "玩家靠近目標時替其累積懸劍，拉開距離後讓懸劍集中落下處刑。", "tiers": [{"tier_rank": 1, "projectiles": 3, "damage_multiplier": 1.10}, {"tier_rank": 2, "projectiles": 5, "damage_multiplier": 1.28}, {"tier_rank": 3, "projectiles": 8, "damage_multiplier": 1.55, "final_burst": true}]},
-    "moon_wheel": {"family": "returning_orbit", "summary": "玩家用移動方向決定月輪切入角度；月輪穿過敵群後折返，再次切過同一路線。", "tiers": [{"tier_rank": 1, "projectiles": 1, "returning": true}, {"tier_rank": 2, "projectiles": 2, "returning": true}, {"tier_rank": 3, "projectiles": 4, "returning": true, "pull_strength": 45.0}]},
+    "moon_wheel": {"family": "bouncing_moon_wheel_field", "summary": "玩家放出多枚月輪在畫面兩側往返反彈；基礎五枚完成一次來回，大師增加月輪數量與往返次數。", "tiers": [{"tier_rank": 1, "wheel_count": 5, "round_trip_count": 1, "bounce_duration": 1.4, "attack_range": 420.0, "damage_per_contact_multiplier": 0.28}, {"tier_rank": 2, "wheel_count": 8, "round_trip_count": 2, "bounce_duration": 2.2, "attack_range": 470.0, "damage_per_contact_multiplier": 0.24}, {"tier_rank": 3, "wheel_count": 12, "round_trip_count": 3, "bounce_duration": 3.1, "attack_range": 540.0, "damage_per_contact_multiplier": 0.22}]},
     "feather": {"family": "orbiting_feather_contact_field", "summary": "羽毛持續繞著玩家切擊接觸光輪的敵人並向外擊退；羽毛越多維持越久，消失前再次施放可逐根補充。", "tiers": [{"tier_rank": 1, "feathers": 3, "halo_duration": 4.8, "halo_radius": 176.0, "tick_interval": 0.18, "damage_per_tick_multiplier": 0.08, "knockback": 105.0}, {"tier_rank": 2, "feathers": 7, "halo_duration": 6.4, "halo_radius": 204.0, "tick_interval": 0.18, "damage_per_tick_multiplier": 0.10, "knockback": 125.0}, {"tier_rank": 3, "feathers": 15, "halo_duration": 8.8, "halo_radius": 236.0, "tick_interval": 0.18, "damage_per_tick_multiplier": 0.12, "knockback": 145.0}]},
-    "ancient_wood": {"family": "sword_aura_gate_network", "summary": "玩家以走位部署古木入口與出口，讓劍氣刷新距離、從敵人側面重新射出並逐次增幅。", "tiers": [{"tier_rank": 1, "gate_count": 2, "relay_count": 1, "damage_multiplier": 1.15, "range_multiplier": 1.15, "size_multiplier": 1.08}, {"tier_rank": 2, "gate_count": 4, "relay_count": 3, "damage_multiplier": 1.35, "range_multiplier": 1.35, "size_multiplier": 1.22}, {"tier_rank": 3, "gate_count": 6, "relay_count": 5, "damage_multiplier": 1.65, "range_multiplier": 1.55, "size_multiplier": 1.48}]},
-    "giant_stone": {"family": "ricochet_boulders", "summary": "玩家改變攻擊角度擊出巨石，利用敵人與牆面反彈，讓岩石互撞形成爆發。", "tiers": [{"tier_rank": 1, "projectiles": 1, "knockback_multiplier": 1.3}, {"tier_rank": 2, "projectiles": 3, "knockback_multiplier": 1.7}, {"tier_rank": 3, "projectiles": 6, "knockback_multiplier": 2.2, "final_burst": true}]},
-    "great_shield": {"family": "forward_guard_counter", "summary": "玩家以面向維持正面安全區，迎向攻擊累積盾勢，再把盾勢化為向前反擊。", "tiers": [{"tier_rank": 1, "guard": 8, "knockback_multiplier": 1.2}, {"tier_rank": 2, "guard": 15, "knockback_multiplier": 1.6}, {"tier_rank": 3, "guard": 24, "knockback_multiplier": 2.1, "piercing": true}]},
-    "fire": {"family": "route_burn_detonation", "summary": "玩家的攻擊路徑留下火線；走位把火線圍成區域後，招式會燃燒並引爆其中敵人。", "tiers": [{"tier_rank": 1, "burn_damage": 3, "burn_duration": 3.0}, {"tier_rank": 2, "burn_damage": 5, "burn_duration": 4.0, "projectiles": 3}, {"tier_rank": 3, "burn_damage": 8, "burn_duration": 5.0, "final_burst": true}]},
-    "lightning": {"family": "target_switch_chain", "summary": "玩家靠走位切換最近目標建立雷印；攻擊不同敵人會放電，重複目標則蓄積更強落雷。", "tiers": [{"tier_rank": 1, "projectiles": 2, "combo_stun": 0.25}, {"tier_rank": 2, "projectiles": 4, "chain_lightning": true}, {"tier_rank": 3, "projectiles": 7, "chain_lightning": true, "combo_stun": 0.7}]},
-    "water_flow": {"family": "outbound_returning_tide", "summary": "玩家沿潮線走位可延伸攻擊，反向走位則讓浪潮回捲，把敵人拉回原攻擊路徑。", "tiers": [{"tier_rank": 1, "returning": true, "knockback_multiplier": 1.2}, {"tier_rank": 2, "projectiles": 3, "returning": true, "pull_strength": 28.0}, {"tier_rank": 3, "projectiles": 5, "returning": true, "pull_strength": 60.0}]},
-    "plant_attack": {"family": "host_growth_harvest", "summary": "玩家選定第一個命中敵人作為宿主，再把其他敵人引入連線，最後擊殺宿主完成毒華收割。", "tiers": [{"tier_rank": 1, "poison_damage": 3, "poison_duration": 4.0}, {"tier_rank": 2, "poison_damage": 5, "poison_duration": 5.0, "pull_strength": 24.0}, {"tier_rank": 3, "poison_damage": 8, "poison_duration": 6.0, "death_spread": true}]},
-    "dragon_breath": {"family": "crossfire_lane", "summary": "玩家放置獨立龍息方向後自由移到另一側，用自己的劍氣與龍息形成交叉火線。", "tiers": [{"tier_rank": 1, "piercing": true, "range_multiplier": 1.2}, {"tier_rank": 2, "projectiles": 2, "piercing": true, "range_multiplier": 1.35}, {"tier_rank": 3, "projectiles": 4, "piercing": true, "range_multiplier": 1.55}]},
-    "dawn_vitality": {"family": "risk_heal_judgment", "summary": "玩家遠離朝陽保持低生命輸出，接近光域則消耗攻勢換取治療與保命。", "tiers": [{"tier_rank": 1, "heal": 10, "heal_on_hit_ratio": 0.03}, {"tier_rank": 2, "heal": 18, "heal_on_hit_ratio": 0.05}, {"tier_rank": 3, "heal": 30, "heal_on_hit_ratio": 0.08, "final_burst": true}]},
-    "shared_branch_vitality": {"family": "dual_origin_crossfire", "summary": "玩家把共生影身留在原地，再移到另一側，讓本體與影身的劍氣交叉夾擊。", "tiers": [{"tier_rank": 1, "echoes": 1, "lifesteal_ratio": 0.03}, {"tier_rank": 2, "echoes": 2, "lifesteal_ratio": 0.05}, {"tier_rank": 3, "echoes": 4, "lifesteal_ratio": 0.08}]}
+    "thorn": {"family": "blooming_thorn_barrage", "summary": "玩家在敵群腳下喚出荊棘花庭；觸手破土並依序開花後，持續朝周圍敵人連射荊棘刺。", "tiers": [{"tier_rank": 1, "thorn_count": 3, "field_radius": 180.0, "field_duration": 2.4, "emerge_duration": 0.45, "bloom_delay": 0.70, "volley_interval": 0.42, "spikes_per_volley": 3, "damage_per_spike_multiplier": 0.28}, {"tier_rank": 2, "thorn_count": 6, "field_radius": 240.0, "field_duration": 3.0, "emerge_duration": 0.42, "bloom_delay": 0.64, "volley_interval": 0.34, "spikes_per_volley": 6, "damage_per_spike_multiplier": 0.40}, {"tier_rank": 3, "thorn_count": 10, "field_radius": 310.0, "field_duration": 3.8, "emerge_duration": 0.38, "bloom_delay": 0.58, "volley_interval": 0.26, "spikes_per_volley": 10, "damage_per_spike_multiplier": 0.54}]},
+    "dr_stone": {"family": "persistent_stone_drone_squad", "summary": "玩家召出會自動索敵射擊的石之無人機；無人機會逐步失速墜毀，及時再次施放可補滿並升級編隊。", "tiers": [{"tier_rank": 1, "drone_count": 3, "drone_duration": 5.0, "attack_interval": 0.65, "attack_range": 300.0, "damage_per_shot_multiplier": 0.30}, {"tier_rank": 2, "drone_count": 6, "drone_duration": 7.0, "attack_interval": 0.50, "attack_range": 360.0, "damage_per_shot_multiplier": 0.40}, {"tier_rank": 3, "drone_count": 10, "drone_duration": 9.0, "attack_interval": 0.38, "attack_range": 430.0, "damage_per_shot_multiplier": 0.52}]},
+    "black_hole": {"family": "singularity_pull_detonation", "summary": "玩家在敵群中釋放重力奇點；事件視界持續吸引並磨損敵人，倒數結束時對仍在範圍內的目標造成重創。", "tiers": [{"tier_rank": 1, "field_radius": 180.0, "field_duration": 2.4, "tick_interval": 0.24, "damage_per_tick_multiplier": 0.07, "burst_damage_multiplier": 1.80, "pull_strength": 90.0}, {"tier_rank": 2, "field_radius": 240.0, "field_duration": 3.0, "tick_interval": 0.22, "damage_per_tick_multiplier": 0.09, "burst_damage_multiplier": 2.50, "pull_strength": 125.0}, {"tier_rank": 3, "field_radius": 320.0, "field_duration": 3.6, "tick_interval": 0.20, "damage_per_tick_multiplier": 0.12, "burst_damage_multiplier": 3.40, "pull_strength": 165.0}]},
+    "fire": {"family": "staggered_fire_pillars", "summary": "玩家喚醒戰場地脈，以錯開節奏隨機預警後向上噴發火柱；基礎五柱，大師二十柱，火焰材質與爆點可隨 Blessing 變化。", "tiers": [{"tier_rank": 1, "pillar_count": 5, "field_radius": 320.0, "eruption_interval": 0.22, "damage_per_pillar_multiplier": 0.72}, {"tier_rank": 2, "pillar_count": 10, "field_radius": 390.0, "eruption_interval": 0.18, "damage_per_pillar_multiplier": 0.86}, {"tier_rank": 3, "pillar_count": 20, "field_radius": 480.0, "eruption_interval": 0.13, "damage_per_pillar_multiplier": 1.05}]},
+    "lightning": {"family": "residual_chain_sky_strike", "summary": "玩家釋放雷電在敵群間持續反彈並留下殘雷；倒數結束後天雷垂直重擊所有仍帶殘雷的敵人。", "tiers": [{"tier_rank": 1, "marked_target_limit": 10, "residual_duration": 1.6, "chain_interval": 0.18, "residual_damage_multiplier": 0.16, "final_strike_multiplier": 1.6}, {"tier_rank": 2, "marked_target_limit": 20, "residual_duration": 2.0, "chain_interval": 0.14, "residual_damage_multiplier": 0.23, "final_strike_multiplier": 2.2}, {"tier_rank": 3, "marked_target_limit": 30, "residual_duration": 2.4, "chain_interval": 0.10, "residual_damage_multiplier": 0.32, "final_strike_multiplier": 3.0}]},
+    "water_flow": {"family": "damaging_tidal_push", "summary": "玩家喚出海浪持續沖刷並把敵人向外推送；階級提高會延長沖刷與推送，但位移受上限保護，不會把敵人推離攻擊範圍。", "tiers": [{"tier_rank": 1, "push_duration": 1.2, "field_radius": 250.0, "push_distance": 55.0, "tick_interval": 0.20, "damage_per_tick_multiplier": 0.16}, {"tier_rank": 2, "push_duration": 1.8, "field_radius": 300.0, "push_distance": 88.0, "tick_interval": 0.20, "damage_per_tick_multiplier": 0.22}, {"tier_rank": 3, "push_duration": 2.4, "field_radius": 340.0, "push_distance": 120.0, "tick_interval": 0.20, "damage_per_tick_multiplier": 0.30}]},
+    "arcane_swamp": {"family": "arcane_swamp_entanglement", "summary": "玩家展開密術沼澤，讓地面觸手同時纏住大量敵人；被纏繞者停止動作並持續受傷。", "tiers": [{"tier_rank": 1, "target_limit": 10, "field_radius": 260.0, "field_duration": 3.0, "tick_interval": 0.32, "damage_per_tick_multiplier": 0.10}, {"tier_rank": 2, "target_limit": 14, "field_radius": 320.0, "field_duration": 3.8, "tick_interval": 0.28, "damage_per_tick_multiplier": 0.14}, {"tier_rank": 3, "target_limit": 20, "field_radius": 390.0, "field_duration": 4.8, "tick_interval": 0.24, "damage_per_tick_multiplier": 0.20}]},
+    "dragon_breath": {"family": "dragon_breath_sweep", "summary": "玩家喚出龍首從左至右掃出一百八十度吐息；進階左右雙龍同時掃蕩，大師再由上方二十顆龍首向下持續噴火一點五秒。", "tiers": [{"tier_rank": 1, "side_sweep_count": 1, "side_sweep_duration": 0.85, "rain_emitter_count": 0, "attack_range": 390.0, "sweep_damage_multiplier": 1.0}, {"tier_rank": 2, "side_sweep_count": 2, "side_sweep_duration": 0.95, "rain_emitter_count": 0, "attack_range": 450.0, "sweep_damage_multiplier": 0.88}, {"tier_rank": 3, "side_sweep_count": 2, "side_sweep_duration": 1.05, "rain_emitter_count": 20, "rain_duration": 1.5, "attack_range": 540.0, "sweep_damage_multiplier": 1.05, "rain_damage_multiplier": 0.28}]},
+    "dawn_vitality": {"family": "player_healing_zone", "summary": "玩家腳下展開跟隨移動的綠金回復區域，發光生命粒子持續上升；階級提高會擴大範圍、時間與每次回復量。", "tiers": [{"tier_rank": 1, "field_radius": 150.0, "field_duration": 4.0, "pulse_interval": 0.80, "heal_per_pulse": 5}, {"tier_rank": 2, "field_radius": 210.0, "field_duration": 6.0, "pulse_interval": 0.72, "heal_per_pulse": 8}, {"tier_rank": 3, "field_radius": 280.0, "field_duration": 8.0, "pulse_interval": 0.64, "heal_per_pulse": 12}]},
+    "shared_branch_vitality": {"family": "body_overdrive_afterimage", "summary": "共生力量直接強化玩家肉體，彩色光暈包覆全身並留下殘影；移速、攻速與持續時間隨階級大幅成長。", "tiers": [{"tier_rank": 1, "buff_duration": 3.5, "body_move_speed_multiplier": 1.35, "body_attack_speed_multiplier": 1.25, "afterimage_count": 3}, {"tier_rank": 2, "buff_duration": 5.0, "body_move_speed_multiplier": 1.55, "body_attack_speed_multiplier": 1.45, "afterimage_count": 5}, {"tier_rank": 3, "buff_duration": 7.0, "body_move_speed_multiplier": 1.80, "body_attack_speed_multiplier": 1.75, "afterimage_count": 8}]}
   },
   "retired_skill_ids": [
     "iron_momentum",
@@ -114,7 +114,7 @@
       "name": "月輪",
       "identity_elements": ["銀月", "環刃", "月蝕"],
       "combat_elements": ["light", "dark"],
-      "series_positioning": "以月輪的拼合、迴旋與蝕影切割控制直線、追蹤與全場範圍。",
+      "series_positioning": "讓多枚月輪在畫面兩側持續往返反彈；階級越高，月輪數量與折返次數越多。",
       "skills": [
         {
           "id": "moonwheel_downlight",
@@ -122,7 +122,7 @@
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "直線／定點攻擊",
-          "description": "月輪懸浮於敵人上方，持續投射銀白月光灼燒範圍內敵人並降低其移動速度。",
+          "description": "五枚銀月環刃錯開高度飛越畫面，再沿原路折返一次；去程與回程都會切擊敵人。",
           "animation_beats": ["細小月牙向上升起", "月牙拼合成完整月輪", "月輪旋轉至正面", "銀白光柱向下垂落"],
           "icon_path": ""
         },
@@ -132,7 +132,7 @@
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "追蹤與迴旋攻擊",
-          "description": "兩道月輪沿螺旋軌跡升空，再由高空迴旋俯衝，並在敵群之間反彈數次。",
+          "description": "八枚月輪形成上下分層弧線，在畫面兩側完成兩次往返，折返點會迸出清楚月光頓點。",
           "animation_beats": ["雙月輪在角色兩側生成", "月輪旋轉螺旋升空", "高空劃出交錯弧線", "高速折返並在敵群間反彈"],
           "icon_path": ""
         },
@@ -142,7 +142,7 @@
           "tier": "master",
           "tier_rank": 3,
           "positioning": "月輪系列終極技",
-          "description": "明月在戰場中央展開並被黑色月影吞沒；月蝕完成時，黑銀雙重月輪向外擴張切割全場。",
+          "description": "十二枚黑銀月輪分成多層軌道，於畫面兩側高速往返三次，以密集但不重疊的弧線切割全場。",
           "animation_beats": ["完整圓月浮現", "黑色月影逐步侵蝕月面", "黑銀雙輪重疊鎖定", "環形切割衝擊向全場擴散"],
           "icon_path": ""
         }
@@ -188,121 +188,118 @@
       ]
     },
     {
-      "id": "ancient_wood",
-      "name": "古木",
-      "identity_elements": ["根系", "年輪", "遠古神木"],
-      "combat_elements": ["normal", "light"],
-      "series_positioning": "把古木作為劍氣入口與出口；玩家以走位部署傳送節點，讓同一道劍氣從不同方位重新射出並逐次增幅。",
+      "id": "thorn",
+      "name": "荊棘",
+      "identity_elements": ["破土荊棘", "魔花綻放", "環射棘刺"],
+      "combat_elements": ["normal", "poison"],
+      "series_positioning": "從敵群腳下召出多條荊棘觸手，依序開花後形成固定砲陣，朝範圍內敵人連射荊棘刺。",
       "skills": [
         {
           "id": "ancient_roots_pursuit",
-          "name": "根脈初生",
+          "name": "棘芽破土",
           "tier": "basic",
           "tier_rank": 1,
-          "positioning": "雙木劍氣傳送",
-          "gameplay_effect": {"gate_count": 2, "relay_count": 1, "damage_multiplier": 1.15, "range_multiplier": 1.15, "size_multiplier": 1.08},
-          "description": "兩座古木分別成為入口與出口。下一道劍氣進入近身古木後，沿發光根脈傳遞，從敵人側面的出口刷新距離並重新射出；玩家走位會改變下一組古木的角度。",
-          "animation_beats": ["兩座古木在玩家與敵側錯位成形", "劍氣沒入入口年輪", "發光根脈沿地面傳遞", "出口年輪亮起並重新射出劍氣"],
+          "positioning": "基礎荊棘花庭",
+          "description": "三條荊棘觸手從敵群腳下破土，尖端依序開花；花心蓄勢後向周圍敵人射出荊棘刺，形成短時間的固定範圍砲陣。",
+          "animation_beats": ["地面裂紋向三個生長點延伸", "荊棘觸手錯落破土", "觸手尖端依序開花", "花心鎖定周圍敵人射出荊棘刺"],
           "icon_path": ""
         },
         {
           "id": "growth_ring_guard",
-          "name": "年輪森衛",
+          "name": "繁花棘庭",
           "tier": "advanced",
           "tier_rank": 2,
-          "positioning": "四木傳送網路",
-          "gameplay_effect": {"gate_count": 4, "relay_count": 3, "damage_multiplier": 1.35, "range_multiplier": 1.35, "size_multiplier": 1.22},
-          "description": "四座古木組成傳送網路。劍氣由玩家附近的入口進入，從朝向敵群最佳的出口重射並可連續穿越；每穿越一座古木都刷新距離、提高尺寸與傷害增幅。",
-          "animation_beats": ["四座古木依次釘入不同方位", "入口年輪吸收月牙劍氣", "根脈依出口順序逐段點亮", "增幅劍氣從敵群側後方連續重射"],
+          "positioning": "多點連射花庭",
+          "description": "六條荊棘由地面分批升起並依序開花，擴大花庭範圍；每輪由不同花心朝周圍敵人連射荊棘刺，讓敵群持續承受交錯火線。",
+          "animation_beats": ["六道地裂由中央向外分岔", "荊棘觸手分兩拍破土", "花苞沿環形順序開花", "多個花心交錯連射棘刺"],
           "icon_path": ""
         },
         {
           "id": "eternal_forest_manifest",
-          "name": "太古神木",
+          "name": "萬棘花獄",
           "tier": "master",
           "tier_rank": 3,
-          "positioning": "古木系列終極技",
-          "gameplay_effect": {"gate_count": 6, "relay_count": 5, "damage_multiplier": 1.65, "range_multiplier": 1.55, "size_multiplier": 1.48},
-          "description": "六座古木依六段 Combo 的位置成陣，大型劍氣依序穿越並從不同方向切過敵群，每次傳送都持續增幅；最後根脈匯入中央太古神木，從正面射出巨型劍氣收尾。",
-          "animation_beats": ["六座古木沿歷史方位錯落成陣", "大型劍氣沒入第一座年輪", "根脈依序亮起並從不同出口重射", "所有木節點向中央太古神木匯流", "巨型劍氣從神木正面貫穿戰場"],
+          "positioning": "荊棘系列大師技",
+          "description": "大師階展開由十條巨型荊棘組成的荊棘花獄，大量魔花在短暫靜止後同時綻放；花心以更高頻率向範圍內敵人傾瀉萬刺，荊棘數量、覆蓋與單刺傷害皆提升。",
+          "animation_beats": ["十道巨大裂紋封住敵群周圍", "大量荊棘分層破土盤繞", "全場花苞短暫停頓後盛放", "萬刺由多層花心同步射向敵群", "殘瓣與斷刺落地消散"],
           "icon_path": ""
         }
       ]
     },
     {
-      "id": "giant_stone",
-      "name": "巨石",
-      "identity_elements": ["山岳", "環石", "重壓"],
+      "id": "dr_stone",
+      "name": "DR. Stone",
+      "identity_elements": ["石之無人機", "浮空符紋", "墜毀碎岩"],
       "combat_elements": ["normal"],
-      "series_positioning": "用山岳重量建立霸體與環繞防禦，終局將群岩壓縮成一座巨岳。",
+      "series_positioning": "召出會自主索敵的浮空石機群，以持續砲火支援玩家；在機體墜毀前續招即可補充整支編隊。",
       "skills": [
         {
           "id": "still_mountain_unmoved",
-          "name": "磐石鎮勢",
+          "name": "石蜂初航",
           "tier": "basic",
           "tier_rank": 1,
-          "positioning": "霸體與減傷",
-          "description": "角色腳下升起山岳般巨石基座，暫時無法被擊退並大幅減傷；承受重擊時只在石座表面留下裂痕。",
-          "animation_beats": ["地面沉降蓄重", "巨石基座托起角色", "岩層鎖合形成山岳輪廓", "重擊只沿表面擴散裂痕"],
+          "positioning": "三機自動支援",
+          "description": "三隻石之無人機在玩家上方啟動浮空符紋，分散編隊後自動鎖定附近敵人發射岩彈；機體會隨時間崩裂墜毀，再次施放可補充失去的無人機。",
+          "animation_beats": ["三枚石核由地面升空", "浮空符紋逐機點亮", "無人機分散編隊自動射擊", "石核裂解冒出碎屑後墜毀"],
           "icon_path": ""
         },
         {
           "id": "stone_ring_unity",
-          "name": "群岩成陣",
+          "name": "岩群巡獵",
           "tier": "advanced",
           "tier_rank": 2,
-          "positioning": "環繞防禦",
-          "description": "數塊巨石環繞角色緩慢旋轉，阻擋飛行物並撞擊敵人；巨石破碎後，碎片仍會短暫維持環繞。",
-          "animation_beats": ["岩塊從地面分離升起", "巨石錯層繞身成環", "接觸飛行物或敵人時重擊震動", "破碎岩片延續原軌跡短暫環繞"],
+          "positioning": "六機巡獵編隊",
+          "description": "六隻石之無人機組成高低錯落的巡獵隊形，提高索敵距離與射速；舊機體接近墜毀時再施放，會補滿壽命並恢復完整隊形。",
+          "animation_beats": ["六枚石核分成兩層升空", "符紋連線校準巡獵隊形", "岩彈沿多條軌跡交錯射出", "失速機體旋轉落地爆成碎石"],
           "icon_path": ""
         },
         {
           "id": "converging_mountains",
-          "name": "萬岳天崩",
+          "name": "天墜石群",
           "tier": "master",
           "tier_rank": 3,
-          "positioning": "巨石系列終極技",
-          "description": "戰場四周升起群岩並向中央合攏壓縮敵人，最後融合成一座巨岳猛烈墜地。",
-          "animation_beats": ["戰場四周巨岩升起", "群岩同步向中央移動", "岩層逐級壓縮敵群", "岩石融合成巨岳", "巨岳墜落並使碎石向外爆散"],
+          "positioning": "DR. Stone 大師技",
+          "description": "大師階部署十隻重裝石之無人機，以更遠索敵、更高射速與更強岩彈覆蓋戰區；機體逐隻墜毀前持續作戰，續招可一次補滿整個石群。",
+          "animation_beats": ["十枚重裝石核分層展開", "多重浮空環同步充能", "全編隊依序鎖敵齊射", "受 Blessing 改寫的軌跡與爆點覆蓋戰場", "逾時機體化為燃亮碎岩墜落"],
           "icon_path": ""
         }
       ]
     },
     {
-      "id": "great_shield",
-      "name": "巨盾",
-      "identity_elements": ["神聖巨盾", "能量返照", "守護光脈"],
-      "combat_elements": ["light"],
-      "series_positioning": "以巨盾吸收、連結與封鎖正面威脅，再將守勢轉為推進衝擊。",
+      "id": "black_hole",
+      "name": "黑洞",
+      "identity_elements": ["重力奇點", "吸積光環", "事件視界"],
+      "combat_elements": ["dark"],
+      "series_positioning": "把敵群拖入逐步擴張的事件視界，以持續重力磨損控制位置，最後用奇點崩塌造成大傷害。",
       "skills": [
         {
           "id": "unity_reflection",
-          "name": "王盾格守",
+          "name": "幽核引潮",
           "tier": "basic",
           "tier_rank": 1,
-          "positioning": "格擋反擊",
-          "description": "發光巨盾記錄成功格擋的攻擊能量，盾面光紋隨吸收傷害逐步點亮，最後以強光波反射。",
-          "animation_beats": ["巨盾輪廓展開", "攻擊能量被盾面吸收", "盾紋依吸收量逐區點亮", "蓄積能量化為強烈光波返射"],
+          "positioning": "基礎重力控制",
+          "description": "敵群中央生成幽暗奇點，吸積光環持續旋轉並把事件視界內的怪物拉向核心；吸引期間造成小幅持續傷害，倒數結束後核心崩塌重創仍在範圍內的敵人。",
+          "animation_beats": ["空間凹陷凝成黑色核心", "吸積光環由外向內加速", "敵人與碎屑持續被拉向事件視界", "核心壓縮停頓後爆發重力震波"],
           "icon_path": ""
         },
         {
           "id": "shared_pulse_guard",
-          "name": "王城盾陣",
+          "name": "深淵吞界",
           "tier": "advanced",
           "tier_rank": 2,
-          "positioning": "團隊防禦",
-          "description": "巨盾向兩側延伸光之脈絡連結附近隊友，使連結者共同分攤傷害並獲得短暫減傷。",
-          "animation_beats": ["中央巨盾立起", "光脈由盾側向外尋找隊友", "脈絡依序連結每名友方", "受擊能量沿連線分散並回到盾心"],
+          "positioning": "進階大範圍吸引",
+          "description": "更大的深淵核心展開多層吸積盤，以更強重力把遠處敵人拖入中央；持續時間與磨損提高，收束時以擴張的事件視界造成更強爆發。",
+          "animation_beats": ["雙層重力環反向旋轉成形", "暗色碎屑沿螺旋軌跡墜入核心", "事件視界擴大並持續牽引敵群", "所有光環瞬間內縮後炸開"],
           "icon_path": ""
         },
         {
           "id": "unbreakable_heaven_gate",
-          "name": "天門永鎮",
+          "name": "萬象歸墟",
           "tier": "master",
           "tier_rank": 3,
-          "positioning": "巨盾系列終極技",
-          "description": "城門般神聖巨盾從天而降封鎖道路，存在期間阻擋所有正面攻擊；結束時盾門向前傾倒成衝擊波。",
-          "animation_beats": ["高空展開城門形神聖盾影", "巨盾垂直降下嵌入地面", "盾門封鎖正面攻擊", "結束時盾門向前傾倒", "盾體化為碾過敵人的巨型衝擊波"],
+          "positioning": "黑洞系列大師技",
+          "description": "大師階奇點吞沒更廣戰區，多重引力弧與碎星帶高速盤旋，長時間把怪物壓進核心並持續磨損；倒數歸零時萬象寂止，再以最大範圍的重力崩塌造成毀滅傷害。",
+          "animation_beats": ["廣域星塵被扭曲成多層吸積盤", "數道引力弧交錯鎖住事件視界", "核心持續壓縮敵群與周圍光線", "所有運動突然停頓", "奇點塌縮後爆發巨型重力震波"],
           "icon_path": ""
         }
       ]
@@ -312,7 +309,7 @@
       "name": "火焰",
       "identity_elements": ["流火", "幽藍冷焰", "燎原火海"],
       "combat_elements": ["fire", "ice"],
-      "series_positioning": "由環身流火建立燃燒區，再加入冰火破甲，最終讓火線蔓延成全場火海。",
+      "series_positioning": "由地面向上分段噴發火柱；階級越高，隨機落點、噴發數量與節奏密度越強。",
       "skills": [
         {
           "id": "flowing_fire_night",
@@ -320,8 +317,8 @@
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "基礎火焰攻擊",
-          "description": "數團流火先環繞角色，再依序飛向敵人；命中後留下小片持續燃燒區域。",
-          "animation_beats": ["流火在角色周圍逐團點燃", "火團沿環身軌跡纏繞蓄勢", "火團依序水平飛向目標", "命中處留下貼地燃燒區"],
+          "description": "五處地面依序浮現短促預警，火柱以不連續頓點從下往上噴發；命中位置留下餘燼。",
+          "animation_beats": ["五處地脈錯開亮起", "第一批火柱向上爆發", "間隔停頓後其餘火柱續噴", "餘燼與熱浪逐層消散"],
           "icon_path": ""
         },
         {
@@ -330,8 +327,8 @@
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "冰火複合攻擊",
-          "description": "藍白蘭花在敵人腳下綻放，花瓣先凍結目標，花心再燃起幽藍火焰，形成冷熱交替的破甲。",
-          "animation_beats": ["藍白蘭花自敵人腳下長出", "冰晶花瓣閉合凍住目標", "花心由冷白轉為幽藍燃燒", "冰殼從內部炸裂形成冷熱破甲"],
+          "description": "十處落點在更大戰區交錯預警，雙段火柱穿插噴發，讓敵人難以停留在同一位置。",
+          "animation_beats": ["十處火紋散佈戰區", "左右落點交替噴發", "中段留下清楚頓點", "第二輪高柱接續衝起"],
           "icon_path": ""
         },
         {
@@ -340,8 +337,8 @@
           "tier": "master",
           "tier_rank": 3,
           "positioning": "火焰系列終極技",
-          "description": "天空落下巨大火種；火種落地後沿地高速蔓延，最終整片戰場化為燃燒火海。",
-          "animation_beats": ["火星逆向升空", "天空逐步染成赤紅", "巨大火種垂直墜落", "多道火線貼地向外擴散", "火線連成全場火海爆發"],
+          "description": "二十處地脈在全場分批甦醒，密集火柱保持清楚先後節奏向上連爆，最後以中央巨柱收束。",
+          "animation_beats": ["二十處火紋分區點亮", "外圈火柱以波次向上爆發", "內圈火柱高速交錯續噴", "全場短暫熄暗蓄力", "中央巨柱貫穿收尾"],
           "icon_path": ""
         }
       ]
@@ -351,7 +348,7 @@
       "name": "雷電",
       "identity_elements": ["雷音", "連鎖印記", "九層雷環"],
       "combat_elements": ["lightning", "fire"],
-      "series_positioning": "以雷音層數與印記連鎖累積節奏，終極技用九層雷環逐級加重。",
+      "series_positioning": "以反彈電流留下殘雷，倒數結束時對仍帶殘雷的敵人逐一降下天雷。",
       "skills": [
         {
           "id": "endless_thunder_tone",
@@ -359,7 +356,7 @@
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "持續雷擊",
-          "description": "微弱電流在敵人之間傳遞並累積雷音；層數足夠時，所有連結敵人同時遭受雷擊。",
+          "description": "電流持續在最多十名敵人之間反彈並留下殘雷；短暫倒數後，天雷垂直重擊每個殘雷目標。",
           "animation_beats": ["細弱電弧連上第一個敵人", "電流緩慢跳向相鄰敵人", "每次跳躍留下雷音節點", "節點同時點亮並降下一輪同步雷擊"],
           "icon_path": ""
         },
@@ -369,7 +366,7 @@
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "火雷複合攻擊",
-          "description": "帶雷火球高速穿過敵群並留下燃燒印記；短暫延遲後，閃電沿全部印記連鎖爆發。",
+          "description": "更快速的連鎖電弧覆蓋最多二十名敵人，殘雷持續傷害更強，倒數後的落雷也同步增幅。",
           "animation_beats": ["雷電纏繞火球壓縮成形", "雷火球高速貫穿敵群", "命中處逐一留下燃燒印記", "閃電沿印記順序連鎖引爆"],
           "icon_path": ""
         },
@@ -379,7 +376,7 @@
           "tier": "master",
           "tier_rank": 3,
           "positioning": "雷電系列終極技",
-          "description": "天空浮現九層雷環，雷聲按固定節奏逐層落下；前八道鎖定敵人，第九道化為覆蓋戰場的巨大雷柱。",
+          "description": "高頻電流在最多三十名敵人之間不斷反彈；殘雷蓄滿時，全場天雷依序落下造成大傷害。",
           "animation_beats": ["九層雷環由遠至近浮現", "雷聲與環光逐層加重", "前八道追蹤雷依節奏落下", "第九層雷環收縮鎖定", "巨大雷柱轟擊整個戰場"],
           "icon_path": ""
         }
@@ -390,7 +387,7 @@
       "name": "水流",
       "identity_elements": ["泉湧", "靈泉", "回瀾"],
       "combat_elements": ["water"],
-      "series_positioning": "以泉湧擊飛、靈泉持續支援，最終用往返巨浪兩次改變戰場位置。",
+      "series_positioning": "以持續海浪沖刷敵群並向外推送；階級提高延長傷害與位移，但保留自動攻擊可及距離。",
       "skills": [
         {
           "id": "soaring_spring_surge",
@@ -398,7 +395,7 @@
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "擊飛與範圍攻擊",
-          "description": "水流從敵人腳下螺旋湧出並將其擊飛；水柱頂端形成旋轉水環，吸入附近敵人。",
+          "description": "低矮浪峰持續向外推動近身敵人，推送期間反覆造成傷害，總位移受到安全上限限制。",
           "animation_beats": ["水氣在敵人腳下盤旋", "螺旋水柱自地面湧出", "目標沿水柱被向上擊飛", "柱頂水環旋轉擴大並吸引周圍敵人"],
           "icon_path": ""
         },
@@ -408,7 +405,7 @@
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "持續恢復與攻擊",
-          "description": "角色身旁生成靈泉持續恢復友方，溢出的水流會追蹤敵人並化為小型水彈。",
+          "description": "雙層浪峰擴大沖刷範圍與持續時間，將敵群穩定推離玩家但不會推出自動攻擊範圍。",
           "animation_beats": ["泉眼在角色身旁湧出", "靈泉形成持續循環的水盆", "柔和水光流向友方恢復生命", "溢流水珠聚成水彈追蹤敵人"],
           "icon_path": ""
         },
@@ -418,47 +415,47 @@
           "tier": "master",
           "tier_rank": 3,
           "positioning": "水流系列終極技",
-          "description": "巨浪從戰場一側橫掃並把敵人推至另一側；浪抵邊界後短暫退潮，再倒捲回來造成更強衝擊。",
+          "description": "多層巨浪長時間推動並磨損整片敵群，推送距離提高但鎖在一百四十像素內，確保後續攻勢能接續。",
           "animation_beats": ["全場水氣向一側聚集", "高聳海浪升起", "第一道巨浪水平橫掃", "海面短暫退潮蓄力", "回瀾反向衝回造成第二次重擊"],
           "icon_path": ""
         }
       ]
     },
     {
-      "id": "plant_attack",
-      "name": "植物攻擊",
-      "identity_elements": ["花粉", "荊棘", "吞噬花海"],
-      "combat_elements": ["poison"],
-      "series_positioning": "用花草侵蝕、荊棘穿刺逐步佔領地面，最後讓整片花海束縛並吞噬敵人。",
+      "id": "arcane_swamp",
+      "name": "密術沼澤",
+      "identity_elements": ["咒泥沼面", "密術觸手", "拘束符紋"],
+      "combat_elements": ["dark", "poison"],
+      "series_positioning": "用廣域沼澤同時限制大量敵人的位置，讓觸手保持纏繞並以穩定持續傷害消耗敵群。",
       "skills": [
         {
           "id": "orchid_corrosion",
-          "name": "荊芽穿刺",
+          "name": "泥觸纏身",
           "tier": "basic",
           "tier_rank": 1,
-          "positioning": "毒性持續傷害",
-          "description": "蘭花與香草在敵人腳下生長，花粉逐步侵蝕防禦；停留越久，花色越深、毒傷越高。",
-          "animation_beats": ["蘭花與香草破土生長", "花瓣逐層張開釋放花粉", "花粉附著並侵蝕敵人", "花朵隨停留時間加深顏色與毒性"],
+          "positioning": "十人廣域定身",
+          "description": "密術沼澤在敵群腳下展開，基礎階即可從地面伸出觸手纏繞最多十名敵人；被纏繞者停止動作，並在拘束期間持續受到咒泥脈衝傷害。",
+          "animation_beats": ["暗色沼面沿地板擴散", "密術符紋鎖定十名目標", "觸手自各目標腳下伸出纏繞", "咒泥脈衝沿觸手反覆造成傷害"],
           "icon_path": ""
         },
         {
           "id": "thorn_court_pierce",
-          "name": "毒華蔓庭",
+          "name": "咒沼群縛",
           "tier": "advanced",
           "tier_rank": 2,
-          "positioning": "爆發與穿刺",
-          "description": "大量荊棘沿指定方向連續刺出，最後主藤化為巨大尖刺貫穿整排敵人。",
-          "animation_beats": ["地表藤脈沿指定方向蔓延", "細荊棘依序向前刺出", "刺擊節奏逐步加速加粗", "主藤凝聚成巨刺水平貫穿"],
+          "positioning": "進階多人拘束",
+          "description": "更大的咒沼同時纏住最多十四名敵人；雙層觸手交錯扣緊目標，延長停止動作的時間，並用更密集的脈衝提高持續傷害。",
+          "animation_beats": ["雙重沼澤漣漪向外擴張", "十四道符紋依距離點亮", "粗細觸手分層盤繞目標", "沼面與觸手交替閃出傷害脈衝"],
           "icon_path": ""
         },
         {
           "id": "myriad_blossoms_devour",
-          "name": "萬華噬界",
+          "name": "萬觸沉淵",
           "tier": "master",
           "tier_rank": 3,
-          "positioning": "植物攻擊終極技",
-          "description": "異常植物迅速覆蓋全場；花朵釋放毒霧、藤蔓束縛敵人，最後整片植物如巨口般同時閉合吞噬。",
-          "animation_beats": ["嫩芽沿全場地面蔓延", "異常花海大規模盛開", "濃厚毒霧由花心擴散", "藤蔓自花海纏住敵人", "所有花朵與葉片同步閉合吞噬"],
+          "positioning": "密術沼澤大師技",
+          "description": "大師階把戰區化為深淵咒沼，最多二十名敵人會被多節觸手牢牢纏住並停止動作；拘束更久、脈衝更快且傷害更強，觸手材質與脈衝可隨 Blessing 轉化。",
+          "animation_beats": ["廣域咒沼吞沒敵群腳下地面", "二十組拘束符紋同時展開", "多節巨觸手從不同方向纏緊目標", "高頻密術脈衝沿全場同步跳動", "觸手沉回沼面並留下元素殘響"],
           "icon_path": ""
         }
       ]
@@ -468,7 +465,7 @@
       "name": "龍息",
       "identity_elements": ["奧術龍首", "龍脈", "空間裂隙"],
       "combat_elements": ["dark", "light"],
-      "series_positioning": "以龍首吐息建立方向壓制，再讓地面龍脈回響，最終召出完整龍影撕裂空間。",
+      "series_positioning": "以一百八十度龍息掃蕩建立壓制；進階左右雙掃，大師再以二十龍首從上方持續覆蓋。",
       "skills": [
         {
           "id": "arcane_breath",
@@ -476,7 +473,7 @@
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "基礎龍息攻擊",
-          "description": "角色前方浮現半透明龍首，持續噴吐逐步擴大的紫藍奧術能量並穿透多名敵人。",
+          "description": "單一龍首由左向右掃過一百八十度，玩家不會被自動攻擊拖動，吐息沿弧線持續灼傷敵群。",
           "animation_beats": ["紫藍奧術線條勾勒龍首", "龍眼亮起並張口蓄能", "龍息自口中持續水平噴吐", "吐息錐體逐步擴大並穿透敵群"],
           "icon_path": ""
         },
@@ -486,7 +483,7 @@
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "連續追擊",
-          "description": "龍息掃過地面留下發光龍脈，短暫延遲後每一道龍脈再次爆發形成第二輪傷害。",
+          "description": "左右各一顆龍首同時展開相反方向掃蕩，以兩道吐息覆蓋玩家兩側的敵群。",
           "animation_beats": ["龍息貼地掃過戰場", "地面留下分岔發光龍脈", "龍脈依序充能變亮", "所有龍脈延遲後再次向上爆發"],
           "icon_path": ""
         },
@@ -496,7 +493,7 @@
           "tier": "master",
           "tier_rank": 3,
           "positioning": "龍息系列終極技",
-          "description": "巨大奧術龍影在角色背後甦醒，以龍爪撕裂空間後向全場噴吐巨型龍息，裂縫中再落下奧術流星。",
+          "description": "左右雙龍先完成弧形掃蕩，隨後上方排列二十顆龍首，向下持續噴吐火焰一點五秒。",
           "animation_beats": ["黑暗中巨型龍眼睜開", "奧術龍影在角色背後完整成形", "龍爪向前撕開空間裂縫", "巨型龍息橫掃全場", "裂縫中持續墜落奧術流星"],
           "icon_path": ""
         }
@@ -507,7 +504,7 @@
       "name": "朝陽生息",
       "identity_elements": ["晨光", "向日花", "常春庭園"],
       "combat_elements": ["light"],
-      "series_positioning": "以朝陽與花庭提供即時、持續與全場級生命恢復。",
+      "series_positioning": "在玩家腳下展開會跟隨移動的綠金回復區域；階級提高範圍、時間與回復量。",
       "skills": [
         {
           "id": "dawnlight_sunbearer",
@@ -515,7 +512,7 @@
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "單次群體恢復",
-          "description": "金色晨光照耀隊伍，角色腳下綻放向日花，立即恢復生命並短暫提高受到的治療量。",
+          "description": "玩家腳下展開小型綠金光域，生命粒子持續向上飄升並週期回復生命。",
           "animation_beats": ["金色晨光由上方穿入", "隊伍腳下生成向日花苞", "花朵迎光同步綻放", "暖金光波完成群體恢復並留下治療增幅"],
           "icon_path": ""
         },
@@ -525,7 +522,7 @@
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "範圍持續治療",
-          "description": "地面形成陽光照耀的小型春庭；站在庭園中的角色持續恢復生命並獲得移動速度加成。",
+          "description": "回復光域跟隨玩家移動，範圍與持續時間擴大，生命脈衝也變得更密集。",
           "animation_beats": ["柔光在地面圈出庭園邊界", "嫩草與小花沿邊界生長", "陽光斑駁灑入春庭", "綠金生命流持續環繞庭中友方"],
           "icon_path": ""
         },
@@ -535,7 +532,7 @@
           "tier": "master",
           "tier_rank": 3,
           "positioning": "朝陽治療終極技",
-          "description": "戰場化為常春庭園，陽光穿葉灑落；所有友方持續恢復生命，並可在一次致命傷害後保留少量生命。",
+          "description": "大範圍綠金聖域長時間跟隨玩家，每次脈衝提供最高回復量，粒子與多層光環完整展開。",
           "animation_beats": ["常春藤與綠葉由四周覆蓋戰場", "庭園樹冠在高處展開", "陽光穿過葉隙形成多層光柱", "全場生命光持續回復友方", "致命傷害時庭園凝聚一枚保命種子"],
           "icon_path": ""
         }
@@ -546,7 +543,7 @@
       "name": "同枝共生",
       "identity_elements": ["春靈", "藤脈", "根系復甦"],
       "combat_elements": ["light"],
-      "series_positioning": "以春靈急救、藤脈共享治療，最後讓全隊生命在共生根系中重新分配與復甦。",
+      "series_positioning": "共生力量直接強化玩家肉體，以彩色光暈、速度線與殘影呈現移速和攻速爆發。",
       "skills": [
         {
           "id": "spring_spirit_return",
@@ -554,7 +551,7 @@
           "tier": "basic",
           "tier_rank": 1,
           "positioning": "快速急救",
-          "description": "嫩葉與花瓣組成的春靈飛向生命最低友方，立即治療並清除一種負面狀態。",
+          "description": "共生光暈包覆玩家，短時間大幅提高移動與自動攻擊速度，移動時留下三層彩色殘影。",
           "animation_beats": ["嫩葉與花瓣旋成小型春靈", "春靈鎖定生命最低友方", "沿柔和弧線快速飛近", "春靈散成治療花光並帶走一層負面狀態"],
           "icon_path": ""
         },
@@ -564,7 +561,7 @@
           "tier": "advanced",
           "tier_rank": 2,
           "positioning": "治療連結",
-          "description": "藤蔓光脈連結數名友方；任一人受到治療時，部分治療量沿藤脈傳給其他連結者。",
+          "description": "肉體強化時間延長，移速與攻速倍率進一步提升，五層殘影讓高速移動仍保持清楚方向。",
           "animation_beats": ["主藤脈從施術者腳下長出", "分枝依序尋找並連上友方", "受治療者節點先亮起", "生命光沿藤脈分流至其他連結者"],
           "icon_path": ""
         },
@@ -574,7 +571,7 @@
           "tier": "master",
           "tier_rank": 3,
           "positioning": "復甦終極技",
-          "description": "所有友方腳下浮現相連根脈，生命會優先流向最低生命角色；若有友方倒下，整片根脈集中力量使其復起。",
+          "description": "大師階以最強共生光暈強化玩家七秒，移速提高至一點八倍、攻速一點七五倍，並留下八層殘影。",
           "animation_beats": ["根脈由全隊腳下向外浮現", "所有根系互相連成生命網路", "生命光自高生命節點流向低生命節點", "倒下者周圍根脈集中收束", "根脈開花並使友方以部分生命復甦"],
           "icon_path": ""
         }
