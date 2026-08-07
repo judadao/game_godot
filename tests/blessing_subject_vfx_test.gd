@@ -130,8 +130,12 @@ func _run() -> void:
 		feedback.get_blessing_overlay_object_count() >= 2
 			and feedback.get_blessing_overlay_object_count() <= 4
 			and bool(feedback.call("is_blessing_attack_override_active"))
+			and not bool(feedback.call("is_attack_geometry_suppressed"))
+			and bool(feedback.call("has_base_sword_wave"))
+			and String(feedback.call("get_motion_profile")) == "blessing_subject_with_sword_wave"
+			and float(feedback.call("get_base_sword_wave_duration")) <= 0.22
 			and feedback.get_travel_duration() >= 0.28,
-		"Blessings must replace the generic Basic Attack with fewer, larger, slower concrete subjects."
+		"Blessing subjects must layer over the restored premium Basic Attack sword wave."
 	)
 	feedback.queue_free()
 	await process_frame

@@ -1179,8 +1179,9 @@ Attack cooldown 的方式呼叫 `CardEffectRunner`；建卡時先經
 每個 base Blessing 另以 `attack_vfx_asset_path` 指向具體小型攻擊物件；
 `BlessingAttackOverlay` 將持有神賜投影到普通攻擊路徑，Lv.1 從單一小物件開始，等級、
 Combo 與 stack 逐步增加數量、尺寸、分流與殘影。三槽高成長時同屏具體物件總數最多六個、
-單體寬度為 84–176px；持有 Blessing 時具體主體直接取代通用劍氣幾何，讓普通攻擊在軌跡、出現方向、
-成長、變色與消失方式上產生可見質變。10 個融合 recipe 的
+單體寬度為 84–176px；持有 Blessing 時 `PremiumCrescentLayer` 仍是普通攻擊的月牙劍氣主體，
+Blessing 具體物件沿同一路徑疊加，並先演出自己的軌跡，再讓快速月牙在命中前追上。只有真正的
+Finisher 可以隱藏普通劍氣幾何。10 個融合 recipe 的
 `subject_asset_path`／`subject_motion` 是背景攻擊主體權威，不得退回一張通用幾何素材。
 
 Run 同時最多持有三項神賜。未滿三項時獎勵可出現新神賜或既有神賜升級；滿三項時

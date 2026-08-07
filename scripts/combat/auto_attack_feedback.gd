@@ -37,6 +37,7 @@ const RELEASE_SHEAR_SAMPLE_COUNT := 3
 const IMPACT_ECHO_COUNT := 2
 const CONTACT_FLASH_WINDOW := 0.045
 const TRAVEL_HISTORY_LAGS := [0.026, 0.052, 0.084, 0.122]
+const BLESSING_SWORD_WAVE_START_PROGRESS := 0.52
 # Compatibility aliases for retired helpers kept below the active generated path.
 const ENERGY_BLADE_TEXTURE := TRAVEL_TEXTURE
 const ENERGY_BLADE_AURA_TEXTURE := TRAVEL_MASK
@@ -72,6 +73,7 @@ const PREMIUM_CRESCENT_LAYERS: Array[StringName] = [
 
 var _target_offset := Vector2.ZERO
 var _travel_progress := 0.0
+var _sword_wave_progress := 0.0
 var _impact_progress := 0.0
 var _accent := Color.WHITE
 var _attack_size_multiplier := 1.0
@@ -87,7 +89,7 @@ var _elemental_aura: Node2D
 var _combo_tier := 0
 var _suppress_attack_geometry := false
 var _travel_tween: Tween
-var _blessing_attack_override_active := false
+var _blessing_attack_overlay_active := false
 var _active_anticipation_duration := ANTICIPATION_DURATION
 var _active_travel_duration := TRAVEL_DURATION
 var _active_impact_duration := IMPACT_DURATION
@@ -121,14 +123,14 @@ func play(
 	_did_hit = damage > 0
 	_combo_tier = clampi(combo_count / 3, 0, 3)
 	var blessing_profiles := visual_profile.get("blessing_attack_profiles", []) as Array
-	_blessing_attack_override_active = (
+	_blessing_attack_overlay_active = (
 		not blessing_profiles.is_empty()
 		and not bool(visual_profile.get("finisher", false))
 	)
-	_suppress_attack_geometry = (
-		bool(visual_profile.get("finisher", false))
-		or _blessing_attack_override_active
-	)
+	_suppress_attack_geometry = bool(visual_profile.get("finisher", false))
+	_travel_progress = 0.0
+	_sword_wave_progress = 0.0
+	_impact_progress = 0.0
 	_visual_elements = _normalize_elements(visual_profile.get("elements", []) as Array)
 	_visual_colors = _colors_for_elements(_visual_elements)
 	# Sword energy keeps a white core. Elements remain independent silhouette layers.
@@ -144,7 +146,7 @@ func play(
 		_combo_tier
 	)
 	premium_crescent_layer.visible = not _suppress_attack_geometry
-	premium_crescent_layer.call("set_progress", _travel_progress, _impact_progress)
+	premium_crescent_layer.call("set_progress", _sword_wave_progress, _impact_progress)
 	blessing_attack_overlay.call(
 		"configure",
 		blessing_profiles,
@@ -176,7 +178,7 @@ func play(
 	_active_anticipation_duration = ANTICIPATION_DURATION
 	_active_travel_duration = TRAVEL_DURATION
 	_active_impact_duration = IMPACT_DURATION
-	if _blessing_attack_override_active:
+	if _blessing_attack_overlay_active:
 		var has_evolved_subject := false
 		for profile_variant in blessing_profiles:
 			if profile_variant is Dictionary and bool((profile_variant as Dictionary).get("evolved", false)):
@@ -298,11 +300,34 @@ func get_impact_duration() -> float:
 
 
 func get_motion_profile() -> StringName:
-	return &"blessing_subject_override" if _blessing_attack_override_active else &"slash_shockwave"
+	return &"blessing_subject_with_sword_wave" if _blessing_attack_overlay_active else &"slash_shockwave"
 
 
 func is_blessing_attack_override_active() -> bool:
-	return _blessing_attack_override_active
+	# Compatibility entry for callers written when Blessings replaced the sword wave.
+	return _blessing_attack_overlay_active
+
+
+func is_blessing_attack_overlay_active() -> bool:
+	return _blessing_attack_overlay_active
+
+
+func has_base_sword_wave() -> bool:
+	return (
+		premium_crescent_layer != null
+		and premium_crescent_layer.visible
+		and not _suppress_attack_geometry
+	)
+
+
+func get_base_sword_wave_duration() -> float:
+	if not _blessing_attack_overlay_active:
+		return _active_anticipation_duration + _active_travel_duration
+	return (
+		_active_travel_duration
+		* (1.0 - BLESSING_SWORD_WAVE_START_PROGRESS)
+		/ (1.0 - LAUNCH_PROGRESS)
+	)
 
 
 func get_animation_quality_profile() -> StringName:
@@ -358,7 +383,7 @@ func get_primary_procedural_stroke_count() -> int:
 func get_current_energy_blade_frame() -> int:
 	return mini(
 		GENERATED_FRAME_COUNT - 1,
-		int(floor(clampf(_travel_progress, 0.0, 0.9999) * GENERATED_FRAME_COUNT))
+		int(floor(clampf(_sword_wave_progress, 0.0, 0.9999) * GENERATED_FRAME_COUNT))
 	)
 
 
@@ -375,7 +400,7 @@ func attach_elemental_aura(
 	if _elemental_aura == null:
 		return
 	add_child(_elemental_aura)
-	_elemental_aura.position = _travel_point(_travel_progress)
+	_elemental_aura.position = _travel_point(_sword_wave_progress)
 	if _elemental_aura.has_method("configure"):
 		_elemental_aura.call("configure", elements, intensity)
 
@@ -386,11 +411,11 @@ func _draw() -> void:
 	var direction := _target_offset.normalized()
 	if direction.is_zero_approx():
 		direction = Vector2.RIGHT
-	if _travel_progress < 1.0:
-		var tip := _travel_point(_travel_progress)
-		if _travel_progress <= RELEASE_TRAVEL_END:
+	if _sword_wave_progress < 1.0:
+		var tip := _travel_point(_sword_wave_progress)
+		if _sword_wave_progress <= RELEASE_TRAVEL_END:
 			var release_progress := clampf(
-				_travel_progress / RELEASE_TRAVEL_END,
+				_sword_wave_progress / RELEASE_TRAVEL_END,
 				0.0,
 				0.9999
 			)
@@ -406,9 +431,9 @@ func _draw() -> void:
 				1.0,
 				&"weapon_release"
 			)
-		if _travel_progress >= TRAVEL_VISUAL_START:
+		if _sword_wave_progress >= TRAVEL_VISUAL_START:
 			var visual_progress := clampf(
-				(_travel_progress - TRAVEL_VISUAL_START)
+				(_sword_wave_progress - TRAVEL_VISUAL_START)
 					/ (1.0 - TRAVEL_VISUAL_START),
 				0.0,
 				0.9999
@@ -453,7 +478,7 @@ func _draw_combo_projectile_layers(tip: Vector2, tail: Vector2) -> void:
 	var direction := _target_offset.normalized()
 	var normal := direction.orthogonal()
 	var combo_color := _combo_color()
-	var travel_phase := _travel_progress * TAU * (1.45 + float(_combo_tier) * 0.28)
+	var travel_phase := _sword_wave_progress * TAU * (1.45 + float(_combo_tier) * 0.28)
 	var orbit_radius := (13.0 + float(_combo_tier) * 4.0) * _attack_size_multiplier
 	for side in [-1.0, 1.0]:
 		var ribbon := PackedVector2Array()
@@ -572,10 +597,10 @@ func _curved_stage_progress(progress: float, stage: StringName) -> float:
 func _current_stage_progress(stage: StringName) -> float:
 	match stage:
 		&"weapon_release":
-			return clampf(_travel_progress / RELEASE_TRAVEL_END, 0.0, 0.9999)
+			return clampf(_sword_wave_progress / RELEASE_TRAVEL_END, 0.0, 0.9999)
 		&"blade_travel":
 			return clampf(
-				(_travel_progress - TRAVEL_VISUAL_START)
+				(_sword_wave_progress - TRAVEL_VISUAL_START)
 					/ (1.0 - TRAVEL_VISUAL_START),
 				0.0,
 				0.9999
@@ -692,7 +717,7 @@ func _draw_generated_stage(
 			-direction * (5.0 + float(combo_pass) * 4.0)
 			+ normal
 				* sin(
-					_travel_progress * TAU * 2.0
+					_sword_wave_progress * TAU * 2.0
 						+ float(combo_pass) * 1.7
 				)
 				* (2.0 + float(combo_pass))
@@ -743,7 +768,7 @@ func _draw_generated_stage(
 			var sample_number := float(shear_index + 1)
 			var shear_frame := maxi(0, frame_index - shear_index - 1)
 			var shear_direction := direction.rotated(
-				deg_to_rad((-2.4 + float(shear_index) * 2.2) * (1.0 - _travel_progress))
+				deg_to_rad((-2.4 + float(shear_index) * 2.2) * (1.0 - _sword_wave_progress))
 			)
 			_draw_generated_frame(
 				texture,
@@ -760,7 +785,7 @@ func _draw_generated_stage(
 			var lag: float = TRAVEL_HISTORY_LAGS[ghost_index]
 			var historical_progress := maxf(
 				TRAVEL_VISUAL_START,
-				_travel_progress - lag
+				_sword_wave_progress - lag
 			)
 			var historical_visual_progress := clampf(
 				(historical_progress - TRAVEL_VISUAL_START)
@@ -898,7 +923,7 @@ func _generated_element_colors(element: StringName) -> Array[Color]:
 
 
 func _draw_weapon_release(direction: Vector2, normal: Vector2) -> void:
-	var release_progress := clampf(_travel_progress / 0.34, 0.0, 1.0)
+	var release_progress := clampf(_sword_wave_progress / 0.34, 0.0, 1.0)
 	var envelope := (
 		smoothstep(0.0, 0.12, release_progress)
 		* (1.0 - smoothstep(0.68, 1.0, release_progress))
@@ -1018,11 +1043,11 @@ func _draw_energy_blade_sprite(center: Vector2, direction: Vector2) -> void:
 		return
 	var frame_index := get_current_energy_blade_frame()
 	var source_rect := _energy_blade_source_rect(frame_index)
-	var pulse := 1.0 + sin(_travel_progress * PI) * 0.05
+	var pulse := 1.0 + sin(_sword_wave_progress * PI) * 0.05
 	var combo_spectacle_scale := ATTACK_GEOMETRY.resolve_combo_spectacle_scale(
 		_combo_tier * 3
 	)
-	var launch_scale := lerpf(0.78, 1.0, smoothstep(0.10, 0.34, _travel_progress))
+	var launch_scale := lerpf(0.78, 1.0, smoothstep(0.10, 0.34, _sword_wave_progress))
 	var width := (
 		176.0
 		* _attack_size_multiplier
@@ -1032,8 +1057,8 @@ func _draw_energy_blade_sprite(center: Vector2, direction: Vector2) -> void:
 	)
 	var height := 106.0 * _attack_size_multiplier * combo_spectacle_scale * launch_scale
 	var angle := direction.angle()
-	var launch_alpha := smoothstep(0.10, 0.27, _travel_progress)
-	var fade := launch_alpha * (1.0 - smoothstep(0.78, 1.0, _travel_progress))
+	var launch_alpha := smoothstep(0.10, 0.27, _sword_wave_progress)
+	var fade := launch_alpha * (1.0 - smoothstep(0.78, 1.0, _sword_wave_progress))
 	_draw_projectile_brush_backing(center, direction, width, height, fade)
 	_draw_combo_frame_aura(center, direction, width, height, source_rect, fade)
 	for layer_index in _visual_elements.size():
@@ -1141,7 +1166,7 @@ func _draw_combo_frame_aura(
 	var combo_color := _combo_color()
 	var normal := direction.orthogonal()
 	for pass_index in _combo_tier:
-		var phase := _travel_progress * TAU * 2.0 + float(pass_index) * 2.2
+		var phase := _sword_wave_progress * TAU * 2.0 + float(pass_index) * 2.2
 		_draw_aura_mask_pass(
 			center,
 			direction,
@@ -1166,7 +1191,7 @@ func _draw_element_frame_aura(
 	fade: float
 ) -> void:
 	var normal := direction.orthogonal()
-	var phase := _travel_progress * TAU * 2.8 + float(layer_index) * 2.1
+	var phase := _sword_wave_progress * TAU * 2.8 + float(layer_index) * 2.1
 	var drift := normal * sin(phase) * 3.5 - direction * (4.0 + float(layer_index) * 2.0)
 	match element:
 		&"flame":
@@ -1280,7 +1305,7 @@ func _draw_flame_edge_flow(
 	var normal := direction.orthogonal()
 	for tongue_index in 7:
 		var seed := float(layer_index * 11 + tongue_index) * 1.371
-		var flow := fmod(seed * 0.31 + _travel_progress * 3.4, 1.0)
+		var flow := fmod(seed * 0.31 + _sword_wave_progress * 3.4, 1.0)
 		var side := -1.0 if (tongue_index + layer_index) % 2 == 0 else 1.0
 		var tip := (
 			center
@@ -1295,7 +1320,7 @@ func _draw_flame_edge_flow(
 				normal
 				* side
 				* sin(ratio * PI)
-				* sin(seed + _travel_progress * TAU * 3.2)
+				* sin(seed + _sword_wave_progress * TAU * 3.2)
 				* 6.0
 			)
 			var flutter := normal * sin(seed * 2.0 + ratio * TAU) * (1.0 - ratio) * 2.2
@@ -1317,7 +1342,7 @@ func _draw_flame_edge_flow(
 		var spark_position := (
 			center
 			- direction * width * (0.20 + fmod(seed, 0.18))
-			+ normal * sin(seed * 2.4 + _travel_progress * TAU * 4.0) * height * 0.32
+			+ normal * sin(seed * 2.4 + _sword_wave_progress * TAU * 4.0) * height * 0.32
 		)
 		draw_line(
 			spark_position - direction * (3.0 + float(spark_index) * 1.2),
@@ -1340,7 +1365,7 @@ func _draw_frost_edge_flow(
 	for shard_index in 7:
 		var seed := float(layer_index * 13 + shard_index) * 1.217
 		var side := -1.0 if (shard_index + layer_index) % 2 == 0 else 1.0
-		var flow := fmod(seed * 0.29 + _travel_progress * 2.35, 1.0)
+		var flow := fmod(seed * 0.29 + _sword_wave_progress * 2.35, 1.0)
 		var shard_tip := (
 			center
 			- direction * width * (0.03 + flow * 0.40)
@@ -1396,7 +1421,7 @@ func _draw_generic_element_flow(
 	var layer_color := _visual_colors[layer_index]
 	for mote_index in 5:
 		var seed := float(layer_index * 7 + mote_index) * 1.173
-		var flow := fmod(seed * 0.37 + _travel_progress * 2.8, 1.0)
+		var flow := fmod(seed * 0.37 + _sword_wave_progress * 2.8, 1.0)
 		var side := -1.0 if (mote_index + layer_index) % 2 == 0 else 1.0
 		var mote_position := (
 			center
@@ -1522,7 +1547,7 @@ func _draw_energy_motes(
 ) -> void:
 	for mote_index in 8:
 		var seed := float(mote_index) * 1.618
-		var travel := fmod(seed + _travel_progress * 2.2, 1.0)
+		var travel := fmod(seed + _sword_wave_progress * 2.2, 1.0)
 		var side := -1.0 if mote_index % 2 == 0 else 1.0
 		var point := (
 			center
@@ -1816,18 +1841,30 @@ func _direction_angle_degrees() -> float:
 	)
 
 
+func _resolve_sword_wave_progress(raw_progress: float) -> float:
+	if not _blessing_attack_overlay_active:
+		return raw_progress
+	return clampf(
+		(raw_progress - BLESSING_SWORD_WAVE_START_PROGRESS)
+			/ (1.0 - BLESSING_SWORD_WAVE_START_PROGRESS),
+		0.0,
+		1.0
+	)
+
+
 func _set_travel_progress(value: float) -> void:
 	_travel_progress = clampf(value, 0.0, 1.0)
+	_sword_wave_progress = _resolve_sword_wave_progress(_travel_progress)
 	if _elemental_aura != null and is_instance_valid(_elemental_aura):
-		_elemental_aura.position = _travel_point(_travel_progress)
-	premium_crescent_layer.call("set_progress", _travel_progress, _impact_progress)
+		_elemental_aura.position = _travel_point(_sword_wave_progress)
+	premium_crescent_layer.call("set_progress", _sword_wave_progress, _impact_progress)
 	blessing_attack_overlay.call("set_progress", _travel_progress, _impact_progress)
 	queue_redraw()
 
 
 func _set_impact_progress(value: float) -> void:
 	_impact_progress = clampf(value, 0.0, 1.0)
-	premium_crescent_layer.call("set_progress", _travel_progress, _impact_progress)
+	premium_crescent_layer.call("set_progress", _sword_wave_progress, _impact_progress)
 	blessing_attack_overlay.call("set_progress", _travel_progress, _impact_progress)
 	queue_redraw()
 
