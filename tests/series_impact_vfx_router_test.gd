@@ -52,6 +52,24 @@ func _run() -> void:
 	lightning_fixture.final_strike.emit(null, Vector2(150.0, 44.0))
 	await process_frame
 	_expect(_has_primitive(lightning_root, "lightning_impact"), "Residual lightning must end with the shared heavy impact primitive.")
+	var blessed_lightning_root := Node2D.new()
+	root.add_child(blessed_lightning_root)
+	var blessed_lightning_fixture := SignalFixture.new()
+	root.add_child(blessed_lightning_fixture)
+	_expect(
+		bool(router.call("bind_controller", "lightning", blessed_lightning_fixture, blessed_lightning_root, [{"element": "fire", "level": 3}])),
+		"Blessed Lightning must keep the same final-strike event authority."
+	)
+	blessed_lightning_fixture.final_strike.emit(null, Vector2(180.0, 52.0))
+	await process_frame
+	_expect(
+		_has_primitive(blessed_lightning_root, "lightning_impact"),
+		"A Blessing may mutate Lightning material, but must not replace its top-down sky-strike topology."
+	)
+	_expect(
+		not _has_primitive(blessed_lightning_root, "fire_burst"),
+		"A Fire Blessing must not erase Lightning's readable delayed sky strike."
+	)
 	var endpoint_cases := [
 		[Vector2(30.0, 220.0), Vector2(66.0, 220.0)],
 		[Vector2(-260.0, 280.0), Vector2(700.0, 280.0)],
@@ -102,7 +120,7 @@ func _run() -> void:
 	_expect(burst != null and burst.has_meta("skill_series_id") and String(burst.get_meta("skill_series_id")) == "black_hole", "Spawned primitives must retain series identity for Blessing mutation and diagnostics.")
 
 	var state := router.call("get_debug_state") as Dictionary
-	_expect(int(state.get("spawn_count", 0)) == 8, "Router diagnostics must count every gameplay-triggered primitive without a duplicate chain sky strike.")
+	_expect(int(state.get("spawn_count", 0)) == 9, "Router diagnostics must count every gameplay-triggered primitive without a duplicate chain sky strike.")
 	_expect((state.get("effect_counts", {}) as Dictionary).has("fire_burst"), "Router diagnostics must expose concrete primitive usage.")
 	_finish()
 

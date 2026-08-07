@@ -163,7 +163,9 @@ preflash、天空主雷、分支、接地閃光、spark 與殘電等至少六層
 Advanced 20 targets 必須配置至少 12 個 world-space spark emitters，避免 0.02 秒 hop 截斷
 0.22 秒粒子；sky-strike spark 在 contact 前不得 emitting，且只能觸發一次。Router test
 需分開 emit chain／final，確認 chain 不會提前建立 `lightning_impact`，並以 36px／960px
-兩種 hop 驗證 bolt 兩端都精準接到 gameplay endpoint。NamedSkill 整合測試另以負 X、
+兩種 hop 驗證 bolt 兩端都精準接到 gameplay endpoint；帶任意 Blessing 的 final event 仍必須
+保留 `lightning_impact` 的下劈 topology，只能改 palette／材質，禁止被通用元素爆點取代。
+NamedSkill 整合測試另以負 X、
 非一倍縮放、不同 Hurtbox offset 與超過十名亂序目標，鎖定顯示目標沿用 gameplay 的
 敵人節點距離最近優先，且 local／world 座標轉換不會讓 Hurtbox 標記漂移。
 

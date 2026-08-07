@@ -180,7 +180,9 @@ func _spawn_primitive(
 
 
 func _resolve_blessing_impact(effect_id: StringName, overlays: Array) -> StringName:
-	if effect_id in [&"lightning_bolt", &"wind_slash"] or overlays.is_empty():
+	# Chain bolts and the delayed sky strike are Lightning's readable attack
+	# topology. Blessings may recolor them, but must not replace either shape.
+	if effect_id in [&"lightning_bolt", &"lightning_impact", &"wind_slash"] or overlays.is_empty():
 		return effect_id
 	var strongest: Dictionary = {}
 	for overlay_variant in overlays:

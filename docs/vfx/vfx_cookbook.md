@@ -37,6 +37,8 @@ receive presentation-only target positions every frame. Their 0.22-second sparks
 world-space emitter pool sized from `duration / (target_count × hop_count)`, so a fast focus jump
 cannot restart or drag the previous burst. Chain events spawn only `lightning_bolt`; only the delayed
 `final_strike` event spawns `lightning_impact`, whose sparks remain disabled until ground contact.
+Blessing mutation preserves both Lightning primitives: it may change palette, glow, noise, and
+supporting layers, but never replaces the delayed sky strike with a generic elemental burst.
 The impact resolves its origin against the viewport top, enforces a long vertical span, and reveals
 the bolt downward before contact so it reads as weather striking the battlefield instead of a short
 local pillar appearing all at once.
