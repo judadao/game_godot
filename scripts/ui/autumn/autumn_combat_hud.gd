@@ -7,6 +7,7 @@ signal redraw_requested
 signal group_changed(group_index: int)
 signal auto_use_changed(enabled: bool)
 
+const UI_VALUE_FORMATTER := preload("res://scripts/ui/ui_value_formatter.gd")
 const MAX_SKILL_TOASTS := 3
 const MAX_VISIBLE_COMBO_SKILLS := 3
 const SKILL_TOAST_LIFETIME := 1.5
@@ -725,12 +726,7 @@ func _make_display_only(node: Node) -> void:
 
 
 func _format_number(value: int) -> String:
-	var text := str(value)
-	var result := ""
-	while text.length() > 3:
-		result = "," + text.substr(text.length() - 3, 3) + result
-		text = text.substr(0, text.length() - 3)
-	return text + result
+	return UI_VALUE_FORMATTER.format_integer(value)
 
 
 func _safe_node_name(value: String) -> String:

@@ -36,7 +36,7 @@ pipeline描述成Current。
 
 | 類型 | 數量 | Path |
 |---|---:|---|
-| JSON data files | 15 | `res://data/*.json` |
+| JSON data files | 17 | `res://data/*.json` |
 | Gameplay `.tres` / `.res` | 0 | 無 |
 | `resources/` content | 0；空目錄不保留 placeholder | 無 |
 | Runtime Resource class | 1個主要enemy model | `EnemyArchetype` |
@@ -48,8 +48,8 @@ pipeline描述成Current。
 | Town NPC transparent cutout | 5 | `res://assets/town/npc/characters/` |
 | Town NPC world animation atlas | 9 | `res://assets/town/npc/characters/*_animation_atlas.png`、`res://assets/town/npc/priest/priest_animation_atlas.png` |
 
-十五個 JSON data files（其中十三個是 runtime／gameplay catalog，另外兩個是 Town
-authoring descriptors）：
+十七個 JSON data files（其中十四個是 runtime／gameplay catalog，另外三個是 Town
+authoring／maintenance descriptors）：
 
 - `res://data/cards.json`
 - `res://data/evolutions.json`
@@ -66,6 +66,7 @@ authoring descriptors）：
 - `res://data/town_npc_character_profiles.json`
 - `res://data/town_modular_layout.json`
 - `res://data/town_visual_style.json`
+- `res://data/maintenance_scope_map.json`
 
 Generated combat presentation：
 
@@ -988,7 +989,9 @@ Paths：
 Dev mode 對應使用 `dev_quick_save.json`、`dev_quick_save.tmp` 與
 `dev_quick_save.json.bak`，路徑選擇由 Game 單一 helper 擁有。
 
-Owner：`scripts/managers/game.gd`，不經`SaveService`。
+Owner：`Game` 組裝／套用 DTO 與選擇 dev/normal path；
+`scripts/systems/quick_save_service.gd` 負責 temporary validation、backup、replace 與 JSON
+read。Quick save 不經 Meta `SaveService`，也不把 Game state 注入檔案服務。
 
 Schema 1 payload：
 
@@ -1020,7 +1023,7 @@ canonical identity，再載入 `AutumnBattleMapV2.tscn`；不得直接刪除 pat
 
 ### 10.3 Backup差異
 
-Meta SaveService在成功後移除backup。Quick save自行copy backup，但load不fallback到
+Meta SaveService在成功後移除backup。QuickSaveService保留前一份backup，但load不fallback到
 backup。修改其中一條pipeline時不可假定另一條自動同步。
 
 ### 10.4 Save安全規則

@@ -5,6 +5,7 @@ signal volley_fired(origin: Vector2, target_positions: Array[Vector2])
 signal completed()
 
 const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
+const TARGET_ADAPTER := preload("res://scripts/combat/combat_target_adapter.gd")
 
 var _target_provider := Callable()
 var _duration := 2.4
@@ -116,11 +117,9 @@ func _resolve_volley() -> void:
 	var target_positions: Array[Vector2] = []
 	for spike_index in _spikes_per_volley:
 		var target := targets[spike_index % targets.size()]
-		var dealt := 0
-		if target.has_method("take_hit"):
-			dealt = int(target.call("take_hit", _damage_per_spike, global_position, _knockback))
-		elif target.has_method("take_damage"):
-			dealt = int(target.call("take_damage", _damage_per_spike))
+		var dealt := TARGET_ADAPTER.deal_damage(
+			target, _damage_per_spike, global_position, _knockback
+		)
 		if dealt > 0:
 			_spike_hit_count += 1
 			target_positions.append(ATTACK_GEOMETRY.target_center(target))

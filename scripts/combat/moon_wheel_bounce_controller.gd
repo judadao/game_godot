@@ -6,6 +6,7 @@ signal impact(target: Node, world_position: Vector2, damage: int)
 signal completed()
 
 const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
+const TARGET_ADAPTER := preload("res://scripts/combat/combat_target_adapter.gd")
 const MAX_CONTACT_IMPACTS_PER_ADVANCE := 1
 
 var _caster: Node2D
@@ -158,8 +159,4 @@ func _targets_in_range() -> Array[Node2D]:
 
 
 func _deal_damage(target: Node2D, source: Vector2) -> int:
-	if target.has_method("take_hit"):
-		return int(target.call("take_hit", _damage_per_contact, source, 55.0))
-	if target.has_method("take_damage"):
-		return int(target.call("take_damage", _damage_per_contact))
-	return 0
+	return TARGET_ADAPTER.deal_damage(target, _damage_per_contact, source, 55.0)

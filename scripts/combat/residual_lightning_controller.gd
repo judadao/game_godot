@@ -6,6 +6,7 @@ signal final_strike(target: Node, target_position: Vector2)
 signal completed()
 
 const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
+const TARGET_ADAPTER := preload("res://scripts/combat/combat_target_adapter.gd")
 
 var _caster: Node2D
 var _target_provider := Callable()
@@ -139,8 +140,4 @@ func _resolve_final_strikes() -> void:
 
 
 func _deal_damage(target: Node2D, amount: int, source: Vector2) -> int:
-	if target.has_method("take_hit"):
-		return int(target.call("take_hit", amount, source, 40.0))
-	if target.has_method("take_damage"):
-		return int(target.call("take_damage", amount))
-	return 0
+	return TARGET_ADAPTER.deal_damage(target, amount, source, 40.0)

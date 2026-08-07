@@ -180,6 +180,9 @@ State/system instances由 `Game` 建立並持有，不加入 SceneTree：
 
 `inventory_manager.gd` 與 `town_manager.gd` 沒有 `class_name`，由 `Game` preload
 script 後 `new()`，以 `call()` 溝通。這是 Current，不應在文件中虛構 typed service。
+Quick save 的 DTO 組裝／套用仍由 `Game` 擁有，但 transactional JSON 檔案 I/O 已抽到
+static `QuickSaveService`（`scripts/systems/quick_save_service.gd`）；它不持有 Game、UI、
+map 或 progression state。
 
 ## 4. Scene 與地圖架構
 
@@ -942,7 +945,7 @@ Scene/UI input
 
 | Severity | Risk | Evidence | Required control |
 |---|---|---|---|
-| High | Game monolith | `game.gd`約2,108行，仍涵蓋多domain；map path registry已抽離 | 新規則優先放可測system；改動跑跨系統tests |
+| High | Game monolith | `game.gd`約7,543行，仍涵蓋多domain；map registry、card collection、quick-save IO 與 codex text projection 已抽離 | 依 `maintenance_scope_map.json` 每次只抽一個可測責任；先跑 focused suite，再跑全回歸 |
 | High | Inventory多份真相 | manager/meta/prototype dictionaries | 明確同步點與一致性assertion |
 | High | Save雙管線 | SaveService vs Game quick save | 分開文件、fixtures與migration |
 | High | Map雙路徑 | canonical vs authoritative | registry test、save compatibility |

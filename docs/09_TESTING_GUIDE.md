@@ -198,7 +198,12 @@ tools/run_godot_tests.sh --pattern 'card_system_test'
 tools/run_godot_tests.sh --suite ui
 tools/run_godot_tests.sh --suite cards --fail-fast
 tools/run_godot_tests.sh --suite scene --strict-warnings
-tools/run_godot_tests.sh --pattern 'map_registry|quick_save'
+tools/run_godot_tests.sh --suite maintenance --strict-warnings
+tools/run_godot_tests.sh --suite assets --strict-warnings
+tools/run_godot_tests.sh --suite vfx --strict-warnings
+tools/run_godot_tests.sh --suite forge --strict-warnings
+tools/run_godot_tests.sh --suite story --strict-warnings
+tools/run_godot_tests.sh --pattern 'map_registry|quick_save(_service|_migration)'
 tools/run_godot_tests.sh --pattern 'town_building_ui_(contract|behavior|layout|lifecycle)'
 tools/run_godot_tests.sh --pattern 'autumn_(safe_zone_contract|modular_route)'
 ```
@@ -573,9 +578,9 @@ Profiler/Monitor 數據，至少包含 process、physics、draw calls 與 node/o
 object、orphan node 與記憶體不持續成長。專案尚無自動 performance/memory
 門檻；在建立基線前，這些屬於必做的可重現量測而非 CI pass/fail。
 
-Scene directory changes must run these permanent contracts:
+Scene directory changes must run these current contracts；已不存在功能的 absence-only
+測試不保留，避免每次修改都驗證退役路徑：
 
-- `tests/scene_cleanup_contract_test.gd`：retired zero-reference scenes stay absent.
 - `tests/scene_feature_directory_test.gd`：UI/dev/test fixtures remain in their owner folders.
 - `tests/town_residence_ui_layout_test.gd`：住宅資訊 UI 在六個基準解析度內不裁切。
 - `tests/town_scene_path_structure_test.gd`：Town active and legacy linked scenes keep their classified paths.
@@ -831,8 +836,10 @@ instance.queue_free()
 `skill_series_catalog_test.gd`、`skill_recipe_manager_test.gd`、`growth_choice_queue_test.gd`、
 `card_growth_ui_*` 與 `autumn_hud_v3_*`。本輪 OB／神賜補全另以
 `combat_ob_completion_contract_test.gd`、
-`combat_ob_finisher_runtime_contract_test.gd` 與 `divine_gift_capacity_contract_test.gd`
-鎖定 32 配方、支援型實際施放、Lv.15 存檔邊界及三格神賜規則。最後仍需執行
+`skill_loadout_execution_test.gd`、`all_skill_series_gameplay_test.gd` 與
+`divine_gift_capacity_contract_test.gd` 鎖定 legacy VFX identity、現役 13 系列路線／
+實際施放、Lv.15 存檔邊界及三格神賜規則。退役的「所有 Finisher 都由下一發普攻直接
+結算」測項不得重新加入。最後仍需執行
 全量 SceneTree tests、editor smoke、main smoke 與人工六尺寸截圖/操作檢查。
 
 ## 18. Future Extension

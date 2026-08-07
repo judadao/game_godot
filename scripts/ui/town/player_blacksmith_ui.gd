@@ -30,6 +30,7 @@ signal market_fixture_purchase_requested(fixture_id: StringName)
 signal upgrade_sword_soul_requested(card_id: StringName)
 signal workshop_upgraded
 
+const UI_VALUE_FORMATTER := preload("res://scripts/ui/ui_value_formatter.gd")
 const VALID_SERVICES: Array[StringName] = [
 	&"forge",
 	&"workshop_upgrade",
@@ -1509,9 +1510,4 @@ func _inventory_has_method(method_name: StringName) -> bool:
 
 
 func _format_number(value: int) -> String:
-	var text := str(value)
-	var result := ""
-	while text.length() > 3:
-		result = "," + text.substr(text.length() - 3, 3) + result
-		text = text.substr(0, text.length() - 3)
-	return text + result
+	return UI_VALUE_FORMATTER.format_integer(value)

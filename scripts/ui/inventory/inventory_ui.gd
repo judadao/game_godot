@@ -9,6 +9,7 @@ signal item_selected(index: int, item_data: Dictionary)
 signal equip_requested(item_id: StringName)
 signal story_review_requested(sequence_id: StringName)
 
+const UI_VALUE_FORMATTER := preload("res://scripts/ui/ui_value_formatter.gd")
 const MODE_INVENTORY := &"bag"
 const MODE_STATUS := &"status"
 const MODE_SWORD_SOULS := &"sword_souls"
@@ -769,9 +770,4 @@ func _display_trait(raw_trait: String) -> String:
 
 
 func _format_number(value: int) -> String:
-	var text := str(value)
-	var result := ""
-	while text.length() > 3:
-		result = "," + text.right(3) + result
-		text = text.left(text.length() - 3)
-	return text + result
+	return UI_VALUE_FORMATTER.format_integer(value)

@@ -3,6 +3,7 @@ class_name HUD
 
 signal interaction_prompt_accepted
 
+const UI_VALUE_FORMATTER := preload("res://scripts/ui/ui_value_formatter.gd")
 const AREA_PANEL_MIN_WIDTH := 220.0
 const AREA_PANEL_MAX_WIDTH := 520.0
 const AREA_TEXT_HORIZONTAL_PADDING := 88.0
@@ -175,9 +176,4 @@ func _make_display_only(node: Node) -> void:
 		_make_display_only(child)
 
 func _format_number(value: int) -> String:
-	var text := str(value)
-	var result := ""
-	while text.length() > 3:
-		result = "," + text.substr(text.length() - 3, 3) + result
-		text = text.substr(0, text.length() - 3)
-	return text + result
+	return UI_VALUE_FORMATTER.format_integer(value)

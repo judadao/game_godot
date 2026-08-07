@@ -1,0 +1,24 @@
+{
+	"schema_version": 1,
+	"policy": {
+		"unreferenced_assets": "preserve",
+		"notes": "Unreferenced, source, candidate, and legacy art is inventoried but never deleted by maintenance tooling."
+	},
+	"categories": [
+		{"id": "generated_vfx", "prefix": "assets/generated/vfx/", "role": "runtime_and_candidate_vfx", "status": "active", "preserve_unreferenced": true},
+		{"id": "generated_general", "prefix": "assets/generated/", "role": "generated_runtime_and_candidate_art", "status": "active", "preserve_unreferenced": true},
+		{"id": "expedition_generated", "prefix": "assets/environments/expedition/generated/", "role": "generated_expedition_maps", "status": "active", "preserve_unreferenced": true},
+		{"id": "environments", "prefix": "assets/environments/", "role": "battlefield_and_background_art", "status": "active", "preserve_unreferenced": true},
+		{"id": "town_modular_v1", "prefix": "assets/town/modular_v1/", "role": "town_source_iteration", "status": "legacy_preserved", "preserve_unreferenced": true},
+		{"id": "town_modular_v2", "prefix": "assets/town/modular_v2/", "role": "town_source_iteration", "status": "candidate_preserved", "preserve_unreferenced": true},
+		{"id": "town_modular_v3", "prefix": "assets/town/modular_v3/", "role": "town_modular_runtime_art", "status": "active", "preserve_unreferenced": true},
+		{"id": "town_rebuild_v2", "prefix": "assets/town/rebuild_v2/", "role": "town_compatibility_art", "status": "legacy_preserved", "preserve_unreferenced": true},
+		{"id": "town", "prefix": "assets/town/", "role": "town_buildings_props_npcs_and_backgrounds", "status": "active", "preserve_unreferenced": true},
+		{"id": "ui", "prefix": "assets/ui/", "role": "interface_icons_frames_and_skill_art", "status": "active", "preserve_unreferenced": true},
+		{"id": "props", "prefix": "assets/props/", "role": "reusable_world_props", "status": "active", "preserve_unreferenced": true},
+		{"id": "curated", "prefix": "assets/curated/", "role": "approved_third_party_and_project_art", "status": "active", "preserve_unreferenced": true},
+		{"id": "enemies", "prefix": "assets/enemies/", "role": "enemy_and_boss_art", "status": "active", "preserve_unreferenced": true},
+		{"id": "monsters", "prefix": "assets/monsters/", "role": "monster_source_and_generated_art", "status": "active", "preserve_unreferenced": true},
+		{"id": "licenses", "prefix": "assets/licenses/", "role": "license_and_attribution_records", "status": "required", "preserve_unreferenced": true}
+	]
+}

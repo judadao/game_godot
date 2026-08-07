@@ -1,0 +1,76 @@
+{
+	"schema_version": 1,
+	"purpose": "Route maintenance work to the smallest authoritative domain and focused test suite.",
+	"domains": [
+		{
+			"id": "composition_and_save",
+			"keywords": ["game flow", "map load", "quick save", "meta save", "UI stack"],
+			"authority_paths": ["res://scenes/game/game.tscn", "res://scripts/managers/game.gd", "res://scripts/systems/quick_save_service.gd", "res://scripts/systems/save_service.gd"],
+			"test_suite": "systems",
+			"change_boundary": "Keep Game as wiring owner; persistence format and file I/O stay in save services."
+		},
+		{
+			"id": "combat_runtime",
+			"keywords": ["damage", "target", "hit", "knockback", "status"],
+			"authority_paths": ["res://scripts/combat/card_effect_runner.gd", "res://scripts/combat/attack_geometry.gd", "res://scripts/combat/combat_target_adapter.gd"],
+			"test_suite": "combat",
+			"change_boundary": "Combat primitives must not depend on UI or map-specific scenes."
+		},
+		{
+			"id": "skill_vfx",
+			"keywords": ["VFX", "skill animation", "impact", "trail", "element material"],
+			"authority_paths": ["res://scripts/combat/named_skill_vfx.gd", "res://scripts/systems/named_skill_vfx_catalog.gd", "res://scripts/systems/skill_series_vfx_catalog.gd", "res://scenes/combat/vfx", "res://data/named_skill_vfx_profiles.json", "res://data/skill_series_vfx.json"],
+			"test_suite": "vfx",
+			"change_boundary": "Presentation recipes consume combat events; they do not own damage or progression."
+		},
+		{
+			"id": "cards_combo_and_skills",
+			"keywords": ["card", "combo", "finisher", "skill recipe", "loadout"],
+			"authority_paths": ["res://data/cards.json", "res://data/skills.json", "res://data/combo_finishers.json", "res://scripts/systems/combo_finisher_catalog.gd", "res://scripts/systems/skill_recipe_manager.gd"],
+			"test_suite": "cards",
+			"change_boundary": "Catalog rules stay in systems/data; HUD only projects the resolved state."
+		},
+		{
+			"id": "expedition_maps",
+			"keywords": ["battle map", "portal", "boss room", "route", "expedition"],
+			"authority_paths": ["res://scripts/systems/map_registry.gd", "res://scripts/systems/expedition_region_catalog.gd", "res://scripts/maps/themed_expedition_route.gd", "res://scenes/maps/expedition"],
+			"test_suite": "maps",
+			"change_boundary": "Canonical public paths remain stable while authoritative map scenes own layout."
+		},
+		{
+			"id": "town_world",
+			"keywords": ["town", "building", "portal art", "ambient", "NPC placement"],
+			"authority_paths": ["res://scenes/maps/town/TownMap.tscn", "res://scenes/maps/town", "res://data/town_modular_layout.json", "res://data/town_visual_style.json"],
+			"test_suite": "town",
+			"change_boundary": "Town scene owns collision and placement; modular visuals remain replaceable assets."
+		},
+		{
+			"id": "forge_and_market",
+			"keywords": ["forge", "blacksmith", "market", "sale shelf", "material quality"],
+			"authority_paths": ["res://scripts/systems/forge_catalog.gd", "res://scripts/systems/forge_service.gd", "res://scripts/ui/town/player_blacksmith_ui.gd", "res://scripts/ui/town/player_market_ui.gd", "res://data/forge_catalog.json"],
+			"test_suite": "forge",
+			"change_boundary": "Forge services own rules; UI emits intent and renders projections."
+		},
+		{
+			"id": "inventory_and_codex_ui",
+			"keywords": ["inventory", "codex", "equipment view", "skill preview"],
+			"authority_paths": ["res://scripts/systems/inventory_manager.gd", "res://scripts/ui/inventory", "res://scripts/ui/inventory/codex_text_formatter.gd", "res://scenes/ui/inventory"],
+			"test_suite": "ui",
+			"change_boundary": "Inventory manager owns mutable inventory; UI receives defensive projections."
+		},
+		{
+			"id": "story_and_dialogue",
+			"keywords": ["story", "dialogue", "chapter", "emotion", "review"],
+			"authority_paths": ["res://scripts/story/story_director.gd", "res://scripts/story/dialogue_runner.gd", "res://scripts/ui/dialogue", "res://data/story"],
+			"test_suite": "story",
+			"change_boundary": "Story state and dialogue playback stay separate from inventory codex presentation."
+		},
+		{
+			"id": "asset_inventory",
+			"keywords": ["asset", "texture", "source art", "unused art", "classification"],
+			"authority_paths": ["res://assets/asset_classification.json", "res://assets/README.md", "res://tools/audit_assets.py"],
+			"test_suite": "assets",
+			"change_boundary": "Audit and classify only; unreferenced assets are preserved unless explicitly authorized otherwise."
+		}
+	]
+}

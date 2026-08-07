@@ -5,6 +5,7 @@ signal pulse_hit(target: Node, world_position: Vector2, damage: int)
 signal completed()
 
 const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
+const TARGET_ADAPTER := preload("res://scripts/combat/combat_target_adapter.gd")
 
 var _target_provider := Callable()
 var _duration := 3.0
@@ -129,11 +130,9 @@ func _resolve_pulse() -> void:
 	_pulse_count += 1
 	var emitted := 0
 	for target in _valid_entangled_targets():
-		var dealt := 0
-		if target.has_method("take_hit"):
-			dealt = int(target.call("take_hit", _damage_per_tick, global_position, 0.0))
-		elif target.has_method("take_damage"):
-			dealt = int(target.call("take_damage", _damage_per_tick))
+		var dealt := TARGET_ADAPTER.deal_damage(
+			target, _damage_per_tick, global_position
+		)
 		if dealt <= 0:
 			continue
 		_pulse_hit_count += 1

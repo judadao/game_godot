@@ -7,6 +7,7 @@ signal toggled(is_open: bool)
 signal canceled
 signal building_upgraded(building_id: StringName, level: int)
 
+const UI_VALUE_FORMATTER := preload("res://scripts/ui/ui_value_formatter.gd")
 const BUILDING_ID := &"town_hall"
 const AGENDA_OVERVIEW := &"overview"
 const AGENDA_UPGRADE := &"hall_upgrade"
@@ -374,9 +375,4 @@ func _resource_display_name(resource_id: StringName) -> String:
 
 
 func _format_number(value: int) -> String:
-	var text := str(maxi(0, value))
-	var result := ""
-	while text.length() > 3:
-		result = "," + text.right(3) + result
-		text = text.left(text.length() - 3)
-	return text + result
+	return UI_VALUE_FORMATTER.format_integer(value, true)

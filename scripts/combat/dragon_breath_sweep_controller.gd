@@ -7,6 +7,7 @@ signal impact(target: Node, world_position: Vector2, damage: int)
 signal completed()
 
 const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
+const TARGET_ADAPTER := preload("res://scripts/combat/combat_target_adapter.gd")
 
 var _caster: Node2D
 var _target_provider := Callable()
@@ -125,10 +126,8 @@ func _resolve_rain_emitter(emitter_index: int) -> void:
 
 
 func _apply_damage(target: Node2D, amount: int, knockback: float) -> void:
-	var dealt := 0
-	if target.has_method("take_hit"):
-		dealt = int(target.call("take_hit", amount, _caster.global_position, knockback))
-	elif target.has_method("take_damage"):
-		dealt = int(target.call("take_damage", amount))
+	var dealt := TARGET_ADAPTER.deal_damage(
+		target, amount, _caster.global_position, knockback
+	)
 	if dealt > 0:
 		impact.emit(target, ATTACK_GEOMETRY.target_center(target), dealt)

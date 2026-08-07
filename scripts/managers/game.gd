@@ -13,6 +13,7 @@ const DEV_QUICK_SAVE_PATH := "user://saves/dev_quick_save.json"
 const DEV_QUICK_SAVE_TEMP_PATH := "user://saves/dev_quick_save.tmp"
 const DEV_QUICK_SAVE_BACKUP_PATH := "user://saves/dev_quick_save.json.bak"
 const DEV_META_SAVE_PATH := "user://saves/dev_meta_progress.json"
+const QUICK_SAVE_SERVICE_SCRIPT := preload("res://scripts/systems/quick_save_service.gd")
 const MAP_REGISTRY_SCRIPT := preload("res://scripts/systems/map_registry.gd")
 const EXPEDITION_CATALOG_SCRIPT := preload("res://scripts/systems/expedition_region_catalog.gd")
 const BATTLE_PORTAL_HUB_SCENE_PATH := "res://scenes/maps/battle_portal_hub.tscn"
@@ -50,6 +51,7 @@ const SERIES_IMPACT_VFX_ROUTER_SCRIPT := preload(
 	"res://scripts/vfx/series_impact_vfx_router.gd"
 )
 const ELEMENT_TAXONOMY_SCRIPT := preload("res://scripts/systems/element_taxonomy.gd")
+const CODEX_TEXT_FORMATTER := preload("res://scripts/ui/inventory/codex_text_formatter.gd")
 const BASE_AP_REGEN := 0.95
 const CARD_TEMPO_DURATION := 6.0
 const CARD_TEMPO_MAX_STACKS := 8
@@ -5148,7 +5150,7 @@ func _inventory_sword_soul_projection() -> Array[Dictionary]:
 			"bonus_type_label": _sword_soul_bonus_type_label(bonus_type),
 			"level": instance.level,
 			"description": _card_level_description(card, instance.level),
-			"effect_summary": _card_effect_summary(card.get("effect", {}) as Dictionary),
+			"effect_summary": CODEX_TEXT_FORMATTER.card_effect_summary(card.get("effect", {}) as Dictionary),
 			"ability_summary": _sword_soul_ability_summary(card),
 			"icon_path": String(card.get("icon_path", JOURNAL_ICON_ROOT + "Icon41_1_2.png")),
 		})
@@ -5216,7 +5218,7 @@ func _sword_soul_bonus_type_label(bonus_type: StringName) -> String:
 
 
 func _sword_soul_ability_summary(card: Dictionary) -> String:
-	var summary := _card_effect_summary(card.get("effect", {}) as Dictionary).strip_edges()
+	var summary := CODEX_TEXT_FORMATTER.card_effect_summary(card.get("effect", {}) as Dictionary).strip_edges()
 	return summary if not summary.is_empty() else "依劍魂等級提供戰鬥加乘。"
 
 
@@ -5315,7 +5317,7 @@ func _inventory_sword_soul_codex_projection() -> Array[Dictionary]:
 			"name": _localized_text(card, "name"),
 			"kind_label": "已解鎖劍魂" if unlocked else "未解鎖劍魂",
 			"description": _localized_text(card, "description"),
-			"effect_summary": _card_effect_summary(card.get("effect", {}) as Dictionary),
+			"effect_summary": CODEX_TEXT_FORMATTER.card_effect_summary(card.get("effect", {}) as Dictionary),
 			"trigger_summary": acquisition_summary,
 			"meta_summary": "解鎖 %s · 持有 %s · 等級 %d / 3" % [
 				"是" if unlocked else "否",
@@ -5413,7 +5415,7 @@ func _inventory_blessing_codex_projection() -> Array[Dictionary]:
 			"id": "blessing:%s" % gift_id,
 			"catalog_kind": "blessing_base",
 			"name": String(gift.get("name", gift_id)),
-			"kind_label": "基本神賜 · %s" % _element_display_name(String(gift.get("element", "normal"))),
+			"kind_label": "基本神賜 · %s" % CODEX_TEXT_FORMATTER.element_display_name(String(gift.get("element", "normal"))),
 			"description": String(gift.get("description", "尚無說明。")),
 			"effect_summary": "普通攻擊質變：%s\n滿級能力：%s" % [
 				status_text,
@@ -5438,7 +5440,7 @@ func _inventory_blessing_codex_projection() -> Array[Dictionary]:
 		var background_attack := fusion.get("background_attack", {}) as Dictionary
 		var element_labels := PackedStringArray()
 		for element_variant in fusion.get("elements", []) as Array:
-			element_labels.append(_element_display_name(String(element_variant)))
+			element_labels.append(CODEX_TEXT_FORMATTER.element_display_name(String(element_variant)))
 		var equipment_name := String(fusion.get("required_equipment_name", "")).strip_edges()
 		var requirement := "無裝備門檻" if equipment_name.is_empty() else "另需裝備：%s" % equipment_name
 		var ownership := (
@@ -5579,7 +5581,7 @@ func _equipment_effect_summary(item: Dictionary) -> String:
 			"get_effect_summary", primal_element
 		))
 		parts.append("%s屬性 · %s" % [
-			_element_display_name(primal_element),
+			CODEX_TEXT_FORMATTER.element_display_name(primal_element),
 			element_summary,
 		])
 	return " · ".join(parts) if not parts.is_empty() else "沒有面板屬性修正"
@@ -5679,11 +5681,11 @@ func _inventory_legacy_codex_projection() -> Array[Dictionary]:
 			"description": _localized_text(card, "description"),
 			"effect_summary": (
 				"%s、攻擊範圍 %d" % [
-					_card_effect_summary(effect),
+					CODEX_TEXT_FORMATTER.card_effect_summary(effect),
 					int(card.get("auto_attack_range", 220)),
 				]
 				if category == "attacks"
-				else _card_effect_summary(effect)
+				else CODEX_TEXT_FORMATTER.card_effect_summary(effect)
 			),
 			"trigger_summary": _codex_trigger_summary_for_card(card),
 			"icon_path": String(card.get("icon_path", "")),
@@ -5716,8 +5718,8 @@ func _inventory_legacy_codex_projection() -> Array[Dictionary]:
 			"name": _localized_text(recipe, "name"),
 			"category": "skills",
 			"kind_label": "已學會戰鬥招式",
-			"description": _skill_recipe_description(recipe),
-			"effect_summary": _card_effect_summary(recipe.get("effect", {}) as Dictionary),
+			"description": CODEX_TEXT_FORMATTER.skill_recipe_description(recipe),
+			"effect_summary": CODEX_TEXT_FORMATTER.card_effect_summary(recipe.get("effect", {}) as Dictionary),
 			"trigger_summary": _skill_trigger_summary(recipe),
 			"icon_path": String(recipe.get("icon_path", "")),
 			"preview_kind": "passive_skill",
@@ -5746,7 +5748,7 @@ func _inventory_legacy_codex_projection() -> Array[Dictionary]:
 			for tag_variant in card.get("tags", []) as Array:
 				_append_vfx_element(elements, String(tag_variant))
 		var base_effect := recipe.get("base_effect", {}) as Dictionary
-		var finisher_effect_summary := _card_effect_summary(base_effect)
+		var finisher_effect_summary := CODEX_TEXT_FORMATTER.card_effect_summary(base_effect)
 		if finisher_effect_summary.strip_edges().is_empty():
 			finisher_effect_summary = "效果會讀取三張配方卡的目前等級、裝備與祝福後動態推導。"
 		var progression := _named_skill_vfx_progression(recipe)
@@ -5851,7 +5853,7 @@ func _codex_kind_label_for_card(card: Dictionary, profile: Dictionary) -> String
 	var effect := card.get("effect", {}) as Dictionary
 	var card_type := String(card.get("type", ""))
 	if category == "infusions":
-		var element := _element_display_name(String(profile.get("element", "")))
+		var element := CODEX_TEXT_FORMATTER.element_display_name(String(profile.get("element", "")))
 		if String(effect.get("target_action", "")) == "dash":
 			return "衝刺附魔"
 		return "%s攻擊附魔" % element if not element.is_empty() else "攻擊附魔"
@@ -5924,145 +5926,6 @@ func _codex_visual_family_for_effect(effect: Dictionary, fallback: String) -> St
 	return fallback
 
 
-func _card_effect_summary(effect: Dictionary) -> String:
-	var parts: Array[String] = []
-	var effect_kind := String(effect.get("kind", ""))
-	if effect.has("amount"):
-		var amount_label := "效果"
-		if effect_kind in ["heal", "regeneration"]:
-			amount_label = "生命"
-		elif effect_kind in ["gain_energy", "action_points"]:
-			amount_label = "AP"
-		elif effect_kind in ["damage", "area_damage", "damage_bonus"]:
-			amount_label = "傷害"
-		parts.append("%s %d" % [amount_label, int(effect["amount"])])
-	if effect.has("heal"):
-		parts.append("每次恢復 %d 生命" % int(effect["heal"]))
-	if effect.has("pulses"):
-		parts.append("生效 %d 次" % int(effect["pulses"]))
-	if effect.has("interval"):
-		parts.append("間隔 %.1f 秒" % float(effect["interval"]))
-	if effect.has("damage_bonus"):
-		parts.append("攻擊傷害 +%d" % int(effect["damage_bonus"]))
-	if effect.has("radius"):
-		parts.append("範圍 %d" % int(effect["radius"]))
-	if effect.has("burn_damage"):
-		parts.append("燃燒傷害 %d" % int(effect["burn_damage"]))
-	if effect.has("frost_ratio"):
-		parts.append("緩速 %d%%" % roundi(float(effect["frost_ratio"]) * 100.0))
-	if effect.has("duration"):
-		parts.append("持續 %.1f 秒" % float(effect["duration"]))
-	if effect.has("status_id"):
-		parts.append(_status_display_name(String(effect["status_id"])))
-	for status_variant in effect.get("statuses", []) as Array:
-		var status := status_variant as Dictionary
-		var status_parts: Array[String] = [
-			_status_display_name(String(status.get("status_id", "status")))
-		]
-		if status.has("tier"):
-			status_parts.append("階級 %d" % int(status["tier"]))
-		if status.has("ratio"):
-			status_parts.append("%d%%" % roundi(float(status["ratio"]) * 100.0))
-		if status.has("amount"):
-			status_parts.append("效果 %d" % int(status["amount"]))
-		if status.has("duration"):
-			status_parts.append("%.1f 秒" % float(status["duration"]))
-		parts.append(" ".join(status_parts))
-	if effect.has("projectile_bonus"):
-		parts.append("劍氣波 +%d" % int(effect["projectile_bonus"]))
-	if effect.has("spread_degrees"):
-		parts.append("散射角度 %.0f 度" % float(effect["spread_degrees"]))
-	if effect.has("combo_stun"):
-		parts.append("暈眩 %.2f 秒" % float(effect["combo_stun"]))
-	if effect.has("size_multiplier"):
-		parts.append("效果尺寸 ×%.2f" % float(effect["size_multiplier"]))
-	if effect.has("attack_range_bonus"):
-		parts.append("攻擊範圍 +%d" % roundi(float(effect["attack_range_bonus"])))
-	if effect.has("attack_interval_multiplier"):
-		parts.append(
-			"攻擊速度 +%d%%"
-				% roundi((1.0 - float(effect["attack_interval_multiplier"])) * 100.0)
-		)
-	if effect.has("projectile_speed_multiplier"):
-		parts.append(
-			"彈體速度 +%d%%"
-				% roundi((float(effect["projectile_speed_multiplier"]) - 1.0) * 100.0)
-		)
-	if effect.has("attack_size_multiplier"):
-		parts.append(
-			"攻擊尺寸 +%d%%"
-				% roundi((float(effect["attack_size_multiplier"]) - 1.0) * 100.0)
-		)
-	if effect.has("defense_bonus"):
-		parts.append("防禦 +%d" % int(effect["defense_bonus"]))
-	if effect.has("move_speed_multiplier"):
-		parts.append("移動速度 +%d%%" % roundi(float(effect["move_speed_multiplier"]) * 100.0))
-	if effect.has("ap_regen_bonus"):
-		parts.append("AP 回復 +%.2f" % float(effect["ap_regen_bonus"]))
-	if effect.has("ap_max_bonus"):
-		parts.append("AP 上限 +%.0f" % float(effect["ap_max_bonus"]))
-	if effect.has("poison_damage"):
-		parts.append("中毒傷害 %d" % int(effect["poison_damage"]))
-	if effect.has("poison_duration"):
-		parts.append("中毒持續 %.1f 秒" % float(effect["poison_duration"]))
-	if effect.has("critical_chance"):
-		parts.append("暴擊率 +%d%%" % roundi(float(effect["critical_chance"]) * 100.0))
-	if effect.has("critical_multiplier"):
-		parts.append("暴擊傷害 ×%.2f" % float(effect["critical_multiplier"]))
-	if effect.has("lifesteal_ratio"):
-		parts.append("生命竊取 %d%%" % roundi(float(effect["lifesteal_ratio"]) * 100.0))
-	if effect.has("combo_duration"):
-		parts.append("附魔 %.1f 秒" % float(effect["combo_duration"]))
-	return (
-		"、".join(parts)
-		if not parts.is_empty()
-		else _effect_kind_display_name(effect_kind)
-	)
-
-
-func _status_display_name(status_id: String) -> String:
-	return {
-		"super_armor": "霸體",
-		"damage_reduction": "傷害減免",
-		"regeneration": "持續恢復",
-		"lifesteal": "生命竊取",
-		"stun": "暈眩",
-		"slow": "緩速",
-	}.get(status_id, "特殊狀態")
-
-
-func _effect_kind_display_name(effect_kind: String) -> String:
-	return {
-		"damage": "造成傷害",
-		"area_damage": "造成範圍傷害",
-		"heal": "恢復生命",
-		"healing_pulses": "持續恢復生命",
-		"regeneration": "持續恢復",
-		"gain_energy": "恢復 AP",
-		"action_points": "調整 AP",
-		"combat_status": "獲得戰鬥狀態",
-		"infusion": "獲得附魔",
-	}.get(effect_kind, "依招式內容動態計算")
-
-
-func _element_display_name(element: String) -> String:
-	return {
-		"water": "水",
-		"fire": "火",
-		"wind": "風",
-		"lightning": "雷",
-		"ice": "冰",
-		"poison": "毒",
-		"light": "光",
-		"dark": "暗",
-		"normal": "普通",
-	}.get(element, "")
-
-
-func _skill_recipe_description(recipe: Dictionary) -> String:
-	return "已學會的招式，佔用 %d 點記憶容量；在戰鬥中完成條件後自動發動。" % int(recipe.get("memory_cost", 0))
-
-
 func _skill_trigger_summary(recipe: Dictionary) -> String:
 	if String(recipe.get("match_mode", "")) == "sequence":
 		var names: Array[String] = []
@@ -6079,57 +5942,25 @@ func _skill_trigger_summary(recipe: Dictionary) -> String:
 
 func _save_quick_slot(menu: Control) -> void:
 	var payload := _build_quick_save_payload()
-	var save_directory := ProjectSettings.globalize_path("user://saves")
-	var create_error := DirAccess.make_dir_recursive_absolute(save_directory)
-	if create_error != OK:
-		_set_menu_footer(menu, "Save failed: cannot create save folder.")
-		return
-
-	var temp_path := _quick_save_temp_path()
-	var save_path := _quick_save_path()
-	var backup_path := _quick_save_backup_path()
-	var temp_file := FileAccess.open(temp_path, FileAccess.WRITE)
-	if temp_file == null:
-		_set_menu_footer(menu, "Save failed: cannot write temporary file.")
-		return
-	temp_file.store_string(JSON.stringify(payload, "\t"))
-	temp_file.flush()
-	temp_file = null
-
-	var check_file := FileAccess.open(temp_path, FileAccess.READ)
-	if check_file == null or JSON.parse_string(check_file.get_as_text()) == null:
-		_remove_file_if_present(temp_path)
-		_set_menu_footer(menu, "Save failed: validation error.")
-		return
-
-	if FileAccess.file_exists(save_path):
-		_copy_file(save_path, backup_path)
-		_remove_file_if_present(save_path)
-
-	var rename_error := DirAccess.rename_absolute(
-		ProjectSettings.globalize_path(temp_path),
-		ProjectSettings.globalize_path(save_path)
+	var result: Dictionary = QUICK_SAVE_SERVICE_SCRIPT.write_json(
+		payload,
+		_quick_save_path(),
+		_quick_save_temp_path(),
+		_quick_save_backup_path()
 	)
-	if rename_error != OK:
-		_set_menu_footer(menu, "Save failed while replacing quick save.")
+	_set_menu_footer(menu, String(result.get("message", "Save failed.")))
+	if not bool(result.get("ok", false)):
 		return
-
 	if menu.has_method("set_button_enabled"):
 		menu.call("set_button_enabled", "load", true)
-	_set_menu_footer(menu, "Game saved.")
 
 
 func _load_quick_slot(menu: Control) -> void:
-	var save_file := FileAccess.open(_quick_save_path(), FileAccess.READ)
-	if save_file == null:
-		_set_menu_footer(menu, "No quick save found.")
+	var result: Dictionary = QUICK_SAVE_SERVICE_SCRIPT.read_json(_quick_save_path())
+	if not bool(result.get("ok", false)):
+		_set_menu_footer(menu, String(result.get("message", "Load failed.")))
 		return
-	var parsed: Variant = JSON.parse_string(save_file.get_as_text())
-	if not parsed is Dictionary:
-		_set_menu_footer(menu, "Load failed: save data is corrupted.")
-		return
-
-	var payload := parsed as Dictionary
+	var payload := result.get("payload", {}) as Dictionary
 	var map_path := String(payload.get("map_path", ""))
 	var resolved_map_path := _resolve_main_scene_path(map_path)
 	if map_path.is_empty() or not ResourceLoader.exists(resolved_map_path):
@@ -6225,23 +6056,6 @@ func _apply_quick_save_payload(payload: Dictionary) -> bool:
 func _set_menu_footer(menu: Control, text: String) -> void:
 	if is_instance_valid(menu) and menu.has_method("set_footer_text"):
 		menu.call("set_footer_text", text)
-
-
-func _copy_file(source_path: String, target_path: String) -> bool:
-	var source := FileAccess.open(source_path, FileAccess.READ)
-	if source == null:
-		return false
-	var target := FileAccess.open(target_path, FileAccess.WRITE)
-	if target == null:
-		return false
-	target.store_buffer(source.get_buffer(source.get_length()))
-	target.flush()
-	return true
-
-
-func _remove_file_if_present(path: String) -> void:
-	if FileAccess.file_exists(path):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 func _resolve_open_ui(ui: Variant) -> Control:

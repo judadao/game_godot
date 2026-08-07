@@ -7,6 +7,7 @@ signal toggled(is_open: bool)
 signal canceled
 signal purchase_requested(offer_id: StringName, quantity: int)
 
+const UI_VALUE_FORMATTER := preload("res://scripts/ui/ui_value_formatter.gd")
 const WORKSHOP_ID: StringName = &"workshop"
 const MATERIAL_FILTER: StringName = &"materials"
 const TOOL_FILTER: StringName = &"forge_tools"
@@ -459,9 +460,4 @@ func _offer_row_status(offer: Dictionary) -> String:
 
 
 func _format_number(value: int) -> String:
-	var text := str(maxi(0, value))
-	var result := ""
-	while text.length() > 3:
-		result = "," + text.substr(text.length() - 3, 3) + result
-		text = text.substr(0, text.length() - 3)
-	return text + result
+	return UI_VALUE_FORMATTER.format_integer(value, true)

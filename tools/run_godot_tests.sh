@@ -26,7 +26,7 @@ usage() {
 Usage: tools/run_godot_tests.sh [options]
 
 Options:
-  --suite NAME          Test suite: all, cards, combat, maps, scene, systems, town, autumn, ui, smoke.
+  --suite NAME          Test suite: all, maintenance, assets, cards, combat, vfx, maps, scene, systems, forge, story, town, autumn, ui, smoke.
   --pattern REGEX       Run tests whose path matches REGEX after suite filtering.
   --smoke               Also run editor and main-scene smoke checks.
   --fail-fast           Stop at the first failing test or smoke check.
@@ -111,11 +111,16 @@ matches_suite() {
 	case "$SUITE" in
 		all) return 0 ;;
 		smoke) return 1 ;;
+		maintenance) [[ "$path" =~ asset_classification|combat_target_adapter|ui_value_formatter|codex_text_formatter|quick_save_service|maintenance_scope_map|content_validation|scene_feature_directory|scene_registry ]] ;;
+		assets) [[ "$path" =~ asset|content_validation|texture|visual_source ]] ;;
 		cards) [[ "$path" =~ card|deck|combo|growth|skill|fixed|hand|projectile ]] ;;
-		combat) [[ "$path" =~ combat|boss|enemy|encounter|survival|auto_attack|auto_horizontal|experience_gem|dash|potion|wandering_merchant|power_fantasy ]] ;;
+		combat) [[ "$path" =~ combat|boss|enemy|encounter|survival|auto_attack|auto_horizontal|experience_gem|dash|potion|wandering_merchant|power_fantasy|lightning|moon_wheel|feather|black_hole|dr_stone|thorn|swamp|dragon_breath|fire_pillar|tidal ]] ;;
+		vfx) [[ "$path" =~ vfx|visual|effect|lightning|moon_wheel|feather|black_hole|thorn|swamp|dr_stone|dragon_breath|fire_pillar|tidal ]] ;;
 		maps) [[ "$path" =~ map|town|battle_portal|vertical_slice|campfire ]] ;;
 		scene) [[ "$path" =~ scene|content_validation|map_layout|map_main|interactive ]] ;;
 		systems) [[ "$path" =~ registry|migration|progression|run_|save|collection|state|memory|recipe ]] ;;
+		forge) [[ "$path" =~ forge|blacksmith|market|material_yard|shop|equipment|town_building ]] ;;
+		story) [[ "$path" =~ story|dialogue|codex|journal ]] ;;
 		town) [[ "$path" =~ town|shop|inventory|merchant ]] ;;
 		autumn) [[ "$path" =~ autumn|battle_map|survival|boss|encounter|combat_camera ]] ;;
 		ui) [[ "$path" =~ ui|hud|layout|card_hand|card_growth|deck_builder|dialogue|shop|inventory|pause|run_result|interaction_prompt ]] ;;

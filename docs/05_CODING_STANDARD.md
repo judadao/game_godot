@@ -67,6 +67,11 @@ func interact(interactor: Node = null) -> bool:
 目前 `scripts/managers/game.gd` 同時協調 map、UI、combat、shop、save 等多項
 責任，屬已知重整候選；新增功能前優先抽出可測純邏輯，不再擴張它。
 
+大型檔案必須依責任拆分，不得只依行數切成 `part_1`／`part_2`。抽離前先建立
+characterization test；抽離後原 owner 只保留 composition、資料轉換或必要相容 wrapper。
+功能權威位置與 focused suite 由 `data/maintenance_scope_map.json` 路由，避免為單一修改
+載入或改動不相干 domain。
+
 ## 4. Signal First
 
 下層元件發 signal，上層協調者決定後果。
@@ -214,6 +219,7 @@ func _connect_once(source: Object, signal_name: StringName, callback: Callable) 
 ## 16. Future Extension
 
 - 將 `Game` 的 save、shop、run combat、UI stack 分階段抽成可注入 coordinator。
+- 持續依 `docs/14_MAINTENANCE_MAP.md` 將大型 VFX/UI script 拆成具語意且可獨立驗證的責任。
 - 導入靜態檢查與 GDScript formatter（需先固定工具版本）。
 - 以 typed Resource 取代成熟且高風險的 JSON Dictionary 邊界。
 

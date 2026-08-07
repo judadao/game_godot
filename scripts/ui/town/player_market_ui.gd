@@ -1,6 +1,8 @@
 class_name PlayerMarketUI
 extends Control
 
+const UI_VALUE_FORMATTER := preload("res://scripts/ui/ui_value_formatter.gd")
+
 signal back_requested
 signal list_for_sale_requested(
 	item_kind: StringName,
@@ -665,12 +667,7 @@ func _find_candidate(key: String) -> Dictionary:
 
 
 func _format_number(value: int) -> String:
-	var source := str(value)
-	var result := ""
-	while source.length() > 3:
-		result = "," + source.substr(source.length() - 3, 3) + result
-		source = source.substr(0, source.length() - 3)
-	return source + result
+	return UI_VALUE_FORMATTER.format_integer(value)
 
 
 func _cost_text(cost: Dictionary) -> String:

@@ -4,6 +4,7 @@ extends Node
 signal contact_hit(target: Node, world_position: Vector2, damage: int)
 
 const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
+const TARGET_ADAPTER := preload("res://scripts/combat/combat_target_adapter.gd")
 
 var _caster: Node2D
 var _target_provider := Callable()
@@ -98,13 +99,9 @@ func _resolve_contact_tick() -> void:
 			_radius
 		):
 			continue
-		var dealt := 0
-		if target.has_method("take_hit"):
-			dealt = int(target.call(
-				"take_hit", _damage_per_tick, field_center, _knockback
-			))
-		elif target.has_method("take_damage"):
-			dealt = int(target.call("take_damage", _damage_per_tick))
+		var dealt := TARGET_ADAPTER.deal_damage(
+			target, _damage_per_tick, field_center, _knockback
+		)
 		if dealt <= 0:
 			continue
 		_hit_count += 1

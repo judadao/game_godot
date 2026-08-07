@@ -97,10 +97,24 @@ Roadmap item 的建立與關閉依序使用：
 
 此基線不包含 F6 視覺檢查、完整互動 walkthrough、profiler、memory monitor 或長時間 soak。
 
+2026-08-07 完成 maintenance boundary、共用 helper 與 focused suite 整理後，
+以 `tools/run_godot_tests.sh --suite all --smoke --strict-warnings` 重建基線：
+
+| Check | Baseline |
+|---|---|
+| Total current standalone test scripts | 217/217 passed |
+| Godot error markers | 0 |
+| Editor headless smoke | passed |
+| Main-scene headless smoke | passed |
+
+後續修改應先依 `docs/14_MAINTENANCE_MAP.md` 選擇最小 focused suite，再於交付前
+執行受影響測試；跨域重構才需要重跑完整基線。
+
 ### 2.3 Current constraints
 
-- `scripts/managers/game.gd` 仍是 central coordinator；map path registry 與跨
-  Meta／Run／Deck 的 card collection mutation 已抽成獨立純邏輯 services；
+- `scripts/managers/game.gd` 仍是 central coordinator；map path registry、跨
+  Meta／Run／Deck 的 card collection mutation 與 quick-save transactional file I/O
+  已抽成獨立純邏輯 services；
 - 已有 central test runner；
 - 無 CI；
 - 無 performance/memory budget；
@@ -346,7 +360,9 @@ Town manager 產生的 visual flag 多於 `Game` 實際套用的四個 scene nod
 save、inventory、town 與 result。純 path mapping 已抽離至
 `scripts/systems/map_registry.gd`；CardInstance 的 add／fusion／exact removal 與
 collection snapshot／rollback 已抽離至
-`scripts/systems/card_collection_service.gd`。`Game` 保留 choice、pause、save 與
+`scripts/systems/card_collection_service.gd`；quick-save temporary／validation／backup／
+replace 已抽離至 `scripts/systems/quick_save_service.gd`。`Game` 保留 DTO、path choice、
+choice、pause 與
 UI orchestration，本項其餘責任仍為 Open。
 
 **Boundary candidates from current ownership**
@@ -355,6 +371,7 @@ UI orchestration，本項其餘責任仍為 Open。
 Game composition root
 ├── MapRegistry（Current）
 ├── CardCollectionService（Current；collection mutation boundary）
+├── QuickSaveService（Current；quick-save file boundary）
 ├── MapFlowCoordinator（Proposed）
 ├── UIFlowCoordinator
 ├── ExpeditionCoordinator
@@ -426,6 +443,8 @@ Game composition root
   `--suite`、`--pattern`、`--fail-fast`、`--smoke` 與 `--strict-warnings`。
 - 2026-07-28 以 `tools/run_godot_tests.sh --suite all --smoke --strict-warnings`
   驗證 94/94 tests、editor smoke 與 main smoke 全部通過。
+- 2026-08-07 依 current test inventory 重跑同一 strict command，驗證
+  217/217 tests、editor headless smoke 與 main headless smoke 全部通過。
 
 **Acceptance Criteria**
 

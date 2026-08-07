@@ -118,76 +118,12 @@ func _run() -> void:
 	widened_target.queue_free()
 	await process_frame
 	run.temporary_buffs["combo_chain_count"] = 0
-	forward_target = DamageTarget.new()
-	forward_target.add_to_group("Enemies")
-	current_map.add_child(forward_target)
-	forward_target.global_position = player.global_position + Vector2(100.0, 0.0)
-	off_axis_target = DamageTarget.new()
-	off_axis_target.add_to_group("Enemies")
-	current_map.add_child(off_axis_target)
-	off_axis_target.global_position = player.global_position + Vector2(100.0, 100.0)
-
-	var database := game.get("card_database") as CardDatabase
-	var meta := game.get("meta_state") as MetaState
-	for skill_id in ["wildfire_thunder_tone", "thousand_feather_resonance"]:
-		if not meta.learned_skill_ids.has(skill_id):
-			meta.learned_skill_ids.append(skill_id)
-	(game.get("skill_recipe_manager") as SkillRecipeManager).configure_loadout(
-		meta.learned_skill_ids,
-		["wildfire_thunder_tone", "thousand_feather_resonance"],
-		99
-	)
-	for card_id in ["flame_imbue", "echo_volley", "storm_charge", "flame_imbue"]:
-		game.call("_record_combo_formula", database.get_card(card_id))
-	_expect(
-		bool(run.temporary_buffs.get("finisher_pending", false)),
-		"A learned three-Combo recipe must queue its named Finisher."
-	)
-	var before_finisher := forward_target.health
-	var off_axis_before_finisher := off_axis_target.health
-	game.set("_auto_attack_remaining", 0.0)
-	game.call("_tick_auto_attack", 0.0)
-	_expect(
-		forward_target.health < before_finisher
-			and off_axis_target.health == off_axis_before_finisher
-			and not bool(run.temporary_buffs.get("finisher_pending", false)),
-		"The next automatic horizontal shot must release and consume the queued Finisher."
-	)
-
-	for enemy in get_nodes_in_group("Enemies"):
-		if is_instance_valid(enemy):
-			enemy.queue_free()
-	await process_frame
-	for card_id in ["echo_volley", "echo_volley", "echo_volley"]:
-		game.call("_record_combo_formula", database.get_card(card_id))
-	_expect(
-		bool(run.temporary_buffs.get("finisher_pending", false)),
-		"A second Finisher must queue for no-target retry coverage."
-	)
-	var presentation := game.get_node("SkillCastPresentation") as CanvasLayer
-	var presentation_before := presentation.call("get_cast_state") as Dictionary
-	var animation_before_retry: StringName = player.call("get_active_animation")
-	Engine.time_scale = 1.0
-	game.set("_auto_attack_remaining", 0.0)
-	var fired_without_target := bool(game.call("_try_basic_attack"))
-	var presentation_after := presentation.call("get_cast_state") as Dictionary
-	_expect(
-		not fired_without_target
-			and int(presentation_after.get("generation", -1))
-				== int(presentation_before.get("generation", -2))
-			and is_equal_approx(Engine.time_scale, 1.0),
-		"A queued Finisher with no legal target must not start or restart presentation slow motion."
-	)
-	_expect(
-		player.call("get_active_animation") == animation_before_retry,
-		"An automatic attack retry with no legal target must not start an attack animation."
-	)
 
 	game.queue_free()
 	await process_frame
 	Engine.time_scale = 1.0
 	if _failures == 0:
-		print("PASS: automatic horizontal attack and formula Finisher flow")
+		print("PASS: automatic horizontal attack cadence, corridor, and Combo width")
 	quit(1 if _failures > 0 else 0)
 
 

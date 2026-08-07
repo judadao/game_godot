@@ -11,6 +11,7 @@ signal confirmed(item_data: Dictionary, quantity: int, mode: String)
 signal blueprint_school_change_requested(blueprint_id: StringName, school_id: StringName)
 signal canceled
 
+const UI_VALUE_FORMATTER := preload("res://scripts/ui/ui_value_formatter.gd")
 const ROW_CONTAINER_PATH := "CenterContainer/ShopWindow/WindowMargin/WindowLayout/Content/ItemListPanel/ItemListLayout/ItemScroll/ItemRows"
 const SHOP_ITEM_ROW_SCENE := preload("res://scenes/ui/shop/ShopItemRow.tscn")
 const ITEM_ICON_SWORD := preload("res://assets/curated/game_own/items/oga_rpg_item_icons/Equipment/DefaultSet_0000_Weapon.png")
@@ -534,12 +535,7 @@ func _to_dictionary_array(source: Array) -> Array[Dictionary]:
 	return result
 
 func _format_number(value: int) -> String:
-	var text := str(value)
-	var result := ""
-	while text.length() > 3:
-		result = "," + text.substr(text.length() - 3, 3) + result
-		text = text.substr(0, text.length() - 3)
-	return text + result
+	return UI_VALUE_FORMATTER.format_integer(value)
 
 
 func _apply_shop_identity(

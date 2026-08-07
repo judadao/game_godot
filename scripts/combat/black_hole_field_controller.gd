@@ -6,6 +6,7 @@ signal detonated(world_position: Vector2, hit_count: int)
 signal completed()
 
 const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
+const TARGET_ADAPTER := preload("res://scripts/combat/combat_target_adapter.gd")
 
 var _target_provider := Callable()
 var _duration := 2.4
@@ -167,8 +168,4 @@ func _resolve_detonation() -> void:
 
 
 func _damage_target(target: Node2D, amount: int, knockback: float) -> int:
-	if target.has_method("take_hit"):
-		return int(target.call("take_hit", amount, global_position, knockback))
-	if target.has_method("take_damage"):
-		return int(target.call("take_damage", amount))
-	return 0
+	return TARGET_ADAPTER.deal_damage(target, amount, global_position, knockback)

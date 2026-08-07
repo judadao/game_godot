@@ -5,6 +5,7 @@ signal shot_fired(drone_index: int, origin: Vector2, target: Node, target_positi
 signal drone_crashed(drone_index: int, world_position: Vector2)
 
 const ATTACK_GEOMETRY := preload("res://scripts/combat/attack_geometry.gd")
+const TARGET_ADAPTER := preload("res://scripts/combat/combat_target_adapter.gd")
 
 var _caster: Node2D
 var _target_provider := Callable()
@@ -104,11 +105,7 @@ func _resolve_shot() -> void:
 	if drone_index < 0:
 		return
 	var origin := _drone_world_position(drone_index)
-	var dealt := 0
-	if target.has_method("take_hit"):
-		dealt = int(target.call("take_hit", _damage_per_shot, origin, 45.0))
-	elif target.has_method("take_damage"):
-		dealt = int(target.call("take_damage", _damage_per_shot))
+	var dealt := TARGET_ADAPTER.deal_damage(target, _damage_per_shot, origin, 45.0)
 	if dealt <= 0:
 		return
 	_shot_count += 1
