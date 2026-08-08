@@ -1589,6 +1589,14 @@ the HUD never reads gameplay state directly.
   simultaneously. Recipe choices render 13 catalog-ordered series sections；
   each section exposes basic／advanced／master as one three-column tier row
 
+  Expedition confirmation reads `get_selected_skill_recipe_ids()` from this same
+  UI before saving, projects the learned subset into `MetaState.active_skill_ids`,
+  and immediately reconfigures `SkillRecipeManager`. A failed save restores both
+  the persisted IDs and the runtime matcher; selected recipe IDs must never exist
+  only as temporary button state.
+  Dev mode unlocks all recipes as learned but leaves this selection authoritative;
+  it must not preselect all recipes and turn the user's first click into a deselect.
+
 ### CombatStatusController
 
 - Scene: `res://scenes/combat/CombatStatusController.tscn`

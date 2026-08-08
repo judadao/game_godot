@@ -65,7 +65,8 @@ func _ready() -> void:
 func configure(
 	cards: Array,
 	current_deck: Array,
-	auto_attack_card_id: String = "ember_bolt"
+	auto_attack_card_id: String = "ember_bolt",
+	active_skill_recipe_ids: Array = []
 ) -> void:
 	_catalog.clear()
 	_counts.clear()
@@ -82,6 +83,18 @@ func configure(
 		if _counts.has(card_id) and not requested.has(card_id):
 			requested.append(card_id)
 	_restore_fixed_loadout(requested)
+	for skill_id_variant in active_skill_recipe_ids:
+		var skill_id := String(skill_id_variant)
+		var recipe := _finisher_recipe_for_skill(skill_id)
+		if recipe.is_empty():
+			continue
+		var requirements_met := true
+		for required_id_variant in recipe.get("required_skills", []) as Array:
+			if not _slot_card_ids.has(String(required_id_variant)):
+				requirements_met = false
+				break
+		if requirements_met and not _selected_skill_recipe_ids.has(skill_id):
+			_selected_skill_recipe_ids.append(skill_id)
 	_auto_attack_card_id = auto_attack_card_id
 	if is_node_ready():
 		set_skill_recipe_selector_visible(false)

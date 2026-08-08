@@ -123,6 +123,7 @@
               ],
               "blend": "add",
               "tint": "#FFFFFF",
+              "render_base": false,
               "delay_seconds": 0,
               "lifetime_seconds": 0.42,
               "stack": {
@@ -144,20 +145,21 @@
           "phase": "travel",
           "layers": [
             {
-              "component": "blue_crescent",
+              "component": "lock_star",
               "anchor": "path",
               "placement": "stagger_along_path",
               "offset": [
                 0,
                 -18
               ],
-              "rotation_degrees": -8,
+              "rotation_degrees": 0,
               "scale": [
-                0.22,
-                0.18
+                0.12,
+                0.12
               ],
-              "blend": "mix",
+              "blend": "add",
               "tint": "#FFFFFF",
+              "render_base": false,
               "delay_seconds": 0.18,
               "lifetime_seconds": 0.38,
               "stack": {
@@ -179,20 +181,21 @@
           "phase": "contact",
           "layers": [
             {
-              "component": "blue_crescent",
+              "component": "lock_star",
               "anchor": "contact",
               "placement": "cross_cut",
               "offset": [
                 0,
                 -10
               ],
-              "rotation_degrees": 8,
+              "rotation_degrees": 0,
               "scale": [
-                0.18,
-                0.15
+                0.12,
+                0.12
               ],
               "blend": "add",
               "tint": "#FFFFFF",
+              "render_base": false,
               "delay_seconds": 0,
               "lifetime_seconds": 0.2,
               "stack": {
@@ -223,6 +226,7 @@
               ],
               "blend": "mix",
               "tint": "#FFFFFF",
+              "render_base": false,
               "delay_seconds": 0.035,
               "lifetime_seconds": 0.34,
               "stack": {
@@ -258,6 +262,7 @@
               ],
               "blend": "mix",
               "tint": "#FFFFFF",
+              "render_base": false,
               "delay_seconds": 0.14,
               "lifetime_seconds": 0.46,
               "stack": {
@@ -779,7 +784,7 @@
           500,
           470
           ],
-          "note": "Closed thorn bud."
+          "note": "Terminal thorn flower."
         },
         {
           "id": "thorn_run",
@@ -797,7 +802,7 @@
           830,
           270
           ],
-          "note": "Horizontal ground-thorn lane."
+          "note": "Airborne thorn scatter packet."
         },
         {
           "id": "thorn_bloom",
@@ -815,7 +820,7 @@
           670,
           420
           ],
-          "note": "Ground eruption and stones."
+          "note": "Stackable thorn-vine growth segment."
         }
       ],
       "stages": [
@@ -824,6 +829,7 @@
           "layers": [
             {
               "component": "thorn_seed",
+              "render_base": false,
               "anchor": "contact",
               "placement": "telegraph_cluster",
               "offset": [
@@ -859,6 +865,7 @@
           "layers": [
             {
               "component": "thorn_run",
+              "render_base": false,
               "anchor": "ground_path",
               "placement": "grow_forward",
               "offset": [
@@ -894,6 +901,7 @@
           "layers": [
             {
               "component": "thorn_bloom",
+              "render_base": false,
               "anchor": "contact",
               "placement": "ground_burst",
               "offset": [
@@ -924,6 +932,7 @@
             },
             {
               "component": "thorn_seed",
+              "render_base": false,
               "anchor": "contact",
               "placement": "bud_cap",
               "offset": [
@@ -959,6 +968,7 @@
           "layers": [
             {
               "component": "thorn_bloom",
+              "render_base": false,
               "anchor": "contact",
               "placement": "settle",
               "offset": [

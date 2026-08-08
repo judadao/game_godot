@@ -40,10 +40,22 @@ func _run() -> void:
 	_expect(int(initial.get("blade_trail_count", 0)) == blade_count, "Every blade needs an independent history trail.")
 	_expect(int(initial.get("materialized_trail_layer_count", 0)) == blade_count * 3, "Every blade trail needs outer energy, colored body, and white cutting core.")
 	_expect(int(initial.get("blade_aura_count", 0)) == blade_count * 2, "Every blade needs separate summon echo and lock sheath layers.")
+	_expect(int(initial.get("summon_star_count", 0)) == blade_count, "Every blade needs its own lock-star summon flash.")
+	_expect(
+		String(initial.get("summon_star_texture", ""))
+			== "res://assets/generated/vfx/skill_materials/components/base/sword_rain__lock_star.png",
+		"Sword Rain summon flashes must use the approved lock-star component."
+	)
 	_expect(int(initial.get("impact_stack_count", 0)) == blade_count, "Every blade needs its own insertion impact stack.")
+	_expect(int(initial.get("ground_crater_count", 0)) == blade_count, "Every blade needs its own grounded crater impact.")
+	_expect(
+		String(initial.get("ground_crater_texture", ""))
+			== "res://assets/generated/vfx/skill_materials/components/base/dr_stone__stone_crater.png",
+		"Sword Rain ground impacts must reuse the approved stone-crater component."
+	)
 	_expect(
 		(initial.get("impact_roles", []) as Array) == [
-			"compression_wedge", "contact_flash", "directional_shards", "ground_scar",
+			"compression_wedge", "contact_flash", "directional_shards", "ground_crater", "ground_scar",
 			"sword_afterglow", "sparks",
 		],
 		"Insertion impact must describe contact material instead of a generic circle."
@@ -69,6 +81,7 @@ func _run() -> void:
 	effect.call("debug_set_progress", orbit_end * 0.5)
 	var orbit := effect.call("get_sword_rain_material_vfx_state") as Dictionary
 	_expect(int(orbit.get("active_summon_echo_count", 0)) >= 3, "Orbit reveal must stagger visible sword-shaped summon echoes.")
+	_expect(int(orbit.get("active_summon_star_count", 0)) >= 1, "Each staggered sword reveal must include a short lock-star flash.")
 	_expect(int(orbit.get("active_trail_count", -1)) == 0, "Orbit reveal must not show travel trails before release.")
 	effect.call("debug_set_progress", (orbit_end + lock_end) * 0.5)
 	var lock := effect.call("get_sword_rain_material_vfx_state") as Dictionary
@@ -81,8 +94,16 @@ func _run() -> void:
 	var contact := effect.call("get_sword_rain_material_vfx_state") as Dictionary
 	_expect(int(contact.get("active_impact_count", 0)) >= 1, "Each inserted sword must trigger its own material impact stack.")
 	_expect(int(contact.get("active_ground_scar_count", 0)) >= 1, "Insertion must leave a short grounded cutting scar before decay.")
+	_expect(int(contact.get("active_ground_crater_count", 0)) >= 1, "Each inserted sword must show a stone crater at its ground contact.")
 
 	var composer := effect.call("get_skill_vfx_recipe_debug_state") as Dictionary
+	var raster_state := composer.get("raster_material", {}) as Dictionary
+	for region_value in raster_state.get("atlas_regions", []) as Array:
+		var region := region_value as Dictionary
+		_expect(
+			not String(region.get("source_path", "")).ends_with("sword_rain__blue_crescent.png"),
+			"Sword Rain runtime composition must not instantiate the removed blue crescent."
+		)
 	_expect(
 		(composer.get("suppressed_generic_roles", []) as Array) == ["rain", "projectile", "trail", "ring", "impact"],
 		"Generic Composer lines must be disabled when the Sword Rain renderer owns those roles."

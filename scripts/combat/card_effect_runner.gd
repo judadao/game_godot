@@ -381,7 +381,7 @@ func _resolve_thorn_bloom_field(
 	var thorn_count := maxi(1, int(effect.get("thorn_count", [3, 6, 10][tier_rank - 1])))
 	var damage_multiplier := maxf(0.01, float(effect.get("damage_per_spike_multiplier", [0.28, 0.40, 0.54][tier_rank - 1])))
 	result["thorn_bloom_field"] = {
-		"center": _resolve_field_center(caster, targets, 360.0),
+		"center": _resolve_field_center(caster, targets, 360.0, true),
 		"duration": maxf(0.2, float(effect.get("field_duration", [2.4, 3.0, 3.8][tier_rank - 1]))),
 		"radius": maxf(48.0, float(effect.get("field_radius", [180.0, 240.0, 310.0][tier_rank - 1]))),
 		"emerge_duration": maxf(0.05, float(effect.get("emerge_duration", [0.45, 0.42, 0.38][tier_rank - 1]))),
@@ -547,7 +547,12 @@ func _resolve_body_overdrive(effect: Dictionary, result: Dictionary) -> void:
 	result["series_rule"] = "body_overdrive_afterimage"
 
 
-func _resolve_field_center(caster: Node, targets: Array, placement_range: float) -> Vector2:
+func _resolve_field_center(
+	caster: Node,
+	targets: Array,
+	placement_range: float,
+	anchor_to_target_origin: bool = false
+) -> Vector2:
 	if not caster is Node2D:
 		return Vector2.ZERO
 	var caster_2d := caster as Node2D
@@ -557,7 +562,11 @@ func _resolve_field_center(caster: Node, targets: Array, placement_range: float)
 		if not target_variant is Node2D or not is_instance_valid(target_variant):
 			continue
 		var candidate := target_variant as Node2D
-		var candidate_center := ATTACK_GEOMETRY.target_center(candidate)
+		var candidate_center := (
+			candidate.global_position
+			if anchor_to_target_origin
+			else ATTACK_GEOMETRY.target_center(candidate)
+		)
 		var distance := caster_2d.global_position.distance_squared_to(candidate_center)
 		if distance < nearest_distance:
 			nearest_distance = distance

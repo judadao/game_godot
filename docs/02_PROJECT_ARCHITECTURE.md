@@ -91,7 +91,8 @@ Game (Node, scripts/managers/game.gd)
 4. 將 `MetaState.town_state`／legacy fields 套入 Town runtime state。
 5. 載入卡牌、13×3 技能系列與 Combo recipe catalog；實際的 `SkillRecipeManager`、
    `GrowthChoiceQueue` 與成長 UI caller 由 `Game` 組裝。
-6. 若 dev mode 啟用，由 `DevModeService` 一次投影全解鎖與測試資源。
+6. 若 dev mode 啟用，由 `DevModeService` 一次投影全解鎖與測試資源；招式只標記 learned，
+   不得自動塞滿 active loadout，舊版「全招式 active」dev 狀態會在載入時清除。
 7. 連接 `CardEffectRunner.effect_resolved`。
 8. 呼叫 `load_current_map(starting_map)`。
 9. 將 runtime progression 同步回 `MetaState`。
@@ -468,7 +469,7 @@ Fire／Lightning／Water／Poison／Wind primitive；不重新找目標或計算
 | Reusable VFX primitives | `scenes/vfx/primitives/`、`scripts/vfx/`、`shaders/vfx/` | 火／雷／水／毒／冰／風各三個五層原語；`LayeredVFXPrimitive2D` 只管理 visual lifecycle 與參數，`ParticleBurst2D`、`LightningGenerator2D`、`TrailHistory2D` 提供共用粒子／A→B 雷電／歷史軌跡。雷電 bolt／impact 由 `LightningVFXPrimitive2D` 專門把程序化路徑拆成 additive glow、色彩體、白熱芯、分支、spark 與接地殘電；禁止反向持有 gameplay 規則 |
 | `SeriesImpactVFXRouter` | `scripts/vfx/series_impact_vfx_router.gd` | 將 persistent series controller 的真實 signal 轉成可重用材質／命中原語；四拍依序為 contact flash、shape expansion、secondary debris、residual fade。雷電 `chain_hit` 只生成 A→B bolt，`final_strike` 才生成 top-down impact；Blessing 只能改其 palette／材質附加層，不得用通用元素爆點替換這兩種可讀 topology。只生成 presentation，禁止自行判斷命中 |
 | Skill VFX Grammar | `SkillVFXRecipeCatalog`、`SkillVFXComposer2D`、`BlessingVFXMutationCatalog`、`skill_vfx_stack.gdshader` | 13 系列各一份 Core＋至少四個額外 role 的 recipe；保留現有透明主物體作 Core，統一 timeline 拼裝其餘 14 種軌跡／爆點 role。Blessing 只投影 palette、數量、路徑、尾跡、爆點與殘留，不擁有傷害規則 |
-| Sword Rain material renderer | `SwordRainMaterialVFX2D`、`sword_rain_energy.gdshader`、`sword_rain_trail.gdshader` | 劍雨專用 presentation：逐把劍保留具體本體，以劍形能量回聲、三層獨立拖尾與逐把插入命中堆疊取代通用 Rain／Projectile 折線與 Ring；讀取 Game 提供的存活敵人清單，把視覺落點追到 Hurtbox 中心並在節點消失時轉鎖鄰敵，但不改 gameplay target、命中或傷害 |
+| Sword Rain material renderer | `SwordRainMaterialVFX2D`、`sword_rain_energy.gdshader`、`sword_rain_trail.gdshader` | 劍雨專用 presentation：逐把劍保留具體本體，出現時各自短閃 lock-star，墜落使用三層獨立拖尾，插地時各自在地板落點顯示 stone-crater；通用 blue-crescent、Rain／Projectile 折線與 Ring 均停用。讀取 Game 提供的存活敵人清單，把視覺落點追到 Hurtbox 中心並在節點消失時轉鎖鄰敵，但不改 gameplay target、命中或傷害 |
 | Feather halo material renderer | `FeatherHaloMaterialVFX2D`、`feather_halo_energy.gdshader`、`feather_halo_trail.gdshader` | 羽毛專用 persistent presentation：Game 將唯一 active halo 掛在玩家下方，羽根朝內逐根進環並繞行，生命末段以材質與粒子消散；同系列再施放只補滿並依序重現羽毛。壽命、fade、stagger、轉速與三級半徑由 series catalog 提供，不擁有格擋、彈幕、命中或傷害規則 |
 | Feather halo contact field | `FeatherHaloDamageController` | 玩家唯一的羽界 gameplay controller；依動態敵人清單與 Hurtbox 半徑，每 0.18 秒只傷害接觸環身範圍的敵人並從玩家位置施加外向擊退。再次施放刷新同一節點，3／7／15 羽分別延長 duration；不控制任何 Sprite、shader 或軌跡 |
 | Persistent series controllers | `scenes/combat/*Controller.tscn`、`scripts/combat/*_controller.gd` | 月輪 5／8／12 枚與 1／2／3 次往返；月輪同趟接觸以排程錯開，卡頓造成的 overdue contact 每次 advance 最多釋放一筆並跨幀排空，每個 contact 都重新讀取存活目標。其餘包含荊棘、DR. Stone、黑洞、密術沼澤、火柱 5／10／20、殘雷 10／20／30、海浪 capped push、龍息 1／2／2+20、朝陽治療域與同枝肉體強化。Controller 只處理 gameplay timing 與命中，不畫 VFX |
@@ -476,6 +477,13 @@ Fire／Lightning／Water／Poison／Wind primitive；不重新找目標或計算
 | `ElementalGroundTrail` | `scenes/combat/vfx/ElementalGroundTrail.tscn`、`data/elemental_ground_trail_profiles.json` | 沿元素大招路徑拼裝 Core／Edge／Accent／Debris atlas 部件與連續 ribbon；火、冰、毒使用不同 topology，不擁有傷害判定 |
 | `NamedSkillVFX` | `scenes/combat/vfx/NamedSkillVFX.tscn`、`data/named_skill_vfx_profiles.json`、`data/skill_series_vfx.json` | 舊 profile 仍供退役 trigger／相容 caller 使用；現役 39 招由 `play_series()` 讀取 series recipe。具體主體可作 bitmap Core，場域／能量型系列可明確宣告 procedural Core；專用 renderer 取代同系列 generic grammar layers，避免重複出圖。播放器只處理 presentation，不擁有名稱、配方或傷害判定 |
 | `CombatVFXFoundation` | `scripts/combat/combat_vfx_foundation.gd` | 遷移期間保留的相容回退；只有 recipe 缺失／配置失敗時才建立，正式系列畫面由 Skill VFX Grammar 渲染，不得讓 Foundation 與 Composer 同時處理或出圖 |
+
+荊棘的 presentation authority 是 `ThornBloomMaterialVFX2D`：每條藤蔓以
+`thorn__thorn_bloom.png` 逐節向上堆疊，頂端只生成一個
+`thorn__thorn_seed.png` 花體，成熟後才以 `thorn__thorn_run.png` 散射。大師階固定
+10 條藤蔓、每條 9 節與 20 個 presentation projectiles；三級節數為 5／7／9，節距必須
+小於顯示素材高度的 55% 以形成連續重疊莖，根部錨在目標腳底而非 Hurtbox 中心。
+generic raster base 必須停畫，controller 仍單獨擁有 volley timing、目標與傷害。
 | `StormChargeVFX` | `scenes/combat/vfx/StormChargeVFX.tscn` | 風暴充能專用的原地五節拍 presentation；固定導電主幹由左右地流依序接入雙腳、持劍手與劍身，接觸時只從劍身下游長出有粗細層級的右向分支，高潮後沿同一路徑回縮；不擁有傷害或 buff 規則 |
 | `CombatStatusController` | `scripts/combat/combat_status_controller.gd` | super armor、damage reduction、lifesteal、regeneration、retaliation 與 timer pause |
 | `EncounterDirector` | `scripts/combat/encounter_director.gd` | wave plan、engagement/leash、enemy ownership |
@@ -536,7 +544,8 @@ UI 對上層提供 setter/configure API與 typed signals：
 - `PauseMenu`：emit save/load/settings/exit-combat/quit 等 intent；Game 只在 active
   combat Run 啟用退出戰鬥，接收 intent 後以失敗結算保留已得資源並回 Town。
 - `DevModeService`：只由 `development/dev_mode_enabled` 控制目前開發建置；啟用時
-  在 catalogs 載入後集中投影全資源、裝備、圖紙、工具、劍魂與招式，並提供正式
+  在 catalogs 載入後集中投影全資源、裝備、圖紙、工具、劍魂與 learned 招式，但不
+  自動 active 任何招式，並提供正式
   route／Boss map entries。`PauseMenu` 只顯示選項並 emit scene path，實際驗證、
   捨棄測試 Run 與載圖仍由 `Game` 擁有。
 
@@ -1166,6 +1175,9 @@ Healing 因此可參與治療、防禦與支援型終結技。catalog 以 `data/
 效果為「配方終結技基底＋該三招的當前等級效果＋裝備 projection＋所有 Divine Gift 效果」。
 純治療／防禦／支援配方的基礎傷害為零，仍透過同一次合法自動攻擊觸發其支援效果。
 施放後只消耗 queue 的第一招，不消耗永久 Combo stacks。
+同一六張歷史可同時排入多個相容招式並依 FIFO 逐一施放；最後一個 queued Finisher
+消耗後必須立即清空 `combo_formula_history` 與 `combo_triggered_skill_ids`，讓 HUD 離開
+`6/3` 狀態並允許下一輪相同招式再次觸發。尚有 queue 時不得提早清除共同公式。
 
 Combo 卡本身提供的 infusion／status 不屬於永久公式狀態：每張卡各自持有 1.5 秒
 基礎倒數，時間到只移除該張卡的 runtime modifier，並由剩餘效果重建攻擊 profile。
@@ -1246,8 +1258,9 @@ auto attack 缺失或無效時 fallback 到已解鎖的有效 attack，active sk
   分組 release 節拍、每把劍的曲線殘光與插入點衝擊；basic／advanced／master 固定為
   10／15／20 把，即二／三／四輪五劍，輪次之間保留頓點。
   `SwordRainMaterialVFX2D` 接管劍雨的 Rain／Projectile／Trail／Ring／Impact role，逐把同步 Core pose，
-  由能量邊緣 shader、外能量／色彩本體／白刃芯三層拖尾、方向性命中閃光、碎片、短地面
-  斬痕、殘劍及 pooled sparks 組成。Game 只提供 live enemy provider；播放器以 Hurtbox
+  由逐劍 lock-star、能量邊緣 shader、外能量／色彩本體／白刃芯三層拖尾、方向性命中閃光、
+  碎片、逐劍貼地 stone-crater、短地面斬痕、殘劍及 pooled sparks 組成；通用 raster 不再
+  路由 blue-crescent。Game 只提供 live enemy provider；播放器以 Hurtbox
   中心作視覺落點，原鎖定節點消失時就近轉鎖，完全無敵人才使用 authored ground fallback。
   通用 Composer 不得同時畫出折線、藍色 connector 或圓環。
   `legacy_vfx_map` 只保留配方與 caller 相容，不再選擇現役招式外觀；

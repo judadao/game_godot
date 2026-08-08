@@ -3,12 +3,14 @@ extends Node2D
 
 const ENERGY_SHADER := preload("res://shaders/vfx/sword_rain_energy.gdshader")
 const TRAIL_SHADER := preload("res://shaders/vfx/sword_rain_trail.gdshader")
+const SUMMON_STAR_TEXTURE := preload("res://assets/generated/vfx/skill_materials/components/base/sword_rain__lock_star.png")
+const GROUND_CRATER_TEXTURE := preload("res://assets/generated/vfx/skill_materials/components/base/dr_stone__stone_crater.png")
 const MOTION_PHASES := [
 	"summon_stagger", "orbit_gather", "lock_charge", "snap_release",
 	"insertion_hold", "afterglow_decay",
 ]
 const IMPACT_ROLES := [
-	"compression_wedge", "contact_flash", "directional_shards", "ground_scar",
+	"compression_wedge", "contact_flash", "directional_shards", "ground_crater", "ground_scar",
 	"sword_afterglow", "sparks",
 ]
 const TRAIL_LAYER_COUNT := 3
@@ -21,10 +23,12 @@ var _palette := [Color("ecfbff"), Color("79cfff"), Color("4546a8")]
 var _tier := 1
 var _timeline := 0.0
 var _active_summon_echo_count := 0
+var _active_summon_star_count := 0
 var _active_lock_sheath_count := 0
 var _active_trail_count := 0
 var _active_impact_count := 0
 var _active_ground_scar_count := 0
+var _active_ground_crater_count := 0
 var _lock_energy := 0.0
 
 
@@ -89,6 +93,7 @@ func set_blade_pose(
 	var core := _core_sprites[index]
 	_sync_energy_material(core.material as ShaderMaterial, cadence_phase, 0.88)
 	var summon := data["summon"] as Sprite2D
+	var summon_star := data["summon_star"] as Sprite2D
 	var lock_sheath := data["lock_sheath"] as Sprite2D
 	for ghost in [summon, lock_sheath]:
 		ghost.position = position_value
@@ -101,6 +106,15 @@ func set_blade_pose(
 		summon.visible = true
 		_sync_energy_material(summon.material as ShaderMaterial, cadence_phase, 1.45)
 		_active_summon_echo_count += 1
+		var summon_phase := clampf(alpha, 0.0, 1.0)
+		var star_flash := sin(summon_phase * PI)
+		if star_flash > 0.02:
+			summon_star.position = position_value
+			summon_star.rotation = 0.0
+			summon_star.scale = scale_value * lerpf(0.78, 1.18, summon_phase)
+			summon_star.modulate = Color(1.0, 1.0, 1.0, star_flash * 0.92)
+			summon_star.visible = true
+			_active_summon_star_count += 1
 	elif cadence_phase == "target_lock" and alpha > 0.02:
 		var charge := 0.64 + 0.36 * sin(_timeline * 24.0 + float(index) * 0.36)
 		lock_sheath.scale = scale_value * Vector2(1.34 + charge * 0.10, 1.10 + charge * 0.05)
@@ -138,21 +152,30 @@ func set_blade_impact(index: int, position_value: Vector2, impact_progress: floa
 	impact_root.visible = bloom > 0.01 or hold > 0.01
 	var flash := data["flash"] as Polygon2D
 	flash.scale = Vector2(lerpf(0.18, 1.82, smoothstep(0.0, 0.34, clamped)), lerpf(0.72, 1.08, clamped))
-	flash.color = Color(_palette[0], bloom * 0.92)
+	flash.color = Color(_palette[0], bloom * 0.64)
 	var compression := data["compression"] as Polygon2D
 	compression.scale = Vector2(lerpf(0.38, 1.18, clamped), lerpf(1.35, 0.82, clamped))
-	compression.color = Color(_palette[2], bloom * 0.52)
+	compression.color = Color(_palette[2], bloom * 0.26)
 	var afterglow := data["afterglow"] as Sprite2D
-	afterglow.modulate = Color(1.0, 1.0, 1.0, hold * 0.48)
+	afterglow.modulate = Color(1.0, 1.0, 1.0, hold * 0.32)
 	afterglow.scale = Vector2.ONE * lerpf(0.82, 1.18, clamped)
 	_sync_energy_material(afterglow.material as ShaderMaterial, "insertion_hold", 2.1)
+	var crater := data["crater"] as Sprite2D
+	var crater_alpha := smoothstep(0.0, 0.10, clamped) * (1.0 - smoothstep(0.72, 1.0, clamped))
+	var crater_growth := lerpf(0.72, 1.08, smoothstep(0.0, 0.32, clamped))
+	crater.scale = Vector2(0.11, 0.09) * crater_growth
+	crater.position = Vector2(0.0, -GROUND_CRATER_TEXTURE.get_height() * crater.scale.y * 0.48)
+	crater.modulate = Color(1.0, 1.0, 1.0, crater_alpha * 0.94)
+	crater.visible = crater_alpha > 0.02
+	if crater.visible:
+		_active_ground_crater_count += 1
 	var shards := data["shards"] as Array
 	for shard_index in shards.size():
 		var shard := shards[shard_index] as Polygon2D
 		var side := -1.0 if shard_index % 2 == 0 else 1.0
 		shard.position = Vector2(side * (10.0 + shard_index * 8.0) * clamped, -12.0 - shard_index * 7.0 * clamped)
 		shard.rotation = side * (0.35 + clamped * 0.5)
-		shard.color = Color(_palette[1 if shard_index < 2 else 0], bloom * (0.8 - shard_index * 0.12))
+		shard.color = Color(_palette[1 if shard_index < 2 else 0], bloom * (0.5 - shard_index * 0.08))
 	var scars := data["scars"] as Array
 	for scar_index in scars.size():
 		var scar := scars[scar_index] as Line2D
@@ -176,7 +199,11 @@ func get_debug_state() -> Dictionary:
 		"blade_trail_count": _blade_layers.size(),
 		"materialized_trail_layer_count": _blade_layers.size() * TRAIL_LAYER_COUNT,
 		"blade_aura_count": _blade_layers.size() * 2,
+		"summon_star_count": _blade_layers.size(),
+		"summon_star_texture": SUMMON_STAR_TEXTURE.resource_path,
 		"impact_stack_count": _blade_layers.size(),
+		"ground_crater_count": _blade_layers.size(),
+		"ground_crater_texture": GROUND_CRATER_TEXTURE.resource_path,
 		"impact_roles": IMPACT_ROLES.duplicate(),
 		"generic_line_roles": [],
 		"uses_core_energy_shader": not _core_sprites.is_empty(),
@@ -184,10 +211,12 @@ func get_debug_state() -> Dictionary:
 		"spark_emitter_count": _spark_emitters.size(),
 		"motion_phases": MOTION_PHASES.duplicate(),
 		"active_summon_echo_count": _active_summon_echo_count,
+		"active_summon_star_count": _active_summon_star_count,
 		"active_lock_sheath_count": _active_lock_sheath_count,
 		"active_trail_count": _active_trail_count,
 		"active_impact_count": _active_impact_count,
 		"active_ground_scar_count": _active_ground_scar_count,
+		"active_ground_crater_count": _active_ground_crater_count,
 		"lock_energy": _lock_energy,
 		"energy_shader": ENERGY_SHADER.resource_path,
 		"trail_shader": TRAIL_SHADER.resource_path,
@@ -195,7 +224,7 @@ func get_debug_state() -> Dictionary:
 
 
 func get_active_layer_count() -> int:
-	return _blade_layers.size() * (2 + TRAIL_LAYER_COUNT + 6) + _spark_emitters.size()
+	return _blade_layers.size() * (3 + TRAIL_LAYER_COUNT + 7) + _spark_emitters.size()
 
 
 func _build_blade_layers(index: int, core: Sprite2D) -> void:
@@ -227,6 +256,14 @@ func _build_blade_layers(index: int, core: Sprite2D) -> void:
 	var summon := _make_ghost_sprite(core, "SummonEcho", 0.52)
 	summon.z_index = core.z_index - 2
 	root.add_child(summon)
+	var summon_star := Sprite2D.new()
+	summon_star.name = "SummonLockStar"
+	summon_star.texture = SUMMON_STAR_TEXTURE
+	summon_star.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	summon_star.z_index = core.z_index + 5
+	summon_star.material = _make_additive_material()
+	summon_star.visible = false
+	root.add_child(summon_star)
 	var lock_sheath := _make_ghost_sprite(core, "LockSheath", 0.72)
 	lock_sheath.z_index = core.z_index - 1
 	root.add_child(lock_sheath)
@@ -235,6 +272,13 @@ func _build_blade_layers(index: int, core: Sprite2D) -> void:
 	impact.z_index = 8 + index % 3
 	impact.visible = false
 	root.add_child(impact)
+	var crater := Sprite2D.new()
+	crater.name = "GroundCrater"
+	crater.texture = GROUND_CRATER_TEXTURE
+	crater.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	crater.z_index = 2
+	crater.visible = false
+	impact.add_child(crater)
 	var flash := Polygon2D.new()
 	flash.name = "ContactFlash"
 	flash.polygon = PackedVector2Array([
@@ -284,8 +328,10 @@ func _build_blade_layers(index: int, core: Sprite2D) -> void:
 		"root": root,
 		"trails": trails,
 		"summon": summon,
+		"summon_star": summon_star,
 		"lock_sheath": lock_sheath,
 		"impact": impact,
+		"crater": crater,
 		"flash": flash,
 		"compression": compression,
 		"afterglow": afterglow,
@@ -373,6 +419,12 @@ func _make_trail_material(layer_index: int) -> ShaderMaterial:
 	return material
 
 
+func _make_additive_material() -> CanvasItemMaterial:
+	var material := CanvasItemMaterial.new()
+	material.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	return material
+
+
 func _sync_energy_material(material: ShaderMaterial, cadence_phase: String, energy_value: float) -> void:
 	if material == null:
 		return
@@ -383,8 +435,10 @@ func _sync_energy_material(material: ShaderMaterial, cadence_phase: String, ener
 
 func _set_blade_layers_hidden(data: Dictionary) -> void:
 	(data["summon"] as Sprite2D).visible = false
+	(data["summon_star"] as Sprite2D).visible = false
 	(data["lock_sheath"] as Sprite2D).visible = false
 	(data["impact"] as Node2D).visible = false
+	(data["crater"] as Sprite2D).visible = false
 	for trail_variant in data["trails"] as Array:
 		var trail := trail_variant as Line2D
 		trail.visible = false
@@ -393,10 +447,12 @@ func _set_blade_layers_hidden(data: Dictionary) -> void:
 
 func _reset_counters() -> void:
 	_active_summon_echo_count = 0
+	_active_summon_star_count = 0
 	_active_lock_sheath_count = 0
 	_active_trail_count = 0
 	_active_impact_count = 0
 	_active_ground_scar_count = 0
+	_active_ground_crater_count = 0
 	_lock_energy = 0.0
 
 

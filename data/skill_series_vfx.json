@@ -113,7 +113,9 @@
       "asset_path": "",
       "material_asset_path": "res://assets/generated/vfx/skill_materials/base/thorn_material_v1.png",
       "procedural_core": true,
-      "bloom_asset_path": "res://assets/generated/vfx/finisher_parts_v4/plant_growth_sequence.png",
+      "vine_segment_asset_path": "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_bloom.png",
+      "terminal_flower_asset_path": "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_seed.png",
+      "scatter_projectile_asset_path": "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_run.png",
       "motion_family": "thorn_emerge_bloom_barrage",
       "gameplay_family": "blooming_thorn_barrage",
       "source": [0, 0],
@@ -123,9 +125,9 @@
       "object_size": 112,
       "rotate_to_path": false,
       "tiers": [
-        {"tier": "basic", "object_count": 3, "thorn_count": 3, "path_count": 1, "direction_count": 1, "radius": 180.0, "duration_seconds": 2.4},
-        {"tier": "advanced", "object_count": 6, "thorn_count": 6, "path_count": 1, "direction_count": 1, "radius": 240.0, "duration_seconds": 3.0},
-        {"tier": "master", "object_count": 10, "thorn_count": 10, "path_count": 3, "direction_count": 3, "radius": 310.0, "duration_seconds": 3.8}
+        {"tier": "basic", "object_count": 3, "thorn_count": 3, "segments_per_vine": 5, "projectiles_per_vine": 8, "path_count": 1, "direction_count": 1, "radius": 180.0, "duration_seconds": 2.4},
+        {"tier": "advanced", "object_count": 6, "thorn_count": 6, "segments_per_vine": 7, "projectiles_per_vine": 14, "path_count": 1, "direction_count": 1, "radius": 240.0, "duration_seconds": 3.0},
+        {"tier": "master", "object_count": 10, "thorn_count": 10, "segments_per_vine": 9, "projectiles_per_vine": 20, "path_count": 3, "direction_count": 3, "radius": 310.0, "duration_seconds": 3.8}
       ],
       "legacy_recipe_ids": []
     },

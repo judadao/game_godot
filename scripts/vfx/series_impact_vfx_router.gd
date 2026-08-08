@@ -1,6 +1,8 @@
 class_name SeriesImpactVFXRouter
 extends Node
 
+const RASTER_EVENT_VFX := preload("res://scripts/vfx/series_raster_event_vfx_2d.gd")
+
 const PRIMITIVE_SCENES := {
 	&"fire_burst": preload("res://scenes/vfx/primitives/fire/fire_burst.tscn"),
 	&"lightning_bolt": preload("res://scenes/vfx/primitives/lightning/lightning_bolt.tscn"),
@@ -48,7 +50,7 @@ func bind_controller(
 			bound = _connect_if_present(controller, &"pillar_erupted", Callable(self, "_on_indexed_point").bind(series_id, &"fire_burst", visual_parent, blessing_overlays)) or bound
 		"lightning":
 			bound = _connect_if_present(controller, &"chain_hit", Callable(self, "_on_lightning_chain").bind(visual_parent, blessing_overlays)) or bound
-			bound = _connect_if_present(controller, &"final_strike", Callable(self, "_on_target_point").bind(series_id, &"lightning_impact", visual_parent, blessing_overlays)) or bound
+			bound = _connect_if_present(controller, &"final_strike", Callable(self, "_on_lightning_final").bind(visual_parent, blessing_overlays)) or bound
 		"water_flow":
 			bound = _connect_if_present(controller, &"wave_pulse", Callable(self, "_on_point_hit").bind(series_id, &"water_splash", visual_parent, blessing_overlays)) or bound
 		"dragon_breath":
@@ -119,7 +121,13 @@ func _on_volley(_origin: Vector2, target_positions: Array[Vector2], series_id: S
 
 
 func _on_drone_shot(_drone_index: int, origin: Vector2, _target: Node, target_position: Vector2, visual_parent: Node, overlays: Array) -> void:
-	_spawn_primitive(&"wind_slash", "dr_stone", visual_parent, origin, target_position, overlays, 0.58)
+	if visual_parent == null or not is_instance_valid(visual_parent):
+		return
+	var projectile := RASTER_EVENT_VFX.new() as Node2D
+	visual_parent.add_child(projectile)
+	projectile.call("play_stone_lance", origin, target_position)
+	projectile.set_meta("blessing_overlays", overlays.duplicate(true))
+	_record_spawn(&"wind_slash")
 
 
 func _on_healing_pulse(amount: int, world_position: Vector2, visual_parent: Node, overlays: Array) -> void:
@@ -128,6 +136,16 @@ func _on_healing_pulse(amount: int, world_position: Vector2, visual_parent: Node
 
 func _on_lightning_chain(from_position: Vector2, _target: Node, target_position: Vector2, visual_parent: Node, overlays: Array) -> void:
 	_spawn_primitive(&"lightning_bolt", "lightning", visual_parent, from_position, target_position, overlays, 0.74)
+
+
+func _on_lightning_final(_target: Node, target_position: Vector2, visual_parent: Node, overlays: Array) -> void:
+	if visual_parent == null or not is_instance_valid(visual_parent):
+		return
+	var strike := RASTER_EVENT_VFX.new() as Node2D
+	visual_parent.add_child(strike)
+	strike.call("play_lightning_sky_strike", target_position)
+	strike.set_meta("blessing_overlays", overlays.duplicate(true))
+	_record_spawn(&"lightning_impact")
 
 
 func _spawn_primitive(
@@ -174,9 +192,13 @@ func _spawn_primitive(
 		primitive.call("play", midpoint, target)
 	else:
 		primitive.call("play", origin)
+	_record_spawn(effect_id)
+	return primitive
+
+
+func _record_spawn(effect_id: StringName) -> void:
 	_spawn_count += 1
 	_effect_counts[String(effect_id)] = int(_effect_counts.get(String(effect_id), 0)) + 1
-	return primitive
 
 
 func _resolve_blessing_impact(effect_id: StringName, overlays: Array) -> StringName:

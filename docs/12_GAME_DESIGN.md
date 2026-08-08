@@ -547,6 +547,12 @@ upgrade 與未發現神賜。滿三格後獎勵池
 | 朝陽生息 | 曙光回生 | 朝陽聖域 | 大日長明 |
 | 同枝共生 | 同枝癒脈 | 共生靈庭 | 萬靈歸生 |
 
+荊棘的正式演出從敵人腳底地表以破土素材逐節向上堆成藤蔓，再於最後一節長出花體；
+花體完成後才發射棘刺散射。三級藤蔓數為 3／6／10，節數為 5／7／9；相鄰節必須密集
+重疊而讀成連續莖，大師階每條藤蔓配置約 20 個畫面散射單位。散射數量是 presentation
+密度，實際傷害與命中頻率仍由荊棘 field controller 的 `spikes_per_volley`、interval 與
+target radius 決定。
+
 每招資料至少包含穩定 ID、繁中名稱、系列 ID／名稱、階級、定位、完整描述與連續動畫
 節拍。`萬劍垂天` 取代舊稱 `天際流光`；`天羽萬象` 取代舊稱 `天光回羽`。四個舊被動
 `iron_momentum`、`ember_reprise`、`battle_tempo`、`grand_strategy` 已退役，不能再由
@@ -562,8 +568,9 @@ procedural Core。專用 renderer 至少拆成 Core／輪廓／動勢／粒子�
 「逐把環繞浮現 → 目標頭頂垂直鎖定 0.8 秒 → 分組加速墜落」編舞，每把劍具有獨立
 曲線殘光，並在插入目標的位置觸發衝擊特效後消失。不同輪使用分離的同心環與冠狀錯層
 鎖定陣列；每輪短密集齊射，中間保留清楚頓點。劍本體使用連續流動的能量邊緣材質，
-下墜才顯示外能量／色彩本體／白刃芯三層拖尾；插入時逐把顯示方向性閃光、碎片、短地面
-斬痕、殘劍與火花。落點追蹤敵人 Hurtbox 中心；已鎖定敵人離場時，後續波次轉鎖最近的
+每把劍出現時短閃一次 lock-star，下墜才顯示外能量／色彩本體／白刃芯三層拖尾；插入時
+逐把在地板落點顯示 stone-crater，並疊加方向性閃光、碎片、短地面斬痕、殘劍與火花。
+通用 blue-crescent 不屬於劍雨編舞。落點追蹤敵人 Hurtbox 中心；已鎖定敵人離場時，後續波次轉鎖最近的
 存活敵人，完全無敵人才落到預設地點。第一輪接觸必須同步較強震屏與 hit-stop。禁止把
 不同劍接成折線、加上無關圓環／藍色 connector，或只用同寬色線表示劍的材質。
 羽毛系列固定以玩家為光輪中心，羽根朝內逐根進入 3／7／15 羽的旋轉編隊；羽毛保留
@@ -1233,12 +1240,15 @@ presentation only after a legal horizontal target confirms that the shot will fi
 
 ### Persistent Combo formula and timed card effects
 
-Combo cards remain in their slot after play. Formula history and stacks persist for the
-entire Run, while each card's attack infusion or status has its own 1.5-second timer.
+Combo cards remain in their slot after play. Formula stacks persist for the entire Run;
+formula history persists while its FIFO Finisher queue is pending, then resets immediately
+after the last queued Finisher fires. Each card's attack infusion or status has its own 1.5-second timer.
 Expiration removes only that card's modifiers, so later overlapping effects
 continue normally. Healing enters the formula when it is part of a catalog recipe. An exact learned
 three-card recipe queues its named Finisher for a later automatic horizontal shot;
-multiple Finishers resolve FIFO. The HUD shows formula slots, persistent stacks,
+multiple Finishers resolve FIFO from the same shared history. Consuming the final entry also
+resets that history's per-skill trigger guard so the next formula cycle can trigger normally.
+The HUD shows formula slots, persistent stacks,
 owned Divine Gifts, Gift-modified names, and the queued ready state.
 
 具名 Finisher 會同時讀取本 Run 實際持有的所有 Divine Gifts，而不是只讀目前標記的

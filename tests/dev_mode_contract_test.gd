@@ -39,6 +39,7 @@ func _run() -> void:
 	_expect(meta.unlocked_cards.size() == (card_database.call("get_all_cards") as Array).size(), "Every Sword Soul/card must be unlocked in dev mode.")
 	var skill_manager: RefCounted = game.get("skill_recipe_manager")
 	_expect(meta.learned_skill_ids.size() == (skill_manager.call("get_all_skills") as Array).size(), "Every named skill must be learned in dev mode.")
+	_expect(meta.active_skill_ids.is_empty(), "Dev mode must leave named-skill activation to the expedition selector instead of preselecting every recipe.")
 
 	var entries: Array[Dictionary] = []
 	if game.has_method("get_dev_map_entries"):

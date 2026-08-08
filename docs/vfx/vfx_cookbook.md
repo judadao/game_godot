@@ -121,9 +121,10 @@ Sword Rain is the first series-specific renderer over this grammar. The generic 
 owns its recipe and Blessing projection, but suppresses generic `Rain`, `Trail`, `Ring`, and
 `Impact` drawing because connecting blade positions into one polyline produced meaningless
 geometry. `SwordRainMaterialVFX2D` instead keeps every authored sword texture readable and gives
-each blade an animated energy-edge material, a three-layer trail (outer energy, colored body,
-white cutting core), and its own insertion stack (directional contact flash, shards, ground scar,
-sword afterglow, pooled sparks). Its timeline is explicitly staged as staggered summon, orbit
+each blade a short lock-star summon flash, an animated energy-edge material, a three-layer trail
+(outer energy, colored body, white cutting core), and its own insertion stack (directional contact
+flash, shards, grounded stone crater, ground scar, sword afterglow, pooled sparks). The generic
+blue-crescent raster is not routed. Its timeline is explicitly staged as staggered summon, orbit
 gather, lock charge, snap release, insertion hold, and afterglow decay. Sword Rain uniquely starts
 at ten blades; its 10/15/20 growth is grouped into two/three/four five-blade volleys rather than
 arbitrary scatter. Runtime playback takes a live enemy provider, aims at Hurtbox centers, and
@@ -153,6 +154,27 @@ swamp pulse, drone shot/crash, Black Hole detonation and healing pulse. Fire/Dra
 palette-authored wind slash/burst components. Blessing overlays mutate the spawned primitive's
 palette, noise, density and glow. Fixed normalized-timeline decorations must not impersonate a
 real hit.
+
+Thorn uses a dedicated three-raster growth grammar rather than the legacy plant-growth atlas:
+stack 5/7/9 `thorn_bloom` sprites upward from the target's ground origin with dense overlap,
+per-segment scale, flip and curve variation; overlap one `thorn_seed` flower with the terminal
+segment; only after bloom may `thorn_run` packets fan across the upper combat frame. Master uses
+ten distinct roots and twenty staggered packets per vine.
+
+The authored raster series below are exclusive renderers: after the generic composer resolves the
+Blessing palette, its plate is hidden so it cannot duplicate silhouettes beneath the specialized
+sprites. Fire preserves one authored base and crown while stretching the central `fire__fire_pillar`
+body to 3/4/5 logical segment heights, so each eruption is continuous without full-image seams.
+DR. Stone uses `dr_stone__stone_orbit` for every orbiting drone and `dr_stone__stone_lance` for
+both preview and gameplay-event shots. Orbit sprites use the shared fringe cleanup material, while
+stone lances use a dedicated material that preserves and strengthens their dark rock core. Water mirrors `water_flow__tidal_curl` away
+from the caster and increases its
+travel scale most strongly at master tier. Black Hole keeps one rotating, breathing
+`black_hole__void_ring` main body plus bounded inward particles and no generated ring lines.
+Dragon Breath uses enlarged `dragon_breath__dragon_head` emitters, overlapping
+`dragon_breath__breath_beam` tiles, a 150px side-head Y sweep, and a staggered 20-emitter master
+rain. The delayed Lightning final event rotates several `lightning__chain_bolt` afterimages into a
+vertical descent and anchors `lightning__sky_impact` by its bottom edge at the gameplay target.
 
 Standalone composition scenes are `slash_vfx_demo`, `fireball_vfx_demo`,
 `lightning_strike_vfx_demo`, `area_burst_vfx_demo`, and `moon_wheel_vfx_demo`. They contain no

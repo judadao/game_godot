@@ -3322,6 +3322,9 @@ func _consume_finisher_formula() -> void:
 		queue.pop_front()
 	run_state.temporary_buffs["finisher_queue"] = queue
 	run_state.temporary_buffs["finisher_pending"] = not queue.is_empty()
+	if queue.is_empty():
+		run_state.temporary_buffs["combo_formula_history"] = []
+		run_state.temporary_buffs["combo_triggered_skill_ids"] = []
 	_refresh_combo_display()
 
 
@@ -4399,7 +4402,7 @@ func _spawn_named_skill_vfx(
 	else:
 		current_map.add_child(effect)
 		effect.global_position = (
-			_resolve_persistent_field_center()
+			_resolve_persistent_field_center(series_id == "thorn")
 			if has_series_profile and series_id in ["black_hole", "thorn", "arcane_swamp"]
 			else (player as Node2D).global_position
 		)
@@ -4439,7 +4442,7 @@ func _spawn_named_skill_vfx(
 		)
 
 
-func _resolve_persistent_field_center() -> Vector2:
+func _resolve_persistent_field_center(anchor_to_target_origin: bool = false) -> Vector2:
 	if not player is Node2D:
 		return Vector2.ZERO
 	var center := (player as Node2D).global_position
@@ -4449,9 +4452,10 @@ func _resolve_persistent_field_center() -> Vector2:
 			continue
 		var target := target_variant as Node2D
 		var target_center := target.global_position
-		var collision_shape := target.find_child("CollisionShape2D", true, false) as CollisionShape2D
-		if collision_shape != null:
-			target_center = collision_shape.global_position
+		if not anchor_to_target_origin:
+			var collision_shape := target.find_child("CollisionShape2D", true, false) as CollisionShape2D
+			if collision_shape != null:
+				target_center = collision_shape.global_position
 		var distance := (player as Node2D).global_position.distance_squared_to(target_center)
 		if distance < nearest_distance:
 			nearest_distance = distance
@@ -7030,7 +7034,8 @@ func _open_deck_builder(target_scene_path: String, target_spawn_name: StringName
 		"configure",
 		discovered,
 		meta_state.selected_deck,
-		meta_state.auto_attack_card_id
+		meta_state.auto_attack_card_id,
+		meta_state.active_skill_ids
 	)
 	ui_control.connect(
 		"loadout_confirmed",
@@ -7069,8 +7074,21 @@ func _on_loadout_confirmed(
 	var previous_meta := meta_state.to_dict()
 	meta_state.set_selected_deck(normalized)
 	meta_state.auto_attack_card_id = _resolve_auto_attack_card_id(auto_attack_card_id)
+	if ui_control != null and ui_control.has_method("get_selected_skill_recipe_ids"):
+		var selected_skill_ids := ui_control.call("get_selected_skill_recipe_ids") as Array
+		meta_state.active_skill_ids.clear()
+		for skill_id_variant in selected_skill_ids:
+			var skill_id := String(skill_id_variant)
+			if (
+				skill_recipe_manager.has_skill(skill_id)
+				and meta_state.learned_skill_ids.has(skill_id)
+				and not meta_state.active_skill_ids.has(skill_id)
+			):
+				meta_state.active_skill_ids.append(skill_id)
+		_configure_skill_loadout()
 	if not save_service.save_meta(_meta_save_path(), meta_state.to_dict()):
 		meta_state.apply_dict(previous_meta)
+		_configure_skill_loadout()
 		return
 	close_ui(ui_control)
 	if target_scene_path.is_empty():

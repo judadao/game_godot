@@ -75,12 +75,16 @@ Inventory／Codex focused coverage：
   攻速與八層殘影；專用 renderer 必須至少五層且可接受 Blessing mutation。另由
   `sword_rain_cadence_vfx_test.gd` 鎖定劍雨 10／15／20 數量、逐把分離環繞浮現、目標
   頭頂垂直鎖定 0.8 秒、五劍分組停頓／加速墜落、逐劍曲線殘光、命中震屏／hit-stop，
-  以及在插入點觸發衝擊後消失；`sword_rain_material_vfx_test.gd` 驗證三層拖尾、六層
-  命中堆疊與通用藍線抑制，`sword_rain_runtime_targeting_test.gd` 驗證 Hurtbox 中心與
+  以及在插入點觸發衝擊後消失；`sword_rain_material_vfx_test.gd` 驗證逐劍 lock-star、
+  三層拖尾、七層命中堆疊、逐劍 stone-crater 與通用藍線／blue-crescent 抑制，
+  `sword_rain_runtime_targeting_test.gd` 驗證 Hurtbox 中心與
   原目標離場後轉鎖存活敵人。
   `skill_series_vfx_visual_capture_test.gd` 可用
   `SKILL_SERIES_VFX_CAPTURE_PATH` 在已配置的 offscreen 圖形 renderer 輸出 13×3 contact sheet；
   dummy headless 環境只執行 geometry／behavior contracts，不要求 PNG capture。
+  `sword_rain_visual_capture_test.gd` 可用 `SWORD_RAIN_VFX_CAPTURE_DIR` 輸出 Master 劍雨的
+  summon／release／contact 三張 1280×720 完整幀、每幀固定 3×2 六切片，以及 lock-star／
+  stone-crater 原尺寸素材；用於確認逐劍星閃、月牙移除與逐劍貼地 crater。
 - `skill_series_vfx_combat_routing_test.gd`：逐一驗證 39 招的實戰 profile 與其舊 Finisher
   recipe bridge 都由目前配置的正式招式消歧義、導向自己系列，`tier_rank` 正確成為
   1／2／3 階 formation；並以相容技能實際走 trigger→spawn，確認招式 ID 會先解析至目前
@@ -138,9 +142,20 @@ z-order、layout 與 generated Scene parity。圖片迭代過程不為主觀畫�
 次成功 Combo、混合路線須提供不同順序，且同一歷史尾段必須聯集觸發所有已編成的
 符合招式並對單招去重；雷電基本招式另固定驗證 `風暴充能 ×3`，避免相容映射把它
 誤接成其他劍魂的混合路線。
+`multi_skill_finisher_cycle_test.gd` 另以同一六張公式排入兩個相容招式，鎖定第一招
+消耗時保留共同歷史、最後一招消耗時清空 history／trigger guard，且下一輪三張公式
+能重新排入相同招式，避免 HUD 永久卡在 `6/3`。
 
-`thorn_bloom_series_test.gd` 鎖定荊棘的 3／6／10 破土、依序開花與棘刺齊射；VFX 使用
-既有開花序列作獨立 bloom layer，gameplay controller 在開花前不得提前造成傷害。
+`thorn_bloom_series_test.gd` 鎖定荊棘的 3／6／10 破土、5／7／9 節密集重疊藤蔓、頂花與
+棘刺齊射；大師階至少 10 條藤蔓、每條 9 節、每條 20 個散射 presentation projectiles，並鎖定
+`thorn_bloom`／`thorn_seed`／`thorn_run` 三張正式素材路徑。gameplay controller 在開花前
+不得提前造成傷害，field center 必須使用目標腳底原點而非空中的 Hurtbox center。
+`thorn_expedition_trigger_test.gd` 另鎖定 dev mode 只解鎖而不預先 active 招式、Deck Builder
+選中的荊棘在確認出征後同步成 `MetaState` 與 runtime matcher，並以真實 AP／手牌連打
+三張血之契約後確實排入 finisher queue。
+`thorn_bloom_visual_capture_test.gd` 可用 `THORN_BLOOM_VFX_CAPTURE_DIR` 輸出三張原始素材，
+以及成長、開花、散射三階段的 1280×720 全畫面與各自固定 3×2 六切片，供每次比例、位置、
+層級或構圖修改後重新執行獨立視覺審查。
 
 `all_skill_series_gameplay_test.gd` 鎖定全部 13 系列的唯一 gameplay family、三階
 執行參數、圖鑑「玩法」說明與 master-tier 真實戰鬥投影；並確認任何自動招式結算
@@ -383,6 +398,13 @@ archetype、beat pattern、三級 evolution、stack progression 與收尾時序�
 載入所有 Godot 4 shader。命中原語另須證明 flash／主形／碎屑／餘韻至少三組不同
 phase offset，且 controller 的真實 pillar／chain／strike／wave／detonation signal 會在正確
 world position 生成 Fire Burst、Lightning Bolt/Impact、Water/Poison Splash 或 Wind Burst。
+
+`requested_skill_material_vfx_test.gd` locks the authored component paths and motion contracts for
+the enlarged Thorn flower, stacked Fire pillars, DR. Stone orbit/lance sprites, outward-growing
+tidal curls, the line-free rotating Black Hole body, tiled Dragon head/beam sweeps, and the
+vertical Lightning descent plus ground-anchored finish. `requested_skill_material_visual_capture_test.gd`
+is the hidden graphical reviewer harness: it saves every native component, one 1280x720 integrated
+master frame per changed series, and six fixed 3-column x 2-row slices for independent review.
 Headless contract 不取代人工開啟 `VFXLibraryDemo.tscn` 與逐一
 demo 的視覺審查；代理不得因此自行開啟顯示視窗。
 Graphical 5-beat contact sheet 是必要視覺證據；只有結構 PASS、但仍呈現細線菱形／鋸齒

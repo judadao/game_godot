@@ -554,7 +554,8 @@ func _ready() -> void:
   毒灘；底層兩條 Line2D 只負責連續性，不擁有命中或持續傷害。
 - `NamedSkillVFX.tscn`：現役系列主物體與數量／路徑編排；靜態 child
   `SkillVFXComposer2D` 依 recipe 拼裝至少五個 Core／軌跡／命中 role；靜態 child
-  `SwordRainMaterialVFX2D` 只在劍雨系列啟用，逐把同步劍形能量、三層拖尾與插入命中。
+  `SwordRainMaterialVFX2D` 只在劍雨系列啟用，逐把同步 lock-star 出現閃光、劍形能量、
+  三層拖尾與貼地 stone-crater 插入命中；通用 blue-crescent 不參與 runtime。
   靜態 child `FeatherHaloMaterialVFX2D` 只在羽毛系列啟用，逐根朝向玩家進入旋轉光輪、
   在生命末段消散，並讓再次施放補回既有光輪而不重疊建立短效果。
   舊 runtime
@@ -576,9 +577,10 @@ overlays 與 normalized progress。五個 `*_vfx_demo.tscn` 使用正式 Compose
 素材，分別檢查斬擊、火球、落雷、範圍爆發與月輪，且不得加入逐格動畫。
 
 `SwordRainMaterialVFX2D.tscn` 是劍雨的專用材質與節奏 child。它不連接不同劍的位置，
-也不畫通用圓環；每把劍各自持有 SummonEcho、LockSheath、OuterEnergy／ColoredBody／
-WhiteCore trail，以及 CompressionWedge／ContactFlash／DirectionalShards／GroundScar／
-SwordAfterglow／Sparks。所有節點只接受 `NamedSkillVFX` 已決定的 pose 與 normalized phase；
+也不畫通用圓環；每把劍各自持有 SummonEcho、SummonLockStar、LockSheath、
+OuterEnergy／ColoredBody／WhiteCore trail，以及 CompressionWedge／ContactFlash／
+DirectionalShards／GroundCrater／GroundScar／SwordAfterglow／Sparks。所有節點只接受
+`NamedSkillVFX` 已決定的 pose 與 normalized phase；
 runtime target provider 只用來更新 visual Hurtbox 落點，不得回寫戰鬥 target 或傷害。
 
 `FeatherHaloMaterialVFX2D.tscn` 是羽毛的 persistent material child。每個 Core 各自持有

@@ -60,6 +60,8 @@ func _run() -> void:
 			"%s crop mapping must follow its catalog material path." % series_entry.get("id", "")
 		)
 		_validate_entry(series_entry, false)
+		if String(series_entry.get("id", "")) == "sword_rain":
+			_validate_sword_rain_component_routing(series_entry)
 	for entry in overlay_entries:
 		var overlay_entry := entry as Dictionary
 		if mutation_script != null:
@@ -153,6 +155,18 @@ func _validate_entry(entry: Dictionary, is_overlay: bool) -> void:
 	_expect((stages[2] as Dictionary).get("layers", []).size() >= 2, "%s contact must locally compose at least two crops." % entry_id)
 	if is_overlay:
 		_expect(not String(entry.get("shape", "")).is_empty(), "%s overlay needs its catalog shape semantics." % entry_id)
+
+
+func _validate_sword_rain_component_routing(entry: Dictionary) -> void:
+	var routed_components: Array[String] = []
+	for stage_value in entry.get("stages", []) as Array:
+		for layer_value in (stage_value as Dictionary).get("layers", []) as Array:
+			var layer := layer_value as Dictionary
+			routed_components.append(String(layer.get("component", "")))
+	_expect(
+		not routed_components.has("blue_crescent"),
+		"Sword Rain must not route the removed blue crescent through any runtime phase."
+	)
 
 
 func _has_visible_alpha(image: Image, region: Rect2i) -> bool:

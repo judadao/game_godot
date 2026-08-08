@@ -64,6 +64,7 @@ var _stage_progress := 0.0
 var _mist_started := false
 var _tail_progress := 0.0
 var _suppress_stage_signal := false
+var _skip_first_process_tick := false
 var _crystal_nodes: Array[Polygon2D] = []
 var _shard_nodes: Array[Polygon2D] = []
 
@@ -108,6 +109,7 @@ func play(center: Variant = null) -> void:
 	_build_shatter_fragments()
 	_configure_mist()
 	_set_normalized_progress(0.0)
+	_skip_first_process_tick = true
 	set_process(true)
 
 
@@ -200,6 +202,9 @@ func debug_set_tail_hold_progress(value: float) -> void:
 
 func _process(delta: float) -> void:
 	if not active:
+		return
+	if _skip_first_process_tick:
+		_skip_first_process_tick = false
 		return
 	var real_delta := delta / maxf(Engine.time_scale, 0.05)
 	var tail_duration := _tail_hold_duration()

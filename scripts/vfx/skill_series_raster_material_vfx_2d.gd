@@ -463,6 +463,8 @@ func _update_mapped_component(
 		alpha = sin(local_phase * PI)
 	var is_overlay := _component_sources[index] != "base"
 	alpha *= 0.34 if is_overlay else 0.62
+	if not is_overlay and not bool(layer.get("render_base", true)):
+		alpha = 0.0
 	var anchor := String(layer.get("resolved_anchor", layer.get("anchor", "contact")))
 	var position := _mapped_anchor_position(anchor, phase, source, target, local_phase, stack_index, stack_count, core_positions)
 	var offset_values := layer.get("offset", [0.0, 0.0]) as Array

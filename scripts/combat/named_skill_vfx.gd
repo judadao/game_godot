@@ -36,7 +36,7 @@ const SWORD_RAIN_MAXIMUM_SPEED_RATIO := 5.2
 const SWORD_RAIN_FLIGHT_SPAN := 0.18
 const SWORD_RAIN_LOCK_LANE_SPACING := 64.0
 const SWORD_RAIN_LOCK_ROW_SPACING := 76.0
-const SWORD_RAIN_CONTACT_LANE_SPACING := 32.0
+const SWORD_RAIN_CONTACT_LANE_SPACING := 44.0
 const SWORD_RAIN_ORBIT_RADIUS := 142.0
 
 @export var auto_free := true
@@ -377,6 +377,11 @@ func _configure_extended_series_renderer(series_id: String, tier_rank: int, reci
 			_healing_zone_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters)
 		"shared_branch_vitality":
 			_body_overdrive_material_vfx.call("configure", _series_sprites, tier_rank, palette, parameters)
+	if series_id in ["black_hole", "thorn", "dr_stone", "fire", "water_flow", "dragon_breath"]:
+		# These renderers own their complete authored raster topology. Keeping the
+		# generic four-phase raster plate underneath creates duplicate silhouettes
+		# and low-quality line clutter around the supplied component art.
+		_skill_vfx_composer.visible = false
 
 
 func _renderer_matches_series(renderer: Node2D, series_id: String) -> bool:
@@ -430,7 +435,7 @@ func get_active_layer_count() -> int:
 	if _series_mode:
 		return _series_sprites.size() + (
 			maxi(0, int(_skill_vfx_composer.call("get_active_layer_count")) - 1)
-			if _skill_vfx_composer != null and is_instance_valid(_skill_vfx_composer)
+			if _skill_vfx_composer != null and is_instance_valid(_skill_vfx_composer) and _skill_vfx_composer.visible
 			else 0
 		) + (
 			int(_sword_rain_material_vfx.call("get_active_layer_count"))
@@ -611,6 +616,8 @@ func get_series_debug_state() -> Dictionary:
 		"relay_multiplier": float(_series_tier_profile.get("relay_multiplier", 1.0)),
 		"launches_object": bool(_series_profile.get("launches_object", false)),
 		"minimum_render_size": _series_render_size,
+		"source_position": _series_vector("source"),
+		"target_position": _series_vector("target"),
 		"growth_rule": String(_series_profile.get("growth_rule", "launched_objects_start_at_three_paths_then_gain_density")),
 		"foundation_layers": foundation_layers,
 	}
@@ -1257,12 +1264,13 @@ func _layout_sword_rain_cadence() -> void:
 			continue
 		var beat := beat_schedule[object_index]
 		var local_strike := (release_progress - beat) / SWORD_RAIN_FLIGHT_SPAN
-		var lane_target := target + Vector2(
+		var ground_impact := target + Vector2(
 			lane_ratio * SWORD_RAIN_CONTACT_LANE_SPACING * 2.0,
-			-absf(lane_ratio) * 5.0
+			0.0
 		)
+		var blade_target := ground_impact + Vector2(0.0, -_series_render_size * 0.44)
 		var curve_side := -1.0 if object_index % 2 == 0 else 1.0
-		var control := lock_anchor.lerp(lane_target, 0.55) + Vector2(
+		var control := lock_anchor.lerp(blade_target, 0.55) + Vector2(
 			curve_side * (14.0 + absf(lane_ratio) * 12.0),
 			0.0
 		)
@@ -1283,8 +1291,8 @@ func _layout_sword_rain_cadence() -> void:
 			continue
 		var travel := clampf((local_strike - 0.12) / 0.60, 0.0, 1.0)
 		var snapped_travel := 1.0 - pow(1.0 - travel, 2.75)
-		var point := _quadratic_bezier(lock_anchor, control, lane_target, snapped_travel)
-		var tangent := _quadratic_bezier_tangent(lock_anchor, control, lane_target, snapped_travel)
+		var point := _quadratic_bezier(lock_anchor, control, blade_target, snapped_travel)
+		var tangent := _quadratic_bezier_tangent(lock_anchor, control, blade_target, snapped_travel)
 		sprite.position = point
 		if not tangent.is_zero_approx():
 			sprite.rotation = tangent.angle() - deg_to_rad(
@@ -1294,11 +1302,11 @@ func _layout_sword_rain_cadence() -> void:
 		sprite.scale = Vector2.ONE * base_scale * strike_scale
 		if local_strike >= 0.72 and local_strike < 0.90:
 			var contact := (local_strike - 0.72) / 0.18
-			sprite.position = lane_target + Vector2(sin(contact * TAU) * 2.5, 0.0)
+			sprite.position = blade_target + Vector2(sin(contact * TAU) * 2.5, 0.0)
 			sprite.scale = Vector2.ONE * base_scale * lerpf(1.22, 0.96, contact)
 		if local_strike >= 0.90:
 			var afterbeat := clampf((local_strike - 0.90) / 0.55, 0.0, 1.0)
-			sprite.position = lane_target + Vector2(0.0, afterbeat * 3.0)
+			sprite.position = blade_target + Vector2(0.0, afterbeat * 3.0)
 			sprite.scale = Vector2.ONE * base_scale * lerpf(1.0, 0.72, afterbeat)
 			_set_alpha(sprite, 1.0 - afterbeat)
 		else:
@@ -1309,13 +1317,13 @@ func _layout_sword_rain_cadence() -> void:
 				object_index,
 				lock_anchor,
 				control,
-				lane_target,
+				blade_target,
 				snapped_travel,
 				clampf(1.45 - local_strike, 0.0, 1.0)
 			)
 			_sword_rain_active_trail_count += 1
 		if local_strike >= 0.68 and local_strike <= 1.45:
-			_update_sword_rain_impact(object_index, lane_target, local_strike)
+			_update_sword_rain_impact(object_index, ground_impact, local_strike)
 			_sword_rain_active_impact_count += 1
 		if local_strike >= 0.72 and local_strike <= 1.45:
 			_sword_rain_inserted_blade_count += 1

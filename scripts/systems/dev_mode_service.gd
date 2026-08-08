@@ -60,8 +60,19 @@ func apply_runtime_unlocks(
 		var skill_id := String((skill_variant as Dictionary).get("id", ""))
 		if not skill_id.is_empty():
 			skill_ids.append(skill_id)
+	var retained_active_skill_ids: Array[String] = []
+	for active_skill_id_variant in meta_state.active_skill_ids:
+		var active_skill_id := String(active_skill_id_variant)
+		if skill_ids.has(active_skill_id) and not retained_active_skill_ids.has(active_skill_id):
+			retained_active_skill_ids.append(active_skill_id)
+	var legacy_all_skills_active := (
+		not skill_ids.is_empty()
+		and retained_active_skill_ids.size() == skill_ids.size()
+	)
 	meta_state.learned_skill_ids.assign(skill_ids)
-	meta_state.active_skill_ids.assign(skill_ids)
+	meta_state.active_skill_ids.assign(
+		[] if legacy_all_skills_active else retained_active_skill_ids
+	)
 	meta_state.dash_upgrade_unlocked = true
 	meta_state.shortcuts["expedition_power_tier"] = 4
 	meta_state.shortcuts["dev_mode_enabled"] = true

@@ -100,10 +100,10 @@ contact layers remain authoritative in the JSON.
 
 | Series | Anticipation | Travel | Contact composition | Residual |
 | --- | --- | --- | --- | --- |
-| `sword_rain` | `lock_star`, 0.00/0.42 s, orbit 1/1/1 | `blue_crescent`, 0.18/0.38 s, path 3/4/5 | crossed `blue_crescent` + `crystal_debris` | debris drift 2/3/4 |
+| `sword_rain` | specialized renderer flashes one `lock_star` as each blade appears | blade sprites and their dedicated trails; no generic raster | one separated grounded `stone_crater` per blade | specialized insertion decay; no generic debris |
 | `moon_wheel` | spinning `moon_crescent`, 0.00/0.34 s, 1/2/3 | bouncing crescent, 0.12/0.62 s, 2/3/4 | `moon_burst` + outward `moon_shards` | returning shards 2/3/5 |
 | `feather` | `feather_fan`, 0.00/0.54 s, 1/2/3 | `feather_dash`, 0.18/0.40 s, 3/5/7 | dash + descending `falling_feathers` | slow fall 3/5/7 |
-| `thorn` | clustered `thorn_seed`, 0.00/0.46 s, 1/2/3 | `thorn_run`, 0.22/0.58 s, 3/5/7 | `thorn_bloom` + bud cap | settling bloom 1/2/3 |
+| `thorn` | dedicated renderer densely overlaps `thorn_bloom`, 5/7/9 grounded segments per vine | terminal `thorn_seed`, one per vine and overlapping the last segment | delayed `thorn_run` scatter, 8/14/20 per vine | 3/6/10 vines; target-origin ground anchor; generic base suppressed |
 | `dr_stone` | `stone_orbit`, 0.00/0.58 s, 3/6/10 | `stone_lance`, 0.20/0.52 s, 3/6/10 | incoming lance + `stone_crater` | crater/dust settle 1/2/3 |
 | `black_hole` | `void_ring`, 0.00/0.68 s, 1/2/3 | inward `void_comet`, 0.22/0.66 s, 3/5/8 | `void_collapse` + inward comet fan | contracting ring 1/2/3 |
 | `fire` | `fire_lane` telegraph, 0.00/0.30 s, 2/3/4 | ground ignition lane, 0.16/0.48 s, 3/5/7 | `fire_pillar` + `fire_burst` | ember burst 2/3/5 |
@@ -148,6 +148,9 @@ with `#FFFFFF` tint.
   anchor. It must not reconstruct the source-sheet layout.
 - Residual begins after contact and fades independently. It may reuse a declared
   crop with a different transform, but it may not reveal a new unlisted region.
+- A base layer marked `render_base: false` is a placement template for Blessing
+  inheritance when a specialized renderer owns that phase. The base sprite stays
+  fully transparent and must not be counted as visible travel or contact output.
 - The screenshots captured at 11:41-11:42 on 2026-08-08 show the failure mode:
   unrelated plate cells travel and pile up together. Those frames are negative
   references, not target composition.

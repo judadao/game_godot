@@ -63,7 +63,7 @@ func _run() -> void:
 	_expect(float(initial.get("minimum_render_size", 0.0)) >= 105.0 and float(initial.get("minimum_render_size", 0.0)) <= 120.0, "Sword Rain blades must be about 70 percent of the previous oversized presentation.")
 	_expect(float(initial.get("lock_lane_spacing", 0.0)) >= 55.0 and float(initial.get("lock_row_spacing", 0.0)) >= 30.0, "Sword Rain target-lock blades must not overlap into one unreadable cluster.")
 	_expect(float(initial.get("orbit_radius", 0.0)) >= 140.0, "Sword Rain reveal must use a wide readable orbit around the caster.")
-	_expect(float(initial.get("contact_lane_spacing", 0.0)) >= 30.0, "Sword Rain contacts must remain separated across the target instead of stacking into one sprite.")
+	_expect(float(initial.get("contact_lane_spacing", 0.0)) >= 40.0, "Sword Rain contacts must leave enough room for distinct grounded craters instead of stacking into one sprite.")
 	_expect(int(initial.get("impact_vfx_count", 0)) == beat_schedule.size(), "Every Sword Rain blade needs a target-insertion impact VFX.")
 
 	var orbit_end := float(initial.get("orbit_end_ratio", 0.0))

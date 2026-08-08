@@ -1,6 +1,9 @@
 extends SceneTree
 
 const CONTROLLER_SCENE := preload("res://scenes/combat/ThornBloomFieldController.tscn")
+const THORN_BLOOM_PATH := "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_bloom.png"
+const THORN_SEED_PATH := "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_seed.png"
+const THORN_RUN_PATH := "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_run.png"
 
 var _failures := 0
 var _targets: Array = []
@@ -88,10 +91,38 @@ func _run() -> void:
 		var visual := effect.call("get_thorn_bloom_vfx_state") as Dictionary
 		_expect(String(visual.get("renderer", "")) == "thorn_emerge_bloom_barrage", "Thorn needs a dedicated layered VFX renderer.")
 		_expect((visual.get("layer_ids", []) as Array) == ["ground_cracks", "thorn_tendrils", "bloom_sequence", "spike_barrage", "petal_decay"], "Thorn VFX must preserve emerge, bloom, attack, and decay layers.")
-		_expect(bool(visual.get("reuses_authored_bloom_frames", false)), "Thorn VFX must reuse the existing authored bloom sequence.")
+		_expect(String(visual.get("vine_segment_texture", "")) == THORN_BLOOM_PATH, "Thorn vines must stack the supplied thorn_bloom raster.")
+		_expect(String(visual.get("terminal_flower_texture", "")) == THORN_SEED_PATH, "Every Thorn vine must terminate in the supplied thorn_seed flower.")
+		_expect(String(visual.get("scatter_projectile_texture", "")) == THORN_RUN_PATH, "Thorn barrages must use the supplied thorn_run raster.")
 		var thorn_count := int(visual.get("thorn_count", 0))
 		var radius := float(visual.get("radius", 0.0))
 		_expect(thorn_count > previous_thorns and radius > previous_radius, "Thorn count and range must grow every tier.")
+		_expect(
+			int(visual.get("segments_per_vine", 0)) == [5, 7, 9][tier - 1],
+			"Thorn tiers must grow denser 5/7/9-segment vines."
+		)
+		_expect(
+			float(visual.get("segment_stride", INF)) < float(visual.get("nominal_segment_height", 0.0)) * 0.55,
+			"Adjacent Thorn segments must overlap densely enough to read as one connected vine."
+		)
+		_expect(
+			is_zero_approx(float(visual.get("root_offset_y", INF))),
+			"The first Thorn segment must originate on the field's ground anchor."
+		)
+		_expect(
+			float(visual.get("flower_offset_from_last_segment", INF)) <= float(visual.get("segment_stride", 0.0)),
+			"The terminal flower must overlap the last vine segment instead of floating above it."
+		)
+		_expect(int(visual.get("vine_segment_count", 0)) == thorn_count * [5, 7, 9][tier - 1], "Every Thorn vine must expose its complete stacked segment count.")
+		_expect(int(visual.get("terminal_flower_count", 0)) == thorn_count, "Every Thorn vine must grow exactly one terminal flower.")
+		if tier == 3:
+			_expect(thorn_count >= 10, "Master Thorn must grow at least ten vines.")
+			_expect(int(visual.get("projectiles_per_vine", 0)) >= 20, "Every master Thorn vine must scatter about twenty thorn_run projectiles.")
+			_expect(int(visual.get("scatter_projectile_count", 0)) >= thorn_count * 20, "Master Thorn needs a screen-filling scatter pool for all ten vines.")
+			effect.call("debug_set_progress", 0.51)
+			visual = effect.call("get_thorn_bloom_vfx_state") as Dictionary
+			_expect(int(visual.get("active_terminal_flower_count", 0)) == thorn_count, "All terminal flowers must bloom before the master barrage.")
+			_expect(int(visual.get("active_scatter_projectile_count", 0)) > 0, "Bloomed master flowers must visibly fire the scatter barrage.")
 		previous_thorns = thorn_count
 		previous_radius = radius
 		effect.queue_free()

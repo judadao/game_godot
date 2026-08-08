@@ -157,7 +157,7 @@ func _run() -> void:
 	_expect(bool(material.call("configure", explicit_target_recipe, 3, [])), "Explicit-target anchor test must configure.")
 	material.call("set_progress", 0.16, Vector2.ZERO, Vector2(260.0, 12.0), 0.55, [Vector2(760.0, 420.0), Vector2(880.0, 460.0)])
 	var target_state := material.call("get_debug_state") as Dictionary
-	var target_snapshot := _first_visible_snapshot(target_state.get("component_snapshots", []) as Array, "anticipation")
+	var target_snapshot := _first_snapshot(target_state.get("component_snapshots", []) as Array, "anticipation")
 	_expect(not target_snapshot.is_empty() and (target_snapshot.get("position", Vector2.ZERO) as Vector2).distance_to(Vector2(260.0, 12.0)) < 120.0, "An explicit target anchor must not be overwritten by distant core positions.")
 	var broken_recipe := recipe.duplicate(true)
 	var broken_composition := (broken_recipe.get("material_composition", {}) as Dictionary).duplicate(true)
@@ -317,6 +317,16 @@ func _first_visible_snapshot(snapshots: Array, role: String) -> Dictionary:
 			continue
 		var snapshot := snapshot_variant as Dictionary
 		if String(snapshot.get("role", "")) == role and float(snapshot.get("alpha", 0.0)) > 0.02:
+			return snapshot
+	return {}
+
+
+func _first_snapshot(snapshots: Array, role: String) -> Dictionary:
+	for snapshot_variant in snapshots:
+		if not snapshot_variant is Dictionary:
+			continue
+		var snapshot := snapshot_variant as Dictionary
+		if String(snapshot.get("role", "")) == role:
 			return snapshot
 	return {}
 

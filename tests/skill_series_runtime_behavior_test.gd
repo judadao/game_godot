@@ -120,6 +120,18 @@ func _test_orbiting_feather_contact_field() -> void:
 
 func _test_thorn_field() -> void:
 	var thorns := _fixture([Vector2(60, 0), Vector2(120, 0), Vector2(180, 0)])
+	var anchor_target := thorns.targets[0] as TestTarget
+	var hurtbox := Area2D.new()
+	hurtbox.name = "Hurtbox"
+	anchor_target.add_child(hurtbox)
+	var collision := CollisionShape2D.new()
+	collision.name = "CollisionShape2D"
+	collision.position = Vector2(0.0, -52.0)
+	var capsule := CapsuleShape2D.new()
+	capsule.radius = 42.0
+	capsule.height = 104.0
+	collision.shape = capsule
+	hurtbox.add_child(collision)
 	var thorn_result := _cast(thorns.runner, thorns.caster, thorns.targets, "blooming_thorn_barrage", {
 		"tier_rank": 2, "thorn_count": 6, "field_radius": 240.0,
 		"field_duration": 3.0, "spikes_per_volley": 6,
@@ -127,6 +139,10 @@ func _test_thorn_field() -> void:
 	})
 	var thorn_field := thorn_result.get("thorn_bloom_field", {}) as Dictionary
 	_expect(int(thorn_field.get("thorn_count", 0)) == 6 and int(thorn_field.get("spikes_per_volley", 0)) == 6, "Thorn cast must create the advanced blooming barrage field.")
+	_expect(
+		(thorn_field.get("center", Vector2.ZERO) as Vector2).is_equal_approx(anchor_target.global_position),
+		"Thorn growth must anchor to the target's ground origin instead of its airborne hurtbox center."
+	)
 	_expect((thorns.targets[0] as TestTarget).damage_taken == 0, "Thorn cast must wait for its emerge and bloom phases before dealing damage.")
 	_free_fixture(thorns)
 
