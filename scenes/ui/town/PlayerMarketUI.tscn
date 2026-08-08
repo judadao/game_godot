@@ -7,12 +7,12 @@
 [ext_resource type="Texture2D" path="res://assets/town/npc/characters/traveler_animation_atlas.png" id="5_traveler"]
 [ext_resource type="Texture2D" path="res://assets/town/npc/characters/witch_animation_atlas.png" id="6_witch"]
 [ext_resource type="Texture2D" path="res://assets/town/npc/characters/innkeeper_animation_atlas.png" id="7_innkeeper"]
-[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_background.png" id="8_shop_bg"]
-[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_midground.png" id="9_shop_mid"]
-[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_foreground.png" id="10_shop_fore"]
-[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_decor_atlas.png" id="11_shop_decor"]
-[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/market_fixture_atlas.png" id="12_fixture_atlas"]
-[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/cozy_market_ambient_atlas.png" id="13_ambient_atlas"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/medieval_armory_market_background.png" id="8_shop_bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/medieval_armory_market_midground.png" id="9_shop_mid"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/medieval_armory_market_foreground.png" id="10_shop_fore"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/medieval_armory_market_decor_atlas.png" id="11_shop_decor"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/medieval_armory_market_fixture_atlas.png" id="12_fixture_atlas"]
+[ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/medieval_armory_market_ambient_atlas.png" id="13_ambient_atlas"]
 [ext_resource type="Texture2D" path="res://assets/ui/town/player_market/generated/blacksmith_menu_icons.png" id="14_menu_icons"]
 
 [sub_resource type="AtlasTexture" id="TravelerFrame"]
@@ -35,7 +35,7 @@ region = Rect2(0, 0, 512, 512)
 atlas = ExtResource("11_shop_decor")
 region = Rect2(512, 0, 512, 512)
 
-[sub_resource type="AtlasTexture" id="DecorBanner"]
+[sub_resource type="AtlasTexture" id="DecorWhetstone"]
 atlas = ExtResource("11_shop_decor")
 region = Rect2(1024, 0, 512, 512)
 
@@ -55,7 +55,7 @@ region = Rect2(1024, 512, 512, 512)
 atlas = ExtResource("12_fixture_atlas")
 region = Rect2(0, 0, 627, 627)
 
-[sub_resource type="AtlasTexture" id="AmbientHerbs"]
+[sub_resource type="AtlasTexture" id="AmbientStraps"]
 atlas = ExtResource("13_ambient_atlas")
 region = Rect2(0, 0, 627, 627)
 
@@ -65,7 +65,7 @@ region = Rect2(627, 0, 627, 627)
 
 [sub_resource type="AtlasTexture" id="AmbientBanner"]
 atlas = ExtResource("13_ambient_atlas")
-region = Rect2(627, 627, 627, 627)
+region = Rect2(0, 627, 627, 627)
 
 [sub_resource type="AtlasTexture" id="MarketHeaderIcon"]
 atlas = ExtResource("14_menu_icons")
@@ -85,7 +85,7 @@ loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("AmbientHerbs:rotation")
+tracks/0/path = NodePath("AmbientStraps:rotation")
 tracks/0/interp = 2
 tracks/0/loop_wrap = true
 tracks/0/keys = {"times": PackedFloat32Array(0, 1.6, 3.2, 4.8, 6.4), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [-0.018, 0.018, -0.012, 0.014, -0.018]}
@@ -179,6 +179,22 @@ corner_radius_top_right = 7
 corner_radius_bottom_right = 7
 corner_radius_bottom_left = 7
 
+[sub_resource type="StyleBoxFlat" id="ProductPlaqueStyle"]
+content_margin_left = 5.0
+content_margin_top = 4.0
+content_margin_right = 5.0
+content_margin_bottom = 4.0
+bg_color = Color(0.055, 0.047, 0.036, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.62, 0.44, 0.22, 0.92)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
 [node name="PlayerMarketUI" type="Control"]
 unique_name_in_owner = true
 layout_mode = 3
@@ -197,7 +213,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.055, 0.032, 0.018, 0.96)
+color = Color(0.018, 0.015, 0.013, 0.985)
 
 [node name="SafeMargin" type="Control" parent="."]
 layout_mode = 1
@@ -208,10 +224,10 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PlayerMarketWindow" type="PanelContainer" parent="SafeMargin"]
-custom_minimum_size = Vector2(1040, 640)
+custom_minimum_size = Vector2(1180, 660)
 layout_mode = 0
-offset_right = 1040.0
-offset_bottom = 640.0
+offset_right = 1180.0
+offset_bottom = 660.0
 theme_type_variation = &"TownServiceWindow"
 theme_override_styles/panel = SubResource("WindowStyle")
 
@@ -247,13 +263,13 @@ size_flags_horizontal = 3
 layout_mode = 2
 theme_override_colors/font_color = Color(0.98, 0.8, 0.4, 1)
 theme_override_font_sizes/font_size = 24
-text = "PLAYER MARKET"
+text = "灰爐武備商店"
 
 [node name="Subtitle" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Header/TitleBlock"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.62, 0.72, 0.73, 1)
 theme_override_font_sizes/font_size = 13
-text = "管理商品、貨架、價格策略與流言顧客"
+text = "武器 · 防具 · 鍛造素材"
 
 [node name="BackButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/Header"]
 unique_name_in_owner = true
@@ -264,7 +280,7 @@ icon_max_width = 20
 expand_icon = true
 theme_override_styles/normal = SubResource("ButtonStyle")
 theme_override_styles/pressed = SubResource("SelectedStyle")
-text = "返回鐵匠鋪"
+text = "返回工坊"
 
 [node name="MarketResourceSummary" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout"]
 unique_name_in_owner = true
@@ -310,7 +326,18 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("9_shop_mid")
 expand_mode = 1
-stretch_mode = 0
+stretch_mode = 6
+
+[node name="InteriorToneGrade" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+z_index = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.07, 0.055, 0.045, 0.2)
 
 [node name="BackWall" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
 layout_mode = 1
@@ -410,9 +437,9 @@ flat = true
 unique_name_in_owner = true
 z_index = 3
 layout_mode = 1
-anchor_left = 0.66
+anchor_left = 0.54
 anchor_top = 0.43
-anchor_right = 1.0
+anchor_right = 0.82
 anchor_bottom = 1.0
 mouse_filter = 2
 texture = SubResource("FixtureBasic")
@@ -423,9 +450,9 @@ stretch_mode = 5
 [node name="Counter" type="ColorRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
 z_index = 4
 layout_mode = 1
-anchor_left = 0.69
+anchor_left = 0.56
 anchor_top = 0.58
-anchor_right = 0.985
+anchor_right = 0.82
 anchor_bottom = 0.92
 color = Color(0.38, 0.23, 0.09, 0)
 
@@ -446,6 +473,7 @@ offset_top = -42.0
 offset_right = 92.0
 offset_bottom = -8.0
 theme_override_colors/font_color = Color(1, 0.83, 0.45, 1)
+theme_override_styles/normal = SubResource("ProductPlaqueStyle")
 text = "▣ 待補貨"
 horizontal_alignment = 1
 mouse_filter = 2
@@ -467,6 +495,7 @@ offset_top = -42.0
 offset_right = 186.0
 offset_bottom = -8.0
 theme_override_colors/font_color = Color(0.63, 0.86, 1, 1)
+theme_override_styles/normal = SubResource("ProductPlaqueStyle")
 text = "◆ 待補貨"
 horizontal_alignment = 1
 mouse_filter = 2
@@ -488,6 +517,7 @@ offset_top = -42.0
 offset_right = 280.0
 offset_bottom = -8.0
 theme_override_colors/font_color = Color(0.83, 0.66, 1, 1)
+theme_override_styles/normal = SubResource("ProductPlaqueStyle")
 text = "✦ 待補貨"
 horizontal_alignment = 1
 mouse_filter = 2
@@ -548,6 +578,7 @@ custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
 color = Color(0.84, 0.72, 0.61, 1)
 [node name="Name" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/Protagonist"]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.76, 0.9, 1, 1)
 text = "主角店主"
@@ -669,6 +700,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="DecorTools" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+visible = false
 z_index = 2
 layout_mode = 1
 anchor_left = 0.37
@@ -680,7 +712,8 @@ texture = SubResource("DecorTools")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="DecorBanner" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+[node name="DecorWhetstone" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+visible = false
 z_index = 2
 layout_mode = 1
 anchor_left = 0.62
@@ -688,11 +721,12 @@ anchor_top = 0.01
 anchor_right = 0.72
 anchor_bottom = 0.39
 mouse_filter = 2
-texture = SubResource("DecorBanner")
+texture = SubResource("DecorWhetstone")
 expand_mode = 1
 stretch_mode = 5
 
 [node name="DecorIngots" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+visible = false
 z_index = 3
 layout_mode = 1
 anchor_left = 0.34
@@ -705,6 +739,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="DecorBottles" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+visible = false
 z_index = 3
 layout_mode = 1
 anchor_left = 0.48
@@ -717,6 +752,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="DecorShield" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+visible = false
 z_index = 3
 layout_mode = 1
 anchor_left = 0.62
@@ -751,9 +787,10 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("10_shop_fore")
 expand_mode = 1
-stretch_mode = 0
+stretch_mode = 6
 
-[node name="AmbientHerbs" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+[node name="AmbientStraps" type="TextureRect" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+visible = false
 z_index = 9
 layout_mode = 1
 anchor_left = 0.0
@@ -763,7 +800,7 @@ anchor_bottom = 0.34
 pivot_offset = Vector2(70, 4)
 rotation = -0.018
 mouse_filter = 2
-texture = SubResource("AmbientHerbs")
+texture = SubResource("AmbientStraps")
 texture_filter = 1
 expand_mode = 1
 stretch_mode = 5
@@ -772,10 +809,10 @@ stretch_mode = 5
 z_index = 9
 modulate = Color(1, 0.9, 0.7, 0.68)
 layout_mode = 1
-anchor_left = 0.43
-anchor_top = -0.04
-anchor_right = 0.57
-anchor_bottom = 0.36
+anchor_left = 0.39
+anchor_top = 0.04
+anchor_right = 0.47
+anchor_bottom = 0.30
 mouse_filter = 2
 texture = SubResource("AmbientLamp")
 texture_filter = 1
@@ -818,6 +855,7 @@ horizontal_alignment = 1
 
 [node name="MarketCustomerSpeech" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
 unique_name_in_owner = true
+z_index = 10
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -827,12 +865,14 @@ offset_right = -250.0
 offset_bottom = 52.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(1, 0.91, 0.72, 1)
+theme_override_styles/normal = SubResource("ProductPlaqueStyle")
 text = "「今天有什麼好貨？」"
 horizontal_alignment = 1
 vertical_alignment = 1
 mouse_filter = 2
 
 [node name="InteractionHint" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas"]
+z_index = 10
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -845,6 +885,7 @@ offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.72, 0.86, 0.84, 1)
+theme_override_styles/normal = SubResource("ProductPlaqueStyle")
 theme_override_font_sizes/font_size = 13
 text = "選擇貨架、櫃台商品或門鈴進行互動"
 horizontal_alignment = 1
@@ -855,9 +896,9 @@ unique_name_in_owner = true
 visible = false
 z_index = 20
 layout_mode = 1
-anchor_left = 0.015
+anchor_left = 0.645
 anchor_top = 0.055
-anchor_right = 0.37
+anchor_right = 0.985
 anchor_bottom = 0.94
 theme_override_styles/panel = SubResource("WindowStyle")
 
@@ -888,10 +929,10 @@ vertical_alignment = 1
 
 [node name="ContextCloseButton" type="Button" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/ContextBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(126, 36)
+custom_minimum_size = Vector2(84, 36)
 layout_mode = 2
 theme_override_styles/normal = SubResource("ButtonStyle")
-text = "收起互動"
+text = "收起"
 
 [node name="Content" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout"]
 unique_name_in_owner = true
@@ -903,6 +944,7 @@ theme_override_constants/separation = 12
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_styles/panel = SubResource("PanelStyle")
 
 [node name="InventoryLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel"]
@@ -913,9 +955,21 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_colors/font_color = Color(0.97, 0.8, 0.46, 1)
 theme_override_font_sizes/font_size = 19
-text = "1  選擇要販售的商品"
+text = "選一件要擺上櫃台的商品"
+
+[node name="SelectedCandidateSummary" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 62)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.84, 0.56, 1)
+theme_override_font_sizes/font_size = 15
+text = "已選商品"
+vertical_alignment = 1
+autowrap_mode = 2
 
 [node name="CandidateScroll" type="ScrollContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
@@ -948,11 +1002,13 @@ vertical_alignment = 1
 autowrap_mode = 2
 
 [node name="PriceHeading" type="Label" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.82, 0.82, 1)
-text = "2  定價策略"
+text = "為這件商品選擇售價"
 
 [node name="PriceRow" type="HBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/InventoryPanel/InventoryLayout"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 5
 
@@ -988,12 +1044,13 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_override_styles/normal = SubResource("SelectedStyle")
-text = "上架到選定貨架"
+text = "確認上架"
 
 [node name="ShelvesPanel" type="PanelContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_styles/panel = SubResource("PanelStyle")
 
 [node name="ShelvesLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel"]
@@ -1004,7 +1061,7 @@ theme_override_constants/separation = 9
 layout_mode = 2
 theme_override_colors/font_color = Color(0.97, 0.8, 0.46, 1)
 theme_override_font_sizes/font_size = 19
-text = "3  管理展示貨架"
+text = "檢查展示貨架"
 
 [node name="ShelfGrid" type="GridContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/ShelvesPanel/ShelvesLayout"]
 layout_mode = 2
@@ -1110,6 +1167,7 @@ autowrap_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_styles/panel = SubResource("PanelStyle")
 
 [node name="RumorLayout" type="VBoxContainer" parent="SafeMargin/PlayerMarketWindow/WindowMargin/MarketLayout/StoreInterior/InteriorCanvas/ContextDock/DockMargin/DockLayout/Content/RumorPanel"]

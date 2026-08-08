@@ -156,8 +156,8 @@ func _test_player_blacksmith() -> void:
 		"PlayerBlacksmithUI must preserve its building routing context."
 	)
 	_expect(
-		String(ui.call("get_resource_text")).contains("Gold 5,000")
-			and String(ui.call("get_resource_text")).contains("Shards 5,000"),
+		String(ui.call("get_resource_text")).contains("金幣 5,000")
+			and String(ui.call("get_resource_text")).contains("魔力碎片 5,000"),
 		"PlayerBlacksmithUI must project current persistent resource amounts."
 	)
 	_expect(

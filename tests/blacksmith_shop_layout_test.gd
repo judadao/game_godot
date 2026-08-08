@@ -67,9 +67,68 @@ func _check_ui(scene: PackedScene, prefix: String, window_name: String, viewport
 			"unlocked": true,
 			"visible": true,
 		}])
+	else:
+		ui.call("set_sale_state", {
+			"capacity": 3,
+			"candidates": [
+				{
+					"item_kind": "equipment",
+					"item_id": "hunter_bow",
+					"item_name": "北境獵弓",
+					"quality": "rare",
+					"quality_label": "稀有武器",
+					"count": 2,
+					"unit_price": 146,
+				},
+				{
+					"item_kind": "equipment",
+					"item_id": "chain_armor",
+					"item_name": "城防鎖甲",
+					"quality": "exceptional",
+					"quality_label": "罕見防具",
+					"count": 1,
+					"unit_price": 228,
+				},
+				{
+					"item_kind": "resource",
+					"item_id": "iron_ingot",
+					"item_name": "精煉鐵錠",
+					"quality": "common",
+					"quality_label": "鍛造素材",
+					"count": 12,
+					"unit_price": 34,
+				},
+			],
+			"shelves": [
+				{"shelf_index": 0, "status": "empty"},
+				{
+					"shelf_index": 1,
+					"status": "customer_ready",
+					"item_name": "青鋼短劍",
+					"customer_name": "巡防士兵",
+				},
+				{"shelf_index": 2, "status": "empty"},
+			],
+			"fixture_state": {
+				"active": {"id": "cedar_display", "name": "雪松武備櫃", "capacity": 3},
+				"next": {},
+			},
+		})
 	ui.call("open")
 	await process_frame
 	await process_frame
+	if prefix == "market":
+		var candidate_list := ui.find_child("MarketCandidateList", true, false) as VBoxContainer
+		var visible_candidates := 0
+		if candidate_list != null:
+			for child in candidate_list.get_children():
+				if child is Button and child.visible:
+					visible_candidates += 1
+		_expect(
+			visible_candidates == 3 and candidate_list.size.y >= 150.0,
+			"Market review fixture must render three readable candidate rows; got %d rows in %s."
+			% [visible_candidates, candidate_list.size]
+		)
 	var window := ui.find_child(window_name, true, false) as Control
 	_expect(window != null and window.is_visible_in_tree(), "%s window must render at %s." % [prefix, viewport_size])
 	if window != null:
@@ -100,6 +159,22 @@ func _check_ui(scene: PackedScene, prefix: String, window_name: String, viewport
 					product_button.pressed.emit()
 					await process_frame
 					await process_frame
+					var capture_candidate_list := ui.find_child("MarketCandidateList", true, false) as VBoxContainer
+					var capture_candidate_scroll := ui.find_child("CandidateScroll", true, false) as ScrollContainer
+					_expect(
+						capture_candidate_scroll != null
+							and capture_candidate_scroll.is_visible_in_tree()
+							and capture_candidate_scroll.size.y >= 180.0,
+						"Market product picker must reserve visible height in the side dock."
+					)
+					if capture_candidate_list != null and capture_candidate_scroll != null:
+						var candidate_viewport := capture_candidate_scroll.get_global_rect()
+						for child in capture_candidate_list.get_children():
+							if child is Button and child.visible:
+								_expect(
+									candidate_viewport.intersects(child.get_global_rect()),
+									"Market candidate rows must render inside the product picker viewport."
+								)
 					var management_image := viewport.get_texture().get_image()
 					var management_name := "market_management_1920x1080"
 					_expect(
@@ -122,20 +197,25 @@ func _check_ui(scene: PackedScene, prefix: String, window_name: String, viewport
 				),
 			"Object-led forge stage must stay inside %s." % viewport_size
 		)
-		for hotspot_name in [
-			"BlueprintRackButton",
+		var blueprint_hotspot := ui.find_child("BlueprintRackButton", true, false) as Control
+		_expect(
+			blueprint_hotspot != null
+				and blueprint_hotspot.is_visible_in_tree()
+				and _transformed_bounds(window).encloses(_transformed_bounds(blueprint_hotspot)),
+			"The current blueprint decision must remain visible inside the window at %s."
+			% viewport_size
+		)
+		for hidden_hotspot_name in [
 			"MethodToolsButton",
 			"MaterialChestButton",
 			"ForgeWorkspaceActionButton",
 			"FinishedRackButton",
 		]:
-			var hotspot := ui.find_child(hotspot_name, true, false) as Control
+			var hidden_hotspot := ui.find_child(hidden_hotspot_name, true, false) as Control
 			_expect(
-				hotspot != null
-					and hotspot.is_visible_in_tree()
-					and _transformed_bounds(window).encloses(_transformed_bounds(hotspot)),
-				"Forge hotspot %s must remain visible inside the window at %s."
-				% [hotspot_name, viewport_size]
+				hidden_hotspot != null and not hidden_hotspot.is_visible_in_tree(),
+				"Future forge decision %s must stay concealed at %s."
+				% [hidden_hotspot_name, viewport_size]
 			)
 		if not _capture_directory.is_empty():
 			var forge_image := viewport.get_texture().get_image()

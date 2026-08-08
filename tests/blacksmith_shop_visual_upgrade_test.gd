@@ -4,6 +4,7 @@ const BLACKSMITH_SCENE := preload("res://scenes/ui/town/PlayerBlacksmithUI.tscn"
 const MARKET_SCENE := preload("res://scenes/ui/town/PlayerMarketUI.tscn")
 
 const GENERATED_ASSETS := [
+	"res://assets/ui/town/player_market/generated/blacksmith_hub_background_v2.png",
 	"res://assets/ui/town/player_market/generated/blacksmith_menu_icons.png",
 	"res://assets/ui/town/player_market/generated/blacksmith_interactive_objects.png",
 	"res://assets/ui/town/player_market/generated/forge_workspace_objects.png",
@@ -80,13 +81,26 @@ func _run() -> void:
 		workshop_animation != null and workshop_animation.is_playing(),
 		"Workshop firelight and hanging objects need a calm looping micro-animation."
 	)
-	for layer_name in ["WorkshopArtBackground", "WorkshopArtMidground", "WorkshopArtForeground"]:
-		var entrance_layer := blacksmith.find_child(layer_name, true, false) as Control
-		_expect(
-			entrance_layer != null and not entrance_layer.visible,
-			"Blacksmith entry must use clean object icons instead of a busy layered room: %s."
-			% layer_name
-		)
+	var workshop_canvas := blacksmith.find_child("WorkshopCanvas", true, false) as Control
+	var workshop_welcome := blacksmith.find_child("WorkshopWelcome", true, false) as Label
+	var workshop_hub := blacksmith.find_child("WorkshopArtBackground", true, false) as TextureRect
+	_expect(
+		workshop_canvas != null
+			and workshop_welcome != null
+			and workshop_welcome.text.contains("哪件事")
+			and workshop_hub != null
+			and workshop_hub.is_visible_in_tree()
+			and workshop_hub.texture != null
+			and workshop_hub.texture.resource_path == (
+				"res://assets/ui/town/player_market/generated/blacksmith_hub_background_v2.png"
+			)
+			and workshop_hub.texture.get_size() == Vector2(1774.0, 887.0)
+			and workshop_hub.mouse_filter == Control.MOUSE_FILTER_IGNORE
+			and workshop_hub.z_index < blacksmith.find_child(
+				"ForgeObjectButton", true, false
+			).z_index,
+		"Blacksmith entry must read as one workshop room whose three doors lead to services."
+	)
 	blacksmith.call("set_recipes", [{
 		"id": "hunter_bow",
 		"name": "Hunter Bow",
@@ -124,18 +138,64 @@ func _run() -> void:
 		"The formal forge hammer and impact need a calm authored strike animation."
 	)
 	var next_hint := blacksmith.find_child("ForgeNextHint", true, false) as Label
+	var recipe_panel := blacksmith.find_child("RecipePanel", true, false) as Control
+	var blueprint_slot := blacksmith.find_child("BlueprintSlot", true, false) as Control
+	var method_slot := blacksmith.find_child("MethodSlot", true, false) as Control
+	var material_slot := blacksmith.find_child("MaterialSlot", true, false) as Control
+	var anvil_slot := blacksmith.find_child("AnvilSlot", true, false) as Control
+	var result_slot := blacksmith.find_child("ResultSlot", true, false) as Control
 	var method_row := blacksmith.find_child("ForgeMethodRow", true, false) as Control
 	var material_row := blacksmith.find_child("MaterialQualityRow", true, false) as Control
 	var forge_actions := blacksmith.find_child("ForgeActions", true, false) as Control
 	_expect(
 		next_hint != null
-			and next_hint.text.contains("下一步")
+			and next_hint.text.contains("選擇圖紙")
 			and not next_hint.text.contains("→")
 			and not next_hint.text.contains("①")
+			and recipe_panel != null and recipe_panel.visible
+			and blueprint_slot != null and blueprint_slot.is_visible_in_tree()
+			and method_slot != null and not method_slot.is_visible_in_tree()
+			and material_slot != null and not material_slot.is_visible_in_tree()
+			and anvil_slot != null and not anvil_slot.is_visible_in_tree()
+			and result_slot != null and not result_slot.is_visible_in_tree()
 			and method_row != null and not method_row.visible
 			and material_row != null and not material_row.visible
 			and forge_actions != null and not forge_actions.visible,
-		"Forge guidance must point at one physical object without opening a choice list early."
+		"Forge must initially reveal only the blueprint decision and its physical rack."
+	)
+	var recipe_button: Button = null
+	var recipe_list := blacksmith.find_child("RecipeList", true, false) as Control
+	if recipe_list != null:
+		for child in recipe_list.get_children():
+			if child is Button and child.visible:
+				recipe_button = child as Button
+				break
+	_expect(recipe_button != null, "The blueprint decision must expose a selectable recipe.")
+	if recipe_button != null:
+		recipe_button.pressed.emit()
+	await process_frame
+	_expect(
+		recipe_panel.visible
+			and blueprint_slot.is_visible_in_tree()
+			and not method_slot.is_visible_in_tree()
+			and not material_slot.is_visible_in_tree(),
+		"Choosing a blueprint must preview it without revealing later decisions."
+	)
+	var blueprint_cta := blacksmith.find_child("BlueprintRackButton", true, false) as Button
+	_expect(
+		blueprint_cta != null and blueprint_cta.text.begins_with("確認圖紙："),
+		"The blueprint page needs one explicit warm primary confirmation action."
+	)
+	blueprint_cta.pressed.emit()
+	await process_frame
+	_expect(
+		not recipe_panel.visible
+			and method_slot.is_visible_in_tree()
+			and not blueprint_slot.is_visible_in_tree()
+			and root.gui_get_focus_owner() == blacksmith.find_child(
+				"MethodToolsButton", true, false
+			),
+		"Confirming a blueprint must collapse the catalog, reveal only the tool rack, and move keyboard focus."
 	)
 	var method_tools := blacksmith.find_child("MethodToolsButton", true, false) as Button
 	method_tools.pressed.emit()
@@ -147,7 +207,10 @@ func _run() -> void:
 	_expect(
 		next_hint.text.contains("素材箱")
 			and not method_row.visible
-			and not material_row.visible,
+			and not material_row.visible
+			and root.gui_get_focus_owner() == blacksmith.find_child(
+				"MaterialChestButton", true, false
+			),
 		"Choosing a method must point at the material chest without opening it early."
 	)
 	var material_chest := blacksmith.find_child("MaterialChestButton", true, false) as Button
@@ -160,16 +223,12 @@ func _run() -> void:
 	_expect(
 		next_hint.text.contains("鐵砧")
 			and not method_row.visible
-			and not material_row.visible,
+			and not material_row.visible
+			and root.gui_get_focus_owner() == blacksmith.find_child(
+				"ForgeWorkspaceActionButton", true, false
+			),
 		"Choosing material must collapse choices and point directly to the anvil."
 	)
-	var recipe_button: Button = null
-	var recipe_list := blacksmith.find_child("RecipeList", true, false) as Control
-	if recipe_list != null:
-		for child in recipe_list.get_children():
-			if child is Button and child.visible:
-				recipe_button = child as Button
-				break
 	_expect(
 		recipe_button != null
 			and recipe_button.text.begins_with("Hunter Bow")

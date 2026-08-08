@@ -31,6 +31,7 @@ signal upgrade_sword_soul_requested(card_id: StringName)
 signal workshop_upgraded
 
 const UI_VALUE_FORMATTER := preload("res://scripts/ui/ui_value_formatter.gd")
+const WINDOW_BASE_SIZE := Vector2(1180.0, 660.0)
 const VALID_SERVICES: Array[StringName] = [
 	&"forge",
 	&"workshop_upgrade",
@@ -44,11 +45,11 @@ const RESOURCE_ORDER: Array[StringName] = [
 	&"autumn_core",
 ]
 const RESOURCE_LABELS := {
-	&"gold": "Gold",
-	&"autumn_wood": "Wood",
-	&"stone": "Stone",
-	&"magic_shard": "Shards",
-	&"autumn_core": "Cores",
+	&"gold": "金幣",
+	&"autumn_wood": "木材",
+	&"stone": "石材",
+	&"magic_shard": "魔力碎片",
+	&"autumn_core": "核心",
 }
 const EQUIPMENT_ICON_PATHS := {
 	&"iron_sword": "res://assets/ui/equipment/generated/iron_sword.png",
@@ -63,10 +64,11 @@ const EQUIPMENT_ICON_PATHS := {
 	&"merchant_seal": "res://assets/ui/equipment/generated/merchant_seal.png",
 }
 const SLOT_LABELS := {
-	&"weapon": "Weapon",
-	&"armor": "Armor",
-	&"accessory": "Accessory",
-	&"sword_soul": "Sword Soul",
+	&"equipment": "裝備",
+	&"weapon": "武器",
+	&"armor": "防具",
+	&"accessory": "飾品",
+	&"sword_soul": "劍魂",
 }
 const MATERIAL_QUALITY_ORDER: Array[StringName] = [
 	&"common",
@@ -100,6 +102,7 @@ const MATERIAL_QUALITY_LABELS := {
 @onready var resource_summary: Label = %ResourceSummary
 @onready var workshop_ledger: Label = %WorkshopLedger
 @onready var recipe_scroll: ScrollContainer = %RecipeScroll
+@onready var recipe_panel: PanelContainer = %RecipePanel
 @onready var recipe_list: VBoxContainer = %RecipeList
 @onready var recipe_row_template: Button = %RecipeRowTemplate
 @onready var empty_recipe_label: Label = %EmptyRecipeLabel
@@ -107,6 +110,7 @@ const MATERIAL_QUALITY_LABELS := {
 @onready var upgrade_workspace: HBoxContainer = %UpgradeWorkspace
 @onready var sales_workspace: HBoxContainer = %SalesWorkspace
 @onready var recipe_preview: TextureRect = %RecipePreview
+@onready var recipe_header: HBoxContainer = %RecipeHeader
 @onready var recipe_name_label: Label = %RecipeNameLabel
 @onready var recipe_type_label: Label = %RecipeTypeLabel
 @onready var recipe_status_label: Label = %RecipeStatusLabel
@@ -117,6 +121,11 @@ const MATERIAL_QUALITY_LABELS := {
 @onready var material_chest_button: Button = %MaterialChestButton
 @onready var forge_workspace_action_button: Button = %ForgeWorkspaceActionButton
 @onready var finished_rack_button: Button = %FinishedRackButton
+@onready var blueprint_slot: VBoxContainer = %BlueprintSlot
+@onready var method_slot: VBoxContainer = %MethodSlot
+@onready var material_slot: VBoxContainer = %MaterialSlot
+@onready var anvil_slot: VBoxContainer = %AnvilSlot
+@onready var result_slot: VBoxContainer = %ResultSlot
 @onready var forge_next_hint: Label = %ForgeNextHint
 @onready var forge_method_row: HBoxContainer = %ForgeMethodRow
 @onready var material_quality_row: HBoxContainer = %MaterialQualityRow
@@ -221,11 +230,21 @@ func _ready() -> void:
 	]
 	_connect_controls()
 	_connect_market_controls()
+	resized.connect(_update_window_scale)
+	var window_host := player_blacksmith_window.get_parent() as Control
+	if window_host != null:
+		window_host.resized.connect(_update_window_scale)
 	gold_feedback.text = ""
 	gold_feedback.visible = false
 	visible = false
 	_apply_service()
 	_refresh()
+	_update_window_scale.call_deferred()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED and is_node_ready():
+		_update_window_scale()
 
 
 func open() -> void:
@@ -238,11 +257,34 @@ func open() -> void:
 	gold_feedback.text = ""
 	gold_feedback.visible = false
 	visible = true
+	_update_window_scale()
+	_update_window_scale.call_deferred()
 	_refresh()
 	_show_workshop_interior()
 	if not was_visible:
 		opened.emit()
 		toggled.emit(true)
+
+
+func _update_window_scale() -> void:
+	if player_blacksmith_window == null:
+		return
+	var target_scale := clampf(
+		minf(
+			size.x * 0.88 / WINDOW_BASE_SIZE.x,
+			size.y * 0.88 / WINDOW_BASE_SIZE.y
+		),
+		0.78,
+		1.9
+	)
+	var window_parent := player_blacksmith_window.get_parent() as Control
+	player_blacksmith_window.size = WINDOW_BASE_SIZE
+	player_blacksmith_window.position = (
+		(window_parent.size - WINDOW_BASE_SIZE) * 0.5
+		if window_parent != null else (size - WINDOW_BASE_SIZE) * 0.5
+	)
+	player_blacksmith_window.pivot_offset = player_blacksmith_window.size * 0.5
+	player_blacksmith_window.scale = Vector2.ONE * target_scale
 
 
 func close() -> void:
@@ -353,6 +395,7 @@ func select_material_quality(quality: StringName) -> void:
 	_has_action_feedback = false
 	if is_node_ready():
 		_refresh_recipe_detail()
+		_focus_guidance_hotspot.call_deferred()
 
 
 func get_selected_material_quality() -> StringName:
@@ -377,8 +420,8 @@ func show_sale_result(result: Dictionary) -> void:
 	var gold := int(result.get("gold", result.get("gold_earned", 0)))
 	var message := String(result.get("message", ""))
 	if message.is_empty():
-		message = "Customer purchase complete." if successful else "No sale was completed."
-	gold_feedback.text = "+%s GOLD" % _format_number(gold) if successful and gold > 0 else message
+		message = "顧客已完成購買。" if successful else "這次沒有完成交易。"
+	gold_feedback.text = "+%s 金幣" % _format_number(gold) if successful and gold > 0 else message
 	gold_feedback.modulate = (
 		Color(1.0, 0.82, 0.32) if successful
 		else Color(1.0, 0.58, 0.45)
@@ -394,7 +437,7 @@ func show_action_result(result: Dictionary) -> void:
 	var successful := bool(result.get("ok", result.get("success", false)))
 	_forge_guidance_step = &"result" if successful else &"forge"
 	_forge_context_panel = &"result" if successful else &"none"
-	_set_feedback(String(result.get("message", "Action complete.")), successful)
+	_set_feedback(String(result.get("message", "操作完成。")), successful)
 	if player_market_ui.visible:
 		player_market_ui.show_action_result(result)
 	_refresh()
@@ -409,6 +452,10 @@ func select_blacksmith_service(service_id: StringName) -> void:
 	if player_market_ui.visible:
 		_close_player_market()
 	_blacksmith_service = service_id
+	if service_id == &"forge":
+		_forge_guidance_step = &"blueprint"
+		_forge_context_panel = &"blueprint"
+		_has_action_feedback = false
 	if not is_node_ready():
 		return
 	_apply_service()
@@ -442,14 +489,31 @@ func get_resource_text() -> String:
 
 
 func select_recipe(recipe_id: StringName) -> void:
+	_preview_recipe(recipe_id)
+
+
+func _preview_recipe(recipe_id: StringName) -> void:
 	if not _recipe_by_id.has(recipe_id):
 		return
 	_selected_recipe_id = recipe_id
-	_forge_guidance_step = &"method"
-	_forge_context_panel = &"none"
+	_forge_guidance_step = &"blueprint"
+	_forge_context_panel = &"blueprint"
 	_has_action_feedback = false
 	_refresh_recipe_rows()
 	_refresh_recipe_detail()
+
+
+func _confirm_selected_blueprint() -> void:
+	if not _recipe_by_id.has(_selected_recipe_id):
+		return
+	var recipe := _recipe_by_id[_selected_recipe_id] as Dictionary
+	if not bool(recipe.get("unlocked", true)):
+		return
+	_forge_guidance_step = &"method"
+	_forge_context_panel = &"none"
+	_has_action_feedback = false
+	_refresh_recipe_detail()
+	_focus_guidance_hotspot.call_deferred()
 
 
 func select_equipment(item_id: StringName) -> void:
@@ -473,6 +537,7 @@ func craft_selected_recipe() -> void:
 	)
 	_set_feedback("鍛造已開始；完成後到成品架查看。", true)
 	_refresh_forge_guidance()
+	_focus_guidance_hotspot.call_deferred()
 
 
 func purchase_selected_equipment() -> void:
@@ -485,8 +550,8 @@ func equip_selected_equipment() -> void:
 		return
 	var succeeded := bool(_inventory.call("equip", item_id))
 	_set_feedback(
-		"Equipment fitted to your loadout." if succeeded
-		else "Craft this equipment before equipping it.",
+		"裝備已加入目前配置。" if succeeded
+		else "必須先完成鍛造才能裝備。",
 		succeeded
 	)
 	_refresh()
@@ -504,8 +569,8 @@ func strengthen_selected_equipment() -> void:
 		return
 	var succeeded := bool(_inventory.call("upgrade_equipment", item_id))
 	_set_feedback(
-		"Tempering complete." if succeeded
-		else "Strengthening is unavailable or lacks materials.",
+		"強化完成。" if succeeded
+		else "目前無法強化，或持有素材不足。",
 		succeeded
 	)
 	_refresh()
@@ -520,8 +585,8 @@ func request_upgrade() -> bool:
 		return false
 	var succeeded := bool(_town.call("upgrade_building", &"blacksmith"))
 	_set_feedback(
-		"Workshop upgrade complete." if succeeded
-		else "Workshop is complete or requires more materials.",
+		"工坊升級完成。" if succeeded
+		else "工坊已升滿，或持有素材不足。",
 		succeeded
 	)
 	if succeeded and _forge_service != null and _forge_service.has_method(
@@ -591,7 +656,7 @@ func _connect_controls() -> void:
 	forge_service_button.pressed.connect(select_blacksmith_service.bind(&"forge"))
 	upgrade_service_button.pressed.connect(select_blacksmith_service.bind(&"workshop_upgrade"))
 	sales_service_button.pressed.connect(select_blacksmith_service.bind(&"sales_table"))
-	blueprint_rack_button.pressed.connect(_focus_blueprint_rack)
+	blueprint_rack_button.pressed.connect(_confirm_selected_blueprint)
 	method_tools_button.pressed.connect(_focus_selected_forge_method)
 	material_chest_button.pressed.connect(_focus_selected_material_quality)
 	forge_workspace_action_button.pressed.connect(craft_selected_recipe)
@@ -674,10 +739,11 @@ func _show_workshop_context(service_id: StringName) -> void:
 	service_rail.visible = false
 	workspace_holder.visible = true
 	workshop_context_title.text = (
-		"熔爐 · 依序操作圖紙架、工具架、素材箱與鐵砧"
+		"鍛造台 · 一次完成一個選擇"
 		if service_id == &"forge"
-		else "工作台 · 改善私人鍛造工坊"
+		else "工坊升級 · 改善設備與製作能力"
 	)
+	_refresh_forge_guidance()
 
 
 func _on_market_list_requested(
@@ -759,13 +825,13 @@ func _refresh_resources() -> void:
 
 func _refresh_stage() -> void:
 	if _town != null and _town.has_method("get_village_stage"):
-		stage_label.text = "Village Stage %d  ·  Workshop Lv.%d" % [
+		stage_label.text = "村莊階段 %d  ·  工坊 Lv.%d" % [
 			int(_town.call("get_village_stage")) + 1,
 			_building_level(),
 		]
 	else:
-		stage_label.text = "Private Workshop"
-	workshop_ledger.text = "%s  •  %s" % [stage_label.text, resource_summary.text]
+		stage_label.text = "私人鍛造工坊"
+	workshop_ledger.text = "%s  ·  %s" % [stage_label.text, resource_summary.text]
 	workshop_ledger.tooltip_text = workshop_ledger.text
 
 
@@ -780,10 +846,9 @@ func _refresh_recipe_catalog() -> void:
 		var button := recipe_row_template.duplicate() as Button
 		button.visible = true
 		button.icon = _recipe_icon(recipe)
-		button.tooltip_text = "Inspect %s" % String(recipe.get("name", recipe_id))
+		button.tooltip_text = "預覽圖紙：%s" % String(recipe.get("name", recipe_id))
 		button.set_meta(&"recipe_id", recipe_id)
-		button.pressed.connect(select_recipe.bind(recipe_id))
-		button.focus_entered.connect(_on_recipe_focused.bind(recipe_id, button))
+		button.pressed.connect(_preview_recipe.bind(recipe_id))
 		recipe_list.add_child(button)
 		button.name = "Recipe_%s" % String(recipe_id)
 		_recipe_buttons.append(button)
@@ -810,18 +875,16 @@ func _refresh_recipe_rows() -> void:
 		var recipe_id := StringName(button.get_meta(&"recipe_id", ""))
 		var recipe := _recipe_by_id.get(recipe_id, {}) as Dictionary
 		var kind := String(recipe.get("kind", recipe.get("result_kind", "equipment")))
-		var tier := int(recipe.get("tier", recipe.get("quality_tier", 0)))
-		var quality_label := String(recipe.get("quality_label", "普通"))
 		var unlocked := bool(recipe.get("unlocked", true))
-		button.text = "%s\n%s  ·  %s  ·  TIER %d  ·  %s" % [
+		button.text = "%s\n%s  ·  %s" % [
 			String(recipe.get("name", recipe_id)),
-			kind.replace("_", " ").to_upper(),
-			quality_label,
-			tier,
-			"READY" if unlocked else "LOCKED",
+			String(SLOT_LABELS.get(StringName(kind), "裝備")),
+			"可鍛造" if unlocked else "未解鎖",
 		]
-		var proficiency_level := int(recipe.get("proficiency_level", 0))
-		button.text += "  ·  熟練 %d/5" % proficiency_level
+		button.tooltip_text = "%s\n%s" % [
+			String(recipe.get("description", "")),
+			"已解鎖" if unlocked else "尚未解鎖",
+		]
 		button.disabled = not bool(recipe.get("visible", true))
 		button.add_theme_stylebox_override(
 			"normal",
@@ -852,18 +915,17 @@ func _refresh_recipe_detail() -> void:
 	var cost := recipe.get("cost", recipe.get("craft_cost", {})) as Dictionary
 	recipe_preview.texture = _recipe_icon(recipe)
 	recipe_name_label.text = String(recipe.get("name", _selected_recipe_id))
-	blueprint_rack_button.text = String(recipe.get("name", _selected_recipe_id))
-	blueprint_rack_button.tooltip_text = "圖紙架：目前選擇 %s；按下返回配方架。" % String(
+	blueprint_rack_button.text = "確認圖紙：%s" % String(recipe.get("name", _selected_recipe_id))
+	blueprint_rack_button.disabled = not unlocked
+	blueprint_rack_button.tooltip_text = "使用這張圖紙，前往選擇鍛法：%s" % String(
 		recipe.get("name", _selected_recipe_id)
 	)
 	var quality_label := String(recipe.get("quality_label", "普通"))
-	var material_tier := String(recipe.get("material_tier", "normal")).to_upper()
-	recipe_type_label.text = "%s  ·  %s  ·  %s MATERIAL" % [
-		String(SLOT_LABELS.get(kind, String(kind).replace("_", " ").capitalize())).to_upper(),
+	recipe_type_label.text = "%s  ·  %s素材" % [
+		String(SLOT_LABELS.get(kind, "裝備")),
 		quality_label,
-		material_tier,
 	]
-	recipe_status_label.text = "OWNED" if owned else ("READY TO FORGE" if unlocked else "LOCKED")
+	recipe_status_label.text = "已持有" if owned else ("可以鍛造" if unlocked else "未解鎖")
 	recipe_status_label.modulate = (
 		Color(0.50, 0.94, 0.74) if owned
 		else (Color(0.98, 0.78, 0.35) if unlocked else Color(0.95, 0.48, 0.40))
@@ -929,11 +991,11 @@ func _refresh_recipe_detail() -> void:
 		cost = cost.duplicate(true)
 		cost.erase("gold")
 	var sale_value := int(recipe.get("sale_value", 0))
-	recipe_cost_label.text = "%s MATERIALS  ·  %s\nPROCESSING FEE  ·  GOLD %d%s" % [
+	recipe_cost_label.text = "%s素材  ·  %s\n加工費  ·  金幣 %d%s" % [
 		String(MATERIAL_QUALITY_LABELS.get(_selected_material_quality, "普通")),
 		_format_cost(cost),
 		processing_fee,
-		"  ·  SALE %d" % sale_value if sale_value > 0 else "",
+		"  ·  售價 %d" % sale_value if sale_value > 0 else "",
 	]
 	craft_button.disabled = (
 		not unlocked or not bool(craft_preview.get("materials_available", true))
@@ -992,18 +1054,19 @@ func _show_empty_recipe_detail() -> void:
 	craft_button.disabled = true
 	forge_workspace_action_button.disabled = true
 	blueprint_rack_button.text = "選圖紙"
+	blueprint_rack_button.disabled = true
 	finished_rack_button.text = "等待成品"
 	equip_button.visible = false
 	strengthen_button.visible = false
 	_forge_guidance_step = &"blueprint"
-	_forge_context_panel = &"none"
+	_forge_context_panel = &"blueprint"
 	_refresh_forge_guidance()
 
 
 func _refresh_workshop() -> void:
 	if not _can_use_town():
-		workshop_level_label.text = "Workshop data unavailable"
-		workshop_unlock_label.text = "Town service is not connected."
+		workshop_level_label.text = "無法取得工坊資料"
+		workshop_unlock_label.text = "尚未連接村莊服務。"
 		workshop_cost_label.text = ""
 		upgrade_button.disabled = true
 		return
@@ -1014,20 +1077,20 @@ func _refresh_workshop() -> void:
 	var fee_discount := float(_town.call(
 		"get_effect_value", &"forge_processing_fee_discount"
 	))
-	workshop_level_label.text = "Workshop Level %d / %d" % [level, max_level]
-	workshop_unlock_label.text = "Current mastery: Tier %d recipes  ·  Processing fee -%d%%" % [
+	workshop_level_label.text = "工坊等級 %d / %d" % [level, max_level]
+	workshop_unlock_label.text = "目前能力：可製作階級 %d 圖紙  ·  加工費 -%d%%" % [
 		level,
 		roundi(fee_discount * 100.0),
 	]
 	workshop_cost_label.text = (
-		"All workshop improvements complete." if cost.is_empty()
+		"所有工坊設備皆已完成升級。" if cost.is_empty()
 		else "%s\n%s\n\n%s" % [
-			String(next_upgrade.get("name", "NEXT UPGRADE")).to_upper(),
+			String(next_upgrade.get("name", "下一項升級")),
 			String(next_upgrade.get("description", "")),
 			_format_cost_rows(cost),
 		]
 	)
-	upgrade_button.text = "Max Level" if cost.is_empty() else "Upgrade Workshop"
+	upgrade_button.text = "已達最高等級" if cost.is_empty() else "升級工坊"
 	upgrade_button.disabled = not bool(_town.call("can_upgrade_building", &"blacksmith"))
 
 
@@ -1142,11 +1205,26 @@ func _select_forge_method(method_id: StringName) -> void:
 	_forge_context_panel = &"none"
 	_has_action_feedback = false
 	_refresh_recipe_detail()
+	_focus_guidance_hotspot.call_deferred()
+
+
+func _focus_guidance_hotspot() -> void:
+	if not visible or not forge_workspace.is_visible_in_tree():
+		return
+	var hotspot := {
+		&"blueprint": blueprint_rack_button,
+		&"method": method_tools_button,
+		&"material": material_chest_button,
+		&"forge": forge_workspace_action_button,
+		&"result": finished_rack_button,
+	}.get(_forge_guidance_step) as Button
+	if hotspot != null and hotspot.is_visible_in_tree() and not hotspot.disabled:
+		hotspot.grab_focus()
 
 
 func _focus_blueprint_rack() -> void:
 	_forge_guidance_step = &"blueprint"
-	_forge_context_panel = &"none"
+	_forge_context_panel = &"blueprint"
 	_refresh_forge_guidance()
 	if not _recipe_buttons.is_empty():
 		_recipe_buttons[0].grab_focus()
@@ -1194,6 +1272,8 @@ func _focus_finished_item_actions() -> void:
 func _refresh_forge_guidance() -> void:
 	if not is_node_ready():
 		return
+	recipe_panel.visible = _forge_context_panel == &"blueprint"
+	recipe_header.visible = _forge_guidance_step != &"blueprint"
 	forge_method_row.visible = _forge_context_panel == &"method"
 	material_quality_row.visible = _forge_context_panel == &"material"
 	forge_actions.visible = (
@@ -1202,12 +1282,19 @@ func _refresh_forge_guidance() -> void:
 	)
 	craft_button.visible = false
 	forge_next_hint.text = {
-		&"blueprint": "現在：從左側圖紙架挑一件想打造的物品",
-		&"method": "下一步：點工具架，選擇這次的鍛法",
-		&"material": "下一步：打開素材箱，選擇素材品質",
-		&"forge": "準備完成：敲擊鐵砧開始鍛造",
-		&"result": "鍛造完成後，到成品架查看裝備",
+		&"blueprint": "選擇圖紙",
+		&"method": "使用工具架決定鍛法",
+		&"material": "打開素材箱挑選品質",
+		&"forge": "材料就緒，敲擊鐵砧",
+		&"result": "從成品架取下裝備",
 	}.get(_forge_guidance_step, "選擇發光的物件繼續")
+	blueprint_slot.visible = _forge_guidance_step == &"blueprint"
+	method_slot.visible = _forge_guidance_step == &"method"
+	material_slot.visible = _forge_guidance_step == &"material"
+	anvil_slot.visible = _forge_guidance_step == &"forge"
+	result_slot.visible = _forge_guidance_step == &"result"
+	recipe_cost_label.visible = _forge_guidance_step == &"forge"
+	action_feedback.visible = _forge_guidance_step == &"result" or _has_action_feedback
 	var hotspots := {
 		&"blueprint": blueprint_rack_button,
 		&"method": method_tools_button,
@@ -1630,12 +1717,13 @@ func _focus_current_workspace() -> void:
 		_:
 			if not _recipe_buttons.is_empty():
 				_recipe_buttons[0].grab_focus()
+				recipe_scroll.ensure_control_visible(_recipe_buttons[0])
 			else:
-				forge_service_button.grab_focus()
+				blueprint_rack_button.grab_focus()
 
 
 func _on_recipe_focused(recipe_id: StringName, button: Button) -> void:
-	select_recipe(recipe_id)
+	_preview_recipe(recipe_id)
 	recipe_scroll.ensure_control_visible(button)
 
 
@@ -1650,7 +1738,7 @@ func _set_feedback(message: String, successful: bool) -> void:
 
 func _format_cost(cost: Dictionary) -> String:
 	if cost.is_empty():
-		return "No material cost"
+		return "不需素材"
 	var parts: Array[String] = []
 	for resource_id in RESOURCE_ORDER:
 		if cost.has(String(resource_id)):

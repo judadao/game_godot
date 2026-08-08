@@ -63,6 +63,52 @@ func _run() -> void:
 			and is_equal_approx(store.size.y, interior_height),
 		"Restocking must open a side dock over the shop view without compressing it."
 	)
+	var candidate_scroll := ui.find_child("CandidateScroll", true, false) as Control
+	var price_row := ui.find_child("PriceRow", true, false) as Control
+	var list_button := ui.find_child("MarketListButton", true, false) as Button
+	_expect(
+		candidate_scroll != null
+			and candidate_scroll.visible
+			and price_row != null
+			and not price_row.visible
+			and list_button != null
+			and not list_button.visible,
+		"Restocking must reveal one decision at a time, beginning with the product choice."
+	)
+	var candidate_list := ui.find_child("MarketCandidateList", true, false) as VBoxContainer
+	var first_candidate: Button = null
+	if candidate_list != null:
+		for child in candidate_list.get_children():
+			if child is Button and child.visible:
+				first_candidate = child as Button
+				break
+	if first_candidate != null:
+		first_candidate.pressed.emit()
+		await process_frame
+		_expect(
+			not candidate_scroll.visible and price_row.visible and not list_button.visible,
+			"Choosing merchandise must replace the list with the pricing decision."
+		)
+		var fair_button := ui.find_child("MarketFairButton", true, false) as Button
+		if fair_button != null:
+			fair_button.pressed.emit()
+			await process_frame
+			_expect(
+				not price_row.visible and list_button.visible and list_button.has_focus(),
+				"Choosing a price must replace pricing with one focused confirmation action."
+			)
+			var context_back := ui.find_child("ContextCloseButton", true, false) as Button
+			_expect(
+				context_back != null and context_back.text == "上一步",
+				"The staged stock flow must provide an explicit back action."
+			)
+			if context_back != null:
+				context_back.pressed.emit()
+				await process_frame
+				_expect(
+					price_row.visible and not list_button.visible,
+					"Going back from confirmation must return to pricing without closing the shop."
+				)
 	_expect(
 		market.has_method("get_active_visitor_count")
 			and int(market.call("get_active_visitor_count")) >= 2

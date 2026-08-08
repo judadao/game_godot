@@ -17,8 +17,12 @@ signal market_fixture_purchase_requested(fixture_id: StringName)
 @onready var back_button: Button = %BackButton
 @onready var resource_summary: Label = %MarketResourceSummary
 @onready var candidate_list: VBoxContainer = %MarketCandidateList
+@onready var candidate_scroll: ScrollContainer = %CandidateScroll
 @onready var candidate_template: Button = %MarketCandidateTemplate
 @onready var candidate_empty: Label = %MarketCandidateEmpty
+@onready var selected_candidate_summary: Label = %SelectedCandidateSummary
+@onready var price_heading: Label = %PriceHeading
+@onready var price_row: HBoxContainer = %PriceRow
 @onready var quick_button: Button = %MarketQuickButton
 @onready var fair_button: Button = %MarketFairButton
 @onready var luxury_button: Button = %MarketLuxuryButton
@@ -84,25 +88,27 @@ var _customer_check_cursor := 0
 var _next_customer_check := 2.4
 var _visitor_states: Array[Dictionary] = []
 var _visitor_textures: Array[Texture2D] = []
+var _stock_stage := 0
+var _active_context: StringName = &""
 
 const VISITOR_SIZE := Vector2(118.0, 118.0)
 const VISITOR_ROUTES := [
 	[
-		Vector2(0.93, 0.98),
-		Vector2(0.82, 0.98),
-		Vector2(0.58, 0.97),
-		Vector2(0.26, 0.96),
-		Vector2(0.48, 0.98),
-		Vector2(0.78, 0.98),
-		Vector2(0.93, 0.98),
+		Vector2(0.93, 0.90),
+		Vector2(0.82, 0.88),
+		Vector2(0.58, 0.86),
+		Vector2(0.26, 0.86),
+		Vector2(0.48, 0.88),
+		Vector2(0.78, 0.89),
+		Vector2(0.93, 0.90),
 	],
 	[
-		Vector2(0.93, 0.96),
-		Vector2(0.88, 0.96),
-		Vector2(0.66, 0.95),
-		Vector2(0.34, 0.94),
-		Vector2(0.72, 0.98),
-		Vector2(0.93, 0.96),
+		Vector2(0.93, 0.88),
+		Vector2(0.88, 0.87),
+		Vector2(0.66, 0.85),
+		Vector2(0.34, 0.84),
+		Vector2(0.72, 0.89),
+		Vector2(0.93, 0.88),
 	],
 ]
 
@@ -118,7 +124,7 @@ func _ready() -> void:
 	luxury_button.pressed.connect(_select_price_strategy.bind(&"luxury"))
 	list_button.pressed.connect(_request_listing)
 	fixture_button.pressed.connect(_request_fixture_purchase)
-	context_close_button.pressed.connect(_hide_context)
+	context_close_button.pressed.connect(_context_back_or_close)
 	shelf_interact_button.pressed.connect(_show_context.bind(&"shelves"))
 	for product_index in product_interact_buttons.size():
 		product_interact_buttons[product_index].pressed.connect(
@@ -142,6 +148,7 @@ func open() -> void:
 	call_deferred("_capture_ambient_origins")
 	_customer_check_elapsed = 0.0
 	_customer_check_pending = false
+	_stock_stage = 0
 	_hide_context(false)
 	_refresh()
 	product_interact_buttons[mini(_selected_shelf, product_interact_buttons.size() - 1)].grab_focus.call_deferred()
@@ -151,9 +158,9 @@ func _apply_viewport_scale() -> void:
 	if player_market_window == null:
 		return
 	var reference_size := Vector2(1280.0, 720.0)
-	var window_size := Vector2(1040.0, 640.0)
+	var window_size := Vector2(1180.0, 660.0)
 	var viewport_scale := minf(size.x / reference_size.x, size.y / reference_size.y)
-	viewport_scale = clampf(viewport_scale, 0.78, 2.0)
+	viewport_scale = clampf(viewport_scale, 0.78, 2.4)
 	player_market_window.size = window_size
 	player_market_window.position = (size - window_size) * 0.5
 	player_market_window.pivot_offset = window_size * 0.5
@@ -235,6 +242,7 @@ func _refresh() -> void:
 	_refresh_detail()
 	_refresh_fixture()
 	_refresh_price_buttons()
+	_refresh_stock_flow()
 
 
 func _refresh_resources() -> void:
@@ -355,6 +363,38 @@ func _refresh_price_buttons() -> void:
 	luxury_button.text = "精品 135%"
 
 
+func _refresh_stock_flow() -> void:
+	var candidate := _find_candidate(_selected_candidate_key)
+	var has_candidate := not candidate.is_empty()
+	context_close_button.text = "上一步" if _active_context == &"stock" and _stock_stage > 0 else "收起"
+	selected_candidate_summary.visible = _stock_stage > 0 and has_candidate
+	candidate_scroll.visible = _stock_stage == 0
+	price_heading.visible = _stock_stage == 1 and has_candidate
+	price_row.visible = _stock_stage == 1 and has_candidate
+	list_button.visible = _stock_stage == 2 and has_candidate
+	if _stock_stage == 0:
+		selected_candidate_summary.text = ""
+		return
+	var unit_price := int(candidate.get("unit_price", 0))
+	var price_factor := float({"quick": 0.8, "fair": 1.0, "luxury": 1.35}.get(
+		String(_price_strategy), 1.0
+	))
+	var projected_price := roundi(float(unit_price) * price_factor)
+	selected_candidate_summary.text = "已選  ◆  %s\n%s  ·  庫存 ×%d%s" % [
+		String(candidate.get("item_name", candidate.get("item_id", "商品"))),
+		String(candidate.get("quality_label", "普通")),
+		int(candidate.get("count", 0)),
+		"  ·  預估 %d GOLD" % projected_price if _stock_stage == 2 else "",
+	]
+	price_heading.text = "為這件商品選擇售價"
+	list_button.text = "確認上架  ·  %s  %d GOLD" % [
+		{"quick": "親民價", "fair": "公道價", "luxury": "精品價"}.get(
+			String(_price_strategy), "公道價"
+		),
+		projected_price,
+	]
+
+
 func _refresh_fixture() -> void:
 	var fixture_state := _sale_overview.get("fixture_state", {}) as Dictionary
 	var active := fixture_state.get("active", {}) as Dictionary
@@ -400,6 +440,10 @@ func _refresh_fixture() -> void:
 
 
 func _show_context(context_id: StringName) -> void:
+	_active_context = context_id
+	if context_id == &"stock":
+		_stock_stage = 0
+		_refresh_stock_flow()
 	context_dock.visible = true
 	context_bar.visible = true
 	context_content.visible = true
@@ -407,7 +451,7 @@ func _show_context(context_id: StringName) -> void:
 	shelves_panel.visible = context_id == &"shelves"
 	rumor_panel.visible = context_id == &"rumor"
 	context_title.text = {
-		&"stock": "櫃台補貨  ·  貨架 %d" % (_selected_shelf + 1),
+		&"stock": "補貨  ·  選商品",
 		&"shelves": "展示架  ·  選擇要檢查的貨架",
 		&"rumor": "店內傳聞  ·  符合流言的商品更容易高價售出",
 	}.get(context_id, "店內互動")
@@ -429,8 +473,28 @@ func _hide_context(restore_focus: bool = true) -> void:
 	inventory_panel.visible = false
 	shelves_panel.visible = false
 	rumor_panel.visible = false
+	_active_context = &""
+	context_close_button.text = "收起"
 	if restore_focus and product_interact_buttons.size() > 0:
 		product_interact_buttons[mini(_selected_shelf, product_interact_buttons.size() - 1)].grab_focus.call_deferred()
+
+
+func _context_back_or_close() -> void:
+	if _active_context == &"stock" and _stock_stage > 0:
+		_stock_stage -= 1
+		_refresh_stock_flow()
+		var focus_target: Control = quick_button
+		if _stock_stage == 0 and not _candidate_buttons.is_empty():
+			focus_target = _candidate_buttons[0]
+		elif _stock_stage == 1:
+			focus_target = {
+				&"quick": quick_button,
+				&"fair": fair_button,
+				&"luxury": luxury_button,
+			}.get(_price_strategy, fair_button)
+		focus_target.grab_focus.call_deferred()
+		return
+	_hide_context()
 
 
 func _capture_ambient_origins() -> void:
@@ -472,12 +536,17 @@ func _select_candidate(key: String) -> void:
 	if _find_candidate(key).is_empty():
 		return
 	_selected_candidate_key = key
+	_stock_stage = 1
 	_refresh()
+	quick_button.grab_focus.call_deferred()
 
 
 func _select_price_strategy(strategy: StringName) -> void:
 	_price_strategy = strategy
+	_stock_stage = 2
 	_refresh_price_buttons()
+	_refresh_stock_flow()
+	list_button.grab_focus.call_deferred()
 
 
 func _request_listing() -> void:
@@ -615,7 +684,7 @@ func _apply_visitor_position(state: Dictionary) -> void:
 	elif segment == route.size() - 2:
 		entrance_fade = smoothstep(1.0, 0.28, progress)
 	node.modulate.a = entrance_fade
-	node.z_index = 3 + clampi(roundi(foot_position.y / 120.0), 0, 3)
+	node.z_index = 9
 	if node == browsing_customer_npc:
 		customer_interact_button.set_anchors_preset(Control.PRESET_TOP_LEFT)
 		customer_interact_button.position = node.position
@@ -655,7 +724,10 @@ func _request_back() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event.is_action_pressed("ui_cancel"):
-		_request_back()
+		if context_dock.visible:
+			_context_back_or_close()
+		else:
+			_request_back()
 		get_viewport().set_input_as_handled()
 
 

@@ -289,8 +289,9 @@ UI setter/configure API
 
 神賜具體物件位於 `assets/generated/vfx/blessings/base/` 與 `evolved/`；素材必須是真透明的單一
 火刃／影匕／毒種／雷苦無／風羽／冰刃／潮鏢／日輪刃或進化主體，使用 MaterialYard 相容的
-大型色塊、粗輪廓與有限色階。Player Market 的 `cozy_market_background`／`midground`／`foreground`
-及六格裝潢 atlas 位於 `assets/ui/town/player_market/generated/`，採暖木、花卉與農產的大色塊像素筆觸，
+大型色塊、粗輪廓與有限色階。Player Market 的 `medieval_armory_market_background`／`midground`／`foreground`
+及 `medieval_armory_market_decor_atlas`／`fixture_atlas`／`ambient_atlas` 位於
+`assets/ui/town/player_market/generated/`，採灰藍石牆、深木、鐵件、武器／防具與素材箱的大色塊像素筆觸，
 不得烘焙 checkerboard、密集微紋理或寫實高光；舊 `blacksmith_shop_*` 工業圖層保留給鍛造工坊物件選擇。
 
 既有共用內容數量與 cross-reference 由 `tests/content_validation_test.gd` 驗證；Town interaction
@@ -883,10 +884,13 @@ canonical value 不翻譯。Manager 同時最多保存三項 inventory entry：�
 必須有唯一 `subject_asset_path` 與 `subject_motion`，runtime 不得以黑底 additive 方框
 或同一張通用圖替代。
 
-`assets/ui/town/player_market/generated/` 保存鐵匠販售店的 `cozy_market_background`、
-`cozy_market_midground`、`cozy_market_foreground` 與 3×2 `cozy_market_decor_atlas`。
+`assets/ui/town/player_market/generated/` 保存鐵匠販售店的 `medieval_armory_market_background`、
+`medieval_armory_market_midground`、`medieval_armory_market_foreground`、3×2
+`medieval_armory_market_decor_atlas`，以及 2×2 `medieval_armory_market_fixture_atlas`／
+`medieval_armory_market_ambient_atlas`。
 中／前景與 atlas 必須保留真 alpha；場景以 AtlasTexture
-切出六件裝潢，禁止將功能文字烘進圖片。
+切出銅鈴、皮卷工具、磨輪、異形原料箱、補給台與盾甲架六件裝潢，ambient atlas 另提供皮帶、
+油燈、單一鐵砧品牌旗與火盆；店內品牌旗只能顯示一面，禁止將功能文字烘進圖片。
 滿三項時只能回傳既有未滿級 entry。融合只接受 `FUSION_RECIPES` 的第一批 10 個進階型態；
 有 `required_equipment_id` 的配方必須由 Game 同步目前 weapon／armor／accessory 後才可顯示與結算。融合原子移除兩項材料
 並加入一項 evolved entry，因此釋出一格。所有 inventory entry 的 effects、mutation

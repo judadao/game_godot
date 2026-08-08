@@ -288,20 +288,41 @@ func _check_unified_building_frame(
 		"ShopUI": "ItemListPanel",
 	}.get(ui_name, "")
 	var middle := ui.find_child(String(middle_name), true, false) as Control
+	var window_rect := _canvas_rect(window) if window != null else Rect2()
 	var header_rect := _canvas_rect(header) if header != null else Rect2()
 	var content_rect := _canvas_rect(content) if content != null else Rect2()
 	var identity_rect := _canvas_rect(identity) if identity != null else Rect2()
 	var portrait_rect := _canvas_rect(portrait) if portrait != null else Rect2()
 	var middle_rect := _canvas_rect(middle) if middle != null else Rect2()
+	var expected_window_size := (
+		Vector2(1180.0, 660.0) if ui_name == "PlayerBlacksmithUI"
+		else Vector2(1040.0, 640.0)
+	)
 	_expect(
 		window != null
-			and window.custom_minimum_size.is_equal_approx(Vector2(1040.0, 640.0))
-			and window.size.x <= 1040.5
-			and window.size.y <= 640.5
+			and window.custom_minimum_size.is_equal_approx(expected_window_size)
+			and window.size.x <= expected_window_size.x + 0.5
+			and window.size.y <= expected_window_size.y + 0.5
 			and window.theme_type_variation == &"TownServiceWindow",
-		"%s must use the shared 1040x640 Town service window at %s; got %s."
+		"%s must use its authored Town service window size at %s; got %s."
 		% [ui_name, viewport_size, window.size if window != null else Vector2.ZERO]
 	)
+	if ui_name == "PlayerBlacksmithUI":
+		var expected_scale := clampf(
+			minf(
+				float(viewport_size.x) * 0.88 / expected_window_size.x,
+				float(viewport_size.y) * 0.88 / expected_window_size.y
+			),
+			0.78,
+			1.9
+		)
+		_expect(
+			window_rect.size.distance_to(expected_window_size * expected_scale) <= 2.0
+				and absf(window_rect.get_center().x - float(viewport_size.x) * 0.5) <= 1.0
+				and absf(window_rect.get_center().y - float(viewport_size.y) * 0.5) <= 1.0,
+			"PlayerBlacksmithUI must scale its centered 1180x660 frame to the viewport at %s."
+			% viewport_size
+		)
 	_expect(
 		ui.theme != null and ui.theme.resource_path == FRAME_THEME_PATH,
 		"%s must reference the shared Town service frame Theme at %s."
@@ -320,7 +341,10 @@ func _check_unified_building_frame(
 	_expect(
 		content != null
 			and header != null
-			and is_equal_approx(content_rect.position.y, header_rect.end.y + 10.0),
+			and is_equal_approx(
+				content_rect.position.y,
+				header_rect.end.y + 10.0 * window.get_global_transform_with_canvas().get_scale().y
+			),
 		"%s content must begin 10px below the shared header at %s."
 		% [ui_name, viewport_size]
 	)
@@ -364,7 +388,9 @@ func _check_unified_building_frame(
 		close_button != null
 			and close_button.custom_minimum_size == Vector2(104.0, 42.0)
 			and close_button.icon != null
-			and close_button.text == "Close"
+			and close_button.text == (
+				"關閉" if ui_name == "PlayerBlacksmithUI" else "Close"
+			)
 			and not close_button.disabled
 			and close_button.modulate.a > 0.99
 			and close_button.self_modulate.a > 0.99,
@@ -424,7 +450,7 @@ func _check_alternate_states(
 			(ui.find_child("UpgradeObjectButton", true, false) as Button).pressed.emit()
 			await process_frame
 			_expect(
-				_visible_text(ui).contains("Workshop Level"),
+				_visible_text(ui).contains("工坊等級"),
 				"PlayerBlacksmithUI upgrade state must remain readable at %s."
 				% viewport_size
 			)
