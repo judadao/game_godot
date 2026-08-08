@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vfx/skill_series_raster_material_vfx_2d.gd" id="1_script"]
+
+[node name="SkillSeriesRasterMaterialVFX2D" type="Node2D" groups=["ReusableVFX", "SkillSeriesRasterMaterialVFX"]]
+visible = false
+script = ExtResource("1_script")
+
+[node name="AnticipationComponents" type="Node2D" parent="."]
+
+[node name="ContactComponents" type="Node2D" parent="."]
+
+[node name="TravelComponents" type="Node2D" parent="."]
+
+[node name="ResidualComponents" type="Node2D" parent="."]

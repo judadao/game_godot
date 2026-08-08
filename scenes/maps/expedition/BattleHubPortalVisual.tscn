@@ -3,34 +3,30 @@
 [ext_resource type="Script" path="res://scripts/maps/battle_hub_portal_visual.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/maps/town/components/TownBattlePortalAnimation.tscn" id="2_town_portal"]
 
+[sub_resource type="CanvasItemMaterial" id="SealVeilMaterial"]
+blend_mode = 1
+
 [sub_resource type="Animation" id="PortalReset"]
 length = 0.0
 
 [sub_resource type="Animation" id="PortalLoop"]
 resource_name = "portal_loop"
-length = 6.0
+length = 3.2
 loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("SealRig:rotation")
-tracks/0/interp = 1
+tracks/0/path = NodePath("ApertureAnchor/PortalScale/ActiveAura:modulate")
+tracks/0/interp = 2
 tracks/0/loop_wrap = true
-tracks/0/keys = {"times": PackedFloat32Array(0, 6), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [0.0, 6.283185]}
+tracks/0/keys = {"times": PackedFloat32Array(0, 1.6, 3.2), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.28), Color(1, 1, 1, 0.62), Color(1, 1, 1, 0.28)]}
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("SealRig:modulate")
+tracks/1/path = NodePath("ApertureAnchor/PortalScale/SealRig:modulate")
 tracks/1/interp = 2
 tracks/1/loop_wrap = true
-tracks/1/keys = {"times": PackedFloat32Array(0, 1.5, 3, 4.5, 6), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.7, 0.78, 1, 0.42), Color(0.9, 0.94, 1, 0.9), Color(0.7, 0.78, 1, 0.48), Color(0.88, 0.92, 1, 0.82), Color(0.7, 0.78, 1, 0.42)]}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("ActivePortalAnimation:scale")
-tracks/2/interp = 2
-tracks/2/loop_wrap = true
-tracks/2/keys = {"times": PackedFloat32Array(0, 1.5, 3, 4.5, 6), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Vector2(0.96, 0.96), Vector2(1.03, 1.03), Vector2(0.98, 0.98), Vector2(1.02, 1.02), Vector2(0.96, 0.96)]}
+tracks/1/keys = {"times": PackedFloat32Array(0, 1.6, 3.2), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.58), Color(1, 1, 1, 0.78), Color(1, 1, 1, 0.58)]}
 
 [sub_resource type="AnimationLibrary" id="PortalAnimationLibrary"]
 _data = {&"RESET": SubResource("PortalReset"), &"portal_loop": SubResource("PortalLoop")}
@@ -38,41 +34,77 @@ _data = {&"RESET": SubResource("PortalReset"), &"portal_loop": SubResource("Port
 [node name="BattleHubPortalVisual" type="Node2D"]
 script = ExtResource("1_script")
 
-[node name="ActivePortalAnimation" parent="." instance=ExtResource("2_town_portal")]
-position = Vector2(-830, -660)
+[node name="ApertureAnchor" type="Node2D" parent="."]
 
-[node name="SealedPortalAnimation" parent="." instance=ExtResource("2_town_portal")]
-position = Vector2(-830, -660)
+[node name="PortalScale" type="Node2D" parent="ApertureAnchor"]
+
+[node name="ActivePortalAnimation" parent="ApertureAnchor/PortalScale" instance=ExtResource("2_town_portal")]
+
+[node name="PortalUnderpaint" parent="ApertureAnchor/PortalScale/ActivePortalAnimation" index="0"]
+position = Vector2(0, 0)
+
+[node name="PortalCore" parent="ApertureAnchor/PortalScale/ActivePortalAnimation" index="1"]
+position = Vector2(0, 0)
+
+[node name="PortalHighlights" parent="ApertureAnchor/PortalScale/ActivePortalAnimation" index="2"]
+position = Vector2(0, 0)
+
+[node name="PortalRuneGlow" parent="ApertureAnchor/PortalScale/ActivePortalAnimation" index="3"]
+position = Vector2(0, -83)
+
+[node name="SealedPortalAnimation" parent="ApertureAnchor/PortalScale" instance=ExtResource("2_town_portal")]
 modulate = Color(0.18, 0.2, 0.27, 0.66)
 
-[node name="SealRig" type="Node2D" parent="."]
-position = Vector2(0, -108)
+[node name="PortalUnderpaint" parent="ApertureAnchor/PortalScale/SealedPortalAnimation" index="0"]
+position = Vector2(0, 0)
 
-[node name="OuterRing" type="Line2D" parent="SealRig"]
-points = PackedVector2Array(0, -69, 48, -48, 69, 0, 48, 48, 0, 69, -48, 48, -69, 0, -48, -48, 0, -69)
-width = 7.0
-default_color = Color(0.62, 0.72, 1, 0.88)
+[node name="PortalCore" parent="ApertureAnchor/PortalScale/SealedPortalAnimation" index="1"]
+position = Vector2(0, 0)
+
+[node name="PortalHighlights" parent="ApertureAnchor/PortalScale/SealedPortalAnimation" index="2"]
+position = Vector2(0, 0)
+
+[node name="PortalRuneGlow" parent="ApertureAnchor/PortalScale/SealedPortalAnimation" index="3"]
+position = Vector2(0, -83)
+
+[node name="ActiveAura" type="Line2D" parent="ApertureAnchor/PortalScale"]
+points = PackedVector2Array(-47, 48, -56, 10, -48, -39, -27, -64, 0, -78, 27, -64, 48, -39, 56, 10, 47, 48)
+width = 3.0
+default_color = Color(1, 0.47, 0.18, 0.72)
 joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
 
-[node name="InnerRing" type="Line2D" parent="SealRig"]
-rotation = 0.392699
-points = PackedVector2Array(0, -47, 33, -33, 47, 0, 33, 33, 0, 47, -33, 33, -47, 0, -33, -33, 0, -47)
+[node name="SealRig" type="Node2D" parent="ApertureAnchor/PortalScale"]
+
+[node name="SealVeil" type="Polygon2D" parent="ApertureAnchor/PortalScale/SealRig"]
+material = SubResource("SealVeilMaterial")
+polygon = PackedVector2Array(-48, 48, -57, 10, -48, -42, -24, -68, 0, -80, 24, -68, 48, -42, 57, 10, 48, 48)
+color = Color(0.08, 0.1, 0.16, 0.72)
+
+[node name="SealRing" type="Line2D" parent="ApertureAnchor/PortalScale/SealRig"]
+points = PackedVector2Array(-48, 48, -57, 10, -48, -42, -24, -68, 0, -80, 24, -68, 48, -42, 57, 10, 48, 48)
 width = 4.0
-default_color = Color(0.72, 0.8, 1, 0.78)
+default_color = Color(0.62, 0.72, 1, 0.74)
 joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
 
-[node name="SealBarA" type="Line2D" parent="SealRig"]
-points = PackedVector2Array(-36, -36, 36, 36)
-width = 9.0
-default_color = Color(0.82, 0.88, 1, 0.92)
+[node name="SealGlyph" type="Line2D" parent="ApertureAnchor/PortalScale/SealRig"]
+points = PackedVector2Array(0, -28, 17, -8, 0, 16, -17, -8, 0, -28)
+width = 4.0
+default_color = Color(0.76, 0.84, 1, 0.88)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
 
-[node name="SealBarB" type="Line2D" parent="SealRig"]
-points = PackedVector2Array(36, -36, -36, 36)
-width = 9.0
-default_color = Color(0.82, 0.88, 1, 0.92)
+[node name="SealCore" type="Polygon2D" parent="ApertureAnchor/PortalScale/SealRig"]
+polygon = PackedVector2Array(0, -18, 9, -8, 0, 4, -9, -8)
+color = Color(0.8, 0.88, 1, 0.48)
 
 [node name="PortalStateAnimation" type="AnimationPlayer" parent="."]
 libraries = {&"": SubResource("PortalAnimationLibrary")}
 autoplay = "portal_loop"
+
+[editable path="ApertureAnchor/PortalScale/ActivePortalAnimation"]
+[editable path="ApertureAnchor/PortalScale/SealedPortalAnimation"]

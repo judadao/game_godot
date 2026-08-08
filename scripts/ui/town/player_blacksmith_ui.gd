@@ -120,6 +120,7 @@ const MATERIAL_QUALITY_LABELS := {
 @onready var method_tools_button: Button = %MethodToolsButton
 @onready var material_chest_button: Button = %MaterialChestButton
 @onready var forge_workspace_action_button: Button = %ForgeWorkspaceActionButton
+@onready var forge_action_label: Label = %ForgeActionLabel
 @onready var finished_rack_button: Button = %FinishedRackButton
 @onready var blueprint_slot: VBoxContainer = %BlueprintSlot
 @onready var method_slot: VBoxContainer = %MethodSlot
@@ -1001,6 +1002,13 @@ func _refresh_recipe_detail() -> void:
 		not unlocked or not bool(craft_preview.get("materials_available", true))
 	)
 	forge_workspace_action_button.disabled = craft_button.disabled
+	forge_action_label.text = (
+		"素材不足，無法敲擊" if forge_workspace_action_button.disabled else "敲擊鐵砧"
+	)
+	forge_action_label.modulate = (
+		Color(0.48, 0.47, 0.45) if forge_workspace_action_button.disabled
+		else Color(1.0, 0.88, 0.56)
+	)
 	craft_button.text = "開始鍛造"
 	_refresh_forge_method_buttons(recipe)
 	_refresh_material_quality_buttons()
@@ -1053,6 +1061,8 @@ func _show_empty_recipe_detail() -> void:
 	recipe_cost_label.text = ""
 	craft_button.disabled = true
 	forge_workspace_action_button.disabled = true
+	forge_action_label.text = "尚未選擇圖紙"
+	forge_action_label.modulate = Color(0.48, 0.47, 0.45)
 	blueprint_rack_button.text = "選圖紙"
 	blueprint_rack_button.disabled = true
 	finished_rack_button.text = "等待成品"

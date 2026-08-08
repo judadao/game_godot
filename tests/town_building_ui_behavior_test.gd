@@ -268,8 +268,9 @@ func _test_player_blacksmith() -> void:
 		market_ui != null
 			and market_ui.visible
 			and candidate_button != null
-			and _visible_text(ui).contains("主角")
-			and _visible_text(ui).contains("顧客")
+			and (ui.find_child("CounterCustomerNPC", true, false) as Control).is_visible_in_tree()
+			and (ui.find_child("BrowsingCustomerNPC", true, false) as Control).is_visible_in_tree()
+			and (ui.find_child("QueueCustomerNPC", true, false) as Control).is_visible_in_tree()
 			and _visible_text(ui).contains("待補貨"),
 		"Entering the market must show a warm authored shop interior with owner, browsing customers, counter goods, and contextual management controls."
 	)

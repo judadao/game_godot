@@ -1,0 +1,1622 @@
+{
+  "schema_version": 1,
+  "algorithm": "For touching difficult plates, classify each non-zero-alpha source pixel with the explicit source-coordinate partition in the generator. Otherwise find 8-connected alpha islands, choose one distinct large anchor-near main island per component, and assign detached islands to the nearest sampled main-island pixel. Preserve original RGBA pixels exactly and trim to assigned alpha bbox.",
+  "generator": "res://tools/build_skill_series_raster_components.py",
+  "components": [
+    {
+      "category": "base",
+      "entry_id": "sword_rain",
+      "component_id": "lock_star",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/sword_rain_material_v1.png",
+      "source_sha256": "2cfe80a3f9157908e51d8fa183110faa35a6306a1669415c594eb8e31cfaf4b1",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/sword_rain__lock_star.png",
+      "asset_sha256": "6d361227f527606734fc0228ef481708e94198883209f0f5499c7c7e70ef2df9",
+      "source_alpha_bbox": [
+        128,
+        106,
+        691,
+        691
+      ],
+      "isolated_size": [
+        563,
+        585
+      ],
+      "anchors": [
+        [
+          390,
+          390
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "sword_rain",
+      "component_id": "blue_crescent",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/sword_rain_material_v1.png",
+      "source_sha256": "2cfe80a3f9157908e51d8fa183110faa35a6306a1669415c594eb8e31cfaf4b1",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/sword_rain__blue_crescent.png",
+      "asset_sha256": "eeca9e9f15bd768b59028fa25addb79ca3f1b3b8f1d8b399f4d9764c8a85db41",
+      "source_alpha_bbox": [
+        264,
+        423,
+        1199,
+        870
+      ],
+      "isolated_size": [
+        935,
+        447
+      ],
+      "anchors": [
+        [
+          470,
+          800
+        ],
+        [
+          980,
+          590
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "sword_rain",
+      "component_id": "crystal_debris",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/sword_rain_material_v1.png",
+      "source_sha256": "2cfe80a3f9157908e51d8fa183110faa35a6306a1669415c594eb8e31cfaf4b1",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/sword_rain__crystal_debris.png",
+      "asset_sha256": "eb78a557aa5dcc223a3b1caff856f65eb305071601384efc712ed2fd5fcf62e6",
+      "source_alpha_bbox": [
+        470,
+        949,
+        783,
+        1142
+      ],
+      "isolated_size": [
+        313,
+        193
+      ],
+      "anchors": [
+        [
+          610,
+          1040
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "moon_wheel",
+      "component_id": "moon_crescent",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/moon_wheel_material_v1.png",
+      "source_sha256": "6f7df0c50304886a8f58ae713cd8db157af861230bee7de2b630c05a5a80510a",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/moon_wheel__moon_crescent.png",
+      "asset_sha256": "6dcb1effb2e7ddec0de6599ae10b73fdc01fbc62eb780ccd0cb798d4768c8304",
+      "source_alpha_bbox": [
+        98,
+        228,
+        643,
+        1035
+      ],
+      "isolated_size": [
+        545,
+        807
+      ],
+      "anchors": [
+        [
+          320,
+          620
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "moon_wheel",
+      "component_id": "moon_burst",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/moon_wheel_material_v1.png",
+      "source_sha256": "6f7df0c50304886a8f58ae713cd8db157af861230bee7de2b630c05a5a80510a",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/moon_wheel__moon_burst.png",
+      "asset_sha256": "db62b13a610aa78fcc10923ebc87c61a3a30e560b569e6fe406bbc125df25317",
+      "source_alpha_bbox": [
+        677,
+        247,
+        1172,
+        670
+      ],
+      "isolated_size": [
+        495,
+        423
+      ],
+      "anchors": [
+        [
+          900,
+          480
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "moon_wheel",
+      "component_id": "moon_shards",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/moon_wheel_material_v1.png",
+      "source_sha256": "6f7df0c50304886a8f58ae713cd8db157af861230bee7de2b630c05a5a80510a",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/moon_wheel__moon_shards.png",
+      "asset_sha256": "0deeb6f34259d9aa6689a538b5f8fe0293c8d9be0d4447c1c4864c3010bcc753",
+      "source_alpha_bbox": [
+        741,
+        733,
+        1056,
+        1044
+      ],
+      "isolated_size": [
+        315,
+        311
+      ],
+      "anchors": [
+        [
+          900,
+          900
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "feather",
+      "component_id": "feather_fan",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/feather_material_v1.png",
+      "source_sha256": "3914005338b46e8f504610a5968c38b5f4a489811e2c11cd24d26398a8823c99",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/feather__feather_fan.png",
+      "asset_sha256": "5f554503188566303b1e599051ee1fb8e6aa543b08b031eb1e1035c551311616",
+      "source_alpha_bbox": [
+        338,
+        85,
+        911,
+        400
+      ],
+      "isolated_size": [
+        573,
+        315
+      ],
+      "anchors": [
+        [
+          620,
+          250
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "feather",
+      "component_id": "feather_dash",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/feather_material_v1.png",
+      "source_sha256": "3914005338b46e8f504610a5968c38b5f4a489811e2c11cd24d26398a8823c99",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/feather__feather_dash.png",
+      "asset_sha256": "99bd6fcc12d8ed662c74ef1b5b378a8fd56c0615dc2e24c04af4db56362c2ba3",
+      "source_alpha_bbox": [
+        329,
+        471,
+        1001,
+        752
+      ],
+      "isolated_size": [
+        672,
+        281
+      ],
+      "anchors": [
+        [
+          600,
+          620
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "feather",
+      "component_id": "falling_feathers",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/feather_material_v1.png",
+      "source_sha256": "3914005338b46e8f504610a5968c38b5f4a489811e2c11cd24d26398a8823c99",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/feather__falling_feathers.png",
+      "asset_sha256": "2c6f9842e24db705382939b285f8dbfbad361b47f6182c2d483f7052aa7e0723",
+      "source_alpha_bbox": [
+        265,
+        834,
+        982,
+        1149
+      ],
+      "isolated_size": [
+        717,
+        315
+      ],
+      "anchors": [
+        [
+          620,
+          1000
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "thorn",
+      "component_id": "thorn_seed",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/thorn_material_v1.png",
+      "source_sha256": "2df3d02f6050459c63ec017ee1d1ba3f76f4f40d76fb4665c7e8e0b8acbc2ce6",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_seed.png",
+      "asset_sha256": "346a08063e73321508ec9e91544c44c6b98c614ad5c719fc0783c4ccc51b81dd",
+      "source_alpha_bbox": [
+        65,
+        74,
+        531,
+        510
+      ],
+      "isolated_size": [
+        466,
+        436
+      ],
+      "anchors": [
+        [
+          290,
+          300
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "thorn",
+      "component_id": "thorn_run",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/thorn_material_v1.png",
+      "source_sha256": "2df3d02f6050459c63ec017ee1d1ba3f76f4f40d76fb4665c7e8e0b8acbc2ce6",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_run.png",
+      "asset_sha256": "819ff1e9331c0fe3535478e7324d061b8151f7a34ffb17d2207056147fbc317a",
+      "source_alpha_bbox": [
+        386,
+        478,
+        1193,
+        716
+      ],
+      "isolated_size": [
+        807,
+        238
+      ],
+      "anchors": [
+        [
+          500,
+          620
+        ],
+        [
+          1050,
+          610
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "thorn",
+      "component_id": "thorn_bloom",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/thorn_material_v1.png",
+      "source_sha256": "2df3d02f6050459c63ec017ee1d1ba3f76f4f40d76fb4665c7e8e0b8acbc2ce6",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_bloom.png",
+      "asset_sha256": "c14e35295b921d56f8b288b4415d00a7c7779f3ddc7bce4cefa026d88e8b7586",
+      "source_alpha_bbox": [
+        565,
+        804,
+        1152,
+        1191
+      ],
+      "isolated_size": [
+        587,
+        387
+      ],
+      "anchors": [
+        [
+          850,
+          1030
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "dr_stone",
+      "component_id": "stone_orbit",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/dr_stone_material_v1.png",
+      "source_sha256": "3b404dd3c9affcbc2ed151e181ff866cb61fe745d39430c5aab9f1aab2f72a8e",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dr_stone__stone_orbit.png",
+      "asset_sha256": "36abd780012bb350aa22bb8035f7682d267a516e6add50f9014be86314c5ab89",
+      "source_alpha_bbox": [
+        63,
+        48,
+        759,
+        646
+      ],
+      "isolated_size": [
+        696,
+        598
+      ],
+      "anchors": [
+        [
+          390,
+          350
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "dr_stone",
+      "component_id": "stone_lance",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/dr_stone_material_v1.png",
+      "source_sha256": "3b404dd3c9affcbc2ed151e181ff866cb61fe745d39430c5aab9f1aab2f72a8e",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dr_stone__stone_lance.png",
+      "asset_sha256": "43d771490d4920befa4a47eec7ae5f295d2f32f4bb67cfc97f5e583d8e5a69df",
+      "source_alpha_bbox": [
+        531,
+        493,
+        1220,
+        845
+      ],
+      "isolated_size": [
+        689,
+        352
+      ],
+      "anchors": [
+        [
+          860,
+          660
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "dr_stone",
+      "component_id": "stone_crater",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/dr_stone_material_v1.png",
+      "source_sha256": "3b404dd3c9affcbc2ed151e181ff866cb61fe745d39430c5aab9f1aab2f72a8e",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dr_stone__stone_crater.png",
+      "asset_sha256": "ba7d46ecb283043f82d14937341d05b0ade649f35b0dfca89d5f6ffbc9eee055",
+      "source_alpha_bbox": [
+        207,
+        861,
+        947,
+        1219
+      ],
+      "isolated_size": [
+        740,
+        358
+      ],
+      "anchors": [
+        [
+          610,
+          1050
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "black_hole",
+      "component_id": "void_ring",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/black_hole_material_v1.png",
+      "source_sha256": "17bd77a8a2cecd8b7beee27d7faa3e6433f815e75a864052acb71c6781b60f64",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/black_hole__void_ring.png",
+      "asset_sha256": "28f5cb18479ff77f1d7d3363182fc23352ac39a42c3a5f06ec5a20a72722dd53",
+      "source_alpha_bbox": [
+        52,
+        81,
+        464,
+        485
+      ],
+      "isolated_size": [
+        412,
+        404
+      ],
+      "anchors": [
+        [
+          260,
+          280
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "black_hole",
+      "component_id": "void_comet",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/black_hole_material_v1.png",
+      "source_sha256": "17bd77a8a2cecd8b7beee27d7faa3e6433f815e75a864052acb71c6781b60f64",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/black_hole__void_comet.png",
+      "asset_sha256": "bcb93f77e2c88528c3899b4d6e455d7c23df9ce7bdb1dbbf3f8c79d5df264bec",
+      "source_alpha_bbox": [
+        424,
+        410,
+        1184,
+        788
+      ],
+      "isolated_size": [
+        760,
+        378
+      ],
+      "anchors": [
+        [
+          760,
+          610
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "black_hole",
+      "component_id": "void_collapse",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/black_hole_material_v1.png",
+      "source_sha256": "17bd77a8a2cecd8b7beee27d7faa3e6433f815e75a864052acb71c6781b60f64",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/black_hole__void_collapse.png",
+      "asset_sha256": "3373be4370fa0e4c44d73e65c09d77bd753c06bed23701dd01dcde2ccf2c20d5",
+      "source_alpha_bbox": [
+        707,
+        793,
+        1131,
+        1158
+      ],
+      "isolated_size": [
+        424,
+        365
+      ],
+      "anchors": [
+        [
+          920,
+          990
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "fire",
+      "component_id": "fire_pillar",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/fire_material_v1.png",
+      "source_sha256": "c765b6ddeac8795d20cc33550cd1cf07ef5bf95157c9cdd2bb8b1e49a6dcc3d0",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/fire__fire_pillar.png",
+      "asset_sha256": "446635c46d958c8b36f09efbd32194e8e3f2a549c31dc55532a76e6d1a92f205",
+      "source_alpha_bbox": [
+        54,
+        45,
+        713,
+        707
+      ],
+      "isolated_size": [
+        659,
+        662
+      ],
+      "anchors": [
+        [
+          360,
+          360
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "fire",
+      "component_id": "fire_lane",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/fire_material_v1.png",
+      "source_sha256": "c765b6ddeac8795d20cc33550cd1cf07ef5bf95157c9cdd2bb8b1e49a6dcc3d0",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/fire__fire_lane.png",
+      "asset_sha256": "13f0aa59723c89f4b062afe241753fd60a5a9ce3fceb1c675ffeb0bf67cc397e",
+      "source_alpha_bbox": [
+        60,
+        688,
+        1201,
+        918
+      ],
+      "isolated_size": [
+        1141,
+        230
+      ],
+      "anchors": [
+        [
+          260,
+          840
+        ],
+        [
+          1050,
+          790
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "fire",
+      "component_id": "fire_burst",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/fire_material_v1.png",
+      "source_sha256": "c765b6ddeac8795d20cc33550cd1cf07ef5bf95157c9cdd2bb8b1e49a6dcc3d0",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/fire__fire_burst.png",
+      "asset_sha256": "24e93e47305cbd6ee3fb06f36ec5dad3e9dcde1d9d4e0c79490c6b5be3204b4a",
+      "source_alpha_bbox": [
+        552,
+        939,
+        1200,
+        1206
+      ],
+      "isolated_size": [
+        648,
+        267
+      ],
+      "anchors": [
+        [
+          850,
+          1080
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "lightning",
+      "component_id": "storm_ring",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/lightning_material_v1.png",
+      "source_sha256": "6133cf38041b0976b3c2fdd181a922f40beb1b45dd688ee22d3ad5f4bcb0863b",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/lightning__storm_ring.png",
+      "asset_sha256": "265784f614e09a9b656eb404c18dbf644b485bf318aa03a827225e523193a3ee",
+      "source_alpha_bbox": [
+        222,
+        35,
+        971,
+        446
+      ],
+      "isolated_size": [
+        749,
+        411
+      ],
+      "anchors": [
+        [
+          600,
+          250
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "lightning",
+      "component_id": "chain_bolt",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/lightning_material_v1.png",
+      "source_sha256": "6133cf38041b0976b3c2fdd181a922f40beb1b45dd688ee22d3ad5f4bcb0863b",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/lightning__chain_bolt.png",
+      "asset_sha256": "e40602f7796b482a21242c32fde018f6551a13ff9629575c70016813938822fd",
+      "source_alpha_bbox": [
+        74,
+        490,
+        1202,
+        779
+      ],
+      "isolated_size": [
+        1128,
+        289
+      ],
+      "anchors": [
+        [
+          200,
+          620
+        ],
+        [
+          1050,
+          650
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "lightning",
+      "component_id": "sky_impact",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/lightning_material_v1.png",
+      "source_sha256": "6133cf38041b0976b3c2fdd181a922f40beb1b45dd688ee22d3ad5f4bcb0863b",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/lightning__sky_impact.png",
+      "asset_sha256": "85cc94cd61802e521178d6d803ef5d71ec68cfba80c360cb7b71caae57c82162",
+      "source_alpha_bbox": [
+        292,
+        770,
+        954,
+        1232
+      ],
+      "isolated_size": [
+        662,
+        462
+      ],
+      "anchors": [
+        [
+          620,
+          1060
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "water_flow",
+      "component_id": "tidal_curl",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/water_flow_material_v1.png",
+      "source_sha256": "d63d2c25da346a34205d15da2feba3f97c8acf7d0058c2e2d1fd0c8c4064f942",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/water_flow__tidal_curl.png",
+      "asset_sha256": "fb14768426b70ba185c8cf0cb2261d16cfec7d67caab84bbfd7a61251f660bf8",
+      "source_alpha_bbox": [
+        69,
+        100,
+        744,
+        560
+      ],
+      "isolated_size": [
+        675,
+        460
+      ],
+      "anchors": [
+        [
+          360,
+          320
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "water_flow",
+      "component_id": "water_stream",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/water_flow_material_v1.png",
+      "source_sha256": "d63d2c25da346a34205d15da2feba3f97c8acf7d0058c2e2d1fd0c8c4064f942",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/water_flow__water_stream.png",
+      "asset_sha256": "09f870c9153b355536d6293dd219c15c01d8287790633294433110a9de67929f",
+      "source_alpha_bbox": [
+        60,
+        337,
+        1202,
+        1054
+      ],
+      "isolated_size": [
+        1142,
+        717
+      ],
+      "anchors": [
+        [
+          260,
+          850
+        ],
+        [
+          1000,
+          520
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "water_flow",
+      "component_id": "water_splash",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/water_flow_material_v1.png",
+      "source_sha256": "d63d2c25da346a34205d15da2feba3f97c8acf7d0058c2e2d1fd0c8c4064f942",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/water_flow__water_splash.png",
+      "asset_sha256": "60be1eaa96e7fb5c09568f6fe31af705c8e733ad97c436c4e69d03b65bfb3737",
+      "source_alpha_bbox": [
+        631,
+        701,
+        1155,
+        1171
+      ],
+      "isolated_size": [
+        524,
+        470
+      ],
+      "anchors": [
+        [
+          900,
+          1010
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "arcane_swamp",
+      "component_id": "swamp_crown",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/arcane_swamp_material_v1.png",
+      "source_sha256": "14b0bbf65ea9ccca4cf35070ca7251aa205e1696435ee05c6c23cce7c9932617",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/arcane_swamp__swamp_crown.png",
+      "asset_sha256": "6cd0e365f5e7e716d4754834331537a0931df49e0a58fc21868cae912fd69355",
+      "source_alpha_bbox": [
+        144,
+        81,
+        683,
+        580
+      ],
+      "isolated_size": [
+        539,
+        499
+      ],
+      "anchors": [
+        [
+          390,
+          360
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "arcane_swamp",
+      "component_id": "swamp_tendril",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/arcane_swamp_material_v1.png",
+      "source_sha256": "14b0bbf65ea9ccca4cf35070ca7251aa205e1696435ee05c6c23cce7c9932617",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/arcane_swamp__swamp_tendril.png",
+      "asset_sha256": "ea330ee4b642b24bacd166de668086d94d9cbbe32736b87e3d03bbcb7d6ada19",
+      "source_alpha_bbox": [
+        126,
+        408,
+        1113,
+        1088
+      ],
+      "isolated_size": [
+        987,
+        680
+      ],
+      "anchors": [
+        [
+          260,
+          850
+        ],
+        [
+          970,
+          600
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "arcane_swamp",
+      "component_id": "swamp_splash",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/arcane_swamp_material_v1.png",
+      "source_sha256": "14b0bbf65ea9ccca4cf35070ca7251aa205e1696435ee05c6c23cce7c9932617",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/arcane_swamp__swamp_splash.png",
+      "asset_sha256": "6ec6d8acc52b6b047467721e7c01c6e95a68b94558db8936c88f0151662460f4",
+      "source_alpha_bbox": [
+        601,
+        851,
+        1112,
+        1179
+      ],
+      "isolated_size": [
+        511,
+        328
+      ],
+      "anchors": [
+        [
+          880,
+          1030
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "dragon_breath",
+      "component_id": "dragon_head",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/dragon_breath_material_v1.png",
+      "source_sha256": "f01176934d98b11167a7c20547d28c5acbd2a5c8048fe7c3cee58c10bb1f7268",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dragon_breath__dragon_head.png",
+      "asset_sha256": "03ada0c6f9dca500573fb911223c380e824682fbcd076f2dc7d60bfb53f79ab2",
+      "source_alpha_bbox": [
+        57,
+        68,
+        524,
+        461
+      ],
+      "isolated_size": [
+        467,
+        393
+      ],
+      "anchors": [
+        [
+          290,
+          260
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "dragon_breath",
+      "component_id": "breath_beam",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/dragon_breath_material_v1.png",
+      "source_sha256": "f01176934d98b11167a7c20547d28c5acbd2a5c8048fe7c3cee58c10bb1f7268",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dragon_breath__breath_beam.png",
+      "asset_sha256": "33d09e80cd3d116715f3fe671995ac3b27dcd3d0e2d1e14a68a7ba3d2e10b125",
+      "source_alpha_bbox": [
+        41,
+        407,
+        1217,
+        836
+      ],
+      "isolated_size": [
+        1176,
+        429
+      ],
+      "anchors": [
+        [
+          240,
+          650
+        ],
+        [
+          1040,
+          650
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "dragon_breath",
+      "component_id": "breath_burst",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/dragon_breath_material_v1.png",
+      "source_sha256": "f01176934d98b11167a7c20547d28c5acbd2a5c8048fe7c3cee58c10bb1f7268",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dragon_breath__breath_burst.png",
+      "asset_sha256": "eaf7fd7b43d5e06ef3bad79de33f8075d3fc768f8a2116ad6e9615a23ad3c378",
+      "source_alpha_bbox": [
+        669,
+        836,
+        1176,
+        1217
+      ],
+      "isolated_size": [
+        507,
+        381
+      ],
+      "anchors": [
+        [
+          900,
+          1050
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "dawn_vitality",
+      "component_id": "sun_bloom",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/dawn_vitality_material_v1.png",
+      "source_sha256": "f8180b9f9efa30b74106423b1f5d3748adce65b5396c1b1c785afa11c2e48554",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dawn_vitality__sun_bloom.png",
+      "asset_sha256": "99b90dfd16de5d2d7fab38eff211ab2304f97b293a9bb7d0b2cb60d415b2ec4b",
+      "source_alpha_bbox": [
+        76,
+        42,
+        611,
+        701
+      ],
+      "isolated_size": [
+        535,
+        659
+      ],
+      "anchors": [
+        [
+          340,
+          390
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "dawn_vitality",
+      "component_id": "rising_leaves",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/dawn_vitality_material_v1.png",
+      "source_sha256": "f8180b9f9efa30b74106423b1f5d3748adce65b5396c1b1c785afa11c2e48554",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dawn_vitality__rising_leaves.png",
+      "asset_sha256": "52710fc48a6f29d2489c5ece12f8d1f5974c090c3153e91b9978583951f9d02b",
+      "source_alpha_bbox": [
+        796,
+        40,
+        1135,
+        665
+      ],
+      "isolated_size": [
+        339,
+        625
+      ],
+      "anchors": [
+        [
+          970,
+          400
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "dawn_vitality",
+      "component_id": "healing_court",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/dawn_vitality_material_v1.png",
+      "source_sha256": "f8180b9f9efa30b74106423b1f5d3748adce65b5396c1b1c785afa11c2e48554",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dawn_vitality__healing_court.png",
+      "asset_sha256": "f64b809dde7fcf611628f99683ee888082af175b66957880a213f3ea0faa1ff4",
+      "source_alpha_bbox": [
+        92,
+        701,
+        1159,
+        1194
+      ],
+      "isolated_size": [
+        1067,
+        493
+      ],
+      "anchors": [
+        [
+          280,
+          1010
+        ],
+        [
+          950,
+          1010
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "shared_branch_vitality",
+      "component_id": "branch_aura",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/shared_branch_vitality_material_v1.png",
+      "source_sha256": "9d0c645e4d5e6f332e3f6ffdf2f63b3202163dd7ccab4594d2c3535456cd1292",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/shared_branch_vitality__branch_aura.png",
+      "asset_sha256": "b1c45bbfd8767085aedbb98f93494594f50a1cdffe8f7a99c5548d6030844db6",
+      "source_alpha_bbox": [
+        126,
+        59,
+        545,
+        491
+      ],
+      "isolated_size": [
+        419,
+        432
+      ],
+      "anchors": [
+        [
+          330,
+          300
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "shared_branch_vitality",
+      "component_id": "branch_dash",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/shared_branch_vitality_material_v1.png",
+      "source_sha256": "9d0c645e4d5e6f332e3f6ffdf2f63b3202163dd7ccab4594d2c3535456cd1292",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/shared_branch_vitality__branch_dash.png",
+      "asset_sha256": "f0866dce1f23d39e2341fadcc050dbe7be3db7cc6ba490b7f9e89b38feefd110",
+      "source_alpha_bbox": [
+        146,
+        471,
+        1194,
+        794
+      ],
+      "isolated_size": [
+        1048,
+        323
+      ],
+      "anchors": [
+        [
+          250,
+          690
+        ],
+        [
+          1000,
+          650
+        ]
+      ]
+    },
+    {
+      "category": "base",
+      "entry_id": "shared_branch_vitality",
+      "component_id": "branch_court",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/base/shared_branch_vitality_material_v1.png",
+      "source_sha256": "9d0c645e4d5e6f332e3f6ffdf2f63b3202163dd7ccab4594d2c3535456cd1292",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/base/shared_branch_vitality__branch_court.png",
+      "asset_sha256": "c890b0ab9af04ccf5dc70a1ee56d4addb6631e4deaf7150cd86e8ae02734b2f1",
+      "source_alpha_bbox": [
+        150,
+        830,
+        1074,
+        1194
+      ],
+      "isolated_size": [
+        924,
+        364
+      ],
+      "anchors": [
+        [
+          300,
+          1040
+        ],
+        [
+          930,
+          1040
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "dark",
+      "component_id": "void_seed",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/dark_overlay_v1.png",
+      "source_sha256": "1734afec364dfbb9d2f36011947c600ccee67fbdbe19f27dedf87b603f0d9b18",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/dark__void_seed.png",
+      "asset_sha256": "6366bb3acd897bdf32d6449d667b2f1dc7867a3c02a7fdd3f7151c064fed339d",
+      "source_alpha_bbox": [
+        180,
+        248,
+        424,
+        487
+      ],
+      "isolated_size": [
+        244,
+        239
+      ],
+      "anchors": [
+        [
+          310,
+          370
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "dark",
+      "component_id": "void_streak",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/dark_overlay_v1.png",
+      "source_sha256": "1734afec364dfbb9d2f36011947c600ccee67fbdbe19f27dedf87b603f0d9b18",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/dark__void_streak.png",
+      "asset_sha256": "913800be811a286beac02293bb9f6ff11ae9f0b58e5f7b63bd777febd836c46e",
+      "source_alpha_bbox": [
+        620,
+        543,
+        1176,
+        658
+      ],
+      "isolated_size": [
+        556,
+        115
+      ],
+      "anchors": [
+        [
+          850,
+          600
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "dark",
+      "component_id": "void_burst",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/dark_overlay_v1.png",
+      "source_sha256": "1734afec364dfbb9d2f36011947c600ccee67fbdbe19f27dedf87b603f0d9b18",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/dark__void_burst.png",
+      "asset_sha256": "9580f907cdcf108df86dcec4c48f31b09b373ac6dc1879d9beca28f3b104b8bb",
+      "source_alpha_bbox": [
+        655,
+        843,
+        1027,
+        1120
+      ],
+      "isolated_size": [
+        372,
+        277
+      ],
+      "anchors": [
+        [
+          820,
+          960
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "fire",
+      "component_id": "flare_seed",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/fire_overlay_v1.png",
+      "source_sha256": "5b447b6f0c18117b57cf354b640cdd300f02febbb40c0401b62c1107165807f8",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/fire__flare_seed.png",
+      "asset_sha256": "7ae9baa085c9ab2f406df15fa5af5bc38d8c5b781a1f4405fb5ee6508b7b80e5",
+      "source_alpha_bbox": [
+        92,
+        131,
+        452,
+        506
+      ],
+      "isolated_size": [
+        360,
+        375
+      ],
+      "anchors": [
+        [
+          310,
+          340
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "fire",
+      "component_id": "flame_streak",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/fire_overlay_v1.png",
+      "source_sha256": "5b447b6f0c18117b57cf354b640cdd300f02febbb40c0401b62c1107165807f8",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/fire__flame_streak.png",
+      "asset_sha256": "941692111de8de561cf5aa9e54406152fdc84db96dfe787dca66a18d51083197",
+      "source_alpha_bbox": [
+        591,
+        618,
+        1178,
+        707
+      ],
+      "isolated_size": [
+        587,
+        89
+      ],
+      "anchors": [
+        [
+          850,
+          640
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "fire",
+      "component_id": "fire_burst",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/fire_overlay_v1.png",
+      "source_sha256": "5b447b6f0c18117b57cf354b640cdd300f02febbb40c0401b62c1107165807f8",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/fire__fire_burst.png",
+      "asset_sha256": "7e400efaad2da5dd2a5f507a6815c2cf23577948461a6449ab5cc8902a47fac5",
+      "source_alpha_bbox": [
+        594,
+        911,
+        1148,
+        1115
+      ],
+      "isolated_size": [
+        554,
+        204
+      ],
+      "anchors": [
+        [
+          850,
+          990
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "ice",
+      "component_id": "ice_seed",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/ice_overlay_v1.png",
+      "source_sha256": "dc7cc8ab67869834e19cb839a9e546505b41fdb261fc266f68d8c3f27769f1ae",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/ice__ice_seed.png",
+      "asset_sha256": "617655a8214770e8026fef95af600bef06c2d5d923745ceb236b278e972342a3",
+      "source_alpha_bbox": [
+        149,
+        180,
+        460,
+        488
+      ],
+      "isolated_size": [
+        311,
+        308
+      ],
+      "anchors": [
+        [
+          310,
+          330
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "ice",
+      "component_id": "ice_streak",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/ice_overlay_v1.png",
+      "source_sha256": "dc7cc8ab67869834e19cb839a9e546505b41fdb261fc266f68d8c3f27769f1ae",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/ice__ice_streak.png",
+      "asset_sha256": "259c6b68c1052d6e14115d737623b93247ae2bc11dc115d502ca3dc4f398ce6f",
+      "source_alpha_bbox": [
+        640,
+        523,
+        1185,
+        608
+      ],
+      "isolated_size": [
+        545,
+        85
+      ],
+      "anchors": [
+        [
+          850,
+          570
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "ice",
+      "component_id": "ice_burst",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/ice_overlay_v1.png",
+      "source_sha256": "dc7cc8ab67869834e19cb839a9e546505b41fdb261fc266f68d8c3f27769f1ae",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/ice__ice_burst.png",
+      "asset_sha256": "094a7e9ab3072b7390db2dd44023116f4b032ac556d04dccbb8ad8e200f287d1",
+      "source_alpha_bbox": [
+        649,
+        792,
+        1041,
+        1136
+      ],
+      "isolated_size": [
+        392,
+        344
+      ],
+      "anchors": [
+        [
+          850,
+          950
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "light",
+      "component_id": "light_seed",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/light_overlay_v1.png",
+      "source_sha256": "7fe1cab7f2a6b877e4a501ee08eaf3394f4645a6bbe81bc3b0b8200746c7a794",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/light__light_seed.png",
+      "asset_sha256": "399d9558554fa3889a422a25f6111ae6c7abd8ea9f3555e2b8b4f823095379f7",
+      "source_alpha_bbox": [
+        124,
+        126,
+        526,
+        480
+      ],
+      "isolated_size": [
+        402,
+        354
+      ],
+      "anchors": [
+        [
+          310,
+          330
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "light",
+      "component_id": "light_streak",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/light_overlay_v1.png",
+      "source_sha256": "7fe1cab7f2a6b877e4a501ee08eaf3394f4645a6bbe81bc3b0b8200746c7a794",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/light__light_streak.png",
+      "asset_sha256": "f5fe7a559195c78c5ecc228279f22b11bd8b056756702d7af3632d534da942d2",
+      "source_alpha_bbox": [
+        658,
+        592,
+        1140,
+        700
+      ],
+      "isolated_size": [
+        482,
+        108
+      ],
+      "anchors": [
+        [
+          850,
+          620
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "light",
+      "component_id": "light_burst",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/light_overlay_v1.png",
+      "source_sha256": "7fe1cab7f2a6b877e4a501ee08eaf3394f4645a6bbe81bc3b0b8200746c7a794",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/light__light_burst.png",
+      "asset_sha256": "b157df4d5ad3b1888becc56d01bcea8fd5ac4c926f7704ff399802e511eda478",
+      "source_alpha_bbox": [
+        708,
+        915,
+        1107,
+        1157
+      ],
+      "isolated_size": [
+        399,
+        242
+      ],
+      "anchors": [
+        [
+          900,
+          980
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "lightning",
+      "component_id": "bolt_seed",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/lightning_overlay_v1.png",
+      "source_sha256": "e39def1a21e06635f0fabddd7543b19e2363d89b6ef8a6472e68c23b001e7c15",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/lightning__bolt_seed.png",
+      "asset_sha256": "2fcd9d27c48ea00377e8841436d32e70a4b5043255cdfc91285358c66a7b7977",
+      "source_alpha_bbox": [
+        132,
+        72,
+        441,
+        369
+      ],
+      "isolated_size": [
+        309,
+        297
+      ],
+      "anchors": [
+        [
+          300,
+          250
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "lightning",
+      "component_id": "bolt_streak",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/lightning_overlay_v1.png",
+      "source_sha256": "e39def1a21e06635f0fabddd7543b19e2363d89b6ef8a6472e68c23b001e7c15",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/lightning__bolt_streak.png",
+      "asset_sha256": "5c06c80a2d2aac36762ae7513b18f469895c7c301f81ad29fb801aad3384665d",
+      "source_alpha_bbox": [
+        481,
+        552,
+        1192,
+        659
+      ],
+      "isolated_size": [
+        711,
+        107
+      ],
+      "anchors": [
+        [
+          700,
+          610
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "lightning",
+      "component_id": "bolt_burst",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/lightning_overlay_v1.png",
+      "source_sha256": "e39def1a21e06635f0fabddd7543b19e2363d89b6ef8a6472e68c23b001e7c15",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/lightning__bolt_burst.png",
+      "asset_sha256": "8f9ccbc2de26f7cb99fd815010a3c1f94bcf67ff4c0da623170ab81e6295fbe9",
+      "source_alpha_bbox": [
+        797,
+        885,
+        1073,
+        1150
+      ],
+      "isolated_size": [
+        276,
+        265
+      ],
+      "anchors": [
+        [
+          930,
+          990
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "poison",
+      "component_id": "poison_seed",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/poison_overlay_v1.png",
+      "source_sha256": "16d887d70add9fd61ec7a2b46b9e5db98c670cc917cc16dbbc7a5d181a3f815e",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/poison__poison_seed.png",
+      "asset_sha256": "a044fc07016a0b3ae90f3ce229190ba3509e64ab2bfc094b5dce39a22db1fc54",
+      "source_alpha_bbox": [
+        135,
+        173,
+        501,
+        495
+      ],
+      "isolated_size": [
+        366,
+        322
+      ],
+      "anchors": [
+        [
+          330,
+          350
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "poison",
+      "component_id": "poison_streak",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/poison_overlay_v1.png",
+      "source_sha256": "16d887d70add9fd61ec7a2b46b9e5db98c670cc917cc16dbbc7a5d181a3f815e",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/poison__poison_streak.png",
+      "asset_sha256": "85604d5eddd98713640d4473ce671a27644f06884e8a51e96c7f18a3dce0cb46",
+      "source_alpha_bbox": [
+        584,
+        556,
+        1166,
+        653
+      ],
+      "isolated_size": [
+        582,
+        97
+      ],
+      "anchors": [
+        [
+          820,
+          610
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "poison",
+      "component_id": "poison_burst",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/poison_overlay_v1.png",
+      "source_sha256": "16d887d70add9fd61ec7a2b46b9e5db98c670cc917cc16dbbc7a5d181a3f815e",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/poison__poison_burst.png",
+      "asset_sha256": "88cbf8ab7bf6f0425b4ef8af55d60a4e1e78435cc99dbe7c3c3e2d83e8fe841f",
+      "source_alpha_bbox": [
+        693,
+        830,
+        1079,
+        1109
+      ],
+      "isolated_size": [
+        386,
+        279
+      ],
+      "anchors": [
+        [
+          860,
+          970
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "water",
+      "component_id": "water_seed",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/water_overlay_v1.png",
+      "source_sha256": "51ffc70b084a1cf3f6df1bb00a97009f670edd3290146187a646edc6bf0c70b1",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/water__water_seed.png",
+      "asset_sha256": "3db6f5507bedabe0e3a29efbd53e4674168d88143b203bc392d64612268cef07",
+      "source_alpha_bbox": [
+        158,
+        143,
+        411,
+        426
+      ],
+      "isolated_size": [
+        253,
+        283
+      ],
+      "anchors": [
+        [
+          300,
+          320
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "water",
+      "component_id": "water_streak",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/water_overlay_v1.png",
+      "source_sha256": "51ffc70b084a1cf3f6df1bb00a97009f670edd3290146187a646edc6bf0c70b1",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/water__water_streak.png",
+      "asset_sha256": "64b449625d8590f3b3385ca7385706784eefcb59a1d0ee501ea52ccf75f89ff1",
+      "source_alpha_bbox": [
+        517,
+        553,
+        1188,
+        663
+      ],
+      "isolated_size": [
+        671,
+        110
+      ],
+      "anchors": [
+        [
+          820,
+          610
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "water",
+      "component_id": "water_burst",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/water_overlay_v1.png",
+      "source_sha256": "51ffc70b084a1cf3f6df1bb00a97009f670edd3290146187a646edc6bf0c70b1",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/water__water_burst.png",
+      "asset_sha256": "b005e90f00ec064135576d07b22669522f7be104a2c6c26b4be1b00fe6d3fac2",
+      "source_alpha_bbox": [
+        678,
+        884,
+        1107,
+        1146
+      ],
+      "isolated_size": [
+        429,
+        262
+      ],
+      "anchors": [
+        [
+          860,
+          990
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "wind",
+      "component_id": "wind_seed",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/wind_overlay_v1.png",
+      "source_sha256": "66a70ef5415605d454194c1f591430e7be0109316cc3853350f468b2db2e9f2d",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/wind__wind_seed.png",
+      "asset_sha256": "13f0dcc4eb57fd3f42e788c1fc4363b4f9f4adb3224d4a3b3e9a699b8870b5a8",
+      "source_alpha_bbox": [
+        77,
+        86,
+        473,
+        448
+      ],
+      "isolated_size": [
+        396,
+        362
+      ],
+      "anchors": [
+        [
+          300,
+          300
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "wind",
+      "component_id": "wind_streak",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/wind_overlay_v1.png",
+      "source_sha256": "66a70ef5415605d454194c1f591430e7be0109316cc3853350f468b2db2e9f2d",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/wind__wind_streak.png",
+      "asset_sha256": "845dde63e8daf947c3d30ebc13869fa5b791f122dd1ab891d2ab8c3199a6b8e2",
+      "source_alpha_bbox": [
+        544,
+        566,
+        1171,
+        632
+      ],
+      "isolated_size": [
+        627,
+        66
+      ],
+      "anchors": [
+        [
+          820,
+          600
+        ]
+      ]
+    },
+    {
+      "category": "blessing",
+      "entry_id": "wind",
+      "component_id": "wind_burst",
+      "source_asset_path": "res://assets/generated/vfx/skill_materials/blessings/wind_overlay_v1.png",
+      "source_sha256": "66a70ef5415605d454194c1f591430e7be0109316cc3853350f468b2db2e9f2d",
+      "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/wind__wind_burst.png",
+      "asset_sha256": "6fc432e7ee2df83a840703dd9729b076766c7b0a27d4a043b1a9e4e1e06ca5f7",
+      "source_alpha_bbox": [
+        827,
+        869,
+        1139,
+        1174
+      ],
+      "isolated_size": [
+        312,
+        305
+      ],
+      "anchors": [
+        [
+          950,
+          1000
+        ]
+      ]
+    }
+  ]
+}

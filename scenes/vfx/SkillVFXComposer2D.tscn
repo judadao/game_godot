@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/vfx/skill_vfx_composer_2d.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/vfx/skills/SkillSeriesRasterMaterialVFX2D.tscn" id="2_raster_material"]
 
 [node name="SkillVFXComposer2D" type="Node2D" groups=["SkillVFXComposer", "ReusableVFX"]]
 script = ExtResource("1_script")
+
+[node name="SkillSeriesRasterMaterialVFX2D" parent="." instance=ExtResource("2_raster_material")]

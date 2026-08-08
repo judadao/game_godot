@@ -229,8 +229,85 @@ func _check_ui(scene: PackedScene, prefix: String, window_name: String, viewport
 			)
 			if forge_image != null and viewport_size == Vector2i(1920, 1080):
 				_save_slices(forge_image, forge_name)
+				await _advance_blacksmith_to_anvil(ui)
+				var anvil_slot := ui.find_child("AnvilSlot", true, false) as Control
+				var anvil_visual_layer := ui.find_child(
+					"AnvilVisualLayer", true, false
+				) as Control
+				var anvil_hotspot := ui.find_child(
+					"ForgeWorkspaceActionButton", true, false
+				) as Button
+				_expect(
+					anvil_slot != null
+						and anvil_slot.is_visible_in_tree()
+						and anvil_hotspot != null
+						and anvil_hotspot.is_visible_in_tree()
+						and not anvil_hotspot.disabled,
+					"The 1920x1080 forge review fixture must reach an enabled anvil state."
+				)
+				var forge_animation := ui.find_child(
+					"ForgeWorkspaceAnimation", true, false
+				) as AnimationPlayer
+				_expect(
+					forge_animation != null,
+					"The final forge review needs the authored hammer animation."
+				)
+				if forge_animation != null:
+					forge_animation.seek(0.0, true)
+				await process_frame
+				var idle_image := viewport.get_texture().get_image()
+				var idle_name := "blacksmith_forge_anvil_idle_1920x1080"
+				_expect(
+					idle_image != null
+						and idle_image.save_png(
+							_capture_directory.path_join("%s.png" % idle_name)
+						) == OK,
+					"Idle anvil review capture must save at 1920x1080."
+				)
+				if idle_image != null:
+					_save_slices(idle_image, idle_name)
+					_save_control_detail(idle_image, anvil_visual_layer, "%s_native" % idle_name)
+				if forge_animation != null:
+					forge_animation.seek(2.86, true)
+				await process_frame
+				var impact_image := viewport.get_texture().get_image()
+				var impact_name := "blacksmith_forge_anvil_impact_1920x1080"
+				_expect(
+					impact_image != null
+						and impact_image.save_png(
+							_capture_directory.path_join("%s.png" % impact_name)
+						) == OK,
+					"Impact-frame anvil review capture must save at 1920x1080."
+				)
+				if impact_image != null:
+					_save_slices(impact_image, impact_name)
+					_save_control_detail(
+						impact_image, anvil_visual_layer, "%s_native" % impact_name
+					)
 	viewport.queue_free()
 	await process_frame
+
+
+func _advance_blacksmith_to_anvil(ui: Control) -> void:
+	var recipe_list := ui.find_child("RecipeList", true, false) as Control
+	if recipe_list != null:
+		for child in recipe_list.get_children():
+			if child is Button and child.visible and not child.disabled:
+				(child as Button).pressed.emit()
+				break
+	await process_frame
+	for button_name in [
+		"BlueprintRackButton",
+		"MethodToolsButton",
+		"SteadyMethodButton",
+		"MaterialChestButton",
+		"CommonMaterialButton",
+	]:
+		var button := ui.find_child(button_name, true, false) as Button
+		_expect(button != null, "Forge review flow needs %s." % button_name)
+		if button != null and not button.disabled:
+			button.pressed.emit()
+		await process_frame
 
 
 func _transformed_bounds(control: Control) -> Rect2:
@@ -258,6 +335,22 @@ func _save_slices(image: Image, base_name: String) -> void:
 				slice.save_png(_capture_directory.path_join("%s_slice_%d.png" % [base_name, index])) == OK,
 				"%s review slice %d must save." % [base_name, index]
 			)
+
+
+func _save_control_detail(image: Image, control: Control, base_name: String) -> void:
+	if control == null:
+		_expect(false, "%s detail capture needs its authored control." % base_name)
+		return
+	var bounds := _transformed_bounds(control).grow(8.0)
+	var left := clampi(floori(bounds.position.x), 0, image.get_width() - 1)
+	var top := clampi(floori(bounds.position.y), 0, image.get_height() - 1)
+	var right := clampi(ceili(bounds.end.x), left + 1, image.get_width())
+	var bottom := clampi(ceili(bounds.end.y), top + 1, image.get_height())
+	var detail := image.get_region(Rect2i(left, top, right - left, bottom - top))
+	_expect(
+		detail.save_png(_capture_directory.path_join("%s.png" % base_name)) == OK,
+		"%s native-detail capture must save." % base_name
+	)
 
 
 func _expect(condition: bool, message: String) -> void:

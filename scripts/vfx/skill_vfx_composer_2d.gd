@@ -28,10 +28,12 @@ var _impact_started := false
 var _progress := 0.0
 var _source := Vector2.ZERO
 var _target := Vector2(260.0, 0.0)
+var _raster_material_vfx: Node2D
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_raster_material_vfx = get_node_or_null("SkillSeriesRasterMaterialVFX2D") as Node2D
 
 
 func configure(recipe: Dictionary, tier_rank: int, blessing_overlays: Array = []) -> bool:
@@ -54,6 +56,11 @@ func configure(recipe: Dictionary, tier_rank: int, blessing_overlays: Array = []
 	_resolve_mutations(blessing_overlays)
 	_build_role_layers()
 	_build_impact_primitive()
+	if _raster_material_vfx != null:
+		if not bool(_raster_material_vfx.call("configure", _recipe, _tier, blessing_overlays)):
+			push_error("Skill VFX raster material composition failed: %s" % String(_recipe.get("id", "")))
+			clear()
+			return false
 	visible = true
 	return true
 
@@ -81,6 +88,8 @@ func set_progress(
 	_source = source
 	_target = target
 	_update_core_materials()
+	if _raster_material_vfx != null and is_instance_valid(_raster_material_vfx):
+		_raster_material_vfx.call("set_progress", _progress, _source, _target, impact_progress, core_positions)
 	for role_variant in _role_layers:
 		_update_role_layer(String(role_variant), _role_layers[role_variant] as CanvasItem, core_positions, impact_progress)
 	if _impact_effect != null and is_instance_valid(_impact_effect):
@@ -91,6 +100,8 @@ func set_progress(
 
 
 func clear() -> void:
+	if _raster_material_vfx != null and is_instance_valid(_raster_material_vfx):
+		_raster_material_vfx.call("clear")
 	for layer_variant in _role_layers.values():
 		var layer := layer_variant as CanvasItem
 		if layer != null and is_instance_valid(layer):
@@ -113,11 +124,14 @@ func clear() -> void:
 
 
 func get_debug_state() -> Dictionary:
+	var raster_state: Dictionary = {}
+	if _raster_material_vfx != null and is_instance_valid(_raster_material_vfx):
+		raster_state = _raster_material_vfx.call("get_debug_state") as Dictionary
 	return {
 		"presentation_mode": "procedural_vfx_recipe",
 		"recipe_id": String(_recipe.get("id", "")),
 		"grammar": (_recipe.get("grammar", []) as Array).duplicate(),
-		"real_visual_layer_count": _role_layers.size() + (1 if _impact_effect != null else 0) + 1,
+		"real_visual_layer_count": _role_layers.size() + (1 if _impact_effect != null else 0) + 1 + int(raster_state.get("active_layer_count", 0)),
 		"mutation_count": _mutations.size(),
 		"visual_count_bonus": _visual_count_bonus,
 		"trajectory_variation": _trajectory_variation,
@@ -127,6 +141,7 @@ func get_debug_state() -> Dictionary:
 		"legacy_fallback_retained": true,
 		"specialized_renderer": _specialized_renderer,
 		"suppressed_generic_roles": _suppressed_generic_roles.duplicate(),
+		"raster_material": raster_state.duplicate(true),
 	}
 
 
@@ -142,27 +157,23 @@ func _resolve_mutations(blessing_overlays: Array) -> void:
 			continue
 		var overlay := overlay_variant as Dictionary
 		var elements := overlay.get("elements", [overlay.get("element", "")]) as Array
-		var resolved_element := ""
 		for element_variant in elements:
-			var candidate := String(element_variant).to_lower()
-			if not MUTATION_CATALOG.get_mutation(candidate).is_empty():
-				resolved_element = candidate
-				break
-		var mutation := MUTATION_CATALOG.get_mutation(resolved_element)
-		if mutation.is_empty():
-			continue
-		var level := clampi(int(overlay.get("level", 1)), 1, 3)
-		_mutations.append(mutation)
-		_visual_count_bonus += int(mutation.get("count_bonus", 0)) * level
-		_trajectory_variation += float(mutation.get("trajectory", 0.0)) * (0.7 + float(level) * 0.3)
-		_impact_primitive = String(mutation.get("impact", _impact_primitive))
-		var mutation_palette := _colors_from_hex(mutation.get("palette", []) as Array)
-		if mutation_palette.size() == 3:
-			if _palette.size() != 3:
-				_palette = mutation_palette
-			else:
-				for color_index in 3:
-					_palette[color_index] = _palette[color_index].lerp(mutation_palette[color_index], 0.46)
+			var resolved_element := String(element_variant).to_lower()
+			var mutation := MUTATION_CATALOG.get_mutation(resolved_element)
+			if mutation.is_empty():
+				continue
+			var level := clampi(int(overlay.get("level", 1)), 1, 3)
+			_mutations.append(mutation)
+			_visual_count_bonus += int(mutation.get("count_bonus", 0)) * level
+			_trajectory_variation += float(mutation.get("trajectory", 0.0)) * (0.7 + float(level) * 0.3)
+			_impact_primitive = String(mutation.get("impact", _impact_primitive))
+			var mutation_palette := _colors_from_hex(mutation.get("palette", []) as Array)
+			if mutation_palette.size() == 3:
+				if _palette.size() != 3:
+					_palette = mutation_palette
+				else:
+					for color_index in 3:
+						_palette[color_index] = _palette[color_index].lerp(mutation_palette[color_index], 0.46)
 	_visual_count_bonus = mini(_visual_count_bonus, 12)
 	_trajectory_variation = minf(_trajectory_variation, 1.4)
 	if _palette.size() != 3:

@@ -1,0 +1,5051 @@
+{
+  "schema_version": 1,
+  "status": "runtime_wired",
+  "source_canvas": {
+    "width": 1254,
+    "height": 1254,
+    "coordinate_space": "source_pixels_rgba"
+  },
+  "isolated_component_assets": {
+    "authority": "res://assets/generated/vfx/skill_materials/components/manifest.json",
+    "path_pattern": "res://assets/generated/vfx/skill_materials/components/{category}/{entry_id}__{component_id}.png",
+    "categories": {
+      "series": "base",
+      "blessing_overlays": "blessing"
+    },
+    "runtime_rule": "Load the isolated component PNG as a whole texture. The source region below is provenance and fallback review data only.",
+    "source_separation": "Touching plates use explicit source-coordinate alpha partitions; separated plates use connected islands plus nearest-main-island assignment. No pixels are redrawn."
+  },
+  "phase_order": [
+    "anticipation",
+    "travel",
+    "contact",
+    "residual"
+  ],
+  "composition_rules": {
+    "whole_sheet_translation": false,
+    "crop_before_transform": true,
+    "prefer_isolated_component_asset": true,
+    "base_topology_owner": "specialized series renderer",
+    "blessing_topology_owner": "inherit base series anchors and paths",
+    "contact_composition": "Layer only the listed local component crops at the contact anchor.",
+    "path_composition": "Repeat a listed travel crop with stagger and overlap; never expose another plate cell.",
+    "alpha_bounds_policy": "native_alpha_bounds is the non-zero-alpha bbox [left, top, right, bottom]; component regions are source-provenance rectangles [x, y, width, height], while isolated component PNGs are the safe runtime textures.",
+    "tint_policy": "Base tint defaults to #FFFFFF (preserve authored palette); Blessings are additive accents, not full recolors.",
+    "tier_order": [
+      "basic",
+      "advanced",
+      "master"
+    ]
+  },
+  "series": [
+    {
+      "id": "sword_rain",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/sword_rain_material_v1.png",
+      "native_alpha_bounds": [
+        128,
+        106,
+        1199,
+        1142
+      ],
+      "components": [
+        {
+          "id": "lock_star",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/sword_rain__lock_star.png",
+          "asset_region": [
+            0,
+            0,
+            563,
+            585
+          ],
+          "role_hint": "anticipation",
+          "region": [
+            112,
+            90,
+            590,
+            620
+          ],
+          "note": "Caster/target lock star; never travel with the slash."
+        },
+        {
+          "id": "blue_crescent",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/sword_rain__blue_crescent.png",
+          "asset_region": [
+            0,
+            0,
+            935,
+            447
+          ],
+          "role_hint": "travel",
+          "region": [
+          500,
+          390,
+          710,
+          500
+          ],
+          "note": "Wide cutting wake, forward axis points right."
+        },
+        {
+          "id": "crystal_debris",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/sword_rain__crystal_debris.png",
+          "asset_region": [
+            0,
+            0,
+            313,
+            193
+          ],
+          "role_hint": "contact",
+          "region": [
+            410,
+            915,
+            430,
+            245
+          ],
+          "note": "Detached shards for local hit scatter."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "lock_star",
+              "anchor": "target",
+              "placement": "orbit",
+              "offset": [
+                0,
+                -54
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.28,
+                0.28
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.42,
+              "stack": {
+                "mode": "orbit",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 1,
+                  "master": 1
+                },
+                "stagger_seconds": 0,
+                "overlap_ratio": 0.15,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 18
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "blue_crescent",
+              "anchor": "path",
+              "placement": "stagger_along_path",
+              "offset": [
+                0,
+                -18
+              ],
+              "rotation_degrees": -8,
+              "scale": [
+                0.22,
+                0.18
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.38,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 4,
+                  "master": 5
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.42,
+                "spacing_pixels": 46,
+                "rotation_step_degrees": -4
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "blue_crescent",
+              "anchor": "contact",
+              "placement": "cross_cut",
+              "offset": [
+                0,
+                -10
+              ],
+              "rotation_degrees": 8,
+              "scale": [
+                0.18,
+                0.15
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.2,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.55,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 72
+              }
+            },
+            {
+              "component": "crystal_debris",
+              "anchor": "contact",
+              "placement": "radial_scatter",
+              "offset": [
+                0,
+                2
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.26,
+                0.26
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.035,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 4
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.18,
+                "spacing_pixels": 22,
+                "rotation_step_degrees": 27
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "crystal_debris",
+              "anchor": "contact",
+              "placement": "drift_down",
+              "offset": [
+                0,
+                18
+              ],
+              "rotation_degrees": 12,
+              "scale": [
+                0.18,
+                0.18
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.14,
+              "lifetime_seconds": 0.46,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 4
+                },
+                "stagger_seconds": 0.06,
+                "overlap_ratio": 0.08,
+                "spacing_pixels": 28,
+                "rotation_step_degrees": 19
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moon_wheel",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/moon_wheel_material_v1.png",
+      "native_alpha_bounds": [
+        98,
+        228,
+        1172,
+        1044
+      ],
+      "components": [
+        {
+          "id": "moon_crescent",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/moon_wheel__moon_crescent.png",
+          "asset_region": [
+            0,
+            0,
+            545,
+            807
+          ],
+          "role_hint": "travel",
+          "region": [
+          72,
+          205,
+          630,
+          860
+          ],
+          "note": "Primary wheel silhouette; crop excludes star and shards."
+        },
+        {
+          "id": "moon_burst",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/moon_wheel__moon_burst.png",
+          "asset_region": [
+            0,
+            0,
+            495,
+            423
+          ],
+          "role_hint": "contact",
+          "region": [
+          690,
+          270,
+          520,
+          430
+          ],
+          "note": "Bright return-contact star."
+        },
+        {
+          "id": "moon_shards",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/moon_wheel__moon_shards.png",
+          "asset_region": [
+            0,
+            0,
+            315,
+            311
+          ],
+          "role_hint": "residual",
+          "region": [
+            690,
+            680,
+            500,
+            380
+          ],
+          "note": "Small angular fragments."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "moon_crescent",
+              "anchor": "source",
+              "placement": "spin_preview",
+              "offset": [
+                18,
+                -28
+              ],
+              "rotation_degrees": -18,
+              "scale": [
+                0.19,
+                0.19
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "orbit",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.06,
+                "overlap_ratio": 0.3,
+                "spacing_pixels": 24,
+                "rotation_step_degrees": 24
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "moon_crescent",
+              "anchor": "path",
+              "placement": "bounce_path",
+              "offset": [
+                0,
+                -12
+              ],
+              "rotation_degrees": -8,
+              "scale": [
+                0.23,
+                0.23
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.12,
+              "lifetime_seconds": 0.62,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 4
+                },
+                "stagger_seconds": 0.12,
+                "overlap_ratio": 0.36,
+                "spacing_pixels": 92,
+                "rotation_step_degrees": 14
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "moon_burst",
+              "anchor": "contact",
+              "placement": "pulse",
+              "offset": [
+                0,
+                -16
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.3,
+                0.3
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.24,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 2
+                },
+                "stagger_seconds": 0.04,
+                "overlap_ratio": 0.62,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 28
+              }
+            },
+            {
+              "component": "moon_shards",
+              "anchor": "contact",
+              "placement": "outward",
+              "offset": [
+                0,
+                6
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.24,
+                0.24
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.03,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 4
+                },
+                "stagger_seconds": 0.04,
+                "overlap_ratio": 0.16,
+                "spacing_pixels": 20,
+                "rotation_step_degrees": 31
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "moon_shards",
+              "anchor": "contact",
+              "placement": "return_drift",
+              "offset": [
+                0,
+                16
+              ],
+              "rotation_degrees": 18,
+              "scale": [
+                0.16,
+                0.16
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.16,
+              "lifetime_seconds": 0.44,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.1,
+                "spacing_pixels": 26,
+                "rotation_step_degrees": -22
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "feather",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/feather_material_v1.png",
+      "native_alpha_bounds": [
+        265,
+        85,
+        1001,
+        1149
+      ],
+      "components": [
+        {
+          "id": "feather_fan",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/feather__feather_fan.png",
+          "asset_region": [
+            0,
+            0,
+            573,
+            315
+          ],
+          "role_hint": "anticipation",
+          "region": [
+            240,
+            65,
+            800,
+            370
+          ],
+          "note": "Separated crown of feathers."
+        },
+        {
+          "id": "feather_dash",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/feather__feather_dash.png",
+          "asset_region": [
+            0,
+            0,
+            672,
+            281
+          ],
+          "role_hint": "travel",
+          "region": [
+            285,
+            440,
+            760,
+            330
+          ],
+          "note": "White-gold forward burst."
+        },
+        {
+          "id": "falling_feathers",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/feather__falling_feathers.png",
+          "asset_region": [
+            0,
+            0,
+            717,
+            315
+          ],
+          "role_hint": "contact",
+          "region": [
+            235,
+            805,
+            810,
+            370
+          ],
+          "note": "Five descending feather streaks."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "feather_fan",
+              "anchor": "source",
+              "placement": "halo_arc",
+              "offset": [
+                0,
+                -64
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.24,
+                0.24
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.54,
+              "stack": {
+                "mode": "orbit",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.075,
+                "overlap_ratio": 0.22,
+                "spacing_pixels": 30,
+                "rotation_step_degrees": 12
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "feather_dash",
+              "anchor": "path",
+              "placement": "stagger_along_path",
+              "offset": [
+                0,
+                -10
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.18,
+                0.15
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.4,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 7
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.48,
+                "spacing_pixels": 54,
+                "rotation_step_degrees": 3
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "feather_dash",
+              "anchor": "contact",
+              "placement": "fan",
+              "offset": [
+                0,
+                -12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.17,
+                0.14
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.2,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.48,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 24
+              }
+            },
+            {
+              "component": "falling_feathers",
+              "anchor": "contact",
+              "placement": "descending_fan",
+              "offset": [
+                0,
+                -42
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.22,
+                0.22
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.04,
+              "lifetime_seconds": 0.48,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 7
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.26,
+                "spacing_pixels": 20,
+                "rotation_step_degrees": 8
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "falling_feathers",
+              "anchor": "contact",
+              "placement": "slow_fall",
+              "offset": [
+                0,
+                20
+              ],
+              "rotation_degrees": 4,
+              "scale": [
+                0.16,
+                0.16
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.66,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 7
+                },
+                "stagger_seconds": 0.075,
+                "overlap_ratio": 0.12,
+                "spacing_pixels": 28,
+                "rotation_step_degrees": 11
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "thorn",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/thorn_material_v1.png",
+      "native_alpha_bounds": [
+        65,
+        74,
+        1193,
+        1191
+      ],
+      "components": [
+        {
+          "id": "thorn_seed",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_seed.png",
+          "asset_region": [
+            0,
+            0,
+            466,
+            436
+          ],
+          "role_hint": "anticipation",
+          "region": [
+          50,
+          55,
+          500,
+          470
+          ],
+          "note": "Closed thorn bud."
+        },
+        {
+          "id": "thorn_run",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_run.png",
+          "asset_region": [
+            0,
+            0,
+            807,
+            238
+          ],
+          "role_hint": "travel",
+          "region": [
+          375,
+          465,
+          830,
+          270
+          ],
+          "note": "Horizontal ground-thorn lane."
+        },
+        {
+          "id": "thorn_bloom",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/thorn__thorn_bloom.png",
+          "asset_region": [
+            0,
+            0,
+            587,
+            387
+          ],
+          "role_hint": "contact",
+          "region": [
+          550,
+          785,
+          670,
+          420
+          ],
+          "note": "Ground eruption and stones."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "thorn_seed",
+              "anchor": "contact",
+              "placement": "telegraph_cluster",
+              "offset": [
+                0,
+                -22
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.2,
+                0.2
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.46,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.08,
+                "overlap_ratio": 0.28,
+                "spacing_pixels": 54,
+                "rotation_step_degrees": 17
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "thorn_run",
+              "anchor": "ground_path",
+              "placement": "grow_forward",
+              "offset": [
+                0,
+                10
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.24,
+                0.18
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.22,
+              "lifetime_seconds": 0.58,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 7
+                },
+                "stagger_seconds": 0.075,
+                "overlap_ratio": 0.5,
+                "spacing_pixels": 48,
+                "rotation_step_degrees": 2
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "thorn_bloom",
+              "anchor": "contact",
+              "placement": "ground_burst",
+              "offset": [
+                0,
+                8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.3,
+                0.26
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.36,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.46,
+                "spacing_pixels": 58,
+                "rotation_step_degrees": 14
+              }
+            },
+            {
+              "component": "thorn_seed",
+              "anchor": "contact",
+              "placement": "bud_cap",
+              "offset": [
+                0,
+                -38
+              ],
+              "rotation_degrees": 12,
+              "scale": [
+                0.13,
+                0.13
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.05,
+              "lifetime_seconds": 0.26,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 30,
+                "rotation_step_degrees": 22
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "thorn_bloom",
+              "anchor": "contact",
+              "placement": "settle",
+              "offset": [
+                0,
+                14
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.22,
+                0.17
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.22,
+              "lifetime_seconds": 0.72,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.09,
+                "overlap_ratio": 0.24,
+                "spacing_pixels": 64,
+                "rotation_step_degrees": -9
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dr_stone",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/dr_stone_material_v1.png",
+      "native_alpha_bounds": [
+        63,
+        48,
+        1220,
+        1219
+      ],
+      "components": [
+        {
+          "id": "stone_orbit",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dr_stone__stone_orbit.png",
+          "asset_region": [
+            0,
+            0,
+            696,
+            598
+          ],
+          "role_hint": "anticipation",
+          "region": [
+          45,
+          30,
+          750,
+          625
+          ],
+          "note": "Orbiting stone core."
+        },
+        {
+          "id": "stone_lance",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dr_stone__stone_lance.png",
+          "asset_region": [
+            0,
+            0,
+            689,
+            352
+          ],
+          "role_hint": "travel",
+          "region": [
+          515,
+          455,
+          720,
+          400
+          ],
+          "note": "Forward meteor/stone lance."
+        },
+        {
+          "id": "stone_crater",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dr_stone__stone_crater.png",
+          "asset_region": [
+            0,
+            0,
+            740,
+            358
+          ],
+          "role_hint": "contact",
+          "region": [
+          195,
+          855,
+          775,
+          370
+          ],
+          "note": "Ground crater explosion."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "stone_orbit",
+              "anchor": "source",
+              "placement": "drone_orbit",
+              "offset": [
+                0,
+                -72
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.19,
+                0.19
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.58,
+              "stack": {
+                "mode": "orbit",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 6,
+                  "master": 10
+                },
+                "stagger_seconds": 0.06,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 62,
+                "rotation_step_degrees": 13
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "stone_lance",
+              "anchor": "path",
+              "placement": "stagger_along_path",
+              "offset": [
+                0,
+                -24
+              ],
+              "rotation_degrees": -6,
+              "scale": [
+                0.18,
+                0.15
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.2,
+              "lifetime_seconds": 0.52,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 6,
+                  "master": 10
+                },
+                "stagger_seconds": 0.075,
+                "overlap_ratio": 0.42,
+                "spacing_pixels": 72,
+                "rotation_step_degrees": -2
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "stone_lance",
+              "anchor": "contact",
+              "placement": "incoming",
+              "offset": [
+                0,
+                -26
+              ],
+              "rotation_degrees": -12,
+              "scale": [
+                0.14,
+                0.12
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.18,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.04,
+                "overlap_ratio": 0.42,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 28
+              }
+            },
+            {
+              "component": "stone_crater",
+              "anchor": "contact",
+              "placement": "ground_burst",
+              "offset": [
+                0,
+                10
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.31,
+                0.27
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.04,
+              "lifetime_seconds": 0.42,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.06,
+                "overlap_ratio": 0.44,
+                "spacing_pixels": 60,
+                "rotation_step_degrees": 16
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "stone_crater",
+              "anchor": "contact",
+              "placement": "dust_settle",
+              "offset": [
+                0,
+                14
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.23,
+                0.18
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.26,
+              "lifetime_seconds": 0.62,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.09,
+                "overlap_ratio": 0.18,
+                "spacing_pixels": 66,
+                "rotation_step_degrees": -12
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "black_hole",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/black_hole_material_v1.png",
+      "native_alpha_bounds": [
+        52,
+        81,
+        1184,
+        1158
+      ],
+      "components": [
+        {
+          "id": "void_ring",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/black_hole__void_ring.png",
+          "asset_region": [
+            0,
+            0,
+            412,
+            404
+          ],
+          "role_hint": "anticipation",
+          "region": [
+          40,
+          65,
+          440,
+          430
+          ],
+          "note": "Open singularity ring."
+        },
+        {
+          "id": "void_comet",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/black_hole__void_comet.png",
+          "asset_region": [
+            0,
+            0,
+            760,
+            378
+          ],
+          "role_hint": "travel",
+          "region": [
+          405,
+          395,
+          790,
+          410
+          ],
+          "note": "Inward purple stream/comet."
+        },
+        {
+          "id": "void_collapse",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/black_hole__void_collapse.png",
+          "asset_region": [
+            0,
+            0,
+            424,
+            365
+          ],
+          "role_hint": "contact",
+          "region": [
+          690,
+          780,
+          460,
+          395
+          ],
+          "note": "Closed collapse disc."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "void_ring",
+              "anchor": "contact",
+              "placement": "expand",
+              "offset": [
+                0,
+                -26
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.24,
+                0.24
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.68,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.09,
+                "overlap_ratio": 0.66,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 21
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "void_comet",
+              "anchor": "path",
+              "placement": "inward_spiral",
+              "offset": [
+                0,
+                -6
+              ],
+              "rotation_degrees": 12,
+              "scale": [
+                0.17,
+                0.13
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.22,
+              "lifetime_seconds": 0.66,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 8
+                },
+                "stagger_seconds": 0.08,
+                "overlap_ratio": 0.44,
+                "spacing_pixels": 70,
+                "rotation_step_degrees": 19
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "void_collapse",
+              "anchor": "contact",
+              "placement": "collapse",
+              "offset": [
+                0,
+                -8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.3,
+                0.3
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.045,
+                "overlap_ratio": 0.72,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 33
+              }
+            },
+            {
+              "component": "void_comet",
+              "anchor": "contact",
+              "placement": "inward_fan",
+              "offset": [
+                0,
+                0
+              ],
+              "rotation_degrees": 180,
+              "scale": [
+                0.12,
+                0.1
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.02,
+              "lifetime_seconds": 0.28,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 8
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.5,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 45
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "void_ring",
+              "anchor": "contact",
+              "placement": "contract",
+              "offset": [
+                0,
+                -4
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.18,
+                0.18
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.22,
+              "lifetime_seconds": 0.76,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.1,
+                "overlap_ratio": 0.62,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": -17
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fire",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/fire_material_v1.png",
+      "native_alpha_bounds": [
+        54,
+        45,
+        1201,
+        1206
+      ],
+      "components": [
+        {
+          "id": "fire_pillar",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/fire__fire_pillar.png",
+          "asset_region": [
+            0,
+            0,
+            659,
+            662
+          ],
+          "role_hint": "contact",
+          "region": [
+            75,
+            25,
+            665,
+            700
+          ],
+          "note": "Vertical ignition pillar."
+        },
+        {
+          "id": "fire_lane",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/fire__fire_lane.png",
+          "asset_region": [
+            0,
+            0,
+            1141,
+            230
+          ],
+          "role_hint": "travel",
+          "region": [
+          50,
+          705,
+          1160,
+          225
+          ],
+          "note": "Ground-skimming flame lane."
+        },
+        {
+          "id": "fire_burst",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/fire__fire_burst.png",
+          "asset_region": [
+            0,
+            0,
+            648,
+            267
+          ],
+          "role_hint": "residual",
+          "region": [
+          535,
+          925,
+          675,
+          290
+          ],
+          "note": "Low explosion and smoke."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "fire_lane",
+              "anchor": "contact",
+              "placement": "ground_telegraph",
+              "offset": [
+                0,
+                12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.17,
+                0.12
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.3,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 4
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.46,
+                "spacing_pixels": 56,
+                "rotation_step_degrees": 4
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "fire_lane",
+              "anchor": "ground_path",
+              "placement": "ignite_forward",
+              "offset": [
+                0,
+                6
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.22,
+                0.15
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.16,
+              "lifetime_seconds": 0.48,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 7
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.56,
+                "spacing_pixels": 44,
+                "rotation_step_degrees": 2
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "fire_pillar",
+              "anchor": "contact",
+              "placement": "pillar",
+              "offset": [
+                0,
+                -48
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.23,
+                0.26
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.42,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.075,
+                "overlap_ratio": 0.38,
+                "spacing_pixels": 72,
+                "rotation_step_degrees": 9
+              }
+            },
+            {
+              "component": "fire_burst",
+              "anchor": "contact",
+              "placement": "base_burst",
+              "offset": [
+                0,
+                10
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.22,
+                0.18
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.035,
+              "lifetime_seconds": 0.3,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.06,
+                "overlap_ratio": 0.4,
+                "spacing_pixels": 54,
+                "rotation_step_degrees": -11
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "fire_burst",
+              "anchor": "contact",
+              "placement": "ember_settle",
+              "offset": [
+                0,
+                12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.18,
+                0.14
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.26,
+              "lifetime_seconds": 0.68,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.085,
+                "overlap_ratio": 0.2,
+                "spacing_pixels": 42,
+                "rotation_step_degrees": 17
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lightning",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/lightning_material_v1.png",
+      "native_alpha_bounds": [
+        74,
+        35,
+        1202,
+        1232
+      ],
+      "components": [
+        {
+          "id": "storm_ring",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/lightning__storm_ring.png",
+          "asset_region": [
+            0,
+            0,
+            749,
+            411
+          ],
+          "role_hint": "anticipation",
+          "region": [
+          205,
+          25,
+          785,
+          420
+          ],
+          "note": "Charged circular sky marker."
+        },
+        {
+          "id": "chain_bolt",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/lightning__chain_bolt.png",
+          "asset_region": [
+            0,
+            0,
+            1128,
+            289
+          ],
+          "role_hint": "travel",
+          "region": [
+          65,
+          475,
+          1150,
+          315
+          ],
+          "note": "Horizontal chained discharge."
+        },
+        {
+          "id": "sky_impact",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/lightning__sky_impact.png",
+          "asset_region": [
+            0,
+            0,
+            662,
+            462
+          ],
+          "role_hint": "contact",
+          "region": [
+          295,
+          790,
+          690,
+          450
+          ],
+          "note": "Vertical ground strike."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "storm_ring",
+              "anchor": "target",
+              "placement": "sky_lock",
+              "offset": [
+                0,
+                -92
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.23,
+                0.19
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.36,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.64,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 23
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "chain_bolt",
+              "anchor": "path",
+              "placement": "chain_between_targets",
+              "offset": [
+                0,
+                -20
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.21,
+                0.14
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.14,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 7
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.62,
+                "spacing_pixels": 52,
+                "rotation_step_degrees": 6
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "sky_impact",
+              "anchor": "contact",
+              "placement": "vertical_strike",
+              "offset": [
+                0,
+                -42
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.26,
+                0.29
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.3,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.045,
+                "overlap_ratio": 0.56,
+                "spacing_pixels": 48,
+                "rotation_step_degrees": 16
+              }
+            },
+            {
+              "component": "chain_bolt",
+              "anchor": "contact",
+              "placement": "forked_snap",
+              "offset": [
+                0,
+                -8
+              ],
+              "rotation_degrees": 18,
+              "scale": [
+                0.13,
+                0.09
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.025,
+              "lifetime_seconds": 0.22,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.025,
+                "overlap_ratio": 0.58,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 47
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "chain_bolt",
+              "anchor": "contact",
+              "placement": "ground_arc",
+              "offset": [
+                0,
+                10
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.13,
+                0.08
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.2,
+              "lifetime_seconds": 0.56,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 4,
+                  "master": 6
+                },
+                "stagger_seconds": 0.06,
+                "overlap_ratio": 0.46,
+                "spacing_pixels": 38,
+                "rotation_step_degrees": 33
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "water_flow",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/water_flow_material_v1.png",
+      "native_alpha_bounds": [
+        60,
+        100,
+        1202,
+        1171
+      ],
+      "components": [
+        {
+          "id": "tidal_curl",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/water_flow__tidal_curl.png",
+          "asset_region": [
+            0,
+            0,
+            675,
+            460
+          ],
+          "role_hint": "anticipation",
+          "region": [
+          45,
+          85,
+          690,
+          470
+          ],
+          "note": "Standing wave curl."
+        },
+        {
+          "id": "water_stream",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/water_flow__water_stream.png",
+          "asset_region": [
+            0,
+            0,
+            1142,
+            717
+          ],
+          "role_hint": "travel",
+          "region": [
+          45,
+          525,
+          640,
+          545
+          ],
+          "note": "Diagonal rushing stream."
+        },
+        {
+          "id": "water_splash",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/water_flow__water_splash.png",
+          "asset_region": [
+            0,
+            0,
+            524,
+            470
+          ],
+          "role_hint": "contact",
+          "region": [
+          690,
+          780,
+          510,
+          405
+          ],
+          "note": "Impact splash."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "tidal_curl",
+              "anchor": "source",
+              "placement": "gather",
+              "offset": [
+                10,
+                -36
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.24,
+                0.24
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.44,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.36,
+                "spacing_pixels": 46,
+                "rotation_step_degrees": 14
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "water_stream",
+              "anchor": "ground_path",
+              "placement": "push_forward",
+              "offset": [
+                0,
+                4
+              ],
+              "rotation_degrees": -4,
+              "scale": [
+                0.23,
+                0.17
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.14,
+              "lifetime_seconds": 0.58,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 8
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.52,
+                "spacing_pixels": 60,
+                "rotation_step_degrees": 2
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "water_stream",
+              "anchor": "contact",
+              "placement": "wash_through",
+              "offset": [
+                0,
+                0
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.16,
+                0.12
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.23,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.04,
+                "overlap_ratio": 0.52,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 28
+              }
+            },
+            {
+              "component": "water_splash",
+              "anchor": "contact",
+              "placement": "splash",
+              "offset": [
+                0,
+                -6
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.28,
+                0.27
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.03,
+              "lifetime_seconds": 0.38,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.42,
+                "spacing_pixels": 52,
+                "rotation_step_degrees": 17
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "tidal_curl",
+              "anchor": "contact",
+              "placement": "receding_arc",
+              "offset": [
+                0,
+                10
+              ],
+              "rotation_degrees": 180,
+              "scale": [
+                0.14,
+                0.12
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.24,
+              "lifetime_seconds": 0.58,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.08,
+                "overlap_ratio": 0.3,
+                "spacing_pixels": 44,
+                "rotation_step_degrees": -19
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arcane_swamp",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/arcane_swamp_material_v1.png",
+      "native_alpha_bounds": [
+        126,
+        81,
+        1113,
+        1179
+      ],
+      "components": [
+        {
+          "id": "swamp_crown",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/arcane_swamp__swamp_crown.png",
+          "asset_region": [
+            0,
+            0,
+            539,
+            499
+          ],
+          "role_hint": "anticipation",
+          "region": [
+          115,
+          65,
+          590,
+          525
+          ],
+          "note": "Rooted purple-green crown."
+        },
+        {
+          "id": "swamp_tendril",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/arcane_swamp__swamp_tendril.png",
+          "asset_region": [
+            0,
+            0,
+            987,
+            680
+          ],
+          "role_hint": "travel",
+          "region": [
+          115,
+          565,
+          670,
+          440
+          ],
+          "note": "Long entangling tendril."
+        },
+        {
+          "id": "swamp_splash",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/arcane_swamp__swamp_splash.png",
+          "asset_region": [
+            0,
+            0,
+            511,
+            328
+          ],
+          "role_hint": "contact",
+          "region": [
+          625,
+          785,
+          525,
+          405
+          ],
+          "note": "Corrosive ground splash."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "swamp_crown",
+              "anchor": "contact",
+              "placement": "seed_pools",
+              "offset": [
+                0,
+                4
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.24,
+                0.21
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.54,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.09,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 68,
+                "rotation_step_degrees": 21
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "swamp_tendril",
+              "anchor": "ground_path",
+              "placement": "entangle_forward",
+              "offset": [
+                0,
+                8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.22,
+                0.14
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.66,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 7
+                },
+                "stagger_seconds": 0.075,
+                "overlap_ratio": 0.54,
+                "spacing_pixels": 58,
+                "rotation_step_degrees": 5
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "swamp_tendril",
+              "anchor": "contact",
+              "placement": "wrap",
+              "offset": [
+                0,
+                -4
+              ],
+              "rotation_degrees": 22,
+              "scale": [
+                0.13,
+                0.1
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.28,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.5,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 51
+              }
+            },
+            {
+              "component": "swamp_splash",
+              "anchor": "contact",
+              "placement": "pool_splash",
+              "offset": [
+                0,
+                10
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.27,
+                0.23
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.035,
+              "lifetime_seconds": 0.4,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.42,
+                "spacing_pixels": 52,
+                "rotation_step_degrees": 19
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "swamp_crown",
+              "anchor": "contact",
+              "placement": "persistent_pool",
+              "offset": [
+                0,
+                14
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.18,
+                0.13
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.28,
+              "lifetime_seconds": 0.92,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.11,
+                "overlap_ratio": 0.4,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 16
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dragon_breath",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/dragon_breath_material_v1.png",
+      "native_alpha_bounds": [
+        41,
+        68,
+        1217,
+        1217
+      ],
+      "components": [
+        {
+          "id": "dragon_head",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dragon_breath__dragon_head.png",
+          "asset_region": [
+            0,
+            0,
+            467,
+            393
+          ],
+          "role_hint": "anticipation",
+          "region": [
+          35,
+          50,
+          520,
+          420
+          ],
+          "note": "Dragon-head breath source."
+        },
+        {
+          "id": "breath_beam",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dragon_breath__breath_beam.png",
+          "asset_region": [
+            0,
+            0,
+            1176,
+            429
+          ],
+          "role_hint": "travel",
+          "region": [
+          35,
+          390,
+          1185,
+          455
+          ],
+          "note": "Long purple breath cone."
+        },
+        {
+          "id": "breath_burst",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dragon_breath__breath_burst.png",
+          "asset_region": [
+            0,
+            0,
+            507,
+            381
+          ],
+          "role_hint": "contact",
+          "region": [
+          655,
+          825,
+          535,
+          405
+          ],
+          "note": "Purple starburst."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "dragon_head",
+              "anchor": "source",
+              "placement": "windup",
+              "offset": [
+                36,
+                -54
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.24,
+                0.24
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.4,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 1,
+                  "master": 2
+                },
+                "stagger_seconds": 0.06,
+                "overlap_ratio": 0.28,
+                "spacing_pixels": 48,
+                "rotation_step_degrees": 13
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "breath_beam",
+              "anchor": "path",
+              "placement": "sweep",
+              "offset": [
+                0,
+                -18
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.28,
+                0.19
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.16,
+              "lifetime_seconds": 0.58,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.08,
+                "overlap_ratio": 0.56,
+                "spacing_pixels": 88,
+                "rotation_step_degrees": 7
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "breath_beam",
+              "anchor": "contact",
+              "placement": "cone_tip",
+              "offset": [
+                0,
+                -10
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.18,
+                0.12
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.22,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.54,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 24
+              }
+            },
+            {
+              "component": "breath_burst",
+              "anchor": "contact",
+              "placement": "burst",
+              "offset": [
+                0,
+                0
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.27,
+                0.27
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.025,
+              "lifetime_seconds": 0.36,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.05,
+                "overlap_ratio": 0.48,
+                "spacing_pixels": 44,
+                "rotation_step_degrees": 31
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "breath_burst",
+              "anchor": "contact",
+              "placement": "afterburn",
+              "offset": [
+                0,
+                8
+              ],
+              "rotation_degrees": 18,
+              "scale": [
+                0.17,
+                0.17
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.24,
+              "lifetime_seconds": 0.58,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.085,
+                "overlap_ratio": 0.28,
+                "spacing_pixels": 50,
+                "rotation_step_degrees": -21
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dawn_vitality",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/dawn_vitality_material_v1.png",
+      "native_alpha_bounds": [
+        76,
+        40,
+        1159,
+        1194
+      ],
+      "components": [
+        {
+          "id": "sun_bloom",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dawn_vitality__sun_bloom.png",
+          "asset_region": [
+            0,
+            0,
+            535,
+            659
+          ],
+          "role_hint": "anticipation",
+          "region": [
+          55,
+          25,
+          570,
+          590
+          ],
+          "note": "Left sun-flower bloom."
+        },
+        {
+          "id": "rising_leaves",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dawn_vitality__rising_leaves.png",
+          "asset_region": [
+            0,
+            0,
+            339,
+            625
+          ],
+          "role_hint": "travel",
+          "region": [
+          785,
+          25,
+          390,
+          660
+          ],
+          "note": "Vertical leaf fountain."
+        },
+        {
+          "id": "healing_court",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/dawn_vitality__healing_court.png",
+          "asset_region": [
+            0,
+            0,
+            1067,
+            493
+          ],
+          "role_hint": "residual",
+          "region": [
+          65,
+          715,
+          1120,
+          490
+          ],
+          "note": "Paired lower healing arcs."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "sun_bloom",
+              "anchor": "source",
+              "placement": "open",
+              "offset": [
+                0,
+                -24
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.24,
+                0.24
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.62,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.1,
+                "overlap_ratio": 0.58,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 18
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "rising_leaves",
+              "anchor": "source",
+              "placement": "rise",
+              "offset": [
+                0,
+                -42
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.19,
+                0.24
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.22,
+              "lifetime_seconds": 0.74,
+              "stack": {
+                "mode": "vertical_stagger",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 8
+                },
+                "stagger_seconds": 0.09,
+                "overlap_ratio": 0.32,
+                "spacing_pixels": 34,
+                "rotation_step_degrees": 7
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "sun_bloom",
+              "anchor": "source",
+              "placement": "healing_pulse",
+              "offset": [
+                0,
+                -8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.18,
+                0.18
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.3,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.05,
+                "overlap_ratio": 0.64,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 27
+              }
+            },
+            {
+              "component": "healing_court",
+              "anchor": "source",
+              "placement": "court_close",
+              "offset": [
+                0,
+                20
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.25,
+                0.18
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.04,
+              "lifetime_seconds": 0.56,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.08,
+                "overlap_ratio": 0.52,
+                "spacing_pixels": 50,
+                "rotation_step_degrees": 9
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "healing_court",
+              "anchor": "source",
+              "placement": "persistent_zone",
+              "offset": [
+                0,
+                18
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.22,
+                0.15
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.3,
+              "lifetime_seconds": 1.1,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.12,
+                "overlap_ratio": 0.46,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": -12
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shared_branch_vitality",
+      "asset_path": "res://assets/generated/vfx/skill_materials/base/shared_branch_vitality_material_v1.png",
+      "native_alpha_bounds": [
+        126,
+        59,
+        1194,
+        1194
+      ],
+      "components": [
+        {
+          "id": "branch_aura",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/shared_branch_vitality__branch_aura.png",
+          "asset_region": [
+            0,
+            0,
+            419,
+            432
+          ],
+          "role_hint": "anticipation",
+          "region": [
+          115,
+          45,
+          470,
+          475
+          ],
+          "note": "Twisting green branch aura."
+        },
+        {
+          "id": "branch_dash",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/shared_branch_vitality__branch_dash.png",
+          "asset_region": [
+            0,
+            0,
+            1048,
+            323
+          ],
+          "role_hint": "travel",
+          "region": [
+          120,
+          465,
+          1080,
+          355
+          ],
+          "note": "Long leafy afterimage."
+        },
+        {
+          "id": "branch_court",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/base/shared_branch_vitality__branch_court.png",
+          "asset_region": [
+            0,
+            0,
+            924,
+            364
+          ],
+          "role_hint": "residual",
+          "region": [
+          140,
+          815,
+          970,
+          395
+          ],
+          "note": "Lower leaf fan/court."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "branch_aura",
+              "anchor": "source",
+              "placement": "wrap_body",
+              "offset": [
+                0,
+                -38
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.22,
+                0.25
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.5,
+              "stack": {
+                "mode": "orbit",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.08,
+                "overlap_ratio": 0.38,
+                "spacing_pixels": 42,
+                "rotation_step_degrees": 16
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "branch_dash",
+              "anchor": "path",
+              "placement": "afterimage_path",
+              "offset": [
+                0,
+                -12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.23,
+                0.14
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.16,
+              "lifetime_seconds": 0.54,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 8
+                },
+                "stagger_seconds": 0.065,
+                "overlap_ratio": 0.48,
+                "spacing_pixels": 50,
+                "rotation_step_degrees": 3
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "branch_dash",
+              "anchor": "contact",
+              "placement": "surge",
+              "offset": [
+                0,
+                -6
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.15,
+                0.09
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.23,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.48,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 26
+              }
+            },
+            {
+              "component": "branch_court",
+              "anchor": "contact",
+              "placement": "leaf_burst",
+              "offset": [
+                0,
+                12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.26,
+                0.2
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.035,
+              "lifetime_seconds": 0.4,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.06,
+                "overlap_ratio": 0.4,
+                "spacing_pixels": 46,
+                "rotation_step_degrees": 18
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "branch_court",
+              "anchor": "source",
+              "placement": "vitality_afterimage",
+              "offset": [
+                0,
+                14
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.19,
+                0.14
+              ],
+              "blend": "mix",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.25,
+              "lifetime_seconds": 0.88,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 3,
+                  "advanced": 5,
+                  "master": 8
+                },
+                "stagger_seconds": 0.1,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 36,
+                "rotation_step_degrees": -7
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "blessing_overlays": [
+    {
+      "id": "dark",
+      "shape": "void_echo",
+      "asset_path": "res://assets/generated/vfx/skill_materials/blessings/dark_overlay_v1.png",
+      "native_alpha_bounds": [
+        180,
+        248,
+        1176,
+        1120
+      ],
+      "components": [
+        {
+          "id": "void_seed",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/dark__void_seed.png",
+          "asset_region": [
+            0,
+            0,
+            244,
+            239
+          ],
+          "role_hint": "anticipation",
+          "region": [
+            145,
+            210,
+            470,
+            420
+          ],
+          "note": "Void seed/orb."
+        },
+        {
+          "id": "void_streak",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/dark__void_streak.png",
+          "asset_region": [
+            0,
+            0,
+            556,
+            115
+          ],
+          "role_hint": "travel",
+          "region": [
+          510,
+          400,
+          675,
+          300
+          ],
+          "note": "Purple directional streak."
+        },
+        {
+          "id": "void_burst",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/dark__void_burst.png",
+          "asset_region": [
+            0,
+            0,
+            372,
+            277
+          ],
+          "role_hint": "contact",
+          "region": [
+            290,
+            735,
+            610,
+            420
+          ],
+          "note": "Butterfly-like void burst."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "void_seed",
+              "anchor": "inherit_base_source",
+              "placement": "accent_charge",
+              "offset": [
+                0,
+                -12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.16,
+                0.16
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.03,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.58,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 17
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "void_streak",
+              "anchor": "inherit_base_path",
+              "placement": "accent_path",
+              "offset": [
+                0,
+                0
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.13,
+                0.1
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.02,
+              "lifetime_seconds": 0.36,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.045,
+                "overlap_ratio": 0.56,
+                "spacing_pixels": 42,
+                "rotation_step_degrees": 4
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "void_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_hit",
+              "offset": [
+                0,
+                -4
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.19,
+                0.19
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.28,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.62,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 29
+              }
+            },
+            {
+              "component": "void_streak",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_forks",
+              "offset": [
+                0,
+                2
+              ],
+              "rotation_degrees": 18,
+              "scale": [
+                0.09,
+                0.07
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.025,
+              "lifetime_seconds": 0.22,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.025,
+                "overlap_ratio": 0.54,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 47
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "void_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_residue",
+              "offset": [
+                0,
+                8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.12,
+                0.09
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.52,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 34,
+                "rotation_step_degrees": -13
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fire",
+      "shape": "turbulent_flare",
+      "asset_path": "res://assets/generated/vfx/skill_materials/blessings/fire_overlay_v1.png",
+      "native_alpha_bounds": [
+        92,
+        131,
+        1178,
+        1115
+      ],
+      "components": [
+        {
+          "id": "flare_seed",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/fire__flare_seed.png",
+          "asset_region": [
+            0,
+            0,
+            360,
+            375
+          ],
+          "role_hint": "anticipation",
+          "region": [
+            120,
+            85,
+            520,
+            480
+          ],
+          "note": "Turbulent flame seed."
+        },
+        {
+          "id": "flame_streak",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/fire__flame_streak.png",
+          "asset_region": [
+            0,
+            0,
+            587,
+            89
+          ],
+          "role_hint": "travel",
+          "region": [
+          535,
+          410,
+          650,
+          285
+          ],
+          "note": "Directional flame streak."
+        },
+        {
+          "id": "fire_burst",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/fire__fire_burst.png",
+          "asset_region": [
+            0,
+            0,
+            554,
+            204
+          ],
+          "role_hint": "contact",
+          "region": [
+            390,
+            735,
+            650,
+            420
+          ],
+          "note": "Low fire burst."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "flare_seed",
+              "anchor": "inherit_base_source",
+              "placement": "accent_charge",
+              "offset": [
+                0,
+                -12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.16,
+                0.16
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.03,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.58,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 17
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "flame_streak",
+              "anchor": "inherit_base_path",
+              "placement": "accent_path",
+              "offset": [
+                0,
+                0
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.13,
+                0.1
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.02,
+              "lifetime_seconds": 0.36,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.045,
+                "overlap_ratio": 0.56,
+                "spacing_pixels": 42,
+                "rotation_step_degrees": 4
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "fire_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_hit",
+              "offset": [
+                0,
+                -4
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.19,
+                0.19
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.28,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.62,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 29
+              }
+            },
+            {
+              "component": "flame_streak",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_forks",
+              "offset": [
+                0,
+                2
+              ],
+              "rotation_degrees": 18,
+              "scale": [
+                0.09,
+                0.07
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.025,
+              "lifetime_seconds": 0.22,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.025,
+                "overlap_ratio": 0.54,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 47
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "fire_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_residue",
+              "offset": [
+                0,
+                8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.12,
+                0.09
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.52,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 34,
+                "rotation_step_degrees": -13
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ice",
+      "shape": "crystal_shard",
+      "asset_path": "res://assets/generated/vfx/skill_materials/blessings/ice_overlay_v1.png",
+      "native_alpha_bounds": [
+        149,
+        180,
+        1185,
+        1136
+      ],
+      "components": [
+        {
+          "id": "ice_seed",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/ice__ice_seed.png",
+          "asset_region": [
+            0,
+            0,
+            311,
+            308
+          ],
+          "role_hint": "anticipation",
+          "region": [
+            110,
+            120,
+            520,
+            470
+          ],
+          "note": "Crystal cluster seed."
+        },
+        {
+          "id": "ice_streak",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/ice__ice_streak.png",
+          "asset_region": [
+            0,
+            0,
+            545,
+            85
+          ],
+          "role_hint": "travel",
+          "region": [
+            430,
+            385,
+            760,
+            320
+          ],
+          "note": "Flat ice streak."
+        },
+        {
+          "id": "ice_burst",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/ice__ice_burst.png",
+          "asset_region": [
+            0,
+            0,
+            392,
+            344
+          ],
+          "role_hint": "contact",
+          "region": [
+            385,
+            725,
+            700,
+            430
+          ],
+          "note": "Crystal impact star."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "ice_seed",
+              "anchor": "inherit_base_source",
+              "placement": "accent_charge",
+              "offset": [
+                0,
+                -12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.16,
+                0.16
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.03,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.58,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 17
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "ice_streak",
+              "anchor": "inherit_base_path",
+              "placement": "accent_path",
+              "offset": [
+                0,
+                0
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.13,
+                0.1
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.02,
+              "lifetime_seconds": 0.36,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.045,
+                "overlap_ratio": 0.56,
+                "spacing_pixels": 42,
+                "rotation_step_degrees": 4
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "ice_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_hit",
+              "offset": [
+                0,
+                -4
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.19,
+                0.19
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.28,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.62,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 29
+              }
+            },
+            {
+              "component": "ice_streak",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_forks",
+              "offset": [
+                0,
+                2
+              ],
+              "rotation_degrees": 18,
+              "scale": [
+                0.09,
+                0.07
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.025,
+              "lifetime_seconds": 0.22,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.025,
+                "overlap_ratio": 0.54,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 47
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "ice_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_residue",
+              "offset": [
+                0,
+                8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.12,
+                0.09
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.52,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 34,
+                "rotation_step_degrees": -13
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "light",
+      "shape": "radiant_halo",
+      "asset_path": "res://assets/generated/vfx/skill_materials/blessings/light_overlay_v1.png",
+      "native_alpha_bounds": [
+        124,
+        126,
+        1140,
+        1157
+      ],
+      "components": [
+        {
+          "id": "light_seed",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/light__light_seed.png",
+          "asset_region": [
+            0,
+            0,
+            402,
+            354
+          ],
+          "role_hint": "anticipation",
+          "region": [
+            95,
+            85,
+            560,
+            500
+          ],
+          "note": "Radiant halo seed."
+        },
+        {
+          "id": "light_streak",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/light__light_streak.png",
+          "asset_region": [
+            0,
+            0,
+            482,
+            108
+          ],
+          "role_hint": "travel",
+          "region": [
+          525,
+          410,
+          625,
+          275
+          ],
+          "note": "Gold-white streak."
+        },
+        {
+          "id": "light_burst",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/light__light_burst.png",
+          "asset_region": [
+            0,
+            0,
+            399,
+            242
+          ],
+          "role_hint": "contact",
+          "region": [
+            390,
+            720,
+            650,
+            440
+          ],
+          "note": "Radiant contact star."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "light_seed",
+              "anchor": "inherit_base_source",
+              "placement": "accent_charge",
+              "offset": [
+                0,
+                -12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.16,
+                0.16
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.03,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.58,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 17
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "light_streak",
+              "anchor": "inherit_base_path",
+              "placement": "accent_path",
+              "offset": [
+                0,
+                0
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.13,
+                0.1
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.02,
+              "lifetime_seconds": 0.36,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.045,
+                "overlap_ratio": 0.56,
+                "spacing_pixels": 42,
+                "rotation_step_degrees": 4
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "light_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_hit",
+              "offset": [
+                0,
+                -4
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.19,
+                0.19
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.28,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.62,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 29
+              }
+            },
+            {
+              "component": "light_streak",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_forks",
+              "offset": [
+                0,
+                2
+              ],
+              "rotation_degrees": 18,
+              "scale": [
+                0.09,
+                0.07
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.025,
+              "lifetime_seconds": 0.22,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.025,
+                "overlap_ratio": 0.54,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 47
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "light_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_residue",
+              "offset": [
+                0,
+                8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.12,
+                0.09
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.52,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 34,
+                "rotation_step_degrees": -13
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lightning",
+      "shape": "forked_snap",
+      "asset_path": "res://assets/generated/vfx/skill_materials/blessings/lightning_overlay_v1.png",
+      "native_alpha_bounds": [
+        132,
+        72,
+        1192,
+        1150
+      ],
+      "components": [
+        {
+          "id": "bolt_seed",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/lightning__bolt_seed.png",
+          "asset_region": [
+            0,
+            0,
+            309,
+            297
+          ],
+          "role_hint": "anticipation",
+          "region": [
+            90,
+            40,
+            580,
+            500
+          ],
+          "note": "Forked charge snap."
+        },
+        {
+          "id": "bolt_streak",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/lightning__bolt_streak.png",
+          "asset_region": [
+            0,
+            0,
+            711,
+            107
+          ],
+          "role_hint": "travel",
+          "region": [
+            150,
+            390,
+            1040,
+            360
+          ],
+          "note": "Horizontal forked bolt."
+        },
+        {
+          "id": "bolt_burst",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/lightning__bolt_burst.png",
+          "asset_region": [
+            0,
+            0,
+            276,
+            265
+          ],
+          "role_hint": "contact",
+          "region": [
+            430,
+            735,
+            620,
+            420
+          ],
+          "note": "Four-way lightning impact."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "bolt_seed",
+              "anchor": "inherit_base_source",
+              "placement": "accent_charge",
+              "offset": [
+                0,
+                -12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.16,
+                0.16
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.03,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.58,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 17
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "bolt_streak",
+              "anchor": "inherit_base_path",
+              "placement": "accent_path",
+              "offset": [
+                0,
+                0
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.13,
+                0.1
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.02,
+              "lifetime_seconds": 0.36,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.045,
+                "overlap_ratio": 0.56,
+                "spacing_pixels": 42,
+                "rotation_step_degrees": 4
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "bolt_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_hit",
+              "offset": [
+                0,
+                -4
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.19,
+                0.19
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.28,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.62,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 29
+              }
+            },
+            {
+              "component": "bolt_streak",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_forks",
+              "offset": [
+                0,
+                2
+              ],
+              "rotation_degrees": 18,
+              "scale": [
+                0.09,
+                0.07
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.025,
+              "lifetime_seconds": 0.22,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.025,
+                "overlap_ratio": 0.54,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 47
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "bolt_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_residue",
+              "offset": [
+                0,
+                8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.12,
+                0.09
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.52,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 34,
+                "rotation_step_degrees": -13
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "poison",
+      "shape": "corrosive_split",
+      "asset_path": "res://assets/generated/vfx/skill_materials/blessings/poison_overlay_v1.png",
+      "native_alpha_bounds": [
+        135,
+        173,
+        1166,
+        1109
+      ],
+      "components": [
+        {
+          "id": "poison_seed",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/poison__poison_seed.png",
+          "asset_region": [
+            0,
+            0,
+            366,
+            322
+          ],
+          "role_hint": "anticipation",
+          "region": [
+            105,
+            115,
+            610,
+            500
+          ],
+          "note": "Corrosive bubble/cloud seed."
+        },
+        {
+          "id": "poison_streak",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/poison__poison_streak.png",
+          "asset_region": [
+            0,
+            0,
+            582,
+            97
+          ],
+          "role_hint": "travel",
+          "region": [
+          525,
+          410,
+          655,
+          280
+          ],
+          "note": "Thin poison slick streak."
+        },
+        {
+          "id": "poison_burst",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/poison__poison_burst.png",
+          "asset_region": [
+            0,
+            0,
+            386,
+            279
+          ],
+          "role_hint": "contact",
+          "region": [
+            390,
+            710,
+            650,
+            450
+          ],
+          "note": "Poison puddle splash."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "poison_seed",
+              "anchor": "inherit_base_source",
+              "placement": "accent_charge",
+              "offset": [
+                0,
+                -12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.16,
+                0.16
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.03,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.58,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 17
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "poison_streak",
+              "anchor": "inherit_base_path",
+              "placement": "accent_path",
+              "offset": [
+                0,
+                0
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.13,
+                0.1
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.02,
+              "lifetime_seconds": 0.36,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.045,
+                "overlap_ratio": 0.56,
+                "spacing_pixels": 42,
+                "rotation_step_degrees": 4
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "poison_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_hit",
+              "offset": [
+                0,
+                -4
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.19,
+                0.19
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.28,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.62,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 29
+              }
+            },
+            {
+              "component": "poison_streak",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_forks",
+              "offset": [
+                0,
+                2
+              ],
+              "rotation_degrees": 18,
+              "scale": [
+                0.09,
+                0.07
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.025,
+              "lifetime_seconds": 0.22,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.025,
+                "overlap_ratio": 0.54,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 47
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "poison_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_residue",
+              "offset": [
+                0,
+                8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.12,
+                0.09
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.52,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 34,
+                "rotation_step_degrees": -13
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "water",
+      "shape": "returning_wave",
+      "asset_path": "res://assets/generated/vfx/skill_materials/blessings/water_overlay_v1.png",
+      "native_alpha_bounds": [
+        158,
+        143,
+        1188,
+        1146
+      ],
+      "components": [
+        {
+          "id": "water_seed",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/water__water_seed.png",
+          "asset_region": [
+            0,
+            0,
+            253,
+            283
+          ],
+          "role_hint": "anticipation",
+          "region": [
+            120,
+            85,
+            570,
+            500
+          ],
+          "note": "Water curl seed."
+        },
+        {
+          "id": "water_streak",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/water__water_streak.png",
+          "asset_region": [
+            0,
+            0,
+            671,
+            110
+          ],
+          "role_hint": "travel",
+          "region": [
+          500,
+          410,
+          695,
+          300
+          ],
+          "note": "Returning water streak."
+        },
+        {
+          "id": "water_burst",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/water__water_burst.png",
+          "asset_region": [
+            0,
+            0,
+            429,
+            262
+          ],
+          "role_hint": "contact",
+          "region": [
+            390,
+            715,
+            690,
+            440
+          ],
+          "note": "Water splash."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "water_seed",
+              "anchor": "inherit_base_source",
+              "placement": "accent_charge",
+              "offset": [
+                0,
+                -12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.16,
+                0.16
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.03,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.58,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 17
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "water_streak",
+              "anchor": "inherit_base_path",
+              "placement": "accent_path",
+              "offset": [
+                0,
+                0
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.13,
+                0.1
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.02,
+              "lifetime_seconds": 0.36,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.045,
+                "overlap_ratio": 0.56,
+                "spacing_pixels": 42,
+                "rotation_step_degrees": 4
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "water_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_hit",
+              "offset": [
+                0,
+                -4
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.19,
+                0.19
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.28,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.62,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 29
+              }
+            },
+            {
+              "component": "water_streak",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_forks",
+              "offset": [
+                0,
+                2
+              ],
+              "rotation_degrees": 18,
+              "scale": [
+                0.09,
+                0.07
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.025,
+              "lifetime_seconds": 0.22,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.025,
+                "overlap_ratio": 0.54,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 47
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "water_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_residue",
+              "offset": [
+                0,
+                8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.12,
+                0.09
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.52,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 34,
+                "rotation_step_degrees": -13
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wind",
+      "shape": "crescent_stream",
+      "asset_path": "res://assets/generated/vfx/skill_materials/blessings/wind_overlay_v1.png",
+      "native_alpha_bounds": [
+        77,
+        86,
+        1171,
+        1174
+      ],
+      "components": [
+        {
+          "id": "wind_seed",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/wind__wind_seed.png",
+          "asset_region": [
+            0,
+            0,
+            396,
+            362
+          ],
+          "role_hint": "anticipation",
+          "region": [
+          60,
+          65,
+          575,
+          445
+          ],
+          "note": "Pinwheel/crescent seed."
+        },
+        {
+          "id": "wind_streak",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/wind__wind_streak.png",
+          "asset_region": [
+            0,
+            0,
+            627,
+            66
+          ],
+          "role_hint": "travel",
+          "region": [
+          475,
+          410,
+          710,
+          290
+          ],
+          "note": "Flat wind streak."
+        },
+        {
+          "id": "wind_burst",
+          "asset_path": "res://assets/generated/vfx/skill_materials/components/blessing/wind__wind_burst.png",
+          "asset_region": [
+            0,
+            0,
+            312,
+            305
+          ],
+          "role_hint": "contact",
+          "region": [
+          625,
+          760,
+          530,
+          425
+          ],
+          "note": "Four-blade wind burst."
+        }
+      ],
+      "stages": [
+        {
+          "phase": "anticipation",
+          "layers": [
+            {
+              "component": "wind_seed",
+              "anchor": "inherit_base_source",
+              "placement": "accent_charge",
+              "offset": [
+                0,
+                -12
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.16,
+                0.16
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.03,
+              "lifetime_seconds": 0.34,
+              "stack": {
+                "mode": "concentric",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.055,
+                "overlap_ratio": 0.58,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 17
+              }
+            }
+          ]
+        },
+        {
+          "phase": "travel",
+          "layers": [
+            {
+              "component": "wind_streak",
+              "anchor": "inherit_base_path",
+              "placement": "accent_path",
+              "offset": [
+                0,
+                0
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.13,
+                0.1
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.02,
+              "lifetime_seconds": 0.36,
+              "stack": {
+                "mode": "path_overlap",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.045,
+                "overlap_ratio": 0.56,
+                "spacing_pixels": 42,
+                "rotation_step_degrees": 4
+              }
+            }
+          ]
+        },
+        {
+          "phase": "contact",
+          "layers": [
+            {
+              "component": "wind_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_hit",
+              "offset": [
+                0,
+                -4
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.19,
+                0.19
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0,
+              "lifetime_seconds": 0.28,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.035,
+                "overlap_ratio": 0.62,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 29
+              }
+            },
+            {
+              "component": "wind_streak",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_forks",
+              "offset": [
+                0,
+                2
+              ],
+              "rotation_degrees": 18,
+              "scale": [
+                0.09,
+                0.07
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.025,
+              "lifetime_seconds": 0.22,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 2,
+                  "advanced": 3,
+                  "master": 5
+                },
+                "stagger_seconds": 0.025,
+                "overlap_ratio": 0.54,
+                "spacing_pixels": 0,
+                "rotation_step_degrees": 47
+              }
+            }
+          ]
+        },
+        {
+          "phase": "residual",
+          "layers": [
+            {
+              "component": "wind_burst",
+              "anchor": "inherit_base_contact",
+              "placement": "accent_residue",
+              "offset": [
+                0,
+                8
+              ],
+              "rotation_degrees": 0,
+              "scale": [
+                0.12,
+                0.09
+              ],
+              "blend": "add",
+              "tint": "#FFFFFF",
+              "delay_seconds": 0.18,
+              "lifetime_seconds": 0.52,
+              "stack": {
+                "mode": "contact_fan",
+                "count_by_tier": {
+                  "basic": 1,
+                  "advanced": 2,
+                  "master": 3
+                },
+                "stagger_seconds": 0.07,
+                "overlap_ratio": 0.34,
+                "spacing_pixels": 34,
+                "rotation_step_degrees": -13
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

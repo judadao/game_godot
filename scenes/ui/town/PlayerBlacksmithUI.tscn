@@ -1,4 +1,4 @@
-[gd_scene load_steps=68 format=3]
+[gd_scene load_steps=72 format=3]
 
 [ext_resource type="Script" uid="uid://bl4jfw2re34g3" path="res://scripts/ui/town/player_blacksmith_ui.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/ui/town/TownNPCPortrait.tscn" id="2_portrait"]
@@ -196,31 +196,24 @@ loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeWorkspaceHammerVisual:rotation")
+tracks/0/path = NodePath("StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeImpactAnchor/ForgeContactAnchor/ForgeHammerPivot:rotation")
 tracks/0/interp = 2
 tracks/0/loop_wrap = true
-tracks/0/keys = {"times": PackedFloat32Array(0, 2.45, 2.7, 2.84, 3.08, 4.2), "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1), "update": 0, "values": [0.24, 0.24, -0.45, 0.5, 0.24, 0.24]}
+tracks/0/keys = {"times": PackedFloat32Array(0, 2.45, 2.7, 2.84, 3.08, 4.2), "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1), "update": 0, "values": [-0.2, -0.2, -0.65, 0.0, -0.2, -0.2]}
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeWorkspaceHammerVisual:position")
-tracks/1/interp = 2
+tracks/1/path = NodePath("StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeImpactAnchor/ForgeContactAnchor/ForgeWorkspaceImpactVisual:modulate")
+tracks/1/interp = 1
 tracks/1/loop_wrap = true
-tracks/1/keys = {"times": PackedFloat32Array(0, 2.45, 2.7, 2.84, 3.08, 4.2), "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1), "update": 0, "values": [Vector2(62, -4), Vector2(62, -4), Vector2(48, -14), Vector2(34, 42), Vector2(62, -4), Vector2(62, -4)]}
+tracks/1/keys = {"times": PackedFloat32Array(0, 2.8, 2.86, 3.12, 4.2), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(1, 0.65, 0.18, 0), Color(1, 0.65, 0.18, 0), Color(1, 0.92, 0.48, 1), Color(1, 0.45, 0.08, 0), Color(1, 0.65, 0.18, 0)]}
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeWorkspaceImpactVisual:modulate")
-tracks/2/interp = 1
+tracks/2/path = NodePath("StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeImpactAnchor/ForgeWorkspaceHearthVisual:modulate")
+tracks/2/interp = 2
 tracks/2/loop_wrap = true
-tracks/2/keys = {"times": PackedFloat32Array(0, 2.8, 2.86, 3.12, 4.2), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(1, 0.65, 0.18, 0), Color(1, 0.65, 0.18, 0), Color(1, 0.92, 0.48, 1), Color(1, 0.45, 0.08, 0), Color(1, 0.65, 0.18, 0)]}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeWorkspaceHearthVisual:modulate")
-tracks/3/interp = 2
-tracks/3/loop_wrap = true
-tracks/3/keys = {"times": PackedFloat32Array(0, 1.3, 2.86, 3.6, 4.2), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(1, 0.74, 0.48, 0.44), Color(1, 0.84, 0.56, 0.56), Color(1, 0.92, 0.66, 0.72), Color(1, 0.76, 0.44, 0.48), Color(1, 0.74, 0.48, 0.44)]}
+tracks/2/keys = {"times": PackedFloat32Array(0, 1.3, 2.86, 3.6, 4.2), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(1, 0.74, 0.48, 0.44), Color(1, 0.84, 0.56, 0.56), Color(1, 0.92, 0.66, 0.72), Color(1, 0.76, 0.44, 0.48), Color(1, 0.74, 0.48, 0.44)]}
 
 [sub_resource type="AnimationLibrary" id="ForgeWorkspaceAnimationLibrary"]
 _data = {&"RESET": SubResource("ForgeWorkspaceReset"), &"idle": SubResource("ForgeWorkspaceIdle")}
@@ -295,6 +288,54 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.48, 0.34, 0.18, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ForgeHitboxNormal"]
+bg_color = Color(0.12, 0.08, 0.035, 0.035)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.72, 0.49, 0.2, 0.28)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ForgeHitboxHover"]
+bg_color = Color(0.72, 0.39, 0.08, 0.1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.72, 0.26, 0.72)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ForgeHitboxFocus"]
+bg_color = Color(0.72, 0.39, 0.08, 0.06)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.75, 0.28, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ForgeHitboxDisabled"]
+bg_color = Color(0.04, 0.04, 0.04, 0.08)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.24, 0.23, 0.21, 0.58)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
@@ -1709,18 +1750,67 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 1
 
 [node name="AnvilVisualLayer" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot"]
-custom_minimum_size = Vector2(0, 230)
+custom_minimum_size = Vector2(0, 260)
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="ForgeWorkspaceHearthVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer"]
+[node name="ForgeWorkspaceActionButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+mouse_default_cursor_shape = 2
+tooltip_text = "鐵砧：確認目前圖紙、鍛法與素材後開始鍛造"
+focus_mode = 2
+theme_override_styles/normal = SubResource("ForgeHitboxNormal")
+theme_override_styles/hover = SubResource("ForgeHitboxHover")
+theme_override_styles/pressed = SubResource("ForgeHitboxHover")
+theme_override_styles/disabled = SubResource("ForgeHitboxDisabled")
+theme_override_styles/focus = SubResource("ForgeHitboxFocus")
+
+[node name="ForgeActionLabel" type="Label" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeWorkspaceActionButton"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -34.0
+offset_right = -8.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.56, 1)
+theme_override_font_sizes/font_size = 12
+text = "敲擊鐵砧"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ForgeImpactAnchor" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.42
+anchor_right = 0.5
+anchor_bottom = 0.42
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ForgeWorkspaceHearthVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeImpactAnchor"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 70.0
-offset_top = 54.0
-offset_right = 230.0
-offset_bottom = 224.0
+offset_left = -258.0
+offset_top = -92.0
+offset_right = -88.0
+offset_bottom = 134.0
 mouse_filter = 2
 texture_filter = 1
 texture = SubResource("ForgeWorkspaceHearth")
@@ -1728,62 +1818,60 @@ expand_mode = 1
 stretch_mode = 5
 modulate = Color(1, 0.74, 0.48, 0.44)
 
-[node name="ForgeWorkspaceAnvilVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer"]
+[node name="ForgeWorkspaceAnvilVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeImpactAnchor"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 170.0
-offset_top = 36.0
-offset_right = 390.0
-offset_bottom = 236.0
+offset_left = -98.0
+offset_top = -68.0
+offset_right = 112.0
+offset_bottom = 212.0
 mouse_filter = 2
 texture_filter = 1
 texture = SubResource("ForgeWorkspaceAnvil")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ForgeWorkspaceHammerVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer"]
+[node name="ForgeContactAnchor" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeImpactAnchor"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 316.0
-offset_top = 8.0
-offset_right = 456.0
-offset_bottom = 164.0
+offset_left = 50.0
+offset_top = -30.0
+offset_right = 50.0
+offset_bottom = -30.0
+mouse_filter = 2
+
+[node name="ForgeHammerPivot" type="Control" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeImpactAnchor/ForgeContactAnchor"]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+rotation = -0.2
+
+[node name="ForgeWorkspaceHammerVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeImpactAnchor/ForgeContactAnchor/ForgeHammerPivot"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = -140.0
+offset_top = -90.0
+offset_right = 40.0
+offset_bottom = 150.0
 mouse_filter = 2
 texture_filter = 1
 texture = SubResource("ForgeWorkspaceHammer")
 expand_mode = 1
 stretch_mode = 5
-pivot_offset = Vector2(15, 66)
-rotation = 0.24
 
-[node name="ForgeWorkspaceImpactVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer"]
+[node name="ForgeWorkspaceImpactVisual" type="TextureRect" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeImpactAnchor/ForgeContactAnchor"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 270.0
-offset_top = 106.0
-offset_right = 380.0
-offset_bottom = 216.0
+offset_left = -60.0
+offset_top = -80.0
+offset_right = 60.0
+offset_bottom = 80.0
 mouse_filter = 2
 texture_filter = 1
 texture = SubResource("ForgeWorkspaceImpact")
 expand_mode = 1
 stretch_mode = 5
 modulate = Color(1, 0.65, 0.18, 0)
-
-[node name="ForgeWorkspaceActionButton" type="Button" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow/AnvilSlot"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 29)
-layout_mode = 2
-tooltip_text = "鐵砧：確認目前圖紙、鍛法與素材後開始鍛造"
-focus_mode = 2
-theme_override_colors/font_color = Color(1, 0.88, 0.56, 1)
-theme_override_font_sizes/font_size = 11
-theme_override_styles/normal = SubResource("PrimaryStyle")
-theme_override_styles/hover = SubResource("HoverStyle")
-theme_override_styles/pressed = SubResource("HoverStyle")
-theme_override_styles/disabled = SubResource("DisabledStyle")
-theme_override_styles/focus = SubResource("FocusStyle")
-text = "敲擊鍛造"
 
 [node name="ResultSlot" type="VBoxContainer" parent="SafeMargin/Center/PlayerBlacksmithWindow/WindowMargin/WindowLayout/MainContent/WorkspaceHolder/ForgeWorkspace/RecipeDetailPanel/RecipeDetailLayout/ForgeInteractionStage/StageLayout/ObjectRow"]
 unique_name_in_owner = true

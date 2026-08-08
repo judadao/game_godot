@@ -291,11 +291,17 @@ Hell、Heaven 四個入口槽位。篇章開啟後舊世界不被替換；Portal
 target；每個變體四片碎片組成鑰匙後才加入可選 Boss 通道，且可同時保留多把鑰匙。
 Town return 使用無大型門體的左側互動出口。
 每個地區入口與中央 Boss 門 instance `BattleHubPortalVisual.tscn`，重用 Town
-`TownBattlePortalAnimation.tscn` 的十二幀漩渦。可用狀態播放帶地區色的漩渦呼吸；
-封印狀態保留低速暗色漩渦並疊加旋轉雙環與交叉鎖印，`battle_portal_hub.gd`
-只依 progression 切換同一元件的 `sealed` 狀態。`StairWalkBaseline` 是角色與傳入
-`PlayerSpawn` 的共同 `y=592` 權威，`FloorCollision` 上緣同步為 `y=562`，避免物理更新後
-把角色拉離背景中景樓梯。
+`TownBattlePortalAnimation.tscn` 的十二幀漩渦。Portal root 固定在互動座標；
+`ApertureAnchor` 依漩渦縮放補償底緣，將效果嵌進背景門洞且 ambient animation 不得修改
+root、anchor 或 scale transform。可用狀態播放帶地區色的漩渦呼吸；封印狀態改用靜止暗色
+漩渦、門洞內 veil、輪廓與小型 glyph，不使用旋轉雙環或交叉鎖印。
+中央 Boss 的漩渦可依大門放大，但封印 veil 與 glyph 使用獨立縮放並保持在下方黑色門洞內，
+不得顯示跨出石拱的大型外圈或 aura；Boss 可用狀態也只顯示門洞內的十二幀漩渦，
+不顯示側門使用的 active aura 或頂部 rune。
+`battle_portal_hub.gd` 只依 progression 切換同一元件的 `sealed` 狀態。
+`StairWalkBaseline` 是角色與傳入 `PlayerSpawn` 的共同 `y=640` 權威；
+`FloorCollision` 中心為 `y=720`、上緣為 `y=672`，讓物理更新後角色落在前景鋪面而非
+背景中景樓梯。
 該出口的互動區與最左側 Autumn portal 必須保持大於一個 Player body 寬度的
 水平淨空，避免玩家同時進入兩個 portal interaction candidates。
 Town 入口沿用背景圖內建的大型藍色門作為唯一視覺，因此

@@ -133,8 +133,25 @@ func _run() -> void:
 			% button_name
 		)
 	var forge_animation := blacksmith.find_child("ForgeWorkspaceAnimation", true, false) as AnimationPlayer
+	var forge_idle_animation: Animation = null
+	if forge_animation != null:
+		forge_idle_animation = forge_animation.get_animation_library("").get_animation("idle")
 	_expect(
-		forge_animation != null and forge_animation.is_playing(),
+		forge_animation != null
+			and forge_animation.is_playing()
+			and forge_idle_animation != null
+			and forge_idle_animation.find_track(
+				NodePath(
+					"StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeImpactAnchor/ForgeContactAnchor/ForgeHammerPivot:rotation"
+				),
+				Animation.TYPE_VALUE
+			) >= 0
+			and forge_idle_animation.find_track(
+				NodePath(
+					"StageLayout/ObjectRow/AnvilSlot/AnvilVisualLayer/ForgeImpactAnchor/ForgeContactAnchor/ForgeHammerPivot/ForgeWorkspaceHammerVisual:position"
+				),
+				Animation.TYPE_VALUE
+			) < 0,
 		"The formal forge hammer and impact need a calm authored strike animation."
 	)
 	var next_hint := blacksmith.find_child("ForgeNextHint", true, false) as Label
@@ -220,14 +237,89 @@ func _run() -> void:
 	var common_button := blacksmith.find_child("CommonMaterialButton", true, false) as Button
 	common_button.pressed.emit()
 	await process_frame
+	var anvil_visual_layer := blacksmith.find_child("AnvilVisualLayer", true, false) as Control
+	var forge_impact_anchor := blacksmith.find_child("ForgeImpactAnchor", true, false) as Control
+	var forge_contact_anchor := blacksmith.find_child("ForgeContactAnchor", true, false) as Control
+	var forge_anvil_visual := blacksmith.find_child(
+		"ForgeWorkspaceAnvilVisual", true, false
+	) as TextureRect
+	var forge_hammer_visual := blacksmith.find_child(
+		"ForgeWorkspaceHammerVisual", true, false
+	) as TextureRect
+	var forge_hammer_pivot := blacksmith.find_child("ForgeHammerPivot", true, false) as Control
+	var forge_impact_visual := blacksmith.find_child(
+		"ForgeWorkspaceImpactVisual", true, false
+	) as TextureRect
+	var forge_action := blacksmith.find_child(
+		"ForgeWorkspaceActionButton", true, false
+	) as Button
 	_expect(
 		next_hint.text.contains("鐵砧")
 			and not method_row.visible
 			and not material_row.visible
-			and root.gui_get_focus_owner() == blacksmith.find_child(
-				"ForgeWorkspaceActionButton", true, false
-			),
+			and root.gui_get_focus_owner() == forge_action,
 		"Choosing material must collapse choices and point directly to the anvil."
+	)
+	_expect(
+		anvil_visual_layer != null
+			and forge_impact_anchor != null
+			and forge_impact_anchor.get_parent() == anvil_visual_layer
+			and forge_contact_anchor != null
+			and forge_contact_anchor.get_parent() == forge_impact_anchor
+			and forge_contact_anchor.position.distance_to(Vector2(50.0, -30.0)) <= 1.0
+			and forge_anvil_visual != null
+			and forge_anvil_visual.get_parent() == forge_impact_anchor
+			and forge_hammer_pivot != null
+			and forge_hammer_pivot.get_parent() == forge_contact_anchor
+			and forge_hammer_visual != null
+			and forge_hammer_visual.get_parent() == forge_hammer_pivot
+			and forge_impact_visual != null
+			and forge_impact_visual.get_parent() == forge_contact_anchor,
+		"The anvil, hammer, and spark must share one responsive local impact anchor."
+	)
+	_expect(
+		forge_impact_anchor != null
+			and forge_contact_anchor != null
+			and forge_hammer_pivot != null
+			and forge_impact_visual != null
+			and forge_contact_anchor.global_position.distance_to(
+				forge_hammer_pivot.global_position
+			) <= 1.0
+			and forge_contact_anchor.global_position.distance_to(
+				forge_impact_visual.get_global_rect().get_center()
+			) <= 1.0,
+		"The hammer pivot and spark center must resolve to the same impact point."
+	)
+	_expect(
+		forge_action != null
+			and forge_action.get_parent() == anvil_visual_layer
+			and forge_action.is_visible_in_tree()
+			and not forge_action.disabled
+			and forge_action.mouse_filter == Control.MOUSE_FILTER_STOP
+			and forge_action.get_rect().encloses(anvil_visual_layer.get_rect()),
+		"The enabled anvil hotspot must cover the whole visible forge workspace, not a detached footer."
+	)
+	var requested := {
+		"recipe": StringName(),
+		"method": StringName(),
+		"quality": StringName(),
+	}
+	blacksmith.craft_with_method_requested.connect(func(
+		recipe_id: StringName, method_id: StringName, quality_id: StringName
+	) -> void:
+		requested["recipe"] = recipe_id
+		requested["method"] = method_id
+		requested["quality"] = quality_id
+	)
+	if forge_action != null and not forge_action.disabled:
+		forge_action.pressed.emit()
+	await process_frame
+	_expect(
+		requested["recipe"] == &"hunter_bow"
+			and requested["method"] == &"steady"
+			and requested["quality"] == &"common"
+			and result_slot.is_visible_in_tree(),
+		"Clicking the enabled anvil hotspot must emit the selected forge intent and advance to the result."
 	)
 	_expect(
 		recipe_button != null
